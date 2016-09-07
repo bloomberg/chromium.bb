@@ -12,7 +12,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 namespace content {
 

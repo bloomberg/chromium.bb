@@ -57,7 +57,6 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/render_widget_scheduling_state.h"
@@ -112,7 +111,6 @@ using blink::WebPoint;
 using blink::WebPopupType;
 using blink::WebRange;
 using blink::WebRect;
-using blink::WebScreenInfo;
 using blink::WebSize;
 using blink::WebTextDirection;
 using blink::WebTouchEvent;
@@ -218,7 +216,7 @@ namespace content {
 
 RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
                            blink::WebPopupType popup_type,
-                           const blink::WebScreenInfo& screen_info,
+                           const ScreenInfo& screen_info,
                            bool swapped_out,
                            bool hidden,
                            bool never_visible)
@@ -247,7 +245,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       screen_info_(screen_info),
-      device_scale_factor_(screen_info_.deviceScaleFactor),
+      device_scale_factor_(screen_info_.device_scale_factor),
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
 #endif
@@ -296,7 +294,7 @@ void RenderWidget::InstallCreateHook(
 RenderWidget* RenderWidget::Create(int32_t opener_id,
                                    CompositorDependencies* compositor_deps,
                                    blink::WebPopupType popup_type,
-                                   const blink::WebScreenInfo& screen_info) {
+                                   const ScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(new RenderWidget(
       compositor_deps, popup_type, screen_info, false, false, false));
@@ -310,7 +308,7 @@ RenderWidget* RenderWidget::Create(int32_t opener_id,
 RenderWidget* RenderWidget::CreateForFrame(
     int routing_id,
     bool hidden,
-    const blink::WebScreenInfo& screen_info,
+    const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
     blink::WebLocalFrame* frame) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
@@ -452,7 +450,7 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
       emulator->original_screen_rect().origin().x() + emulator->offset().x(),
       emulator->original_screen_rect().origin().y() + emulator->offset().y());
   screen_info_ = emulator->original_screen_info();
-  device_scale_factor_ = screen_info_.deviceScaleFactor;
+  device_scale_factor_ = screen_info_.device_scale_factor;
 }
 
 gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
@@ -1021,13 +1019,13 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 
 void RenderWidget::Resize(const ResizeParams& params) {
   bool orientation_changed =
-      screen_info_.orientationAngle != params.screen_info.orientationAngle ||
-      screen_info_.orientationType != params.screen_info.orientationType;
+      screen_info_.orientation_angle != params.screen_info.orientation_angle ||
+      screen_info_.orientation_type != params.screen_info.orientation_type;
 
   screen_info_ = params.screen_info;
 
-  if (device_scale_factor_ != screen_info_.deviceScaleFactor) {
-    device_scale_factor_ = screen_info_.deviceScaleFactor;
+  if (device_scale_factor_ != screen_info_.device_scale_factor) {
+    device_scale_factor_ = screen_info_.device_scale_factor;
     OnDeviceScaleFactorChanged();
     ScheduleComposite();
   }
@@ -1911,8 +1909,38 @@ bool RenderWidget::CanComposeInline() {
   return true;
 }
 
-WebScreenInfo RenderWidget::screenInfo() {
-  return screen_info_;
+blink::WebScreenInfo RenderWidget::screenInfo() {
+  blink::WebScreenInfo web_screen_info;
+  web_screen_info.deviceScaleFactor = screen_info_.device_scale_factor;
+  web_screen_info.depth = screen_info_.depth;
+  web_screen_info.depthPerComponent = screen_info_.depth_per_component;
+  web_screen_info.isMonochrome = screen_info_.is_monochrome;
+  web_screen_info.rect = blink::WebRect(screen_info_.rect);
+  web_screen_info.availableRect = blink::WebRect(screen_info_.available_rect);
+  switch (screen_info_.orientation_type) {
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
+      web_screen_info.orientationType =
+          blink::WebScreenOrientationPortraitPrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
+      web_screen_info.orientationType =
+          blink::WebScreenOrientationPortraitSecondary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
+      web_screen_info.orientationType =
+          blink::WebScreenOrientationLandscapePrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
+      web_screen_info.orientationType =
+          blink::WebScreenOrientationLandscapeSecondary;
+      break;
+    default:
+      web_screen_info.orientationType =
+          blink::WebScreenOrientationUndefined;
+      break;
+  }
+  web_screen_info.orientationAngle = screen_info_.orientation_angle;
+  return web_screen_info;
 }
 
 void RenderWidget::resetInputMethod() {
@@ -2076,7 +2104,7 @@ void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
 float RenderWidget::GetOriginalDeviceScaleFactor() const {
   return
       screen_metrics_emulator_ ?
-      screen_metrics_emulator_->original_screen_info().deviceScaleFactor :
+      screen_metrics_emulator_->original_screen_info().device_scale_factor :
       device_scale_factor_;
 }
 

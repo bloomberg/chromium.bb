@@ -49,10 +49,6 @@ struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWindow_Reply;
 
-namespace blink {
-struct WebScreenInfo;
-}
-
 namespace base {
 class ProcessMetrics;
 class SharedMemory;

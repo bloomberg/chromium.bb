@@ -21,7 +21,7 @@ class RenderWidgetFullscreen : public RenderWidget {
 
  protected:
   RenderWidgetFullscreen(CompositorDependencies* compositor_deps,
-                         const blink::WebScreenInfo& screen_info);
+                         const ScreenInfo& screen_info);
   ~RenderWidgetFullscreen() override;
 
   virtual blink::WebWidget* CreateWebWidget();

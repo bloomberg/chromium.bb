@@ -43,7 +43,7 @@ class RenderWidgetScreenMetricsEmulator {
   float scale() const { return scale_; }
   const gfx::PointF& offset() const { return offset_; }
   const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
-  const blink::WebScreenInfo& original_screen_info() const {
+  const ScreenInfo& original_screen_info() const {
     return original_resize_params_.screen_info;
   }
   const gfx::Rect& original_screen_rect() const {

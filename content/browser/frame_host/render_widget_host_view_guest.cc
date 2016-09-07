@@ -31,7 +31,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 #if defined(OS_MACOSX)
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"

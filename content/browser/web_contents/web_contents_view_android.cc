@@ -16,7 +16,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -30,21 +29,20 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 // static
-void WebContentsView::GetDefaultScreenInfo(
-    blink::WebScreenInfo* results) {
+void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   results->rect = display.bounds();
   // TODO(husky): Remove any system controls from availableRect.
-  results->availableRect = display.work_area();
-  results->deviceScaleFactor = display.device_scale_factor();
-  results->orientationAngle = display.RotationAsDegree();
-  results->orientationType =
+  results->available_rect = display.work_area();
+  results->device_scale_factor = display.device_scale_factor();
+  results->orientation_angle = display.RotationAsDegree();
+  results->orientation_type =
       RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
   gfx::DeviceDisplayInfo info;
   results->depth = display.color_depth();
-  results->depthPerComponent = display.depth_per_component();
-  results->isMonochrome = (results->depthPerComponent == 0);
+  results->depth_per_component = display.depth_per_component();
+  results->is_monochrome = (results->depth_per_component == 0);
 }
 
 WebContentsView* CreateWebContentsView(
@@ -105,7 +103,7 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
   return content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
 }
 
-void WebContentsViewAndroid::GetScreenInfo(blink::WebScreenInfo* result) const {
+void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
   // ScreenInfo isn't tied to the widget on Android. Always return the default.
   WebContentsView::GetDefaultScreenInfo(result);
 }

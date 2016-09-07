@@ -595,7 +595,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   *resize_params = ResizeParams();
 
-  GetWebScreenInfo(&resize_params->screen_info);
+  GetScreenInfo(&resize_params->screen_info);
   if (delegate_) {
     resize_params->resizer_rect = delegate_->GetRootWindowResizerRect(this);
     resize_params->is_fullscreen_granted =
@@ -1245,8 +1245,8 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
   input_event_observers_.RemoveObserver(observer);
 }
 
-void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetWebScreenInfo");
+void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfo");
   if (delegate_)
     delegate_->GetScreenInfo(result);
   else
@@ -1254,9 +1254,9 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
 
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
-  latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
+  latency_tracker_.set_device_scale_factor(result->device_scale_factor);
   if (IsUseZoomForDSFEnabled())
-    input_router_->SetDeviceScaleFactor(result->deviceScaleFactor);
+    input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }
 
 void RenderWidgetHostImpl::HandleCompositorProto(

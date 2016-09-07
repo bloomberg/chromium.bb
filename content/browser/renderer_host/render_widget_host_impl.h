@@ -62,7 +62,6 @@ class WebLayer;
 #endif
 class WebMouseEvent;
 struct WebCompositionUnderline;
-struct WebScreenInfo;
 }
 
 namespace cc {
@@ -91,6 +90,7 @@ class TouchEmulator;
 class WebCursor;
 struct EditCommand;
 struct ResizeParams;
+struct ScreenInfo;
 struct TextInputState;
 
 // This implements the RenderWidgetHost interface that is exposed to
@@ -179,7 +179,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       RenderWidgetHost::InputEventObserver* observer) override;
   void RemoveInputEventObserver(
       RenderWidgetHost::InputEventObserver* observer) override;
-  void GetWebScreenInfo(blink::WebScreenInfo* result) override;
+  void GetScreenInfo(content::ScreenInfo* result) override;
   void HandleCompositorProto(const std::vector<uint8_t>& proto) override;
 
   // Notification that the screen info has changed.

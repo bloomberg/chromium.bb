@@ -85,7 +85,7 @@ using WebWidgetTestProxyType =
     test_runner::WebWidgetTestProxy<RenderWidget,
                                     CompositorDependencies*,
                                     blink::WebPopupType,
-                                    const blink::WebScreenInfo&,
+                                    const ScreenInfo&,
                                     bool,
                                     bool,
                                     bool>;
@@ -105,7 +105,7 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
 
 RenderWidget* CreateWebWidgetTestProxy(CompositorDependencies* compositor_deps,
                                        blink::WebPopupType popup_type,
-                                       const blink::WebScreenInfo& screen_info,
+                                       const ScreenInfo& screen_info,
                                        bool swapped_out,
                                        bool hidden,
                                        bool never_visible) {

@@ -18,7 +18,6 @@
 namespace blink {
 class WebMouseWheelEvent;
 class WebGestureEvent;
-struct WebScreenInfo;
 }
 
 namespace gfx {
@@ -33,6 +32,7 @@ class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class TextInputManager;
+struct ScreenInfo;
 struct NativeWebKeyboardEvent;
 
 //
@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void UpdateDeviceScaleFactor(double device_scale_factor) {}
 
   // Retrieve screen information.
-  virtual void GetScreenInfo(blink::WebScreenInfo* web_screen_info);
+  virtual void GetScreenInfo(ScreenInfo* web_screen_info);
 
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer.

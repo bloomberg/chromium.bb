@@ -63,12 +63,11 @@ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
   return guest_->embedder_web_contents()->GetTopLevelNativeWindow();
 }
 
-void WebContentsViewGuest::GetScreenInfo(
-    blink::WebScreenInfo* web_screen_info) const {
+void WebContentsViewGuest::GetScreenInfo(ScreenInfo* screen_info) const {
   if (guest_->embedder_web_contents())
-    guest_->embedder_web_contents()->GetView()->GetScreenInfo(web_screen_info);
+    guest_->embedder_web_contents()->GetView()->GetScreenInfo(screen_info);
   else
-    WebContentsView::GetDefaultScreenInfo(web_screen_info);
+    WebContentsView::GetDefaultScreenInfo(screen_info);
 }
 
 void WebContentsViewGuest::OnGuestAttached(WebContentsView* parent_view) {

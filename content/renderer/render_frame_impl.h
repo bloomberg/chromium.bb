@@ -90,7 +90,6 @@ struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
-struct WebScreenInfo;
 }  // namespace blink
 
 namespace gfx {
@@ -161,6 +160,7 @@ struct FrameReplicationState;
 struct NavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
+struct ScreenInfo;
 struct StartNavigationParams;
 struct StreamOverrideParameters;
 
@@ -176,7 +176,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int32_t routing_id,
       int32_t widget_routing_id,
       bool hidden,
-      const blink::WebScreenInfo& screen_info,
+      const ScreenInfo& screen_info,
       CompositorDependencies* compositor_deps,
       blink::WebFrame* opener);
 

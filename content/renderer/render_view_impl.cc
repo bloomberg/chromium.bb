@@ -2953,7 +2953,7 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
 void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   ResizeParams params;
   params.screen_info = screen_info_;
-  params.screen_info.deviceScaleFactor = factor;
+  params.screen_info.device_scale_factor = factor;
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
   params.physical_backing_size = gfx::ScaleToCeiledSize(size(), factor);

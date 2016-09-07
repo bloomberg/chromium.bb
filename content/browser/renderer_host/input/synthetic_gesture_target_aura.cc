@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_processor.h"
@@ -24,9 +23,9 @@ namespace content {
 SyntheticGestureTargetAura::SyntheticGestureTargetAura(
     RenderWidgetHostImpl* host)
     : SyntheticGestureTargetBase(host) {
-  blink::WebScreenInfo screenInfo;
-  host->GetWebScreenInfo(&screenInfo);
-  device_scale_factor_ = screenInfo.deviceScaleFactor;
+  ScreenInfo screen_info;
+  host->GetScreenInfo(&screen_info);
+  device_scale_factor_ = screen_info.device_scale_factor;
 }
 
 void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(

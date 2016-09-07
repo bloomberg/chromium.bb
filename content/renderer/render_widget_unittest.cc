@@ -52,7 +52,7 @@ class InteractiveRenderWidget : public RenderWidget {
   explicit InteractiveRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(compositor_deps,
                      blink::WebPopupTypeNone,
-                     blink::WebScreenInfo(),
+                     ScreenInfo(),
                      false,
                      false,
                      false),

@@ -81,8 +81,8 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
       blink::WebDeviceEmulationParams::Desktop) {
     applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
     modified_resize_params.screen_info.rect = original_screen_info().rect;
-    modified_resize_params.screen_info.availableRect =
-        original_screen_info().availableRect;
+    modified_resize_params.screen_info.available_rect =
+        original_screen_info().available_rect;
     window_screen_rect = original_window_screen_rect_;
   } else {
     applied_widget_rect_.set_origin(emulation_params_.viewPosition);
@@ -92,20 +92,40 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
                               emulation_params_.screenSize.height);
     }
     modified_resize_params.screen_info.rect = screen_rect;
-    modified_resize_params.screen_info.availableRect = screen_rect;
+    modified_resize_params.screen_info.available_rect = screen_rect;
     window_screen_rect = applied_widget_rect_;
   }
 
-  modified_resize_params.screen_info.deviceScaleFactor =
+  modified_resize_params.screen_info.device_scale_factor =
       emulation_params_.deviceScaleFactor
           ? emulation_params_.deviceScaleFactor
-          : original_screen_info().deviceScaleFactor;
+          : original_screen_info().device_scale_factor;
 
   if (emulation_params_.screenOrientationType !=
       blink::WebScreenOrientationUndefined) {
-    modified_resize_params.screen_info.orientationType =
-        emulation_params_.screenOrientationType;
-    modified_resize_params.screen_info.orientationAngle =
+    switch (emulation_params_.screenOrientationType) {
+      case blink::WebScreenOrientationPortraitPrimary:
+        modified_resize_params.screen_info.orientation_type =
+            SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+        break;
+      case blink::WebScreenOrientationPortraitSecondary:
+        modified_resize_params.screen_info.orientation_type =
+            SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+        break;
+      case blink::WebScreenOrientationLandscapePrimary:
+        modified_resize_params.screen_info.orientation_type =
+            SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+        break;
+      case blink::WebScreenOrientationLandscapeSecondary:
+        modified_resize_params.screen_info.orientation_type =
+            SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+        break;
+      default:
+        modified_resize_params.screen_info.orientation_type =
+            SCREEN_ORIENTATION_VALUES_DEFAULT;
+        break;
+    }
+    modified_resize_params.screen_info.orientation_angle =
         emulation_params_.screenOrientationAngle;
   }
 
@@ -116,7 +136,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   //   root layer.
   blink::WebDeviceEmulationParams modified_emulation_params = emulation_params_;
   modified_emulation_params.deviceScaleFactor =
-      original_screen_info().deviceScaleFactor;
+      original_screen_info().device_scale_factor;
   modified_emulation_params.offset =
       blink::WebFloatPoint(offset_.x(), offset_.y());
   modified_emulation_params.scale = scale_;
@@ -127,7 +147,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 
   modified_resize_params.physical_backing_size =
       gfx::ScaleToCeiledSize(original_resize_params_.new_size,
-                             original_screen_info().deviceScaleFactor);
+                             original_screen_info().device_scale_factor);
   modified_resize_params.new_size = applied_widget_rect_.size();
   modified_resize_params.visible_viewport_size = applied_widget_rect_.size();
   modified_resize_params.needs_resize_ack = false;

@@ -10,7 +10,6 @@
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h"
 
 namespace content {
@@ -132,27 +131,26 @@ blink::WebScreenOrientationLockType
   if (!rwh)
     return blink::WebScreenOrientationLockDefault;
 
-  blink::WebScreenInfo screen_info;
-  rwh->GetWebScreenInfo(&screen_info);
+  ScreenInfo screen_info;
+  rwh->GetScreenInfo(&screen_info);
 
-  switch (screen_info.orientationType) {
-    case blink::WebScreenOrientationPortraitPrimary:
-    case blink::WebScreenOrientationPortraitSecondary:
-      if (screen_info.orientationAngle == 0 ||
-          screen_info.orientationAngle == 180) {
+  switch (screen_info.orientation_type) {
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
+      if (screen_info.orientation_angle == 0 ||
+          screen_info.orientation_angle == 180) {
         return blink::WebScreenOrientationLockPortraitPrimary;
       }
       return blink::WebScreenOrientationLockLandscapePrimary;
-    case blink::WebScreenOrientationLandscapePrimary:
-    case blink::WebScreenOrientationLandscapeSecondary:
-      if (screen_info.orientationAngle == 0 ||
-          screen_info.orientationAngle == 180) {
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
+      if (screen_info.orientation_angle == 0 ||
+          screen_info.orientation_angle == 180) {
         return blink::WebScreenOrientationLockLandscapePrimary;
       }
       return blink::WebScreenOrientationLockPortraitPrimary;
-    case blink::WebScreenOrientationUndefined:
-      NOTREACHED();
-      return blink::WebScreenOrientationLockDefault;
+    default:
+      break;
   }
 
   NOTREACHED();
@@ -165,32 +163,32 @@ bool ScreenOrientationProvider::LockMatchesCurrentOrientation(
   if (!rwh)
     return false;
 
-  blink::WebScreenInfo screen_info;
-  rwh->GetWebScreenInfo(&screen_info);
+  ScreenInfo screen_info;
+  rwh->GetScreenInfo(&screen_info);
 
   switch (lock) {
     case blink::WebScreenOrientationLockPortraitPrimary:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationPortraitPrimary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
     case blink::WebScreenOrientationLockPortraitSecondary:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationPortraitSecondary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
     case blink::WebScreenOrientationLockLandscapePrimary:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationLandscapePrimary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
     case blink::WebScreenOrientationLockLandscapeSecondary:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationLandscapeSecondary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
     case blink::WebScreenOrientationLockLandscape:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationLandscapePrimary ||
-          screen_info.orientationType ==
-          blink::WebScreenOrientationLandscapeSecondary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY ||
+          screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
     case blink::WebScreenOrientationLockPortrait:
-      return screen_info.orientationType ==
-          blink::WebScreenOrientationPortraitPrimary ||
-          screen_info.orientationType ==
-          blink::WebScreenOrientationPortraitSecondary;
+      return screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY ||
+          screen_info.orientation_type ==
+          SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
     case blink::WebScreenOrientationLockAny:
       return true;
     case blink::WebScreenOrientationLockNatural:

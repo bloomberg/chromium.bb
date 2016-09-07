@@ -1786,7 +1786,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ(
         "0,0 800x600",
-        gfx::Rect(std::get<0>(params).screen_info.availableRect).ToString());
+        std::get<0>(params).screen_info.available_rect.ToString());
     EXPECT_EQ("800x600", std::get<0>(params).new_size.ToString());
     // Resizes are blocked until we swapped a frame of the correct size, and
     // we've committed it.
@@ -1811,7 +1811,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ(
         "0,0 1600x1200",
-        gfx::Rect(std::get<0>(params).screen_info.availableRect).ToString());
+        std::get<0>(params).screen_info.available_rect.ToString());
     EXPECT_EQ("1600x1200", std::get<0>(params).new_size.ToString());
     view_->OnSwapCompositorFrame(
         0, MakeDelegatedFrame(1.f, std::get<0>(params).new_size,

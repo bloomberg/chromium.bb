@@ -147,7 +147,7 @@ TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
 TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
   ResizeParams resize_params;
   gfx::Size size(200, 200);
-  resize_params.screen_info = blink::WebScreenInfo();
+  resize_params.screen_info = ScreenInfo();
   resize_params.new_size = size;
   resize_params.physical_backing_size = size;
   resize_params.top_controls_height = 0.f;

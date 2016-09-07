@@ -6,8 +6,8 @@
 #define CONTENT_COMMON_RESIZE_PARAMS_H_
 
 #include "content/common/content_export.h"
+#include "content/public/common/screen_info.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -18,7 +18,7 @@ struct CONTENT_EXPORT ResizeParams {
   ~ResizeParams();
 
   // Information about the screen (dpi, depth, etc..).
-  blink::WebScreenInfo screen_info;
+  ScreenInfo screen_info;
 
   // The size of the renderer.
   gfx::Size new_size;

@@ -44,7 +44,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "net/base/filename_util.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -642,43 +641,42 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
 
 namespace {
 
-void GetScreenInfoForWindow(blink::WebScreenInfo* results,
+void GetScreenInfoForWindow(ScreenInfo* results,
                             aura::Window* window) {
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display display = window
                                        ? screen->GetDisplayNearestWindow(window)
                                        : screen->GetPrimaryDisplay();
   results->rect = display.bounds();
-  results->availableRect = display.work_area();
+  results->available_rect = display.work_area();
   // TODO(derat|oshima): Don't hardcode this. Get this from display object.
   results->depth = 24;
-  results->depthPerComponent = 8;
-  results->deviceScaleFactor = display.device_scale_factor();
+  results->depth_per_component = 8;
+  results->device_scale_factor = display.device_scale_factor();
 
-  // The Display rotation and the WebScreenInfo orientation are not the same
+  // The Display rotation and the ScreenInfo orientation are not the same
   // angle. The former is the physical display rotation while the later is the
   // rotation required by the content to be shown properly on the screen, in
   // other words, relative to the physical display.
-  results->orientationAngle = display.RotationAsDegree();
-  if (results->orientationAngle == 90)
-    results->orientationAngle = 270;
-  else if (results->orientationAngle == 270)
-    results->orientationAngle = 90;
+  results->orientation_angle = display.RotationAsDegree();
+  if (results->orientation_angle == 90)
+    results->orientation_angle = 270;
+  else if (results->orientation_angle == 270)
+    results->orientation_angle = 90;
 
-  results->orientationType =
+  results->orientation_type =
       RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
 }
 
 }  // namespace
 
 // Static.
-void WebContentsView::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
+void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
   GetScreenInfoForWindow(results, NULL);
 }
 
-void WebContentsViewAura::GetScreenInfo(
-    blink::WebScreenInfo* web_screen_info) const {
-  GetScreenInfoForWindow(web_screen_info, window_.get());
+void WebContentsViewAura::GetScreenInfo(ScreenInfo* screen_info) const {
+  GetScreenInfoForWindow(screen_info, window_.get());
 }
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {

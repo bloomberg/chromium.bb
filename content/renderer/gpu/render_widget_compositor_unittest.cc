@@ -24,7 +24,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 using testing::AllOf;
 using testing::Field;

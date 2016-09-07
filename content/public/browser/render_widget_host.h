@@ -25,7 +25,6 @@ class Rect;
 
 namespace blink {
 class WebMouseEvent;
-struct WebScreenInfo;
 }
 
 namespace content {
@@ -34,6 +33,7 @@ class RenderProcessHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostIterator;
 class RenderWidgetHostView;
+struct ScreenInfo;
 
 // A RenderWidgetHost manages the browser side of a browser<->renderer
 // HWND connection.  The HWND lives in the browser process, and
@@ -257,7 +257,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void RemoveInputEventObserver(InputEventObserver* observer) = 0;
 
   // Get the screen info corresponding to this render widget.
-  virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
+  virtual void GetScreenInfo(ScreenInfo* result) = 0;
 
   // Sends a compositor proto to the render widget.
   virtual void HandleCompositorProto(const std::vector<uint8_t>& proto) = 0;

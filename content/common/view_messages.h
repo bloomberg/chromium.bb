@@ -31,6 +31,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/screen_info.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
@@ -43,7 +44,6 @@
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
@@ -106,6 +106,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
                           gfx::FontRenderParams::HINTING_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(content::ScreenOrientationValues,
+                          content::SCREEN_ORIENTATION_VALUES_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
                           content::TAP_MULTIPLE_TARGETS_STRATEGY_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
@@ -163,15 +165,15 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
   IPC_STRUCT_TRAITS_MEMBER(screenOrientationType)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebScreenInfo)
-  IPC_STRUCT_TRAITS_MEMBER(deviceScaleFactor)
+IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(depth)
-  IPC_STRUCT_TRAITS_MEMBER(depthPerComponent)
-  IPC_STRUCT_TRAITS_MEMBER(isMonochrome)
+  IPC_STRUCT_TRAITS_MEMBER(depth_per_component)
+  IPC_STRUCT_TRAITS_MEMBER(is_monochrome)
   IPC_STRUCT_TRAITS_MEMBER(rect)
-  IPC_STRUCT_TRAITS_MEMBER(availableRect)
-  IPC_STRUCT_TRAITS_MEMBER(orientationType)
-  IPC_STRUCT_TRAITS_MEMBER(orientationAngle)
+  IPC_STRUCT_TRAITS_MEMBER(available_rect)
+  IPC_STRUCT_TRAITS_MEMBER(orientation_type)
+  IPC_STRUCT_TRAITS_MEMBER(orientation_angle)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)

@@ -66,7 +66,6 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"

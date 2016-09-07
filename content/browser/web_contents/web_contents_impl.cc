@@ -991,9 +991,9 @@ void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
       new PageMsg_SetDeviceScaleFactor(MSG_ROUTING_NONE, device_scale_factor));
 }
 
-void WebContentsImpl::GetScreenInfo(blink::WebScreenInfo* web_screen_info) {
+void WebContentsImpl::GetScreenInfo(ScreenInfo* screen_info) {
   if (GetView())
-    GetView()->GetScreenInfo(web_screen_info);
+    GetView()->GetScreenInfo(screen_info);
 }
 
 WebUI* WebContentsImpl::CreateSubframeWebUI(const GURL& url,

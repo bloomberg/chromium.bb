@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/screen_info.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "device/geolocation/geolocation_provider.h"
@@ -21,7 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/geometry/rect.h"
 
 using testing::ElementsAre;
@@ -36,7 +36,7 @@ void GetFingerprintInternal(
     uint64_t obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
-    const blink::WebScreenInfo& screen_info,
+    const content::ScreenInfo& screen_info,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -198,10 +198,10 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 
-  blink::WebScreenInfo screen_info;
+  content::ScreenInfo screen_info;
   screen_info.depth = kScreenColorDepth;
-  screen_info.rect = blink::WebRect(screen_bounds_);
-  screen_info.availableRect = blink::WebRect(available_screen_bounds_);
+  screen_info.rect = screen_bounds_;
+  screen_info.available_rect = available_screen_bounds_;
 
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,

@@ -7,7 +7,6 @@
 
 namespace blink {
 class WebWidget;
-struct WebScreenInfo;
 }
 
 namespace cc {

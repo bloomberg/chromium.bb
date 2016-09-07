@@ -875,7 +875,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     int32_t routing_id,
     int32_t widget_routing_id,
     bool hidden,
-    const blink::WebScreenInfo& screen_info,
+    const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
     blink::WebFrame* opener) {
   // A main frame RenderFrame must have a RenderWidget.
@@ -1291,7 +1291,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
     active_url = render_view()->GetURLForGraphicsContext3D();
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       render_view()->routing_id(), GetRenderWidget()->compositor_deps(),
-      plugin, active_url, GetRenderWidget()->screenInfo());
+      plugin, active_url, GetRenderWidget()->screen_info());
   widget->show(blink::WebNavigationPolicyIgnore);
   return widget;
 }

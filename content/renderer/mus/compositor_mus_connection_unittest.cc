@@ -146,7 +146,7 @@ class TestRenderWidget : public content::RenderWidget {
   explicit TestRenderWidget(content::CompositorDependencies* compositor_deps)
       : content::RenderWidget(compositor_deps,
                               blink::WebPopupTypeNone,
-                              blink::WebScreenInfo(),
+                              content::ScreenInfo(),
                               true,
                               false,
                               false) {}

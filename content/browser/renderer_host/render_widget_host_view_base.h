@@ -26,6 +26,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/screen_info.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
@@ -49,7 +50,6 @@ class VideoFrame;
 }
 
 namespace blink {
-struct WebScreenInfo;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 }
@@ -368,11 +368,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
 
   // Compute the orientation type of the display assuming it is a mobile device.
-  static blink::WebScreenOrientationType GetOrientationTypeForMobile(
+  static ScreenOrientationValues GetOrientationTypeForMobile(
       const display::Display& display);
 
   // Compute the orientation type of the display assuming it is a desktop.
-  static blink::WebScreenOrientationType GetOrientationTypeForDesktop(
+  static ScreenOrientationValues GetOrientationTypeForDesktop(
       const display::Display& display);
 
   // Gets the bounds of the window, in screen coordinates.

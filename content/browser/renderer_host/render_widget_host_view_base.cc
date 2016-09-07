@@ -356,8 +356,7 @@ void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
 }
 
 // static
-blink::WebScreenOrientationType
-RenderWidgetHostViewBase::GetOrientationTypeForMobile(
+ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForMobile(
     const display::Display& display) {
   int angle = display.RotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
@@ -371,26 +370,25 @@ RenderWidgetHostViewBase::GetOrientationTypeForMobile(
 
   switch (angle) {
   case 0:
-    return natural_portrait ? blink::WebScreenOrientationPortraitPrimary
-                           : blink::WebScreenOrientationLandscapePrimary;
+    return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
+                            : SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
   case 90:
-    return natural_portrait ? blink::WebScreenOrientationLandscapePrimary
-                           : blink::WebScreenOrientationPortraitSecondary;
+    return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
+                            : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
   case 180:
-    return natural_portrait ? blink::WebScreenOrientationPortraitSecondary
-                           : blink::WebScreenOrientationLandscapeSecondary;
+    return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY
+                            : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
   case 270:
-    return natural_portrait ? blink::WebScreenOrientationLandscapeSecondary
-                           : blink::WebScreenOrientationPortraitPrimary;
+    return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY
+                            : SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
   default:
     NOTREACHED();
-    return blink::WebScreenOrientationPortraitPrimary;
+    return SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
   }
 }
 
 // static
-blink::WebScreenOrientationType
-RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
+ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
     const display::Display& display) {
   static int primary_landscape_angle = -1;
   static int primary_portrait_angle = -1;
@@ -407,13 +405,13 @@ RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
 
   if (is_portrait) {
     return primary_portrait_angle == angle
-        ? blink::WebScreenOrientationPortraitPrimary
-        : blink::WebScreenOrientationPortraitSecondary;
+        ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
+        : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
   }
 
   return primary_landscape_angle == angle
-      ? blink::WebScreenOrientationLandscapePrimary
-      : blink::WebScreenOrientationLandscapeSecondary;
+      ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
+      : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
 }
 
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {

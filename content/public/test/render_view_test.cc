@@ -36,7 +36,6 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -530,7 +529,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
                             gfx::Rect resizer_rect,
                             bool is_fullscreen_granted) {
   ResizeParams params;
-  params.screen_info = blink::WebScreenInfo();
+  params.screen_info = ScreenInfo();
   params.new_size = new_size;
   params.physical_backing_size = new_size;
   params.top_controls_height = 0.f;

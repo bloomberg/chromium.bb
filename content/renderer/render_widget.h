@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/public/common/screen_info.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/render_widget_input_handler.h"
@@ -121,12 +122,12 @@ class CONTENT_EXPORT RenderWidget
   static RenderWidget* Create(int32_t opener_id,
                               CompositorDependencies* compositor_deps,
                               blink::WebPopupType popup_type,
-                              const blink::WebScreenInfo& screen_info);
+                              const ScreenInfo& screen_info);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
   static RenderWidget* CreateForFrame(int routing_id,
                                       bool hidden,
-                                      const blink::WebScreenInfo& screen_info,
+                                      const ScreenInfo& screen_info,
                                       CompositorDependencies* compositor_deps,
                                       blink::WebLocalFrame* frame);
 
@@ -135,7 +136,7 @@ class CONTENT_EXPORT RenderWidget
   using CreateRenderWidgetFunction =
       RenderWidget* (*)(CompositorDependencies*,
                         blink::WebPopupType,
-                        const blink::WebScreenInfo&,
+                        const ScreenInfo&,
                         bool,
                         bool,
                         bool);
@@ -176,7 +177,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidgetOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
   // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
-  blink::WebScreenInfo screen_info() const { return screen_info_; }
+  ScreenInfo screen_info() const { return screen_info_; }
 
   // Functions to track out-of-process frames for special notifications.
   void RegisterRenderFrameProxy(RenderFrameProxy* proxy);
@@ -415,7 +416,7 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidget(CompositorDependencies* compositor_deps,
                blink::WebPopupType popup_type,
-               const blink::WebScreenInfo& screen_info,
+               const ScreenInfo& screen_info,
                bool swapped_out,
                bool hidden,
                bool never_visible);
@@ -736,7 +737,7 @@ class CONTENT_EXPORT RenderWidget
   base::TimeDelta total_input_handling_time_this_frame_;
 
   // Properties of the screen hosting this RenderWidget instance.
-  blink::WebScreenInfo screen_info_;
+  ScreenInfo screen_info_;
 
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.

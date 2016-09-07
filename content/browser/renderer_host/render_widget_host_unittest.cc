@@ -382,13 +382,13 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unresponsive_timer_fired() const { return unresponsive_timer_fired_; }
 
-  void SetScreenInfo(const blink::WebScreenInfo& screen_info) {
+  void SetScreenInfo(const ScreenInfo& screen_info) {
     screen_info_ = screen_info;
   }
 
   // RenderWidgetHostDelegate overrides.
-  void GetScreenInfo(blink::WebScreenInfo* web_screen_info) override {
-    *web_screen_info = screen_info_;
+  void GetScreenInfo(ScreenInfo* screen_info) override {
+    *screen_info = screen_info_;
   }
 
  protected:
@@ -434,7 +434,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unresponsive_timer_fired_;
 
-  blink::WebScreenInfo screen_info_;
+  ScreenInfo screen_info_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -794,14 +794,14 @@ TEST_F(RenderWidgetHostTest, Resize) {
 }
 
 // Test that a resize event is sent if WasResized() is called after a
-// WebScreenInfo change.
+// ScreenInfo change.
 TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
-  blink::WebScreenInfo screen_info;
-  screen_info.deviceScaleFactor = 1.f;
+  ScreenInfo screen_info;
+  screen_info.device_scale_factor = 1.f;
   screen_info.rect = blink::WebRect(0, 0, 800, 600);
-  screen_info.availableRect = blink::WebRect(0, 0, 800, 600);
-  screen_info.orientationAngle = 0;
-  screen_info.orientationType = blink::WebScreenOrientationPortraitPrimary;
+  screen_info.available_rect = blink::WebRect(0, 0, 800, 600);
+  screen_info.orientation_angle = 0;
+  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
   auto host_delegate =
       static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
@@ -812,8 +812,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
 
-  screen_info.orientationAngle = 180;
-  screen_info.orientationType = blink::WebScreenOrientationLandscapePrimary;
+  screen_info.orientation_angle = 180;
+  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
   host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();
@@ -821,7 +821,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
 
-  screen_info.deviceScaleFactor = 2.f;
+  screen_info.device_scale_factor = 2.f;
 
   host_delegate->SetScreenInfo(screen_info);
   host_->WasResized();

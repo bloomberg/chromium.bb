@@ -32,7 +32,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
   ResizeParams resize_params;
-  resize_params.screen_info = blink::WebScreenInfo();
+  resize_params.screen_info = ScreenInfo();
   resize_params.new_size = gfx::Size();
   resize_params.physical_backing_size = gfx::Size();
   resize_params.top_controls_height = 0.f;
@@ -72,12 +72,12 @@ TEST_F(RenderWidgetTest, OnResize) {
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
 
   // Changing the screen info should not send the ack.
-  resize_params.screen_info.orientationAngle = 90;
+  resize_params.screen_info.orientation_angle = 90;
   OnResize(resize_params);
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
 
-  resize_params.screen_info.orientationType =
-      blink::WebScreenOrientationPortraitPrimary;
+  resize_params.screen_info.orientation_type =
+      SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
   OnResize(resize_params);
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
 }

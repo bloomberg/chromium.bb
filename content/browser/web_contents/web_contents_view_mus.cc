@@ -62,8 +62,7 @@ gfx::NativeWindow WebContentsViewMus::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
-void WebContentsViewMus::GetScreenInfo(
-    blink::WebScreenInfo* web_screen_info) const {
+void WebContentsViewMus::GetScreenInfo(ScreenInfo* screen_info) const {
   // TODO(wjmaclean) Figure out what goes here.
 }
 

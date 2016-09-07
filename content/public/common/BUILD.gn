@@ -191,6 +191,8 @@ source_set("common_sources") {
     "sandbox_type.h",
     "sandboxed_process_launcher_delegate.cc",
     "sandboxed_process_launcher_delegate.h",
+    "screen_info.cc",
+    "screen_info.h",
     "screen_orientation_values.h",
     "security_style.h",
     "send_zygote_child_ping_linux.h",

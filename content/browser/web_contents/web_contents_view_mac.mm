@@ -40,6 +40,7 @@ using content::PopupMenuHelper;
 using content::RenderViewHostFactory;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
+using content::ScreenInfo;
 using content::WebContents;
 using content::WebContentsImpl;
 using content::WebContentsViewMac;
@@ -77,23 +78,23 @@ STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::WebDragOperationEvery);
 
 namespace {
 
-blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
+content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(view);
 
   NSScreen* screen = [NSScreen deepestScreen];
 
-  blink::WebScreenInfo results;
+  content::ScreenInfo results;
 
-  results.deviceScaleFactor = static_cast<int>(display.device_scale_factor());
+  results.device_scale_factor = static_cast<int>(display.device_scale_factor());
   results.depth = NSBitsPerPixelFromDepth([screen depth]);
-  results.depthPerComponent = NSBitsPerSampleFromDepth([screen depth]);
-  results.isMonochrome =
+  results.depth_per_component = NSBitsPerSampleFromDepth([screen depth]);
+  results.is_monochrome =
       [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
   results.rect = display.bounds();
-  results.availableRect = display.work_area();
-  results.orientationAngle = display.RotationAsDegree();
-  results.orientationType =
+  results.available_rect = display.work_area();
+  results.orientation_angle = display.RotationAsDegree();
+  results.orientation_type =
       content::RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
 
   return results;
@@ -104,9 +105,8 @@ blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
 namespace content {
 
 // static
-void WebContentsView::GetDefaultScreenInfo(
-    blink::WebScreenInfo* results) {
-  *results = GetWebScreenInfo(NULL);
+void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
+  *results = GetNSViewScreenInfo(nil);
 }
 
 WebContentsView* CreateWebContentsView(
@@ -150,8 +150,8 @@ gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
-void WebContentsViewMac::GetScreenInfo(blink::WebScreenInfo* results) const {
-  *results = GetWebScreenInfo(GetNativeView());
+void WebContentsViewMac::GetScreenInfo(ScreenInfo* results) const {
+  *results = GetNSViewScreenInfo(GetNativeView());
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {

@@ -31,7 +31,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -471,9 +470,9 @@ void PageHandler::InnerSwapCompositorFrame() {
       gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
                      1 / metadata.device_scale_factor);
 
-  blink::WebScreenInfo screen_info;
+  content::ScreenInfo screen_info;
   GetWebContents()->GetView()->GetScreenInfo(&screen_info);
-  double device_scale_factor = screen_info.deviceScaleFactor;
+  double device_scale_factor = screen_info.device_scale_factor;
   double scale = 1;
 
   if (screencast_max_width_ > 0) {

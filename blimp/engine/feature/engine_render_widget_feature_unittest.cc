@@ -98,7 +98,7 @@ class MockRenderWidgetHost
   void RemoveMouseEventCallback(const MouseEventCallback& callback) override {}
   void AddInputEventObserver(InputEventObserver* observer) override {}
   void RemoveInputEventObserver(InputEventObserver* observer) override {}
-  void GetWebScreenInfo(blink::WebScreenInfo* result) override {}
+  void GetScreenInfo(content::ScreenInfo* result) override {}
   void HandleCompositorProto(const std::vector<uint8_t>& proto) override {}
 
   bool Send(IPC::Message* msg) override { return false; }

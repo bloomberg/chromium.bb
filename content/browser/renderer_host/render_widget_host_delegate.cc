@@ -8,7 +8,7 @@
 
 namespace content {
 
-void RenderWidgetHostDelegate::GetScreenInfo(blink::WebScreenInfo*) {}
+void RenderWidgetHostDelegate::GetScreenInfo(ScreenInfo*) {}
 
 bool RenderWidgetHostDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
