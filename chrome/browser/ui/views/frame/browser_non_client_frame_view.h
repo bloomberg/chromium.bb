@@ -100,6 +100,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void ActivationChanged(bool active) override;
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;

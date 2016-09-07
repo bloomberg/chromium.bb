@@ -209,6 +209,54 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   SchedulePaint();
 }
 
+bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
+                                                  const gfx::Rect& rect) const {
+  DCHECK_EQ(target, this);
+  if (!views::ViewTargeterDelegate::DoesIntersectRect(this, rect)) {
+    // |rect| is outside the frame's bounds.
+    return false;
+  }
+
+  if (!browser_view()->IsTabStripVisible()) {
+    // Claim |rect| if it is above the top of the topmost client area view.
+    return rect.y() < GetTopInset(false);
+  }
+
+  // If the rect is outside the bounds of the client area, claim it.
+  gfx::RectF rect_in_client_view_coords_f(rect);
+  View::ConvertRectToTarget(this, frame()->client_view(),
+                            &rect_in_client_view_coords_f);
+  gfx::Rect rect_in_client_view_coords =
+      gfx::ToEnclosingRect(rect_in_client_view_coords_f);
+  if (!frame()->client_view()->HitTestRect(rect_in_client_view_coords))
+    return true;
+
+  // Otherwise, claim |rect| only if it is above the bottom of the tabstrip in
+  // a non-tab portion.
+  TabStrip* tabstrip = browser_view()->tabstrip();
+  if (!tabstrip || !browser_view()->IsTabStripVisible())
+    return false;
+
+  gfx::RectF rect_in_tabstrip_coords_f(rect);
+  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
+  gfx::Rect rect_in_tabstrip_coords =
+      gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
+  if (rect_in_tabstrip_coords.bottom() > tabstrip->GetLocalBounds().bottom()) {
+    // |rect| is below the tabstrip.
+    return false;
+  }
+
+  if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
+    // Claim |rect| if it is in a non-tab portion of the tabstrip.
+    return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
+  }
+
+  // We claim |rect| because it is above the bottom of the tabstrip, but
+  // not in the tabstrip itself. In particular, the avatar label/button is left
+  // of the tabstrip and the window controls are right of the tabstrip.
+  return true;
+}
+
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {
   OnProfileAvatarChanged(profile_path);

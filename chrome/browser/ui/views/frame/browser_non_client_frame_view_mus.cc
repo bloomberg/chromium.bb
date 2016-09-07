@@ -376,33 +376,6 @@ void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
   tab_strip_ = nullptr;
 }
 
-bool BrowserNonClientFrameViewMus::DoesIntersectRect(
-    const views::View* target,
-    const gfx::Rect& rect) const {
-  CHECK_EQ(target, this);
-  if (!views::ViewTargeterDelegate::DoesIntersectRect(this, rect)) {
-    // |rect| is outside BrowserNonClientFrameViewMus's bounds.
-    return false;
-  }
-
-  if (!browser_view()->IsTabStripVisible()) {
-    // Claim |rect| if it is above the top of the topmost client area view.
-    return rect.y() < GetTopInset(false);
-  }
-
-  // Claim |rect| only if it is above the bottom of the tabstrip in a non-tab
-  // portion. In particular, the avatar label/button is left of the tabstrip and
-  // the window controls are right of the tabstrip.
-  TabStrip* tabstrip = browser_view()->tabstrip();
-  gfx::RectF rect_in_tabstrip_coords_f(rect);
-  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
-  const gfx::Rect rect_in_tabstrip_coords =
-      gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
-  return (rect_in_tabstrip_coords.y() <= tabstrip->height()) &&
-          (!tabstrip->HitTestRect(rect_in_tabstrip_coords) ||
-          tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords));
-}
-
 int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
   const int avatar_right = profile_indicator_icon()

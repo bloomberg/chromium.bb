@@ -86,10 +86,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void TabStripMaxXChanged(TabStrip* tab_strip) override;
   void TabStripDeleted(TabStrip* tab_strip) override;
 
-  // views::NonClientFrameView:
-  bool DoesIntersectRect(const views::View* target,
-                         const gfx::Rect& rect) const override;
-
   // Distance between the left edge of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;
 
