@@ -4275,10 +4275,13 @@ void FrameView::notifyRenderThrottlingObservers()
 {
     TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
     DCHECK(!isInPerformLayout());
-    DCHECK(!m_frame->document() || !m_frame->document()->inStyleRecalc());
+    DCHECK(frame().document());
+    DCHECK(!frame().document()->inStyleRecalc());
     bool wasThrottled = canThrottleRendering();
 
     updateThrottlingStatus();
+
+    frame().document()->onVisibilityMaybeChanged(!m_hiddenForThrottling);
 
     bool becameThrottled = !wasThrottled && canThrottleRendering();
     bool becameUnthrottled = wasThrottled && !canThrottleRendering();

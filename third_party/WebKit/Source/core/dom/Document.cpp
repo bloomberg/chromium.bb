@@ -383,6 +383,21 @@ static void runAutofocusTask(ExecutionContext* context)
     }
 }
 
+// These are logged to UMA, so don't re-arrange them without creating a new histogram.
+enum DocumentVisibilityForDeferredLoading {
+    Created,
+    WouldLoadBecauseVisible,
+    // TODO(dgrogan): Add WouldLoadBecauseTopOrLeft, WouldLoadBecauseDisplayNone, etc
+
+    DocumentVisibilityForDeferredLoadingEnd
+};
+
+static void RecordStateToHistogram(DocumentVisibilityForDeferredLoading state)
+{
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, unseenFrameHistogram, ("Navigation.DeferredDocumentLoading.StatesV1", DocumentVisibilityForDeferredLoadingEnd));
+    unseenFrameHistogram.count(state);
+}
+
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
@@ -454,6 +469,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasViewportUnits(false)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
     , m_nodeCount(0)
+    , m_visibilityWasLogged(false)
 {
     if (m_frame) {
         DCHECK(m_frame->page());
@@ -488,6 +504,10 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         setURL(initializer.url());
 
     initSecurityContext(initializer);
+    DCHECK(getSecurityOrigin());
+    if (frame() && frame()->tree().top()->securityContext() && !getSecurityOrigin()->canAccess(frame()->tree().top()->securityContext()->getSecurityOrigin()))
+        RecordStateToHistogram(Created);
+
     initDNSPrefetch();
 
     InstanceCounters::incrementCounter(InstanceCounters::DocumentCounter);
@@ -6016,6 +6036,15 @@ DEFINE_TRACE(Document)
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
     SecurityContext::trace(visitor);
+}
+
+void Document::onVisibilityMaybeChanged(bool visible)
+{
+    DCHECK(frame());
+    if (visible && !m_visibilityWasLogged && frame()->isCrossOriginSubframe()) {
+        m_visibilityWasLogged = true;
+        RecordStateToHistogram(WouldLoadBecauseVisible);
+    }
 }
 
 DEFINE_TRACE_WRAPPERS(Document)

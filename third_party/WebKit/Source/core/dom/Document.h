@@ -1094,6 +1094,8 @@ public:
 
     bool isInMainFrame() const;
 
+    void onVisibilityMaybeChanged(bool visible);
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1416,6 +1418,8 @@ private:
     bool m_mayContainV0Shadow = false;
 
     Member<SnapCoordinator> m_snapCoordinator;
+
+    bool m_visibilityWasLogged;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

@@ -26209,6 +26209,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.DeferredDocumentLoading.StatesV1"
+    enum="DocumentStateForDeferredLoading">
+  <owner>dgrogan@chromium.org</owner>
+  <summary>
+    Why and if cross-origin documents would be loaded in a world where we defer
+    loading until they are visible.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.EngagementTime.HTTP" units="ms">
   <owner>felt@chromium.org</owner>
   <summary>
@@ -74685,6 +74694,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Mouse"/>
   <int value="2" label="Touch"/>
   <int value="3" label="Keyboard"/>
+</enum>
+
+<enum name="DocumentStateForDeferredLoading" type="int">
+  <int value="0" label="Created"/>
+  <int value="1" label="WouldLoadBecauseVisible"/>
 </enum>
 
 <enum name="DocumentWriteGatedEvaluation" type="int">
