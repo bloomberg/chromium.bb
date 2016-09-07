@@ -453,7 +453,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         LayoutSize previousSize = size();
 
         updateLogicalWidth();
-        bool logicalHeightWasIndefinite = computeContentLogicalHeight(MainOrPreferredSize, style()->logicalHeight(), LayoutUnit(-1)) == LayoutUnit(-1);
+        bool logicalHeightWasIndefinite = !hasDefiniteLogicalHeight();
 
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
@@ -1452,7 +1452,7 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     if (isRowAxis) {
         availableSize = sizingOperation == IntrinsicSizeComputation ? LayoutUnit(-1) : availableLogicalWidth();
     } else {
-        availableSize = computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
+        availableSize = availableLogicalHeightForPercentageComputation();
         if (availableSize == -1) {
             const Length& maxLength = styleRef().logicalMaxHeight();
             if (!maxLength.isMaxSizeNone())
