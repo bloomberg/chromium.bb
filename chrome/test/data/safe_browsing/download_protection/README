@@ -13,7 +13,8 @@ pvk2pfx -pvk test.pvk test.cer (export the private key with the cert)
 copy unsigned.exe signed.exe
 signtool sign /f test.pfx /p password signed.exe
 
-wow_helper.exe: Signed Google Chrome binary from an official build.
+disable_outdated_build_detector.exe: Signed Google Chrome binary from an
+official build.
 
 signed_twice.exe: A copy of signed.exe with a bogus hand-crafted second
 attribute certificate entry.

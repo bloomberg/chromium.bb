@@ -268,7 +268,7 @@ const CertificateTestData kCertificateTestData[] = {
     "unsigned.exe",
     0,
   }, {
-    "wow_helper.exe",
+    "disable_outdated_build_detector.exe",
     1,
   }, {
     "signed_twice.exe",
@@ -284,7 +284,7 @@ INSTANTIATE_TEST_CASE_P(SignedExe,
 INSTANTIATE_TEST_CASE_P(UnsignedExe,
                         PeImageReaderCertificateTest,
                         testing::Values(&kCertificateTestData[1]));
-INSTANTIATE_TEST_CASE_P(WowHelperExe,
+INSTANTIATE_TEST_CASE_P(DisableOutdatedBuildDetectorExe,
                         PeImageReaderCertificateTest,
                         testing::Values(&kCertificateTestData[2]));
 INSTANTIATE_TEST_CASE_P(SignedTwiceExe,
