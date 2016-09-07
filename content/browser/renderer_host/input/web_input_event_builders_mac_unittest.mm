@@ -563,6 +563,19 @@ TEST(WebInputEventBuilderMacTest, DomKeyFlagsChanged) {
   }
 }
 
+TEST(WebInputEventBuilderMacTest, ContextMenuKey) {
+  // Context menu is not defined but shows up as 0x6E.
+  const int kVK_ContextMenu = 0x6E;
+
+  const NSEventType kEventTypeToTest[] = {NSKeyDown, NSKeyUp};
+  for (auto flags : kEventTypeToTest) {
+    NSEvent* mac_event = BuildFakeKeyEvent(kVK_ContextMenu, 0, 0, flags);
+    WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
+    EXPECT_EQ(ui::DomKey::CONTEXT_MENU, web_event.domKey);
+    EXPECT_EQ(ui::VKEY_APPS, web_event.windowsKeyCode);
+  }
+}
+
 // Flaky - https://crbug.com/640457
 // Test that a ui::Event and blink::WebInputEvent made from the same NSEvent
 // have the same values for comparable fields.

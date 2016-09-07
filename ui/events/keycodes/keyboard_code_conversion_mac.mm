@@ -20,6 +20,8 @@ namespace {
 
 // This value is not defined but shows up as 0x36.
 const int kVK_RightCommand = 0x36;
+// Context menu is not defined but shows up as 0x6E.
+const int kVK_ContextMenu = 0x6E;
 
 // A struct to hold a Windows keycode to Mac virtual keycode mapping.
 struct KeyCodeMap {
@@ -426,7 +428,7 @@ KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
     /* 0x6B */ VKEY_F14,
     /* 0x6C */ VKEY_UNKNOWN, // n/a
     /* 0x6D */ VKEY_F10,
-    /* 0x6E */ VKEY_UNKNOWN, // n/a (Windows95 key?)
+    /* 0x6E */ VKEY_APPS, // Context Menu key
     /* 0x6F */ VKEY_F12,
     /* 0x70 */ VKEY_UNKNOWN, // n/a
     /* 0x71 */ VKEY_F15,
@@ -545,6 +547,8 @@ DomKey DomKeyFromKeyCode(unsigned short keyCode) {
       return DomKey::ARROW_DOWN;
     case kVK_UpArrow:
       return DomKey::ARROW_UP;
+    case kVK_ContextMenu:
+      return DomKey::CONTEXT_MENU;
     default:
       return DomKey::NONE;
   }
