@@ -1,13 +1,7 @@
 {
-  "Android GN Builder (dbg)": {
+  "Android Cronet Builder": {
     "additional_compile_targets": [
-      "blimp_tests",
-      "chrome_public_apk",
-      "chrome_public_test_apk",
-      "content_shell_apk",
-      "content_shell_test_apk",
-      "mojo_test_apk",
-      "system_webview_apk"
+      "cronet_package"
     ]
   },
   "Android N5X Swarm Builder": {

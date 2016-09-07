@@ -30,15 +30,18 @@
           'android_cronet_gn_debug_static_bot_arm64',
       'Android Cronet ARMv6 Builder':
           'android_cronet_gn_release_bot_minimal_symbols_armv6',
-      'Android Cronet Builder (dbg)': 'android_cronet_gn_debug_static_bot',
+      'Android Cronet Builder':
+          'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon',
+      'Android Cronet Builder (dbg)':
+          'android_cronet_gn_debug_static_bot_arm_no_neon',
       'Android Cronet Builder Asan':
-          'android_cronet_gn_release_bot_minimal_symbols_clang_asan',
+          'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon_clang_asan',
       'Android Cronet Data Reduction Proxy Builder':
-          'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols',
+          'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet KitKat Builder':
-          'android_cronet_gn_release_bot_minimal_symbols',
+          'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Lollipop Builder':
-          'android_cronet_gn_release_bot_minimal_symbols',
+          'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Marshmallow 64bit Builder':
           'android_cronet_gn_release_bot_minimal_symbols_arm64',
       'Android Cronet Marshmallow 64bit Perf':
@@ -791,9 +794,10 @@
       'android_compile_x64_dbg': 'android_gn_debug_trybot_x64',
       'android_compile_x86_dbg': 'android_gn_debug_trybot_x86',
       'android_coverage': 'android_gn_debug_trybot_java_coverage',
+      'android_cronet_builder': 'android_cronet_gn_release_trybot_arm_no_neon',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
-      'android_cronet_tester': 'android_cronet_gn_debug_static_bot',
+      'android_cronet_tester': 'android_cronet_gn_debug_static_bot_arm_no_neon',
       'android_n5x_swarming_rel': 'swarming_android_gn_release_trybot_arm64',
       'android_optional_gpu_tests_rel':
         'swarming_android_gn_release_trybot_arm64',
@@ -1056,12 +1060,12 @@
       'shared', 'debug', 'minimal_symbols',
     ],
 
-    'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols': [
+    'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols_arm_no_neon': [
       'android', 'cronet', 'data_reduction_proxy', 'gn',
       'release_bot_minimal_symbols', 'arm_no_neon'
     ],
 
-    'android_cronet_gn_debug_static_bot': [
+    'android_cronet_gn_debug_static_bot_arm_no_neon': [
       'android', 'cronet', 'gn', 'debug_static_bot', 'arm_no_neon'
     ],
 
@@ -1073,7 +1077,7 @@
       'android', 'cronet', 'gn', 'debug_static_bot', 'x86'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols': [
+    'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon': [
       'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm_no_neon'
     ],
 
@@ -1085,7 +1089,7 @@
       'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'armv6'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols_clang_asan': [
+    'android_cronet_gn_release_bot_minimal_symbols_arm_no_neon_clang_asan': [
       'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm_no_neon',
       'clang', 'asan'
     ],
@@ -1096,6 +1100,10 @@
 
     'android_cronet_gn_release_bot_minimal_symbols_x86': [
       'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'x86'
+    ],
+
+    'android_cronet_gn_release_trybot_arm_no_neon': [
+      'android', 'cronet', 'gn', 'release_trybot', 'arm_no_neon'
     ],
 
     'android_gn_debug_bot': [
