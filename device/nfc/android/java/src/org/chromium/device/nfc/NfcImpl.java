@@ -346,7 +346,7 @@ public class NfcImpl implements Nfc {
     private void enableReaderMode() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
 
-        if (mReaderCallbackHandler != null || mActivity == null) return;
+        if (mReaderCallbackHandler != null || mActivity == null || mNfcAdapter == null) return;
 
         // TODO(crbug.com/625589): Check if there are active watch operations.
         if (mPendingPushOperation == null) return;
@@ -366,8 +366,12 @@ public class NfcImpl implements Nfc {
     private void disableReaderMode() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
 
+        // There is no API that could query whether reader mode is enabled for adapter.
+        // If mReaderCallbackHandler is null, reader mode is not enabled.
+        if (mReaderCallbackHandler == null) return;
+
         mReaderCallbackHandler = null;
-        if (mActivity != null && !mActivity.isDestroyed()) {
+        if (mActivity != null && mNfcAdapter != null && !mActivity.isDestroyed()) {
             mNfcAdapter.disableReaderMode(mActivity);
         }
     }
