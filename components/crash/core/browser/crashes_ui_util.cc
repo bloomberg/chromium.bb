@@ -24,12 +24,14 @@ const CrashesUILocalizedString kCrashesUILocalizedStrings[] = {
     {"crashHeaderFormatLocalOnly", IDS_CRASH_CRASH_HEADER_FORMAT_LOCAL_ONLY},
     {"crashTimeFormat", IDS_CRASH_CRASH_TIME_FORMAT},
     {"crashNotUploaded", IDS_CRASH_CRASH_NOT_UPLOADED},
+    {"crashUserRequested", IDS_CRASH_CRASH_USER_REQUESTED},
     {"crashPending", IDS_CRASH_CRASH_PENDING},
     {"crashesTitle", IDS_CRASH_TITLE},
     {"disabledHeader", IDS_CRASH_DISABLED_HEADER},
     {"disabledMessage", IDS_CRASH_DISABLED_MESSAGE},
     {"noCrashesMessage", IDS_CRASH_NO_CRASHES_MESSAGE},
     {"uploadCrashesLinkText", IDS_CRASH_UPLOAD_MESSAGE},
+    {"uploadNowLinkText", IDS_CRASH_UPLOAD_NOW_LINK_TEXT},
 };
 
 const size_t kCrashesUILocalizedStringsCount =
@@ -40,6 +42,7 @@ const char kCrashesUIRequestCrashList[] = "requestCrashList";
 const char kCrashesUIRequestCrashUpload[] = "requestCrashUpload";
 const char kCrashesUIShortProductName[] = "shortProductName";
 const char kCrashesUIUpdateCrashList[] = "updateCrashList";
+const char kCrashesUIRequestSingleCrashUpload[] = "requestSingleCrashUpload";
 
 std::string UploadInfoStateAsString(UploadList::UploadInfo::State state) {
   switch (state) {
@@ -47,6 +50,8 @@ std::string UploadInfoStateAsString(UploadList::UploadInfo::State state) {
       return "not_uploaded";
     case UploadList::UploadInfo::State::Pending:
       return "pending";
+    case UploadList::UploadInfo::State::Pending_UserRequested:
+      return "pending_user_requested";
     case UploadList::UploadInfo::State::Uploaded:
       return "uploaded";
   }

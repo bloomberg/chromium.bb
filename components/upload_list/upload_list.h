@@ -35,8 +35,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   struct UploadInfo {
     enum class State {
       NotUploaded = 0,
-      Pending = 1,
-      Uploaded = 2,
+      Pending,
+      Pending_UserRequested,
+      Uploaded,
     };
 
     UploadInfo(const std::string& upload_id,
@@ -80,6 +81,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // loading is complete.
   void LoadUploadListAsynchronously();
 
+  // Asynchronously requests a user triggered upload.
+  void RequestSingleCrashUploadAsync(const std::string& local_id);
+
   // Clears the delegate, so that any outstanding asynchronous load will not
   // call the delegate on completion.
   void ClearDelegate();
@@ -94,6 +98,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
 
   // Reads the upload log and stores the entries in |uploads|.
   virtual void LoadUploadList(std::vector<UploadInfo>* uploads);
+
+  // Requests a user triggered upload for a crash report with a given id.
+  virtual void RequestSingleCrashUpload(const std::string& local_id);
 
  private:
   friend class base::RefCountedThreadSafe<UploadList>;

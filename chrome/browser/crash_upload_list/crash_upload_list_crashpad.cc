@@ -18,6 +18,7 @@ namespace {
 typedef void (*GetCrashReportsPointer)(
     const crash_reporter::Report** reports,
     size_t* report_count);
+typedef void (*RequestSingleCrashUploadPointer)(const std::string& local_id);
 
 void GetReportsThunk(
     std::vector<crash_reporter::Report>* reports) {
@@ -38,6 +39,21 @@ void GetReportsThunk(
         reports_pointer, reports_pointer + report_count);
   }
 }
+
+void RequestSingleCrashUploadThunk(const std::string& local_id) {
+  static RequestSingleCrashUploadPointer request_single_crash_upload = []() {
+    // The crash reporting is handled by chrome_elf.dll which loads early in
+    // the chrome process.
+    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
+    return reinterpret_cast<RequestSingleCrashUploadPointer>(
+        elf_module ? GetProcAddress(elf_module, "RequestSingleCrashUploadImpl")
+                   : nullptr);
+  }();
+
+  if (request_single_crash_upload)
+    request_single_crash_upload(local_id);
+}
+
 #endif  // OS_WIN
 
 UploadList::UploadInfo::State ReportUploadStateToUploadInfoState(
@@ -48,6 +64,9 @@ UploadList::UploadInfo::State ReportUploadStateToUploadInfoState(
 
     case crash_reporter::ReportUploadState::Pending:
       return UploadList::UploadInfo::State::Pending;
+
+    case crash_reporter::ReportUploadState::Pending_UserRequested:
+      return UploadList::UploadInfo::State::Pending_UserRequested;
 
     case crash_reporter::ReportUploadState::Uploaded:
       return UploadList::UploadInfo::State::Uploaded;
@@ -85,4 +104,15 @@ void CrashUploadListCrashpad::LoadUploadList(
                    report.local_id, base::Time::FromTimeT(report.capture_time),
                    ReportUploadStateToUploadInfoState(report.state)));
   }
+}
+
+void CrashUploadListCrashpad::RequestSingleCrashUpload(
+    const std::string& local_id) {
+#if defined(OS_WIN)
+  // On Windows, crash reporting is handled by chrome_elf.dll, that's why we
+  // can't call crash_reporter::RequestSingleCrashUpload directly.
+  RequestSingleCrashUploadThunk(local_id);
+#else
+  crash_reporter::RequestSingleCrashUpload(local_id);
+#endif
 }

@@ -16,23 +16,22 @@ function requestCrashes() {
  * Callback from backend with the list of crashes. Builds the UI.
  * @param {boolean} enabled Whether or not crash reporting is enabled.
  * @param {boolean} dynamicBackend Whether the crash backend is dynamic.
+ * @param {boolean} manualUploads Whether the manual uploads are supported.
  * @param {array} crashes The list of crashes.
  * @param {string} version The browser version.
  * @param {string} os The OS name and version.
  */
-function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
+function updateCrashList(
+    enabled, dynamicBackend, manualUploads,
+    crashes, version, os) {
   $('countBanner').textContent =
       loadTimeData.getStringF('crashCountFormat',
                               crashes.length.toLocaleString());
 
   var crashSection = $('crashList');
 
-  $('enabledMode').hidden = !enabled;
   $('disabledMode').hidden = enabled;
   $('crashUploadStatus').hidden = !enabled || !dynamicBackend;
-
-  if (!enabled)
-    return;
 
   // Clear any previous list.
   crashSection.textContent = '';
@@ -41,27 +40,27 @@ function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
 
   for (var i = 0; i < crashes.length; i++) {
     var crash = crashes[i];
-    if (crash['local_id'] == '')
-      crash['local_id'] = productName;
+    if (crash.local_id == '')
+      crash.local_id = productName;
 
     var crashBlock = document.createElement('div');
-    if (crash['state'] != 'uploaded')
+    if (crash.state != 'uploaded')
       crashBlock.className = 'notUploaded';
     var title = document.createElement('h3');
-    var uploaded = crash['state'] == 'uploaded';
+    var uploaded = crash.state == 'uploaded';
     if (uploaded) {
       title.textContent = loadTimeData.getStringF('crashHeaderFormat',
-                                                  crash['id'],
-                                                  crash['local_id']);
+                                                  crash.id,
+                                                  crash.local_id);
     } else {
       title.textContent = loadTimeData.getStringF('crashHeaderFormatLocalOnly',
-                                                  crash['local_id']);
+                                                  crash.local_id);
     }
     crashBlock.appendChild(title);
     if (uploaded) {
       var date = document.createElement('p');
       date.textContent = loadTimeData.getStringF('crashTimeFormat',
-                                                 crash['time']);
+                                                 crash.time);
       crashBlock.appendChild(date);
       var linkBlock = document.createElement('p');
       var link = document.createElement('a');
@@ -102,16 +101,34 @@ function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
       link.textContent = loadTimeData.getString('bugLinkText');
       linkBlock.appendChild(link);
       crashBlock.appendChild(linkBlock);
-    } else if (crash['state'] == 'pending') {
-      var pending = document.createElement('p');
-      pending.textContent = loadTimeData.getStringF('crashPending',
-                                                    crash['time']);
-      crashBlock.appendChild(pending);
-    } else if (crash['state'] == 'not_uploaded') {
-      var not_uploaded = document.createElement('p');
-      not_uploaded.textContent = loadTimeData.getStringF('crashNotUploaded',
-                                                         crash['time']);
-      crashBlock.appendChild(not_uploaded);
+    } else if (crash.state == 'pending_user_requested') {
+      var userRequested = document.createElement('p');
+      userRequested.textContent =
+          loadTimeData.getStringF('crashUserRequested', crash.time);
+      crashBlock.appendChild(userRequested);
+    } else if (crash.state == 'pending' || crash.state == 'not_uploaded') {
+      if (crash.state == 'pending')
+        var textContentKey = 'crashPending';
+      else
+        var textContentKey = 'crashNotUploaded';
+
+      var notUploaded = document.createElement('p');
+      notUploaded.textContent = loadTimeData.getStringF(textContentKey,
+                                                    crash.time);
+      crashBlock.appendChild(notUploaded);
+
+      if (manualUploads) {
+        var uploadNowLinkBlock = document.createElement('p');
+        var link = document.createElement('a');
+        link.href = '';
+        link.textContent = loadTimeData.getString('uploadNowLinkText');
+        link.local_id = crash.local_id;
+        link.onclick = function() {
+          chrome.send('requestSingleCrashUpload', [this.local_id]);
+        };
+        uploadNowLinkBlock.appendChild(link);
+        crashBlock.appendChild(uploadNowLinkBlock);
+      }
     }
     crashSection.appendChild(crashBlock);
   }

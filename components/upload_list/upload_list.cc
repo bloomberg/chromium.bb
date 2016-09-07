@@ -133,3 +133,18 @@ void UploadList::GetUploads(size_t max_count,
             uploads_.begin() + std::min(uploads_.size(), max_count),
             std::back_inserter(*uploads));
 }
+
+void UploadList::RequestSingleCrashUploadAsync(const std::string& local_id) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  worker_pool_->PostTask(
+      FROM_HERE,
+      base::Bind(&UploadList::RequestSingleCrashUpload, this, local_id));
+#endif
+}
+
+void UploadList::RequestSingleCrashUpload(const std::string& local_id) {
+  // Manual uploads for not uploaded crash reports are not available for non
+  // crashpad systems.
+  NOTREACHED();
+}

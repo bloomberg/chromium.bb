@@ -278,7 +278,9 @@ void GetReports(std::vector<Report>* reports) {
     report.local_id = pending_report.uuid.ToString();
     report.capture_time = pending_report.creation_time;
     report.upload_time = 0;
-    report.state = ReportUploadState::Pending;
+    report.state = pending_report.upload_explicitly_requested
+                       ? ReportUploadState::Pending_UserRequested
+                       : report.state = ReportUploadState::Pending;
     reports->push_back(report);
   }
 
@@ -286,6 +288,14 @@ void GetReports(std::vector<Report>* reports) {
             [](const Report& a, const Report& b) {
               return a.capture_time > b.capture_time;
             });
+}
+
+void RequestSingleCrashUpload(const std::string& local_id) {
+  if (!g_database)
+    return;
+  crashpad::UUID uuid;
+  uuid.InitializeFromString(local_id);
+  g_database->RequestUpload(uuid);
 }
 
 }  // namespace crash_reporter
@@ -318,6 +328,12 @@ void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(const wchar_t* key) {
   crash_reporter::ClearCrashKey(base::UTF16ToUTF8(key));
 }
 
+// This helper is invoked by code in chrome.dll to request a single crash report
+// upload. See CrashUploadListCrashpad.
+void __declspec(dllexport)
+    RequestSingleCrashUploadImpl(const std::string& local_id) {
+  crash_reporter::RequestSingleCrashUpload(local_id);
+}
 }  // extern "C"
 
 #endif  // OS_WIN

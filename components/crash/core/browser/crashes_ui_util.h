@@ -33,6 +33,7 @@ extern const char kCrashesUIRequestCrashList[];
 extern const char kCrashesUIRequestCrashUpload[];
 extern const char kCrashesUIShortProductName[];
 extern const char kCrashesUIUpdateCrashList[];
+extern const char kCrashesUIRequestSingleCrashUpload[];
 
 // Converts and appends the most recent uploads to |out_value|.
 void UploadListToValue(UploadList* upload_list, base::ListValue* out_value);

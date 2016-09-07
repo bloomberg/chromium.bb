@@ -72,7 +72,8 @@ bool GetUploadsEnabled();
 enum class ReportUploadState {
   NotUploaded,
   Pending,
-  Uploaded,
+  Pending_UserRequested,
+  Uploaded
 };
 
 struct Report {
@@ -89,6 +90,9 @@ struct Report {
 // The list will be sorted in descending order by report creation time (newest
 // reports first).
 void GetReports(std::vector<Report>* reports);
+
+// Requests a user triggered upload for a crash report with a given id.
+void RequestSingleCrashUpload(const std::string& local_id);
 
 namespace internal {
 

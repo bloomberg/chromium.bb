@@ -28,14 +28,14 @@
     <a is="action-link" role="button" id="uploadCrashes"
         i18n-content="uploadCrashesLinkText"></a>
   </div>
-  <div id="enabledMode">
-    <h2 id="countBanner"></h2>
-    <div id="crashList"></div>
-    <p id="noCrashes" i18n-content="noCrashesMessage" hidden></p>
-  </div>
   <div id="disabledMode" hidden>
     <h2 i18n-content="disabledHeader"></h2>
     <p i18n-values=".innerHTML:disabledMessage"></p>
+  </div>
+  <div id="crashesInfo">
+    <h2 id="countBanner"></h2>
+    <div id="crashList"></div>
+    <p id="noCrashes" i18n-content="noCrashesMessage" hidden></p>
   </div>
   <script src="chrome://resources/js/i18n_template.js"></script>
   <script src="chrome://resources/js/jstemplate_compiled.js"></script>

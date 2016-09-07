@@ -125,6 +125,7 @@ void CrashesDOMHandler::UpdateUI() {
     crash::UploadListToValue(upload_list_.get(), &crash_list);
   base::FundamentalValue enabled(crash_reporting_enabled);
   base::FundamentalValue dynamic_backend(false);
+  base::FundamentalValue manual_uploads(false);
   base::StringValue version(version_info::GetVersionNumber());
   base::StringValue os_string(base::SysInfo::OperatingSystemName() + " " +
                               base::SysInfo::OperatingSystemVersion());
@@ -132,6 +133,7 @@ void CrashesDOMHandler::UpdateUI() {
   std::vector<const base::Value*> args;
   args.push_back(&enabled);
   args.push_back(&dynamic_backend);
+  args.push_back(&manual_uploads);
   args.push_back(&crash_list);
   args.push_back(&version);
   args.push_back(&os_string);
