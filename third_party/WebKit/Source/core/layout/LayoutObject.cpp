@@ -3153,7 +3153,7 @@ void LayoutObject::setMayNeedPaintInvalidationSubtree()
     setMayNeedPaintInvalidation();
 }
 
-void LayoutObject::setMayNeedPaintInvalidationAnimatgedBackgroundImage()
+void LayoutObject::setMayNeedPaintInvalidationAnimatedBackgroundImage()
 {
     if (mayNeedPaintInvalidationAnimatedBackgroundImage())
         return;

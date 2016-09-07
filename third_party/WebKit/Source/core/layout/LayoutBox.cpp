@@ -1549,7 +1549,7 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
                 invalidateBackgroundObscurationStatus();
                 bool maybeAnimated = layer->image()->cachedImage() && layer->image()->cachedImage()->getImage() && layer->image()->cachedImage()->getImage()->maybeAnimated();
                 if (maybeAnimated)
-                    setMayNeedPaintInvalidationAnimatgedBackgroundImage();
+                    setMayNeedPaintInvalidationAnimatedBackgroundImage();
                 else
                     setShouldDoFullPaintInvalidation();
                 break;

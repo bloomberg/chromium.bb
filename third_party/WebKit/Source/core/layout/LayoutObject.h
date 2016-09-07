@@ -1333,7 +1333,7 @@ public:
     void setMayNeedPaintInvalidationSubtree();
 
     bool mayNeedPaintInvalidationAnimatedBackgroundImage() const { return m_bitfields.mayNeedPaintInvalidationAnimatedBackgroundImage(); }
-    void setMayNeedPaintInvalidationAnimatgedBackgroundImage();
+    void setMayNeedPaintInvalidationAnimatedBackgroundImage();
 
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
     void setShouldInvalidateSelection();
