@@ -503,8 +503,9 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, std::unique_pt
     , m_mediaValues(MediaValuesCached::create(mediaValuesCachedData))
     , m_didRewind(false)
 {
-    ASSERT(m_documentParameters.get());
-    ASSERT(m_mediaValues.get());
+    DCHECK(m_documentParameters.get());
+    DCHECK(m_mediaValues.get());
+    DCHECK(documentURL.isValid());
     m_cssScanner.setReferrerPolicy(m_documentParameters->referrerPolicy);
 }
 

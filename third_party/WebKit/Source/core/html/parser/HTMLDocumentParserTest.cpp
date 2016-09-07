@@ -38,6 +38,7 @@ protected:
     HTMLDocumentParserTest()
         : m_dummyPageHolder(DummyPageHolder::create())
     {
+        m_dummyPageHolder->document().setURL(KURL(KURL(), "https://example.test"));
     }
 
     HTMLDocumentParser* createParser(HTMLDocument& document)
