@@ -10,10 +10,18 @@ blink_modules_sources("sensor") {
     "Sensor.h",
     "SensorErrorEvent.cpp",
     "SensorErrorEvent.h",
+    "SensorProviderProxy.cpp",
+    "SensorProviderProxy.h",
+    "SensorProxy.cpp",
+    "SensorProxy.h",
     "SensorReading.cpp",
     "SensorReading.h",
     "SensorReadingEvent.cpp",
     "SensorReadingEvent.h",
     "SensorState.h",
+  ]
+
+  deps = [
+    "//device/generic_sensor/public/interfaces:interfaces_blink",
   ]
 }
