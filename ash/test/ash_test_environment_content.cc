@@ -39,6 +39,11 @@ std::unique_ptr<AshTestEnvironment> AshTestEnvironment::Create() {
   return base::MakeUnique<AshTestEnvironmentContent>();
 }
 
+// static
+std::string AshTestEnvironment::Get100PercentResourceFileName() {
+  return "ash_test_resources_with_content_100_percent.pak";
+}
+
 AshTestEnvironmentContent::AshTestEnvironmentContent()
     : thread_bundle_(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
 

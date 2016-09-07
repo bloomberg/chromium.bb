@@ -6,6 +6,7 @@
 #define ASH_TEST_ASH_TEST_ENVIRONMENT_H_
 
 #include <memory>
+#include <string>
 
 namespace base {
 class SequencedWorkerPool;
@@ -33,6 +34,9 @@ class AshTestEnvironment {
 
   // Creates the object appropriate to the current environment.
   static std::unique_ptr<AshTestEnvironment> Create();
+
+  // Returns the ASCII file name of where the 100% resources are stored.
+  static std::string Get100PercentResourceFileName();
 
   // Called from AshTestHelper::SetUp()/TearDown().
   virtual void SetUp() {}

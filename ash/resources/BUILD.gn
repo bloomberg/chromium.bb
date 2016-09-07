@@ -23,7 +23,7 @@ template("ash_test_resources") {
   percent = invoker.percent
 
   repack("ash_test_resources_${target_name}") {
-    output = "$root_build_dir/ash_test_resources_${percent}_percent.pak"
+    output = "$root_build_dir/${target_name}.pak"
 
     sources = [
       "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak",
@@ -31,17 +31,21 @@ template("ash_test_resources") {
     ]
 
     if (percent == "100") {
-      sources += [
-        "$root_gen_dir/content/content_resources.pak",
-        "$root_gen_dir/ui/resources/webui_resources.pak",
-      ]
+      sources += [ "$root_gen_dir/ui/resources/webui_resources.pak" ]
+    }
+
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
     }
 
     deps = [
       "//ash/resources",
-      "//content:resources",
       "//ui/resources",
     ]
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     if (toolkit_views) {
       deps += [
@@ -74,4 +78,16 @@ ash_test_resources("100_percent") {
 
 ash_test_resources("200_percent") {
   percent = "200"
+}
+
+# There is no with_content_200_percent as content resources are only available
+# at 100%.
+ash_test_resources("with_content_100_percent") {
+  percent = "100"
+  sources = [
+    "$root_gen_dir/content/content_resources.pak",
+  ]
+  deps = [
+    "//content:resources",
+  ]
 }

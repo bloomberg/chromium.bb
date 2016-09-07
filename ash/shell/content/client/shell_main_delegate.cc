@@ -46,17 +46,19 @@ void ShellMainDelegate::InitializeResourceBundle() {
   PathService::Get(base::DIR_MODULE, &path);
   base::FilePath ash_test_strings =
       path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
-  base::FilePath ash_test_resources_100 =
-      path.Append(FILE_PATH_LITERAL("ash_test_resources_100_percent.pak"));
-  base::FilePath ash_test_resources_200 =
-      path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
 
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P))
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P)) {
+    base::FilePath ash_test_resources_100 = path.Append(
+        FILE_PATH_LITERAL("ash_test_resources_with_content_100_percent.pak"));
     rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P))
+  }
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P)) {
+    base::FilePath ash_test_resources_200 =
+        path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
     rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
+  }
 }
 
 }  // namespace shell

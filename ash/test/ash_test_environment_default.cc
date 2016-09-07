@@ -53,5 +53,10 @@ std::unique_ptr<AshTestEnvironment> AshTestEnvironment::Create() {
   return base::MakeUnique<AshTestEnvironmentDefault>();
 }
 
+// static
+std::string AshTestEnvironment::Get100PercentResourceFileName() {
+  return "ash_test_resources_100_percent.pak";
+}
+
 }  // namespace test
 }  // namespace ash
