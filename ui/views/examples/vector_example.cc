@@ -13,8 +13,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -37,7 +37,9 @@ class VectorIconGallery : public View,
         size_input_(new Textfield()),
         color_input_(new Textfield()),
         file_chooser_(new Textfield()),
-        file_go_button_(new BlueButton(this, base::ASCIIToUTF16("Render"))),
+        file_go_button_(
+            MdTextButton::CreateStandardButton(this,
+                                               base::ASCIIToUTF16("Render"))),
         vector_id_(0),
         // 36dp is one of the natural sizes for MD icons, and corresponds
         // roughly to a 32dp usable area.

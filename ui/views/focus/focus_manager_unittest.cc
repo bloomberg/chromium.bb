@@ -15,7 +15,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
@@ -480,21 +479,6 @@ class FocusManagerDtorTest : public FocusManagerTest {
    private:
     DtorTrackVector* dtor_tracker_;
     DISALLOW_COPY_AND_ASSIGN(TestFocusManagerFactory);
-  };
-
-  class LabelButtonDtorTracked : public LabelButton {
-   public:
-    LabelButtonDtorTracked(const base::string16& text,
-                           DtorTrackVector* dtor_tracker)
-        : LabelButton(NULL, text),
-          dtor_tracker_(dtor_tracker) {
-      SetStyle(STYLE_BUTTON);
-    };
-    ~LabelButtonDtorTracked() override {
-      dtor_tracker_->push_back("LabelButtonDtorTracked");
-    }
-
-    DtorTrackVector* dtor_tracker_;
   };
 
   class WindowDtorTracked : public Widget {
