@@ -5,7 +5,8 @@
 
 set -e
 
-cd $(dirname "$0")/../..
+readonly SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$SCRIPT_DIR/../.."  # src/.
 
 export GYP_GENERATORS="ninja"
 
