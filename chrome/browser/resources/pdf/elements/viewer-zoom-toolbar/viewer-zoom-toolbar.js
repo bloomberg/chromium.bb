@@ -27,6 +27,7 @@
     },
 
     /**
+     * @private
      * Change button tooltips to match any changes to localized strings.
      */
     updateTooltips_: function() {
@@ -38,6 +39,9 @@
       this.$['zoom-out-button'].tooltips = [this.strings.tooltipZoomOut];
     },
 
+    /**
+     * Handle clicks of the fit-button.
+     */
     fitToggle: function() {
       if (this.$['fit-button'].activeIndex == FIT_TO_WIDTH)
         this.fire('fit-to-width');
@@ -45,10 +49,30 @@
         this.fire('fit-to-page');
     },
 
+    /**
+     * Handle the keyboard shortcut equivalent of fit-button clicks.
+     */
+    fitToggleFromHotKey: function() {
+      this.fitToggle();
+
+      // Toggle the button state since there was no mouse click.
+      var button = this.$['fit-button'];
+      if (button.activeIndex == FIT_TO_WIDTH)
+        button.activeIndex = FIT_TO_PAGE;
+      else
+        button.activeIndex = FIT_TO_WIDTH;
+    },
+
+    /**
+     * Handle clicks of the zoom-in-button.
+     */
     zoomIn: function() {
       this.fire('zoom-in');
     },
 
+    /**
+     * Handle clicks of the zoom-out-button.
+     */
     zoomOut: function() {
       this.fire('zoom-out');
     },

@@ -179,6 +179,18 @@ var tests = [
     MockInteractions.tap(fab);
     assertEvent('fit-to-page');
 
+    // Do the same as above, but with fitToggleFromHotKey().
+    zoomToolbar.fitToggleFromHotKey();
+    assertEvent('fit-to-width');
+    zoomToolbar.fitToggleFromHotKey();
+    assertEvent('fit-to-page');
+    zoomToolbar.fitToggleFromHotKey();
+    assertEvent('fit-to-width');
+
+    // Tap 4: Fire fit-to-page again.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-page');
+
     chrome.test.succeed();
   }
 ];

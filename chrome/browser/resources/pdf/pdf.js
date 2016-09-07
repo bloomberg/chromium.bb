@@ -377,7 +377,7 @@ PDFViewer.prototype = {
           this.viewport.position = position;
         }
         return;
-      case 65:  // a key.
+      case 65:  // 'a' key.
         if (e.ctrlKey || e.metaKey) {
           this.plugin_.postMessage({
             type: 'selectAll'
@@ -386,17 +386,21 @@ PDFViewer.prototype = {
           e.preventDefault();
         }
         return;
-      case 71: // g key.
+      case 71: // 'g' key.
         if (this.toolbar_ && (e.ctrlKey || e.metaKey) && e.altKey) {
           this.toolbarManager_.showToolbars();
           this.toolbar_.selectPageNumber();
         }
         return;
-      case 219:  // left bracket.
+      case 219:  // Left bracket key.
         if (e.ctrlKey)
           this.rotateCounterClockwise_();
         return;
-      case 221:  // right bracket.
+      case 220:  // Backslash key.
+        if (e.ctrlKey)
+          this.zoomToolbar_.fitToggleFromHotKey();
+        return;
+      case 221:  // Right bracket key.
         if (e.ctrlKey)
           this.rotateClockwise_();
         return;
@@ -442,6 +446,10 @@ PDFViewer.prototype = {
     });
   },
 
+  /**
+   * @private
+   * Set zoom to "fit to page".
+   */
   fitToPage_: function() {
     this.viewport_.fitToPage();
     this.toolbarManager_.forceHideTopToolbar();
