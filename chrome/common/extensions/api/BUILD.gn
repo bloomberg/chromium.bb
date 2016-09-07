@@ -2,11 +2,165 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//build/json_schema_api.gni")
 import("//tools/json_schema_compiler/json_features.gni")
-import("schemas.gni")
 
 assert(enable_extensions)
+
+schema_sources = [
+  "accessibility_features.json",
+  "accessibility_private.json",
+  "activity_log_private.json",
+  "autofill_private.idl",
+  "automation.idl",
+  "automation_internal.idl",
+  "autotest_private.idl",
+  "bluetooth_low_energy.idl",
+  "bookmark_manager_private.json",
+  "bookmarks.json",
+  "braille_display_private.idl",
+  "browser.idl",
+  "chrome_web_view_internal.json",
+  "cloud_print_private.json",
+  "command_line_private.json",
+  "content_settings.json",
+  "context_menus_internal.json",
+  "context_menus.json",
+  "cookies.json",
+  "cryptotoken_private.idl",
+  "dashboard_private.json",
+  "data_reduction_proxy.json",
+  "debugger.json",
+  "desktop_capture.json",
+  "developer_private.idl",
+  "dial.idl",
+  "downloads.idl",
+  "downloads_internal.idl",
+  "easy_unlock_private.idl",
+  "experience_sampling_private.json",
+  "feedback_private.idl",
+  "file_system.idl",
+  "font_settings.json",
+  "gcm.json",
+  "history.json",
+  "hotword_private.idl",
+  "i18n.json",
+  "identity.idl",
+  "identity_private.idl",
+  "image_writer_private.idl",
+  "inline_install_private.idl",
+  "instance_id.json",
+  "language_settings_private.idl",
+  "manifest_types.json",
+  "media_galleries.idl",
+  "metrics_private.json",
+  "notification_provider.idl",
+  "notifications.idl",
+  "omnibox.json",
+  "page_capture.json",
+  "passwords_private.idl",
+  "permissions.json",
+  "preferences_private.json",
+  "quick_unlock_private.idl",
+  "resources_private.idl",
+  "screenlock_private.idl",
+  "sessions.json",
+  "settings_private.idl",
+  "signed_in_devices.idl",
+  "streams_private.idl",
+  "sync_file_system.idl",
+  "system_indicator.idl",
+  "system_private.json",
+  "tab_capture.idl",
+  "tabs.json",
+  "types.json",
+  "web_navigation.json",
+
+  # Despite the name, this API does not rely on any
+  # WebRTC-specific bits and as such does not belong in
+  # the enable_webrtc==0 section below.
+  "webrtc_audio_private.idl",
+  "webrtc_desktop_capture_private.idl",
+  "webrtc_logging_private.idl",
+  "webstore_private.json",
+  "webstore_widget_private.idl",
+  "windows.json",
+]
+if (enable_task_manager) {
+  schema_sources += [ "processes.idl" ]
+}
+if (is_chromeos) {
+  schema_sources += [
+    "cast_devices_private.idl",
+    "certificate_provider.idl",
+    "certificate_provider_internal.idl",
+    "echo_private.json",
+    "enterprise_device_attributes.idl",
+    "enterprise_platform_keys.idl",
+    "enterprise_platform_keys_internal.idl",
+    "enterprise_platform_keys_private.json",
+    "file_browser_handler_internal.json",
+    "file_manager_private.idl",
+    "file_manager_private_internal.idl",
+    "file_system_provider.idl",
+    "file_system_provider_internal.idl",
+    "first_run_private.json",
+    "input_ime.json",
+    "input_method_private.json",
+    "launcher_search_provider.idl",
+    "log_private.idl",
+    "platform_keys.idl",
+    "platform_keys_internal.idl",
+    "terminal_private.json",
+    "users_private.idl",
+    "wallpaper.json",
+    "wallpaper_private.json",
+  ]
+} else if (is_linux || is_win) {
+  schema_sources += [ "input_ime.json" ]
+}
+if (enable_service_discovery) {
+  schema_sources += [
+    "gcd_private.idl",
+    "mdns.idl",
+  ]
+}
+if (enable_webrtc) {
+  schema_sources += [
+    "cast_streaming_receiver_session.idl",
+    "cast_streaming_rtp_stream.idl",
+    "cast_streaming_session.idl",
+    "cast_streaming_udp_transport.idl",
+  ]
+}
+if (enable_app_list) {
+  schema_sources += [
+    # TODO(tapted): Move this into chromeos_schema_files.
+    "launcher_page.idl",
+  ]
+}
+
+extensions_api_root_namespace = "extensions::api::%(namespace)s"
+
+extensions_api_uncompiled_sources = [
+  "browsing_data.json",
+  "extension.json",
+  "idltest.idl",
+  "music_manager_private.idl",
+  "top_sites.json",
+]
+
+if (is_chromeos) {
+  extensions_api_uncompiled_sources += [
+    "chromeos_info_private.json",
+    "media_player_private.json",
+  ]
+}
+
+extensions_api_schema_include_rules =
+    "extensions/common/api:extensions::api::%(namespace)s"
 
 # GYP version: chrome/common/extensions/api/api.gyp:chrome_api
 json_schema_api("api") {
@@ -15,8 +169,36 @@ json_schema_api("api") {
   bundle = true
   configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
+  schema_include_rules = extensions_api_schema_include_rules
 
-  deps = schema_dependencies
+  uncompiled_bundle_schema_sources = [
+    "app.json",
+    "browser_action.json",
+    "commands.json",
+    "declarative_content.json",
+    "file_browser_handler.json",
+    "page_action.json",
+    "privacy.json",
+    "proxy.json",
+    "tts_engine.json",
+    "tts.json",
+    "types_private.json",
+    "webstore.json",
+  ]
+  if (!is_chromeos) {
+    # On ChromeOS, input_method_private is fully compiled (as part of
+    # schema_files), and so gets added to the bundle already. On other
+    # platforms, we still need it added to the bundle.
+    # TODO(devlin): That's weird. Investigate.
+    uncompiled_bundle_schema_sources += [ "input_method_private.json" ]
+  }
+
+  uncompiled_sources = extensions_api_uncompiled_sources
+
+  root_namespace = extensions_api_root_namespace
+  deps = [
+    "//extensions/common/api",
+  ]
 }
 
 # GYP version: chrome/browser/extensions/api/api.gyp:chrome_api_registration
@@ -26,6 +208,10 @@ json_schema_api("api_registration") {
   bundle_registration = true
   configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
+  root_namespace = extensions_api_root_namespace
+  schema_include_rules = extensions_api_schema_include_rules
+
+  uncompiled_sources = extensions_api_uncompiled_sources
 
   deps = [
     # Different APIs include headers from these targets.
@@ -44,7 +230,7 @@ json_schema_api("api_registration") {
   if (is_chromeos) {
     deps += [ "//components/drive:proto" ]
   }
-  deps += schema_dependencies
+  deps += [ "//extensions/common/api" ]
 }
 
 json_features("api_features") {
