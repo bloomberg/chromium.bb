@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -73,7 +72,8 @@ class PendingApprovals {
       const std::string& id);
 
  private:
-  typedef ScopedVector<WebstoreInstaller::Approval> ApprovalList;
+  using ApprovalList =
+      std::vector<std::unique_ptr<WebstoreInstaller::Approval>>;
 
   ApprovalList approvals_;
 
@@ -85,18 +85,19 @@ PendingApprovals::~PendingApprovals() {}
 
 void PendingApprovals::PushApproval(
     std::unique_ptr<WebstoreInstaller::Approval> approval) {
-  approvals_.push_back(approval.release());
+  approvals_.push_back(std::move(approval));
 }
 
 std::unique_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
     Profile* profile,
     const std::string& id) {
-  for (size_t i = 0; i < approvals_.size(); ++i) {
-    WebstoreInstaller::Approval* approval = approvals_[i];
-    if (approval->extension_id == id &&
-        profile->IsSameProfile(approval->profile)) {
-      approvals_.weak_erase(approvals_.begin() + i);
-      return std::unique_ptr<WebstoreInstaller::Approval>(approval);
+  for (ApprovalList::iterator iter = approvals_.begin();
+       iter != approvals_.end(); ++iter) {
+    if (iter->get()->extension_id == id &&
+        profile->IsSameProfile(iter->get()->profile)) {
+      std::unique_ptr<WebstoreInstaller::Approval> approval = std::move(*iter);
+      approvals_.erase(iter);
+      return approval;
     }
   }
   return std::unique_ptr<WebstoreInstaller::Approval>();

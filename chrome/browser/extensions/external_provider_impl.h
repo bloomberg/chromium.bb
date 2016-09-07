@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/common/manifest.h"
@@ -104,9 +103,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
 
   // Retrieves the extensions that were found in this provider.
   void RetrieveExtensionsFromPrefs(
-      ScopedVector<ExternalInstallInfoUpdateUrl>*
+      std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>*
           external_update_url_extensions,
-      ScopedVector<ExternalInstallInfoFile>* external_file_extensions);
+      std::vector<std::unique_ptr<ExternalInstallInfoFile>>*
+          external_file_extensions);
 
   // Location for external extensions that are provided by this provider from
   // local crx files.

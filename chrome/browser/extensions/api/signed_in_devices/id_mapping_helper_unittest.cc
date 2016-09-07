@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/guid.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/sync/device_info/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,25 +30,19 @@ bool VerifyDictionary(
 }
 
 TEST(IdMappingHelperTest, SetIdsForDevices) {
-  ScopedVector<DeviceInfo> devices;
+  std::vector<std::unique_ptr<DeviceInfo>> devices;
 
-  devices.push_back(new DeviceInfo(base::GenerateGUID(),
-                                   "abc Device",
-                                   "XYZ v1",
-                                   "XYZ SyncAgent v1",
-                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                   "device_id1"));
+  devices.push_back(base::MakeUnique<DeviceInfo>(
+      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id1"));
 
-  devices.push_back(new DeviceInfo(base::GenerateGUID(),
-                                   "def Device",
-                                   "XYZ v1",
-                                   "XYZ SyncAgent v1",
-                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                   "device_id2"));
+  devices.push_back(base::MakeUnique<DeviceInfo>(
+      base::GenerateGUID(), "def Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id2"));
 
   base::DictionaryValue dictionary;
 
-  CreateMappingForUnmappedDevices(&(devices.get()), &dictionary);
+  CreateMappingForUnmappedDevices(devices, &dictionary);
 
   std::string public_id1 = devices[0]->public_id();
   std::string public_id2 = devices[1]->public_id();
@@ -59,14 +53,11 @@ TEST(IdMappingHelperTest, SetIdsForDevices) {
   EXPECT_NE(public_id1, public_id2);
 
   // Now add a third device.
-  devices.push_back(new DeviceInfo(base::GenerateGUID(),
-                                   "ghi Device",
-                                   "XYZ v1",
-                                   "XYZ SyncAgent v1",
-                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                   "device_id3"));
+  devices.push_back(base::MakeUnique<DeviceInfo>(
+      base::GenerateGUID(), "ghi Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id3"));
 
-  CreateMappingForUnmappedDevices(&(devices.get()), &dictionary);
+  CreateMappingForUnmappedDevices(devices, &dictionary);
 
   // Now make sure the existing ids are not changed.
   EXPECT_EQ(public_id1, devices[0]->public_id());

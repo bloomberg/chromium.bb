@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 namespace sync_driver {
@@ -28,11 +27,11 @@ namespace extensions {
 // filled with the list of devices associated with the account signed into this
 // |profile|. This function needs the |extension_id| because the
 // public device ids are set per extension.
-ScopedVector<sync_driver::DeviceInfo> GetAllSignedInDevices(
+std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile);
 
-ScopedVector<sync_driver::DeviceInfo> GetAllSignedInDevices(
+std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
     sync_driver::DeviceInfoTracker* device_tracker,
     ExtensionPrefs* extension_prefs);

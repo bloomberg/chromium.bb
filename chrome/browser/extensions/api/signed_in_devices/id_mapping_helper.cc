@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -69,16 +68,15 @@ std::string GetRandomId(
 }
 
 void CreateMappingForUnmappedDevices(
-    std::vector<DeviceInfo*>* device_info,
+    const std::vector<std::unique_ptr<DeviceInfo>>& device_info,
     base::DictionaryValue* value) {
-  for (unsigned int i = 0; i < device_info->size(); ++i) {
-    DeviceInfo* device = (*device_info)[i];
+  for (const std::unique_ptr<DeviceInfo>& device : device_info) {
     std::string local_id = GetPublicIdFromGUID(*value,
                                                device->guid());
 
     // If the device does not have a local id, set one.
     if (local_id.empty()) {
-      local_id = GetRandomId(*value, device_info->size());
+      local_id = GetRandomId(*value, device_info.size());
       value->SetString(local_id, device->guid());
     }
     device->set_public_id(local_id);
@@ -91,14 +89,11 @@ std::unique_ptr<DeviceInfo> GetDeviceInfoForClientId(
     Profile* profile) {
   DCHECK(crx_file::id_util::IdIsValid(extension_id)) << extension_id
                                                      << " is not valid";
-  ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id,
-                                                           profile);
-  for (ScopedVector<DeviceInfo>::iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    if ((*it)->guid() == client_id) {
-      std::unique_ptr<DeviceInfo> device(*it);
-      devices.weak_erase(it);
+  std::vector<std::unique_ptr<DeviceInfo>> devices =
+      GetAllSignedInDevices(extension_id, profile);
+  for (auto& iter : devices) {
+    if (iter->guid() == client_id) {
+      std::unique_ptr<DeviceInfo> device = std::move(iter);
       return device;
     }
   }

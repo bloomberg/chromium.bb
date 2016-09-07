@@ -210,12 +210,13 @@ std::unique_ptr<DeviceInfo> DeviceInfoSyncService::GetDeviceInfo(
   return base::WrapUnique(CreateDeviceInfo(iter->second));
 }
 
-ScopedVector<DeviceInfo> DeviceInfoSyncService::GetAllDeviceInfo() const {
-  ScopedVector<DeviceInfo> list;
+std::vector<std::unique_ptr<DeviceInfo>>
+DeviceInfoSyncService::GetAllDeviceInfo() const {
+  std::vector<std::unique_ptr<DeviceInfo>> list;
 
   for (SyncDataMap::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {
-    list.push_back(CreateDeviceInfo(iter->second));
+    list.push_back(base::WrapUnique(CreateDeviceInfo(iter->second)));
   }
 
   return list;

@@ -106,7 +106,7 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
 
-  ScopedVector<TestExtensionDir> test_extension_dirs_;
+  std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateApiUnitTest);
 };
@@ -128,8 +128,8 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
       " \"permissions\": [\"*://*/*\"]"
       "}";
 
-  test_extension_dirs_.push_back(new TestExtensionDir);
-  TestExtensionDir* dir = test_extension_dirs_.back();
+  test_extension_dirs_.push_back(base::MakeUnique<TestExtensionDir>());
+  TestExtensionDir* dir = test_extension_dirs_.back().get();
   dir->WriteManifest(kManifest);
 
   // TODO(devlin): We should extract out methods to load an unpacked extension

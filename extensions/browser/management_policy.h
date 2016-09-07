@@ -100,7 +100,8 @@ class ManagementPolicy {
   void UnregisterProvider(Provider* provider);
 
   // Like RegisterProvider(), but registers multiple providers instead.
-  void RegisterProviders(std::vector<Provider*> providers);
+  void RegisterProviders(
+      const std::vector<std::unique_ptr<Provider>>& providers);
 
   // Returns true if the user is permitted to install, load, and run the given
   // extension. If not, |error| may be set to an appropriate message.
@@ -154,6 +155,8 @@ class ManagementPolicy {
                            const Extension* extension,
                            base::string16* error) const;
 
+  // This stores raw pointers to Provider.
+  // TODO(lazyboy): Consider making ManagementPolicy own these providers.
   ProviderList providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementPolicy);

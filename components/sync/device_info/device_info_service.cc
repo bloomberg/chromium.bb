@@ -230,8 +230,9 @@ std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
   return CopyToModel(*iter->second);
 }
 
-ScopedVector<DeviceInfo> DeviceInfoService::GetAllDeviceInfo() const {
-  ScopedVector<DeviceInfo> list;
+std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
+    const {
+  std::vector<std::unique_ptr<DeviceInfo>> list;
 
   for (ClientIdToSpecifics::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {

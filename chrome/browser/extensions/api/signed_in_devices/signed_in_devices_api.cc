@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,12 +53,13 @@ const base::DictionaryValue* GetIdMappingDictionary(
 // Helper routine to get all signed in devices. The helper takes in
 // the pointers for |DeviceInfoTracker| and |Extensionprefs|. This
 // makes it easier to test by passing mock values for these pointers.
-ScopedVector<DeviceInfo> GetAllSignedInDevices(
+std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
     DeviceInfoTracker* device_tracker,
     ExtensionPrefs* extension_prefs) {
   DCHECK(device_tracker);
-  ScopedVector<DeviceInfo> devices = device_tracker->GetAllDeviceInfo();
+  std::vector<std::unique_ptr<DeviceInfo>> devices =
+      device_tracker->GetAllDeviceInfo();
   const base::DictionaryValue* mapping_dictionary = GetIdMappingDictionary(
       extension_prefs,
       extension_id);
@@ -70,8 +70,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   std::unique_ptr<base::DictionaryValue> editable_mapping_dictionary(
       mapping_dictionary->DeepCopy());
 
-  CreateMappingForUnmappedDevices(&(devices.get()),
-                                  editable_mapping_dictionary.get());
+  CreateMappingForUnmappedDevices(devices, editable_mapping_dictionary.get());
 
   // Write into |ExtensionPrefs| which will get persisted in disk.
   extension_prefs->UpdateExtensionPref(extension_id,
@@ -80,7 +79,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   return devices;
 }
 
-ScopedVector<DeviceInfo> GetAllSignedInDevices(
+std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile) {
   // Get the device tracker and extension prefs pointers
@@ -90,7 +89,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   DCHECK(device_tracker);
   if (!device_tracker->IsSyncing()) {
     // Devices are not sync'ing.
-    return ScopedVector<DeviceInfo>();
+    return std::vector<std::unique_ptr<DeviceInfo>>();
   }
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
@@ -131,16 +130,13 @@ bool SignedInDevicesGetFunction::RunSync() {
     return true;
   }
 
-  ScopedVector<DeviceInfo> devices =
+  std::vector<std::unique_ptr<DeviceInfo>> devices =
       GetAllSignedInDevices(extension_id(), GetProfile());
 
   std::unique_ptr<base::ListValue> result(new base::ListValue());
 
-  for (ScopedVector<DeviceInfo>::const_iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    result->Append((*it)->ToValue());
-  }
+  for (const std::unique_ptr<DeviceInfo>& device : devices)
+    result->Append(device->ToValue());
 
   SetResult(std::move(result));
   return true;

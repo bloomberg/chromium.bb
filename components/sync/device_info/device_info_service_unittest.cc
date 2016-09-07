@@ -52,6 +52,7 @@ using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 
+using DeviceInfoList = std::vector<std::unique_ptr<DeviceInfo>>;
 using StorageKeyList = ModelTypeService::StorageKeyList;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
@@ -343,7 +344,7 @@ TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
   InitializeAndPump();
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
   OnSyncStarting();
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
@@ -354,7 +355,7 @@ TEST_F(DeviceInfoServiceTest, EmptyDataReconciliationSlowLoad) {
   OnSyncStarting();
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
   base::RunLoop().RunUntilIdle();
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
@@ -368,7 +369,7 @@ TEST_F(DeviceInfoServiceTest, LocalProviderSubscription) {
   local_device()->Initialize(CreateDeviceInfo());
   base::RunLoop().RunUntilIdle();
 
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
@@ -385,7 +386,7 @@ TEST_F(DeviceInfoServiceTest, LocalProviderInitRace) {
   local_device()->Initialize(CreateDeviceInfo());
   base::RunLoop().RunUntilIdle();
 
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
@@ -422,7 +423,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalData) {
 
   InitializeAndPump();
 
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   AssertEqual(specifics, *all_device_info[0]);
   AssertEqual(specifics,
@@ -437,7 +438,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalMetadata) {
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&AssertResultIsSuccess));
   InitializeAndPump();
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
@@ -457,7 +458,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalDataAndMetadata) {
 
   InitializeAndPump();
 
-  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  DeviceInfoList all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(2u, all_device_info.size());
   AssertEqual(specifics,
               *service()->GetDeviceInfo(specifics.cache_guid()).get());

@@ -72,7 +72,8 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   bool IsSyncing() const override;
   std::unique_ptr<sync_driver::DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override;
-  ScopedVector<sync_driver::DeviceInfo> GetAllDeviceInfo() const override;
+  std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllDeviceInfo()
+      const override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;

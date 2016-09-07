@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"

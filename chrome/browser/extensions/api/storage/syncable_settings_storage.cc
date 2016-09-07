@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -219,13 +220,13 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
         // Sync and local values are the same, no changes to send.
       } else {
         // Sync value is different, update local setting with new value.
-        changes->push_back(new SettingSyncData(
+        changes->push_back(base::MakeUnique<SettingSyncData>(
             syncer::SyncChange::ACTION_UPDATE, extension_id_, it.key(),
             std::move(sync_value)));
       }
     } else {
       // Not synced, delete local setting.
-      changes->push_back(new SettingSyncData(
+      changes->push_back(base::MakeUnique<SettingSyncData>(
           syncer::SyncChange::ACTION_DELETE, extension_id_, it.key(),
           std::unique_ptr<base::Value>(new base::DictionaryValue())));
     }
@@ -238,7 +239,7 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     std::string key = base::DictionaryValue::Iterator(*sync_state).key();
     std::unique_ptr<base::Value> value;
     CHECK(sync_state->RemoveWithoutPathExpansion(key, &value));
-    changes->push_back(new SettingSyncData(
+    changes->push_back(base::MakeUnique<SettingSyncData>(
         syncer::SyncChange::ACTION_ADD, extension_id_, key, std::move(value)));
   }
 
@@ -268,11 +269,10 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
   std::vector<syncer::SyncError> errors;
   ValueStoreChangeList changes;
 
-  for (SettingSyncDataList::iterator it = sync_changes->begin();
-       it != sync_changes->end(); ++it) {
-    DCHECK_EQ(extension_id_, (*it)->extension_id());
-    const std::string& key = (*it)->key();
-    std::unique_ptr<base::Value> change_value = (*it)->PassValue();
+  for (const std::unique_ptr<SettingSyncData>& sync_change : *sync_changes) {
+    DCHECK_EQ(extension_id_, sync_change->extension_id());
+    const std::string& key = sync_change->key();
+    std::unique_ptr<base::Value> change_value = sync_change->PassValue();
 
     std::unique_ptr<base::Value> current_value;
     {
@@ -292,7 +292,7 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
 
     syncer::SyncError error;
 
-    switch ((*it)->change_type()) {
+    switch (sync_change->change_type()) {
       case syncer::SyncChange::ACTION_ADD:
         if (!current_value.get()) {
           error = OnSyncAdd(key, std::move(change_value), &changes);

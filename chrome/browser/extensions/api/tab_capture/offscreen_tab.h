@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -75,7 +74,7 @@ class OffscreenTabsOwner
   explicit OffscreenTabsOwner(content::WebContents* extension_web_contents);
 
   content::WebContents* const extension_web_contents_;
-  ScopedVector<OffscreenTab> tabs_;
+  std::vector<std::unique_ptr<OffscreenTab>> tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenTabsOwner);
 };

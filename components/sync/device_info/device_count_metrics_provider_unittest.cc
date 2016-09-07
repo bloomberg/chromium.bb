@@ -28,8 +28,8 @@ class FakeTracker : public DeviceInfoTracker {
       const std::string& client_id) const override {
     return std::unique_ptr<DeviceInfo>();
   }
-  ScopedVector<DeviceInfo> GetAllDeviceInfo() const override {
-    return ScopedVector<DeviceInfo>();
+  std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override {
+    return std::vector<std::unique_ptr<DeviceInfo>>();
   }
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}

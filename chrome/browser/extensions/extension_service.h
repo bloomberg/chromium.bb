@@ -242,9 +242,10 @@ class ExtensionService
       const extensions::ExternalProviderInterface* provider) override;
   void OnExternalProviderUpdateComplete(
       const extensions::ExternalProviderInterface* provider,
-      const ScopedVector<extensions::ExternalInstallInfoUpdateUrl>&
+      const std::vector<
+          std::unique_ptr<extensions::ExternalInstallInfoUpdateUrl>>&
           external_update_url_extensions,
-      const ScopedVector<extensions::ExternalInstallInfoFile>&
+      const std::vector<std::unique_ptr<extensions::ExternalInstallInfoFile>>&
           external_file_extensions,
       const std::set<std::string>& removed_extensions) override;
 

@@ -9,7 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -91,7 +90,7 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   void RemoveChangeObserverForExtension(const std::string& extension_id);
 
   Profile* const profile_;
-  ScopedVector<SignedInDevicesChangeObserver> change_observers_;
+  std::vector<std::unique_ptr<SignedInDevicesChangeObserver>> change_observers_;
 
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

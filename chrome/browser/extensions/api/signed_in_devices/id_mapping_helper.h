@@ -45,7 +45,7 @@ std::string GetGUIDFromPublicId(
 // The dictionary would have the public id as the key and the
 // device guid as the value.
 void CreateMappingForUnmappedDevices(
-    std::vector<sync_driver::DeviceInfo*>* device_info,
+    const std::vector<std::unique_ptr<sync_driver::DeviceInfo>>& device_info,
     base::DictionaryValue* value);
 
 // Gets the device info for a given client id. If the device is not found

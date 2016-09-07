@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -51,7 +50,7 @@ class DeviceInfoSyncService : public syncer::SyncableService,
   bool IsSyncing() const override;
   std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override;
-  ScopedVector<DeviceInfo> GetAllDeviceInfo() const override;
+  std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;

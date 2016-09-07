@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/common/extensions/api/tab_capture.h"
@@ -110,7 +109,7 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   void KillRequest(LiveRequest* request);
 
   content::BrowserContext* const browser_context_;
-  ScopedVector<LiveRequest> requests_;
+  std::vector<std::unique_ptr<LiveRequest>> requests_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

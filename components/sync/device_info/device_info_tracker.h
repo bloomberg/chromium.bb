@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/scoped_vector.h"
 #include "components/sync/device_info/device_info.h"
 
 namespace sync_driver {
@@ -32,7 +31,7 @@ class DeviceInfoTracker {
   virtual std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const = 0;
   // Gets DeviceInfo for all synced devices (including the local one).
-  virtual ScopedVector<DeviceInfo> GetAllDeviceInfo() const = 0;
+  virtual std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const = 0;
   // Registers an observer to be called on syncing any updated DeviceInfo.
   virtual void AddObserver(Observer* observer) = 0;
   // Unregisters an observer.

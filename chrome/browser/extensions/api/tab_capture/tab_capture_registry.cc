@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -272,7 +273,7 @@ void TabCaptureRegistry::GetCapturedTabs(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(list_of_capture_info);
   list_of_capture_info->Clear();
-  for (const LiveRequest* request : requests_) {
+  for (const std::unique_ptr<LiveRequest>& request : requests_) {
     if (request->is_anonymous() || !request->is_verified() ||
         request->extension_id() != extension_id)
       continue;
@@ -287,7 +288,8 @@ void TabCaptureRegistry::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   // Cleanup all the requested media streams for this extension.
-  for (ScopedVector<LiveRequest>::iterator it = requests_.begin();
+  for (std::vector<std::unique_ptr<LiveRequest>>::iterator it =
+           requests_.begin();
        it != requests_.end();) {
     if ((*it)->extension_id() == extension->id()) {
       it = requests_.erase(it);
@@ -313,8 +315,8 @@ bool TabCaptureRegistry::AddRequest(content::WebContents* target_contents,
     }
   }
 
-  requests_.push_back(
-      new LiveRequest(target_contents, extension_id, is_anonymous, this));
+  requests_.push_back(base::MakeUnique<LiveRequest>(
+      target_contents, extension_id, is_anonymous, this));
   return true;
 }
 
@@ -436,31 +438,31 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
 
 TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(
     const content::WebContents* target_contents) const {
-  for (ScopedVector<LiveRequest>::const_iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
-    if ((*it)->web_contents() == target_contents)
-      return *it;
+  for (const auto& request : requests_) {
+    if (request->web_contents() == target_contents)
+      return request.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(
     int original_target_render_process_id,
     int original_target_render_frame_id) const {
-  for (ScopedVector<LiveRequest>::const_iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
-    if ((*it)->WasOriginallyTargettingRenderFrameID(
+  for (const std::unique_ptr<LiveRequest>& request : requests_) {
+    if (request->WasOriginallyTargettingRenderFrameID(
             original_target_render_process_id,
-            original_target_render_frame_id))
-      return *it;
+            original_target_render_frame_id)) {
+      return request.get();
+    }
   }
-  return NULL;
+  return nullptr;
 }
 
 void TabCaptureRegistry::KillRequest(LiveRequest* request) {
-  for (ScopedVector<LiveRequest>::iterator it = requests_.begin();
+  for (std::vector<std::unique_ptr<LiveRequest>>::iterator it =
+           requests_.begin();
        it != requests_.end(); ++it) {
-    if ((*it) == request) {
+    if (it->get() == request) {
       requests_.erase(it);
       return;
     }
