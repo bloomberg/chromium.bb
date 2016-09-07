@@ -210,9 +210,6 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
     histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
 #endif
   }
-
-  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.GLResetNotificationStrategy",
-      gpu_info.gl_reset_notification_strategy);
 }
 
 // Combine the integers into a string, seperated by ','.
