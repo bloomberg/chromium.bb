@@ -49,7 +49,6 @@ template("create_native_executable_dist") {
       android_readelf,
     ]
     outputs = [
-      depfile,
       _libraries_list,
     ]
     rebased_binaries = rebase_path([ invoker.binary ], root_build_dir)
@@ -184,7 +183,6 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
       sources = invoker.sources
       outputs = [
-        depfile,
         "${jni_output_dir}/{{source_name_part}}_jni.h",
       ]
 
@@ -288,7 +286,6 @@ if (enable_java_templates) {
           jar_file,
         ]
         outputs = [
-          depfile,
           "${jni_output_dir}/${classname}_jni.h",
         ]
 
@@ -391,7 +388,6 @@ if (enable_java_templates) {
       sources = invoker.sources
 
       outputs = [
-        depfile,
         "$_base_gen_dir/${invoker.package_name}/{{source_name_part}}.java",
       ]
 
@@ -401,7 +397,7 @@ if (enable_java_templates) {
         "--include-path",
         rebase_path(_include_path, root_build_dir),
         "--output",
-        rebase_path(outputs[1], root_build_dir),
+        rebase_path(outputs[0], root_build_dir),
         "--template={{source}}",
       ]
 
@@ -476,7 +472,6 @@ if (enable_java_templates) {
                "--srcjar=$_rebased_srcjar_path",
              ] + _rebased_sources
       outputs = [
-        depfile,
         _srcjar_path,
       ]
     }
@@ -516,7 +511,6 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.d"
 
       outputs = [
-        depfile,
         invoker.output,
       ]
 
@@ -581,7 +575,6 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.d"
 
       outputs = [
-        depfile,
         _resources_zip,
       ]
 
@@ -651,7 +644,6 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.d"
 
       outputs = [
-        depfile,
         _resources_zip,
       ]
 
@@ -1822,7 +1814,6 @@ if (enable_java_templates) {
           _build_config,
         ]
         outputs = [
-          depfile,
           "${_dist_ijar_path}",
         ]
         data = [
@@ -1952,7 +1943,6 @@ if (enable_java_templates) {
         script = "//build/android/gyp/pack_relocations.py"
         depfile = "$target_gen_dir/$target_name.d"
         outputs = [
-          depfile,
           _native_libs_json,
         ]
 
@@ -2143,7 +2133,6 @@ if (enable_java_templates) {
       ]
 
       outputs = [
-        depfile,
         _incremental_install_script_path,
       ]
 
@@ -2500,7 +2489,6 @@ if (enable_java_templates) {
 
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
-        depfile,
         srcjar_path,
       ]
       rebased_imports = rebase_path(imports, root_build_dir)
@@ -2571,7 +2559,6 @@ if (enable_java_templates) {
       sources = invoker.sources
       depfile = "$target_gen_dir/$target_name.d"
       outputs = [
-        depfile,
         srcjar_path,
       ]
       args = [

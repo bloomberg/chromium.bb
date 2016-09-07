@@ -18,14 +18,18 @@ manifest_package = "org.chromium.chrome"
 
 chrome_public_jinja_variables = default_chrome_public_jinja_variables +
                                 [ "manifest_package=$manifest_package" ]
+chrome_public_android_manifest =
+    "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
+chrome_sync_shell_android_manifest =
+    "$target_gen_dir/chrome_sync_shell_apk/AndroidManifest.xml"
 
 chrome_sync_shell_jinja_variables =
     default_chrome_public_jinja_variables +
     [ "manifest_package=org.chromium.chrome.sync_shell" ]
 
-jinja_template("chrome_public_apk_manifest") {
+jinja_template("chrome_public_android_manifest") {
   input = "java/AndroidManifest.xml"
-  output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
+  output = chrome_public_android_manifest
   variables = chrome_public_jinja_variables
   variables += [
     "min_sdk_version=16",
@@ -33,9 +37,9 @@ jinja_template("chrome_public_apk_manifest") {
   ]
 }
 
-jinja_template("chrome_sync_shell_apk_manifest") {
+jinja_template("chrome_sync_shell_android_manifest") {
   input = "java/AndroidManifest.xml"
-  output = "$root_gen_dir/chrome_sync_shell_apk_manifest/AndroidManifest.xml"
+  output = chrome_sync_shell_android_manifest
   variables = chrome_sync_shell_jinja_variables
   variables += [
     "min_sdk_version=16",
@@ -170,7 +174,7 @@ java_strings_grd("chrome_strings_grd") {
 
 android_library("chrome_java") {
   deps = [
-    ":chrome_public_apk_manifest",
+    ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     "//base:base_java",
     "//chrome/android/webapk/libs/client:client_java",
@@ -230,8 +234,7 @@ android_library("chrome_java") {
   jar_excluded_patterns = [ "*/BuildConfig.class" ]
 
   # Manifest used for linting (determining unused resources).
-  android_manifest = get_target_outputs(":chrome_public_apk_manifest")
-  android_manifest = android_manifest[1]
+  android_manifest = chrome_public_android_manifest
 
   # TODO(sievers): Split java code into components. Not everything
   # is really all that UI related here.
@@ -581,9 +584,8 @@ template("chrome_public_apk_tmpl_shared") {
 }
 
 chrome_public_apk_tmpl_shared("chrome_public_apk") {
-  android_manifest = get_target_outputs(":chrome_public_apk_manifest")
-  android_manifest = android_manifest[1]
-  android_manifest_dep = ":chrome_public_apk_manifest"
+  android_manifest = chrome_public_android_manifest
+  android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublic"
   shared_libraries = [ ":chrome" ]
 
@@ -592,9 +594,8 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
   testonly = true
-  android_manifest = get_target_outputs(":chrome_sync_shell_apk_manifest")
-  android_manifest = android_manifest[1]
-  android_manifest_dep = ":chrome_sync_shell_apk_manifest"
+  android_manifest = chrome_sync_shell_android_manifest
+  android_manifest_dep = ":chrome_sync_shell_android_manifest"
   apk_name = "ChromeSyncShell"
   shared_libraries = [ ":chrome_sync_shell" ]
 

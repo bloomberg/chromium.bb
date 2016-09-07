@@ -424,6 +424,7 @@ def AddDepfileOption(parser):
 
 
 def WriteDepfile(path, dependencies):
+  MakeDirectory(os.path.dirname(path))
   with open(path, 'w') as depfile:
     depfile.write(path)
     depfile.write(': ')
