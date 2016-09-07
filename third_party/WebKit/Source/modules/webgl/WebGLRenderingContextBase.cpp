@@ -649,7 +649,7 @@ ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase()
     return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
-PassRefPtr<Image> WebGLRenderingContextBase::getImage(SnapshotReason reason) const
+PassRefPtr<Image> WebGLRenderingContextBase::getImage(AccelerationHint hint, SnapshotReason reason) const
 {
     if (!drawingBuffer())
         return nullptr;
@@ -667,7 +667,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(SnapshotReason reason) con
         NOTREACHED();
         return nullptr;
     }
-    return buffer->newImageSnapshot(PreferAcceleration, reason);
+    return buffer->newImageSnapshot(hint, reason);
 }
 
 namespace {

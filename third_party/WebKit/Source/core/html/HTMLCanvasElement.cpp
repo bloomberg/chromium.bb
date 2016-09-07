@@ -1126,15 +1126,17 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
         return createTransparentImage(size());
     }
 
-    if (m_context->is3d()) {
-        m_context->paintRenderingResultsToCanvas(BackBuffer);
-    }
-
     sk_sp<SkImage> skImage;
-    RefPtr<blink::Image> image = renderingContext()->getImage(reason);
-
-    if (image)
-        skImage = image->imageForCurrentFrame();
+    if (m_context->is3d()) {
+        // Because WebGL sources always require making a copy of the back buffer, we
+        // use paintRenderingResultsToCanvas instead of getImage in order to keep a cached
+        // copy of the backing in the canvas's ImageBuffer.
+        renderingContext()->paintRenderingResultsToCanvas(BackBuffer);
+        skImage = hasImageBuffer() ? buffer()->newSkImageSnapshot(hint, reason) : createTransparentImage(size())->imageForCurrentFrame();
+    } else {
+        RefPtr<blink::Image> image = renderingContext()->getImage(hint, reason);
+        skImage = image ? image->imageForCurrentFrame() : createTransparentImage(size())->imageForCurrentFrame();
+    }
 
     if (skImage) {
         *status = NormalSourceImageStatus;

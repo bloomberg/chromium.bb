@@ -167,7 +167,7 @@ public:
 
     void validateStateStack() final;
 
-    PassRefPtr<Image> getImage(SnapshotReason) const final;
+    PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final;
 
     bool isAccelerationOptimalForCanvasContent() const;
 

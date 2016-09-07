@@ -584,11 +584,11 @@ ImageBuffer* CanvasRenderingContext2D::imageBuffer() const
     return canvas()->buffer();
 }
 
-PassRefPtr<Image> blink::CanvasRenderingContext2D::getImage(SnapshotReason reason) const
+PassRefPtr<Image> blink::CanvasRenderingContext2D::getImage(AccelerationHint hint, SnapshotReason reason) const
 {
     if (!hasImageBuffer())
         return nullptr;
-    return canvas()->buffer()->newImageSnapshot(PreferAcceleration, reason);
+    return canvas()->buffer()->newImageSnapshot(hint, reason);
 }
 
 bool CanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const String& colorString) const

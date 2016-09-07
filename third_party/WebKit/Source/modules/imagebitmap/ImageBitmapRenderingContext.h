@@ -36,7 +36,7 @@ public:
     bool isContextLost() const override { return false; }
     bool paint(GraphicsContext&, const IntRect&) override;
     void setCanvasGetContextResult(RenderingContext&) final;
-    PassRefPtr<Image> getImage(SnapshotReason) const final { return m_image.get(); }
+    PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final { return m_image.get(); }
 
     // TODO(junov): Implement GPU accelerated rendering using a layer bridge
     WebLayer* platformLayer() const override { return nullptr; }

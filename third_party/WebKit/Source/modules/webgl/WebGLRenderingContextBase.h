@@ -411,7 +411,7 @@ public:
         DECLARE_TRACE();
     };
 
-    PassRefPtr<Image> getImage(SnapshotReason) const override;
+    PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const override;
     void setFilterQuality(SkFilterQuality) override;
     bool isWebGL2OrHigher() { return version() >= 2; }
 

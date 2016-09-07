@@ -134,11 +134,11 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     return ImageBitmap::create(image.release());
 }
 
-PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(SnapshotReason reason) const
+PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(AccelerationHint hint, SnapshotReason reason) const
 {
     if (!imageBuffer())
         return nullptr;
-    sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, reason);
+    sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(hint, reason);
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(skImage));
     return image;
 }

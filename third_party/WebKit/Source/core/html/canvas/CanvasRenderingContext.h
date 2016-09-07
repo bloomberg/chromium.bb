@@ -81,7 +81,7 @@ public:
     WTF::String colorSpaceAsString() const;
     sk_sp<SkColorSpace> skColorSpace() const;
 
-    virtual PassRefPtr<Image> getImage(SnapshotReason) const = 0;
+    virtual PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const = 0;
     virtual ContextType getContextType() const = 0;
     virtual bool isAccelerated() const { return false; }
     virtual bool shouldAntialias() const { return false; }
