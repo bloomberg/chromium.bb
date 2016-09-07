@@ -315,9 +315,9 @@ void DesktopWindowTreeHostWin::SetShape(
   // See crbug.com/410593.
   SkRegion* shape = native_region.get();
   SkRegion device_region;
-  if (display::win::GetDPIScale() > 1.0) {
+  const float scale = display::win::ScreenWin::GetScaleFactorForHWND(GetHWND());
+  if (scale > 1.0) {
     shape = &device_region;
-    const float scale = display::win::GetDPIScale();
     std::vector<SkIRect> rects;
     for (SkRegion::Iterator it(*native_region); !it.done(); it.next()) {
       const SkIRect& rect = it.rect();
