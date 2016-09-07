@@ -240,6 +240,12 @@ public class NewTabPageRecyclerView extends RecyclerView {
             return;
         }
 
+        // If we have the card offset field trial enabled, don't peek at all.
+        if (CardsFieldTrial.getFirstCardOffsetDp() != 0) {
+            peekingCard.updatePeek(0, /* shouldAnimate */ false);
+            return;
+        }
+
         // Here we consider that if the header is animating (is not completely expanded), the card
         // should as well. In that case, the space below the header is what we have available.
         boolean shouldAnimate = header.itemView.getHeight() < mMaxHeaderHeight;

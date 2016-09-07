@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.cards.CardsFieldTrial;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 
 /**
@@ -34,6 +36,7 @@ public class NewTabPageLayout extends LinearLayout {
     private final int mMostVisitedLayoutBleed;
     private final int mPeekingCardHeight;
     private final int mTabStripHeight;
+    private final int mFieldTrialLayoutAdjustment;
 
     private int mParentViewportHeight;
     private int mSearchboxViewShadowWidth;
@@ -69,6 +72,8 @@ public class NewTabPageLayout extends LinearLayout {
         mPeekingCardHeight =
                 res.getDimensionPixelSize(R.dimen.snippets_padding_and_peeking_card_height);
         mTabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
+        mFieldTrialLayoutAdjustment = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                CardsFieldTrial.getFirstCardOffsetDp(), res.getDisplayMetrics());
     }
 
     @Override
@@ -131,7 +136,8 @@ public class NewTabPageLayout extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         boolean hasSpaceForPeekingCard = false;
-        int maxAboveTheFoldHeight = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight;
+        int maxAboveTheFoldHeight = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight
+                - mFieldTrialLayoutAdjustment;
 
         // We need to make sure we have just enough space to show the peeking card.
         if (getMeasuredHeight() > maxAboveTheFoldHeight) {
