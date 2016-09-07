@@ -477,6 +477,11 @@ void ArcAuthService::OnIsSyncingChanged() {
 
   if (IsArcEnabled())
     OnOptInPreferenceChanged();
+
+  if (!g_disable_ui_for_testing && profile_->IsNewProfile() &&
+      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
+    ArcAuthNotification::Show(profile_);
+  }
 }
 
 void ArcAuthService::Shutdown() {
