@@ -54,7 +54,7 @@ void ScreenOrientationProvider::LockOrientation(int request_id,
     if (!static_cast<WebContentsImpl*>(web_contents())
              ->IsFullscreenForCurrentTab()) {
       dispatcher_->NotifyLockError(request_id,
-          blink::WebLockOrientationErrorFullScreenRequired);
+          blink::WebLockOrientationErrorFullscreenRequired);
       return;
     }
   }

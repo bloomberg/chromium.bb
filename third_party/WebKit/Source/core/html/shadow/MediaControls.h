@@ -144,7 +144,7 @@ private:
     Member<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
     Member<MediaControlTextTrackListElement> m_textTrackList;
     Member<MediaControlCastButtonElement> m_castButton;
-    Member<MediaControlFullscreenButtonElement> m_fullScreenButton;
+    Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
 
     Timer<MediaControls> m_hideMediaControlsTimer;
     unsigned m_hideTimerBehaviorFlags;

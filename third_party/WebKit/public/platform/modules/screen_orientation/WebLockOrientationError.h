@@ -12,7 +12,7 @@ enum WebLockOrientationError {
     WebLockOrientationErrorNotAvailable,
 
     // If fullscreen is required to lock.
-    WebLockOrientationErrorFullScreenRequired,
+    WebLockOrientationErrorFullscreenRequired,
 
     // If another lock/unlock got called before that one ended.
     WebLockOrientationErrorCanceled,

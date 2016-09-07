@@ -1139,7 +1139,7 @@ void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl)
 
     if (isFullscreen()) {
         // This handles any transition to or from fullscreen overlay mode.
-        frame->chromeClient().enterFullScreenForElement(this);
+        frame->chromeClient().enterFullscreenForElement(this);
     }
 }
 

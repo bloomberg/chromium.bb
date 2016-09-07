@@ -51,8 +51,8 @@ void LayoutSliderThumb::updateAppearance(const ComputedStyle& parentStyle)
         mutableStyleRef().setAppearance(MediaSliderThumbPart);
     else if (parentStyle.appearance() == MediaVolumeSliderPart)
         mutableStyleRef().setAppearance(MediaVolumeSliderThumbPart);
-    else if (parentStyle.appearance() == MediaFullScreenVolumeSliderPart)
-        mutableStyleRef().setAppearance(MediaFullScreenVolumeSliderThumbPart);
+    else if (parentStyle.appearance() == MediaFullscreenVolumeSliderPart)
+        mutableStyleRef().setAppearance(MediaFullscreenVolumeSliderThumbPart);
     if (styleRef().hasAppearance())
         LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef());
 }

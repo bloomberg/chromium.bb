@@ -829,14 +829,14 @@ void ChromeClientImpl::detachCompositorAnimationTimeline(CompositorAnimationTime
         webFrame->frameWidget()->detachCompositorAnimationTimeline(compositorTimeline);
 }
 
-void ChromeClientImpl::enterFullScreenForElement(Element* element)
+void ChromeClientImpl::enterFullscreenForElement(Element* element)
 {
-    m_webView->enterFullScreenForElement(element);
+    m_webView->enterFullscreenForElement(element);
 }
 
-void ChromeClientImpl::exitFullScreenForElement(Element* element)
+void ChromeClientImpl::exitFullscreenForElement(Element* element)
 {
-    m_webView->exitFullScreenForElement(element);
+    m_webView->exitFullscreenForElement(element);
 }
 
 void ChromeClientImpl::clearCompositedSelection(LocalFrame* frame)

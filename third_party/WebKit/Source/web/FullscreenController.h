@@ -49,10 +49,10 @@ public:
     void didEnterFullscreen();
     void didExitFullscreen();
 
-    void enterFullScreenForElement(Element*);
-    void exitFullScreenForElement(Element*);
+    void enterFullscreenForElement(Element*);
+    void exitFullscreenForElement(Element*);
 
-    bool isFullscreen() { return m_fullScreenFrame; }
+    bool isFullscreen() { return m_fullscreenFrame; }
 
     void updateSize();
 
@@ -75,12 +75,12 @@ private:
     bool m_needsScrollAndScaleRestore;
 
     // If set, the WebView is transitioning to fullscreen for this element.
-    Member<Element> m_provisionalFullScreenElement;
+    Member<Element> m_provisionalFullscreenElement;
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
-    Member<LocalFrame> m_fullScreenFrame;
+    Member<LocalFrame> m_fullscreenFrame;
 
-    bool m_isCancelingFullScreen;
+    bool m_isCancelingFullscreen;
 };
 
 } // namespace blink

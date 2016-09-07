@@ -263,7 +263,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
         // was already called on a descendant element in another process, and
         // getting here means that it already passed the user gesture check.
         if (!UserGestureIndicator::utilizeUserGesture() && !ScopedOrientationChangeIndicator::processingOrientationChange() && !forCrossProcessDescendant) {
-            String message = ExceptionMessages::failedToExecute("requestFullScreen",
+            String message = ExceptionMessages::failedToExecute("requestFullscreen",
                 "Element", "API can only be initiated by a user gesture.");
             document()->addConsoleMessage(
                 ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
@@ -331,7 +331,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
 
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
-        document()->frameHost()->chromeClient().enterFullScreenForElement(&element);
+        document()->frameHost()->chromeClient().enterFullscreenForElement(&element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
@@ -461,13 +461,13 @@ void Fullscreen::exitFullscreen()
         // that is part of the document so we will pass the documentElement in
         // that case. This should be fix by exiting fullscreen for a frame
         // instead of an element, see https://crbug.com/441259
-        host->chromeClient().exitFullScreenForElement(
+        host->chromeClient().exitFullscreenForElement(
             m_currentFullScreenElement ? m_currentFullScreenElement.get() : document()->documentElement());
         return;
     }
 
     // Otherwise, notify the chrome of the new full screen element.
-    host->chromeClient().enterFullScreenForElement(newTop);
+    host->chromeClient().enterFullscreenForElement(newTop);
 }
 
 bool Fullscreen::fullscreenEnabled(Document& document)
@@ -475,7 +475,7 @@ bool Fullscreen::fullscreenEnabled(Document& document)
     // 4. The fullscreenEnabled attribute must return true if the context object has its
     //    fullscreen enabled flag set and fullscreen is supported, and false otherwise.
 
-    // Top-level browsing contexts are implied to have their allowFullScreen attribute set.
+    // Top-level browsing contexts are implied to have their allowfullscreen attribute set.
     return fullscreenIsAllowedForAllOwners(document) && fullscreenIsSupported(document);
 }
 

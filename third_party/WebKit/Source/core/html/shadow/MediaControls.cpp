@@ -118,7 +118,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_toggleClosedCaptionsButton(nullptr)
     , m_textTrackList(nullptr)
     , m_castButton(nullptr)
-    , m_fullScreenButton(nullptr)
+    , m_fullscreenButton(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
     , m_hideTimerBehaviorFlags(IgnoreNone)
     , m_isMouseOverControls(false)
@@ -230,7 +230,7 @@ void MediaControls::initializeControls()
     panel->appendChild(castButton);
 
     MediaControlFullscreenButtonElement* fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
-    m_fullScreenButton = fullscreenButton;
+    m_fullscreenButton = fullscreenButton;
     panel->appendChild(fullscreenButton);
 
     m_panel = panel;
@@ -281,7 +281,7 @@ void MediaControls::reset()
 
     refreshClosedCaptionsButtonVisibility();
 
-    m_fullScreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
+    m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 
     refreshCastButtonVisibilityWithoutUpdate();
 }
@@ -521,7 +521,7 @@ void MediaControls::refreshCastButtonVisibilityWithoutUpdate()
         // newMediaPlaybackUiEnabled case, we let computeWhichControlsFit()
         // handle this.
         if ( !RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()
-            && m_fullScreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
+            && m_fullscreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
             m_castButton->setIsWanted(false);
             m_overlayCastButton->tryShowOverlay();
         }
@@ -539,14 +539,14 @@ void MediaControls::showOverlayCastButtonIfNeeded()
 
 void MediaControls::enteredFullscreen()
 {
-    m_fullScreenButton->setIsFullscreen(true);
+    m_fullscreenButton->setIsFullscreen(true);
     stopHideMediaControlsTimer();
     startHideMediaControlsTimer();
 }
 
 void MediaControls::exitedFullscreen()
 {
-    m_fullScreenButton->setIsFullscreen(false);
+    m_fullscreenButton->setIsFullscreen(false);
     stopHideMediaControlsTimer();
     startHideMediaControlsTimer();
 }
@@ -689,7 +689,7 @@ void MediaControls::computeWhichControlsFit()
     // Controls that we'll hide / show, in order of decreasing priority.
     MediaControlElement* elements[] = {
         // Exclude m_playButton; we handle it specially.
-        m_fullScreenButton.get(),
+        m_fullscreenButton.get(),
         m_toggleClosedCaptionsButton.get(),
         m_timeline.get(),
         m_currentTimeDisplay.get(),
@@ -779,7 +779,7 @@ void MediaControls::networkStateChanged()
     invalidate(m_playButton);
     invalidate(m_overlayPlayButton);
     invalidate(m_muteButton);
-    invalidate(m_fullScreenButton);
+    invalidate(m_fullscreenButton);
     invalidate(m_timeline);
     invalidate(m_volumeSlider);
 }
@@ -796,7 +796,7 @@ DEFINE_TRACE(MediaControls)
     visitor->trace(m_muteButton);
     visitor->trace(m_volumeSlider);
     visitor->trace(m_toggleClosedCaptionsButton);
-    visitor->trace(m_fullScreenButton);
+    visitor->trace(m_fullscreenButton);
     visitor->trace(m_durationDisplay);
     visitor->trace(m_enclosure);
     visitor->trace(m_textTrackList);

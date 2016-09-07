@@ -285,7 +285,7 @@ public:
     // WebScheduler::InterventionReporter implementation:
     void ReportIntervention(const WebString& message) override;
 
-    void didUpdateFullScreenSize();
+    void didUpdateFullscreenSize();
 
     float defaultMinimumPageScaleFactor() const;
     float defaultMaximumPageScaleFactor() const;
@@ -463,8 +463,8 @@ public:
     float fakePageScaleAnimationPageScaleForTesting() const { return m_fakePageScaleAnimationPageScaleFactor; }
     bool fakePageScaleAnimationUseAnchorForTesting() const { return m_fakePageScaleAnimationUseAnchor; }
 
-    void enterFullScreenForElement(Element*);
-    void exitFullScreenForElement(Element*);
+    void enterFullscreenForElement(Element*);
+    void exitFullscreenForElement(Element*);
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();

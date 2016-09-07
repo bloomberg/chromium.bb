@@ -139,7 +139,7 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
   std::list<blink::WebLockOrientationError> errors;
   errors.push_back(blink::WebLockOrientationErrorNotAvailable);
   errors.push_back(
-      blink::WebLockOrientationErrorFullScreenRequired);
+      blink::WebLockOrientationErrorFullscreenRequired);
   errors.push_back(blink::WebLockOrientationErrorCanceled);
 
   for (std::list<blink::WebLockOrientationError>::const_iterator

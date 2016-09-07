@@ -213,7 +213,7 @@ void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize)
     page()->frameHost().visualViewport().setSize(newSize);
     page()->frameHost().visualViewport().clampToBoundaries();
 
-    view()->didUpdateFullScreenSize();
+    view()->didUpdateFullscreenSize();
 }
 
 void WebFrameWidgetImpl::updateMainFrameLayoutSize()

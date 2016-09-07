@@ -57,20 +57,20 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
     , m_haveEnteredFullscreen(false)
     , m_exitFullscreenPageScaleFactor(0)
     , m_needsScrollAndScaleRestore(false)
-    , m_isCancelingFullScreen(false)
+    , m_isCancelingFullscreen(false)
 {
 }
 
 void FullscreenController::didEnterFullscreen()
 {
-    if (!m_provisionalFullScreenElement)
+    if (!m_provisionalFullscreenElement)
         return;
 
-    Element* element = m_provisionalFullScreenElement.release();
+    Element* element = m_provisionalFullscreenElement.release();
     Document& document = element->document();
-    m_fullScreenFrame = document.frame();
+    m_fullscreenFrame = document.frame();
 
-    if (!m_fullScreenFrame)
+    if (!m_fullscreenFrame)
         return;
 
     if (!m_haveEnteredFullscreen) {
@@ -94,21 +94,21 @@ void FullscreenController::didEnterFullscreen()
 
 void FullscreenController::didExitFullscreen()
 {
-    if (!m_fullScreenFrame)
+    if (!m_fullscreenFrame)
         return;
 
     if (m_haveEnteredFullscreen)
         updatePageScaleConstraints(true);
 
-    if (Document* document = m_fullScreenFrame->document()) {
+    if (Document* document = m_fullscreenFrame->document()) {
         if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
             Element* element = fullscreen->currentFullScreenElement();
             if (element) {
                 // When the client exits from full screen we have to call fullyExitFullscreen to notify
                 // the document. While doing that, suppress notifications back to the client.
-                m_isCancelingFullScreen = true;
+                m_isCancelingFullscreen = true;
                 Fullscreen::fullyExitFullscreen(*document);
-                m_isCancelingFullScreen = false;
+                m_isCancelingFullscreen = false;
 
                 // If the video used overlay fullscreen mode, the background was made transparent. Restore the transparency.
                 if (isHTMLVideoElement(element) && m_webViewImpl->layerTreeView())
@@ -126,20 +126,20 @@ void FullscreenController::didExitFullscreen()
     }
 
     m_haveEnteredFullscreen = false;
-    m_fullScreenFrame.clear();
+    m_fullscreenFrame.clear();
 }
 
-void FullscreenController::enterFullScreenForElement(Element* element)
+void FullscreenController::enterFullscreenForElement(Element* element)
 {
     // We are already transitioning to fullscreen for a different element.
-    if (m_provisionalFullScreenElement) {
-        m_provisionalFullScreenElement = element;
+    if (m_provisionalFullscreenElement) {
+        m_provisionalFullscreenElement = element;
         return;
     }
 
     // We are already in fullscreen mode.
-    if (m_fullScreenFrame) {
-        m_provisionalFullScreenElement = element;
+    if (m_fullscreenFrame) {
+        m_provisionalFullscreenElement = element;
         didEnterFullscreen();
         return;
     }
@@ -160,16 +160,16 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     if (frame && frame->client()) {
         if (!Fullscreen::from(element->document()).forCrossProcessDescendant())
             frame->client()->enterFullscreen();
-        m_provisionalFullScreenElement = element;
+        m_provisionalFullscreenElement = element;
     }
 }
 
-void FullscreenController::exitFullScreenForElement(Element* element)
+void FullscreenController::exitFullscreenForElement(Element* element)
 {
     DCHECK(element);
 
     // The client is exiting full screen, so don't send a notification.
-    if (m_isCancelingFullScreen)
+    if (m_isCancelingFullscreen)
         return;
 
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
@@ -184,7 +184,7 @@ void FullscreenController::updateSize()
 
     updatePageScaleConstraints(false);
 
-    LayoutFullScreen* layoutObject = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenLayoutObject();
+    LayoutFullScreen* layoutObject = Fullscreen::from(*m_fullscreenFrame->document()).fullScreenLayoutObject();
     if (layoutObject)
         layoutObject->updateStyle();
 }
@@ -230,8 +230,8 @@ void FullscreenController::updatePageScaleConstraints(bool removeConstraints)
 
 DEFINE_TRACE(FullscreenController)
 {
-    visitor->trace(m_provisionalFullScreenElement);
-    visitor->trace(m_fullScreenFrame);
+    visitor->trace(m_provisionalFullscreenElement);
+    visitor->trace(m_fullscreenFrame);
 }
 
 } // namespace blink

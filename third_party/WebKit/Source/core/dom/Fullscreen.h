@@ -138,7 +138,7 @@ private:
     // be forwarded across processes. However, the latter assumption could
     // change if https://crbug.com/161068 is fixed so that cross-process
     // postMessage can carry user gestures.  If that happens, this should be
-    // moved to be part of |m_fullScreenElementStack|.
+    // moved to be part of |m_fullscreenElementStack|.
     bool m_forCrossProcessDescendant;
 };
 

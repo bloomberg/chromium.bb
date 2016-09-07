@@ -133,8 +133,8 @@ public:
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;
 
-    void enterFullScreenForElement(Element*) override;
-    void exitFullScreenForElement(Element*) override;
+    void enterFullscreenForElement(Element*) override;
+    void exitFullscreenForElement(Element*) override;
 
     void clearCompositedSelection(LocalFrame*) override;
     void updateCompositedSelection(LocalFrame*, const CompositedSelection&) override;

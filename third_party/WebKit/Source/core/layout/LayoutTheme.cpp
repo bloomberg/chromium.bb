@@ -212,7 +212,7 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
         return adjustMenuListButtonStyle(style, e);
     case SliderHorizontalPart:
     case SliderVerticalPart:
-    case MediaFullScreenVolumeSliderPart:
+    case MediaFullscreenVolumeSliderPart:
     case MediaSliderPart:
     case MediaVolumeSliderPart:
         return adjustSliderContainerStyle(style, e);

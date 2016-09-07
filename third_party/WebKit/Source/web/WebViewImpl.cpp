@@ -1964,7 +1964,7 @@ void WebViewImpl::didExitFullscreen()
     m_fullscreenController->didExitFullscreen();
 }
 
-void WebViewImpl::didUpdateFullScreenSize()
+void WebViewImpl::didUpdateFullscreenSize()
 {
     m_fullscreenController->updateSize();
 }
@@ -2097,14 +2097,14 @@ void WebViewImpl::themeChanged()
     view->invalidateRect(damagedRect);
 }
 
-void WebViewImpl::enterFullScreenForElement(Element* element)
+void WebViewImpl::enterFullscreenForElement(Element* element)
 {
-    m_fullscreenController->enterFullScreenForElement(element);
+    m_fullscreenController->enterFullscreenForElement(element);
 }
 
-void WebViewImpl::exitFullScreenForElement(Element* element)
+void WebViewImpl::exitFullscreenForElement(Element* element)
 {
-    m_fullscreenController->exitFullScreenForElement(element);
+    m_fullscreenController->exitFullscreenForElement(element);
 }
 
 bool WebViewImpl::hasHorizontalScrollbar()

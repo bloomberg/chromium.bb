@@ -208,8 +208,8 @@ public:
     virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }
     virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }
 
-    virtual void enterFullScreenForElement(Element*) { }
-    virtual void exitFullScreenForElement(Element*) { }
+    virtual void enterFullscreenForElement(Element*) { }
+    virtual void exitFullscreenForElement(Element*) { }
 
     virtual void clearCompositedSelection(LocalFrame*) { }
     virtual void updateCompositedSelection(LocalFrame*, const CompositedSelection&) { }

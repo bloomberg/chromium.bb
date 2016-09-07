@@ -1210,7 +1210,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles)
     // Enter fullscreen.
     Element* element = static_cast<Element*>(
         webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
-    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->enterFullscreenForElement(element);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -1247,7 +1247,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter)
     // Enter fullscreen.
     Element* element = static_cast<Element*>(
         webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
-    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->enterFullscreenForElement(element);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -1258,9 +1258,9 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter)
     // Exit and, without performing a layout, reenter fullscreen again. We
     // shouldn't try to restore the scroll and scale values when we layout to
     // enter fullscreen.
-    webViewImpl->exitFullScreenForElement(element);
+    webViewImpl->exitFullscreenForElement(element);
     webViewImpl->didExitFullscreen();
-    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->enterFullscreenForElement(element);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -1269,7 +1269,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter)
     ASSERT_EQ(0, webViewImpl->mainFrameImpl()->frameView()->maximumScrollPosition().y());
 
     // When we exit now, we should restore the original scroll value.
-    webViewImpl->exitFullScreenForElement(element);
+    webViewImpl->exitFullscreenForElement(element);
     webViewImpl->didExitFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -1296,7 +1296,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
     Element* element = static_cast<Element*>(webViewImpl->mainFrame()->document().body());
-    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->enterFullscreenForElement(element);
     webViewImpl->didEnterFullscreen();
 
     // Page scale factor must be 1.0 during fullscreen for elements to be sized
@@ -1305,10 +1305,10 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 
     // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
     Element* otherElement = static_cast<Element*>(webViewImpl->mainFrame()->document().head());
-    webViewImpl->enterFullScreenForElement(otherElement);
+    webViewImpl->enterFullscreenForElement(otherElement);
 
     // Confirm that exiting fullscreen restores the parameters.
-    webViewImpl->exitFullScreenForElement(element);
+    webViewImpl->exitFullscreenForElement(element);
     webViewImpl->didExitFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 

@@ -444,10 +444,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case MediaControlsFullscreenBackgroundPart:
         m_value.valueID = CSSValueMediaControlsFullscreenBackground;
         break;
-    case MediaFullScreenVolumeSliderPart:
+    case MediaFullscreenVolumeSliderPart:
         m_value.valueID = CSSValueMediaFullscreenVolumeSlider;
         break;
-    case MediaFullScreenVolumeSliderThumbPart:
+    case MediaFullscreenVolumeSliderThumbPart:
         m_value.valueID = CSSValueMediaFullscreenVolumeSliderThumb;
         break;
     case MediaCurrentTimePart:
