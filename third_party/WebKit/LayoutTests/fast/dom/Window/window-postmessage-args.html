@@ -48,18 +48,14 @@ function tryPostMessage(first, second, third, shouldFail) {
 document.getElementById("description").innerHTML = "Test that the second argument of window.postMessage is ignored or triggers an error if it is not a message port. You should see PASS message '1' through '7', followed by 'done', with messages 4-7 received below.<br><br>";
 
 tryPostMessage('1', '*', 1, true);
-tryPostMessage('2', '*', 'c', true); // Legacy overload resolution will consider 3rd argument to be the (string) origin.
+tryPostMessage('2', '*', 'c', true);
 tryPostMessage('3', '*', { x: 1 }, true);
-tryPostMessage('3a', { x: 1 }, '*', true); // Legacy argument order.
 tryPostMessage('4', '*', window);  // Passes because window has a "length" attribute of value '0', so it looks like an array
-tryPostMessage('4a', window, '*'); // Legacy argument order.
 tryPostMessage('5', '*', undefined);
 tryPostMessage('5a', '*', null, true);
 tryPostMessage('6', '*', void 0);
 var channel1 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, '7', '*', [channel1.port1, channel1.port2]);
-var channel1a = new MessageChannel;
-tryPostMessageFunction(window.postMessage, '7a', [channel1a.port1, channel1a.port2], '*');
 var channel2 = new MessageChannel;
 tryPostMessageFunction(window.postMessage, '7', '*', [channel2.port1, channel2.port2]);
 var channel3 = new MessageChannel;

@@ -38,7 +38,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     channel_.port1.onmessage = function(evt) {
       cvox.MathJax.execMessage(evt.data);
     };
-    window.postMessage('cvox.MathJaxPortSetup', [channel_.port2], '*');
+    window.postMessage('cvox.MathJaxPortSetup', '*', [channel_.port2]);
   };
 
 

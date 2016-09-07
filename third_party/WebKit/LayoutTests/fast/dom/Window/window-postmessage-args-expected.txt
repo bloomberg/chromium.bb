@@ -1,18 +1,14 @@
-CONSOLE WARNING: line 31: 'window.postMessage(message, transferables, targetOrigin)' is deprecated and will be removed in M54, around October 2016. Please use 'window.postMessage(message, targetOrigin, transferables)' instead. See https://www.chromestatus.com/features/5719033043222528 for more details.
 Test that the second argument of window.postMessage is ignored or triggers an error if it is not a message port. You should see PASS message '1' through '7', followed by 'done', with messages 4-7 received below.
 
 
 PASS Posting message ('1', 1): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
-PASS Posting message ('2', c): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 2nd argument is neither an array, nor does it have indexed properties.
+PASS Posting message ('2', c): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('3', [object Object]): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
-PASS Posting message ('3a', *): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 2nd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('4', [object Window]) did not throw an exception
-PASS Posting message ('4a', *) did not throw an exception
 PASS Posting message ('5', undefined) did not throw an exception
 PASS Posting message ('5a', null): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
 PASS Posting message ('6', undefined) did not throw an exception
 PASS Posting message ('7', [object MessagePort],[object MessagePort]) did not throw an exception
-PASS Posting message ('7a', *) did not throw an exception
 PASS Posting message ('7', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('2147483648', undefined) did not throw an exception
 PASS Posting message ('2147483648', null): threw exception TypeError: Failed to execute 'postMessage' on 'Window': The 3rd argument is neither an array, nor does it have indexed properties.
@@ -35,11 +31,9 @@ PASS window.postMessage() threw exception TypeError: Failed to execute 'postMess
 PASS window.postMessage('a') threw exception TypeError: Failed to execute 'postMessage' on 'Window': 2 arguments required, but only 1 present..
 PASS Posting message ('done', undefined) did not throw an exception
 Received message '4' with 0 ports.
-Received message '4a' with 0 ports.
 Received message '5' with 0 ports.
 Received message '6' with 0 ports.
 Received message '7' with 2 ports.
-Received message '7a' with 2 ports.
 Received message '7' with 2 ports.
 Received message '2147483648' with 0 ports.
 Received message '[object MessagePort]' with 2 ports.

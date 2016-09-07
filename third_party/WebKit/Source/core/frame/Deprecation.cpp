@@ -55,11 +55,6 @@ String dopplerWillBeRemoved(const char* feature, int milestone, const char* deta
     return String::format("%s is deprecated and will be removed in %s. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
 }
 
-String replacedWillBeRemoved(const char* feature, const char* replacement, int milestone, const char* details)
-{
-    return String::format("%s is deprecated and will be removed in %s. Please use %s instead. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), replacement, details);
-}
-
 } // anonymous namespace
 
 namespace blink {
@@ -347,9 +342,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::HTMLKeygenElement:
         return willBeRemoved("The <keygen> element", 56, "5716060992962560");
-
-    case UseCounter::WindowPostMessageWithLegacyTargetOriginArgument:
-        return replacedWillBeRemoved("'window.postMessage(message, transferables, targetOrigin)'", "'window.postMessage(message, targetOrigin, transferables)'", 54, "5719033043222528");
 
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
         return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(56));

@@ -150,14 +150,6 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     }
 }
 
-static bool isLegacyTargetOriginDesignation(v8::Local<v8::Value> value)
-{
-    if (value->IsString() || value->IsStringObject())
-        return true;
-    return false;
-}
-
-
 void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
@@ -185,24 +177,21 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     }
 
     // This function has variable arguments and can be:
-    // Per current spec:
     //   postMessage(message, targetOrigin)
     //   postMessage(message, targetOrigin, {sequence of transferrables})
-    // Legacy non-standard implementations in webkit allowed:
-    //   postMessage(message, {sequence of transferrables}, targetOrigin);
+    // TODO(foolip): Type checking of the arguments should happen in order, so
+    // that e.g. postMessage({}, { toString: () => { throw Error(); } }, 0)
+    // throws the Error from toString, not the TypeError for argument 3.
     Transferables transferables;
-    int targetOriginArgIndex = 1;
+    const int targetOriginArgIndex = 1;
     if (info.Length() > 2) {
-        int transferablesArgIndex = 2;
-        if (isLegacyTargetOriginDesignation(info[2])) {
-            Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), window->document(), UseCounter::WindowPostMessageWithLegacyTargetOriginArgument);
-            targetOriginArgIndex = 2;
-            transferablesArgIndex = 1;
-        }
+        const int transferablesArgIndex = 2;
         if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
             return;
         }
     }
+    // TODO(foolip): targetOrigin should be a USVString in IDL and treated as
+    // such here, without TreatNullAndUndefinedAsNullString.
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
