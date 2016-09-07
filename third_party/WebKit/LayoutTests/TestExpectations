@@ -82,8 +82,8 @@ crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Fai
 crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
 crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
-crbug.com/619103 compositing/overflow/updating-scrolling-container-and-content.html [ Crash ]
-crbug.com/619103 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ Crash ]
+crbug.com/619103 compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
+crbug.com/619103 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ Crash Timeout ]
 
 # TODO(fmalita): re-enable
 # crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]

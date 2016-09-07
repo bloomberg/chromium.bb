@@ -9,7 +9,7 @@ if (window.testRunner)
 
 if (window.internals) {
     internals.settings.setUseDefaultImageInterpolationQuality(true);
-    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
+    internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
 }
 
 function runRepaintTest()

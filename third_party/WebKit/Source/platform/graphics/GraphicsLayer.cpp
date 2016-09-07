@@ -80,7 +80,6 @@ struct PaintInvalidationInfo {
     PaintInvalidationReason reason;
 };
 
-#if DCHECK_IS_ON()
 struct UnderPaintInvalidation {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     int x;
@@ -88,16 +87,13 @@ struct UnderPaintInvalidation {
     SkColor oldPixel;
     SkColor newPixel;
 };
-#endif
 
 struct PaintInvalidationTracking {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     Vector<PaintInvalidationInfo> trackedPaintInvalidations;
-#if DCHECK_IS_ON()
     sk_sp<SkPicture> lastPaintedPicture;
     Region paintInvalidationRegionSinceLastPaint;
     Vector<UnderPaintInvalidation> underPaintInvalidations;
-#endif
 };
 
 typedef HashMap<const GraphicsLayer*, PaintInvalidationTracking> PaintInvalidationTrackingMap;
@@ -336,15 +332,13 @@ void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::Disabled
 {
     if (paintWithoutCommit(interestRect, disabledMode)) {
         getPaintController().commitNewDisplayItems(offsetFromLayoutObjectWithSubpixelAccumulation());
-#if DCHECK_IS_ON()
-        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
             sk_sp<SkPicture> newPicture = capturePicture();
             checkPaintUnderInvalidations(*newPicture);
             PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
             tracking.lastPaintedPicture = std::move(newPicture);
             tracking.paintInvalidationRegionSinceLastPaint = Region();
         }
-#endif
     }
 }
 
@@ -554,7 +548,7 @@ void GraphicsLayer::resetTrackedPaintInvalidations()
     if (it == paintInvalidationTrackingMap().end())
         return;
 
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
         it->value.trackedPaintInvalidations.clear();
     else
         paintInvalidationTrackingMap().remove(it);
@@ -580,14 +574,12 @@ void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, cons
         tracking.trackedPaintInvalidations.append(info);
     }
 
-#if DCHECK_IS_ON()
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
         // TODO(crbug.com/496260): Some antialiasing effects overflows the paint invalidation rect.
         IntRect r = rect;
         r.inflate(1);
         tracking.paintInvalidationRegionSinceLastPaint.unite(r);
     }
-#endif
 }
 
 static bool comparePaintInvalidationInfo(const PaintInvalidationInfo& a, const PaintInvalidationInfo& b)
@@ -780,7 +772,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlag
                 }
                 json->setArray("paintInvalidations", std::move(paintInvalidationsJSON));
             }
-#if DCHECK_IS_ON()
+
             Vector<UnderPaintInvalidation>& underPaintInvalidations = it->value.underPaintInvalidations;
             if (!underPaintInvalidations.isEmpty()) {
                 std::unique_ptr<JSONArray> underPaintInvalidationsJSON = JSONArray::create();
@@ -794,7 +786,6 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlag
                 }
                 json->setArray("underPaintInvalidations", std::move(underPaintInvalidationsJSON));
             }
-#endif
         }
     }
 
@@ -1253,8 +1244,6 @@ void GraphicsLayer::setCompositorMutableProperties(uint32_t properties)
         layer->setCompositorMutableProperties(properties);
 }
 
-#if DCHECK_IS_ON()
-
 sk_sp<SkPicture> GraphicsLayer::capturePicture()
 {
     if (!drawsContent())
@@ -1300,11 +1289,19 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
     int width = static_cast<int>(ceilf(std::min(tracking.lastPaintedPicture->cullRect().width(), newPicture.cullRect().width())));
     int height = static_cast<int>(ceilf(std::min(tracking.lastPaintedPicture->cullRect().height(), newPicture.cullRect().height())));
     oldBitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
-    SkCanvas(oldBitmap).drawPicture(tracking.lastPaintedPicture.get());
+    {
+        SkCanvas canvas(oldBitmap);
+        canvas.clear(SK_ColorTRANSPARENT);
+        canvas.drawPicture(tracking.lastPaintedPicture.get());
+    }
 
     SkBitmap newBitmap;
     newBitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
-    SkCanvas(newBitmap).drawPicture(&newPicture);
+    {
+        SkCanvas canvas(newBitmap);
+        canvas.clear(SK_ColorTRANSPARENT);
+        canvas.drawPicture(&newPicture);
+    }
 
     oldBitmap.lockPixels();
     newBitmap.lockPixels();
@@ -1323,7 +1320,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
                     LOG(ERROR) << "and more...";
                 }
                 ++mismatchingPixels;
-                *newBitmap.getAddr32(x, y) = SK_ColorRED;
+                *newBitmap.getAddr32(x, y) = SkColorSetARGB(0x80, 0xFF, 0, 0xFF); // Half translucent magenta.
             } else {
                 *newBitmap.getAddr32(x, y) = SK_ColorTRANSPARENT;
             }
@@ -1341,8 +1338,6 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
     sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     getPaintController().appendDebugDrawingAfterCommit(*this, picture, offsetFromLayoutObjectWithSubpixelAccumulation());
 }
-
-#endif // DCHECK_IS_ON()
 
 } // namespace blink
 

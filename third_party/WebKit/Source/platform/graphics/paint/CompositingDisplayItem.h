@@ -35,7 +35,6 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-#if ENABLE(ASSERT)
     bool equals(const DisplayItem& other) const final
     {
         return DisplayItem::equals(other)
@@ -45,7 +44,6 @@ private:
             && m_bounds == static_cast<const BeginCompositingDisplayItem&>(other).m_bounds
             && m_colorFilter == static_cast<const BeginCompositingDisplayItem&>(other).m_colorFilter;
     }
-#endif
 
     const SkXfermode::Mode m_xferMode;
     const float m_opacity;

@@ -705,7 +705,7 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     if (selectionOnly) {
         paintForegroundForFragmentsWithPhase(PaintPhaseSelection, layerFragments, context, localPaintingInfo, paintFlags, clipState);
     } else {
-        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds()) {
+        if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds()) {
             size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantBlockBackgroundsOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
             // Don't set the empty flag if we are not painting the whole background.
@@ -716,7 +716,7 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
             }
         }
 
-        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseFloat()) {
+        if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseFloat()) {
             size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
             bool phaseIsEmpty = context.getPaintController().newDisplayItemList().size() == sizeBefore;
@@ -726,7 +726,7 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
 
         paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintFlags, clipState);
 
-        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantOutlines()) {
+        if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantOutlines()) {
             size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
             bool phaseIsEmpty = context.getPaintController().newDisplayItemList().size() == sizeBefore;
