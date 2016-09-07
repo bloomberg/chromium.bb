@@ -1,28 +1,23 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<title>RTCPeerConnection signalingState</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
-description("Tests the RTCPeerConnection states.");
 
-var pc = null;
+async_test(function(test) {
+  var pc = new webkitRTCPeerConnection({iceServers: []}, null);
+  assert_equals(pc.signalingState, 'stable');
+  pc.onsignalingstatechange = test.step_func(() => {
+    assert_equals(pc.signalingState, 'closed');
+    test.done();
+  });
+  pc.close();
+}, 'Tests the RTCPeerConnection "stable" and "closed" signalingState strings.');
 
-function stateChanged()
-{
-    testPassed("stateChanged was called");
-    shouldBeEqualToString('pc.signalingState', 'closed');
-    finishJSTest();
-}
-
-shouldNotThrow('pc = new webkitRTCPeerConnection({iceServers:[]}, null);');
-shouldBeEqualToString('pc.signalingState', 'stable');
-pc.onsignalingstatechange = stateChanged;
-pc.close();
-
-window.jsTestIsAsync = true;
-window.successfullyParsed = true;
 </script>
 </body>
 </html>
