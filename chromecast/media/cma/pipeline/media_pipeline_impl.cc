@@ -83,7 +83,7 @@ struct MediaPipelineImpl::FlushTask {
 MediaPipelineImpl::MediaPipelineImpl()
     : cdm_context_(nullptr),
       backend_state_(BACKEND_STATE_UNINITIALIZED),
-      playback_rate_(1.0f),
+      playback_rate_(0),
       audio_decoder_(nullptr),
       video_decoder_(nullptr),
       pending_time_update_task_(false),

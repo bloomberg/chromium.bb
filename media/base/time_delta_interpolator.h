@@ -40,6 +40,7 @@ class MEDIA_EXPORT TimeDeltaInterpolator {
   base::TimeDelta StopInterpolating();
 
   // Sets a new rate at which to interpolate.
+  // The default rate is 0.
   //
   // |tick_clock| will be queried for a new reference time value.
   void SetPlaybackRate(double playback_rate);

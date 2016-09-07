@@ -136,6 +136,7 @@ class PipelineHelper {
     eos_[STREAM_VIDEO] = !media_pipeline_.HasVideo();
     base::TimeDelta start_time = base::TimeDelta::FromMilliseconds(0);
     media_pipeline_.StartPlayingFrom(start_time);
+    media_pipeline_.SetPlaybackRate(1.0);
   }
   void SetCdm() { media_pipeline_.SetCdm(cdm_context_.get()); }
   void Flush(const base::Closure& flush_cb) { media_pipeline_.Flush(flush_cb); }

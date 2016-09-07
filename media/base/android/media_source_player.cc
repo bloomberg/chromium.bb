@@ -71,6 +71,7 @@ MediaSourcePlayer::MediaSourcePlayer(
                  weak_factory_.GetWeakPtr())));
 
   demuxer_->Initialize(this);
+  interpolator_.SetPlaybackRate(1.0);
   interpolator_.SetUpperBound(base::TimeDelta());
   weak_this_ = weak_factory_.GetWeakPtr();
 }

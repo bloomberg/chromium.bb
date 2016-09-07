@@ -11,7 +11,9 @@ namespace media {
 
 class TimeDeltaInterpolatorTest : public ::testing::Test {
  public:
-  TimeDeltaInterpolatorTest() : interpolator_(&test_tick_clock_) {}
+  TimeDeltaInterpolatorTest() : interpolator_(&test_tick_clock_) {
+    interpolator_.SetPlaybackRate(1.0);
+  }
 
  protected:
   void AdvanceSystemTime(base::TimeDelta delta) {

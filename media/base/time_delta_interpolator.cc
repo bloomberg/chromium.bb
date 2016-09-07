@@ -18,7 +18,7 @@ TimeDeltaInterpolator::TimeDeltaInterpolator(base::TickClock* tick_clock)
     : tick_clock_(tick_clock),
       interpolating_(false),
       upper_bound_(kNoTimestamp),
-      playback_rate_(1.0) {
+      playback_rate_(0) {
   DCHECK(tick_clock_);
 }
 
