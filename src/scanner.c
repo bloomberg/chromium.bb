@@ -586,7 +586,7 @@ free_interface(struct interface *interface)
  *
  * Upon error, this routine does not modify or set errno.
  *
- * \returns -1 on error, or a non-negative integer on success
+ * Returns -1 on error, or a non-negative integer on success
  */
 static int
 strtouint(const char *str)
