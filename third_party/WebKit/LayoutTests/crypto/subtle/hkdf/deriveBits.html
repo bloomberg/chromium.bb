@@ -22,7 +22,7 @@ kHkdfAlgorithm = {
     info: new Uint8Array()
 };
 
-var extractable = true;
+var extractable = false;
 Promise.resolve(null).then(function(result) {
     // Set up the test by creating an HKDF key.
     return crypto.subtle.importKey("raw", hexStringToUint8Array(kHkdfKey), {name: "HKDF"}, extractable, ['deriveKey', 'deriveBits']);

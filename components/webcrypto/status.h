@@ -273,6 +273,10 @@ class Status {
   // PBKDF2 was called with iterations == 0.
   static Status ErrorPbkdf2Iterations0();
 
+  // Tried importing a key with extractable=true for one of the *KDF
+  // algorithms.
+  static Status ErrorImportExtractableKdfKey();
+
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

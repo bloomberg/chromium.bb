@@ -13,7 +13,6 @@ description("Test deriving HKDF keys with deriveKey()");
 
 jsTestIsAsync = true;
 
-var extractable = true;
 var derivingKeyAlgorithm = {
     name: "HKDF",
     hash: "SHA-256",
@@ -55,12 +54,12 @@ Promise.resolve(null).then(function(result) {
     publicKey = result;
 
     debug("Derive an HKDF key from ECDH keys");
-    return crypto.subtle.deriveKey({name: "ECDH", namedCurve: "P-256", public: publicKey}, privateKey, "HKDF", true, ['deriveKey', 'deriveBits']);
+    return crypto.subtle.deriveKey({name: "ECDH", namedCurve: "P-256", public: publicKey}, privateKey, "HKDF", false, ['deriveKey', 'deriveBits']);
 }).then(function(result) {
     hkdfKey = result;
 
     shouldEvaluateAs("hkdfKey.algorithm.name", "HKDF");
-    shouldEvaluateAs("hkdfKey.extractable", true);
+    shouldEvaluateAs("hkdfKey.extractable", false);
     shouldEvaluateAs("hkdfKey.usages.join(',')", "deriveKey,deriveBits");
 
     debug("\nDerive 128 bits from the HKDF key");
@@ -68,7 +67,7 @@ Promise.resolve(null).then(function(result) {
 }).then(function(result) {
     derivedBits = result;
 
-    return crypto.subtle.importKey("raw", secret, hkdfAlgorithm, true, ['deriveBits']);
+    return crypto.subtle.importKey("raw", secret, hkdfAlgorithm, false, ['deriveBits']);
 }).then(function(hkdfKey) {
     return crypto.subtle.deriveBits(hkdfAlgorithm, hkdfKey, 128);
 }).then(function(result) {

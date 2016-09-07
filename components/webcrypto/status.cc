@@ -362,6 +362,11 @@ Status Status::ErrorPbkdf2Iterations0() {
                 "PBKDF2 requires iterations > 0");
 }
 
+Status Status::ErrorImportExtractableKdfKey() {
+  return Status(blink::WebCryptoErrorTypeSyntax,
+                "KDF keys must set extractable=false");
+}
+
 Status::Status(blink::WebCryptoErrorType error_type,
                const std::string& error_details_utf8)
     : type_(TYPE_ERROR),

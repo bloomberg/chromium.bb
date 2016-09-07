@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Derive an HKDF key from ECDH keys
 PASS hkdfKey.algorithm.name is "HKDF"
 PASS typeof hkdfKey.extractable is 'boolean'
-PASS hkdfKey.extractable is true
+PASS hkdfKey.extractable is false
 PASS hkdfKey.usages.join(',') is "deriveKey,deriveBits"
 
 Derive 128 bits from the HKDF key

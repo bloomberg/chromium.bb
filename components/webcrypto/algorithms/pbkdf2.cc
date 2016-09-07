@@ -50,6 +50,9 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     if (status.IsError())
       return status;
 
+    if (extractable)
+      return Status::ErrorImportExtractableKdfKey();
+
     const blink::WebCryptoKeyAlgorithm key_algorithm =
         blink::WebCryptoKeyAlgorithm::createWithoutParams(
             blink::WebCryptoAlgorithmIdPbkdf2);
@@ -106,6 +109,10 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
+    // NOTE: Unlike ImportKeyRaw(), this does not enforce extractable==false.
+    // This is intentional. Although keys cannot currently be created with
+    // extractable==true, earlier implementations permitted this, so
+    // de-serialization by structured clone should not reject them.
     return CreateWebCryptoSecretKey(key_data, algorithm, extractable, usages,
                                     key);
   }
