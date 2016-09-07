@@ -95,7 +95,7 @@ unsigned WebPrerender::relTypes() const
 
 WebString WebPrerender::referrer() const
 {
-    return m_private->referrer();
+    return m_private->getReferrer();
 }
 
 WebReferrerPolicy WebPrerender::referrerPolicy() const

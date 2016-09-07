@@ -69,7 +69,7 @@ public:
 
     const KURL& url() const { return m_url; }
     unsigned relTypes() const { return m_relTypes; }
-    const String& referrer() const { return m_referrer.referrer; }
+    const String& getReferrer() const { return m_referrer.referrer; }
     ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
 
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
