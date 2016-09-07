@@ -104,8 +104,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_next_frame_(false),
         did_request_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
-        reduce_memory_result_(true),
-        skip_draw_layers_in_on_draw_(false) {
+        reduce_memory_result_(true) {
     media::InitializeMediaLibrary();
   }
 
@@ -175,10 +174,8 @@ class LayerTreeHostImplTest : public testing::Test,
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(frame.get()));
     last_on_draw_render_passes_.clear();
     RenderPass::CopyAll(frame->render_passes, &last_on_draw_render_passes_);
-    if (!skip_draw_layers_in_on_draw_)
-      host_impl_->DrawLayers(frame.get());
+    host_impl_->DrawLayers(frame.get());
     host_impl_->DidDrawAllLayers(*frame);
-    host_impl_->SwapBuffers(*frame);
     last_on_draw_frame_ = std::move(frame);
   }
 
@@ -457,7 +454,6 @@ class LayerTreeHostImplTest : public testing::Test,
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
-    host_impl_->SwapBuffers(frame);
   }
 
   void pinch_zoom_pan_viewport_forces_commit_redraw(float device_scale_factor);
@@ -519,7 +515,6 @@ class LayerTreeHostImplTest : public testing::Test,
   bool reduce_memory_result_;
   base::Closure animation_task_;
   base::TimeDelta requested_animation_delay_;
-  bool skip_draw_layers_in_on_draw_;
   std::unique_ptr<LayerTreeHostImpl::FrameData> last_on_draw_frame_;
   RenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
@@ -3492,7 +3487,6 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
-    host_impl_->SwapBuffers(frame);
     host_impl_->DidDrawAllLayers(frame);
 
     EXPECT_TRUE(layer->will_draw_called());
@@ -3510,7 +3504,6 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
 
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
-    host_impl_->SwapBuffers(frame);
     host_impl_->DidDrawAllLayers(frame);
 
     EXPECT_TRUE(layer->will_draw_called());
@@ -3544,7 +3537,6 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_FALSE(layer->will_draw_called());
@@ -3562,7 +3554,6 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_TRUE(layer->will_draw_called());
@@ -3605,7 +3596,6 @@ TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_FALSE(occluded_layer->will_draw_called());
@@ -3644,7 +3634,6 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
       *host_impl_->active_tree()->begin());
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   host_impl_->DidDrawAllLayers(frame);
 
   EXPECT_TRUE(root->did_draw_called());
@@ -3815,7 +3804,6 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 
   for (size_t i = 0; i < cases.size(); ++i) {
     // Clean up host_impl_ state.
@@ -3843,7 +3831,6 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     EXPECT_EQ(testcase.expected_result, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
-    host_impl_->SwapBuffers(frame);
   }
 }
 
@@ -6673,7 +6660,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->DrawLayers(&frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 
   // Layer with translucent content and painting, so drawn with blending.
   layer1->SetContentsOpaque(false);
@@ -6682,7 +6668,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6695,7 +6680,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6708,7 +6692,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6732,7 +6715,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6747,7 +6729,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6763,7 +6744,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6786,7 +6766,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6807,7 +6786,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6826,7 +6804,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6846,7 +6823,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
@@ -6861,7 +6837,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6875,7 +6850,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6889,7 +6863,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
@@ -6904,7 +6877,6 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
-  host_impl_->SwapBuffers(frame);
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 }
@@ -6914,7 +6886,6 @@ static bool MayContainVideoBitSetOnFrameData(LayerTreeHostImpl* host_impl) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   host_impl->DrawLayers(&frame);
-  host_impl->SwapBuffers(frame);
   host_impl->DidDrawAllLayers(frame);
   return frame.may_contain_video;
 }
@@ -7211,7 +7182,6 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
 
 TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
   viewport_size_ = gfx::Size(1000, 1000);
-  skip_draw_layers_in_on_draw_ = true;  // Resourceless can't draw tiled quads.
 
   bool software = true;
   CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
@@ -7229,7 +7199,6 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
 
 TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   viewport_size_ = gfx::Size(1000, 1000);
-  skip_draw_layers_in_on_draw_ = true;  // Resourceless can't draw tiled quads.
 
   bool software = true;
   CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
@@ -7312,7 +7281,6 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   layer_tree_host_impl->DidDrawAllLayers(frame);
-  layer_tree_host_impl->SwapBuffers(frame);
   gfx::Rect expected_swap_rect(500, 500);
   EXPECT_EQ(expected_swap_rect.ToString(),
             fake_output_surface->last_swap_rect().ToString());
@@ -7333,7 +7301,6 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  layer_tree_host_impl->SwapBuffers(frame);
 
   expected_swap_rect = gfx::Rect(26, 28);
   EXPECT_EQ(expected_swap_rect.ToString(),
@@ -7347,7 +7314,6 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  layer_tree_host_impl->SwapBuffers(frame);
 
   expected_swap_rect = gfx::Rect(10, 10);
   EXPECT_EQ(expected_swap_rect.ToString(),
@@ -7575,7 +7541,6 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 
   EXPECT_GT(context3d->NumTextures(), 0u);
 
@@ -7611,7 +7576,6 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 
   // Cause damage so we would draw something if possible.
   host_impl_->SetFullViewportDamage();
@@ -7626,7 +7590,6 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 }
 
 class LayerTreeHostImplTestWithDelegatingRenderer
@@ -7670,9 +7633,8 @@ class LayerTreeHostImplTestWithDelegatingRenderer
                 root_render_pass->quad_list.ElementAt(1)->visible_rect);
     }
 
-    host_impl_->DrawLayers(&frame);
+    EXPECT_EQ(expect_to_draw, host_impl_->DrawLayers(&frame));
     host_impl_->DidDrawAllLayers(frame);
-    EXPECT_EQ(expect_to_draw, host_impl_->SwapBuffers(frame));
   }
 };
 
@@ -8057,7 +8019,6 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
 
   // The CopyOutputResult's callback has a ref on the ContextProvider and a
   // texture in a texture mailbox.
@@ -8483,7 +8444,7 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
 }
 
 // Make sure LatencyInfo carried by LatencyInfoSwapPromise are passed
-// to CompositorFrameMetadata after SwapBuffers();
+// in CompositorFrameMetadata.
 TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   std::unique_ptr<SolidColorLayerImpl> root =
       SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
@@ -8508,9 +8469,8 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame);
+  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
   host_impl_->DidDrawAllLayers(frame);
-  EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
   const std::vector<ui::LatencyInfo>& metadata_latency_after =
       fake_output_surface->last_sent_frame()->metadata.latency_info;
@@ -8552,9 +8512,8 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame);
+  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
   host_impl_->DidDrawAllLayers(frame);
-  EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
   // Ensure the selection bounds have propagated to the frame metadata.
   const Selection<gfx::SelectionBound>& selection_after =

@@ -21,14 +21,12 @@ class CC_EXPORT DelegatingRenderer {
                      ResourceProvider* resource_provider);
   ~DelegatingRenderer();
 
-  void DrawFrame(RenderPassList* render_passes_in_draw_order);
-
-  void SwapBuffers(CompositorFrameMetadata metadata);
+  void DrawFrame(CompositorFrameMetadata metadata,
+                 RenderPassList render_passes_in_draw_order);
 
  private:
   OutputSurface* const output_surface_;
   ResourceProvider* const resource_provider_;
-  std::unique_ptr<DelegatedFrameData> delegated_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);
 };

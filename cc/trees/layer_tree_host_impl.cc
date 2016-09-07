@@ -1624,21 +1624,23 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   return metadata;
 }
 
-void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
+bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
+  DCHECK(CanDraw());
+  DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
+
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
 
-  base::TimeTicks frame_begin_time = CurrentBeginFrameArgs().frame_time;
-  DCHECK(CanDraw());
+  ResetRequiresHighResToDraw();
 
   if (frame->has_no_damage) {
-    TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     DCHECK(!resourceless_software_draw_);
-    return;
+
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
+    active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
+    return false;
   }
 
-  DCHECK(!frame->render_passes.empty());
-
-  fps_counter_->SaveTimeStamp(frame_begin_time,
+  fps_counter_->SaveTimeStamp(CurrentBeginFrameArgs().frame_time,
                               !output_surface_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
@@ -1679,9 +1681,41 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                                                 resource_provider_.get());
   }
 
-  renderer_->DrawFrame(&frame->render_passes);
-  // The render passes should be consumed by the renderer.
-  DCHECK(frame->render_passes.empty());
+  CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  metadata.may_contain_video = frame->may_contain_video;
+  active_tree()->FinishSwapPromises(&metadata);
+  for (auto& latency : metadata.latency_info) {
+    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
+                           TRACE_ID_DONT_MANGLE(latency.trace_id()),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "SwapBuffers");
+    // Only add the latency component once for renderer swap, not the browser
+    // swap.
+    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
+                             nullptr)) {
+      latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
+                               0, 0);
+    }
+  }
+
+  renderer_->DrawFrame(std::move(metadata), std::move(frame->render_passes));
+
+  // The next frame should start by assuming nothing has changed, and changes
+  // are noted as they occur.
+  // TODO(boliu): If we did a temporary software renderer frame, propogate the
+  // damage forward to the next frame.
+  for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
+    auto* surface = (*frame->render_surface_layer_list)[i]->render_surface();
+    surface->damage_tracker()->DidDrawDamagedArea();
+  }
+  active_tree_->ResetAllChangeTracking();
+
+  active_tree_->set_has_ever_been_drawn(true);
+  devtools_instrumentation::DidDrawFrame(id_);
+  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
+      rendering_stats_instrumentation_->impl_thread_rendering_stats());
+  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
+  return true;
 }
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
@@ -1818,50 +1852,6 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   // Prevent the active tree from drawing until activation.
   // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
-}
-
-bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
-  ResetRequiresHighResToDraw();
-
-  if (frame.has_no_damage) {
-    active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
-    return false;
-  }
-
-  CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
-  metadata.may_contain_video = frame.may_contain_video;
-  active_tree()->FinishSwapPromises(&metadata);
-  for (auto& latency : metadata.latency_info) {
-    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                           TRACE_ID_DONT_MANGLE(latency.trace_id()),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "step", "SwapBuffers");
-    // Only add the latency component once for renderer swap, not the browser
-    // swap.
-    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
-                             nullptr)) {
-      latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-                               0, 0);
-    }
-  }
-  renderer_->SwapBuffers(std::move(metadata));
-
-  // The next frame should start by assuming nothing has changed, and changes
-  // are noted as they occur.
-  // TODO(boliu): If we did a temporary software renderer frame, propogate the
-  // damage forward to the next frame.
-  for (size_t i = 0; i < frame.render_surface_layer_list->size(); i++) {
-    auto* surface = (*frame.render_surface_layer_list)[i]->render_surface();
-    surface->damage_tracker()->DidDrawDamagedArea();
-  }
-  active_tree_->ResetAllChangeTracking();
-
-  active_tree_->set_has_ever_been_drawn(true);
-  devtools_instrumentation::DidDrawFrame(id_);
-  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
-      rendering_stats_instrumentation_->impl_thread_rendering_stats());
-  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
-  return true;
 }
 
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {

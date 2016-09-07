@@ -573,8 +573,7 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     draw_result = layer_tree_host_impl_->PrepareToDraw(frame);
     draw_frame = draw_result == DRAW_SUCCESS;
     if (draw_frame) {
-      layer_tree_host_impl_->DrawLayers(frame);
-      if (layer_tree_host_impl_->SwapBuffers(*frame)) {
+      if (layer_tree_host_impl_->DrawLayers(frame)) {
         if (scheduler_on_impl_thread_)
           scheduler_on_impl_thread_->DidSwapBuffers();
         client_->DidPostSwapBuffers();

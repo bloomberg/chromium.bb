@@ -600,8 +600,7 @@ DrawResult ProxyImpl::DrawAndSwapInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    layer_tree_host_impl_->DrawLayers(&frame);
-    if (layer_tree_host_impl_->SwapBuffers(frame))
+    if (layer_tree_host_impl_->DrawLayers(&frame))
       scheduler_->DidSwapBuffers();
     result = DRAW_SUCCESS;
   } else {
