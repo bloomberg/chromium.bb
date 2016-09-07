@@ -77,7 +77,7 @@ class NotificationsObserver
 class ArcNotificationManagerTest : public testing::Test {
  public:
   ArcNotificationManagerTest() {}
-  ~ArcNotificationManagerTest() override { loop_.RunUntilIdle(); }
+  ~ArcNotificationManagerTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   FakeArcBridgeService* service() { return service_.get(); }
@@ -127,7 +127,7 @@ class ArcNotificationManagerTest : public testing::Test {
     service_->notifications()->SetInstance(arc_notifications_instance_.get());
 
     while (!observer.IsReady())
-      loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
     service_->notifications()->RemoveObserver(&observer);
   }

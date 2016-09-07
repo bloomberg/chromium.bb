@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -386,7 +387,7 @@ TEST_F(MenuControllerTest, OpenClose) {
   EXPECT_FALSE(delegate.did_close_);
 
   // Pump the task that notifies the delegate.
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Expect that the delegate got notified properly.
   EXPECT_TRUE(delegate.did_close_);
