@@ -1703,7 +1703,7 @@ TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing)
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawing)
 {
-    EXPECT_DEATH(testMoreDrawing(), "Can't find cached display item");
+    EXPECT_DEATH(testMoreDrawing(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawing)
