@@ -691,8 +691,8 @@ void WebContentsAndroid::OnFinishGetContentBitmap(
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (response == READBACK_SUCCESS)
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-  Java_WebContentsImpl_onGetContentBitmapFinished(
-      env, obj->obj(), callback->obj(), java_bitmap, response);
+  Java_WebContentsImpl_onGetContentBitmapFinished(env, *obj, *callback,
+                                                  java_bitmap, response);
 }
 
 void WebContentsAndroid::OnFinishDownloadImage(
@@ -722,8 +722,7 @@ void WebContentsAndroid::OnFinishDownloadImage(
     Java_WebContentsImpl_createSizeAndAddToList(env, jsizes, size.width(),
                                                 size.height());
   }
-  Java_WebContentsImpl_onDownloadImageFinished(env, obj->obj(), callback->obj(),
-                                               id, http_status_code, jurl,
-                                               jbitmaps, jsizes);
+  Java_WebContentsImpl_onDownloadImageFinished(
+      env, *obj, *callback, id, http_status_code, jurl, jbitmaps, jsizes);
 }
 }  // namespace content

@@ -72,6 +72,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -204,11 +205,11 @@ ContentViewCore* ContentViewCore::FromWebContents(
 
 ContentViewCoreImpl::ContentViewCoreImpl(
     JNIEnv* env,
-    jobject obj,
+    const JavaRef<jobject>& obj,
     WebContents* web_contents,
-    const base::android::JavaRef<jobject>& view_android_delegate,
+    const JavaRef<jobject>& view_android_delegate,
     ui::WindowAndroid* window_android,
-    jobject java_bridge_retained_object_set)
+    const JavaRef<jobject>& java_bridge_retained_object_set)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       view_(view_android_delegate),
@@ -796,7 +797,7 @@ int ContentViewCoreImpl::GetBottomControlsHeightPix() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return 0;
-  return Java_ContentViewCore_getBottomControlsHeightPix(env, j_obj.obj());
+  return Java_ContentViewCore_getBottomControlsHeightPix(env, j_obj);
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {

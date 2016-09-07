@@ -14,6 +14,8 @@
 #include "jni/HandleViewResources_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
+using base::android::JavaRef;
+
 namespace content {
 
 namespace {
@@ -30,7 +32,7 @@ class HandleResources {
   HandleResources() : loaded_(false) {
   }
 
-  void LoadIfNecessary(jobject context) {
+  void LoadIfNecessary(const JavaRef<jobject>& context) {
     if (loaded_)
       return;
 
@@ -38,8 +40,6 @@ class HandleResources {
 
     TRACE_EVENT0("browser", "HandleResources::Create");
     JNIEnv* env = base::android::AttachCurrentThread();
-    if (!context)
-      context = base::android::GetApplicationContext().obj();
 
     left_bitmap_ = CreateSkBitmapFromJavaBitmap(
         Java_HandleViewResources_getLeftHandleBitmap(env, context));
@@ -93,7 +93,7 @@ base::LazyInstance<HandleResources>::Leaky g_selection_resources;
 CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
     cc::Layer* root_layer,
     float dpi_scale,
-    jobject context)
+    const JavaRef<jobject>& context)
     : dpi_scale_(dpi_scale),
       orientation_(ui::TouchHandleOrientation::UNDEFINED),
       layer_(cc::UIResourceLayer::Create()) {

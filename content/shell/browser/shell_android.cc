@@ -90,7 +90,7 @@ bool Shell::PlatformIsFullscreenForTabOrPending(
 }
 
 void Shell::Close() {
-  RemoveShellView(java_object_.obj());
+  RemoveShellView(java_object_);
   delete this;
 }
 

@@ -472,7 +472,7 @@ void CompositorImpl::SetSurface(jobject surface) {
     ANativeWindow_acquire(window);
     surface_handle_ = tracker->AddSurfaceForNativeWidget(window);
     // Register first, SetVisible() might create an OutputSurface.
-    RegisterViewSurface(surface_handle_, j_surface.obj());
+    RegisterViewSurface(surface_handle_, j_surface);
     SetVisible(true);
     ANativeWindow_release(window);
   }

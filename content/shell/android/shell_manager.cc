@@ -17,6 +17,7 @@
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
@@ -34,15 +35,15 @@ namespace content {
 
 ScopedJavaLocalRef<jobject> CreateShellView(Shell* shell) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
-  return Java_ShellManager_createShell(env, j_shell_manager,
+  return Java_ShellManager_createShell(env,
+                                       g_global_state.Get().j_shell_manager,
                                        reinterpret_cast<intptr_t>(shell));
 }
 
-void RemoveShellView(jobject shell_view) {
+void RemoveShellView(const JavaRef<jobject>& shell_view) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
-  Java_ShellManager_removeShell(env, j_shell_manager, shell_view);
+  Java_ShellManager_removeShell(env, g_global_state.Get().j_shell_manager,
+                                shell_view);
 }
 
 // Register native methods

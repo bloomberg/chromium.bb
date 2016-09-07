@@ -35,9 +35,9 @@ class GinJavaBridgeDispatcherHost
       public WebContentsObserver,
       public GinJavaMethodInvocationHelper::DispatcherDelegate {
  public:
-
-  GinJavaBridgeDispatcherHost(WebContents* web_contents,
-                              jobject retained_object_set);
+  GinJavaBridgeDispatcherHost(
+      WebContents* web_contents,
+      const base::android::JavaRef<jobject>& retained_object_set);
 
   void AddNamedObject(
       const std::string& name,

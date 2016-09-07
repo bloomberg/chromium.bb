@@ -50,7 +50,7 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
     // surface directly, so there's no need to add a valid native widget here.
     surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
         gfx::kNullAcceleratedWidget);
-    RegisterViewSurface(surface_id_, surface.j_surface().obj());
+    RegisterViewSurface(surface_id_, surface.j_surface());
     SendSurfaceID(surface_id_);
   }
 }

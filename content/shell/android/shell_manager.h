@@ -25,7 +25,7 @@ namespace content {
 base::android::ScopedJavaLocalRef<jobject> CreateShellView(Shell* shell);
 
 // Removes a previously created shell view.
-void RemoveShellView(jobject shell_view);
+void RemoveShellView(const base::android::JavaRef<jobject>& shell_view);
 
 // Registers the ShellManager native methods.
 bool RegisterShellManager(JNIEnv* env);

@@ -24,7 +24,9 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+
 namespace {
 
 // static
@@ -54,7 +56,7 @@ static base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationEntry(
 }
 
 static void AddNavigationEntryToHistory(JNIEnv* env,
-                                        jobject history,
+                                        const JavaRef<jobject>& history,
                                         content::NavigationEntry* entry,
                                         int index) {
   content::Java_NavigationControllerImpl_addToNavigationHistory(

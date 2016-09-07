@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/android/build_info.h"
+#include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -1103,13 +1104,16 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
     return std::unique_ptr<ui::TouchHandleDrawable>(
         sync_compositor_->client()->CreateDrawable());
   }
-  return std::unique_ptr<
-      ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
-      content_view_core_->GetViewAndroid()->GetLayer(),
-      ui::GetScaleFactorForNativeView(GetNativeView()),
-      // Use the activity context (instead of the application context) to ensure
-      // proper handle theming.
-      content_view_core_->GetContext().obj()));
+  base::android::ScopedJavaLocalRef<jobject> activityContext =
+      content_view_core_->GetContext();
+  return std::unique_ptr<ui::TouchHandleDrawable>(
+      new CompositedTouchHandleDrawable(
+          content_view_core_->GetViewAndroid()->GetLayer(),
+          ui::GetScaleFactorForNativeView(GetNativeView()),
+          // Use the activity context where possible (instead of the application
+          // context) to ensure proper handle theming.
+          activityContext.is_null() ? base::android::GetApplicationContext()
+                                    : activityContext));
 }
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(

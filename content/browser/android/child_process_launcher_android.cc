@@ -31,6 +31,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -236,7 +237,7 @@ void EstablishSurfacePeer(JNIEnv* env,
       &SetSurfacePeer, jsurface, pid, primary_id, secondary_id));
 }
 
-void RegisterViewSurface(int surface_id, jobject j_surface) {
+void RegisterViewSurface(int surface_id, const JavaRef<jobject>& j_surface) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_ChildProcessLauncher_registerViewSurface(env, surface_id, j_surface);

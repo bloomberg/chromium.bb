@@ -28,13 +28,13 @@ namespace content {
 
 GinJavaBridgeDispatcherHost::GinJavaBridgeDispatcherHost(
     WebContents* web_contents,
-    jobject retained_object_set)
+    const base::android::JavaRef<jobject>& retained_object_set)
     : WebContentsObserver(web_contents),
       next_object_id_(1),
       retained_object_set_(base::android::AttachCurrentThread(),
                            retained_object_set),
       allow_object_contents_inspection_(true) {
-  DCHECK(retained_object_set);
+  DCHECK(!retained_object_set.is_null());
 }
 
 GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
