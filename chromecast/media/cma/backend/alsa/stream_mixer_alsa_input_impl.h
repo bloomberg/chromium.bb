@@ -146,6 +146,8 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   const scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
+  double resample_ratio_;
+
   State state_;
   float volume_multiplier_;
 
