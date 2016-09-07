@@ -240,7 +240,8 @@
       "[HOME]/.android/known_devices.json",
       "--adb-path",
       "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
-      "-v"
+      "-v",
+      "--enable-usb-reset"
     ],
     "env": {
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json",
