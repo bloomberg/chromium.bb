@@ -1173,17 +1173,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
       field_value_and_properties_map, extract_mask, form, field);
 }
 
-GURL StripAuthAndParams(const GURL& gurl) {
-  // We want to keep the path but strip any authentication data, as well as
-  // query and ref portions of URL, for the form action and form origin.
-  GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return gurl.ReplaceComponents(rep);
-}
-
 }  // namespace
 
 ScopedLayoutPreventer::ScopedLayoutPreventer() {
@@ -1196,6 +1185,15 @@ ScopedLayoutPreventer::~ScopedLayoutPreventer() {
   DCHECK(g_prevent_layout) << "Is any other instance of ScopedLayoutPreventer "
                               "alive in the same process?";
   g_prevent_layout = false;
+}
+
+GURL StripAuthAndParams(const GURL& gurl) {
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return gurl.ReplaceComponents(rep);
 }
 
 bool ExtractFormData(const WebFormElement& form_element, FormData* data) {

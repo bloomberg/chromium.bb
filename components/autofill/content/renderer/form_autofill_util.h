@@ -75,6 +75,10 @@ class ScopedLayoutPreventer {
   DISALLOW_COPY_AND_ASSIGN(ScopedLayoutPreventer);
 };
 
+// Helper function that strips any authentication data, as well as query and
+// ref portions of URL
+GURL StripAuthAndParams(const GURL& gurl);
+
 // Extract FormData from the form element and return whether the operation was
 // successful.
 bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);

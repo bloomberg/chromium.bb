@@ -19,8 +19,8 @@ namespace autofill {
 void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
                               const char* form_str) {
   autofill::PasswordForm form;
-  form.origin =
-      GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str));
+  form.origin = form_util::StripAuthAndParams(
+      GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str)));
   generation_agent->FormNotBlacklisted(form);
 }
 

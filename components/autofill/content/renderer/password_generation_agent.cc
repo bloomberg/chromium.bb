@@ -33,6 +33,8 @@
 
 namespace autofill {
 
+using form_util::StripAuthAndParams;
+
 namespace {
 
 // Returns true if we think that this form is for account creation. |passwords|
@@ -55,11 +57,19 @@ bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
   return std::find(urls.begin(), urls.end(), url) != urls.end();
 }
 
+// Finds a form in |forms| that has the same action and name as |form|.
+// If the action of a form in |forms| is empty, it uses |base_url| as action. It
+// also strips parameters of the action.
 const PasswordFormGenerationData* FindFormGenerationData(
     const std::vector<PasswordFormGenerationData>& forms,
-    const PasswordForm& form) {
+    const PasswordForm& form,
+    const GURL& base_url) {
   for (const auto& form_it : forms) {
-    if (form_it.name == form.form_data.name && form_it.action == form.action)
+    GURL action = form_it.action;
+    if (action.is_empty())
+      action = base_url;
+    action = form_util::StripAuthAndParams(action);
+    if (form_it.name == form.form_data.name && action == form.action)
       return &form_it;
   }
   return nullptr;
@@ -380,8 +390,9 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
                << "blacklisted";
       continue;
     } else {
-      generation_data = FindFormGenerationData(generation_enabled_forms_,
-                                               *possible_password_form);
+      generation_data = FindFormGenerationData(
+          generation_enabled_forms_, *possible_password_form,
+          render_frame()->GetWebFrame()->document().baseURL());
       if (!generation_data) {
         if (AutocompleteAttributesSetForGeneration(*possible_password_form)) {
           VLOG(2) << "Ignoring lack of Autofill signal due to Autocomplete "

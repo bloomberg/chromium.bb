@@ -133,7 +133,7 @@ const char kSigninFormHTML[] =
     "</FORM>";
 
 const char kAccountCreationFormHTML[] =
-    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "<FORM name = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
     "  <INPUT type = 'password' id = 'second_password' size = 5/> "
