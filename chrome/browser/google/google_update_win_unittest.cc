@@ -8,7 +8,6 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include <map>
 #include <memory>
 #include <queue>
 
@@ -25,7 +24,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -39,7 +37,6 @@
 using ::testing::DoAll;
 using ::testing::HasSubstr;
 using ::testing::InSequence;
-using ::testing::InvokeWithoutArgs;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::Sequence;
@@ -70,51 +67,6 @@ class MockUpdateCheckDelegate : public UpdateCheckDelegate {
   base::WeakPtrFactory<UpdateCheckDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockUpdateCheckDelegate);
-};
-
-// A fake implementation of the COM IGlobalInterfaceTable that holds and hands
-// out object pointers.
-class FakeGlobalInterfaceTable : public CComObjectRootEx<CComSingleThreadModel>,
-                                 public IGlobalInterfaceTable {
- public:
-  BEGIN_COM_MAP(FakeGlobalInterfaceTable)
-    COM_INTERFACE_ENTRY(IGlobalInterfaceTable)
-  END_COM_MAP()
-
-  FakeGlobalInterfaceTable() = default;
-
-  HRESULT STDMETHODCALLTYPE RegisterInterfaceInGlobal(IUnknown* object,
-                                                      REFIID,
-                                                      DWORD* cookie) override {
-    objects_[++last_cookie_] = object;
-    *cookie = last_cookie_;
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE RevokeInterfaceFromGlobal(DWORD cookie) override {
-    return objects_.erase(cookie) ? S_OK : E_INVALIDARG;
-  }
-
-  HRESULT STDMETHODCALLTYPE GetInterfaceFromGlobal(DWORD cookie,
-                                                   REFIID,
-                                                   void** object) override {
-    auto it = objects_.find(cookie);
-    if (it == objects_.end())
-      return E_INVALIDARG;
-    it->second.get()->AddRef();
-    *object = it->second.get();
-    return S_OK;
-  }
-
-  size_t empty() const { return objects_.empty(); }
-
- private:
-  using CookieToObjectMap = std::map<DWORD, base::win::ScopedComPtr<IUnknown>>;
-
-  CookieToObjectMap objects_;
-  DWORD last_cookie_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGlobalInterfaceTable);
 };
 
 // An interface that exposes a factory method for creating an IGoogleUpdate3Web
@@ -466,20 +418,18 @@ class MockAppBundle : public CComObjectRootEx<CComSingleThreadModel>,
     CComObject<MockApp>* mock_app = nullptr;
     EXPECT_EQ(S_OK, CComObject<MockApp>::CreateInstance(&mock_app));
 
+    // Give mock_app_bundle a ref to the app which it will return when asked.
     // Note: to support multiple apps, get_appWeb expectations should use
     // successive indices.
-    app_ = mock_app;
+    mock_app->AddRef();
     EXPECT_CALL(*this, get_appWeb(0, _))
-        .WillRepeatedly(
-            DoAll(SetArgPointee<1>(mock_app),
-                  InvokeWithoutArgs(mock_app, &CComObject<MockApp>::AddRef)));
+        .WillOnce(DoAll(SetArgPointee<1>(mock_app),
+                        Return(S_OK)));
 
     return mock_app;
   }
 
  private:
-  base::win::ScopedComPtr<IAppWeb> app_;
-
   DISALLOW_COPY_AND_ASSIGN(MockAppBundle);
 };
 
@@ -527,14 +477,11 @@ class MockGoogleUpdate : public CComObjectRootEx<CComSingleThreadModel>,
     // Give this instance a ref to the bundle which it will return when created.
     mock_app_bundle->AddRef();
     EXPECT_CALL(*this, createAppBundleWeb(_))
-        .InSequence(sequence_)
         .WillOnce(DoAll(SetArgPointee<0>(mock_app_bundle), Return(S_OK)));
     return mock_app_bundle;
   }
 
  private:
-  Sequence sequence_;
-
   DISALLOW_COPY_AND_ASSIGN(MockGoogleUpdate);
 };
 
@@ -584,8 +531,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   GoogleUpdateWinTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         task_runner_handle_(task_runner_),
-        system_level_install_(GetParam()),
-        fake_global_interface_table_(nullptr) {}
+        system_level_install_(GetParam()) {}
 
   void SetUp() override {
     ::testing::TestWithParam<bool>::SetUp();
@@ -636,9 +582,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
 
     // Provide an IGoogleUpdate3Web class factory so that this test can provide
     // a mocked-out instance.
-    SetUpdateCheckFactoriesForTesting(
-        base::Bind(&GoogleUpdateWinTest::GetFakeGlobalInterfaceTable,
-                   base::Unretained(this)),
+    SetGoogleUpdateFactoryForTesting(
         base::Bind(&GoogleUpdateFactory::Create,
                    base::Unretained(&mock_google_update_factory_)));
 
@@ -667,29 +611,9 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   }
 
   void TearDown() override {
-    // Be sure all objects were removed from the Global Interface Table.
-    if (fake_global_interface_table_) {
-      ASSERT_TRUE(fake_global_interface_table_->empty());
-      global_interface_table_.Release();
-      fake_global_interface_table_ = nullptr;
-    }
-
     // Remove the test's IGoogleUpdate on-demand update class factory.
-    SetUpdateCheckFactoriesForTesting(GlobalInterfaceTableClassFactory(),
-                                      GoogleUpdate3ClassFactory());
+    SetGoogleUpdateFactoryForTesting(GoogleUpdate3ClassFactory());
     ::testing::TestWithParam<bool>::TearDown();
-  }
-
-  HRESULT GetFakeGlobalInterfaceTable(
-      base::win::ScopedComPtr<IGlobalInterfaceTable>* global_interface_table) {
-    if (!fake_global_interface_table_) {
-      EXPECT_EQ(S_OK, CComObject<FakeGlobalInterfaceTable>::CreateInstance(
-                          &fake_global_interface_table_));
-      EXPECT_NE(nullptr, fake_global_interface_table_);
-      global_interface_table_ = fake_global_interface_table_;
-    }
-    *global_interface_table = global_interface_table_;
-    return S_OK;
   }
 
   static const base::char16 kClients[];
@@ -697,7 +621,6 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   static const base::char16 kChromeGuid[];
   static const base::char16 kChromeBinariesGuid[];
 
-  base::win::ScopedCOMInitializer com_initializer_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   bool system_level_install_;
@@ -706,9 +629,6 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   std::unique_ptr<base::ScopedPathOverride> program_files_x86_override_;
   std::unique_ptr<base::ScopedPathOverride> local_app_data_override_;
   registry_util::RegistryOverrideManager registry_override_manager_;
-
-  CComObject<FakeGlobalInterfaceTable>* fake_global_interface_table_;
-  base::win::ScopedComPtr<IGlobalInterfaceTable> global_interface_table_;
 
   // A mock object, the OnUpdateCheckCallback method of which will be invoked
   // each time the update check machinery invokes the given UpdateCheckCallback.
@@ -994,18 +914,27 @@ TEST_P(GoogleUpdateWinTest, UpdateFailed) {
 TEST_P(GoogleUpdateWinTest, RetryAfterExternalUpdaterError) {
   static const HRESULT GOOPDATE_E_APP_USING_EXTERNAL_UPDATER = 0xa043081d;
 
-  CComObject<MockGoogleUpdate>* google_update =
-      mock_google_update_factory_.MakeServerMock();
-  CComObject<MockAppBundle>* mock_app_bundle = google_update->MakeAppBundle();
+  CComObject<MockAppBundle>* mock_app_bundle =
+      mock_google_update_factory_.MakeServerMock()->MakeAppBundle();
 
   // The first attempt will fail in createInstalledApp indicating that an update
   // is already in progress.
+  Sequence bundle_seq;
   EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+      .InSequence(bundle_seq)
       .WillOnce(Return(GOOPDATE_E_APP_USING_EXTERNAL_UPDATER));
 
-  // Expect a retry on a new bundle.
-  mock_app_bundle = google_update->MakeAppBundle();
-  CComObject<MockApp>* mock_app = mock_app_bundle->MakeApp(kChromeBinariesGuid);
+  // Expect a retry on the same instance.
+  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+      .InSequence(bundle_seq)
+      .WillOnce(Return(S_OK));
+
+  // See MakeApp() for an explanation of this:
+  CComObject<MockApp>* mock_app = nullptr;
+  EXPECT_EQ(S_OK, CComObject<MockApp>::CreateInstance(&mock_app));
+  mock_app->AddRef();
+  EXPECT_CALL(*mock_app_bundle, get_appWeb(0, _))
+      .WillOnce(DoAll(SetArgPointee<1>(mock_app), Return(S_OK)));
 
   // Expect the bundle to be called on to start the update.
   EXPECT_CALL(*mock_app_bundle, checkForUpdate()).WillOnce(Return(S_OK));

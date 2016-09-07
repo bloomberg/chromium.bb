@@ -20,12 +20,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
@@ -60,7 +60,6 @@ enum GoogleUpdateUpgradeStatus {
   NUM_UPGRADE_STATUS
 };
 
-GlobalInterfaceTableClassFactory* g_global_interface_table_factory = nullptr;
 GoogleUpdate3ClassFactory* g_google_update_factory = nullptr;
 
 // The time interval, in milliseconds, between polls to Google Update. This
@@ -121,15 +120,6 @@ void ConfigureProxyBlanket(IUnknown* interface_pointer) {
                       RPC_C_IMP_LEVEL_IMPERSONATE,
                       nullptr,
                       EOAC_DYNAMIC_CLOAKING);
-}
-
-HRESULT CreateGlobalInterfaceTable(
-    base::win::ScopedComPtr<IGlobalInterfaceTable>* global_interface_table) {
-  if (g_global_interface_table_factory)
-    return g_global_interface_table_factory->Run(global_interface_table);
-
-  return global_interface_table->CreateInstance(CLSID_StdGlobalInterfaceTable,
-                                                nullptr, CLSCTX_INPROC_SERVER);
 }
 
 // Creates a class factory for a COM Local Server class using either plain
@@ -213,93 +203,16 @@ HRESULT CreateGoogleUpdate3WebClass(
       google_update->ReceiveVoid());
 }
 
-// InterfaceCookie -------------------------------------------------------------
-
-// Manages the lifetime of an interface's cookie in the COM Global Interface
-// Table.
-template <class T>
-class InterfaceCookie {
- public:
-  InterfaceCookie() = default;
-  ~InterfaceCookie();
-
-  void Initialize(
-      base::win::ScopedComPtr<IGlobalInterfaceTable> global_interface_table);
-
-  // Registers |interface_pointer| in the process's Global Interface Table.
-  HRESULT Register(const base::win::ScopedComPtr<T>& interface_pointer);
-
-  // Populates |interface_pointer| with the cookie's interface in the process's
-  // Global Interface Table.
-  HRESULT Get(base::win::ScopedComPtr<T>* interface_pointer) const;
-
-  // Revokes the cookie from the Global Interface Table. This function is safe
-  // to call when the cookie is empty.
-  HRESULT Revoke();
-
-  explicit operator bool() const { return cookie_ != 0; }
-
- private:
-  base::win::ScopedComPtr<IGlobalInterfaceTable> global_interface_table_;
-  DWORD cookie_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(InterfaceCookie);
-};
-
-template <class T>
-InterfaceCookie<T>::~InterfaceCookie() {
-  Revoke();
-}
-
-template <class T>
-void InterfaceCookie<T>::Initialize(
-    base::win::ScopedComPtr<IGlobalInterfaceTable> global_interface_table) {
-  DCHECK(!global_interface_table_);
-  global_interface_table_ = std::move(global_interface_table);
-}
-
-template <class T>
-HRESULT InterfaceCookie<T>::Register(
-    const base::win::ScopedComPtr<T>& interface_pointer) {
-  DCHECK(global_interface_table_);
-  DCHECK_EQ(0U, cookie_);
-  return global_interface_table_->RegisterInterfaceInGlobal(
-      interface_pointer.get(), base::win::ScopedComPtr<T>::iid(), &cookie_);
-}
-
-template <class T>
-HRESULT InterfaceCookie<T>::Get(
-    base::win::ScopedComPtr<T>* interface_pointer) const {
-  DCHECK(global_interface_table_);
-  DCHECK(interface_pointer);
-  DCHECK_NE(0U, cookie_);
-  return global_interface_table_->GetInterfaceFromGlobal(
-      cookie_, base::win::ScopedComPtr<T>::iid(),
-      interface_pointer->ReceiveVoid());
-}
-
-template <class T>
-HRESULT InterfaceCookie<T>::Revoke() {
-  if (!cookie_)
-    return S_OK;
-
-  DCHECK(global_interface_table_);
-  HRESULT hresult = global_interface_table_->RevokeInterfaceFromGlobal(cookie_);
-  if (SUCCEEDED(hresult))
-    cookie_ = 0;
-  return hresult;
-}
-
 // UpdateCheckDriver -----------------------------------------------------------
 
-// A driver that is created and destroyed on the caller's task runner and drives
+// A driver that is created and destroyed on the caller's thread and drives
 // Google Update on another.
 class UpdateCheckDriver {
  public:
   // Runs an update check on |task_runner|, invoking methods of |delegate| on
-  // the caller's task runner to report progress and final results.
+  // the caller's thread to report progress and final results.
   static void RunUpdateCheck(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& locale,
       bool install_update_if_possible,
       gfx::AcceleratedWidget elevation_window,
@@ -308,11 +221,12 @@ class UpdateCheckDriver {
  private:
   friend class base::DeleteHelper<UpdateCheckDriver>;
 
-  UpdateCheckDriver(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                    const std::string& locale,
-                    bool install_update_if_possible,
-                    gfx::AcceleratedWidget elevation_window,
-                    const base::WeakPtr<UpdateCheckDelegate>& delegate);
+  UpdateCheckDriver(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::string& locale,
+      bool install_update_if_possible,
+      gfx::AcceleratedWidget elevation_window,
+      const base::WeakPtr<UpdateCheckDelegate>& delegate);
 
   // Invokes a completion or error method on all delegates, as appropriate.
   ~UpdateCheckDriver();
@@ -349,8 +263,7 @@ class UpdateCheckDriver {
   // Returns true if |current_state| and |state_value| can be obtained from the
   // ongoing update check. Otherwise, populates |hresult| with the reason they
   // could not be obtained.
-  bool GetCurrentState(base::win::ScopedComPtr<IAppBundleWeb>* app_bundle,
-                       base::win::ScopedComPtr<ICurrentState>* current_state,
+  bool GetCurrentState(base::win::ScopedComPtr<ICurrentState>* current_state,
                        CurrentState* state_value,
                        HRESULT* hresult) const;
 
@@ -365,8 +278,7 @@ class UpdateCheckDriver {
   // chrome/installer/util/util_constants.h); otherwise, it will be -1.
   // |error_string| will be populated with a completion message if one is
   // provided by Google Update.
-  bool IsErrorState(const base::win::ScopedComPtr<IAppBundleWeb>& app_bundle,
-                    const base::win::ScopedComPtr<ICurrentState>& current_state,
+  bool IsErrorState(const base::win::ScopedComPtr<ICurrentState>& current_state,
                     CurrentState state_value,
                     GoogleUpdateErrorCode* error_code,
                     HRESULT* hresult,
@@ -404,15 +316,15 @@ class UpdateCheckDriver {
   // previous notification) and another future poll will be scheduled.
   void PollGoogleUpdate();
 
-  // The global driver instance. Accessed only on the caller's task runner.
+  // The global driver instance. Accessed only on the caller's thread.
   static UpdateCheckDriver* driver_;
 
   // The task runner on which the update checks runs.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The caller's task runner, on which methods of the |delegates_| will be
   // invoked.
-  scoped_refptr<base::SequencedTaskRunner> result_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> result_runner_;
 
   // The UI locale.
   std::string locale_;
@@ -424,7 +336,7 @@ class UpdateCheckDriver {
   gfx::AcceleratedWidget elevation_window_;
 
   // Contains all delegates by which feedback is conveyed. Accessed only on the
-  // caller's task runner.
+  // caller's thread.
   std::vector<base::WeakPtr<UpdateCheckDelegate>> delegates_;
 
   // Number of remaining retries allowed when errors occur.
@@ -433,16 +345,14 @@ class UpdateCheckDriver {
   // True if operating on a per-machine installation rather than a per-user one.
   bool system_level_install_;
 
-  // The COM Global Interface Table for the process.
-  base::win::ScopedComPtr<IGlobalInterfaceTable> global_interface_table_;
+  // The on-demand updater that is doing the work.
+  base::win::ScopedComPtr<IGoogleUpdate3Web> google_update_;
 
-  // A cookie in the Global Interface Table for the on-demand updater that is
-  // doing the work.
-  InterfaceCookie<IGoogleUpdate3Web> google_update_cookie_;
+  // An app bundle containing the application being updated.
+  base::win::ScopedComPtr<IAppBundleWeb> app_bundle_;
 
-  // A cookie in the Global Interface Table for the app bundle containing the
-  // application being updated.
-  InterfaceCookie<IAppBundleWeb> app_bundle_cookie_;
+  // The application being updated (Chrome, Chrome Binaries, or Chrome SxS).
+  base::win::ScopedComPtr<IAppWeb> app_;
 
   // The progress value reported most recently to the caller.
   int last_reported_progress_;
@@ -463,7 +373,7 @@ UpdateCheckDriver* UpdateCheckDriver::driver_ = nullptr;
 
 // static
 void UpdateCheckDriver::RunUpdateCheck(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
@@ -485,15 +395,15 @@ void UpdateCheckDriver::RunUpdateCheck(
   }
 }
 
-// Runs on the caller's task runner.
+// Runs on the caller's thread.
 UpdateCheckDriver::UpdateCheckDriver(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
     : task_runner_(std::move(task_runner)),
-      result_runner_(base::SequencedTaskRunnerHandle::Get()),
+      result_runner_(base::ThreadTaskRunnerHandle::Get()),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
@@ -507,10 +417,7 @@ UpdateCheckDriver::UpdateCheckDriver(
       installer_exit_code_(-1) {}
 
 UpdateCheckDriver::~UpdateCheckDriver() {
-  DCHECK(result_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!google_update_cookie_);
-  DCHECK(!app_bundle_cookie_);
-
+  DCHECK(result_runner_->BelongsToCurrentThread());
   // If there is an error, then error_code must not be blank, and vice versa.
   DCHECK_NE(status_ == UPGRADE_ERROR, error_code_ == GOOGLE_UPDATE_NO_ERROR);
   UMA_HISTOGRAM_ENUMERATION("GoogleUpdate.UpgradeResult", status_,
@@ -545,14 +452,14 @@ UpdateCheckDriver::~UpdateCheckDriver() {
 
 void UpdateCheckDriver::AddDelegate(
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  DCHECK(result_runner_->RunsTasksOnCurrentThread());
+  DCHECK(result_runner_->BelongsToCurrentThread());
   delegates_.push_back(delegate);
 }
 
 void UpdateCheckDriver::NotifyUpgradeProgress(
     int progress,
     const base::string16& new_version) {
-  DCHECK(result_runner_->RunsTasksOnCurrentThread());
+  DCHECK(result_runner_->BelongsToCurrentThread());
 
   for (const auto& delegate : delegates_) {
     if (delegate)
@@ -583,74 +490,47 @@ void UpdateCheckDriver::BeginUpdateCheck() {
   }
 
   DCHECK(FAILED(hresult));
-  // Return results immediately since the driver is not polling Google Update.
-  // Release the reference on the COM objects so that they are torn down in the
-  // blocking pool before bouncing back to the caller's task runner.
-  app_bundle_cookie_.Revoke();
-  google_update_cookie_.Revoke();
   OnUpgradeError(error_code, hresult, -1, base::string16());
   result_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     GoogleUpdateErrorCode* error_code) {
-  // All errors prior to creation of the main update class are reported as:
-  *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
   HRESULT hresult = S_OK;
-
-  // Create/get the process's Global Interface Table.
-  if (!global_interface_table_) {
-    // Make sure ATL is initialized in this module.
-    ui::win::CreateATLModuleIfNeeded();
-
-    hresult = CreateGlobalInterfaceTable(&global_interface_table_);
-    if (FAILED(hresult))
-      return hresult;
-
-    google_update_cookie_.Initialize(global_interface_table_);
-    app_bundle_cookie_.Initialize(global_interface_table_);
-  }
-
-  // Create or get the GoogleUpdate3Web class.
-  base::win::ScopedComPtr<IGoogleUpdate3Web> google_update;
-  if (!google_update_cookie_) {
-    // Instantiate GoogleUpdate3Web{Machine,User}Class.
+  // Instantiate GoogleUpdate3Web{Machine,User}Class.
+  if (!google_update_) {
     base::FilePath chrome_exe;
     if (!PathService::Get(base::DIR_EXE, &chrome_exe))
       NOTREACHED();
 
     system_level_install_ = !InstallUtil::IsPerUserInstall(chrome_exe);
 
+    // Make sure ATL is initialized in this module.
+    ui::win::CreateATLModuleIfNeeded();
+
     *error_code = CanUpdateCurrentChrome(chrome_exe, system_level_install_);
     if (*error_code != GOOGLE_UPDATE_NO_ERROR)
       return E_FAIL;
 
-    *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
     hresult = CreateGoogleUpdate3WebClass(system_level_install_,
                                           install_update_if_possible_,
-                                          elevation_window_, &google_update);
-    if (SUCCEEDED(hresult)) {
-      ConfigureProxyBlanket(google_update.get());
-
-      hresult = google_update_cookie_.Register(google_update);
+                                          elevation_window_, &google_update_);
+    if (FAILED(hresult)) {
+      *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
+      return hresult;
     }
 
-    if (FAILED(hresult))
-      return hresult;
-  } else {
-    hresult = google_update_cookie_.Get(&google_update);
-    if (FAILED(hresult))
-      return hresult;
+    ConfigureProxyBlanket(google_update_.get());
   }
 
   // The class was created, so all subsequent errors are reported as:
   *error_code = GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR;
 
-  // Create or get the AppBundleWeb used to update Chrome.
-  if (!app_bundle_cookie_) {
+  // Create an app bundle.
+  if (!app_bundle_) {
     base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
     base::win::ScopedComPtr<IDispatch> dispatch;
-    hresult = google_update->createAppBundleWeb(dispatch.Receive());
+    hresult = google_update_->createAppBundleWeb(dispatch.Receive());
     if (FAILED(hresult))
       return hresult;
     hresult = dispatch.QueryInterface(app_bundle.Receive());
@@ -677,58 +557,55 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
       app_bundle->put_parentHWND(
           reinterpret_cast<ULONG_PTR>(elevation_window_));
     }
+    app_bundle_.swap(app_bundle);
+  }
+
+  // Get a reference to the Chrome app in the bundle.
+  if (!app_) {
     base::string16 app_guid =
         installer::GetAppGuidForUpdates(system_level_install_);
     DCHECK(!app_guid.empty());
 
+    base::win::ScopedComPtr<IDispatch> dispatch;
     // It is common for this call to fail with APP_USING_EXTERNAL_UPDATER if
     // an auto update is in progress.
-    hresult =
-        app_bundle->createInstalledApp(base::win::ScopedBstr(app_guid.c_str()));
+    hresult = app_bundle_->createInstalledApp(
+        base::win::ScopedBstr(app_guid.c_str()));
     if (FAILED(hresult))
       return hresult;
+    // Move the IAppBundleWeb reference into a local now so that failures from
+    // this point onward result in it being released.
+    base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
+    app_bundle.swap(app_bundle_);
+    hresult = app_bundle->get_appWeb(0, dispatch.Receive());
+    if (FAILED(hresult))
+      return hresult;
+    base::win::ScopedComPtr<IAppWeb> app;
+    hresult = dispatch.QueryInterface(app.Receive());
+    if (FAILED(hresult))
+      return hresult;
+    ConfigureProxyBlanket(app.get());
     hresult = app_bundle->checkForUpdate();
     if (FAILED(hresult))
       return hresult;
-
-    hresult = app_bundle_cookie_.Register(app_bundle);
-    if (FAILED(hresult))
-      return hresult;
+    app_bundle_.swap(app_bundle);
+    app_.swap(app);
   }
 
   return hresult;
 }
 
 bool UpdateCheckDriver::GetCurrentState(
-    base::win::ScopedComPtr<IAppBundleWeb>* app_bundle,
     base::win::ScopedComPtr<ICurrentState>* current_state,
     CurrentState* state_value,
     HRESULT* hresult) const {
-  // Get the bundle being checked or updated.
-  *hresult = app_bundle_cookie_.Get(app_bundle);
-  if (FAILED(*hresult))
-    return false;
-
-  // Get Chrome's app from the bundle.
   base::win::ScopedComPtr<IDispatch> dispatch;
-  *hresult = (*app_bundle)->get_appWeb(0, dispatch.Receive());
-  if (FAILED(*hresult))
-    return false;
-  base::win::ScopedComPtr<IAppWeb> app;
-  *hresult = dispatch.QueryInterface(app.Receive());
-  if (FAILED(*hresult))
-    return false;
-  dispatch.Release();
-  ConfigureProxyBlanket(app.get());
-
-  // Get the status of Chrome's update check or update.
-  *hresult = app->get_currentState(dispatch.Receive());
+  *hresult = app_->get_currentState(dispatch.Receive());
   if (FAILED(*hresult))
     return false;
   *hresult = dispatch.QueryInterface(current_state->Receive());
   if (FAILED(*hresult))
     return false;
-  dispatch.Release();
   ConfigureProxyBlanket(current_state->get());
   LONG value = 0;
   *hresult = (*current_state)->get_stateValue(&value);
@@ -739,7 +616,6 @@ bool UpdateCheckDriver::GetCurrentState(
 }
 
 bool UpdateCheckDriver::IsErrorState(
-    const base::win::ScopedComPtr<IAppBundleWeb>& app_bundle,
     const base::win::ScopedComPtr<ICurrentState>& current_state,
     CurrentState state_value,
     GoogleUpdateErrorCode* error_code,
@@ -784,7 +660,7 @@ bool UpdateCheckDriver::IsErrorState(
     return true;
   }
   if (state_value == STATE_UPDATE_AVAILABLE && install_update_if_possible_) {
-    *hresult = app_bundle->install();
+    *hresult = app_bundle_->install();
     if (FAILED(*hresult)) {
       // Report a failure to start the install as a general error while trying
       // to interact with Google Update.
@@ -897,7 +773,6 @@ bool UpdateCheckDriver::IsIntermediateState(
 }
 
 void UpdateCheckDriver::PollGoogleUpdate() {
-  base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
   base::win::ScopedComPtr<ICurrentState> state;
   CurrentState state_value = STATE_INIT;
   HRESULT hresult = S_OK;
@@ -908,10 +783,10 @@ void UpdateCheckDriver::PollGoogleUpdate() {
   base::string16 new_version;
   int progress = 0;
 
-  if (!GetCurrentState(&app_bundle, &state, &state_value, &hresult)) {
+  if (!GetCurrentState(&state, &state_value, &hresult)) {
     OnUpgradeError(GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR, hresult, -1,
                    base::string16());
-  } else if (IsErrorState(app_bundle, state, state_value, &error_code, &hresult,
+  } else if (IsErrorState(state, state_value, &error_code, &hresult,
                           &installer_exit_code, &error_string)) {
     OnUpgradeError(error_code, hresult, installer_exit_code, error_string);
   } else if (IsFinalState(state, state_value, &upgrade_status, &new_version)) {
@@ -948,11 +823,11 @@ void UpdateCheckDriver::PollGoogleUpdate() {
   }
 
   // Release the reference on the COM objects before bouncing back to the
-  // caller's task runner.
+  // caller's thread.
   state.Release();
-  app_bundle.Release();
-  app_bundle_cookie_.Revoke();
-  google_update_cookie_.Revoke();
+  app_.Release();
+  app_bundle_.Release();
+  google_update_.Release();
 
   result_runner_->DeleteSoon(FROM_HERE, this);
 }
@@ -996,11 +871,12 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
 
 // Globals ---------------------------------------------------------------------
 
-void BeginUpdateCheck(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                      const std::string& locale,
-                      bool install_update_if_possible,
-                      gfx::AcceleratedWidget elevation_window,
-                      const base::WeakPtr<UpdateCheckDelegate>& delegate) {
+void BeginUpdateCheck(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const std::string& locale,
+    bool install_update_if_possible,
+    gfx::AcceleratedWidget elevation_window,
+    const base::WeakPtr<UpdateCheckDelegate>& delegate) {
   UpdateCheckDriver::RunUpdateCheck(std::move(task_runner), locale,
                                     install_update_if_possible,
                                     elevation_window, delegate);
@@ -1009,17 +885,8 @@ void BeginUpdateCheck(scoped_refptr<base::SequencedTaskRunner> task_runner,
 
 // Private API exposed for testing. --------------------------------------------
 
-void SetUpdateCheckFactoriesForTesting(
-    const GlobalInterfaceTableClassFactory& global_interface_table_factory,
+void SetGoogleUpdateFactoryForTesting(
     const GoogleUpdate3ClassFactory& google_update_factory) {
-  if (g_global_interface_table_factory) {
-    delete g_global_interface_table_factory;
-    g_global_interface_table_factory = nullptr;
-  }
-  if (!global_interface_table_factory.is_null())
-    g_global_interface_table_factory =
-        new GlobalInterfaceTableClassFactory(global_interface_table_factory);
-
   if (g_google_update_factory) {
     delete g_google_update_factory;
     g_google_update_factory = nullptr;

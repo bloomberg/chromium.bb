@@ -39,7 +39,7 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback,
         (base::win::OSInfo::GetInstance()->service_pack().major == 0) &&
         !base::win::UserAccountControlIsEnabled())) {
     callback_.Run(CHECKING, 0, base::string16());
-    BeginUpdateCheckInBlockingPool(false /* !install_update_if_possible */);
+    BeginUpdateCheckOnFileThread(false /* !install_update_if_possible */);
   }
 }
 
@@ -66,7 +66,7 @@ void VersionUpdaterWin::OnUpdateCheckComplete(
   } else {
     // Notify the caller that the update is now beginning and initiate it.
     status = UPDATING;
-    BeginUpdateCheckInBlockingPool(true /* install_update_if_possible */);
+    BeginUpdateCheckOnFileThread(true /* install_update_if_possible */);
   }
   callback_.Run(status, 0, base::string16());
 }
@@ -113,15 +113,12 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
   callback_.Run(status, 0, message);
 }
 
-void VersionUpdaterWin::BeginUpdateCheckInBlockingPool(
+void VersionUpdaterWin::BeginUpdateCheckOnFileThread(
     bool install_update_if_possible) {
   // Disconnect from any previous attempts to avoid redundant callbacks.
   weak_factory_.InvalidateWeakPtrs();
-  base::SequencedWorkerPool* blocking_pool =
-      content::BrowserThread::GetBlockingPool();
-  BeginUpdateCheck(blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-                       blocking_pool->GetSequenceToken(),
-                       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
+  BeginUpdateCheck(content::BrowserThread::GetTaskRunnerForThread(
+                       content::BrowserThread::FILE),
                    g_browser_process->GetApplicationLocale(),
                    install_update_if_possible, owner_widget_,
                    weak_factory_.GetWeakPtr());
