@@ -18,6 +18,8 @@ class MediaSessionDelegate {
   static std::unique_ptr<MediaSessionDelegate> Create(
       MediaSession* media_session);
 
+  virtual ~MediaSessionDelegate() = default;
+
   virtual bool RequestAudioFocus(
       AudioFocusManager::AudioFocusType audio_focus_type) = 0;
   virtual void AbandonAudioFocus() = 0;

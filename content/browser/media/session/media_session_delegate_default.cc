@@ -19,6 +19,7 @@ namespace {
 class MediaSessionDelegateDefault : public MediaSessionDelegate {
  public:
   explicit MediaSessionDelegateDefault(MediaSession* media_session);
+  ~MediaSessionDelegateDefault() override;
 
   // MediaSessionDelegate implementation.
   bool RequestAudioFocus(
@@ -36,6 +37,8 @@ MediaSessionDelegateDefault::MediaSessionDelegateDefault(
     MediaSession* media_session)
     : media_session_(media_session) {
 }
+
+MediaSessionDelegateDefault::~MediaSessionDelegateDefault() = default;
 
 bool MediaSessionDelegateDefault::RequestAudioFocus(
     AudioFocusManager::AudioFocusType audio_focus_type) {

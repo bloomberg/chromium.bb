@@ -19,7 +19,7 @@ class MediaSessionDelegateAndroid : public MediaSessionDelegate {
   static bool Register(JNIEnv* env);
 
   explicit MediaSessionDelegateAndroid(MediaSession* media_session);
-  ~MediaSessionDelegateAndroid();
+  ~MediaSessionDelegateAndroid() override;
 
   void Initialize();
 
