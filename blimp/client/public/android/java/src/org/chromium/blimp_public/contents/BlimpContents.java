@@ -21,6 +21,11 @@ public interface BlimpContents {
     BlimpNavigationController getNavigationController();
 
     /**
+     * Returns the theme color for Blimp tab.
+     */
+    int getThemeColor();
+
+    /**
      * Adds an observer to this BlimpContents.
      */
     void addObserver(BlimpContentsObserver observer);

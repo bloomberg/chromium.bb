@@ -1114,6 +1114,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
         }
 
+        // Apply theme color for Blimp tab.
+        if (isBlimpTab() && getBlimpContents() != null) {
+            themeColor = getBlimpContents().getThemeColor();
+            if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
+        }
+
         // Do not apply the theme color if there are any security issues on the page.
         int securityLevel = getSecurityLevel();
         if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR

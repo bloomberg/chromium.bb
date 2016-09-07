@@ -25,6 +25,9 @@ public class BlimpContentsImpl implements BlimpContents {
                 nativeBlimpContentsImplAndroid, navigationController, blimpView);
     }
 
+    // Light blue theme color on Blimp tab.
+    private static final int BLIMP_THEME_COLOR = 0xb3e5fc;
+
     private long mNativeBlimpContentsImplAndroid;
 
     // Given the importance of the navigation controller, this member is kept directly in Java to
@@ -70,6 +73,13 @@ public class BlimpContentsImpl implements BlimpContents {
     @Override
     public BlimpNavigationController getNavigationController() {
         return mBlimpNavigationController;
+    }
+
+    // TODO(xingliu): Use the correct theme color for Blimp.
+    // crbug.com/644774
+    @Override
+    public int getThemeColor() {
+        return BLIMP_THEME_COLOR;
     }
 
     @Override
