@@ -22,14 +22,30 @@ namespace {
 // "Prerender.NoStatePrefetchResourceCount" histogram family.
 // Hence, existing enumerated constants should never be deleted or reordered,
 // and new constants should only be appended at the end of the enumeration.
-enum NoStatePrefetchResourceType {
-  MAIN_RESOURCE_CACHEABLE = 0,
-  MAIN_RESOURCE_NO_STORE = 1,
-  SUB_RESOURCE_CACHEABLE = 2,
-  SUB_RESOURCE_NO_STORE = 3,
-
-  NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT  // Must be the last.
+enum NoStatePrefetchResponseType {
+  NO_STORE = 1 << 0,
+  REDIRECT = 1 << 1,
+  MAIN_RESOURCE = 1 << 2,
+  NO_STATE_PREFETCH_RESPONSE_TYPE_COUNT = 1 << 3
 };
+
+int GetResourceType(bool is_main_resource, bool is_redirect, bool is_no_store) {
+  return (is_no_store * NO_STORE) + (is_redirect * REDIRECT) +
+         (is_main_resource * MAIN_RESOURCE);
+}
+
+// Similar to UMA_HISTOGRAM_ENUMERATION but allows a dynamic histogram name.
+// Records a sample such as 0 <= sample < bucket_count, in a histogram with
+// |bucket_count| buckets of width 1 each.
+void RecordHistogramEnum(std::string histogram_name,
+                         base::HistogramBase::Sample sample,
+                         base::HistogramBase::Sample bucket_count) {
+  DCHECK_LT(sample, bucket_count);
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      histogram_name, 1, bucket_count, bucket_count + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(sample);
+}
 
 // Time window for which we will record windowed PLTs from the last observed
 // link rel=prefetch tag. This is not intended to be the same as the prerender
@@ -395,26 +411,32 @@ void PrerenderHistograms::RecordNetworkBytes(Origin origin,
   }
 }
 
-void PrerenderHistograms::RecordResourcePrefetch(Origin origin,
-                                                 bool is_main_resource,
-                                                 bool is_no_store) const {
+void PrerenderHistograms::RecordPrefetchResponseReceived(
+    Origin origin,
+    bool is_main_resource,
+    bool is_redirect,
+    bool is_no_store) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NoStatePrefetchResourceType type =
-      is_main_resource
-          ? (is_no_store ? MAIN_RESOURCE_NO_STORE : MAIN_RESOURCE_CACHEABLE)
-          : (is_no_store ? SUB_RESOURCE_NO_STORE : SUB_RESOURCE_CACHEABLE);
-  DCHECK_LT(type, NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT);
 
+  int sample = GetResourceType(is_main_resource, is_redirect, is_no_store);
   std::string histogram_name =
-      GetHistogramName(origin, IsOriginWash(), "NoStatePrefetchResourceTypes");
+      GetHistogramName(origin, IsOriginWash(), "NoStatePrefetchResponseTypes");
+  RecordHistogramEnum(histogram_name, sample,
+                      NO_STATE_PREFETCH_RESPONSE_TYPE_COUNT);
+}
 
-  // Unrolls UMA_HISTOGRAM_ENUMERATION, required to support dynamic histogram
-  // name.
-  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-      histogram_name, 1, NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT,
-      NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_pointer->Add(type);
+void PrerenderHistograms::RecordPrefetchRedirectCount(
+    Origin origin,
+    bool is_main_resource,
+    int redirect_count) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const int kMaxRedirectCount = 10;
+  std::string histogram_base_name = base::StringPrintf(
+      "NoStatePrefetch%sResourceRedirects", is_main_resource ? "Main" : "Sub");
+  std::string histogram_name =
+      GetHistogramName(origin, IsOriginWash(), histogram_base_name);
+  RecordHistogramEnum(histogram_name, redirect_count, kMaxRedirectCount);
 }
 
 bool PrerenderHistograms::IsOriginWash() const {

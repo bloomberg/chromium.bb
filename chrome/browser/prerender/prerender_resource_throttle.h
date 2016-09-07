@@ -64,12 +64,14 @@ class PrerenderResourceThrottle
       const std::string& follow_only_when_prerender_shown_header,
       content::ResourceType resource_type,
       bool async,
+      bool is_no_store,
       int render_process_id,
       int render_frame_id,
       const GURL& new_url);
 
   static void WillProcessResponseOnUI(bool is_main_resource,
                                       bool is_no_store,
+                                      int redirect_count,
                                       int render_process_id,
                                       int render_frame_id);
 

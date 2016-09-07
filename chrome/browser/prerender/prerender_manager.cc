@@ -551,10 +551,19 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   }
 }
 
-void PrerenderManager::RecordResourcePrefetch(Origin origin,
-                                              bool is_main_resource,
-                                              bool is_no_store) {
-  histograms_->RecordResourcePrefetch(origin, is_main_resource, is_no_store);
+void PrerenderManager::RecordPrefetchResponseReceived(Origin origin,
+                                                      bool is_main_resource,
+                                                      bool is_redirect,
+                                                      bool is_no_store) {
+  histograms_->RecordPrefetchResponseReceived(origin, is_main_resource,
+                                              is_redirect, is_no_store);
+}
+
+void PrerenderManager::RecordPrefetchRedirectCount(Origin origin,
+                                                   bool is_main_resource,
+                                                   int redirect_count) {
+  histograms_->RecordPrefetchRedirectCount(origin, is_main_resource,
+                                           redirect_count);
 }
 
 // static

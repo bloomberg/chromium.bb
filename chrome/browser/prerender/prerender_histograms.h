@@ -108,10 +108,18 @@ class PrerenderHistograms {
                           int64_t prerender_bytes,
                           int64_t profile_bytes) const;
 
-  // Record resources loaded by NoStatePrefetch.
-  void RecordResourcePrefetch(Origin origin,
-                              bool is_main_resource,
-                              bool is_no_store) const;
+  // Called when a NoStatePrefetch request has received a response (including
+  // redirects). May be called several times per resource, in case of redirects.
+  void RecordPrefetchResponseReceived(Origin origin,
+                                      bool is_main_resource,
+                                      bool is_redirect,
+                                      bool is_no_store) const;
+
+  // Called when a NoStatePrefetch resource has been loaded. This is called only
+  // once per resource, when all redirects have been resolved.
+  void RecordPrefetchRedirectCount(Origin origin,
+                                   bool is_main_resource,
+                                   int redirect_count) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
