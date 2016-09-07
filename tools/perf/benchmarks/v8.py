@@ -116,9 +116,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
 
-# Disabled on reference builds as they are failing across multiple Android
-# devices. see http://crbug.com/636405
-@benchmark.Disabled('reference')
+
 class V8TodoMVC(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the TodoMVC examples."""
   page_set = page_sets.TodoMVCPageSet
