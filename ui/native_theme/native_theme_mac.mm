@@ -126,6 +126,29 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 }
 
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
+  // Even with --secondary-ui-md, menus use the platform colors and styling.
+  switch (color_id) {
+    case kColorId_EnabledMenuItemForegroundColor:
+      return NSSystemColorToSkColor([NSColor controlTextColor]);
+    case kColorId_DisabledMenuItemForegroundColor:
+    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
+      return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
+    case kColorId_SelectedMenuItemForegroundColor:
+      return NSSystemColorToSkColor([NSColor selectedMenuItemTextColor]);
+    case kColorId_FocusedMenuItemBackgroundColor:
+    case kColorId_HoverMenuItemBackgroundColor:
+      return NSSystemColorToSkColor([NSColor selectedMenuItemColor]);
+    case kColorId_MenuBackgroundColor:
+      return kMenuPopupBackgroundColor;
+    case kColorId_MenuSeparatorColor:
+      return base::mac::IsOS10_9() ? kMenuSeparatorColorMavericks
+                                   : kMenuSeparatorColor;
+    case kColorId_MenuBorderColor:
+      return kMenuBorderColor;
+    default:
+      break;
+  }
+
   if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     return ApplySystemControlTint(GetAuraColor(color_id, this));
 
@@ -167,25 +190,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return SK_ColorWHITE;
     case kColorId_ButtonHoverColor:
       return NSSystemColorToSkColor([NSColor selectedControlTextColor]);
-
-    // Menus.
-    case kColorId_EnabledMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor controlTextColor]);
-    case kColorId_DisabledMenuItemForegroundColor:
-    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
-    case kColorId_SelectedMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor selectedMenuItemTextColor]);
-    case kColorId_FocusedMenuItemBackgroundColor:
-    case kColorId_HoverMenuItemBackgroundColor:
-      return NSSystemColorToSkColor([NSColor selectedMenuItemColor]);
-    case kColorId_MenuBackgroundColor:
-      return kMenuPopupBackgroundColor;
-    case kColorId_MenuSeparatorColor:
-      return base::mac::IsOS10_9() ? kMenuSeparatorColorMavericks
-                                   : kMenuSeparatorColor;
-    case kColorId_MenuBorderColor:
-      return kMenuBorderColor;
 
     // Link.
     case kColorId_LinkDisabled:
