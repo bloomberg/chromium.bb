@@ -183,9 +183,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }
 
-  void DrawLayers(FrameData* frame) override {
-    LayerTreeHostImpl::DrawLayers(frame);
+  bool SwapBuffers(const FrameData& frame) override {
+    bool r = LayerTreeHostImpl::SwapBuffers(frame);
     test_hooks_->DrawLayersOnThread(this);
+    return r;
   }
 
   void NotifyReadyToActivate() override {

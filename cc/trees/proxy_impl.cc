@@ -601,19 +601,17 @@ DrawResult ProxyImpl::DrawAndSwapInternal(bool forced_draw) {
 
   if (draw_frame) {
     layer_tree_host_impl_->DrawLayers(&frame);
+    if (layer_tree_host_impl_->SwapBuffers(frame))
+      scheduler_->DidSwapBuffers();
     result = DRAW_SUCCESS;
   } else {
     DCHECK_NE(DRAW_SUCCESS, result);
   }
+
   layer_tree_host_impl_->DidDrawAllLayers(frame);
 
   bool start_ready_animations = draw_frame;
   layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
-
-  if (draw_frame) {
-    if (layer_tree_host_impl_->SwapBuffers(frame))
-      scheduler_->DidSwapBuffers();
-  }
 
   // Tell the main thread that the the newly-commited frame was drawn.
   if (next_frame_is_newly_committed_frame_) {

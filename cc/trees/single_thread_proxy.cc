@@ -589,6 +589,17 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
       return DRAW_ABORTED_CANT_DRAW;
     }
 
+    // This CapturePostTasks should be destroyed before
+    // DidCommitAndDrawFrame() is called since that goes out to the
+    // embedder, and we want the embedder to receive its callbacks before that.
+    // NOTE: This maintains consistent ordering with the ThreadProxy since
+    // the DidCommitAndDrawFrame() must be post-tasked from the impl thread
+    // there as the main thread is not blocked, so any posted tasks inside
+    // the swap buffers will execute first.
+    DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
+    BlockingTaskRunner::CapturePostTasks blocked(
+        task_runner_provider_->blocking_main_thread_task_runner());
+
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile2(
@@ -603,7 +614,19 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
           FROM_HERE_WITH_EXPLICIT_FUNCTION(
               "461509 SingleThreadProxy::DoComposite3"));
       layer_tree_host_impl_->DrawLayers(frame);
+
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile8(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "461509 SingleThreadProxy::DoComposite8"));
+      if (layer_tree_host_impl_->SwapBuffers(*frame)) {
+        if (scheduler_on_impl_thread_)
+          scheduler_on_impl_thread_->DidSwapBuffers();
+        client_->DidPostSwapBuffers();
+      }
     }
+
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile4(
@@ -611,46 +634,13 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
             "461509 SingleThreadProxy::DoComposite4"));
     layer_tree_host_impl_->DidDrawAllLayers(*frame);
 
-    bool start_ready_animations = draw_frame;
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile5(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461509 SingleThreadProxy::DoComposite5"));
+    bool start_ready_animations = draw_frame;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile7(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite7"));
-  }
-
-  if (draw_frame) {
-    DebugScopedSetImplThread impl(task_runner_provider_);
-
-    // This CapturePostTasks should be destroyed before
-    // DidCommitAndDrawFrame() is called since that goes out to the
-    // embedder,
-    // and we want the embedder to receive its callbacks before that.
-    // NOTE: This maintains consistent ordering with the ThreadProxy since
-    // the DidCommitAndDrawFrame() must be post-tasked from the impl thread
-    // there as the main thread is not blocked, so any posted tasks inside
-    // the swap buffers will execute first.
-    DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
-
-    BlockingTaskRunner::CapturePostTasks blocked(
-        task_runner_provider_->blocking_main_thread_task_runner());
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile8(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite8"));
-    if (layer_tree_host_impl_->SwapBuffers(*frame)) {
-      if (scheduler_on_impl_thread_)
-        scheduler_on_impl_thread_->DidSwapBuffers();
-      client_->DidPostSwapBuffers();
-    }
   }
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509 is
   // fixed.

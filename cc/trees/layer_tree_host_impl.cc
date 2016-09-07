@@ -1682,24 +1682,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   renderer_->DrawFrame(&frame->render_passes);
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
-
-  // The next frame should start by assuming nothing has changed, and changes
-  // are noted as they occur.
-  // TODO(boliu): If we did a temporary software renderer frame, propogate the
-  // damage forward to the next frame.
-  for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
-    (*frame->render_surface_layer_list)[i]
-        ->render_surface()
-        ->damage_tracker()
-        ->DidDrawDamagedArea();
-  }
-  active_tree_->ResetAllChangeTracking();
-
-  active_tree_->set_has_ever_been_drawn(true);
-  devtools_instrumentation::DidDrawFrame(id_);
-  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
-      rendering_stats_instrumentation_->impl_thread_rendering_stats());
-  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
 }
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
@@ -1840,10 +1822,12 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
 
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   ResetRequiresHighResToDraw();
+
   if (frame.has_no_damage) {
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
   }
+
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame.may_contain_video;
   active_tree()->FinishSwapPromises(&metadata);
@@ -1861,6 +1845,22 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
     }
   }
   renderer_->SwapBuffers(std::move(metadata));
+
+  // The next frame should start by assuming nothing has changed, and changes
+  // are noted as they occur.
+  // TODO(boliu): If we did a temporary software renderer frame, propogate the
+  // damage forward to the next frame.
+  for (size_t i = 0; i < frame.render_surface_layer_list->size(); i++) {
+    auto* surface = (*frame.render_surface_layer_list)[i]->render_surface();
+    surface->damage_tracker()->DidDrawDamagedArea();
+  }
+  active_tree_->ResetAllChangeTracking();
+
+  active_tree_->set_has_ever_been_drawn(true);
+  devtools_instrumentation::DidDrawFrame(id_);
+  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
+      rendering_stats_instrumentation_->impl_thread_rendering_stats());
+  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
   return true;
 }
 
