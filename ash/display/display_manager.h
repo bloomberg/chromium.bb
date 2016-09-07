@@ -18,7 +18,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/managed_display_info.h"
 
@@ -36,6 +38,8 @@ class DisplayNotificationsTest;
 
 namespace display {
 class DisplayLayoutStore;
+class DisplayObserver;
+class Screen;
 }
 
 namespace gfx {
@@ -45,7 +49,6 @@ class Rect;
 
 namespace ash {
 class AcceleratorControllerTest;
-class ScreenAsh;
 
 using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
 
@@ -97,7 +100,7 @@ class ASH_EXPORT DisplayManager
   // The display ID for a virtual display assigned to a unified desktop.
   static int64_t kUnifiedDisplayId;
 
-  DisplayManager();
+  explicit DisplayManager(std::unique_ptr<display::Screen> screen);
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;
 #else
@@ -327,9 +330,6 @@ class ASH_EXPORT DisplayManager
   // is enabled.
   void CreateMirrorWindowAsyncIfAny();
 
-  // Create a screen instance to be used during shutdown.
-  void CreateScreenForShutdown() const;
-
   // A unit test may change the internal display id (which never happens on
   // a real device). This will update the mode list for internal display
   // for this test scenario.
@@ -340,6 +340,15 @@ class ASH_EXPORT DisplayManager
 
   // Reset the internal display zoom.
   void ResetInternalDisplayZoom();
+
+  // Notifies observers of display configuration changes.
+  void NotifyMetricsChanged(const display::Display& display, uint32_t metrics);
+  void NotifyDisplayAdded(const display::Display& display);
+  void NotifyDisplayRemoved(const display::Display& display);
+
+  // Delegated from the Screen implementation.
+  void AddObserver(display::DisplayObserver* observer);
+  void RemoveObserver(display::DisplayObserver* observer);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
@@ -421,7 +430,7 @@ class ASH_EXPORT DisplayManager
 
   Delegate* delegate_;  // not owned.
 
-  std::unique_ptr<ScreenAsh> screen_;
+  std::unique_ptr<display::Screen> screen_;
 
   std::unique_ptr<display::DisplayLayoutStore> layout_store_;
 
@@ -469,6 +478,8 @@ class ASH_EXPORT DisplayManager
   display::Display::Rotation registered_internal_display_rotation_;
 
   bool unified_desktop_enabled_;
+
+  base::ObserverList<display::DisplayObserver> observers_;
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 

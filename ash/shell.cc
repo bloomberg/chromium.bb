@@ -44,6 +44,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/screen_ash.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -500,7 +501,7 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
       blocking_pool_(blocking_pool) {
   DCHECK(aura::Env::GetInstanceDontCreate());
   gpu_support_.reset(wm_shell_->delegate()->CreateGPUSupport());
-  display_manager_.reset(new DisplayManager);
+  display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_.reset(new WindowTreeHostManager);
   user_metrics_recorder_.reset(new UserMetricsRecorder);
 
@@ -641,7 +642,7 @@ Shell::~Shell() {
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
   // destruction
   // of its owned RootWindowControllers relies on the value.
-  display_manager_->CreateScreenForShutdown();
+  ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
   wm_shell_->Shutdown();

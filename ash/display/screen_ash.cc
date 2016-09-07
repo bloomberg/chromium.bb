@@ -24,13 +24,17 @@ namespace ash {
 
 namespace {
 
+// We need to keep this in order for unittests to tell if
+// the object in display::Screen::GetScreenByType is for shutdown.
+display::Screen* screen_for_shutdown = nullptr;
+
 DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
 class ScreenForShutdown : public display::Screen {
  public:
-  explicit ScreenForShutdown(ScreenAsh* screen_ash)
+  explicit ScreenForShutdown(display::Screen* screen_ash)
       : display_list_(screen_ash->GetAllDisplays()),
         primary_display_(screen_ash->GetPrimaryDisplay()) {}
 
@@ -79,22 +83,6 @@ class ScreenForShutdown : public display::Screen {
 ScreenAsh::ScreenAsh() {}
 
 ScreenAsh::~ScreenAsh() {}
-
-void ScreenAsh::NotifyMetricsChanged(const display::Display& display,
-                                     uint32_t metrics) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayMetricsChanged(display, metrics));
-}
-
-void ScreenAsh::NotifyDisplayAdded(const display::Display& display) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayAdded(display));
-}
-
-void ScreenAsh::NotifyDisplayRemoved(const display::Display& display) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayRemoved(display));
-}
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
@@ -180,15 +168,31 @@ display::Display ScreenAsh::GetPrimaryDisplay() const {
 }
 
 void ScreenAsh::AddObserver(display::DisplayObserver* observer) {
-  observers_.AddObserver(observer);
+  GetDisplayManager()->AddObserver(observer);
 }
 
 void ScreenAsh::RemoveObserver(display::DisplayObserver* observer) {
-  observers_.RemoveObserver(observer);
+  GetDisplayManager()->RemoveObserver(observer);
 }
 
-display::Screen* ScreenAsh::CloneForShutdown() {
-  return new ScreenForShutdown(this);
+// static
+DisplayManager* ScreenAsh::CreateDisplayManager() {
+  std::unique_ptr<ScreenAsh> screen(new ScreenAsh);
+
+  display::Screen* current = display::Screen::GetScreen();
+  // If there is no native, or the native was for shutdown,
+  // use ash's screen.
+  if (!current || current == screen_for_shutdown)
+    display::Screen::SetScreenInstance(screen.get());
+  return new DisplayManager(std::move(screen));
+}
+
+// static
+void ScreenAsh::CreateScreenForShutdown() {
+  delete screen_for_shutdown;
+  // fix this up...
+  screen_for_shutdown = new ScreenForShutdown(display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(screen_for_shutdown);
 }
 
 }  // namespace ash

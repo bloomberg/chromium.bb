@@ -15,7 +15,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/display/display_util.h"
-#include "ash/display/screen_ash.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
@@ -56,10 +55,6 @@
 namespace ash {
 
 namespace {
-
-// We need to keep this in order for unittests to tell if
-// the object in display::Screen::GetScreenByType is for shutdown.
-display::Screen* screen_for_shutdown = nullptr;
 
 // The number of pixels to overlap between the primary and secondary displays,
 // in case that the offset value is too large.
@@ -131,9 +126,9 @@ using std::vector;
 // static
 int64_t DisplayManager::kUnifiedDisplayId = -10;
 
-DisplayManager::DisplayManager()
+DisplayManager::DisplayManager(std::unique_ptr<display::Screen> screen)
     : delegate_(nullptr),
-      screen_(new ScreenAsh),
+      screen_(std::move(screen)),
       layout_store_(new display::DisplayLayoutStore),
       first_display_id_(display::Display::kInvalidDisplayID),
       num_connected_displays_(0),
@@ -151,11 +146,6 @@ DisplayManager::DisplayManager()
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableUnifiedDesktop);
 #endif
-  display::Screen* current = display::Screen::GetScreen();
-  // If there is no native, or the native was for shutdown,
-  // use ash's screen.
-  if (!current || current == screen_for_shutdown)
-    display::Screen::SetScreenInstance(screen_.get());
 }
 
 DisplayManager::~DisplayManager() {
@@ -264,7 +254,7 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   ApplyDisplayLayout(GetCurrentDisplayLayout(), &active_display_list_,
                      &updated_ids);
   for (int64_t id : updated_ids) {
-    screen_->NotifyMetricsChanged(
+    NotifyMetricsChanged(
         GetDisplayForId(id),
         display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
             display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
@@ -295,8 +285,8 @@ bool DisplayManager::UpdateWorkAreaOfDisplay(int64_t display_id,
   display->UpdateWorkAreaFromInsets(insets);
   bool workarea_changed = old_work_area != display->work_area();
   if (workarea_changed) {
-    screen_->NotifyMetricsChanged(
-        *display, display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+    NotifyMetricsChanged(*display,
+                         display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
   }
   return workarea_changed;
 }
@@ -807,10 +797,10 @@ void DisplayManager::UpdateDisplaysWith(
                               removed_displays.begin(), removed_displays.end());
 
   for (const auto& display : removed_displays)
-    screen_->NotifyDisplayRemoved(display);
+    NotifyDisplayRemoved(display);
 
   for (size_t index : added_display_indices)
-    screen_->NotifyDisplayAdded(active_display_list_[index]);
+    NotifyDisplayAdded(active_display_list_[index]);
 
   active_display_list_.resize(active_display_list_size);
   is_updating_display_list_ = false;
@@ -828,7 +818,7 @@ void DisplayManager::UpdateDisplaysWith(
       metrics |= display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
       notify_primary_change = false;
     }
-    screen_->NotifyMetricsChanged(updated_display, metrics);
+    NotifyMetricsChanged(updated_display, metrics);
   }
 
   if (notify_primary_change) {
@@ -844,7 +834,7 @@ void DisplayManager::UpdateDisplaysWith(
       if (primary.device_scale_factor() != old_primary.device_scale_factor())
         metrics |= display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
 
-      screen_->NotifyMetricsChanged(primary, metrics);
+      NotifyMetricsChanged(primary, metrics);
     }
   }
 
@@ -1050,8 +1040,8 @@ bool DisplayManager::UpdateDisplayBounds(int64_t display_id,
       return false;
     display::Display* display = FindDisplayForId(display_id);
     display->SetSize(display_info_[display_id].size_in_pixel());
-    screen_->NotifyMetricsChanged(
-        *display, display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+    NotifyMetricsChanged(*display,
+                         display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
     return true;
   }
   return false;
@@ -1066,12 +1056,6 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
                             weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DisplayManager::CreateScreenForShutdown() const {
-  delete screen_for_shutdown;
-  screen_for_shutdown = screen_->CloneForShutdown();
-  display::Screen::SetScreenInstance(screen_for_shutdown);
 }
 
 void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {
@@ -1397,6 +1381,30 @@ void DisplayManager::ApplyDisplayLayout(const display::DisplayLayout& layout,
 void DisplayManager::RunPendingTasksForTest() {
   if (!software_mirroring_display_list_.empty())
     base::RunLoop().RunUntilIdle();
+}
+
+void DisplayManager::NotifyMetricsChanged(const display::Display& display,
+                                          uint32_t metrics) {
+  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                    OnDisplayMetricsChanged(display, metrics));
+}
+
+void DisplayManager::NotifyDisplayAdded(const display::Display& display) {
+  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                    OnDisplayAdded(display));
+}
+
+void DisplayManager::NotifyDisplayRemoved(const display::Display& display) {
+  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                    OnDisplayRemoved(display));
+}
+
+void DisplayManager::AddObserver(display::DisplayObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DisplayManager::RemoveObserver(display::DisplayObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

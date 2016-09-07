@@ -8,20 +8,19 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+
+namespace display {
+class DisplayObserver;
+}
 
 namespace gfx {
 class Rect;
 }
 
 namespace ash {
-namespace internal {
 class DisplayManager;
-}
 
 // Aura implementation of display::Screen. Implemented here to avoid circular
 // dependencies.
@@ -45,20 +44,13 @@ class ASH_EXPORT ScreenAsh : public display::Screen {
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
 
+  // CreateDisplayManager with a ScreenAsh instance.
+  static DisplayManager* CreateDisplayManager();
+
+  // Create a screen instance to be used during shutdown.
+  static void CreateScreenForShutdown();
+
  private:
-  friend class DisplayManager;
-
-  // Notifies observers of display configuration changes.
-  void NotifyMetricsChanged(const display::Display& display, uint32_t metrics);
-  void NotifyDisplayAdded(const display::Display& display);
-  void NotifyDisplayRemoved(const display::Display& display);
-
-  // Creates a screen that can be used during shutdown.
-  // It simply has a copy of the displays.
-  display::Screen* CloneForShutdown();
-
-  base::ObserverList<display::DisplayObserver> observers_;
-
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
 };
 
