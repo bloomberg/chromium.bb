@@ -79,6 +79,11 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<LogPrivateAPI>;
 
   void Initialize();
+
+  void RegisterTempFileOnFileResourceSequence(
+      const std::string& owner_extension_id,
+      const base::FilePath& file_path);
+
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
