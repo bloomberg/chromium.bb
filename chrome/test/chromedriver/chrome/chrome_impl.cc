@@ -154,11 +154,6 @@ std::string ChromeImpl::page_load_strategy() const {
   return page_load_strategy_;
 }
 
-void ChromeImpl::set_page_load_strategy(std::string strategy) {
-  // Support for page load strategy already checked when capability is parsed.
-  page_load_strategy_ = strategy;
-}
-
 Status ChromeImpl::Quit() {
   Status status = QuitImpl();
   if (status.IsOk())
@@ -170,10 +165,12 @@ ChromeImpl::ChromeImpl(
     std::unique_ptr<DevToolsHttpClient> http_client,
     std::unique_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    std::unique_ptr<PortReservation> port_reservation)
+    std::unique_ptr<PortReservation> port_reservation,
+    std::string page_load_strategy)
     : quit_(false),
       devtools_http_client_(std::move(http_client)),
       devtools_websocket_client_(std::move(websocket_client)),
-      port_reservation_(std::move(port_reservation)) {
+      port_reservation_(std::move(port_reservation)),
+      page_load_strategy_(page_load_strategy) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

@@ -58,8 +58,6 @@ std::string StubChrome::page_load_strategy() const {
   return std::string();
 }
 
-void StubChrome::set_page_load_strategy(std::string strategy) {}
-
 Status StubChrome::Quit() {
   return Status(kOk);
 }

@@ -206,8 +206,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
 
-  session->chrome->set_page_load_strategy(capabilities.page_load_strategy);
-
   status = session->chrome->GetWebViewIdForFirstTab(&session->window);
   if (status.IsError())
     return status;

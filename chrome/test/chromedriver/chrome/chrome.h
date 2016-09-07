@@ -50,9 +50,8 @@ class Chrome {
   // actions can be performed on it.
   virtual bool HasTouchScreen() const = 0;
 
+  // Return the page load strategy for this session.
   virtual std::string page_load_strategy() const = 0;
-
-  virtual void set_page_load_strategy(std::string strategy) = 0;
 
   // Quits Chrome.
   virtual Status Quit() = 0;

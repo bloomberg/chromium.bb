@@ -33,7 +33,6 @@ class StubChrome : public Chrome {
   bool IsMobileEmulationEnabled() const override;
   bool HasTouchScreen() const override;
   std::string page_load_strategy() const override;
-  void set_page_load_strategy(std::string strategy) override;
   Status Quit() override;
 
  private:

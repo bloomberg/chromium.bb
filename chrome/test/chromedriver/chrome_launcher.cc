@@ -307,7 +307,8 @@ Status LaunchRemoteChromeSession(
 
   chrome->reset(new ChromeRemoteImpl(std::move(devtools_http_client),
                                      std::move(devtools_websocket_client),
-                                     *devtools_event_listeners));
+                                     *devtools_event_listeners,
+                                     capabilities.page_load_strategy));
   return Status(kOk);
 }
 
@@ -441,11 +442,17 @@ Status LaunchDesktopChrome(
                  << status.message();
   }
 
-  std::unique_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
-      std::move(devtools_http_client), std::move(devtools_websocket_client),
-      *devtools_event_listeners, std::move(port_reservation),
-      std::move(process), command, &user_data_dir, &extension_dir,
-      capabilities.network_emulation_enabled));
+  std::unique_ptr<ChromeDesktopImpl> chrome_desktop(
+      new ChromeDesktopImpl(std::move(devtools_http_client),
+                            std::move(devtools_websocket_client),
+                            *devtools_event_listeners,
+                            std::move(port_reservation),
+                            capabilities.page_load_strategy,
+                            std::move(process),
+                            command,
+                            &user_data_dir,
+                            &extension_dir,
+                            capabilities.network_emulation_enabled));
   for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
     VLOG(0) << "Waiting for extension bg page load: " << extension_bg_pages[i];
     std::unique_ptr<WebView> web_view;
@@ -520,10 +527,12 @@ Status LaunchAndroidChrome(
                  << status.message();
   }
 
-  chrome->reset(new ChromeAndroidImpl(
-      std::move(devtools_http_client), std::move(devtools_websocket_client),
-      *devtools_event_listeners, std::move(port_reservation),
-      std::move(device)));
+  chrome->reset(new ChromeAndroidImpl(std::move(devtools_http_client),
+                                      std::move(devtools_websocket_client),
+                                      *devtools_event_listeners,
+                                      std::move(port_reservation),
+                                      capabilities.page_load_strategy,
+                                      std::move(device)));
   return Status(kOk);
 }
 

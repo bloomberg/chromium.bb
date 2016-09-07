@@ -31,6 +31,7 @@ class ChromeDesktopImpl : public ChromeImpl {
       std::unique_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       std::unique_ptr<PortReservation> port_reservation,
+      std::string page_load_strategy,
       base::Process process,
       const base::CommandLine& command,
       base::ScopedTempDir* user_data_dir,
