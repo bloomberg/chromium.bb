@@ -1013,14 +1013,14 @@ String CSSRadialGradientValue::customCSSText() const
 float CSSRadialGradientValue::resolveRadius(CSSPrimitiveValue* radius, const CSSToLengthConversionData& conversionData, float* widthOrHeight)
 {
     float result = 0;
-    if (radius->isNumber()) // Can the radius be a percentage?
+    if (radius->isNumber())
         result = radius->getFloatValue() * conversionData.zoom();
     else if (widthOrHeight && radius->isPercentage())
         result = *widthOrHeight * radius->getFloatValue() / 100;
     else
         result = radius->computeLength<float>(conversionData);
 
-    return std::max(result, 0.0f);
+    return clampTo<float>(std::max(result, 0.0f));
 }
 
 namespace {
