@@ -30,6 +30,7 @@ public:
     static MediaKeys* mediaKeys(HTMLMediaElement&);
     static ScriptPromise setMediaKeys(ScriptState*, HTMLMediaElement&, MediaKeys*);
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
+    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey);
 
     // WebMediaPlayerEncryptedMediaClient methods
     void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) final;

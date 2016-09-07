@@ -32,6 +32,8 @@
     readonly attribute unrestricted double expiration;
     [CallWith=ScriptState] readonly attribute Promise closed;
     readonly attribute MediaKeyStatusMap keyStatuses;
+    attribute EventHandler onkeystatuseschange;
+    attribute EventHandler onmessage;
 
     // session initialization
     [CallWith=ScriptState] Promise<void> generateRequest(DOMString initDataType, BufferSource initData);

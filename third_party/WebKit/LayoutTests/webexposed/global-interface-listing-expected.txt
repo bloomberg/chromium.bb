@@ -2805,6 +2805,7 @@ interface HTMLMediaElement : HTMLElement
     getter muted
     getter networkState
     getter onencrypted
+    getter onwaitingforkey
     getter paused
     getter playbackRate
     getter played
@@ -2840,6 +2841,7 @@ interface HTMLMediaElement : HTMLElement
     setter loop
     setter muted
     setter onencrypted
+    setter onwaitingforkey
     setter playbackRate
     setter preload
     setter src
@@ -3754,6 +3756,8 @@ interface MediaKeySession : EventTarget
     getter closed
     getter expiration
     getter keyStatuses
+    getter onkeystatuseschange
+    getter onmessage
     getter sessionId
     method close
     method constructor
@@ -3761,6 +3765,8 @@ interface MediaKeySession : EventTarget
     method load
     method remove
     method update
+    setter onkeystatuseschange
+    setter onmessage
 interface MediaKeyStatusMap
     attribute @@toStringTag
     getter size

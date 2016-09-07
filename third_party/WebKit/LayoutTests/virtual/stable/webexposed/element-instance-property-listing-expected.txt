@@ -307,6 +307,7 @@ html element audio
     property muted
     property networkState
     property onencrypted
+    property onwaitingforkey
     property pause
     property paused
     property play
@@ -1034,6 +1035,7 @@ html element video
     property muted
     property networkState
     property onencrypted
+    property onwaitingforkey
     property pause
     property paused
     property play

@@ -70,12 +70,15 @@ class MediaKeySession final
     USING_PRE_FINALIZER(MediaKeySession, dispose);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
+
     ~MediaKeySession() override;
 
     String sessionId() const;
     double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
     MediaKeyStatusMap* keyStatuses();
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, const DOMArrayPiece& initData);
     ScriptPromise load(ScriptState*, const String& sessionId);
