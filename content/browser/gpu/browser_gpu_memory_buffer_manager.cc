@@ -50,22 +50,6 @@ void GpuMemoryBufferDeleted(
       FROM_HERE, base::Bind(destruction_callback, sync_token));
 }
 
-bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
-  switch (gpu::GetNativeGpuMemoryBufferType()) {
-    case gfx::SHARED_MEMORY_BUFFER:
-      return false;
-    case gfx::IO_SURFACE_BUFFER:
-    case gfx::SURFACE_TEXTURE_BUFFER:
-    case gfx::OZONE_NATIVE_PIXMAP:
-      return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   GpuMemoryBufferConfigurationSet configurations;
 
@@ -81,7 +65,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto& format : kNativeFormats) {
       for (auto& usage : kNativeUsages) {
-        if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage))
+        if (gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }
@@ -105,7 +89,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT};
     for (auto& format : kGPUReadWriteFormats) {
       for (auto& usage : kGPUReadWriteUsages) {
-        if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage))
+        if (gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }

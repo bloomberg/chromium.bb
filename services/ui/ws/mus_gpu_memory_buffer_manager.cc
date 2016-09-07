@@ -13,26 +13,6 @@
 
 namespace ui {
 
-namespace {
-
-bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
-  switch (gpu::GetNativeGpuMemoryBufferType()) {
-    case gfx::SHARED_MEMORY_BUFFER:
-      return false;
-    case gfx::IO_SURFACE_BUFFER:
-    case gfx::SURFACE_TEXTURE_BUFFER:
-    case gfx::OZONE_NATIVE_PIXMAP:
-      return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-}  // namespace
-
 namespace ws {
 
 MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
@@ -50,7 +30,7 @@ MusGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gpu::SurfaceHandle surface_handle) {
   gfx::GpuMemoryBufferId id = GetNextGenericSharedMemoryId();
   const bool is_native =
-      IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage);
+      gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
   if (is_native) {
     gfx::GpuMemoryBufferHandle handle = gpu_service_->CreateGpuMemoryBuffer(
         id, size, format, usage, client_id_, surface_handle);
