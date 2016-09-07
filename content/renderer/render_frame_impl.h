@@ -1270,9 +1270,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // |pepper_last_mouse_event_target_| is not owned by this class. We depend on
   // the RenderFrameImpl to NULL it out when it destructs.
   PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
-
-  // TODO(lfg): Temporary to help debug issue https://crbug.com/638400.
-  bool is_plugin_initializing_;
 #endif
 
   mojo::Binding<mojom::Frame> frame_binding_;
