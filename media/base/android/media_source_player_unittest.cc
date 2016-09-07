@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/android/audio_decoder_job.h"
@@ -586,7 +587,7 @@ class MediaSourcePlayerTest : public testing::Test {
 
       // Run the message loop so that prefetch will complete.
       while (expected_num_seek_requests == demuxer_->num_seek_requests())
-        message_loop_.RunUntilIdle();
+        base::RunLoop().RunUntilIdle();
     } else {
       // Simulate demuxer's response to the video data request.
       player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo(false));
@@ -693,7 +694,7 @@ class MediaSourcePlayerTest : public testing::Test {
     int expected_num_data_requests = demuxer_->num_data_requests();
     // Run until decoder starts to request new data.
     while (demuxer_->num_data_requests() == expected_num_data_requests)
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(IsDrainingDecoder(is_audio));
   }
 
@@ -729,7 +730,7 @@ class MediaSourcePlayerTest : public testing::Test {
            (wait_for_video && GetMediaCodecBridge(false) &&
                GetMediaDecoderJob(false)->HasData() &&
                GetMediaDecoderJob(false)->is_decoding())) {
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
@@ -756,7 +757,7 @@ class MediaSourcePlayerTest : public testing::Test {
     if (send_eos)
       player_.OnDemuxerDataAvailable(CreateEOSAck(eos_for_audio));
     EXPECT_FALSE(manager_.playback_completed());
-    message_loop_.Run();
+    base::RunLoop().Run();
     EXPECT_TRUE(manager_.playback_completed());
     EXPECT_EQ(original_num_data_requests, demuxer_->num_data_requests());
   }
@@ -1036,7 +1037,7 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
   TriggerPlayerStarvation();
   // Wait for the media codec bridge to finish decoding and be reset.
   while (GetMediaDecoderJob(false)->is_decoding())
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
   // No further seek or data requests should have been received since the
   // surface is empty.
@@ -1048,7 +1049,7 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
   CreateNextTextureAndSetVideoSurface();
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
   while(demuxer_->num_browser_seek_requests() != 1)
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   WaitForVideoDecodeDone();
 }
 
@@ -1067,12 +1068,12 @@ TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
   CreateNextTextureAndSetVideoSurface();
   player_.Start();
   while (!GetMediaDecoderJob(false)->is_decoding())
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
   ReleasePlayer();
   // Wait for the media codec bridge to finish decoding and be reset.
   while (GetMediaDecoderJob(false)->is_decoding())
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
@@ -1160,7 +1161,7 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
   EXPECT_EQ(decoder_job, GetMediaDecoderJob(true));
 
   while (GetMediaDecoderJob(true)->is_decoding())
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   // The decoder job should finish and wait for data.
   EXPECT_EQ(2, demuxer_->num_data_requests());
   EXPECT_TRUE(IsRequestingDemuxerData(true));
@@ -1829,7 +1830,7 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
 
   // Waiting for decoder to finish draining.
   while (IsDrainingDecoder(true) || IsDrainingDecoder(false))
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MediaSourcePlayerTest,
@@ -1871,7 +1872,7 @@ TEST_F(MediaSourcePlayerTest,
 
   // Waiting for audio decoder to finish draining.
   while (IsDrainingDecoder(true))
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit0) {

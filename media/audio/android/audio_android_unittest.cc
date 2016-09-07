@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/android/audio_manager_android.h"
@@ -40,10 +41,9 @@ using ::testing::Return;
 namespace media {
 namespace {
 
-ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
-  if (++*count >= limit) {
-    loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  }
+ACTION_P4(CheckCountAndPostQuitTask, count, limit, task_runner, quit_closure) {
+  if (++*count >= limit)
+    task_runner->PostTask(FROM_HERE, quit_closure);
 }
 
 const char kSpeechFile_16b_s_48k[] = "speech_16b_stereo_48kHz.raw";
@@ -431,7 +431,6 @@ class AudioAndroidOutputTest : public testing::Test {
 
  protected:
   AudioManager* audio_manager() { return audio_manager_.get(); }
-  base::MessageLoopForUI* loop() { return loop_.get(); }
   const AudioParameters& audio_output_parameters() {
     return audio_output_parameters_;
   }
@@ -509,17 +508,20 @@ class AudioAndroidOutputTest : public testing::Test {
     int count = 0;
     MockAudioSourceCallback source;
 
+    base::RunLoop run_loop;
     EXPECT_CALL(source, OnMoreData(NotNull(), _, 0))
         .Times(AtLeast(num_callbacks))
         .WillRepeatedly(
-            DoAll(CheckCountAndPostQuitTask(&count, num_callbacks, loop()),
+            DoAll(CheckCountAndPostQuitTask(&count, num_callbacks,
+                                            base::ThreadTaskRunnerHandle::Get(),
+                                            run_loop.QuitWhenIdleClosure()),
                   Invoke(RealOnMoreData)));
     EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
 
     OpenAndStartAudioOutputStreamOnAudioThread(&source);
 
     start_time_ = base::TimeTicks::Now();
-    loop()->Run();
+    run_loop.Run();
     end_time_ = base::TimeTicks::Now();
 
     StopAndCloseAudioOutputStreamOnAudioThread();
@@ -659,16 +661,18 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
     int count = 0;
     MockAudioInputCallback sink;
 
+    base::RunLoop run_loop;
     EXPECT_CALL(sink, OnData(audio_input_stream_, NotNull(), _, _))
         .Times(AtLeast(num_callbacks))
-        .WillRepeatedly(
-            CheckCountAndPostQuitTask(&count, num_callbacks, loop()));
+        .WillRepeatedly(CheckCountAndPostQuitTask(
+            &count, num_callbacks, base::ThreadTaskRunnerHandle::Get(),
+            run_loop.QuitWhenIdleClosure()));
     EXPECT_CALL(sink, OnError(audio_input_stream_)).Times(0);
 
     OpenAndStartAudioInputStreamOnAudioThread(&sink);
 
     start_time_ = base::TimeTicks::Now();
-    loop()->Run();
+    run_loop.Run();
     end_time_ = base::TimeTicks::Now();
 
     StopAndCloseAudioInputStreamOnAudioThread();

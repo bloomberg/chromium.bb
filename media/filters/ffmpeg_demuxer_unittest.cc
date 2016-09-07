@@ -292,7 +292,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_OpenFails) {
 //  ("find_stream_info_fail.webm");
 //  demuxer_->Initialize(
 //      &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_PARSE));
-//  message_loop_.RunUntilIdle();
+//  base::RunLoop().RunUntilIdle();
 //}
 
 TEST_F(FFmpegDemuxerTest, Initialize_NoStreams) {

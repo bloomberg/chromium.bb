@@ -26,6 +26,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -310,5 +311,5 @@ int main(int argc, char **argv) {
   media::cast::test::QueueManager qm2(fd2, fd1, std::move(out_pipe));
   CheckByteCounters();
   printf("Press Ctrl-C when done.\n");
-  message_loop.Run();
+  base::RunLoop().Run();
 }
