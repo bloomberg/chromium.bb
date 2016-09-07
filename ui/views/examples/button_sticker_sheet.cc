@@ -23,21 +23,22 @@ const int kStretchyGridColumnSetId = 0;
 // weight and will flex in either dimension as needed. The resulting grid layout
 // has only one ColumnSet (numbered kStretchyGridColumnSetId).
 GridLayout* MakeStretchyGridLayout(View* host, int ncols) {
-  const float kPaddingDoesNotResize = 0.0;
-  const int kPaddingWidth = 8;
+  const float kPaddingResizesEqually = 1.0;
+  const int kPaddingWidth = 30;
   const GridLayout::Alignment kColumnStretchesHorizontally = GridLayout::FILL;
   const GridLayout::Alignment kColumnStretchesVertically = GridLayout::FILL;
-  const float kColumnResizesEqually = 1.0;
-  const GridLayout::SizeType kColumnUsesPreferredSize = GridLayout::USE_PREF;
+  const float kColumnDoesNotResize = 0.0;
+  const GridLayout::SizeType kColumnUsesFixedSize = GridLayout::FIXED;
+  const int kColumnWidth = 96;
 
   GridLayout* layout = new GridLayout(host);
   ColumnSet* columns = layout->AddColumnSet(kStretchyGridColumnSetId);
   for (int i = 0; i < ncols; ++i) {
     if (i != 0)
-      columns->AddPaddingColumn(kPaddingDoesNotResize, kPaddingWidth);
+      columns->AddPaddingColumn(kPaddingResizesEqually, kPaddingWidth);
     columns->AddColumn(kColumnStretchesHorizontally, kColumnStretchesVertically,
-                       kColumnResizesEqually, kColumnUsesPreferredSize, 0,
-                       0);  // These two are ignored when using PREF.
+                       kColumnDoesNotResize, kColumnUsesFixedSize, kColumnWidth,
+                       kColumnWidth);
   }
   return layout;
 }
