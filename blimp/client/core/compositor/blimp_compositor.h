@@ -28,7 +28,6 @@ class Thread;
 namespace cc {
 namespace proto {
 class CompositorMessage;
-class InitializeImpl;
 }  // namespace proto
 
 class ContextProvider;
@@ -166,7 +165,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   // Helper method to build the internal CC LayerTreeHost instance from
   // |message|.
-  void CreateLayerTreeHost(const cc::proto::InitializeImpl& initialize_message);
+  void CreateLayerTreeHost();
 
   // Helper method to destroy the internal CC LayerTreeHost instance and all its
   // associated state.

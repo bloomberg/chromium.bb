@@ -8,7 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 import "commit_earlyout_reason.proto";
 import "layer_tree_host.proto";
-import "layer_tree_settings.proto";
 import "rect.proto";
 
 package cc.proto;
@@ -90,9 +89,6 @@ message CompositorMessageToImpl {
 
   // Only one of the following fields will be set per CompositorMessageToImpl.
 
-  // Set for message Type::INITIALIZE_IMPL.
-  optional InitializeImpl initialize_impl_message = 2;
-
   // Set for message Type::SET_DEFER_COMMITS.
   optional SetDeferCommits defer_commits_message = 3;
 
@@ -104,13 +100,6 @@ message CompositorMessageToImpl {
 
   // Set for message Type::SET_NEEDS_REDRAW.
   optional SetNeedsRedraw set_needs_redraw_message = 6;
-}
-
-// The embedder of the remote client compositor should process the
-// InitializeImpl message to retrieve the LayerTreeSettings sent from the
-// server. The settings sent from the server may be modified by the embedder.
-message InitializeImpl {
-  optional LayerTreeSettings layer_tree_settings = 1;
 }
 
 message SetDeferCommits {

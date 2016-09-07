@@ -42,7 +42,6 @@ proto_library("proto_internal") {
     "layer_tree.proto",
     "layer_tree_debug_state.proto",
     "layer_tree_host.proto",
-    "layer_tree_settings.proto",
     "managed_memory_policy.proto",
     "memory_allocation.proto",
     "point.proto",

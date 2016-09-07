@@ -86,10 +86,6 @@ class BlimpCompositorTest : public testing::Test {
     cc::proto::CompositorMessageToImpl* to_impl = message->mutable_to_impl();
     to_impl->set_message_type(
         cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL);
-    cc::proto::InitializeImpl* initialize_message =
-        to_impl->mutable_initialize_impl_message();
-    cc::LayerTreeSettings settings;
-    settings.ToProtobuf(initialize_message->mutable_layer_tree_settings());
     compositor_->OnCompositorMessageReceived(std::move(message));
   }
 

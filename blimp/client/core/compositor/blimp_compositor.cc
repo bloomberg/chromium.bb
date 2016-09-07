@@ -138,10 +138,9 @@ void BlimpCompositor::OnCompositorMessageReceived(
       break;
     case cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL:
       DCHECK(!host_);
-      DCHECK(to_impl_proto.has_initialize_impl_message());
 
       // Create the remote client LayerTreeHost for the compositor.
-      CreateLayerTreeHost(to_impl_proto.initialize_impl_message());
+      CreateLayerTreeHost();
       break;
     case cc::proto::CompositorMessageToImpl::CLOSE_IMPL:
       DCHECK(host_);
@@ -266,8 +265,7 @@ void BlimpCompositor::DestroyDelegatedContent() {
   surface_id_ = cc::SurfaceId();
 }
 
-void BlimpCompositor::CreateLayerTreeHost(
-    const cc::proto::InitializeImpl& initialize_message) {
+void BlimpCompositor::CreateLayerTreeHost() {
   DCHECK(!host_);
   VLOG(1) << "Creating LayerTreeHost for render widget: " << render_widget_id_;
 

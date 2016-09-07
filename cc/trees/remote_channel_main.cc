@@ -233,11 +233,6 @@ void RemoteChannelMain::SynchronouslyInitializeImpl(
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(
       proto::CompositorMessageToImpl::INITIALIZE_IMPL);
-  proto::InitializeImpl* initialize_impl_proto =
-      to_impl_proto->mutable_initialize_impl_message();
-  proto::LayerTreeSettings* settings_proto =
-      initialize_impl_proto->mutable_layer_tree_settings();
-  layer_tree_host->settings().ToProtobuf(settings_proto);
 
   VLOG(1) << "Sending initialize message to client";
   SendMessageProto(proto);
