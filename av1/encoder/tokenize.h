@@ -55,8 +55,8 @@ struct AV1_COMP;
 struct ThreadData;
 
 #if CONFIG_PALETTE
-void av1_tokenize_palette_sb(struct ThreadData *const td, BLOCK_SIZE bsize,
-                             int plane, TOKENEXTRA **t);
+void av1_tokenize_palette_sb(const struct ThreadData *const td,
+                             BLOCK_SIZE bsize, int plane, TOKENEXTRA **t);
 #endif  // CONFIG_PALETTE
 
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,

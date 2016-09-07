@@ -688,12 +688,14 @@ static const int palette_color_context_lookup[PALETTE_COLOR_CONTEXTS] = {
 };
 
 int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
-                                  int c, int n, int *color_order) {
+                                  int c, int n, uint8_t *color_order,
+                                  int *color_idx) {
   int i, j, max, max_idx, temp;
   int scores[PALETTE_MAX_SIZE + 10];
   int weights[4] = { 3, 2, 3, 2 };
   int color_ctx = 0;
   int color_neighbors[4];
+  int inverse_color_order[PALETTE_MAX_SIZE];
   assert(n <= PALETTE_MAX_SIZE);
   if (c - 1 >= 0)
     color_neighbors[0] = color_map[r * cols + c - 1];
@@ -711,7 +713,10 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
     color_neighbors[3] = color_map[(r - 1) * cols + c + 1];
   else
     color_neighbors[3] = -1;
-  for (i = 0; i < PALETTE_MAX_SIZE; ++i) color_order[i] = i;
+  for (i = 0; i < PALETTE_MAX_SIZE; ++i) {
+    color_order[i] = i;
+    inverse_color_order[i] = i;
+  }
   memset(scores, 0, PALETTE_MAX_SIZE * sizeof(scores[0]));
   for (i = 0; i < 4; ++i) {
     if (color_neighbors[i] >= 0) scores[color_neighbors[i]] += weights[i];
@@ -734,6 +739,8 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
       temp = color_order[i];
       color_order[i] = color_order[max_idx];
       color_order[max_idx] = temp;
+      inverse_color_order[color_order[i]] = i;
+      inverse_color_order[color_order[max_idx]] = max_idx;
     }
   }
   for (i = 0; i < 4; ++i) color_ctx = color_ctx * 11 + scores[i];
@@ -743,6 +750,9 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
       break;
     }
   if (color_ctx >= PALETTE_COLOR_CONTEXTS) color_ctx = 0;
+  if (color_idx != NULL) {
+    *color_idx = inverse_color_order[color_map[r * cols + c]];
+  }
   return color_ctx;
 }
 #endif  // CONFIG_PALETTE

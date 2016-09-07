@@ -888,8 +888,7 @@ static int rd_pick_palette_intra_sby(
   if (colors > 1 && colors <= 64) {
     int r, c, i, j, k;
     const int max_itr = 50;
-    int color_ctx, color_idx = 0;
-    int color_order[PALETTE_MAX_SIZE];
+    uint8_t color_order[PALETTE_MAX_SIZE];
     float *const data = x->palette_buffer->kmeans_data_buf;
     float centroids[PALETTE_MAX_SIZE];
     uint8_t *const color_map = xd->plane[0].color_index_map;
@@ -970,13 +969,9 @@ static int rd_pick_palette_intra_sby(
               1);
       for (i = 0; i < rows; ++i) {
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
-          color_ctx = av1_get_palette_color_context(color_map, cols, i, j, k,
-                                                    color_order);
-          for (r = 0; r < k; ++r)
-            if (color_map[i * cols + j] == color_order[r]) {
-              color_idx = r;
-              break;
-            }
+          int color_idx;
+          const int color_ctx = av1_get_palette_color_context(
+              color_map, cols, i, j, k, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < k);
           this_rate += cpi->palette_y_color_cost[k - 2][color_ctx][color_idx];
         }
@@ -1785,8 +1780,7 @@ static void rd_pick_palette_intra_sbuv(
   if (colors > 1 && colors <= 64) {
     int r, c, n, i, j;
     const int max_itr = 50;
-    int color_ctx, color_idx = 0;
-    int color_order[PALETTE_MAX_SIZE];
+    uint8_t color_order[PALETTE_MAX_SIZE];
     int64_t this_sse;
     float lb_u, ub_u, val_u;
     float lb_v, ub_v, val_v;
@@ -1876,13 +1870,9 @@ static void rd_pick_palette_intra_sbuv(
 
       for (i = 0; i < rows; ++i) {
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
-          color_ctx = av1_get_palette_color_context(color_map, cols, i, j, n,
-                                                    color_order);
-          for (r = 0; r < n; ++r)
-            if (color_map[i * cols + j] == color_order[r]) {
-              color_idx = r;
-              break;
-            }
+          int color_idx;
+          const int color_ctx = av1_get_palette_color_context(
+              color_map, cols, i, j, n, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < n);
           this_rate += cpi->palette_uv_color_cost[n - 2][color_ctx][color_idx];
         }
