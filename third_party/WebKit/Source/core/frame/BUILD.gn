@@ -55,8 +55,6 @@ blink_core_sources("frame") {
     "LocalDOMWindow.h",
     "LocalFrame.cpp",
     "LocalFrame.h",
-    "LocalFrameLifecycleNotifier.h",
-    "LocalFrameLifecycleObserver.h",
     "Location.cpp",
     "Location.h",
     "Navigator.cpp",

@@ -309,7 +309,6 @@ DEFINE_TRACE(LocalFrame)
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
     Frame::trace(visitor);
-    LocalFrameLifecycleNotifier::trace(visitor);
     Supplementable<LocalFrame>::trace(visitor);
 }
 
@@ -386,9 +385,7 @@ void LocalFrame::detach(FrameDetachType type)
 
     m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*localDOMWindow());
 
-    // Signal frame destruction here rather than in the destructor.
-    // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
-    LocalFrameLifecycleNotifier::notifyContextDestroyed();
+    localDOMWindow()->frameDestroyed();
 
     // TODO: Page should take care of updating focus/scrolling instead of Frame.
     // TODO: It's unclear as to why this is called more than once, but it is,

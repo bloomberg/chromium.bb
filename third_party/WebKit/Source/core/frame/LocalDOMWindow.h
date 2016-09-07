@@ -31,7 +31,6 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
@@ -161,6 +160,7 @@ public:
 
     void registerEventListenerObserver(EventListenerObserver*);
 
+    void frameDestroyed();
     void reset();
 
     unsigned pendingUnloadEventListeners() const;
@@ -220,8 +220,6 @@ protected:
     void schedulePostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, Document* source) override;
 
 private:
-    class WindowFrameObserver;
-
     // Intentionally private to prevent redundant checks when the type is
     // already LocalDOMWindow.
     bool isLocalDOMWindow() const override { return true; }
@@ -235,9 +233,8 @@ private:
     void willDestroyDocumentInFrame();
 
     void willDetachFrameHost();
-    void frameDestroyed();
 
-    Member<WindowFrameObserver> m_frameObserver;
+    Member<LocalFrame> m_frame;
     Member<Document> m_document;
     Member<DOMVisualViewport> m_visualViewport;
 

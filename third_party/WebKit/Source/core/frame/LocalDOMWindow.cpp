@@ -83,43 +83,6 @@
 
 namespace blink {
 
-// Rather than simply inheriting LocalFrameLifecycleObserver like most other
-// classes, LocalDOMWindow hides its LocalFrameLifecycleObserver with
-// composition. This prevents conflicting overloads between DOMWindow, which
-// has a frame() accessor that returns Frame* for bindings code, and
-// LocalFrameLifecycleObserver, which has a frame() accessor that returns a
-// LocalFrame*.
-class LocalDOMWindow::WindowFrameObserver final : public GarbageCollected<LocalDOMWindow::WindowFrameObserver>, public LocalFrameLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
-public:
-    static WindowFrameObserver* create(LocalDOMWindow* window, LocalFrame& frame)
-    {
-        return new WindowFrameObserver(window, frame);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_window);
-        LocalFrameLifecycleObserver::trace(visitor);
-    }
-
-    // LocalFrameLifecycleObserver overrides:
-    void contextDestroyed() override
-    {
-        m_window->frameDestroyed();
-        LocalFrameLifecycleObserver::contextDestroyed();
-    }
-
-private:
-    WindowFrameObserver(LocalDOMWindow* window, LocalFrame& frame)
-        : LocalFrameLifecycleObserver(&frame)
-        , m_window(window)
-    {
-    }
-
-    Member<LocalDOMWindow> m_window;
-};
-
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
@@ -295,7 +258,7 @@ bool LocalDOMWindow::allowPopUp()
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
-    : m_frameObserver(WindowFrameObserver::create(this, frame))
+    : m_frame(&frame)
     , m_visualViewport(DOMVisualViewport::create(this))
     , m_shouldPrintWhenFinishedLoading(false)
 {
@@ -496,6 +459,7 @@ void LocalDOMWindow::frameDestroyed()
     resetLocation();
     m_properties.clear();
     removeAllEventListeners();
+    m_frame = nullptr;
 }
 
 void LocalDOMWindow::willDestroyDocumentInFrame()
@@ -521,7 +485,7 @@ void LocalDOMWindow::registerEventListenerObserver(EventListenerObserver* eventL
 
 void LocalDOMWindow::reset()
 {
-    m_frameObserver->contextDestroyed();
+    frameDestroyed();
 
     m_screen = nullptr;
     m_history = nullptr;
@@ -1507,7 +1471,7 @@ DOMWindow* LocalDOMWindow::open(const String& urlString, const AtomicString& fra
 
 DEFINE_TRACE(LocalDOMWindow)
 {
-    visitor->trace(m_frameObserver);
+    visitor->trace(m_frame);
     visitor->trace(m_document);
     visitor->trace(m_properties);
     visitor->trace(m_screen);
@@ -1535,9 +1499,8 @@ LocalFrame* LocalDOMWindow::frame() const
     // If the LocalDOMWindow still has a frame reference, that frame must point
     // back to this LocalDOMWindow: otherwise, it's easy to get into a situation
     // where script execution leaks between different LocalDOMWindows.
-    if (m_frameObserver->frame())
-        ASSERT_WITH_SECURITY_IMPLICATION(m_frameObserver->frame()->domWindow() == this);
-    return m_frameObserver->frame();
+    SECURITY_DCHECK(!m_frame || m_frame->domWindow() == this);
+    return m_frame;
 }
 
 } // namespace blink

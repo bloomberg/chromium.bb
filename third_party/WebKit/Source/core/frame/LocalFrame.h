@@ -31,8 +31,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/Frame.h"
-#include "core/frame/LocalFrameLifecycleNotifier.h"
-#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FrameTree.h"
 #include "core/paint/PaintPhase.h"
@@ -80,7 +78,7 @@ class WebFrameScheduler;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
-class CORE_EXPORT LocalFrame final : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame> {
+class CORE_EXPORT LocalFrame final : public Frame, public Supplementable<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
     static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*, InterfaceProvider* = nullptr);
