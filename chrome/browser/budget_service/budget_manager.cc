@@ -114,6 +114,8 @@ double BudgetManager::GetCost(blink::mojom::BudgetOperationType type) {
   switch (type) {
     case blink::mojom::BudgetOperationType::SILENT_PUSH:
       return 2.0;
+    case blink::mojom::BudgetOperationType::INVALID_OPERATION:
+      return SiteEngagementScore::kMaxPoints + 1;
       // No default case.
   }
   NOTREACHED();

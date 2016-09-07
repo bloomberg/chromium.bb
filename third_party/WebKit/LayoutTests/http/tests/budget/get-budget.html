@@ -15,11 +15,25 @@
       promise_test(function() {
         return budgetServiceMock.then(mock => {
           assert_own_property(Navigator.prototype, 'budget');
+          mock.addBudget(TEST_BUDGET_TIME, TEST_BUDGET_AT);
           return navigator.budget.getBudget();
         }).then(budget => {
           assert_equals(budget.length, 1);
           assert_equals(budget[0].budgetAt, TEST_BUDGET_AT);
           assert_equals(budget[0].time, TEST_BUDGET_TIME);
+        });
+      }, 'BudgetService.GetBudget should return correct results.');
+
+      promise_test(function() {
+        return budgetServiceMock.then(mock => {
+          assert_own_property(Navigator.prototype, 'budget');
+          mock.setError("database-error");
+          return navigator.budget.getBudget();
+        }).then(budget => {
+          assert_unreached('getBudget should have failed.');
+        }, function(error) {
+          assert_equals(error.name, 'DataError');
+          assert_equals(error.message, "Error reading the budget database.");
         });
       }, 'BudgetService.GetBudget should return correct results.');
     </script>

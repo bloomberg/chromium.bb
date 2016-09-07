@@ -5,13 +5,14 @@
 // https://beverloo.github.io/budget-api/#budget-service-interface
 // TODO(harkness): Link WICG spec when it exists.
 
-enum ActionType {
+enum OperationType {
     "silent-push"
 };
 
 [
     RuntimeEnabled=Budget
 ] interface BudgetService {
-    [CallWith=ScriptState] Promise<double> getCost(ActionType actionType);
+    [CallWith=ScriptState] Promise<double> getCost(OperationType operation);
     [CallWith=ScriptState] Promise<FrozenArray<BudgetState>> getBudget();
+    [CallWith=ScriptState] Promise<boolean> reserve(OperationType operation);
 };

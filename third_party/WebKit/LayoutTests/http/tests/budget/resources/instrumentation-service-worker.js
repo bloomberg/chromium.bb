@@ -38,6 +38,14 @@ self.addEventListener('message', function(workerEvent) {
         }).catch(makeErrorHandler(event.data.command));
         break;
 
+      case 'reserve':
+        navigator.budget.reserve('silent-push').then(success => {
+          port.postMessage({
+            command: event.data.command,
+            success: success });
+        }).catch(makeErrorHandler(event.data.command));
+        break;
+
       default:
         port.postMessage({
           command: 'error',

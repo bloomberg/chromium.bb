@@ -20,7 +20,7 @@
           getActiveServiceWorkerWithMessagePort(test, script, scope)
             .then(function(workerInfo) {
               port = workerInfo.port;
-              port.postMessage({command: 'getCostInvalidType'});
+              port.postMessage({ command: 'getCostInvalidType' });
 
               port.addEventListener('message', function(event) {
                 if (typeof event.data != 'object' || !event.data.command)
@@ -29,7 +29,7 @@
                 assert_equals(event.data.command, 'getCostInvalidType');
                 assert_false(event.data.success,
                     'getCost should fail with invalid arguments.');
-                assert_equals(event.data.errorMessage, "Failed to execute 'getCost' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type ActionType.");
+                assert_equals(event.data.errorMessage, "Failed to execute 'getCost' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type OperationType.");
                 test.done();
               });
             })

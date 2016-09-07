@@ -17,6 +17,7 @@
         var port;
 
         budgetServiceMock.then(mock => {
+          mock.addBudget(TEST_BUDGET_TIME, TEST_BUDGET_AT);
           getActiveServiceWorkerWithMessagePort(test, script, scope)
             .then(function(workerInfo) {
               port = workerInfo.port;

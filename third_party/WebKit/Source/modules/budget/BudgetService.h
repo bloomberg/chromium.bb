@@ -30,15 +30,17 @@ public:
     ~BudgetService();
 
     // Implementation of the Budget API interface.
-    ScriptPromise getCost(ScriptState*, const AtomicString& actionType);
+    ScriptPromise getCost(ScriptState*, const AtomicString& operation);
     ScriptPromise getBudget(ScriptState*);
+    ScriptPromise reserve(ScriptState*, const AtomicString& operation);
 
     DEFINE_INLINE_TRACE() {}
 
 private:
     // Callbacks from the BudgetService to the blink layer.
     void gotCost(ScriptPromiseResolver*, double cost) const;
-    void gotBudget(ScriptPromiseResolver*, const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
+    void gotBudget(ScriptPromiseResolver*, mojom::blink::BudgetServiceErrorType, const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
+    void gotReservation(ScriptPromiseResolver*, mojom::blink::BudgetServiceErrorType, bool success) const;
 
     // Error handler for use if mojo service doesn't connect.
     void onConnectionError();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>getCost succeeds from a Service Worker</title>
+    <title>reserve succeeds from a Service Worker</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
@@ -17,26 +17,25 @@
         var port;
 
         budgetServiceMock.then(mock => {
-          mock.setCost("silent-push", TEST_BUDGET_COST);
+          mock.setReserveSuccess(true);
           getActiveServiceWorkerWithMessagePort(test, script, scope)
             .then(function(workerInfo) {
               port = workerInfo.port;
-              port.postMessage({ command: 'getCost' });
+              port.postMessage({ command: 'reserve' });
 
               port.addEventListener('message', function(event) {
                 if (typeof event.data != 'object' || !event.data.command)
                   assert_unreached('Invalid message from the service worker');
 
-                assert_equals(event.data.command, 'getCost');
+                assert_equals(event.data.command, 'reserve');
                 assert_true(event.data.success,
-                    'getCost should succeed. Error message: ' + event.data.errorMessage);
-                assert_equals(event.data.cost, TEST_BUDGET_COST);
+                    'reserve should succeed. Error message: ' + event.data.errorMessage);
                 test.done();
               });
             })
           .catch(unreached_rejection(test));
         });
-      }, 'getCost should succeed from Service Worker');
+      }, 'reserve should succeed from Service Worker');
     </script>
   </body>
 </html>

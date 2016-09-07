@@ -41,5 +41,12 @@ void BudgetServiceImpl::GetBudget(const url::Origin& origin,
                                   const GetBudgetCallback& callback) {
   // TODO(harkness) Call the BudgetManager once it supports detailed GetBudget
   // calls.
-  callback.Run(0);
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, 0);
+}
+
+void BudgetServiceImpl::Reserve(const url::Origin& origin,
+                                blink::mojom::BudgetOperationType operation,
+                                const ReserveCallback& callback) {
+  // TODO(harkness): Call the BudgetManager::Reserve when it is available.
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, false);
 }

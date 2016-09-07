@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Budget API: Make basic getCost calls.</title>
+    <title>Budget API: Make basic reserve calls.</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="/js-test-resources/mojo-helpers.js"></script>
@@ -15,24 +15,24 @@
       promise_test(function() {
         return budgetServiceMock.then(mock => {
           assert_own_property(Navigator.prototype, 'budget');
-          mock.setCost("silent-push", TEST_BUDGET_COST);
-          return navigator.budget.getCost("silent-push");
-        }).then(cost => {
-          assert_equals(cost, TEST_BUDGET_COST);
+          mock.setReserveSuccess(true);
+          return navigator.budget.reserve("silent-push");
+        }).then(success => {
+          assert_equals(success, true);
         });
-      }, 'BudgetService.GetCost should return correct results.');
+      }, 'BudgetService.Reserve should return correct results.');
 
       promise_test(function() {
         return budgetServiceMock.then(mock => {
           assert_own_property(Navigator.prototype, 'budget');
-          return navigator.budget.getCost("frobinator");
-        }).then(cost => {
-          assert_unreached('getCost should have failed with an invalid argument.');
+          return navigator.budget.reserve("frobinator");
+        }).then(success => {
+          assert_unreached('reserve should have failed with an invalid argument.');
         }, function(error) {
           assert_equals(error.name, 'TypeError');
-          assert_equals(error.message, "Failed to execute 'getCost' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type OperationType.");
+          assert_equals(error.message, "Failed to execute 'reserve' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type OperationType.");
         });
-      }, 'BudgetService.GetCost should return Type Error if an invalid argument is provided.');
+      }, 'BudgetService.Reserve should return Type Error if an invalid argument is provided.');
     </script>
   </body>
 </html>

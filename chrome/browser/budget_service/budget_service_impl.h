@@ -21,7 +21,10 @@ class BudgetServiceImpl : public blink::mojom::BudgetService {
   void GetCost(blink::mojom::BudgetOperationType operation,
                const GetCostCallback& callback) override;
   void GetBudget(const url::Origin& origin,
-                 const GetBudgetCallback& callbac) override;
+                 const GetBudgetCallback& callback) override;
+  void Reserve(const url::Origin& origin,
+               blink::mojom::BudgetOperationType operation,
+               const ReserveCallback& callback) override;
 
  private:
   BudgetServiceImpl(int render_process_id,
