@@ -34,8 +34,8 @@ component("vr") {
 
   if (is_android) {
     sources += [
-      "android/gvr/gvr_api_manager.cc",
-      "android/gvr/gvr_api_manager.h",
+      "android/gvr/gvr_delegate.cc",
+      "android/gvr/gvr_delegate.h",
       "android/gvr/gvr_device.cc",
       "android/gvr/gvr_device.h",
       "android/gvr/gvr_device_provider.cc",

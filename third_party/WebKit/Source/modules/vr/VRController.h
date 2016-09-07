@@ -34,6 +34,12 @@ public:
     void getDisplays(ScriptPromiseResolver*);
     device::blink::VRPosePtr getPose(unsigned index);
     void resetPose(unsigned index);
+    void requestPresent(unsigned index);
+    void exitPresent(unsigned index);
+    void submitFrame(unsigned index);
+    void updateLayerBounds(unsigned index,
+        device::blink::VRLayerBoundsPtr leftBounds,
+        device::blink::VRLayerBoundsPtr rightBounds);
 
     VRDisplay* createOrUpdateDisplay(const device::blink::VRDisplayPtr&);
     VRDisplayVector updateDisplays(mojo::WTFArray<device::blink::VRDisplayPtr>);

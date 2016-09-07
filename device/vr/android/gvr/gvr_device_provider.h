@@ -5,19 +5,18 @@
 #ifndef DEVICE_VR_ANDROID_GVR_DEVICE_PROVIDER_H
 #define DEVICE_VR_ANDROID_GVR_DEVICE_PROVIDER_H
 
-#include <jni.h>
-
 #include <memory>
 
-#include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "device/vr/android/gvr/gvr_api_manager.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 
 namespace device {
 
-class GvrDeviceProvider : public VRDeviceProvider, public GvrApiManagerClient {
+class GvrDeviceProviderDelegate;
+
+class GvrDeviceProvider : public VRDeviceProvider, public GvrDelegateClient {
  public:
   GvrDeviceProvider();
   ~GvrDeviceProvider() override;
@@ -25,13 +24,13 @@ class GvrDeviceProvider : public VRDeviceProvider, public GvrApiManagerClient {
   void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
-  // GvrApiManagerClient
-  void OnGvrApiInitialized(gvr::GvrApi* gvr_api) override;
-  void OnGvrApiShutdown() override;
+  // GvrDelegateClient
+  void OnDelegateInitialized(GvrDelegate* delegate) override;
+  void OnDelegateShutdown() override;
 
  private:
   std::unique_ptr<VRDevice> vr_device_;
-  base::android::ScopedJavaGlobalRef<jobject> j_device_;
+  std::unique_ptr<GvrDeviceProviderDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };

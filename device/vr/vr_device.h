@@ -35,6 +35,13 @@ class VRDevice {
   virtual VRPosePtr GetPose() = 0;
   virtual void ResetPose() = 0;
 
+  virtual void RequestPresent(){};
+  virtual void ExitPresent(){};
+
+  virtual void SubmitFrame(){};
+  virtual void UpdateLayerBounds(VRLayerBoundsPtr leftBounds,
+                                 VRLayerBoundsPtr rightBounds){};
+
  private:
   VRDeviceProvider* provider_;
   unsigned int id_;

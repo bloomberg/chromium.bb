@@ -65,4 +65,34 @@ void VRServiceImpl::ResetPose(uint32_t index) {
     device->ResetPose();
 }
 
+void VRServiceImpl::RequestPresent(uint32_t index) {
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  VRDevice* device = device_manager->GetDevice(index);
+  if (device)
+    device->RequestPresent();
+}
+
+void VRServiceImpl::ExitPresent(uint32_t index) {
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  VRDevice* device = device_manager->GetDevice(index);
+  if (device)
+    device->ExitPresent();
+}
+
+void VRServiceImpl::SubmitFrame(uint32_t index) {
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  VRDevice* device = device_manager->GetDevice(index);
+  if (device)
+    device->SubmitFrame();
+}
+
+void VRServiceImpl::UpdateLayerBounds(uint32_t index,
+                                      VRLayerBoundsPtr leftBounds,
+                                      VRLayerBoundsPtr rightBounds) {
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  VRDevice* device = device_manager->GetDevice(index);
+  if (device)
+    device->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));
+}
+
 }  // namespace device

@@ -54,6 +54,13 @@ struct VRDisplay {
    VREyeParameters rightEye;
 };
 
+struct VRLayerBounds {
+   float left;
+   float top;
+   float width;
+   float height;
+};
+
 interface VRService {
   SetClient(VRServiceClient client);
 
@@ -61,6 +68,11 @@ interface VRService {
   [Sync]
   GetPose(uint32 index) => (VRPose pose);
   ResetPose(uint32 index);
+
+  RequestPresent(uint32 index);
+  ExitPresent(uint32 index);
+  SubmitFrame(uint32 index);
+  UpdateLayerBounds(uint32 index, VRLayerBounds leftBounds, VRLayerBounds rightBounds);
 };
 
 interface VRServiceClient {

@@ -181,10 +181,44 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
             // Check to see if the canvas is still the current fullscreen
             // element once per second.
             m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
+
+            controller()->requestPresent(m_displayId);
         } else {
             DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay.");
             resolver->reject(exception);
         }
+
+        // Set up the texture bounds for the provided layer
+        device::blink::VRLayerBoundsPtr leftBounds = device::blink::VRLayerBounds::New();
+        device::blink::VRLayerBoundsPtr rightBounds = device::blink::VRLayerBounds::New();
+
+        if (m_layer.hasLeftBounds()) {
+            leftBounds->left = m_layer.leftBounds()[0];
+            leftBounds->top = m_layer.leftBounds()[1];
+            leftBounds->width = m_layer.leftBounds()[2];
+            leftBounds->height = m_layer.leftBounds()[3];
+        } else {
+            // Left eye defaults
+            leftBounds->left = 0.0f;
+            leftBounds->top = 0.0f;
+            leftBounds->width = 0.5f;
+            leftBounds->height = 1.0f;
+        }
+
+        if (m_layer.hasRightBounds()) {
+            rightBounds->left = m_layer.rightBounds()[0];
+            rightBounds->top = m_layer.rightBounds()[1];
+            rightBounds->width = m_layer.rightBounds()[2];
+            rightBounds->height = m_layer.rightBounds()[3];
+        } else {
+            // Right eye defaults
+            rightBounds->left = 0.5f;
+            rightBounds->top = 0.0f;
+            rightBounds->width = 0.5f;
+            rightBounds->height = 1.0f;
+        }
+
+        controller()->updateLayerBounds(m_displayId, std::move(leftBounds), std::move(rightBounds));
     } else {
         DOMException* exception = DOMException::create(InvalidStateError, "Invalid layer source.");
         resolver->reject(exception);
@@ -208,6 +242,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState)
     if (!m_capabilities->hasExternalDisplay()) {
         Fullscreen::fullyExitFullscreen(m_layer.source()->document());
         m_fullscreenCheckTimer.stop();
+        controller()->exitPresent(m_displayId);
     } else {
         // Can't get into this presentation mode, so nothing to do here.
     }
@@ -235,6 +270,7 @@ HeapVector<VRLayer> VRDisplay::getLayers()
 
 void VRDisplay::submitFrame(VRPose* pose)
 {
+    controller()->submitFrame(m_displayId);
 }
 
 void VRDisplay::didProcessTask()
@@ -257,6 +293,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*)
         m_isPresenting = false;
         m_navigatorVR->fireVRDisplayPresentChange(this);
         m_fullscreenCheckTimer.stop();
+        controller()->exitPresent(m_displayId);
     }
 }
 

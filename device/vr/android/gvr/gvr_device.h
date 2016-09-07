@@ -8,15 +8,13 @@
 #include "base/macros.h"
 #include "device/vr/vr_device.h"
 
-namespace gvr {
-class GvrApi;
-}  // namespace gvr
-
 namespace device {
+
+class GvrDelegate;
 
 class GvrDevice : public VRDevice {
  public:
-  GvrDevice(VRDeviceProvider* provider, gvr::GvrApi* gvr_api);
+  GvrDevice(VRDeviceProvider* provider, GvrDelegate* delegate);
   ~GvrDevice() override;
 
   // VRDevice
@@ -24,8 +22,15 @@ class GvrDevice : public VRDevice {
   VRPosePtr GetPose() override;
   void ResetPose() override;
 
+  void RequestPresent() override;
+  void ExitPresent() override;
+
+  void SubmitFrame() override;
+  void UpdateLayerBounds(VRLayerBoundsPtr leftBounds,
+                         VRLayerBoundsPtr rightBounds) override;
+
  private:
-  gvr::GvrApi* gvr_api_;
+  GvrDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

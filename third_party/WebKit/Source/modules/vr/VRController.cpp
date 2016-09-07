@@ -58,6 +58,40 @@ void VRController::resetPose(unsigned index)
     m_service->ResetPose(index);
 }
 
+void VRController::requestPresent(unsigned index)
+{
+    if (!m_service)
+        return;
+
+    m_service->RequestPresent(index);
+}
+
+void VRController::exitPresent(unsigned index)
+{
+    if (!m_service)
+        return;
+
+    m_service->ExitPresent(index);
+}
+
+void VRController::submitFrame(unsigned index)
+{
+    if (!m_service)
+        return;
+
+    m_service->SubmitFrame(index);
+}
+
+void VRController::updateLayerBounds(unsigned index,
+    device::blink::VRLayerBoundsPtr leftBounds,
+    device::blink::VRLayerBoundsPtr rightBounds)
+{
+    if (!m_service)
+        return;
+
+    m_service->UpdateLayerBounds(index, std::move(leftBounds), std::move(rightBounds));
+}
+
 VRDisplay* VRController::createOrUpdateDisplay(const device::blink::VRDisplayPtr& display)
 {
     VRDisplay* vrDisplay = getDisplayForIndex(display->index);
