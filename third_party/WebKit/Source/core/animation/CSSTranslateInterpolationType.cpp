@@ -4,7 +4,7 @@
 
 #include "core/animation/CSSTranslateInterpolationType.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/transforms/TranslateTransformOperation.h"
@@ -52,9 +52,9 @@ enum TranslateComponentIndex : unsigned {
 InterpolationValue createNeutralValue()
 {
     std::unique_ptr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
-    result->set(TranslateX, CSSLengthInterpolationType::createNeutralInterpolableValue());
-    result->set(TranslateY, CSSLengthInterpolationType::createNeutralInterpolableValue());
-    result->set(TranslateZ, CSSLengthInterpolationType::createNeutralInterpolableValue());
+    result->set(TranslateX, LengthInterpolationFunctions::createNeutralInterpolableValue());
+    result->set(TranslateY, LengthInterpolationFunctions::createNeutralInterpolableValue());
+    result->set(TranslateZ, LengthInterpolationFunctions::createNeutralInterpolableValue());
     return InterpolationValue(std::move(result));
 }
 
@@ -64,9 +64,9 @@ InterpolationValue convertTranslateOperation(const TranslateTransformOperation* 
         return createNeutralValue();
 
     std::unique_ptr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
-    result->set(TranslateX, CSSLengthInterpolationType::maybeConvertLength(translate->x(), zoom).interpolableValue);
-    result->set(TranslateY, CSSLengthInterpolationType::maybeConvertLength(translate->y(), zoom).interpolableValue);
-    result->set(TranslateZ, CSSLengthInterpolationType::maybeConvertLength(Length(translate->z(), Fixed), zoom).interpolableValue);
+    result->set(TranslateX, LengthInterpolationFunctions::maybeConvertLength(translate->x(), zoom).interpolableValue);
+    result->set(TranslateY, LengthInterpolationFunctions::maybeConvertLength(translate->y(), zoom).interpolableValue);
+    result->set(TranslateZ, LengthInterpolationFunctions::maybeConvertLength(Length(translate->z(), Fixed), zoom).interpolableValue);
     return InterpolationValue(std::move(result));
 }
 
@@ -102,11 +102,11 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(const CSSVal
     for (size_t i = 0; i < TranslateComponentIndexCount; i++) {
         InterpolationValue component = nullptr;
         if (i < list.length()) {
-            component = CSSLengthInterpolationType::maybeConvertCSSValue(list.item(i));
+            component = LengthInterpolationFunctions::maybeConvertCSSValue(list.item(i));
             if (!component)
                 return nullptr;
         } else {
-            component = InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
+            component = InterpolationValue(LengthInterpolationFunctions::createNeutralInterpolableValue());
         }
         result->set(i, std::move(component.interpolableValue));
     }
@@ -122,9 +122,9 @@ void CSSTranslateInterpolationType::apply(const InterpolableValue& interpolableV
 {
     const InterpolableList& list = toInterpolableList(interpolableValue);
     const CSSToLengthConversionData& conversionData = environment.state().cssToLengthConversionData();
-    Length x = CSSLengthInterpolationType::createLength(*list.get(TranslateX), nullptr, conversionData, ValueRangeAll);
-    Length y = CSSLengthInterpolationType::createLength(*list.get(TranslateY), nullptr, conversionData, ValueRangeAll);
-    float z = CSSLengthInterpolationType::createLength(*list.get(TranslateZ), nullptr, conversionData, ValueRangeAll).pixels();
+    Length x = LengthInterpolationFunctions::createLength(*list.get(TranslateX), nullptr, conversionData, ValueRangeAll);
+    Length y = LengthInterpolationFunctions::createLength(*list.get(TranslateY), nullptr, conversionData, ValueRangeAll);
+    float z = LengthInterpolationFunctions::createLength(*list.get(TranslateZ), nullptr, conversionData, ValueRangeAll).pixels();
 
     RefPtr<TranslateTransformOperation> result = nullptr;
     if (!x.isZero() || !y.isZero() || z != 0)

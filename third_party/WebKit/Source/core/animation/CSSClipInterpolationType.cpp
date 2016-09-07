@@ -4,7 +4,7 @@
 
 #include "core/animation/CSSClipInterpolationType.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -150,7 +150,7 @@ static std::unique_ptr<InterpolableValue> convertClipComponent(const Length& len
 {
     if (length.isAuto())
         return InterpolableList::create(0);
-    return CSSLengthInterpolationType::maybeConvertLength(length, zoom).interpolableValue;
+    return LengthInterpolationFunctions::maybeConvertLength(length, zoom).interpolableValue;
 }
 
 static InterpolationValue createClipValue(const LengthBox& clip, double zoom)
@@ -200,7 +200,7 @@ static std::unique_ptr<InterpolableValue> convertClipComponent(const CSSPrimitiv
 {
     if (isCSSAuto(length))
         return InterpolableList::create(0);
-    return CSSLengthInterpolationType::maybeConvertCSSValue(length).interpolableValue;
+    return LengthInterpolationFunctions::maybeConvertCSSValue(length).interpolableValue;
 }
 
 InterpolationValue CSSClipInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers&) const
@@ -255,7 +255,7 @@ void CSSClipInterpolationType::apply(const InterpolableValue& interpolableValue,
     {
         if (isAuto)
             return Length(Auto);
-        return CSSLengthInterpolationType::createLength(*list.get(index), nullptr, environment.state().cssToLengthConversionData(), ValueRangeAll);
+        return LengthInterpolationFunctions::createLength(*list.get(index), nullptr, environment.state().cssToLengthConversionData(), ValueRangeAll);
     };
     environment.state().style()->setClip(LengthBox(
         convertIndex(autos.isTopAuto, ClipTop),

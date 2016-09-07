@@ -4,7 +4,7 @@
 
 #include "core/animation/FilterInterpolationFunctions.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/ShadowInterpolationFunctions.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -128,9 +128,9 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
 
     case FilterOperation::BLUR: {
         if (filter.length() == 0)
-            result.interpolableValue = CSSLengthInterpolationType::createNeutralInterpolableValue();
+            result.interpolableValue = LengthInterpolationFunctions::createNeutralInterpolableValue();
         else
-            result = CSSLengthInterpolationType::maybeConvertCSSValue(filter.item(0));
+            result = LengthInterpolationFunctions::maybeConvertCSSValue(filter.item(0));
         break;
     }
 
@@ -171,7 +171,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(const Filter
         break;
 
     case FilterOperation::BLUR:
-        result = CSSLengthInterpolationType::maybeConvertLength(toBlurFilterOperation(filter).stdDeviation(), zoom);
+        result = LengthInterpolationFunctions::maybeConvertLength(toBlurFilterOperation(filter).stdDeviation(), zoom);
         break;
 
     case FilterOperation::DROP_SHADOW: {
@@ -212,7 +212,7 @@ std::unique_ptr<InterpolableValue> FilterInterpolationFunctions::createNoneValue
         return InterpolableNumber::create(1);
 
     case FilterOperation::BLUR:
-        return CSSLengthInterpolationType::createNeutralInterpolableValue();
+        return LengthInterpolationFunctions::createNeutralInterpolableValue();
 
     case FilterOperation::DROP_SHADOW:
         return ShadowInterpolationFunctions::createNeutralInterpolableValue();
@@ -251,7 +251,7 @@ FilterOperation* FilterInterpolationFunctions::createFilter(const InterpolableVa
     }
 
     case FilterOperation::BLUR: {
-        Length stdDeviation = CSSLengthInterpolationType::createLength(interpolableValue, nonInterpolableValue.typeNonInterpolableValue(), state.cssToLengthConversionData(), ValueRangeNonNegative);
+        Length stdDeviation = LengthInterpolationFunctions::createLength(interpolableValue, nonInterpolableValue.typeNonInterpolableValue(), state.cssToLengthConversionData(), ValueRangeNonNegative);
         return BlurFilterOperation::create(stdDeviation);
     }
 

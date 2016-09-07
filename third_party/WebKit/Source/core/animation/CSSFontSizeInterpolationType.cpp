@@ -4,7 +4,7 @@
 
 #include "core/animation/CSSFontSizeInterpolationType.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/LengthFunctions.h"
@@ -57,7 +57,7 @@ private:
 
 InterpolationValue convertFontSize(float size)
 {
-    return InterpolationValue(CSSLengthInterpolationType::createInterpolablePixels(size));
+    return InterpolationValue(LengthInterpolationFunctions::createInterpolablePixels(size));
 }
 
 InterpolationValue maybeConvertKeyword(CSSValueID valueID, const StyleResolverState& state, InterpolationType::ConversionCheckers& conversionCheckers)
@@ -82,7 +82,7 @@ InterpolationValue maybeConvertKeyword(CSSValueID valueID, const StyleResolverSt
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    return InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
+    return InterpolationValue(LengthInterpolationFunctions::createNeutralInterpolableValue());
 }
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertInitial(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
@@ -99,7 +99,7 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(const Style
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    std::unique_ptr<InterpolableValue> result = CSSLengthInterpolationType::maybeConvertCSSValue(value).interpolableValue;
+    std::unique_ptr<InterpolableValue> result = LengthInterpolationFunctions::maybeConvertCSSValue(value).interpolableValue;
     if (result)
         return InterpolationValue(std::move(result));
 
@@ -117,7 +117,7 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertUnderlyingValue(con
 void CSSFontSizeInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
     const FontDescription& parentFont = environment.state().parentFontDescription();
-    Length fontSizeLength = CSSLengthInterpolationType::createLength(interpolableValue, nullptr, environment.state().fontSizeConversionData(), ValueRangeNonNegative);
+    Length fontSizeLength = LengthInterpolationFunctions::createLength(interpolableValue, nullptr, environment.state().fontSizeConversionData(), ValueRangeNonNegative);
     float fontSize = floatValueForLength(fontSizeLength, parentFont.getSize().value);
     environment.state().fontBuilder().setSize(FontDescription::Size(0, fontSize, !fontSizeLength.isPercentOrCalc() || parentFont.isAbsoluteSize()));
 }

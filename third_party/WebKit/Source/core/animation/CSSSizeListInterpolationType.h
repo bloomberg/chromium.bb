@@ -5,8 +5,8 @@
 #ifndef CSSSizeListInterpolationType_h
 #define CSSSizeListInterpolationType_h
 
-#include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/CSSLengthListInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
@@ -36,7 +36,8 @@ private:
             if (!item.isValuePair())
                 return nullptr;
             const CSSValuePair& pair = toCSSValuePair(item);
-            return CSSLengthInterpolationType::maybeConvertCSSValue(index % 2 == 0 ? pair.first() : pair.second());
+            const CSSValue& side = index % 2 == 0 ? pair.first() : pair.second();
+            return LengthInterpolationFunctions::maybeConvertCSSValue(side);
         });
     }
 };

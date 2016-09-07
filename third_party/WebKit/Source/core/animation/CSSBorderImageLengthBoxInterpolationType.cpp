@@ -5,7 +5,7 @@
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 
 #include "core/animation/BorderImageLengthBoxPropertyFunctions.h"
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -146,7 +146,7 @@ InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box, 
         if (side.isNumber()) {
             list->set(i, InterpolableNumber::create(side.number()));
         } else {
-            InterpolationValue convertedSide = CSSLengthInterpolationType::maybeConvertLength(side.length(), zoom);
+            InterpolationValue convertedSide = LengthInterpolationFunctions::maybeConvertLength(side.length(), zoom);
             if (!convertedSide)
                 return nullptr;
             list->set(i, std::move(convertedSide.interpolableValue));
@@ -206,7 +206,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(c
         if (side.isNumber()) {
             list->set(i, InterpolableNumber::create(side.getDoubleValue()));
         } else {
-            InterpolationValue convertedSide = CSSLengthInterpolationType::maybeConvertCSSValue(side);
+            InterpolationValue convertedSide = LengthInterpolationFunctions::maybeConvertCSSValue(side);
             if (!convertedSide)
                 return nullptr;
             list->set(i, std::move(convertedSide.interpolableValue));
@@ -255,7 +255,7 @@ void CSSBorderImageLengthBoxInterpolationType::composite(UnderlyingValueOwner& u
         if (sideNumbers.isNumber[i])
             underlyingList.getMutable(i)->scaleAndAdd(underlyingFraction, *list.get(i));
         else
-            CSSLengthInterpolationType::composite(underlyingList.getMutable(i), underlyingSideNonInterpolableValues[i], underlyingFraction, *list.get(i), sideNonInterpolableValues[i].get());
+            LengthInterpolationFunctions::composite(underlyingList.getMutable(i), underlyingSideNonInterpolableValues[i], underlyingFraction, *list.get(i), sideNonInterpolableValues[i].get());
     }
 }
 
@@ -267,7 +267,7 @@ void CSSBorderImageLengthBoxInterpolationType::apply(const InterpolableValue& in
     const auto& convertSide = [&sideNumbers, &list, &environment, &nonInterpolableValues](size_t index) -> BorderImageLength {
         if (sideNumbers.isNumber[index])
             return clampTo<double>(toInterpolableNumber(list.get(index))->value(), 0);
-        return CSSLengthInterpolationType::createLength(*list.get(index), nonInterpolableValues[index].get(), environment.state().cssToLengthConversionData(), ValueRangeNonNegative);
+        return LengthInterpolationFunctions::createLength(*list.get(index), nonInterpolableValues[index].get(), environment.state().cssToLengthConversionData(), ValueRangeNonNegative);
     };
     BorderImageLengthBox box(
         convertSide(SideTop),

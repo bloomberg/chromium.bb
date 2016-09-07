@@ -5,8 +5,8 @@
 #ifndef CSSLengthPairInterpolationType_h
 #define CSSLengthPairInterpolationType_h
 
-#include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/CSSLengthListInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSValuePair.h"
 
@@ -23,7 +23,8 @@ private:
     {
         const CSSValuePair& pair = toCSSValuePair(value);
         return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
-            return CSSLengthInterpolationType::maybeConvertCSSValue(index == 0 ? pair.first() : pair.second());
+            const CSSValue& item = index == 0 ? pair.first() : pair.second();
+            return LengthInterpolationFunctions::maybeConvertCSSValue(item);
         });
     }
 };

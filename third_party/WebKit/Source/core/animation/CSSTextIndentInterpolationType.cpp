@@ -4,7 +4,7 @@
 
 #include "core/animation/CSSTextIndentInterpolationType.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -105,7 +105,7 @@ private:
 
 InterpolationValue createValue(const Length& length, const IndentMode& mode, double zoom)
 {
-    InterpolationValue convertedLength = CSSLengthInterpolationType::maybeConvertLength(length, zoom);
+    InterpolationValue convertedLength = LengthInterpolationFunctions::maybeConvertLength(length, zoom);
     DCHECK(convertedLength);
     return InterpolationValue(std::move(convertedLength.interpolableValue), CSSTextIndentNonInterpolableValue::create(convertedLength.nonInterpolableValue.release(), mode));
 }
@@ -146,7 +146,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(const CSSVa
         else if (primitiveValue.getValueID() == CSSValueHanging)
             type = TextIndentHanging;
         else
-            length = CSSLengthInterpolationType::maybeConvertCSSValue(primitiveValue);
+            length = LengthInterpolationFunctions::maybeConvertCSSValue(primitiveValue);
     }
     DCHECK(length);
 
@@ -169,7 +169,7 @@ PairwiseInterpolationValue CSSTextIndentInterpolationType::maybeMergeSingles(Int
     if (startNonInterpolableValue.mode() != endNonInterpolableValue.mode())
         return nullptr;
 
-    PairwiseInterpolationValue result = CSSLengthInterpolationType::staticMergeSingleConversions(
+    PairwiseInterpolationValue result = LengthInterpolationFunctions::mergeSingles(
         InterpolationValue(std::move(start.interpolableValue), startNonInterpolableValue.lengthNonInterpolableValue().release()),
         InterpolationValue(std::move(end.interpolableValue), endNonInterpolableValue.lengthNonInterpolableValue().release()));
     result.nonInterpolableValue = CSSTextIndentNonInterpolableValue::create(result.nonInterpolableValue.release(), startNonInterpolableValue.mode());
@@ -187,7 +187,7 @@ void CSSTextIndentInterpolationType::composite(UnderlyingValueOwner& underlyingV
         return;
     }
 
-    CSSLengthInterpolationType::composite(
+    LengthInterpolationFunctions::composite(
         underlyingValueOwner.mutableValue().interpolableValue,
         toCSSTextIndentNonInterpolableValue(*underlyingValueOwner.mutableValue().nonInterpolableValue).lengthNonInterpolableValue(),
         underlyingFraction,
@@ -199,7 +199,7 @@ void CSSTextIndentInterpolationType::apply(const InterpolableValue& interpolable
 {
     const CSSTextIndentNonInterpolableValue& cssTextIndentNonInterpolableValue = toCSSTextIndentNonInterpolableValue(*nonInterpolableValue);
     ComputedStyle& style = *environment.state().style();
-    style.setTextIndent(CSSLengthInterpolationType::createLength(
+    style.setTextIndent(LengthInterpolationFunctions::createLength(
         interpolableValue,
         cssTextIndentNonInterpolableValue.lengthNonInterpolableValue(),
         environment.state().cssToLengthConversionData(),

@@ -4,7 +4,7 @@
 
 #include "core/animation/CSSLengthListInterpolationType.h"
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/LengthListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/UnderlyingLengthChecker.h"
@@ -31,7 +31,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertNeutral(const Int
         return nullptr;
 
     return ListInterpolationFunctions::createList(underlyingLength, [](size_t) {
-        return InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
+        return InterpolationValue(LengthInterpolationFunctions::createNeutralInterpolableValue());
     });
 }
 
@@ -41,7 +41,7 @@ static InterpolationValue maybeConvertLengthList(const Vector<Length>& lengthLis
         return nullptr;
 
     return ListInterpolationFunctions::createList(lengthList.size(), [&lengthList, zoom](size_t index) {
-        return CSSLengthInterpolationType::maybeConvertLength(lengthList[index], zoom);
+        return LengthInterpolationFunctions::maybeConvertLength(lengthList[index], zoom);
     });
 }
 
@@ -96,13 +96,13 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertValue(const CSSVa
 
     const CSSValueList& list = toCSSValueList(value);
     return ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
-        return CSSLengthInterpolationType::maybeConvertCSSValue(list.item(index));
+        return LengthInterpolationFunctions::maybeConvertCSSValue(list.item(index));
     });
 }
 
 PairwiseInterpolationValue CSSLengthListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
-    return ListInterpolationFunctions::maybeMergeSingles(std::move(start), std::move(end), CSSLengthInterpolationType::staticMergeSingleConversions);
+    return ListInterpolationFunctions::maybeMergeSingles(std::move(start), std::move(end), LengthInterpolationFunctions::mergeSingles);
 }
 
 InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
@@ -116,8 +116,8 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(c
 void CSSLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     ListInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value,
-        CSSLengthInterpolationType::nonInterpolableValuesAreCompatible,
-        CSSLengthInterpolationType::composite);
+        LengthInterpolationFunctions::nonInterpolableValuesAreCompatible,
+        LengthInterpolationFunctions::composite);
 }
 
 void CSSLengthListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
@@ -129,7 +129,7 @@ void CSSLengthListInterpolationType::apply(const InterpolableValue& interpolable
     DCHECK_EQ(nonInterpolableList.length(), length);
     Vector<Length> result(length);
     for (size_t i = 0; i < length; i++) {
-        result[i] = CSSLengthInterpolationType::createLength(
+        result[i] = LengthInterpolationFunctions::createLength(
             *interpolableList.get(i),
             nonInterpolableList.get(i),
             environment.state().cssToLengthConversionData(),
