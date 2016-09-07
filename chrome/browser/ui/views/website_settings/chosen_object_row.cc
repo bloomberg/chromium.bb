@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/chosen_object_view.h"
+#include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
 
-#include "chrome/browser/ui/views/website_settings/chosen_object_view_observer.h"
+#include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -14,7 +14,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 
-ChosenObjectView::ChosenObjectView(
+ChosenObjectRow::ChosenObjectRow(
     std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info)
     : info_(std::move(info)) {
   views::GridLayout* layout = new views::GridLayout(this);
@@ -61,14 +61,14 @@ ChosenObjectView::ChosenObjectView(
                   views::GridLayout::CENTER);
 }
 
-void ChosenObjectView::AddObserver(ChosenObjectViewObserver* observer) {
+void ChosenObjectRow::AddObserver(ChosenObjectRowObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-ChosenObjectView::~ChosenObjectView() {}
+ChosenObjectRow::~ChosenObjectRow() {}
 
-void ChosenObjectView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
+void ChosenObjectRow::ButtonPressed(views::Button* sender,
+                                    const ui::Event& event) {
   // Change the icon to reflect the selected setting.
   const gfx::Image& image =
       WebsiteSettingsUI::GetChosenObjectIcon(*info_, true);
@@ -78,6 +78,6 @@ void ChosenObjectView::ButtonPressed(views::Button* sender,
   delete delete_button_;
   delete_button_ = nullptr;
 
-  FOR_EACH_OBSERVER(ChosenObjectViewObserver, observer_list_,
+  FOR_EACH_OBSERVER(ChosenObjectRowObserver, observer_list_,
                     OnChosenObjectDeleted(*info_));
 }

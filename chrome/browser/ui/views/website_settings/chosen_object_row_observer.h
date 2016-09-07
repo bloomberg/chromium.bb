@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_OBSERVER_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
+#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
-class ChosenObjectView;
+class ChosenObjectRow;
 
-class ChosenObjectViewObserver {
+class ChosenObjectRowObserver {
  public:
   // This method is called when permission for the object is revoked.
   virtual void OnChosenObjectDeleted(
       const WebsiteSettingsUI::ChosenObjectInfo& info) = 0;
 
  protected:
-  virtual ~ChosenObjectViewObserver() {}
+  virtual ~ChosenObjectRowObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_

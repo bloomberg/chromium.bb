@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/website_settings/chosen_object_view_observer.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
+#include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -51,8 +51,8 @@ enum : int {
 
 // The views implementation of the website settings UI.
 class WebsiteSettingsPopupView : public content::WebContentsObserver,
-                                 public PermissionSelectorViewObserver,
-                                 public ChosenObjectViewObserver,
+                                 public PermissionSelectorRowObserver,
+                                 public ChosenObjectRowObserver,
                                  public views::BubbleDialogDelegateView,
                                  public views::ButtonListener,
                                  public views::LinkListener,
@@ -87,11 +87,11 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
-  // PermissionSelectorViewObserver implementation.
+  // PermissionSelectorRowObserver implementation.
   void OnPermissionChanged(
       const WebsiteSettingsUI::PermissionInfo& permission) override;
 
-  // ChosenObjectViewObserver implementation.
+  // ChosenObjectRowObserver implementation.
   void OnChosenObjectDeleted(
       const WebsiteSettingsUI::ChosenObjectInfo& info) override;
 

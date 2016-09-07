@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
-#include "chrome/browser/ui/views/website_settings/chosen_object_view.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
+#include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -637,7 +637,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     const ChosenObjectInfoList& chosen_object_info_list) {
   // When a permission is changed, WebsiteSettings::OnSitePermissionChanged()
-  // calls this method with updated permissions. However, PermissionSelectorView
+  // calls this method with updated permissions. However, PermissionSelectorRow
   // will have already updated its state, so it's already reflected in the UI.
   // In addition, if a permission is set to the default setting, WebsiteSettings
   // removes it from |permission_info_list|, but the button should remain.
@@ -670,7 +670,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
                         0);
   for (const auto& permission : permission_info_list) {
     layout->StartRow(1, content_column);
-    PermissionSelectorView* selector = new PermissionSelectorView(
+    PermissionSelectorRow* selector = new PermissionSelectorRow(
         web_contents() ? web_contents()->GetVisibleURL() : GURL::EmptyGURL(),
         permission);
     selector->AddObserver(this);
@@ -685,7 +685,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
   for (auto* object : chosen_object_info_list) {
     layout->StartRow(1, content_column);
     // The view takes ownership of the object info.
-    auto* object_view = new ChosenObjectView(base::WrapUnique(object));
+    auto* object_view = new ChosenObjectRow(base::WrapUnique(object));
     object_view->AddObserver(this);
     layout->AddView(object_view, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);

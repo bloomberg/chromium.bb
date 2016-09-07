@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -53,7 +53,7 @@ class PermissionMenuButton : public views::MenuButton,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
-  PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorView|.
+  PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorRow|.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   bool is_rtl_display_;
@@ -223,10 +223,10 @@ void PermissionCombobox::OnPerformAction(Combobox* combobox) {
 }  // namespace internal
 
 ///////////////////////////////////////////////////////////////////////////////
-// PermissionSelectorView
+// PermissionSelectorRow
 ///////////////////////////////////////////////////////////////////////////////
 
-PermissionSelectorView::PermissionSelectorView(
+PermissionSelectorRow::PermissionSelectorRow(
     const GURL& url,
     const WebsiteSettingsUI::PermissionInfo& permission)
     : icon_(NULL), menu_button_(NULL), combobox_(NULL) {
@@ -277,7 +277,7 @@ PermissionSelectorView::PermissionSelectorView(
   menu_model_.reset(new PermissionMenuModel(
       url,
       permission,
-      base::Bind(&PermissionSelectorView::PermissionChanged,
+      base::Bind(&PermissionSelectorRow::PermissionChanged,
                  base::Unretained(this))));
 
   // Create the permission menu button.
@@ -293,12 +293,12 @@ PermissionSelectorView::PermissionSelectorView(
     InitializeMenuButtonView(layout, permission);
 }
 
-void PermissionSelectorView::AddObserver(
-    PermissionSelectorViewObserver* observer) {
+void PermissionSelectorRow::AddObserver(
+    PermissionSelectorRowObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
+void PermissionSelectorRow::ChildPreferredSizeChanged(View* child) {
   SizeToPreferredSize();
   // FIXME: The parent is only a plain |View| that is used as a
   // container/box/panel. The SizeToPreferredSize method of the parent is
@@ -307,10 +307,10 @@ void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
   parent()->SizeToPreferredSize();
 }
 
-PermissionSelectorView::~PermissionSelectorView() {
+PermissionSelectorRow::~PermissionSelectorRow() {
   // Gross. On paper the Combobox and the ComboboxModelAdapter are both owned by
   // this class, but actually, the Combobox is owned by View and will be
-  // destroyed in ~View(), which runs *after* ~PermissionSelectorView() is done,
+  // destroyed in ~View(), which runs *after* ~PermissionSelectorRow() is done,
   // which means the Combobox gets destroyed after its ComboboxModel, which
   // causes an explosion when the Combobox attempts to stop observing the
   // ComboboxModel. This hack ensures the Combobox is deleted before its
@@ -322,7 +322,7 @@ PermissionSelectorView::~PermissionSelectorView() {
     RemoveChildView(combobox_);
 }
 
-void PermissionSelectorView::InitializeMenuButtonView(
+void PermissionSelectorRow::InitializeMenuButtonView(
     views::GridLayout* layout,
     const WebsiteSettingsUI::PermissionInfo& permission) {
   bool button_enabled =
@@ -338,7 +338,7 @@ void PermissionSelectorView::InitializeMenuButtonView(
   layout->AddView(menu_button_);
 }
 
-void PermissionSelectorView::InitializeComboboxView(
+void PermissionSelectorRow::InitializeComboboxView(
     views::GridLayout* layout,
     const WebsiteSettingsUI::PermissionInfo& permission) {
   bool button_enabled =
@@ -357,7 +357,7 @@ void PermissionSelectorView::InitializeComboboxView(
   layout->AddView(combobox_);
 }
 
-void PermissionSelectorView::PermissionChanged(
+void PermissionSelectorRow::PermissionChanged(
     const WebsiteSettingsUI::PermissionInfo& permission) {
   // Change the permission icon to reflect the selected setting.
   const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
@@ -374,7 +374,7 @@ void PermissionSelectorView::PermissionChanged(
     combobox_->UpdateSelectedIndex(use_default);
   }
 
-  FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
+  FOR_EACH_OBSERVER(PermissionSelectorRowObserver,
                     observer_list_,
                     OnPermissionChanged(permission));
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_
+#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -31,14 +31,15 @@ class ImageView;
 class MenuRunner;
 }
 
-// A custom view for selecting a permission setting for the given permission
-// |type|.
-class PermissionSelectorView : public views::View {
+// A PermissionSelectorRow is a row in the Page Info bubble that shows a
+// permission that a site can have ambient access to, and allows the user to
+// control whether that access is granted.
+class PermissionSelectorRow : public views::View {
  public:
-  PermissionSelectorView(const GURL& url,
-                         const WebsiteSettingsUI::PermissionInfo& permission);
+  PermissionSelectorRow(const GURL& url,
+                        const WebsiteSettingsUI::PermissionInfo& permission);
 
-  void AddObserver(PermissionSelectorViewObserver* observer);
+  void AddObserver(PermissionSelectorRowObserver* observer);
 
   void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
 
@@ -47,7 +48,7 @@ class PermissionSelectorView : public views::View {
   void ChildPreferredSizeChanged(View* child) override;
 
  private:
-  ~PermissionSelectorView() override;
+  ~PermissionSelectorRow() override;
 
   void InitializeMenuButtonView(
       views::GridLayout* layout,
@@ -64,9 +65,9 @@ class PermissionSelectorView : public views::View {
   internal::PermissionMenuButton* menu_button_;  // Owned by the views hierachy.
   internal::PermissionCombobox* combobox_;  // Owned by the views hierarchy.
 
-  base::ObserverList<PermissionSelectorViewObserver, false> observer_list_;
+  base::ObserverList<PermissionSelectorRowObserver, false> observer_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionSelectorView);
+  DISALLOW_COPY_AND_ASSIGN(PermissionSelectorRow);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_

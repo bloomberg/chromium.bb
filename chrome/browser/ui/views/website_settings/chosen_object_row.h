@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
+#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -15,17 +15,20 @@ class ImageButton;
 class ImageView;
 }
 
-class ChosenObjectViewObserver;
+class ChosenObjectRowObserver;
 
-class ChosenObjectView : public views::View, public views::ButtonListener {
+// A ChosenObjectRow is a row in the Page Info bubble that shows an individual
+// object (e.g. a Bluetooth device, a USB device) that the current site has
+// access to.
+class ChosenObjectRow : public views::View, public views::ButtonListener {
  public:
-  explicit ChosenObjectView(
+  explicit ChosenObjectRow(
       std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info);
 
-  void AddObserver(ChosenObjectViewObserver* observer);
+  void AddObserver(ChosenObjectRowObserver* observer);
 
  private:
-  ~ChosenObjectView() override;
+  ~ChosenObjectRow() override;
 
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -33,10 +36,10 @@ class ChosenObjectView : public views::View, public views::ButtonListener {
   views::ImageView* icon_;             // Owned by the views hierarchy.
   views::ImageButton* delete_button_;  // Owned by the views hierarchy.
 
-  base::ObserverList<ChosenObjectViewObserver> observer_list_;
+  base::ObserverList<ChosenObjectRowObserver> observer_list_;
   std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChosenObjectView);
+  DISALLOW_COPY_AND_ASSIGN(ChosenObjectRow);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
