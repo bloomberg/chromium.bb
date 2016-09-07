@@ -406,7 +406,6 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
 #endif
 
   UpdateBorder();
-  arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style);
   // set_background() takes ownership but takes a raw pointer.
   std::unique_ptr<Background> b =
       PlatformStyle::CreateComboboxBackground(GetArrowContainerWidth());
@@ -436,6 +435,15 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
   arrow_button_->SetVisible(true);
   AddChildView(text_button_);
   AddChildView(arrow_button_);
+
+  // A layer is applied to make sure that canvas bounds are snapped to pixel
+  // boundaries (for the sake of drawing the arrow).
+  if (UseMd()) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+  } else {
+    arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style);
+  }
 }
 
 Combobox::~Combobox() {
@@ -788,7 +796,32 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
       PositionArrowWithinContainer(arrow_bounds, ArrowSize(), style_);
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  canvas->DrawImageInt(arrow_image_, arrow_bounds.x(), arrow_bounds.y());
+  if (UseMd()) {
+    // Since this is a core piece of UI and vector icons don't handle fractional
+    // scale factors particularly well, manually draw an arrow and make sure it
+    // looks good at all scale factors.
+    float dsf = canvas->UndoDeviceScaleFactor();
+    SkScalar x = std::ceil(arrow_bounds.x() * dsf);
+    SkScalar y = std::ceil(arrow_bounds.y() * dsf);
+    SkScalar height = std::floor(arrow_bounds.height() * dsf);
+    SkPath path;
+    // This epsilon makes sure that all the aliasing pixels are slightly more
+    // than half full. Otherwise, rounding issues cause some to be considered
+    // slightly less than half full and come out a little lighter.
+    const SkScalar kEpsilon = 0.0001f;
+    path.moveTo(x - kEpsilon, y);
+    path.rLineTo(height, height);
+    path.rLineTo(2 * kEpsilon, 0);
+    path.rLineTo(height, -height);
+    path.close();
+    SkPaint paint;
+    paint.setColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonEnabledColor));
+    paint.setAntiAlias(true);
+    canvas->DrawPath(path, paint);
+  } else {
+    canvas->DrawImageInt(arrow_image_, arrow_bounds.x(), arrow_bounds.y());
+  }
 }
 
 void Combobox::PaintButtons(gfx::Canvas* canvas) {
@@ -909,7 +942,7 @@ void Combobox::OnPerformAction() {
 }
 
 gfx::Size Combobox::ArrowSize() const {
-  return arrow_image_.size();
+  return UseMd() ? gfx::Size(8, 4) : arrow_image_.size();
 }
 
 gfx::Size Combobox::GetContentSize() const {
