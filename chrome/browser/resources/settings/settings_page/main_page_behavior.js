@@ -96,6 +96,9 @@ var MainPageBehaviorImpl = {
         // Scroll to the collapsed section.
         if (currentSection && !settings.lastRouteChangeWasPopstate())
           currentSection.scrollIntoView();
+      } else {
+        // Scroll to top while sliding to another subpage.
+        this.scroller.scrollTop = 0;
       }
     } else if (currentSection) {
       // Expand the section into a subpage or scroll to it on the main page.
