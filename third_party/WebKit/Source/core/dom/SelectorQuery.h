@@ -42,7 +42,7 @@ class Document;
 class Element;
 class ExceptionState;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Element> StaticElementList;
+using StaticElementList = StaticNodeTypeList<Element>;
 
 class SelectorDataList {
     DISALLOW_NEW();

@@ -58,8 +58,7 @@ private:
     HeapVector<Member<NodeType>> m_nodes;
 };
 
-typedef StaticNodeTypeList<Node> StaticNodeList;
-typedef StaticNodeTypeList<Element> StaticElementList;
+using StaticNodeList = StaticNodeTypeList<Node>;
 
 template <typename NodeType>
 StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)

@@ -70,7 +70,7 @@ class TypeConversions;
 class UnionTypesTest;
 class ScrollState;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Node> StaticNodeList;
+using StaticNodeList = StaticNodeTypeList<Node>;
 
 class Internals final : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver, public ValueIterable<int> {
     DEFINE_WRAPPERTYPEINFO();

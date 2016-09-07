@@ -40,7 +40,7 @@ namespace blink {
 class Node;
 class QualifiedName;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Node> StaticNodeList;
+using StaticNodeList = StaticNodeTypeList<Node>;
 
 class MutationRecord : public GarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
