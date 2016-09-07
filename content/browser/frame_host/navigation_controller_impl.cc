@@ -1007,7 +1007,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // make sure Blink didn't treat a new cross-process navigation as inert, and
     // thus set params.did_create_new_entry to false. In that case, we must
     // treat it as NEW since the SiteInstance doesn't match the entry.
-    if (GetLastCommittedEntry() &&
+    if (!GetLastCommittedEntry() ||
         GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance())
       return NAVIGATION_TYPE_NEW_PAGE;
 
