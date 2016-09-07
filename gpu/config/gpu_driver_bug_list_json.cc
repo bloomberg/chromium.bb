@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.93",
+  "version": "8.94",
   "entries": [
     {
       "id": 1,
@@ -1497,23 +1497,6 @@ LONG_STRING_CONST(
 )  // LONG_STRING_CONST macro
 // Avoid C2026 (string too big) error on VisualStudio.
 LONG_STRING_CONST(
-    {
-      "id": 146,
-      "description": "Crashes in D3D11 on specific AMD drivers",
-      "cr_bugs": [517040],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "op": "between",
-        "value": "15.200",
-        "value2": "15.201"
-      },
-      "features": [
-        "disable_d3d11"
-      ]
-    },
     {
       "id": 147,
       "description": "Limit max texure size to 4096 on all of Android",
