@@ -121,7 +121,7 @@ class MockInputHandler : public cc::InputHandler {
 
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override {
-    return std::unique_ptr<cc::SwapPromiseMonitor>();
+    return nullptr;
   }
 
   cc::ScrollElasticityHelper* CreateScrollElasticityHelper() override {

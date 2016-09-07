@@ -33,13 +33,12 @@ def CheckUniquePtr(input_api, output_api,
             ('%s:%d uses explicit std::unique_ptr constructor. ' +
              'Use base::MakeUnique<T>() or base::WrapUnique() instead.') %
             (f.LocalPath(), line_number)))
-      # TODO(sky): this incorrectly catches templates. Fix and reenable.
       # Disallow:
       # std::unique_ptr<T>()
-      # if input_api.re.search(r'\bstd::unique_ptr<.*?>\(\)', line):
-      #   errors.append(output_api.PresubmitError(
-      #       '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
-      #       (f.LocalPath(), line_number)))
+      if input_api.re.search(r'\bstd::unique_ptr<[^<>]+>\(\)', line):
+        errors.append(output_api.PresubmitError(
+            '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
+            (f.LocalPath(), line_number)))
   return errors
 
 

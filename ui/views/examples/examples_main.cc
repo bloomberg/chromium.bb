@@ -112,9 +112,8 @@ int main(int argc, char** argv) {
     display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
-    views::examples::ShowExamplesWindow(
-        views::examples::QUIT_ON_CLOSE, nullptr,
-        std::unique_ptr<ScopedVector<views::examples::ExampleBase>>());
+    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE, nullptr,
+                                        nullptr);
 
     base::RunLoop().Run();
 

@@ -227,15 +227,14 @@ class DisplayConfiguratorTest : public testing::Test {
   }
 
   void Init(bool panel_fitting_enabled) {
-    configurator_.Init(std::unique_ptr<NativeDisplayDelegate>(),
-                       panel_fitting_enabled);
+    configurator_.Init(nullptr, panel_fitting_enabled);
   }
 
   // Initializes |configurator_| with a single internal display.
   void InitWithSingleOutput() {
     UpdateOutputs(1, false);
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-    configurator_.Init(std::unique_ptr<NativeDisplayDelegate>(), false);
+    configurator_.Init(nullptr, false);
 
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
     configurator_.ForceInitialConfigure(0);
