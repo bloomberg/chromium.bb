@@ -96,7 +96,9 @@ void ContentDecryptionModuleResultPromise::reject(ExceptionCode code, const Stri
     // already posted that need to happen only after the promise is resolved.)
     // TODO(jrummell): Make resolving a promise asynchronous as well (including
     // making sure events still happen after the promise is resolved).
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&ContentDecryptionModuleResultPromise::rejectInternal, wrapPersistent(this), code, errorMessage));
+    if (getExecutionContext()) {
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&ContentDecryptionModuleResultPromise::rejectInternal, wrapPersistent(this), code, errorMessage));
+    }
 }
 
 void ContentDecryptionModuleResultPromise::rejectInternal(ExceptionCode code, const String& errorMessage)
