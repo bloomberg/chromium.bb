@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/css/cssom/CSSTokenStreamValue.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 
 namespace blink {
 
@@ -17,14 +17,14 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final : public GarbageCollected
 public:
     virtual ~CSSStyleVariableReferenceValue() { }
 
-    static CSSStyleVariableReferenceValue* create(const String& variable, const CSSTokenStreamValue* fallback)
+    static CSSStyleVariableReferenceValue* create(const String& variable, const CSSUnparsedValue* fallback)
     {
         return new CSSStyleVariableReferenceValue(variable, fallback);
     }
 
     const String& variable() const { return m_variable; }
 
-    CSSTokenStreamValue* fallback() { return const_cast<CSSTokenStreamValue*>(m_fallback.get()); }
+    CSSUnparsedValue* fallback() { return const_cast<CSSUnparsedValue*>(m_fallback.get()); }
 
     DEFINE_INLINE_TRACE()
     {
@@ -32,14 +32,14 @@ public:
     }
 
 protected:
-    CSSStyleVariableReferenceValue(const String& variable, const CSSTokenStreamValue* fallback)
+    CSSStyleVariableReferenceValue(const String& variable, const CSSUnparsedValue* fallback)
         : m_variable(variable)
         , m_fallback(fallback)
     {
     }
 
     String m_variable;
-    Member<const CSSTokenStreamValue> m_fallback;
+    Member<const CSSUnparsedValue> m_fallback;
 };
 
 } // namespace blink

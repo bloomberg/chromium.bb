@@ -10,9 +10,9 @@
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
-#include "core/css/cssom/CSSTokenStreamValue.h"
 #include "core/css/cssom/CSSTransformValue.h"
 #include "core/css/cssom/CSSURLImageValue.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID, const CSSValue& v
     }
 
     if (value.isVariableReferenceValue()) {
-        return CSSTokenStreamValue::fromCSSValue(toCSSVariableReferenceValue(value));
+        return CSSUnparsedValue::fromCSSValue(toCSSVariableReferenceValue(value));
     }
 
     if (value.isImageValue()) {

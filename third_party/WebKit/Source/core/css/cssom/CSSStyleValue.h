@@ -30,9 +30,9 @@ public:
         PositionType,
         ResourceType,
         SimpleLengthType,
-        TokenStreamType,
         TransformType,
         URLImageType,
+        UnparsedType,
     };
 
     virtual ~CSSStyleValue() { }

@@ -9,5 +9,5 @@
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
     readonly attribute DOMString variable;
-    readonly attribute CSSTokenStreamValue fallback;
+    readonly attribute CSSUnparsedValue fallback;
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTokenStreamValue_h
-#define CSSTokenStreamValue_h
+#ifndef CSSUnparsedValue_h
+#define CSSUnparsedValue_h
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/StringOrCSSVariableReferenceValue.h"
@@ -13,20 +13,20 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSTokenStreamValue final : public CSSStyleValue, public ValueIterable<StringOrCSSVariableReferenceValue> {
-    WTF_MAKE_NONCOPYABLE(CSSTokenStreamValue);
+class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue, public ValueIterable<StringOrCSSVariableReferenceValue> {
+    WTF_MAKE_NONCOPYABLE(CSSUnparsedValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSTokenStreamValue* create(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
+    static CSSUnparsedValue* create(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
     {
-        return new CSSTokenStreamValue(fragments);
+        return new CSSUnparsedValue(fragments);
     }
 
-    static CSSTokenStreamValue* fromCSSValue(const CSSVariableReferenceValue&);
+    static CSSUnparsedValue* fromCSSValue(const CSSVariableReferenceValue&);
 
     CSSValue* toCSSValue() const override;
 
-    StyleValueType type() const override { return TokenStreamType; }
+    StyleValueType type() const override { return UnparsedType; }
 
     StringOrCSSVariableReferenceValue fragmentAtIndex(int index) const { return m_fragments.at(index); }
 
@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    CSSTokenStreamValue(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
+    CSSUnparsedValue(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
         : CSSStyleValue()
         , m_fragments(fragments)
     {
@@ -53,4 +53,4 @@ private:
 
 } // namespace blink
 
-#endif // CSSTokenStreamValue_h
+#endif // CSSUnparsedValue_h

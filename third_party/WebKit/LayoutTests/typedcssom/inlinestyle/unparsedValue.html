@@ -23,7 +23,7 @@ test(function() {
   assert_equals(barFallback[1].fallback, null);
   assert_equals(barFallback[2], " + 15px");
   assert_equals(result[4], ")");
-}, "Construction of CSSTokenStreamValue is normalized using example from the spec");
+}, "Construction of CSSUnparsedValue is normalized using example from the spec");
 
 test(function() {
   testElement.style.width = "var(--a, 10px, 20px, 30em)";

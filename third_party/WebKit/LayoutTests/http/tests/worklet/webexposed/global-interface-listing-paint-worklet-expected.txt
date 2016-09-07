@@ -100,12 +100,6 @@ CONSOLE MESSAGE: line 137: interface CSSStyleValue
 CONSOLE MESSAGE: line 137:     static method parse
 CONSOLE MESSAGE: line 137:     getter cssText
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137: interface CSSTokenStreamValue : CSSStyleValue
-CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     method entries
-CONSOLE MESSAGE: line 137:     method forEach
-CONSOLE MESSAGE: line 137:     method keys
-CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter cssText
 CONSOLE MESSAGE: line 137:     method asMatrix
@@ -126,6 +120,12 @@ CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSURLImageValue : CSSImageValue
 CONSOLE MESSAGE: line 137:     getter url
 CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSUnparsedValue : CSSStyleValue
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method entries
+CONSOLE MESSAGE: line 137:     method forEach
+CONSOLE MESSAGE: line 137:     method keys
+CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface CSSVariableReferenceValue
 CONSOLE MESSAGE: line 137:     getter fallback
 CONSOLE MESSAGE: line 137:     getter variable

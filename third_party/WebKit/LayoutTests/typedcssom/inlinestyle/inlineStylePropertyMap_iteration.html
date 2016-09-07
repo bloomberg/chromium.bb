@@ -95,12 +95,12 @@ test(function() {
   var entries = [...testElement.styleMap.values()];
 
   assert_equals(entries.length, 1);
-  assert_equals(entries[0].constructor, CSSTokenStreamValue);
+  assert_equals(entries[0].constructor, CSSUnparsedValue);
   assert_equals(entries[0].cssText, '--bg-color');
   assert_equals([...entries[0]].length, 1);
   assert_equals([...entries[0]][0].variable, "--bg-color");
   assert_equals([...entries[0]][0].fallback, null);
-}, "Variable values come out as CSSTokenStreamValues");
+}, "Variable values come out as CSSUnparsedValues");
 
 test(function() {
   testElement.style = '';

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSTokenStreamValue.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
 #include "core/css/parser/CSSTokenizer.h"
@@ -12,29 +12,29 @@ namespace blink {
 
 namespace {
 
-class TokenStreamValueIterationSource final : public ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource {
+class UnparsedValueIterationSource final : public ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource {
 public:
-    explicit TokenStreamValueIterationSource(CSSTokenStreamValue* tokenStreamValue)
-        : m_tokenStreamValue(tokenStreamValue)
+    explicit UnparsedValueIterationSource(CSSUnparsedValue* unparsedValue)
+        : m_unparsedValue(unparsedValue)
     {
     }
 
     bool next(ScriptState*, StringOrCSSVariableReferenceValue& value, ExceptionState&) override
     {
-        if (m_index >= m_tokenStreamValue->size())
+        if (m_index >= m_unparsedValue->size())
             return false;
-        value = m_tokenStreamValue->fragmentAtIndex(m_index);
+        value = m_unparsedValue->fragmentAtIndex(m_index);
         return true;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_tokenStreamValue);
+        visitor->trace(m_unparsedValue);
         ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource::trace(visitor);
     }
 
 private:
-    const Member<CSSTokenStreamValue> m_tokenStreamValue;
+    const Member<CSSUnparsedValue> m_unparsedValue;
 };
 
 StringView findVariableName(CSSParserTokenRange& range)
@@ -45,12 +45,12 @@ StringView findVariableName(CSSParserTokenRange& range)
 
 StringOrCSSVariableReferenceValue variableReferenceValue(const StringView& variableName, const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
 {
-    CSSTokenStreamValue* tokenStreamValue;
+    CSSUnparsedValue* unparsedValue;
     if (fragments.size() == 0)
-        tokenStreamValue = nullptr;
+        unparsedValue = nullptr;
     else
-        tokenStreamValue = CSSTokenStreamValue::create(fragments);
-    CSSStyleVariableReferenceValue* variableReference = CSSStyleVariableReferenceValue::create(variableName.toString(), tokenStreamValue);
+        unparsedValue = CSSUnparsedValue::create(fragments);
+    CSSStyleVariableReferenceValue* variableReference = CSSStyleVariableReferenceValue::create(variableName.toString(), unparsedValue);
     return StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(variableReference);
 }
 
@@ -81,17 +81,17 @@ HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(CSSPar
 
 } // namespace
 
-ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource* CSSTokenStreamValue::startIteration(ScriptState*, ExceptionState&)
+ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource* CSSUnparsedValue::startIteration(ScriptState*, ExceptionState&)
 {
-    return new TokenStreamValueIterationSource(this);
+    return new UnparsedValueIterationSource(this);
 }
 
-CSSTokenStreamValue* CSSTokenStreamValue::fromCSSValue(const CSSVariableReferenceValue& cssVariableReferenceValue)
+CSSUnparsedValue* CSSUnparsedValue::fromCSSValue(const CSSVariableReferenceValue& cssVariableReferenceValue)
 {
-    return CSSTokenStreamValue::create(parserTokenRangeToFragments(cssVariableReferenceValue.variableDataValue()->tokenRange()));
+    return CSSUnparsedValue::create(parserTokenRangeToFragments(cssVariableReferenceValue.variableDataValue()->tokenRange()));
 }
 
-CSSValue* CSSTokenStreamValue::toCSSValue() const
+CSSValue* CSSUnparsedValue::toCSSValue() const
 {
     StringBuilder tokens;
 
