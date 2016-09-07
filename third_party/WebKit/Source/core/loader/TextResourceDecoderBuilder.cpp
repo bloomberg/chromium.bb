@@ -30,6 +30,7 @@
 
 #include "core/loader/TextResourceDecoderBuilder.h"
 
+#include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -133,8 +134,10 @@ inline std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::createDe
 {
     const WTF::TextEncoding encodingFromDomain = getEncodingFromDomain(document->url());
     if (LocalFrame* frame = document->frame()) {
-        if (Settings* settings = frame->settings())
-            return TextResourceDecoder::create(m_mimeType, encodingFromDomain.isValid() ? encodingFromDomain : settings->defaultTextEncodingName(), true);
+        if (Settings* settings = frame->settings()) {
+            // Disable autodetection for XML to honor the default encoding (UTF-8) for unlabelled documents.
+            return TextResourceDecoder::create(m_mimeType, encodingFromDomain.isValid() ? encodingFromDomain : settings->defaultTextEncodingName(), !DOMImplementation::isXMLMIMEType(m_mimeType));
+        }
     }
 
     return TextResourceDecoder::create(m_mimeType, encodingFromDomain);
