@@ -48,6 +48,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(R_V_LINE_TO);
   RETURN_IF_IS(CUBIC_TO);
   RETURN_IF_IS(R_CUBIC_TO);
+  RETURN_IF_IS(CUBIC_TO_SHORTHAND);
   RETURN_IF_IS(CIRCLE);
   RETURN_IF_IS(ROUND_RECT);
   RETURN_IF_IS(CLOSE);
@@ -91,6 +92,7 @@ void PaintPath(Canvas* canvas,
   std::vector<SkPaint> paints;
   SkRect clip_rect = SkRect::MakeEmpty();
   bool flips_in_rtl = false;
+  CommandType previous_command_type = NEW_PATH;
 
   for (size_t i = 0; path_elements[i].type != END; i++) {
     if (paths.empty() || path_elements[i].type == NEW_PATH) {
@@ -239,6 +241,35 @@ void PaintPath(Canvas* canvas,
         break;
       }
 
+      case CUBIC_TO_SHORTHAND: {
+        // Compute the first control point (|x1| and |y1|) as the reflection
+        // of the second control point on the previous command relative to
+        // the current point. If there is no previous command or if the
+        // previous command is not a cubic Bezier curve, the first control
+        // point is coincident with the current point. Refer to the SVG
+        // path specs for further details.
+        SkPoint last_point;
+        path.getLastPt(&last_point);
+        SkScalar delta_x = 0;
+        SkScalar delta_y = 0;
+        if (previous_command_type == CUBIC_TO ||
+            previous_command_type == R_CUBIC_TO ||
+            previous_command_type == CUBIC_TO_SHORTHAND) {
+          SkPoint last_control_point = path.getPoint(path.countPoints() - 2);
+          delta_x = last_point.fX - last_control_point.fX;
+          delta_y = last_point.fY - last_control_point.fY;
+        }
+
+        SkScalar x1 = last_point.fX + delta_x;
+        SkScalar y1 = last_point.fY + delta_y;
+        SkScalar x2 = path_elements[++i].arg;
+        SkScalar y2 = path_elements[++i].arg;
+        SkScalar x3 = path_elements[++i].arg;
+        SkScalar y3 = path_elements[++i].arg;
+        path.cubicTo(x1, y1, x2, y2, x3, y3);
+        break;
+      }
+
       case CIRCLE: {
         SkScalar x = path_elements[++i].arg;
         SkScalar y = path_elements[++i].arg;
@@ -291,6 +322,8 @@ void PaintPath(Canvas* canvas,
         NOTREACHED();
         break;
     }
+
+    previous_command_type = command_type;
   }
 
   gfx::ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size,

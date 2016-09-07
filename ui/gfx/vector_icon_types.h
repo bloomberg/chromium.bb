@@ -44,6 +44,7 @@ enum CommandType {
   R_V_LINE_TO,
   CUBIC_TO,
   R_CUBIC_TO,
+  CUBIC_TO_SHORTHAND,
   CIRCLE,
   ROUND_RECT,
   CLOSE,
