@@ -197,7 +197,7 @@ counter-reset custom_all
 cursor inherited, custom_all
 cx interpolable, svg, converter=convertLength
 cy interpolable, svg, converter=convertLength
-d runtime_flag=CSSPropertyD, interpolable, svg, converter=convertPathOrNone
+d interpolable, svg, converter=convertPathOrNone
 display
 dominant-baseline inherited, svg
 empty-cells inherited, type_name=EEmptyCells
