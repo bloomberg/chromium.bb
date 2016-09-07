@@ -291,11 +291,11 @@ class ArcBluetoothBridge
                                  bool connected) const;
   void OnGattConnected(
       mojom::BluetoothAddressPtr addr,
-      std::unique_ptr<device::BluetoothGattConnection> connection) const;
+      std::unique_ptr<device::BluetoothGattConnection> connection);
   void OnGattConnectError(
       mojom::BluetoothAddressPtr addr,
       device::BluetoothDevice::ConnectErrorCode error_code) const;
-  void OnGattDisconnected(mojom::BluetoothAddressPtr addr) const;
+  void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
 
   void OnStartLEListenDone(const StartLEListenCallback& callback,
                            scoped_refptr<device::BluetoothAdvertisement> adv);
@@ -385,6 +385,12 @@ class ArcBluetoothBridge
   int32_t gatt_server_attribute_next_handle_ = 0;
   // Keeps track of all devices which initiated a GATT connection to us.
   std::unordered_set<std::string> gatt_connection_cache_;
+  // Map of device address to GATT connection objects for connections we
+  // have made. We need to hang on to these as long as the connection is
+  // active since their destructors will drop the connections otherwise.
+  std::unordered_map<std::string,
+                     std::unique_ptr<device::BluetoothGattConnection>>
+      gatt_connections_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
 

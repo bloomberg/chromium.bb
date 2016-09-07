@@ -943,7 +943,9 @@ void ArcBluetoothBridge::OnGattConnectStateChanged(
 
 void ArcBluetoothBridge::OnGattConnected(
     mojom::BluetoothAddressPtr addr,
-    std::unique_ptr<BluetoothGattConnection> connection) const {
+    std::unique_ptr<BluetoothGattConnection> connection) {
+  DCHECK(CalledOnValidThread());
+  gatt_connections_[addr->To<std::string>()] = std::move(connection);
   OnGattConnectStateChanged(std::move(addr), true);
 }
 
@@ -954,7 +956,16 @@ void ArcBluetoothBridge::OnGattConnectError(
 }
 
 void ArcBluetoothBridge::OnGattDisconnected(
-    mojom::BluetoothAddressPtr addr) const {
+    mojom::BluetoothAddressPtr addr) {
+  DCHECK(CalledOnValidThread());
+  auto it = gatt_connections_.find(addr->To<std::string>());
+  if (it == gatt_connections_.end()) {
+    LOG(WARNING) << "OnGattDisconnected called, "
+                 << "but no gatt connection was found";
+  } else {
+    gatt_connections_.erase(it);
+  }
+
   OnGattConnectStateChanged(std::move(addr), false);
 }
 
