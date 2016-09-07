@@ -773,14 +773,11 @@ static gfx::ColorSpace SkColorSpaceToColorSpace(const SkColorSpace* skColorSpace
         return gfx::ColorSpace();
 
     gfx::ColorSpace::TransferID transferID = gfx::ColorSpace::TransferID::UNSPECIFIED;
-    switch (skColorSpace->gammaNamed()) {
-    case SkColorSpace::kSRGB_GammaNamed:
+    if (skColorSpace->gammaCloseToSRGB()) {
         transferID = gfx::ColorSpace::TransferID::IEC61966_2_1;
-        break;
-    case SkColorSpace::kLinear_GammaNamed:
+    } else if (skColorSpace->gammaIsLinear()) {
         transferID = gfx::ColorSpace::TransferID::LINEAR;
-        break;
-    default:
+    } else {
         // TODO(crbug.com/634102): Not all curve type are supported
         DCHECK(false);
     }
