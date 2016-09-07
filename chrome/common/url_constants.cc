@@ -581,7 +581,7 @@ const char kNaturalScrollHelpURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kLearnMoreEnterpriseURL[] =
-    "https://support.google.com/chromebook/answer/2535613";
+    "https://support.google.com/chromebook/?p=managed";
 #endif
 
 const char kRemoveNonCWSExtensionURL[] =
