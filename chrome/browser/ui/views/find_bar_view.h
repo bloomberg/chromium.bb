@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -35,7 +35,7 @@ class Separator;
 //
 ////////////////////////////////////////////////////////////////////////////////
 class FindBarView : public DropdownBarView,
-                    public views::ButtonListener,
+                    public views::VectorIconButtonDelegate,
                     public views::TextfieldController,
                     public views::ViewTargeterDelegate {
  public:
@@ -71,8 +71,9 @@ class FindBarView : public DropdownBarView,
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
 
-  // views::ButtonListener:
+  // views::VectorIconButtonDelegate:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  SkColor GetVectorIconBaseColor() const override;
 
   // views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,

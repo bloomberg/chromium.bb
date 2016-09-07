@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,6 +43,7 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -142,18 +142,12 @@ FindBarView::FindBarView(FindBarHost* host)
   AddChildView(find_text_);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    BarControlButton* find_previous = new BarControlButton(this);
-    find_previous->SetIcon(
-        gfx::VectorIconId::FIND_PREV,
-        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
-    BarControlButton* find_next = new BarControlButton(this);
-    find_next->SetIcon(
-        gfx::VectorIconId::FIND_NEXT,
-        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
-    BarControlButton* close = new BarControlButton(this);
-    close->SetIcon(
-        gfx::VectorIconId::BAR_CLOSE,
-        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
+    views::VectorIconButton* find_previous = new views::VectorIconButton(this);
+    find_previous->SetIcon(gfx::VectorIconId::FIND_PREV);
+    views::VectorIconButton* find_next = new views::VectorIconButton(this);
+    find_next->SetIcon(gfx::VectorIconId::FIND_NEXT);
+    views::VectorIconButton* close = new views::VectorIconButton(this);
+    close->SetIcon(gfx::VectorIconId::BAR_CLOSE);
 
     find_previous_button_ = find_previous;
     find_next_button_ = find_next;
@@ -424,7 +418,7 @@ gfx::Size FindBarView::GetPreferredSize() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarView, views::ButtonListener implementation:
+// FindBarView, views::VectorIconButtonDelegate implementation:
 
 void FindBarView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
@@ -449,6 +443,11 @@ void FindBarView::ButtonPressed(
       NOTREACHED() << "Unknown button";
       break;
   }
+}
+
+SkColor FindBarView::GetVectorIconBaseColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -666,7 +665,3 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   separator_->SetColor(SkColorSetA(text_color, 0x26));
 }
 
-SkColor FindBarView::GetTextColorForIcon() {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-}

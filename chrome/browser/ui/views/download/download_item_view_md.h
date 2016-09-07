@@ -33,7 +33,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
@@ -61,7 +61,7 @@ class LabelButton;
 // The DownloadItemView in MD style. This is copied from DownloadItemView,
 // which it should eventually replace.
 class DownloadItemViewMd : public views::InkDropHostView,
-                           public views::ButtonListener,
+                           public views::VectorIconButtonDelegate,
                            public views::ContextMenuController,
                            public content::DownloadItem::Observer,
                            public gfx::AnimationDelegate {
@@ -116,8 +116,9 @@ class DownloadItemViewMd : public views::InkDropHostView,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // ButtonListener implementation.
+  // VectorIconButtonDelegate implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  SkColor GetVectorIconBaseColor() const override;
 
   // gfx::AnimationDelegate implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;

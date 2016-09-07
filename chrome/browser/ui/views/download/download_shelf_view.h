@@ -15,7 +15,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/mouse_watcher.h"
 
@@ -41,7 +41,7 @@ class MdTextButton;
 class DownloadShelfView : public views::AccessiblePaneView,
                           public gfx::AnimationDelegate,
                           public DownloadShelf,
-                          public views::ButtonListener,
+                          public views::VectorIconButtonDelegate,
                           public views::LinkListener,
                           public views::MouseWatcherListener {
  public:
@@ -72,10 +72,11 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Invoked when the user clicks the 'show all downloads' link button.
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Implementation of ButtonListener.
+  // Implementation of VectorIconButtonDelegate.
   // Invoked when the user clicks the close button. Asks the browser to
   // hide the download shelf.
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
+  SkColor GetVectorIconBaseColor() const override;
 
   // Implementation of DownloadShelf.
   bool IsShowing() const override;

@@ -35,7 +35,6 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -65,6 +64,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
@@ -157,16 +157,16 @@ class SeparatorBorder : public views::FocusableBorder {
 }  // namespace
 
 // Allows the DownloadItemViewMd to control the InkDrop on the drop down button.
-class DownloadItemViewMd::DropDownButton : public BarControlButton {
+class DownloadItemViewMd::DropDownButton : public views::VectorIconButton {
  public:
-  explicit DropDownButton(views::ButtonListener* listener)
-      : BarControlButton(listener) {}
+  explicit DropDownButton(views::VectorIconButtonDelegate* delegate)
+      : views::VectorIconButton(delegate) {}
   ~DropDownButton() override {}
 
   // Promoted visibility to public.
   void AnimateInkDrop(views::InkDropState state) {
     // TODO(bruthig): Plumb in the proper Event.
-    BarControlButton::AnimateInkDrop(state, nullptr /* event */);
+    views::VectorIconButton::AnimateInkDrop(state, nullptr /* event */);
   }
 
  private:
@@ -598,6 +598,10 @@ void DownloadItemViewMd::ButtonPressed(views::Button* sender,
   download()->Remove();
 }
 
+SkColor DownloadItemViewMd::GetVectorIconBaseColor() const {
+  return GetTextColor();
+}
+
 void DownloadItemViewMd::AnimationProgressed(const gfx::Animation* animation) {
   // We don't care if what animation (body button/drop button/complete),
   // is calling back, as they all have to go through the same paint call.
@@ -871,10 +875,8 @@ void DownloadItemViewMd::SetDropdownState(State new_state) {
       !dropdown_button_->GetImage(views::CustomButton::STATE_NORMAL).isNull())
     return;
 
-  dropdown_button_->SetIcon(
-      new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
-                          : gfx::VectorIconId::FIND_PREV,
-      base::Bind(&DownloadItemViewMd::GetTextColor, base::Unretained(this)));
+  dropdown_button_->SetIcon(new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
+                                                : gfx::VectorIconId::FIND_PREV);
   if (new_state != dropdown_state_) {
     dropdown_button_->AnimateInkDrop(new_state == PUSHED
                                          ? views::InkDropState::ACTIVATED

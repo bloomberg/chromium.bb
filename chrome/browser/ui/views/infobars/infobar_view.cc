@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
-#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -35,6 +34,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -263,9 +263,8 @@ void InfoBarView::ViewHierarchyChanged(
     }
 
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      BarControlButton* close = new BarControlButton(this);
-      close->SetIcon(gfx::VectorIconId::BAR_CLOSE,
-                     base::Bind(&GetInfobarTextColor));
+      views::VectorIconButton* close = new views::VectorIconButton(this);
+      close->SetIcon(gfx::VectorIconId::BAR_CLOSE);
       close_button_ = close;
     } else {
       close_button_ = new views::ImageButton(this);
@@ -306,6 +305,10 @@ void InfoBarView::ButtonPressed(views::Button* sender,
     delegate()->InfoBarDismissed();
     RemoveSelf();
   }
+}
+
+SkColor InfoBarView::GetVectorIconBaseColor() const {
+  return GetInfobarTextColor();
 }
 
 int InfoBarView::ContentMinimumWidth() const {

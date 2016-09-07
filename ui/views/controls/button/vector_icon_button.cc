@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bar_control_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
 
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/painter.h"
+
+namespace views {
 
 namespace {
 
@@ -18,8 +22,10 @@ const int kButtonExtraTouchSize = 4;
 
 }  // namespace
 
-BarControlButton::BarControlButton(views::ButtonListener* listener)
-    : views::ImageButton(listener), id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
+VectorIconButton::VectorIconButton(VectorIconButtonDelegate* delegate)
+    : views::ImageButton(delegate),
+      delegate_(delegate),
+      id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
   if (ui::MaterialDesignController::IsModeMaterial())
     SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
@@ -28,13 +34,10 @@ BarControlButton::BarControlButton(views::ButtonListener* listener)
   SetFocusPainter(nullptr);
 }
 
-BarControlButton::~BarControlButton() {}
+VectorIconButton::~VectorIconButton() {}
 
-void BarControlButton::SetIcon(
-    gfx::VectorIconId id,
-    const base::Callback<SkColor(void)>& get_text_color_callback) {
+void VectorIconButton::SetIcon(gfx::VectorIconId id) {
   id_ = id;
-  get_text_color_callback_ = get_text_color_callback;
 
   if (!border()) {
     SetBorder(views::Border::CreateEmptyBorder(
@@ -43,9 +46,13 @@ void BarControlButton::SetIcon(
   }
 }
 
-void BarControlButton::OnThemeChanged() {
+void VectorIconButton::OnEnabledChanged() {
+  OnThemeChanged();
+}
+
+void VectorIconButton::OnThemeChanged() {
   SkColor icon_color =
-      color_utils::DeriveDefaultIconColor(get_text_color_callback_.Run());
+      color_utils::DeriveDefaultIconColor(delegate_->GetVectorIconBaseColor());
   gfx::ImageSkia image = gfx::CreateVectorIcon(id_, icon_color);
   SetImage(views::CustomButton::STATE_NORMAL, &image);
   image = gfx::CreateVectorIcon(id_, SkColorSetA(icon_color, 0xff / 2));
@@ -53,6 +60,8 @@ void BarControlButton::OnThemeChanged() {
   set_ink_drop_base_color(icon_color);
 }
 
-void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void VectorIconButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   OnThemeChanged();
 }
+
+}  // namespace views

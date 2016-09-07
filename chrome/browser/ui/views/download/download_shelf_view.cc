@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/download/download_item_view_md.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -37,6 +36,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -172,10 +172,8 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
         this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
     show_all_view_ = show_all_view_md_;
 
-    BarControlButton* close_button = new BarControlButton(this);
-    close_button->SetIcon(gfx::VectorIconId::BAR_CLOSE,
-                          base::Bind(&DownloadShelfView::GetTextColorForIconMd,
-                                     base::Unretained(this)));
+    views::VectorIconButton* close_button = new views::VectorIconButton(this);
+    close_button->SetIcon(gfx::VectorIconId::BAR_CLOSE);
     close_button_ = close_button;
   }
   close_button_->SetAccessibleName(
@@ -428,6 +426,10 @@ void DownloadShelfView::ButtonPressed(
     NOTREACHED();
 }
 
+SkColor DownloadShelfView::GetVectorIconBaseColor() const {
+  return DownloadItemViewMd::GetTextColorForThemeProvider(GetThemeProvider());
+}
+
 bool DownloadShelfView::IsShowing() const {
   return visible() && shelf_animation_.IsShowing();
 }
@@ -494,8 +496,4 @@ content::DownloadItem* DownloadShelfView::GetDownloadItemForView(size_t i) {
   if (ui::MaterialDesignController::IsModeMaterial())
     return static_cast<DownloadItemViewMd*>(download_views_[i])->download();
   return static_cast<DownloadItemView*>(download_views_[i])->download();
-}
-
-SkColor DownloadShelfView::GetTextColorForIconMd() {
-  return DownloadItemViewMd::GetTextColorForThemeProvider(GetThemeProvider());
 }

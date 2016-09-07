@@ -9,7 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -19,13 +19,13 @@ class FontList;
 namespace views {
 
 class Label;
-class LabelButton;
+class Button;
 class BubbleBorder;
 class ImageView;
 
 // The non-client frame view of bubble-styled widgets.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
-                                     public ButtonListener {
+                                     public VectorIconButtonDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -35,7 +35,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   ~BubbleFrameView() override;
 
   // Creates a close button used in the corner of the dialog.
-  static LabelButton* CreateCloseButton(ButtonListener* listener);
+  static Button* CreateCloseButton(VectorIconButtonDelegate* delegate);
 
   // NonClientFrameView overrides:
   gfx::Rect GetBoundsForClientView() const override;
@@ -65,7 +65,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
-  // Overridden from ButtonListener:
+  // Overridden from VectorIconButtonDelegate:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
@@ -85,7 +85,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   bool close_button_clicked() const { return close_button_clicked_; }
 
-  LabelButton* GetCloseButtonForTest() { return close_; }
+  Button* GetCloseButtonForTest() { return close_; }
 
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
@@ -125,7 +125,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // The optional title icon, title, and (x) close button.
   views::ImageView* title_icon_;
   Label* title_;
-  LabelButton* close_;
+  Button* close_;
 
   // A view to contain the footnote view, if it exists.
   View* footnote_container_;

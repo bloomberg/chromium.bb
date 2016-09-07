@@ -18,7 +18,8 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/vector_icon_button.h"
+#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -127,7 +128,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
 class AppListDialogContainer : public BaseDialogContainer,
-                               public views::ButtonListener {
+                               public views::VectorIconButtonDelegate {
  public:
   AppListDialogContainer(views::View* dialog_body,
                          const base::Closure& close_callback)
@@ -167,7 +168,7 @@ class AppListDialogContainer : public BaseDialogContainer,
     }
   }
 
-  views::LabelButton* close_button_;
+  views::Button* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
 };

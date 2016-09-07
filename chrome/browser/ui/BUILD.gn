@@ -1562,8 +1562,6 @@ split_static_library("ui") {
         "views/autofill/save_card_bubble_views.h",
         "views/autofill/save_card_icon_view.cc",
         "views/autofill/save_card_icon_view.h",
-        "views/bar_control_button.cc",
-        "views/bar_control_button.h",
         "views/bookmarks/bookmark_bar_instructions_view.cc",
         "views/bookmarks/bookmark_bar_instructions_view.h",
         "views/bookmarks/bookmark_bar_view.cc",

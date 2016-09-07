@@ -237,15 +237,14 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
       const gfx::VectorIconId icon_id = (mode == MODE_RELOAD)
                                             ? gfx::VectorIconId::NAVIGATE_RELOAD
                                             : gfx::VectorIconId::NAVIGATE_STOP;
-      const int kButtonSize = 16;
       const SkColor normal_color =
           tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
       const SkColor disabled_color =
           tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
       SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(icon_id, kButtonSize, normal_color));
+               gfx::CreateVectorIcon(icon_id, normal_color));
       SetImage(views::Button::STATE_DISABLED,
-               gfx::CreateVectorIcon(icon_id, kButtonSize, disabled_color));
+               gfx::CreateVectorIcon(icon_id, disabled_color));
       set_ink_drop_base_color(normal_color);
     } else {
       SetImage(views::Button::STATE_NORMAL,
