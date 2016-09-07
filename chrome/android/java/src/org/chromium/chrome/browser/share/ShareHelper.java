@@ -100,6 +100,13 @@ public class ShareHelper {
          * Note that if the user cancels the share dialog, this callback is never called.
          */
         public void onTargetChosen(ComponentName chosenComponent);
+
+        /**
+         * Called when the user cancels the share dialog.
+         *
+         * Guaranteed that either this, or onTargetChosen (but not both) will be called, eventually.
+         */
+        public void onCancel();
     }
 
     /**
@@ -137,6 +144,11 @@ public class ShareHelper {
                 Context context = activity.getApplicationContext();
                 if (sLastRegisteredReceiver != null) {
                     context.unregisterReceiver(sLastRegisteredReceiver);
+                    // Must cancel the callback (to satisfy guarantee that exactly one method of
+                    // TargetChosenCallback is called).
+                    // TODO(mgiuca): This should be called immediately upon cancelling the chooser,
+                    // not just when the next share takes place (https://crbug.com/636274).
+                    sLastRegisteredReceiver.cancel();
                 }
                 sLastRegisteredReceiver = new TargetChosenReceiver(saveLastUsed, callback);
                 context.registerReceiver(
@@ -172,6 +184,12 @@ public class ShareHelper {
             }
             if (mSaveLastUsed && target != null) {
                 setLastShareComponentName(target);
+            }
+        }
+
+        private void cancel() {
+            if (mCallback != null) {
+                mCallback.onCancel();
             }
         }
     }

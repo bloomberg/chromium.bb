@@ -43,6 +43,10 @@ public class ShareServiceImpl implements ShareService {
             public void onTargetChosen(ComponentName chosenComponent) {
                 callback.call(null);
             }
+
+            public void onCancel() {
+                callback.call("Share canceled");
+            }
         };
 
         ShareHelper.share(false, false, mActivity, title, text, null, null, null, innerCallback);
