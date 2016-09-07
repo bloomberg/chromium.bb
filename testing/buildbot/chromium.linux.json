@@ -2177,10 +2177,6 @@
         "script": "checkdeps.py"
       },
       {
-        "name": "checklicenses",
-        "script": "checklicenses.py"
-      },
-      {
         "name": "checkperms",
         "script": "checkperms.py"
       },

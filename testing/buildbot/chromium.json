@@ -5,10 +5,6 @@
     ],
     "scripts": [
       {
-        "name": "checklicenses",
-        "script": "checklicenses.py"
-      },
-      {
         "name": "checkperms",
         "script": "checkperms.py"
       },
