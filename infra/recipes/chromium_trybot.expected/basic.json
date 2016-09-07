@@ -50,8 +50,7 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--output_manifest",
-      "--gerrit_no_rebase_patch_ref"
+      "--output_manifest"
     ],
     "cwd": "[BUILDER_CACHE]/linux",
     "env": {
