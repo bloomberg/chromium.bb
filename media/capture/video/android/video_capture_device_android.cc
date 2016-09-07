@@ -289,7 +289,6 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     if (!got_first_frame_) {
       // Set aside one frame allowance for fluctuation.
       expected_next_frame_time_ = current_time - frame_interval_;
-      first_ref_time_ = current_time;
       got_first_frame_ = true;
 
       for (const auto& request : photo_requests_queue_)
@@ -300,6 +299,11 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
 
   // Deliver the frame when it doesn't arrive too early.
   if (expected_next_frame_time_ <= current_time) {
+    // Using |expected_next_frame_time_| to estimate a proper capture timestamp
+    // since android.hardware.Camera API doesn't expose a better timestamp.
+    const base::TimeDelta capture_time =
+        expected_next_frame_time_ - base::TimeTicks();
+
     expected_next_frame_time_ += frame_interval_;
 
     // TODO(qiangchen): Investigate how to get raw timestamp for Android,
@@ -309,7 +313,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
       return;
     client_->OnIncomingCapturedData(reinterpret_cast<uint8_t*>(buffer), length,
                                     capture_format_, rotation, current_time,
-                                    current_time - first_ref_time_);
+                                    capture_time);
   }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);
@@ -325,12 +329,17 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
                                                      jint uv_pixel_stride,
                                                      jint width,
                                                      jint height,
-                                                     jint rotation) {
+                                                     jint rotation,
+                                                     jlong timestamp) {
   {
     base::AutoLock lock(lock_);
     if (state_ != kConfigured || !client_)
       return;
   }
+  const int64_t absolute_micro =
+      timestamp / base::Time::kNanosecondsPerMicrosecond;
+  const base::TimeDelta capture_time =
+      base::TimeDelta::FromMicroseconds(absolute_micro);
 
   const base::TimeTicks current_time = base::TimeTicks::Now();
   {
@@ -338,7 +347,6 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
     if (!got_first_frame_) {
       // Set aside one frame allowance for fluctuation.
       expected_next_frame_time_ = current_time - frame_interval_;
-      first_ref_time_ = current_time;
       got_first_frame_ = true;
 
       for (const auto& request : photo_requests_queue_)
@@ -379,7 +387,7 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
       return;
     client_->OnIncomingCapturedData(buffer.get(), buffer_length,
                                     capture_format_, rotation, current_time,
-                                    current_time - first_ref_time_);
+                                    capture_time);
   }
 }
 

@@ -134,7 +134,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                         image.getPlanes()[0].getBuffer(), image.getPlanes()[0].getRowStride(),
                         image.getPlanes()[1].getBuffer(), image.getPlanes()[2].getBuffer(),
                         image.getPlanes()[1].getRowStride(), image.getPlanes()[1].getPixelStride(),
-                        image.getWidth(), image.getHeight(), getCameraRotation());
+                        image.getWidth(), image.getHeight(), getCameraRotation(),
+                        image.getTimestamp());
             } catch (IllegalStateException ex) {
                 Log.e(TAG, "acquireLatestImage():", ex);
             }

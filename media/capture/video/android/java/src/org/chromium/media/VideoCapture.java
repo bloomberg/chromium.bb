@@ -143,7 +143,8 @@ public abstract class VideoCapture {
 
     public native void nativeOnI420FrameAvailable(long nativeVideoCaptureDeviceAndroid,
             ByteBuffer yBuffer, int yStride, ByteBuffer uBuffer, ByteBuffer vBuffer,
-            int uvRowStride, int uvPixelStride, int width, int height, int rotation);
+            int uvRowStride, int uvPixelStride, int width, int height, int rotation,
+            long timestamp);
 
     // Method for VideoCapture implementations to signal an asynchronous error.
     public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);
