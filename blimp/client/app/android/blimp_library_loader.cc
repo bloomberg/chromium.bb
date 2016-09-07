@@ -17,6 +17,7 @@
 #include "blimp/client/public/android/blimp_jni_registrar.h"
 #include "jni/BlimpLibraryLoader_jni.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_android_jni_registrar.h"
 #include "ui/gl/gl_surface.h"
 
 using base::android::JavaParamRef;
@@ -44,6 +45,9 @@ bool RegisterJni(JNIEnv* env) {
     return false;
 
   if (!blimp::client::RegisterBlimpAppJni(env))
+    return false;
+
+  if (!ui::RegisterUIAndroidJni(env))
     return false;
 
   return true;
