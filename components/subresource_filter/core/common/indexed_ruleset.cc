@@ -328,10 +328,6 @@ bool DoesInitiatorMatchDomainList(
     return true;
   }
 
-  // TODO(pkalinnikov): Switch back to const url::Origin& once |DomainIs|
-  // becomes implemented for url::Origin.
-  GURL initiator_as_url(initiator.Serialize());
-
   size_t max_domain_length = 0;
   bool is_positive = true;
   bool negatives_only = true;
@@ -352,7 +348,7 @@ bool DoesInitiatorMatchDomainList(
       negatives_only = false;
     }
 
-    if (!initiator_as_url.DomainIs(filter_piece))
+    if (!initiator.DomainIs(filter_piece))
       continue;
     max_domain_length = filter_piece.length();
     is_positive = !is_negative;
