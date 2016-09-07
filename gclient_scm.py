@@ -1235,7 +1235,7 @@ class GitWrapper(SCMWrapper):
       self._Run(config_cmd, options)
       need_fetch = True
     if fetch and need_fetch:
-      self._Fetch(options)
+      self._Fetch(options, prune=options.force)
 
   def _Run(self, args, options, show_header=True, **kwargs):
     # Disable 'unused options' warning | pylint: disable=W0613
