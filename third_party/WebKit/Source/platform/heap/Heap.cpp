@@ -528,7 +528,7 @@ void ThreadHeap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType 
     state->heap().commitCallbackStacks();
     state->heap().preGC();
 
-    StackFrameDepthScope stackDepthScope;
+    StackFrameDepthScope stackDepthScope(&state->heap().stackFrameDepth());
 
     size_t totalObjectSize = state->heap().heapStats().allocatedObjectSize() + state->heap().heapStats().markedObjectSize();
     if (gcType != BlinkGC::TakeSnapshot)

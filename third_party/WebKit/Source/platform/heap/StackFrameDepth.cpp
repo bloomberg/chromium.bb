@@ -18,8 +18,6 @@ namespace blink {
 
 static const char* s_avoidOptimization = nullptr;
 
-uintptr_t StackFrameDepth::s_stackFrameLimit = kMinimumStackLimit;
-
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
 // and the stack frame base register is adjusted |kSafeStackFrameSize|.
 NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy)
@@ -45,7 +43,7 @@ void StackFrameDepth::enableStackLimit()
     // except if ASan is enabled.
     size_t stackSize = getUnderestimatedStackSize();
     if (!stackSize) {
-        s_stackFrameLimit = getFallbackStackLimit();
+        m_stackFrameLimit = getFallbackStackLimit();
         return;
     }
 
@@ -55,7 +53,7 @@ void StackFrameDepth::enableStackLimit()
     RELEASE_ASSERT(stackSize > static_cast<const size_t>(kStackRoomSize));
     size_t stackRoom = stackSize - kStackRoomSize;
     RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
-    s_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
+    m_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
 
     // If current stack use is already exceeding estimated limit, mark as disabled.
     if (!isSafeToRecurse())

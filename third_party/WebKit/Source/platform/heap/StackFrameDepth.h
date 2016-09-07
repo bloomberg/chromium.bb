@@ -20,27 +20,26 @@ namespace blink {
 // Use isSafeToRecurse() to determine if it is safe to consume
 // more stack by invoking another recursive call.
 class PLATFORM_EXPORT StackFrameDepth final {
-    STATIC_ONLY(StackFrameDepth);
+    DISALLOW_NEW();
 public:
-    inline static bool isSafeToRecurse()
+    bool isSafeToRecurse()
     {
         // Asssume that the stack grows towards lower addresses, which
         // all the ABIs currently supported do.
         //
         // A unit test checks that the assumption holds for a target
         // (HeapTest.StackGrowthDirection.)
-        return currentStackFrame() > s_stackFrameLimit;
+        return currentStackFrame() > m_stackFrameLimit;
     }
 
-    static void enableStackLimit();
-    static void disableStackLimit()
+    void enableStackLimit();
+    void disableStackLimit()
     {
-        s_stackFrameLimit = kMinimumStackLimit;
+        m_stackFrameLimit = kMinimumStackLimit;
     }
 
-#if ENABLE(ASSERT)
-    inline static bool isEnabled() { return s_stackFrameLimit != kMinimumStackLimit; }
-    inline static bool isAcceptableStackUse()
+    bool isEnabled() { return m_stackFrameLimit != kMinimumStackLimit; }
+    bool isAcceptableStackUse()
     {
 #if defined(ADDRESS_SANITIZER)
         // ASan adds extra stack usage leading to too noisy asserts.
@@ -49,7 +48,6 @@ public:
         return !isEnabled() || isSafeToRecurse();
 #endif
     }
-#endif
 
     static size_t getUnderestimatedStackSize();
     static void* getStackStart();
@@ -89,24 +87,27 @@ private:
     static uintptr_t getFallbackStackLimit();
 
     // The (pointer-valued) stack limit.
-    static uintptr_t s_stackFrameLimit;
+    uintptr_t m_stackFrameLimit;
 };
 
 class StackFrameDepthScope {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StackFrameDepthScope);
 public:
-    StackFrameDepthScope()
+    explicit StackFrameDepthScope(StackFrameDepth* depth): m_depth(depth)
     {
-        StackFrameDepth::enableStackLimit();
+        m_depth->enableStackLimit();
         // Enabled unless under stack pressure.
-        ASSERT(StackFrameDepth::isSafeToRecurse() || !StackFrameDepth::isEnabled());
+        DCHECK(m_depth->isSafeToRecurse() || !m_depth->isEnabled());
     }
 
     ~StackFrameDepthScope()
     {
-        StackFrameDepth::disableStackLimit();
+        m_depth->disableStackLimit();
     }
+
+private:
+    StackFrameDepth* m_depth;
 };
 
 } // namespace blink

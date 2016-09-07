@@ -70,8 +70,8 @@ public:
             // but test and appropriately handle them should they occur
             // in release builds.
             //
-            ASSERT(StackFrameDepth::isAcceptableStackUse());
-            if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
+            DCHECK(visitor->heap().stackFrameDepth().isAcceptableStackUse());
+            if (LIKELY(visitor->heap().stackFrameDepth().isSafeToRecurse())) {
                 if (visitor->ensureMarked(t)) {
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
                 }

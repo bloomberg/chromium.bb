@@ -35,6 +35,7 @@
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/heap/PageMemory.h"
+#include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/AddressSanitizer.h"
@@ -231,6 +232,8 @@ public:
         return isHeapObjectAlive(ptr);
     }
 
+    StackFrameDepth& stackFrameDepth() { return m_stackFrameDepth; }
+
     RecursiveMutex& threadAttachMutex() { return m_threadAttachMutex; }
     const ThreadStateSet& threads() const { return m_threads; }
     ThreadHeapStats& heapStats() { return m_stats; }
@@ -412,6 +415,7 @@ private:
     std::unique_ptr<CallbackStack> m_globalWeakCallbackStack;
     std::unique_ptr<CallbackStack> m_ephemeronStack;
     BlinkGC::GCReason m_lastGCReason;
+    StackFrameDepth m_stackFrameDepth;
 
     static ThreadHeap* s_mainThreadHeap;
 
