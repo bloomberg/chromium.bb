@@ -23,7 +23,10 @@ BlimpNavigationControllerImpl::BlimpNavigationControllerImpl(
     navigation_feature_->SetDelegate(kDummyTabId, this);
 }
 
-BlimpNavigationControllerImpl::~BlimpNavigationControllerImpl() = default;
+BlimpNavigationControllerImpl::~BlimpNavigationControllerImpl() {
+  if (navigation_feature_)
+    navigation_feature_->RemoveDelegate(kDummyTabId);
+}
 
 void BlimpNavigationControllerImpl::LoadURL(const GURL& url) {
   current_url_ = url;

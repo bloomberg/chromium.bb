@@ -88,8 +88,12 @@ void RenderWidgetFeature::ProcessMessage(
 
   int target_tab_id = message->target_tab_id();
   RenderWidgetFeatureDelegate* delegate = FindDelegate(target_tab_id);
-  DCHECK(delegate) << "RenderWidgetFeatureDelegate not found for "
-                   << target_tab_id;
+  if (!delegate) {
+    VLOG(1) << "RenderWidgetFeatureDelegate not found for " << target_tab_id
+            << ". Ignoring.";
+    callback.Run(net::OK);
+    return;
+  }
 
   switch (message->feature_case()) {
     case BlimpMessage::kRenderWidget:

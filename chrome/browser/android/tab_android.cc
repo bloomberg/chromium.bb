@@ -434,7 +434,10 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
   ui::WindowAndroid* window =
       reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
   blimp_contents_ = context->CreateBlimpContents(window);
-  DCHECK(blimp_contents_);
+  // If creating a BlimpContents failed, fall back to WebContents-based by
+  // doing an early out here.
+  if (!blimp_contents_)
+    return nullptr;
 
   // Let's detach the layer from WebContents first, just to be sure.
   if (web_contents_ && web_contents_->GetNativeView() &&

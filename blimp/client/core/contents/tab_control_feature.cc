@@ -24,10 +24,6 @@ void TabControlFeature::set_outgoing_message_processor(
 
 void TabControlFeature::SetSizeAndScale(const gfx::Size& size,
                                         float device_pixel_ratio) {
-  if (last_size_ == size && last_device_pixel_ratio_ == device_pixel_ratio) {
-    return;
-  }
-
   last_size_ = size;
   last_device_pixel_ratio_ = device_pixel_ratio;
 
