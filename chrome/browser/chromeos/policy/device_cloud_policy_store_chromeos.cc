@@ -144,8 +144,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
   const chromeos::DeviceSettingsService::Status status =
       device_settings_service_->status();
 
-  const bool is_enterprise_managed = install_attributes_->IsEnterpriseDevice();
-  if (!is_enterprise_managed) {
+  if (!install_attributes_->IsEnterpriseDevice()) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
@@ -197,7 +196,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
         policy_->MergeFrom(*policy_data);
 
       PolicyMap new_policy_map;
-      if (is_enterprise_managed && is_managed()) {
+      if (is_managed()) {
         DecodeDevicePolicy(*device_settings_service_->device_settings(),
                            &new_policy_map);
       }
