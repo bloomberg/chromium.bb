@@ -150,6 +150,59 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
     return true;
 }
 
+template <typename Functor>
+void ContainerNode::insertNodeVector(const NodeVector& targets, Node* next, const Functor& mutator)
+{
+    InspectorInstrumentation::willInsertDOMNode(this);
+    for (const auto& targetNode : targets) {
+        DCHECK(targetNode);
+        {
+            EventDispatchForbiddenScope assertNoEventDispatch;
+            ScriptForbiddenScope forbidScript;
+
+            if (!mutator(*this, *targetNode, next))
+                break;
+        }
+        updateTreeAfterInsertion(*targetNode);
+    }
+    dispatchSubtreeModifiedEvent();
+}
+
+class ContainerNode::AdoptAndInsertBefore {
+public:
+    bool operator()(ContainerNode& container, Node& child, Node* next) const
+    {
+        DCHECK(next);
+        // Due to arbitrary code running in response to a DOM mutation event
+        // it's possible that "next" is no longer a child of "container".
+        // It's also possible that "child" has been inserted elsewhere.  In
+        // either of those cases, we'll just stop.
+        if (next->parentNode() != &container)
+            return false;
+        if (child.parentNode())
+            return false;
+
+        container.treeScope().adoptIfNeeded(child);
+        container.insertBeforeCommon(*next, child);
+        return true;
+    }
+};
+
+class ContainerNode::AdoptAndAppendChild {
+public:
+    bool operator()(ContainerNode& container, Node& child, Node* next) const
+    {
+        // If the child has a parent again, just stop what we're doing, because
+        // that means someone is doing something with DOM mutation -- can't
+        // re-parent a child that already has a parent.
+        if (child.parentNode())
+            return false;
+        container.treeScope().adoptIfNeeded(child);
+        container.appendChildCommon(child);
+        return true;
+    }
+};
+
 Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState& exceptionState)
 {
     // insertBefore(node, 0) is equivalent to appendChild(node)
@@ -191,35 +244,8 @@ Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState
         return newChild;
     }
 
-    InspectorInstrumentation::willInsertDOMNode(this);
-
     ChildListMutationScope mutation(*this);
-    for (const auto& targetNode : targets) {
-        DCHECK(targetNode);
-        Node& child = *targetNode;
-
-        // Due to arbitrary code running in response to a DOM mutation event it's
-        // possible that "next" is no longer a child of "this".
-        // It's also possible that "child" has been inserted elsewhere.
-        // In either of those cases, we'll just stop.
-        if (next->parentNode() != this)
-            break;
-        if (child.parentNode())
-            break;
-
-        {
-            EventDispatchForbiddenScope assertNoEventDispatch;
-            ScriptForbiddenScope forbidScript;
-
-            treeScope().adoptIfNeeded(child);
-            insertBeforeCommon(*next, child);
-        }
-
-        updateTreeAfterInsertion(child);
-    }
-
-    dispatchSubtreeModifiedEvent();
-
+    insertNodeVector(targets, next, AdoptAndInsertBefore());
     return newChild;
 }
 
@@ -366,37 +392,10 @@ Node* ContainerNode::replaceChild(Node* newChild, Node* oldChild, ExceptionState
         return child;
     }
 
-    InspectorInstrumentation::willInsertDOMNode(this);
-
-    // Add the new child(ren).
-    for (const auto& targetNode : targets) {
-        DCHECK(targetNode);
-        Node& child = *targetNode;
-
-        // Due to arbitrary code running in response to a DOM mutation event it's
-        // possible that "next" is no longer a child of "this".
-        // It's also possible that "child" has been inserted elsewhere.
-        // In either of those cases, we'll just stop.
-        if (next && next->parentNode() != this)
-            break;
-        if (child.parentNode())
-            break;
-
-        treeScope().adoptIfNeeded(child);
-
-        // Add child before "next".
-        {
-            EventDispatchForbiddenScope assertNoEventDispatch;
-            if (next)
-                insertBeforeCommon(*next, child);
-            else
-                appendChildCommon(child);
-        }
-
-        updateTreeAfterInsertion(child);
-    }
-
-    dispatchSubtreeModifiedEvent();
+    if (next)
+        insertNodeVector(targets, next, AdoptAndInsertBefore());
+    else
+        insertNodeVector(targets, nullptr, AdoptAndAppendChild());
     return child;
 }
 
@@ -625,32 +624,8 @@ Node* ContainerNode::appendChild(Node* newChild, ExceptionState& exceptionState)
         return newChild;
     }
 
-    InspectorInstrumentation::willInsertDOMNode(this);
-
-    // Now actually add the child(ren).
     ChildListMutationScope mutation(*this);
-    for (const auto& targetNode : targets) {
-        DCHECK(targetNode);
-        Node& child = *targetNode;
-
-        // If the child has a parent again, just stop what we're doing, because
-        // that means someone is doing something with DOM mutation -- can't re-parent
-        // a child that already has a parent.
-        if (child.parentNode())
-            break;
-
-        {
-            EventDispatchForbiddenScope assertNoEventDispatch;
-            ScriptForbiddenScope forbidScript;
-
-            treeScope().adoptIfNeeded(child);
-            appendChildCommon(child);
-        }
-
-        updateTreeAfterInsertion(child);
-    }
-
-    dispatchSubtreeModifiedEvent();
+    insertNodeVector(targets, nullptr, AdoptAndAppendChild());
     return newChild;
 }
 

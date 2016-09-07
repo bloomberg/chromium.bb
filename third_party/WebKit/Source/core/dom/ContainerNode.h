@@ -242,7 +242,12 @@ private:
 
     NodeListsNodeData& ensureNodeLists();
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
-    void insertBeforeCommon(Node& nextChild, Node& oldChild);
+    template <typename Functor> void insertNodeVector(const NodeVector&, Node* next, const Functor&);
+    class AdoptAndInsertBefore;
+    class AdoptAndAppendChild;
+    friend class AdoptAndInsertBefore;
+    friend class AdoptAndAppendChild;
+    void insertBeforeCommon(Node& nextChild, Node& newChild);
     void appendChildCommon(Node& child);
     void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
