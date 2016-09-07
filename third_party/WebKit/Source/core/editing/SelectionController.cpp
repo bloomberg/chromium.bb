@@ -124,7 +124,7 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventSingleClick");
 
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!m_frame->document()->needsLayoutTreeUpdate());
     Node* innerNode = event.innerNode();
     if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
         return false;
@@ -366,9 +366,7 @@ void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHi
 
     AppendTrailingWhitespace appendTrailingWhitespace = (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend;
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!m_frame->document()->needsLayoutTreeUpdate());
 
     return selectClosestWordFromHitTestResult(result.hitTestResult(), appendTrailingWhitespace, result.event().fromTouch() ? SelectInputEventType::Touch : SelectInputEventType::Mouse);
 }
