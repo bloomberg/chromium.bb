@@ -121,6 +121,15 @@ config("runtime_library") {
   } else {
     libs = [ "c++_static" ]
   }
+  libs += [
+    "c++abi",
+    "android_support",
+  ]
+
+  # arm builds of libc++ starting in NDK r12 depend on unwind.
+  if (current_cpu == "arm") {
+    libs += [ "unwind" ]
+  }
 
   # Manually link the libgcc.a that the cross compiler uses. This is
   # absolute because the linker will look inside the sysroot if it's not.

@@ -429,7 +429,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_protobuf.git' + '@' + '999188d0dc72e97f7fe08bb756958a2cf090f4e7',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + 'af1c5a4cd6329ccdcf8c2bc93d9eea02f9d74869',
+     Var('chromium_git') + '/android_tools.git' + '@' + '25d57ead05d3dfef26e9c19b13ed10b0a69829cf',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
@@ -492,8 +492,6 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'cff15311c7c1abbe77b3c714135dccc2009ee473',
   },
 }
-
-recursedeps = [ 'src/third_party/android_tools' ]
 
 include_rules = [
   # Everybody can use some things.
@@ -1025,5 +1023,9 @@ hooks = [
   },
 ]
 
-# ANGLE manages DEPS that it also owns the build files for, such as dEQP.
-recursedeps = [("src/third_party/angle", "DEPS.chromium")]
+recursedeps = [
+  # android_tools manages the NDK.
+  'src/third_party/android_tools',
+  # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
+  ("src/third_party/angle", "DEPS.chromium"),
+]

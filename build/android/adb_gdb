@@ -640,6 +640,16 @@ Please verify your NDK installation!"
 }
 
 # $1: NDK install path
+get_ndk_host_gdb_client() {
+  local NDK_DIR="$1"
+  local HOST_OS HOST_ARCH
+
+  HOST_OS=$(get_ndk_host_system)
+  HOST_ARCH=$(get_ndk_host_arch)
+  echo "$NDK_DIR/prebuilt/$HOST_OS-$HOST_ARCH/bin/gdb"
+}
+
+# $1: NDK install path
 # $2: target architecture.
 get_ndk_gdbserver () {
   local NDK_DIR="$1"
@@ -678,7 +688,7 @@ ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN%/}
 
 # Find host GDB client binary
 if [ -z "$GDB" ]; then
-  GDB=$(which $ANDROID_TOOLCHAIN/*-$GDBEXEPOSTFIX 2>/dev/null | head -1)
+  GDB=$(get_ndk_host_gdb_client "$ANDROID_NDK_ROOT")
   if [ -z "$GDB" ]; then
     panic "Can't find Android gdb client in your path, check your \
 --toolchain or --gdb path."
