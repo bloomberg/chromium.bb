@@ -2531,7 +2531,7 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   // Don't use bookmark_bar_view_->height() which won't be the final height if
   // the bookmark bar is animating.
   return chrome::kNTPBookmarkBarHeight -
-      views::NonClientFrameView::kClientEdgeThickness;
+         views::NonClientFrameView::kClientEdgeThickness;
 }
 
 void BrowserView::ExecuteExtensionCommand(

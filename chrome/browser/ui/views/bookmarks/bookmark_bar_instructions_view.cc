@@ -69,7 +69,8 @@ gfx::Size BookmarkBarInstructionsView::GetPreferredSize() const {
     width += pref.width();
   }
   width += (child_count() - 1) * GetViewPadding();
-  return gfx::Size(width, height);
+  gfx::Insets insets = GetInsets();
+  return gfx::Size(width + insets.width(), height + insets.height());
 }
 
 void BookmarkBarInstructionsView::Layout() {

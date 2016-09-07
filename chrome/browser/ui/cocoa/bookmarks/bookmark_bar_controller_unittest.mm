@@ -1022,14 +1022,13 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
 
   for (NSButton* button in buttons) {
     if (kIsModeMaterial) {
-      EXPECT_FLOAT_EQ(
-          (chrome::kBookmarkBarHeight +
-              bookmarks::kMaterialVisualHeightOffset) -
-                  2 * bookmarks::BookmarkVerticalPadding(),
-          [button frame].size.height);
+      EXPECT_FLOAT_EQ((chrome::kMinimumBookmarkBarHeight +
+                       bookmarks::kMaterialVisualHeightOffset) -
+                          2 * bookmarks::BookmarkVerticalPadding(),
+                      [button frame].size.height);
     } else {
       EXPECT_FLOAT_EQ(
-          (chrome::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) -
+          (chrome::kMinimumBookmarkBarHeight + bookmarks::kVisualHeightOffset) -
               2 * bookmarks::BookmarkVerticalPadding(),
           [button frame].size.height);
     }

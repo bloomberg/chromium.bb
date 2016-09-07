@@ -1096,7 +1096,7 @@ CGFloat BookmarkRightMargin() {
     [view setHidden:NO];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view animateToNewHeight:(chrome::kBookmarkBarHeight -
+    [view animateToNewHeight:(chrome::kMinimumBookmarkBarHeight -
                               bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::SHOW
@@ -1117,7 +1117,7 @@ CGFloat BookmarkRightMargin() {
     [view setHidden:NO];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view animateToNewHeight:(chrome::kBookmarkBarHeight -
+    [view animateToNewHeight:(chrome::kMinimumBookmarkBarHeight -
                               bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else {
@@ -1166,8 +1166,8 @@ CGFloat BookmarkRightMargin() {
       reduceHeight =
           isRetina && !ui::MaterialDesignController::IsModeMaterial();
 
-      return reduceHeight ? chrome::kBookmarkBarHeight + 1
-                          : chrome::kBookmarkBarHeight;
+      return reduceHeight ? chrome::kMinimumBookmarkBarHeight + 1
+                          : chrome::kMinimumBookmarkBarHeight;
     case BookmarkBar::DETACHED:
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:

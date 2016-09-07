@@ -23,11 +23,12 @@ const int kMaterialVisualHeightOffset = 2;
 // new tab pages.
 const int kNTPBookmarkBarPadding =
     (chrome::kNTPBookmarkBarHeight -
-        (chrome::kBookmarkBarHeight + kVisualHeightOffset)) / 2;
+     (chrome::kMinimumBookmarkBarHeight + kVisualHeightOffset)) /
+    2;
 
 // The height of buttons in the bookmark bar.
 const int kBookmarkButtonHeight =
-    chrome::kBookmarkBarHeight + kVisualHeightOffset;
+    chrome::kMinimumBookmarkBarHeight + kVisualHeightOffset;
 
 // The height of buttons in a bookmark bar folder menu.
 const CGFloat kBookmarkFolderButtonHeight = 24.0;

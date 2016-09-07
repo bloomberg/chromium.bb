@@ -172,7 +172,7 @@ static const int kAppsShortcutButtonTag = 2;
 
 // Preferred padding between text and edge.
 static const int kButtonPaddingHorizontal = 6;
-static const int kButtonPaddingVertical = 4;
+static const int kButtonPaddingVertical = 5;
 
 static const gfx::ElideBehavior kElideBehavior = gfx::FADE_TAIL;
 
@@ -844,17 +844,27 @@ int BookmarkBarView::GetToolbarOverlap() const {
           size_animation_.GetCurrentValue());
 }
 
+int BookmarkBarView::GetPreferredHeight() const {
+  int height = chrome::kMinimumBookmarkBarHeight;
+  for (int i = 0; i < child_count(); ++i) {
+    const views::View* view = child_at(i);
+    if (view->visible())
+      height = std::max(view->GetPreferredSize().height(), height);
+  }
+  return height;
+}
+
 gfx::Size BookmarkBarView::GetPreferredSize() const {
   gfx::Size prefsize;
+  int preferred_height = GetPreferredHeight();
   if (IsDetached()) {
     prefsize.set_height(
-        chrome::kBookmarkBarHeight +
-        static_cast<int>(
-            (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
-            (1 - size_animation_.GetCurrentValue())));
+        preferred_height +
+        static_cast<int>((chrome::kNTPBookmarkBarHeight - preferred_height) *
+                         (1 - size_animation_.GetCurrentValue())));
   } else {
-    prefsize.set_height(static_cast<int>(chrome::kBookmarkBarHeight *
-                                         size_animation_.GetCurrentValue()));
+    prefsize.set_height(
+        static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
   }
   return prefsize;
 }
@@ -880,13 +890,12 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   // if they are visible.
   int width = GetHorizontalMargin();
 
-  int height = chrome::kBookmarkBarHeight;
+  int height = GetPreferredHeight();
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
     width += 2 * static_cast<int>(kNewTabHorizontalPadding * current_state);
-    height += static_cast<int>(
-        (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
-            current_state);
+    height += static_cast<int>((chrome::kNTPBookmarkBarHeight - height) *
+                               current_state);
   }
 
   if (managed_bookmarks_button_->visible()) {
@@ -926,20 +935,21 @@ void BookmarkBarView::Layout() {
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
   int width = View::width() - 2 * GetHorizontalMargin();
-  int height = chrome::kBookmarkBarHeight - kBottomMargin;
+  int preferred_height = GetPreferredHeight();
+  int height = preferred_height - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
     x += static_cast<int>(kNewTabHorizontalPadding * current_state);
-    y += (View::height() - chrome::kBookmarkBarHeight) / 2;
+    y += (View::height() - preferred_height) / 2;
     width -= static_cast<int>(kNewTabHorizontalPadding * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
     // when animating in/out, as shrinking its height instead looks weird.  This
     // also matches how we layout infobars.
-    y += View::height() - chrome::kBookmarkBarHeight;
+    y += View::height() - preferred_height;
   }
 
   gfx::Size other_bookmarks_pref = other_bookmarks_button_->visible() ?
@@ -1658,6 +1668,8 @@ void BookmarkBarView::Init() {
   UpdateBookmarksSeparatorVisibility();
 
   instructions_ = new BookmarkBarInstructionsView(this);
+  instructions_->SetBorder(views::Border::CreateEmptyBorder(
+      kButtonPaddingVertical, 0, kButtonPaddingVertical, 0));
   AddChildView(instructions_);
 
   set_context_menu_controller(this);

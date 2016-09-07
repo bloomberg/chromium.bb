@@ -10,19 +10,19 @@
 namespace chrome {
 
 // The height of Bookmarks Bar, when visible in "New Tab Page" mode.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 const int kNTPBookmarkBarHeight = 40;
-#endif
 
-// The height of Bookmarks Bar, when attached to the toolbar.
+// The minimum height of Bookmarks Bar, when attached to the toolbar. The
+// height of the toolbar may grow to more than this value if the embedded
+// views need more space, for example, when the font is larger than normal.
 #if defined(OS_MACOSX)
 // This is actually a little smaller than it should be (by |kVisualHeightOffset|
 // points) because of the visual overlap with the main toolbar. When using this
 // to compute values other than the actual height of the toolbar, be sure to add
 // |kVisualHeightOffset|.
-const int kBookmarkBarHeight = 26;
+const int kMinimumBookmarkBarHeight = 26;
 #elif defined(TOOLKIT_VIEWS)
-const int kBookmarkBarHeight = 28;
+const int kMinimumBookmarkBarHeight = 28;
 #endif
 
 }  // namespace chrome

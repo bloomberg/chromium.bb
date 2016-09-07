@@ -385,6 +385,8 @@ class BookmarkBarView : public views::AccessiblePaneView,
     SchedulePaint();
   }
 
+  int GetPreferredHeight() const;
+
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;
 
