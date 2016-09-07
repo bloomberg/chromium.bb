@@ -282,15 +282,15 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
     //           held by the signature parameter passed to the verify method.
     WebVector<uint8_t> signature = copyBytes(rawSignature);
 
-    // 14.3.4.3: Let normalizedAlgorithm be the result of normalizing an
+    // 14.3.4.3: Let data be the result of getting a copy of the bytes held by
+    //           the data parameter passed to the verify method.
+    WebVector<uint8_t> data = copyBytes(rawData);
+
+    // 14.3.4.4: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "verify".
     WebCryptoAlgorithm normalizedAlgorithm;
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationVerify, normalizedAlgorithm, result))
         return promise;
-
-    // 14.3.4.5: Let data be the result of getting a copy of the bytes held by
-    //           the data parameter passed to the verify method.
-    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.4.9: If the name member of normalizedAlgorithm is not equal to the
     //           name attribute of the [[algorithm]] internal slot of key then throw an
@@ -379,19 +379,12 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result))
         return promise;
 
-    // 14.3.9.2: Let normalizedAlgorithm be the result of normalizing an
-    //           algorithm, with alg set to algorithm and op set to
-    //           "importKey".
-    WebCryptoAlgorithm normalizedAlgorithm;
-    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationImportKey, normalizedAlgorithm, result))
-        return promise;
-
     // In the case of JWK keyData will hold the UTF8-encoded JSON for the
     // JsonWebKey, otherwise it holds a copy of the BufferSource.
     WebVector<uint8_t> keyData;
 
     switch (format) {
-    // 14.3.9.6: If format is equal to the string "raw", "pkcs8", or "spki":
+    // 14.3.9.2: If format is equal to the string "raw", "pkcs8", or "spki":
     //
     //  (1) If the keyData parameter passed to the importKey method is a
     //      JsonWebKey dictionary, throw a TypeError.
@@ -410,7 +403,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
             return promise;
         }
         break;
-    // 14.3.9.6: If format is equal to the string "jwk":
+    // 14.3.9.2: If format is equal to the string "jwk":
     //
     //  (1) If the keyData parameter passed to the importKey method is not a
     //      JsonWebKey dictionary, throw a TypeError.
@@ -430,6 +423,14 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
         }
         break;
     }
+
+    // 14.3.9.3: Let normalizedAlgorithm be the result of normalizing an
+    //           algorithm, with alg set to algorithm and op set to
+    //           "importKey".
+    WebCryptoAlgorithm normalizedAlgorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationImportKey, normalizedAlgorithm, result))
+        return promise;
+
     histogramAlgorithm(scriptState->getExecutionContext(), normalizedAlgorithm);
     Platform::current()->crypto()->importKey(format, std::move(keyData), normalizedAlgorithm, extractable, keyUsages, result->result());
     return promise;
