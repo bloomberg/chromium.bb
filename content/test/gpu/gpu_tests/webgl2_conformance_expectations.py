@@ -142,6 +142,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win', 'intel'], bug=483282)
 
+    self.Fail('conformance2/buffers/uniform-buffers.html',
+        ['win7', 'intel'], bug=593024)
+    self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
+        ['win7', 'intel'], bug=593024)
+
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
     # configuration while running basically any test.
