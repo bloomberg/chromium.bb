@@ -406,7 +406,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * the animation here should be reflected also in
      * {@link #updateViewStateForDismiss(float, ViewHolder)} and reset in
      * {@link CardViewHolder#onBindViewHolder(NewTabPageItem)}.
-     * @param article The item to be dismissed.
+     * @param suggestion The item to be dismissed.
      */
     public void dismissItemWithAnimation(SnippetArticle suggestion) {
         // We need to recompute the position, as it might have changed.
