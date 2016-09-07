@@ -198,11 +198,6 @@ void OnRemoveRequestsDone(
 
 }  // namespace
 
-static jboolean IsOfflinePagesEnabled(JNIEnv* env,
-                                          const JavaParamRef<jclass>& clazz) {
-  return offline_pages::IsOfflinePagesEnabled();
-}
-
 static jboolean IsOfflineBookmarksEnabled(JNIEnv* env,
                                           const JavaParamRef<jclass>& clazz) {
   return offline_pages::IsOfflineBookmarksEnabled();

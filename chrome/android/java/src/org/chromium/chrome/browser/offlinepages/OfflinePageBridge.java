@@ -44,9 +44,6 @@ public class OfflinePageBridge {
     private final ObserverList<OfflinePageModelObserver> mObservers =
             new ObserverList<OfflinePageModelObserver>();
 
-    /** Whether offline pages feature is enabled or not. */
-    private static Boolean sOfflinePagesEnabled;
-
     /** Whether an offline sub-feature is enabled or not. */
     private static Boolean sOfflineBookmarksEnabled;
     private static Boolean sBackgroundLoadingEnabled;
@@ -107,17 +104,6 @@ public class OfflinePageBridge {
     @CalledByNative
     private static OfflinePageBridge create(long nativeOfflinePageBridge) {
         return new OfflinePageBridge(nativeOfflinePageBridge);
-    }
-
-    /**
-     * @return True if offline pages feature is enabled.
-     */
-    public static boolean isOfflinePagesEnabled() {
-        ThreadUtils.assertOnUiThread();
-        if (sOfflinePagesEnabled == null) {
-            sOfflinePagesEnabled = nativeIsOfflinePagesEnabled();
-        }
-        return sOfflinePagesEnabled;
     }
 
     /**
@@ -590,7 +576,6 @@ public class OfflinePageBridge {
         return new ClientId(clientNamespace, id);
     }
 
-    private static native boolean nativeIsOfflinePagesEnabled();
     private static native boolean nativeIsOfflineBookmarksEnabled();
     private static native boolean nativeIsBackgroundLoadingEnabled();
     private static native boolean nativeIsPageSharingEnabled();

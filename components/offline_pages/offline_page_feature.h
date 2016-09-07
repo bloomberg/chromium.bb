@@ -17,10 +17,6 @@ extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 
-// Returns true if offline pages, as result of one or more offline features
-// being enabled, is enabled.
-bool IsOfflinePagesEnabled();
-
 // Returns true if saving bookmarked pages for offline viewing is enabled.
 bool IsOfflineBookmarksEnabled();
 

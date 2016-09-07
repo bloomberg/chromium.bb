@@ -32,12 +32,6 @@ const base::Feature kOfflinePagesSharingFeature{
 const base::Feature kBackgroundLoaderForDownloadsFeature{
     "BackgroundLoadingForDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool IsOfflinePagesEnabled() {
-  return IsOfflineBookmarksEnabled() || IsOffliningRecentPagesEnabled() ||
-         IsOfflinePagesBackgroundLoadingEnabled() ||
-         IsOfflinePagesCTEnabled() || IsOfflinePagesSharingEnabled();
-}
-
 bool IsOfflineBookmarksEnabled() {
   return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
 }
