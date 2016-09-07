@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demonstracijski način</translation>
 <translation id="1481244281142949601">Nalazite se u primjerenoj sigurnosnoj okolini.</translation>
 <translation id="1482124012545051544">Spremno za izradu sigurnosnih kopija novih fotografija (ukupno <ph name="FILE_COUNT" />)</translation>
+<translation id="1483493594462132177">Pošalji</translation>
 <translation id="148466539719134488">švicarska</translation>
 <translation id="1485015260175968628">Proširenje ili aplikacija sada može:</translation>
 <translation id="1486096554574027028">Pretraživanje zaporki</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Zakreni u &amp;smjeru kretanja kazaljke na satu</translation>
 <translation id="1852799913675865625">Došlo je do pogreške pri pokušaju čitanja datoteke: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Dodaj lokaciju...</translation>
-<translation id="1857166538520940818">Priložite datoteku:</translation>
 <translation id="1858585891038687145">Vjeruj ovom certifikatu za identifikaciju proizvođača softvera</translation>
 <translation id="1859234291848436338">Smjer pisanja</translation>
 <translation id="1864111464094315414">Prijava</translation>
@@ -1577,7 +1577,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3108145564672865299">Zaključavanje usmjerenja zaslona</translation>
 <translation id="3108967419958202225">Odabir...</translation>
 <translation id="3112378005171663295">Sažmi</translation>
-<translation id="3113551216836192921">Datoteka u privitku prenosi se na Googleove poslužitelje radi uklanjanja pogrešaka.</translation>
 <translation id="3115147772012638511">Čekanje predmemorije...</translation>
 <translation id="3116361045094675131">UK tipkovnica</translation>
 <translation id="3117812041123364382">Omogući/onemogući plutajuću virtualnu tipkovnicu.</translation>
@@ -1892,7 +1891,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Stranice koje se ne uspiju učitati dok preglednik nije povezan s mrežom automatski će se ponovo učitati ako je njihova kartica vidljiva.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Otkaži preuzimanje}one{Otkaži preuzimanja}few{Otkaži preuzimanja}other{Otkaži preuzimanja}}</translation>
 <translation id="3512810056947640266">URL (nije obavezno):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> želi dijeliti sadržaj vašeg zaslona. Odaberite što želite dijeliti.</translation>
 <translation id="3518086201899641494">Obavijesti o obaveznim portalima za autentifikaciju</translation>
 <translation id="3519867315646775981">transliteracija (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Korisnicima omogućuje uključivanje zbirke nevažećih lanaca TLS/SSL certifikata.</translation>
@@ -2008,7 +2006,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">čitati postavke pristupačnosti</translation>
 <translation id="3654092442379740616">Pogreška u sinkronizaciji: proizvod <ph name="PRODUCT_NAME" /> zastario je i treba ga ažurirati.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ima trajni pristup jednoj datoteci.}one{Ima trajni pristup # datoteci.}few{Ima trajni pristup do # datoteke.}other{Ima trajni pristup do # datoteka.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> želi dijeliti sadržaj vašeg zaslona s karticom <ph name="TARGET_NAME" />. Odaberite što želite dijeliti.</translation>
 <translation id="3657468915905674858">Omogući PPAPI Win32k Lockdown.</translation>
 <translation id="3660234220361471169">Nepouzdano</translation>
 <translation id="3665589677786828986">Chrome je otkrio da je neki drugi program promijenio vaše postavke, pa ih je vratio na izvorne zadane vrijednosti.</translation>
@@ -2565,7 +2562,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4462159676511157176">Prilagođeni poslužitelji naziva</translation>
 <translation id="4465830120256509958">Brazilska tipkovnica</translation>
 <translation id="4467100756425880649">Galerija Chrome web-trgovine</translation>
-<translation id="4467798014533545464">Prikaži URL</translation>
 <translation id="4470564870223067757">hangul 2 set</translation>
 <translation id="4474155171896946103">Označi sve kartice...</translation>
 <translation id="4476590490540813026">Sportaš</translation>
@@ -4622,6 +4618,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7393449708074241536">Time će se trajno izbrisati ovoliko stavki s ovog uređaja: <ph name="TOTAL_COUNT" />.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> pokrenut će se pri pokretanju sustava i nastavi raditi u pozadini čak i nakon što zatvorite sve ostale prozore proizvoda <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Dopusti svim web-lokacijama upotrebu generiranja ključeva u obrascima.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Pričekajte dok se Chromebox ponovo pokrene...</translation>
 <translation id="7401543881546089382">Izbriši prečac</translation>
 <translation id="7403358905955888520">Onemogućuje pravilo automatskog otkrivanja vremenske zone sustava za uređaje.</translation>
@@ -4997,7 +4994,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7928710562641958568">Izbaci uređaj</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> dijeli zaslon i zvuk.</translation>
 <translation id="7938594894617528435">Trenutačno izvan mreže</translation>
-<translation id="7939374455203157513">Omogući usluge u oblaku</translation>
 <translation id="7939412583708276221">Svejedno zadrži</translation>
 <translation id="7939997691108949385">Upravitelj će moći konfigurirati ograničenja i postavke za tog nadziranog korisnika na adresi <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">američka (SAD Colemak)</translation>

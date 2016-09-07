@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Mode demo</translation>
 <translation id="1481244281142949601">Sandbox Anda memadai.</translation>
 <translation id="1482124012545051544">Siap mencadangkan <ph name="FILE_COUNT" /> foto baru</translation>
+<translation id="1483493594462132177">Kirim</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1485015260175968628">Sekarang aplikasi/ekstensi dapat:</translation>
 <translation id="1486096554574027028">Telusuri sandi</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Putar &amp;searah jarum jam</translation>
 <translation id="1852799913675865625">Terdapat kesalahan saat mencoba membaca file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">+ lokasi...</translation>
-<translation id="1857166538520940818">Lampirkan file:</translation>
 <translation id="1858585891038687145">Mempercayai sertifikat ini untuk mengidentifikasi pembuat perangkat lunak</translation>
 <translation id="1859234291848436338">Arah Penulisan</translation>
 <translation id="1864111464094315414">Masuk</translation>
@@ -1577,7 +1577,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3108145564672865299">Penguncian Orientasi Layar</translation>
 <translation id="3108967419958202225">Pilih...</translation>
 <translation id="3112378005171663295">Ciutkan</translation>
-<translation id="3113551216836192921">File terlampir diunggah ke server Google untuk debugging.</translation>
 <translation id="3115147772012638511">Menunggu cache...</translation>
 <translation id="3116361045094675131">Keyboard Inggris</translation>
 <translation id="3117812041123364382">Mengaktifkan/Menonaktifkan keyboard virtual mengambang.</translation>
@@ -1892,7 +1891,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Laman yang gagal dimuat saat browser offline hanya akan dimuat ulang secara otomatis apabila tabnya terlihat.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Batalkan Unduhan}other{Batalkan Unduhan}}</translation>
 <translation id="3512810056947640266">URL (opsional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> ingin membagikan konten layar Anda. Pilih yang ingin Anda bagikan.</translation>
 <translation id="3518086201899641494">Notifikasi tentang portal yang tertahan</translation>
 <translation id="3519867315646775981">Transliterasi (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Memungkinkan pengguna ikut serta ke koleksi rantai sertifikat TLS/SSL yang tidak valid.</translation>
@@ -2008,7 +2006,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Baca setelan aksesibilitas Anda</translation>
 <translation id="3654092442379740616">Kesalahan Sinkronisasi: <ph name="PRODUCT_NAME" /> sudah usang dan perlu diperbarui.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Memiliki akses permanen ke satu file.}other{Memiliki akses permanen ke # file.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> ingin membagikan konten layar Anda dengan <ph name="TARGET_NAME" />. Pilih yang ingin Anda bagikan.</translation>
 <translation id="3657468915905674858">Aktifkan Gembok Total Win32k PPAPI.</translation>
 <translation id="3660234220361471169">Tidak tepercaya</translation>
 <translation id="3665589677786828986">Chrome mendeteksi bahwa beberapa setelan Anda dirusak oleh program lain dan menyetelnya ulang ke setelan default aslinya.</translation>
@@ -2565,7 +2562,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4462159676511157176">Server nama khusus</translation>
 <translation id="4465830120256509958">Keyboard untuk bahasa Portugis Brasil</translation>
 <translation id="4467100756425880649">Galeri Toko Web Chrome</translation>
-<translation id="4467798014533545464">Tampilkan URL</translation>
 <translation id="4470564870223067757">2 Himpunan Hangul</translation>
 <translation id="4474155171896946103">Bookmark semua tab...</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -4624,6 +4620,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7393449708074241536">Tindakan ini akan menghapus <ph name="TOTAL_COUNT" /> item dari perangkat ini secara permanen.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> akan diluncurkan pada permulaan sistem dan tetap berjalan di latar meskipun Anda telah menutup semua jendela <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Izinkan semua situs menggunakan pembuatan kunci dalam formulir.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Tunggu saat Chromebox dimulai ulang...</translation>
 <translation id="7401543881546089382">Hapus pintasan</translation>
 <translation id="7403358905955888520">Nonaktifkan kebijakan perangkat deteksi otomatis zona waktu sistem.</translation>
@@ -4999,7 +4996,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7928710562641958568">Keluarkan perangkat</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> membagikan layar dan audio Anda.</translation>
 <translation id="7938594894617528435">Sedang offline</translation>
-<translation id="7939374455203157513">Aktifkan Layanan Awan</translation>
 <translation id="7939412583708276221">Lanjutkan saja</translation>
 <translation id="7939997691108949385">Pengelola akan dapat mengonfigurasi batasan dan setelan untuk pengguna yang dilindungi ini di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak AS</translation>

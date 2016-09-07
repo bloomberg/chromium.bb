@@ -283,7 +283,7 @@
 <translation id="1399648040768741453">מקלדת טלוגו (פונטית)</translation>
 <translation id="140240131475089220">ניפוי באגים שקט</translation>
 <translation id="140250605646987970">‏הטלפון שלך נמצא, אך Smart Lock פועל רק במכשירי Android מגרסה 5.0 ואילך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
-<translation id="1403519882106291341">‏תנאי מערכת ההפעלה Google Chrome</translation>
+<translation id="1403519882106291341">‏תנאי מערכת ההפעלה של Google Chrome</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (בפיקוח)</translation>
 <translation id="1405476660552109915">האם ברצונך ש-<ph name="PASSWORD_MANAGER_BRAND" /> ישמור את חשבונך לאתר הזה?</translation>
 <translation id="1406500794671479665">מאמת...</translation>
@@ -350,6 +350,7 @@
 <translation id="1480041086352807611">מצב הדגמה</translation>
 <translation id="1481244281142949601">אתה נמצא בארגז חול מוגבל כראוי.</translation>
 <translation id="1482124012545051544">מוכן לגבות <ph name="FILE_COUNT" /> תמונות חדשות</translation>
+<translation id="1483493594462132177">שלח</translation>
 <translation id="148466539719134488">שווייצרית</translation>
 <translation id="1485015260175968628">יכול כעת:</translation>
 <translation id="1486096554574027028">חפש בסיסמאות</translation>
@@ -636,7 +637,6 @@
 <translation id="1850508293116537636">סובב &amp;בכיוון השעון</translation>
 <translation id="1852799913675865625">אירעה שגיאה בעת ניסיון לקרוא את הקובץ: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">הוסף מיקום...</translation>
-<translation id="1857166538520940818">צרף קובץ:</translation>
 <translation id="1858585891038687145">תן אמון באישור זה לזיהוי מפתחי תוכנה</translation>
 <translation id="1859234291848436338">כיוון כתיבה</translation>
 <translation id="1864111464094315414">התחבר</translation>
@@ -1573,7 +1573,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3108145564672865299">נעילה של כיוון המסך</translation>
 <translation id="3108967419958202225">בחר...</translation>
 <translation id="3112378005171663295">כווץ</translation>
-<translation id="3113551216836192921">‏הקובץ המצורף מועלה לשרתים של Google לצורך ניפוי באגים.</translation>
 <translation id="3115147772012638511">ממתין לקובץ שמור...</translation>
 <translation id="3116361045094675131">מקלדת אנגלית (בריטניה)</translation>
 <translation id="3117812041123364382">הפעל/השבת את המקלדת הווירטואלית הצפה.</translation>
@@ -1887,7 +1886,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3512284449647229026">דפים שהטעינה שלהם נכשלת כאשר הדפדפן במצב לא מקוון ייטענו אוטומטית רק אם הכרטיסייה גלויה.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{בטל הורדה}two{בטל הורדות}many{בטל הורדות}other{בטל הורדות}}</translation>
 <translation id="3512810056947640266">כתובת אתר (אופציונלי):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> רוצה לשתף את תוכן המסך שלך. בחר את התוכן שברצונך לשתף.</translation>
 <translation id="3518086201899641494">הודעות על פורטל חובה</translation>
 <translation id="3519867315646775981">‏תעתוק (שלום ← shalom)</translation>
 <translation id="3522159121915794564">‏מאפשר למשתמשים להסכים לאיסוף של שרשראות אישורי TLS/SSL לא חוקיים.</translation>
@@ -2003,7 +2001,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="3654092442379740616">שגיאת סנכרון:  <ph name="PRODUCT_NAME" /> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{יש לו גישה קבועה אל קובץ אחד.}two{יש לו גישה קבועה אל # קבצים.}many{יש לו גישה קבועה אל # קבצים.}other{יש לו גישה קבועה אל # קבצים.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> רוצה לשתף את תוכן המסך שלך עם <ph name="TARGET_NAME" />. בחר את התוכן שברצונך לשתף.</translation>
 <translation id="3657468915905674858">‏אפשר סגירה של PPAPI Win32k</translation>
 <translation id="3660234220361471169">לא אמין</translation>
 <translation id="3665589677786828986">‏Chrome זיהה שחלק מההגדרות שלך נפגמו על ידי תכנית אחרת ואיפס אותן לברירות המחדל המקוריות.</translation>
@@ -2560,7 +2557,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4462159676511157176">שרתי שמות מותאמים אישית</translation>
 <translation id="4465830120256509958">מקלדת פורטוגזית (ברזיל) </translation>
 <translation id="4467100756425880649">‏הגלריה של חנות האינטרנט של Chrome</translation>
-<translation id="4467798014533545464">הצג כתובת אתר</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">צור סימניה לכל הכרטיסיות...</translation>
 <translation id="4476590490540813026">ספורטאית</translation>
@@ -4613,6 +4609,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7393449708074241536">הפעולה הזו תמחק לצמיתות <ph name="TOTAL_COUNT" /> פריטים מהמכשיר.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> יופעל עם אתחול המערכת וימשיך לפעול ברקע גם כאשר תסגור את כל החלונות האחרים של <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">אפשר לכל האתרים להשתמש ביצירת מפתחות בטפסים.</translation>
+<translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="740083207982962331">‏המתן בזמן שה-Chromebox שלך מופעל מחדש...</translation>
 <translation id="7401543881546089382">מחק קיצור דרך</translation>
 <translation id="7403358905955888520">השבת את מדיניות המכשיר לזיהוי אוטומטי של אזור זמן המערכת.</translation>
@@ -4986,7 +4983,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7928710562641958568">הוצא את המכשיר</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> משתף את המסך והאודיו שלך.</translation>
 <translation id="7938594894617528435">לא מקוונת כעת</translation>
-<translation id="7939374455203157513">הפעלת שירותי ענן</translation>
 <translation id="7939412583708276221">שמור בכל מקרה</translation>
 <translation id="7939997691108949385">המנהל יוכל לקבוע הגבלות והגדרות עבור משתמש בפיקוח זה בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">‏ארה"ב - Colemak</translation>

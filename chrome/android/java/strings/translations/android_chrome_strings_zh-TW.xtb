@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4543661749405994812">複製電子郵件地址</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
+<translation id="4576023202210315647">將分頁保留在 Chrome 中</translation>
 <translation id="4581964774250883625">您已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
 <translation id="4605958867780575332">已移除項目：<ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">自動填入表單資料</translation>
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個開啟的分頁}other{%1$d 個開啟的分頁}}</translation>
-<translation id="6910211073230771657">已刪除</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
 <translation id="8168435359814927499">內容</translation>
 <translation id="8173098127580644436">不限時間</translation>
-<translation id="8187025609458112874">無法分享已刪除的檔案</translation>
 <translation id="8190358571722158785">還剩 1 天</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8202097416529803614">訂單摘要</translation>

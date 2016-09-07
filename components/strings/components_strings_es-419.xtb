@@ -341,7 +341,7 @@
 <translation id="4816492930507672669">Ajustar a la página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4880827082731008257">Buscar historial</translation>
-<translation id="4884656795097055129">Se mostrarán más artículos cuando haya más información.</translation>
+<translation id="4884656795097055129">Se mostrarán más artículos en el momento adecuado.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Esta página ha sido traducida desde un idioma desconocido a <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Debe especificarse un valor.</translation>
@@ -552,6 +552,7 @@
 <translation id="7568593326407688803">Esta página está en<ph name="ORIGINAL_LANGUAGE" />¿Quieres traducirla?</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
 <translation id="7578104083680115302">Paga con rapidez en sitios y apps a través de varios dispositivos con tarjetas que guardaste en Google.</translation>
+<translation id="7588950540487816470">Web física</translation>
 <translation id="7592362899630581445">El certificado del servidor no cumple con las restricciones de nombre.</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> no puede procesar esta solicitud en este momento.</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>

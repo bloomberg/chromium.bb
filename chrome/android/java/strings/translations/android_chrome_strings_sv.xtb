@@ -289,6 +289,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4543661749405994812">Kopiera e-postadress</translation>
 <translation id="4572422548854449519">Logga in på hanterat konto</translation>
+<translation id="4576023202210315647">Spara fliken i Chrome</translation>
 <translation id="4581964774250883625">Du surfar inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{för # minut sedan}other{för # minuter sedan}}</translation>
 <translation id="4605958867780575332">Borttaget objekt: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d öppen flik}other{%1$d öppna flikar}}</translation>
-<translation id="6910211073230771657">Borttagen</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -600,7 +600,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="8173098127580644436">tidens början</translation>
-<translation id="8187025609458112874">Det går inte att dela raderade filer</translation>
 <translation id="8190358571722158785">1 dag kvar</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8202097416529803614">Beställningsöversikt</translation>

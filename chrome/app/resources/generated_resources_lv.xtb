@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demonstrācijas režīms</translation>
 <translation id="1481244281142949601">Jums ir pietiekami liela smilškaste.</translation>
 <translation id="1482124012545051544">Gatavs <ph name="FILE_COUNT" /> jaunu fotoattēlu dublēšanai</translation>
+<translation id="1483493594462132177">Sūtīt</translation>
 <translation id="148466539719134488">Šveices</translation>
 <translation id="1485015260175968628">Tagad var:</translation>
 <translation id="1486096554574027028">Meklēt paroles</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Pagriezt &amp;pulksteņrādītāju kustības virzienā</translation>
 <translation id="1852799913675865625">Faila lasīšanas laikā radās kļūda: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Pievienot atrašanās vietu...</translation>
-<translation id="1857166538520940818">Pievienot failu:</translation>
 <translation id="1858585891038687145">Uzticēties šim sertifikātam, lai identificētu programmatūras izstrādātājus</translation>
 <translation id="1859234291848436338">Rakstīšanas virziens</translation>
 <translation id="1864111464094315414">Pieteikties</translation>
@@ -1578,7 +1578,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3108145564672865299">Ekrāna orientācijas bloķēšana</translation>
 <translation id="3108967419958202225">Izvēlēties...</translation>
 <translation id="3112378005171663295">Sakļaut</translation>
-<translation id="3113551216836192921">Pievienotais fails ir augšupielādēts Google serveros, lai veiktu atkļūdošanu.</translation>
 <translation id="3115147772012638511">Gaida krtuvi...</translation>
 <translation id="3116361045094675131">AK tastatūra</translation>
 <translation id="3117812041123364382">Iespējot/atspējot peldošo virtuālo tastatūru.</translation>
@@ -1894,7 +1893,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Lapas, kuras neizdosies ielādēt, kamēr pārlūks lietots bezsaistē, tiks automātiski atkārtoti ielādētas tikai tad, ja to cilne ir redzama.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Atcelt lejupielādi}zero{Atcelt lejupielādes}one{Atcelt lejupielādes}other{Atcelt lejupielādes}}</translation>
 <translation id="3512810056947640266">URL (neobligāti):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> vēlas kopīgot jūsu ekrāna saturu. Izvēlieties kopīgojamo saturu.</translation>
 <translation id="3518086201899641494">Paziņojumi par caurlaides lapām</translation>
 <translation id="3519867315646775981">Transliterācija (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Ļauj lietotājiem izvēlēties apkopot nederīgu TLS/SSL sertifikātu virknes.</translation>
@@ -2010,7 +2008,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Lasīt jūsu piekļuves iestatījumus</translation>
 <translation id="3654092442379740616">Sinhronizācijas kļūda: <ph name="PRODUCT_NAME" /> ir novecojis un ir jāatjaunina.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tai ir pastāvīga piekļuve vienam failam.}zero{Tai ir pastāvīga piekļuve # failiem.}one{Tai ir pastāvīga piekļuve # failam.}other{Tai ir pastāvīga piekļuve # failiem.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> vēlas kopīgot jūsu ekrāna saturu ar <ph name="TARGET_NAME" />. Izvēlieties kopīgojamo saturu.</translation>
 <translation id="3657468915905674858">PPAPI Win32k bloķēšanas iespējošana</translation>
 <translation id="3660234220361471169">Neuzticami</translation>
 <translation id="3665589677786828986">Pārlūkā Chrome tika konstatēts, ka daži jūsu iestatījumi tika bojāti citā programmā, tāpēc šie iestatījumi tika atiestatīti uz sākotnējiem noklusējuma iestatījumiem.</translation>
@@ -2567,7 +2564,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4462159676511157176">Pielāgoti nosaukumu serveri</translation>
 <translation id="4465830120256509958">Brazīļu valodas tastatūra</translation>
 <translation id="4467100756425880649">Chrome interneta veikala galerija</translation>
-<translation id="4467798014533545464">URL rādīšana</translation>
 <translation id="4470564870223067757">Hangils (2 Set)</translation>
 <translation id="4474155171896946103">Saglabāt visas cilnes kā grāmatzīmes...</translation>
 <translation id="4476590490540813026">Sportiste</translation>
@@ -4629,6 +4625,7 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="7393449708074241536">Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti <ph name="TOTAL_COUNT" /> vienumi.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> tiks startēta pie sistēmas startēšanas un turpinās darboties fonā arī tad, ja aizvērsiet visus citus <ph name="PRODUCT_NAME" /> logus.</translation>
 <translation id="7396863776022882342">Atļaut izmantot atslēgu ģenerēšanu visu vietņu veidlapās.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Lūdzu, uzgaidiet, līdz jūsu Chromebox dators tiek restartēts...</translation>
 <translation id="7401543881546089382">Dzēst saīsni</translation>
 <translation id="7403358905955888520">Atspējot laika joslas automātiskās noteikšanas ierīces politiku.</translation>
@@ -5004,7 +5001,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="7928710562641958568">Ierīces atvienošana</translation>
 <translation id="79312157130859720">Lietotne <ph name="APP_NAME" /> koplieto jūsu ekrānu un audio.</translation>
 <translation id="7938594894617528435">Pašlaik atrodas bezsaistē</translation>
-<translation id="7939374455203157513">Iespējot mākoņa pakalpojumus</translation>
 <translation id="7939412583708276221">Tik un tā saglabāt</translation>
 <translation id="7939997691108949385">Pārzinis vietnē <ph name="MANAGEMENT_URL" /> varēs konfigurēt šī uzraudzītā lietotāja ierobežojumus un iestatījumus.</translation>
 <translation id="7943385054491506837">ASV Colemak</translation>

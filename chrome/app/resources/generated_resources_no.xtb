@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demo-modus</translation>
 <translation id="1481244281142949601">Du har tilstrekkelig sandkassebeskyttelse.</translation>
 <translation id="1482124012545051544">Klar til å sikkerhetskopiere <ph name="FILE_COUNT" /> nye bilder</translation>
+<translation id="1483493594462132177">Send</translation>
 <translation id="148466539719134488">Sveitsisk</translation>
 <translation id="1485015260175968628">Den har allerede følgende tilgang:</translation>
 <translation id="1486096554574027028">Søk i passord</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">Rotér &amp;med klokken</translation>
 <translation id="1852799913675865625">Det oppstod en feil under forsøket på å lese filen: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Legg til plassering</translation>
-<translation id="1857166538520940818">Legg ved fil:</translation>
 <translation id="1858585891038687145">Stol på dette sertifikatet for identifisering av programvareprodusenter</translation>
 <translation id="1859234291848436338">Skriveretning</translation>
 <translation id="1864111464094315414">Pålogging</translation>
@@ -1033,7 +1033,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2422426094670600218">&lt;uten navn&gt;</translation>
 <translation id="2423578206845792524">Lagre &amp;bildet som...</translation>
 <translation id="2424091190911472304">Kjør alltid på <ph name="ORIGIN" /></translation>
-<translation id="2425040750078864123">Slår på pakking av PWA-er som en Android WebAPK. Dette krever at du sender data til en Chrome-tjener for å generere appen.</translation>
+<translation id="2425040750078864123">Slår på pakking av PWA-er inn i en Android WebAPK. Dette krever at du sender data til en Chrome-tjener for å generere appen.</translation>
 <translation id="2425632738803359658">Bytt til brukermeny med «material design»</translation>
 <translation id="2425665904502185219">Total filstørrelse</translation>
 <translation id="2431394478374894294">Slår på taleinndata på det virtuelle tastaturet</translation>
@@ -1573,7 +1573,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3108145564672865299">Låsing av skjermretningen</translation>
 <translation id="3108967419958202225">Velg</translation>
 <translation id="3112378005171663295">Skjul</translation>
-<translation id="3113551216836192921">Den vedlagte filen er lastet opp til Googles tjenere for feilsøking.</translation>
 <translation id="3115147772012638511">Venter på buffer...</translation>
 <translation id="3116361045094675131">Britisk tastatur</translation>
 <translation id="3117812041123364382">Slår det flytende virtuelle tastaturet på/av.</translation>
@@ -1887,7 +1886,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sider som ikke lastes inn mens nettleseren er koblet fra nettet, blir bare lastet inn på nytt automatisk hvis fanene for sidene er synlige.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Avbryt nedlastingen}other{Avbryt nedlastingene}}</translation>
 <translation id="3512810056947640266">Nettadresse (valgfritt):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> ønsker å dele innholdet på skjermen din. Velg hva du ønsker å dele.</translation>
 <translation id="3518086201899641494">Varsler om autentiseringsportal</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Gir brukere mulighet til å velge å delta i innsamlingen av ugyldige TLS-/SSL-sertifikatkjeder.</translation>
@@ -2003,7 +2001,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">lese tilgjengelighetsinnstillingene dine</translation>
 <translation id="3654092442379740616">Synkroniseringsfeil: <ph name="PRODUCT_NAME" /> er foreldet og må oppdateres.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent tilgang til én fil.}other{Den har permanent tilgang til # filer.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> ønsker å dele innholdet på skjermen din med <ph name="TARGET_NAME" />. Velg hva du ønsker å dele.</translation>
 <translation id="3657468915905674858">Slå på Win32k-låsing for PPAPI.</translation>
 <translation id="3660234220361471169">Uklarert</translation>
 <translation id="3665589677786828986">Chrome har oppdaget at noen av innstillingene ble ødelagt av et annet program og tilbakestille dem til originalinnstillingene.</translation>
@@ -2296,7 +2293,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: påloggingsfeil</translation>
 <translation id="4072248638558688893">Tamilsk tastatur (fonetisk)</translation>
 <translation id="4074900173531346617">Sertifikat for signering av e-poster</translation>
-<translation id="4074945132384537841">Slår på muligheten for å gi eller fjerne tilgang til funksjoner via HTTP-toppteksten for funksjonsretningslinjene.</translation>
+<translation id="4074945132384537841">Slår på muligheten for å gi eller fjerne tilgang til funksjoner via HTTP-toppteksten Feature-Policy.</translation>
 <translation id="4075084141581903552">Automatisk pålogging er tilgjengelig for <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Aggressiv</translation>
 <translation id="408098233265424160">Smart Lock-nærhetspåvisning</translation>
@@ -2330,7 +2327,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4109135793348361820">Flytt vinduet til <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110342520124362335">Informasjonskapsler fra <ph name="DOMAIN" /> blokkert.</translation>
 <translation id="4110559665646603267">Fokusér på hyllen</translation>
-<translation id="4111987820265285122">Funksjonsretningslinje</translation>
+<translation id="4111987820265285122">Funksjonsretningslinjer</translation>
 <translation id="4112917766894695549">Disse innstillingene håndheves av administratoren din.</translation>
 <translation id="4114360727879906392">Forrige vindu</translation>
 <translation id="4114470632216071239">Lås SIM-kort (krev personlig kode for å bruke mobildata)</translation>
@@ -2558,7 +2555,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4465830120256509958">Brasiliansk tastatur</translation>
 <translation id="4467100756425880649">Chrome Nettmarked Galleri</translation>
-<translation id="4467798014533545464">Vis nettadressen</translation>
 <translation id="4470564870223067757">Hangul 2-sett</translation>
 <translation id="4474155171896946103">Bokmerk alle fanene</translation>
 <translation id="4476590490540813026">Idrettsutøver</translation>
@@ -4608,6 +4604,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7393449708074241536">Dette sletter <ph name="TOTAL_COUNT" /> elementer permanent fra denne enheten.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> starter ved systemoppstart, og fortsetter å kjøre i bakgrunnen selv når du har lukket alle andre vinduer for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Tillat alle nettsteder å bruke nøkkelgenerering i skjemaer.</translation>
+<translation id="7400418766976504921">Nettadresse</translation>
 <translation id="740083207982962331">Vent mens Chromeboxen din starter på nytt …</translation>
 <translation id="7401543881546089382">Slett snarveien</translation>
 <translation id="7403358905955888520">Slå av enhetsinnstillingene for automatisk påvisning av tidssone.</translation>
@@ -4981,7 +4978,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7928710562641958568">Utløserenhet</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deler lyden og skjermen din.</translation>
 <translation id="7938594894617528435">Frakoblet for øyeblikket</translation>
-<translation id="7939374455203157513">Slå på nettskytjenester</translation>
 <translation id="7939412583708276221">Behold uansett</translation>
 <translation id="7939997691108949385">Administratoren kan konfigurere begrensninger og innstillinger for denne administrerte brukeren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">USA Colemak</translation>

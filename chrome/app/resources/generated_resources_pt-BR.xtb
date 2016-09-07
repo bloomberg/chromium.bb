@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="1481244281142949601">Sua sandbox é adequada.</translation>
 <translation id="1482124012545051544">Pronto para fazer o backup de <ph name="FILE_COUNT" /> fotos novas</translation>
+<translation id="1483493594462132177">Enviar</translation>
 <translation id="148466539719134488">Suíço</translation>
 <translation id="1485015260175968628">Ele agora pode:</translation>
 <translation id="1486096554574027028">Pesquisar senhas</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Girar no &amp;sentido horário</translation>
 <translation id="1852799913675865625">Ocorreu um erro ao tentar ler o arquivo: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">Adicionar local...</translation>
-<translation id="1857166538520940818">Anexar arquivo:</translation>
 <translation id="1858585891038687145">Confiar neste certificado para a identificação de criadores do software</translation>
 <translation id="1859234291848436338">Direção de Gravação</translation>
 <translation id="1864111464094315414">Login</translation>
@@ -1577,7 +1577,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3108145564672865299">Bloqueio da orientação da tela</translation>
 <translation id="3108967419958202225">Escolher...</translation>
 <translation id="3112378005171663295">Recolher</translation>
-<translation id="3113551216836192921">O arquivo anexo é enviado aos servidores do Google para depuração.</translation>
 <translation id="3115147772012638511">Aguardando o cache...</translation>
 <translation id="3116361045094675131">Teclado do Reino Unido</translation>
 <translation id="3117812041123364382">Ativar/Desativar teclado virtual flutuante.</translation>
@@ -1892,7 +1891,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Páginas que não podem ser carregadas enquanto o navegador está off-line são atualizadas automaticamente apenas se sua guia está visível.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar download}one{Cancelar downloads}other{Cancelar downloads}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> quer compartilhar o conteúdo da sua tela. Escolha o que você gostaria de compartilhar.</translation>
 <translation id="3518086201899641494">Notificações sobre portais cativos</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Permite que os usuários optem pelo conjunto de cadeias de certificados TLS/SSL inválidos.</translation>
@@ -2008,7 +2006,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Ler suas configurações de acessibilidade</translation>
 <translation id="3654092442379740616">Erro de sincronização: <ph name="PRODUCT_NAME" /> está desatualizado e precisa ser atualizado.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um arquivo.}one{Tem acesso permanente a # arquivos.}other{Tem acesso permanente a # arquivos.}}</translation>
-<translation id="3656059567098593256">O <ph name="APP_NAME" /> deseja compartilhar o conteúdo da sua tela com <ph name="TARGET_NAME" />. Escolha o que você gostaria de compartilhar.</translation>
 <translation id="3657468915905674858">Ativar Bloqueio total de PPAPI Win32k.</translation>
 <translation id="3660234220361471169">Não confiáveis</translation>
 <translation id="3665589677786828986">O Google Chrome detectou que algumas das suas configurações foram corrompidas por outro programa e as redefiniu para os padrões originais.</translation>
@@ -2564,7 +2561,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4465830120256509958">Teclado brasileiro</translation>
 <translation id="4467100756425880649">Galeria da Chrome Web Store</translation>
-<translation id="4467798014533545464">Mostrar URL</translation>
 <translation id="4470564870223067757">Conjunto de letras coreanas (Hangul 2)</translation>
 <translation id="4474155171896946103">Adicionar todas as guias aos favoritos...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4625,6 +4621,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7393449708074241536">Isso excluirá permanentemente <ph name="TOTAL_COUNT" /> itens deste dispositivo.</translation>
 <translation id="7396845648024431313">O <ph name="APP_NAME" /> será iniciado na inicialização do sistema e continuará sendo executado em segundo plano, mesmo quando você fechar todas as outras janelas de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Permitir que todos os sites usem a geração de chaves em formulários.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Aguarde enquanto seu Chromebox é reiniciado...</translation>
 <translation id="7401543881546089382">Excluir atalho</translation>
 <translation id="7403358905955888520">Desativa a política do dispositivo de detecção automática do fuso horário do sistema.</translation>
@@ -5000,7 +4997,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7928710562641958568">Ejetar dispositivo</translation>
 <translation id="79312157130859720">O app <ph name="APP_NAME" /> está compartilhando sua tela e áudio.</translation>
 <translation id="7938594894617528435">Atualmente off-line</translation>
-<translation id="7939374455203157513">Ativar serviços em nuvem</translation>
 <translation id="7939412583708276221">Manter assim mesmo</translation>
 <translation id="7939997691108949385">O gerente poderá configurar restrições e configurações para este usuário supervisionado em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak EUA</translation>

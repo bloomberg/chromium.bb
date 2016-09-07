@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">फ़ोल्डर चुनें</translation>
 <translation id="4543661749405994812">ईमेल पते की प्रतिलिपि बनाएं</translation>
 <translation id="4572422548854449519">प्रबंधित खाते में प्रवेश करें</translation>
+<translation id="4576023202210315647">टैब को Chrome में सहेजें</translation>
 <translation id="4581964774250883625">आप गुप्त मोड में चले गए हैं.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="4605958867780575332">आइटम निकाला गया: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाला फ़ॉर्म डेटा</translation>
 <translation id="6868088497967843822">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्त करने के लिए प्रवेश करें</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
-<translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
 <translation id="6965382102122355670">ठीक</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">खोजने के लिए स्‍पर्श करें चयनित शब्‍द और वर्तमान पृष्‍ठ को संदर्भ के रूप में Google खोज पर भेजती है. आप उसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बंद कर सकते हैं.</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8173098127580644436">प्रारंभ समय</translation>
-<translation id="8187025609458112874">हटाई गई फ़ाइलों को साझा नहीं किया जा सकता</translation>
 <translation id="8190358571722158785">1 दिन शेष</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8202097416529803614">आदेश सारांश</translation>

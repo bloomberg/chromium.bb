@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Mode de demostració</translation>
 <translation id="1481244281142949601">El vostre sandbox és adequat.</translation>
 <translation id="1482124012545051544">Preparat per crear una còpia de seguretat de <ph name="FILE_COUNT" /> fotos noves</translation>
+<translation id="1483493594462132177">Envia</translation>
 <translation id="148466539719134488">Suís</translation>
 <translation id="1485015260175968628">Ara pot:</translation>
 <translation id="1486096554574027028">Cerca contrasenyes</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Gira en el sentit de les &amp;agulles del rellotge</translation>
 <translation id="1852799913675865625">S'ha produït un error en intentar llegir el fitxer: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Afegeix una ubicació...</translation>
-<translation id="1857166538520940818">Adjunta un fitxer:</translation>
 <translation id="1858585891038687145">Confia en aquest certificat per identificar generadors de programari</translation>
 <translation id="1859234291848436338">Direcció de l'escriptura</translation>
 <translation id="1864111464094315414">Inicia la sessió</translation>
@@ -1576,7 +1576,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3108145564672865299">Bloqueig de l'orientació de la pantalla</translation>
 <translation id="3108967419958202225">Trieu...</translation>
 <translation id="3112378005171663295">Redueix</translation>
-<translation id="3113551216836192921">El fitxer adjunt s'ha penjat als servidors de Google per depurar-lo.</translation>
 <translation id="3115147772012638511">Esperant la memòria cau...</translation>
 <translation id="3116361045094675131">Teclat anglès</translation>
 <translation id="3117812041123364382">Activa o desactiva el teclat virtual flotant.</translation>
@@ -1890,7 +1889,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Les pàgines que no es puguin carregar quan el navegador estigui fora de línia només es tornaran a carregar automàticament si la seva pestanya és visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancel·la la baixada}other{Cancel·la les baixades}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> vol compartir el contingut de la vostra pantalla. Trieu el que vulgueu compartir.</translation>
 <translation id="3518086201899641494">Notificacions sobre portals captius</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Permet que els usuaris activin la recopilació de cadenes de certificats TLS/SSL no vàlides.</translation>
@@ -2006,7 +2004,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Consultar la configuració d'accessibilitat</translation>
 <translation id="3654092442379740616">Error de sincronització: <ph name="PRODUCT_NAME" /> no està actualitzat i necessita una actualització.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Té accés permanent a un fitxer.}other{Té accés permanent a # fitxers.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> vol compartir el contingut de la vostra pantalla amb <ph name="TARGET_NAME" />. Trieu el que vulgueu compartir.</translation>
 <translation id="3657468915905674858">Activa el bloqueig de Win32k per a PPAPI.</translation>
 <translation id="3660234220361471169">No és de confiança</translation>
 <translation id="3665589677786828986">Chrome ha detectat que un altre programa ha malmès alguns dels paràmetres de configuració i els ha restablert als valors predeterminats originals.</translation>
@@ -2300,7 +2297,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error d'inici de sessió</translation>
 <translation id="4072248638558688893">Teclat tàmil (fonètic)</translation>
 <translation id="4074900173531346617">Certificat del signant del correu electrònic</translation>
-<translation id="4074945132384537841">Permet concedir i suprimir l'accés a funcions mitjançant la capçalera HTTP Funció-Política.</translation>
+<translation id="4074945132384537841">Permet concedir i suprimir l'accés a funcions mitjançant la capçalera HTTP Feature-Policy.</translation>
 <translation id="4075084141581903552">L'inici de sessió automàtic està disponible amb <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Agressiva</translation>
 <translation id="408098233265424160">Detecció de proximitat de Smart Lock</translation>
@@ -2562,7 +2559,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4462159676511157176">Servidors de noms personalitzats</translation>
 <translation id="4465830120256509958">Teclat brasiler</translation>
 <translation id="4467100756425880649">Galeria de Chrome Web Store</translation>
-<translation id="4467798014533545464">Mostra l'URL</translation>
 <translation id="4470564870223067757">Configuració 2 de hangul</translation>
 <translation id="4474155171896946103">Afegeix totes les pestanyes a les adreces d'interès...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -3972,7 +3968,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6450876761651513209">Canvieu la configuració relacionada amb la privadesa.</translation>
 <translation id="6451180435462401570">Gestiona els dispositius Cloud Print</translation>
 <translation id="6451650035642342749">Neteja la configuració d'obertura automàtica</translation>
-<translation id="6451689256222386810">Si has oblidat la frase de contrasenya o vols canviar aquesta configuració, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" />.</translation>
+<translation id="6451689256222386810">Si has oblidat la frase de contrasenya o vols canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" />.</translation>
 <translation id="6452181791372256707">Rebutja</translation>
 <translation id="6455348477571378046">Tipus de certificat:</translation>
 <translation id="645705751491738698">Continua bloquejant JavaScript</translation>
@@ -4613,6 +4609,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7393449708074241536">Amb aquesta acció, se suprimiran <ph name="TOTAL_COUNT" /> elements d'aquest dispositiu de manera permanent.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> s'iniciarà quan s'iniciï el sistema i continuarà executant-se en segon pla, fins i tot quan hàgiu tancat la resta de finestres de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Permet que tots els llocs utilitzin la generació de claus en formularis</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Espereu mentre Chromebox es reinicia...</translation>
 <translation id="7401543881546089382">Suprimeix la drecera</translation>
 <translation id="7403358905955888520">Desactiva la política del dispositiu que permet detectar automàticament la zona horària del sistema.</translation>
@@ -4986,7 +4983,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7928710562641958568">Expulsa el dispositiu</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio.</translation>
 <translation id="7938594894617528435">Fora de línia en aquest moment</translation>
-<translation id="7939374455203157513">Activa els serveis en núvol</translation>
 <translation id="7939412583708276221">Continua de totes maneres</translation>
 <translation id="7939997691108949385">L'administrador podrà configurar les restriccions i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak nord-americà</translation>

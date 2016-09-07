@@ -229,7 +229,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3690847815241521170">Buscando dispositivos… <ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
 <translation id="3716158070938632480">Hay páginas web cercanas</translation>
-<translation id="3738139272394829648">Tocar para buscar</translation>
+<translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Administrar</translation>
@@ -289,6 +289,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4543661749405994812">Copiar dirección de correo</translation>
 <translation id="4572422548854449519">Inicia sesión en la cuenta administrada</translation>
+<translation id="4576023202210315647">Guardar pestaña en Chrome</translation>
 <translation id="4581964774250883625">Has entrado en el modo incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
 <translation id="4605958867780575332">Elemento retirado: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6865313869410766144">Datos de Autocompletar formulario</translation>
 <translation id="6868088497967843822">Inicia sesión para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestaña abierta}other{%1$d pestañas abiertas}}</translation>
-<translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -512,7 +512,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7056999826593229648">Conexión lenta detectada</translation>
 <translation id="7057058088140140610">Tarjetas de crédito y direcciones con Google Payments</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
-<translation id="7063006564040364415">No ha sido posible establecer conexión con el servidor de sincronización.</translation>
+<translation id="7063006564040364415">No se ha podido conectar con el servidor de sincronización.</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="7074853159844403180"><ph name="SITE" /> quiere vincularse con:</translation>
 <translation id="7081639897063626814">Mantener los datos actuales de forma independiente</translation>
@@ -600,7 +600,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el origen de los tiempos</translation>
-<translation id="8187025609458112874">No se pueden compartir archivos eliminados</translation>
 <translation id="8190358571722158785">Queda 1 día</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8202097416529803614">Resumen del pedido</translation>

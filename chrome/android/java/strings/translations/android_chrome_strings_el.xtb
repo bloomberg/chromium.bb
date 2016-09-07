@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">Επιλογή φακέλου</translation>
 <translation id="4543661749405994812">Αντιγραφή διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="4572422548854449519">Συνδεθείτε στον διαχειριζόμενο λογαριασμό</translation>
+<translation id="4576023202210315647">Διατήρηση καρτέλας στο Chrome</translation>
 <translation id="4581964774250883625">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Πριν από # λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="4605958867780575332">Το στοιχείο καταργήθηκε <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">Δεδομένα φόρμας αυτόματης συμπλήρωσης</translation>
 <translation id="6868088497967843822">Συνδεθείτε προκειμένου οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και οι άλλες ρυθμίσεις σας να είναι διαθέσιμες σε όλες τις συσκευές σας.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ανοικτή καρτέλα}other{%1$d ανοικτές καρτέλες}}</translation>
-<translation id="6910211073230771657">Διαγράφηκε</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">Η λειτουργία "Αγγίξτε για αναζήτηση" αποστέλλει την επιλεγμένη λέξη και την τρέχουσα σελίδα ως περιβάλλον στην Αναζήτηση Google. Μπορείτε να την απενεργοποιήσετε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Περιεχόμενο</translation>
 <translation id="8173098127580644436">από την αρχή</translation>
-<translation id="8187025609458112874">Δεν είναι δυνατή η κοινή χρήση διαγραμμένων αρχείων</translation>
 <translation id="8190358571722158785">Απομένει 1 ημέρα</translation>
 <translation id="8200772114523450471">Συνέχιση</translation>
 <translation id="8202097416529803614">Σύνοψη παραγγελίας</translation>

@@ -1360,7 +1360,7 @@
 
           Om den här inställningen är inaktiverad eller inte har angetts kan fjärråtkomstvärden kopplas till vilken lokal användare som helst.</translation>
 <translation id="5697306356229823047">Rapportera enhetsanvändare</translation>
-<translation id="570062449808736508">När man ställt in ett annat värde för princpen än den tomma strängen läser WebView webbadressbegränsningar från innehållsutgivaren med utfärdarnamnet.</translation>
+<translation id="570062449808736508">När man ställt in ett annat värde för principen än en tom sträng läser WebView webbadressbegränsningar från innehållsutgivaren med utfärdarnamnet.</translation>
 <translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
 
           Tänk på att den här policyn är på väg att fasas ut och kommer att tas bort i framtiden.

@@ -1310,7 +1310,7 @@
 
           Hvis denne innstillingen er slått av eller ikke spesifisert, kan fjerntilgangsverten tilknyttes alle lokale brukere.</translation>
 <translation id="5697306356229823047">Rapportering av enhetsbrukere</translation>
-<translation id="570062449808736508">Når denne retningslinjen er satt til en streng som ikke er tom, leser WebView nettadressebegrensningene fra innholdsleverandøren med det gitte autoritetsnavnet.</translation>
+<translation id="570062449808736508">Når denne regelen er satt til en streng som ikke er tom, leser WebView nettadressebegrensningene fra innholdsleverandøren med det angitte autoritetsnavnet.</translation>
 <translation id="5703863730741917647">Angi handlingen som skal utføres når inaktivitetsforsinkelsen blir overgått.
 
           Vær oppmerksom på at denne innstillingen er avviklet og skal fjernes i fremtiden.

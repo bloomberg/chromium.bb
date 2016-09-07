@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">演示模式</translation>
 <translation id="1481244281142949601">您已经进行了充分的沙盒测试。</translation>
 <translation id="1482124012545051544">可以开始备份 <ph name="FILE_COUNT" /> 张新照片了</translation>
+<translation id="1483493594462132177">发送</translation>
 <translation id="148466539719134488">瑞士语</translation>
 <translation id="1485015260175968628">该程序现在可以：</translation>
 <translation id="1486096554574027028">搜索密码</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">顺时针旋转(&amp;C)</translation>
 <translation id="1852799913675865625">尝试读取文件时发生错误：<ph name="ERROR_TEXT" />。</translation>
 <translation id="1856715684130786728">添加位置…</translation>
-<translation id="1857166538520940818">附加文件：</translation>
 <translation id="1858585891038687145">信任该证书，以便标识软件编写者的身份</translation>
 <translation id="1859234291848436338">书写方向</translation>
 <translation id="1864111464094315414">登录</translation>
@@ -1573,7 +1573,6 @@
 <translation id="3108145564672865299">屏幕方向锁定</translation>
 <translation id="3108967419958202225">选择...</translation>
 <translation id="3112378005171663295">折叠</translation>
-<translation id="3113551216836192921">附件会上传到 Google 服务器，用于侦查错误。</translation>
 <translation id="3115147772012638511">正在等待存入缓存...</translation>
 <translation id="3116361045094675131">英语（英国）键盘</translation>
 <translation id="3117812041123364382">启用/停用浮动虚拟键盘。</translation>
@@ -1886,7 +1885,6 @@
 <translation id="3512284449647229026">如有网页在浏览器处于离线状态时未能成功加载，则只自动重新加载其标签页处于可见状态的网页。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{取消下载}other{取消下载}}</translation>
 <translation id="3512810056947640266">网址（可选)：</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" />想要共享您屏幕上的内容。请选择您要共享的内容。</translation>
 <translation id="3518086201899641494">关于强制门户的通知</translation>
 <translation id="3519867315646775981">音译(shalom ← שלום)</translation>
 <translation id="3522159121915794564">允许用户启用对无效 TLS/SSL 证书链的收集功能。</translation>
@@ -2002,7 +2000,6 @@
 <translation id="3654045516529121250">读取您的无障碍设置</translation>
 <translation id="3654092442379740616">发生同步错误：<ph name="PRODUCT_NAME" />已过期，需要更新。</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{此应用对 1 个文件拥有永久访问权限。}other{此应用对 # 个文件拥有永久访问权限。}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" />想要与<ph name="TARGET_NAME" />共享您屏幕上的内容。请选择您要共享的内容。</translation>
 <translation id="3657468915905674858">启用 PPAPI Win32k 锁定。</translation>
 <translation id="3660234220361471169">不可信</translation>
 <translation id="3665589677786828986">Chrome检测到您的部分设置被其他程序篡改了，因此已将这些设置重置为原始默认设置。</translation>
@@ -2558,7 +2555,6 @@
 <translation id="4462159676511157176">自定义域名服务器</translation>
 <translation id="4465830120256509958">葡萄牙语（巴西）键盘</translation>
 <translation id="4467100756425880649">Chrome 网上应用店扩展程序列表</translation>
-<translation id="4467798014533545464">显示网址</translation>
 <translation id="4470564870223067757">韩语(2 Set)</translation>
 <translation id="4474155171896946103">为所有标签页添加书签...</translation>
 <translation id="4476590490540813026">运动员</translation>
@@ -4598,6 +4594,7 @@
 <translation id="7393449708074241536">这会将 <ph name="TOTAL_COUNT" /> 项内容从这台设备上永久删除。</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 会在系统启动时启动，即使您将其他所有 <ph name="PRODUCT_NAME" />窗口关闭，它也会继续在后台运行。</translation>
 <translation id="7396863776022882342">允许所有网站在表单中使用密钥生成功能。</translation>
+<translation id="7400418766976504921">网址</translation>
 <translation id="740083207982962331">正在重启您的 Chromebox，请稍候…</translation>
 <translation id="7401543881546089382">删除快捷方式</translation>
 <translation id="7403358905955888520">停用系统时区自动检测设备政策。</translation>
@@ -4713,7 +4710,7 @@
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> 下载失败</translation>
 <translation id="7551643184018910560">固定到任务栏</translation>
 <translation id="7553242001898162573">输入您的密码</translation>
-<translation id="7554791636758816595">打开新的标签页</translation>
+<translation id="7554791636758816595">新标签页</translation>
 <translation id="7556033326131260574">Smart Lock 无法验证您的帐户，您需要输入密码才能进入。</translation>
 <translation id="7556242789364317684">抱歉，“<ph name="SHORT_PRODUCT_NAME" />”无法恢复您的设置。要更正此错误，“<ph name="SHORT_PRODUCT_NAME" />”必须使用 Powerwash 重置您的设备。</translation>
 <translation id="7558050486864662801">当网站要求使用您的麦克风时询问您（推荐）</translation>
@@ -4971,7 +4968,6 @@
 <translation id="7928710562641958568">卸载设备</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共享您的屏幕和音频。</translation>
 <translation id="7938594894617528435">当前处于离线状态</translation>
-<translation id="7939374455203157513">启用云服务</translation>
 <translation id="7939412583708276221">仍然保留</translation>
 <translation id="7939997691108949385">管理员可以转到 <ph name="MANAGEMENT_URL" />，配置针对此受监管用户的限制和设置。</translation>
 <translation id="7943385054491506837">美国英语(Colemak)</translation>

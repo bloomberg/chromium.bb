@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Modo demo</translation>
 <translation id="1481244281142949601">La zona de pruebas es adecuada.</translation>
 <translation id="1482124012545051544">Listo para realizar la copia de seguridad de <ph name="FILE_COUNT" /> fotos nuevas</translation>
+<translation id="1483493594462132177">Enviar</translation>
 <translation id="148466539719134488">Suizo</translation>
 <translation id="1485015260175968628">Ahora puede:</translation>
 <translation id="1486096554574027028">Buscar contraseñas</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Girar a la &amp;derecha</translation>
 <translation id="1852799913675865625">Se ha producido un error al intentar leer el archivo: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Añadir ubicación...</translation>
-<translation id="1857166538520940818">Adjuntar archivo:</translation>
 <translation id="1858585891038687145">Confiar en este certificado para identificar a los fabricantes de software</translation>
 <translation id="1859234291848436338">Sentido de la escritura</translation>
 <translation id="1864111464094315414">Acceder</translation>
@@ -1580,7 +1580,6 @@ Para obtener más información, accede a nuestro <ph name="BEGIN_LINK" />Centro 
 <translation id="3108145564672865299">Bloqueo de orientación de pantalla</translation>
 <translation id="3108967419958202225">Seleccionar...</translation>
 <translation id="3112378005171663295">Contraer</translation>
-<translation id="3113551216836192921">El archivo adjunto se subirá a los servidores de Google para depuración.</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3116361045094675131">Teclado del Reino Unido</translation>
 <translation id="3117812041123364382">Habilita o inhabilita el teclado virtual flotante.</translation>
@@ -1893,7 +1892,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3512284449647229026">Las páginas que no se carguen cuando el navegador no esté conectado a Internet solo se volverán a cargar automáticamente si su pestaña está visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar descarga}other{Cancelar descargas}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> quiere compartir el contenido de tu pantalla. Selecciona el contenido que quieres compartir.</translation>
 <translation id="3518086201899641494">Notificaciones sobre portales cautivos</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Permite a los usuarios habilitar la colección de cadenas de certificados TLS/SSL que no son válidas.</translation>
@@ -2009,7 +2007,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3654092442379740616">Error de sincronización: <ph name="PRODUCT_NAME" /> está obsoleto y debe actualizarse.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> quiere compartir el contenido de tu pantalla con <ph name="TARGET_NAME" />. Selecciona el contenido que quieres compartir.</translation>
 <translation id="3657468915905674858">Habilitar bloqueo de Win32k para PPAPI.</translation>
 <translation id="3660234220361471169">No es de confianza</translation>
 <translation id="3665589677786828986">Chrome ha detectado que otro programa ha dañado algunas opciones de configuración y ha restablecido la configuración predeterminada original.</translation>
@@ -2260,7 +2257,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3983586614702900908">dispositivos de un proveedor desconocido</translation>
 <translation id="3984413272403535372">Se ha producido un error al firmar la extensión.</translation>
 <translation id="3987970780975473420">Habilitar la Web física.</translation>
-<translation id="3989635538409502728">Salir</translation>
+<translation id="3989635538409502728">Cerrar sesión</translation>
 <translation id="3990375969515589745">Habilita los experimentos de Herramientas para desarrolladores. Utiliza el panel de configuración de este servicio para activar experimentos individuales.</translation>
 <translation id="399179161741278232">Importados</translation>
 <translation id="3991936620356087075">Has introducido el código PIN de desbloqueo demasiadas veces. Tu tarjeta SIM se ha inhabilitado permanentemente.</translation>
@@ -2565,7 +2562,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4465830120256509958">Teclado brasileño</translation>
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
-<translation id="4467798014533545464">Mostrar URL</translation>
 <translation id="4470564870223067757">Hangul de doble alternancia</translation>
 <translation id="4474155171896946103">Añadir todas las pestañas a marcadores...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4554,7 +4550,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7303492016543161086">Mostrar opciones de accesibilidad en el menú del sistema</translation>
 <translation id="730515362922783851">Intercambiar datos con cualquier dispositivo en la red local o Internet</translation>
 <translation id="7309257895202129721">Mostrar &amp;controles</translation>
-<translation id="7311079019872751559">Acceso de complementos no incluidos en la zona de pruebas</translation>
+<translation id="7311079019872751559">Acceso de complementos sin pasar por la zona de pruebas</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME" /> no está actualizado.</translation>
 <translation id="7314244761674113881">Host SOCKS</translation>
 <translation id="7314278895724341067">Habilitar páginas Nueva pestaña sin conexión</translation>
@@ -4620,6 +4616,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7393449708074241536">Se eliminarán de forma permanente <ph name="TOTAL_COUNT" /> elementos de este dispositivo.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Permitir que los sitios web utilicen la generación de claves en formularios.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Espera mientras se reinicia el Chromebox…</translation>
 <translation id="7401543881546089382">Eliminar acceso directo</translation>
 <translation id="7403358905955888520">Inhabilita la política de dispositivos para la detección automática de la zona horaria del sistema.</translation>
@@ -4995,7 +4992,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7928710562641958568">Expulsar dispositivo</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> está compartiendo la pantalla y el audio.</translation>
 <translation id="7938594894617528435">Sin conexión actualmente</translation>
-<translation id="7939374455203157513">Habilitar Cloud Services</translation>
 <translation id="7939412583708276221">Mantener de todos modos</translation>
 <translation id="7939997691108949385">El administrador podrá configurar restricciones y opciones para este usuario supervisado en la página <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Estados Unidos (Colemak)</translation>
@@ -5876,7 +5872,7 @@ Calculando el tiempo de carga completa</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9149866541089851383">Editar...</translation>
 <translation id="9150045010208374699">Utilizar la cámara</translation>
-<translation id="9150735707954472829">Tabulador</translation>
+<translation id="9150735707954472829">Pestaña </translation>
 <translation id="9152722471788855605">Analizador de archivos .zip para la navegación segura</translation>
 <translation id="9153341767479566106">Otras extensiones que no se han podido cargar:</translation>
 <translation id="9153744823707037316">Método de entrada de conjunto</translation>

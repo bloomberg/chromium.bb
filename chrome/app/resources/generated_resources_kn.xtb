@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">ಡೆಮೋ ಮೋಡ್</translation>
 <translation id="1481244281142949601">ನೀವು ಸಮರ್ಪಕವಾಗಿ sandbox ಅನ್ನು ಪ್ರವೇಶಿಸಿದ್ದೀರಿ.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> ಹೊಸ ಫೋಟೋಗಳು ಬ್ಯಾಕಪ್ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ</translation>
+<translation id="1483493594462132177">ಕಳುಹಿಸು</translation>
 <translation id="148466539719134488">ಸ್ವಿಸ್</translation>
 <translation id="1485015260175968628">ಇದೀಗ ಸಾಧ್ಯ:</translation>
 <translation id="1486096554574027028">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಹುಡುಕು</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">&amp;ಪ್ರದಕ್ಷಿಣೆಯಂತೆ ತಿರುಗಿಸಿ</translation>
 <translation id="1852799913675865625">ಫೈಲ್ ಅನ್ನು ಓದಲು ಪ್ರಯತ್ನಿಸುವಾಗ ದೋಷ ಕಂಡುಬಂದಿದೆ: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">ಸ್ಥಾನ ಸೇರಿಸಿ...</translation>
-<translation id="1857166538520940818">ಫೈಲ್ ಲಗತ್ತಿಸಿ:</translation>
 <translation id="1858585891038687145">ಸಾಫ್ಟ್‌ವೇರ್ ತಯಾರಕರನ್ನು ಗುರುತಿಸುವುದಕ್ಕಾಗಿ ಈ ಪ್ರಮಾಣಪತ್ರದ ಮೇಲೆ ವಿಶ್ವಾಸವಿಡಿ</translation>
 <translation id="1859234291848436338">ಬರವಣಿಗೆ ನಿರ್ದೇಶನ</translation>
 <translation id="1864111464094315414">ಲಾಗಿನ್</translation>
@@ -1578,7 +1578,6 @@
 <translation id="3108145564672865299">ಪರದೆ ಓರಿಯಂಟೇಶನ್ ಲಾಕ್ ಮಾಡುವಿಕೆ</translation>
 <translation id="3108967419958202225">ಆರಿಸಿ...</translation>
 <translation id="3112378005171663295">ಸಂಕುಚಿಸಿ</translation>
-<translation id="3113551216836192921">ಲಗತ್ತಿಸಲಾಗಿರುವ ಫೈಲ್ ಅನ್ನು ಡೀಬಗಿಂಗ್‌ಗಾಗಿ Google ಸರ್ವರ್‌ಗಳಿಗೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="3115147772012638511">ಕ್ಯಾಶ್‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸುತ್ತಿದೆ...</translation>
 <translation id="3116361045094675131">ಯುಕೆ ಕೀಬೋರ್ಡ್</translation>
 <translation id="3117812041123364382">ಫ್ಲೋಟಿಂಗ್ ವರ್ಚುವಲ್ ಕೀಬೋರ್ಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ/ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ.</translation>
@@ -1892,7 +1891,6 @@
 <translation id="3512284449647229026">ಬ್ರೌಸರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಾಗ ಲೋಡ್ ಆಗುವಲ್ಲಿ ವಿಫಲವಾಗುವ ಪುಟಗಳ ಟ್ಯಾಬ್ ಗೋಚರಿಸಿದರೆ ಮಾತ್ರ ಅವುಗಳು ಸ್ವಯಂ-ಮರುಲೋಡ್ ಆಗುತ್ತವೆ.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ}one{ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಿ}other{ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಿ}}</translation>
 <translation id="3512810056947640266">URL (ಐಚ್ಛಿಕ):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿರುವ ವಿಷಯವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತದೆ. ನೀವು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುವ ಸಂಗತಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="3518086201899641494">ವಶದಲ್ಲಿರುವ ಪೋರ್ಟಲ್‌ಗಳ ಕುರಿತು ಅಧಿಸೂಚನೆಗಳು</translation>
 <translation id="3519867315646775981">ಲಿಪ್ಯಂತರಣ (shalom ← שלום)</translation>
 <translation id="3522159121915794564">ಬಳಕೆದಾರರಿಗೆ ಅಮಾನ್ಯ TLS/SSL ಪ್ರಮಾಣಪತ್ರ ಸರಣಿಗಳ ಸಂಗ್ರಹಣೆಯಲ್ಲಿ ಆಯ್ಕೆಮಾಡಲು ಅನುಮತಿಸುತ್ತದೆ.</translation>
@@ -2008,7 +2006,6 @@
 <translation id="3654045516529121250">ನಿಮ್ಮ ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಓದಿಕೊಳ್ಳಿ</translation>
 <translation id="3654092442379740616">ಸಿಂಕ್ ದೋಷ: <ph name="PRODUCT_NAME" /> ಅವಧಿ ಮುಕ್ತಾಯಗೊಂಡಿದೆ ಮತ್ತು ನವೀಕರಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ಇದು ಒಂದು ಫೈಲ್‌ಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}one{ಇದು # ಫೈಲ್‌ಗಳಿಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}other{ಇದು # ಫೈಲ್‌ಗಳಿಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿರುವ ವಿಷಯವನ್ನು <ph name="TARGET_NAME" /> ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತದೆ. ನೀವು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುವ ಸಂಗತಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="3657468915905674858">PPAPI Win32k ಲಾಕ್‌ಡೌನ್ ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="3660234220361471169">ವಿಶ್ವಾಸಾರ್ಹವಿಲ್ಲದ</translation>
 <translation id="3665589677786828986">ನಿಮ್ಮ ಕೆಲವು ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಬೇರೊಂದು ಪ್ರೋಗ್ರಾಂನಿಂದಾಗಿ ಹಾನಿಗೊಳಗಾಗಿರುವುದು Chrome ಗಮನಕ್ಕೆ ಬಂದಿದೆ ಮತ್ತು ಅವುಗಳ ಮೂಲ ಡೀಫಾಲ್ಟ್‌ಗಳಿಗೆ ಅವುಗಳನ್ನು ಮರುಹೊಂದಿಸಿದೆ.</translation>
@@ -2565,7 +2562,6 @@
 <translation id="4462159676511157176">ಕಸ್ಟಮ್ ಹೆಸರು ಸರ್ವರ್‌ಗಳು</translation>
 <translation id="4465830120256509958">ಬ್ರೆಜಿಲಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="4467100756425880649">Chrome ವೆಬ್ ಅಂಗಡಿ ಗ್ಯಾಲರಿ</translation>
-<translation id="4467798014533545464">URL ತೋರಿಸು</translation>
 <translation id="4470564870223067757">ಹಂಗುಲ್ 2 ಸೆಟ್</translation>
 <translation id="4474155171896946103">ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡು...</translation>
 <translation id="4476590490540813026">ಕ್ರೀಡಾಪಟು</translation>
@@ -3160,7 +3156,7 @@
 <translation id="529172024324796256">ಬಳಕೆದಾರ ಹೆಸರು :</translation>
 <translation id="529175790091471945">ಈ ಸಾಧನವನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿ</translation>
 <translation id="5292890015345653304">SD ಕಾರ್ಡ್ ಅಥವಾ USB ಮೆಮೊರಿ ಸ್ಟಿಕ್ ಅನ್ನು ಸೇರಿಸಿ</translation>
-<translation id="5294529402252479912">ಇದೀಗ Adobe Reader ನವೀಕರಿಸಿ</translation>
+<translation id="5294529402252479912">ಇದೀಗ Adobe Reader ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="5298219193514155779">ಇವರಿಂದ ಥೀಮ್ ರಚಿಸಲಾಗಿದೆ</translation>
 <translation id="5298363578196989456">"<ph name="IMPORT_NAME" />" ವಿಸ್ತರಣೆಯು ಹಂಚಿಕೊಂಡ ಮಾಡ್ಯೂಲ್ ಆಗಿಲ್ಲದಿರುವ ಕಾರಣ ಅದನ್ನು ಆಮದು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5299109548848736476">ಟ್ರ್ಯಾಕ್ ಮಾಡಬೇಡಿ</translation>
@@ -4632,6 +4628,7 @@
 <translation id="7393449708074241536">ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ <ph name="TOTAL_COUNT" /> ಐಟಂಗಳನ್ನು ಅಳಿಸುತ್ತದೆ.</translation>
 <translation id="7396845648024431313">ಸಿಸ್ಟಂ ಪ್ರಾರಂಭಗೊಳ್ಳುವಾಗ <ph name="APP_NAME" /> ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ ಮತ್ತು ಒಮ್ಮೆ ನೀವು ಇತರೆ ಎಲ್ಲ <ph name="PRODUCT_NAME" /> ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿದರೂ ಸಹ ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಗೊಳ್ಳಲು ಮುಂದುವರಿಯುತ್ತದೆ.</translation>
 <translation id="7396863776022882342">ಫಾರ್ಮ್‌ಗಳಲ್ಲಿ ಕೀ ರಚನೆಯನ್ನು ಬಳಸಲು ಎಲ್ಲಾ ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸು.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">ನಿಮ್ಮ Chromebox ಪುನರಾರಂಭಿಸುವಾಗ ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ...</translation>
 <translation id="7401543881546089382">ಶಾರ್ಟ್‌ಕಟ್ ಅಳಿಸಿ</translation>
 <translation id="7403358905955888520">ಸಿಸ್ಟಂ ಸಮಯ ವಲಯ ಸ್ವಯಂಚಾಲಿತ ಪತ್ತೆಹಚ್ಚುವಿಕೆ ಸಾಧನ ನೀತಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ.</translation>
@@ -5007,7 +5004,6 @@
 <translation id="7928710562641958568">ಸಾಧನ ತೆಗೆದುಹಾಕು</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> ನಿಮ್ಮ ಪರದೆ ಮತ್ತು ಆಡಿಯೋವನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="7938594894617528435">ಪ್ರಸ್ತುತ ಆಫ್‌ಲೈನ್</translation>
-<translation id="7939374455203157513">ಮೇಘ ಸೇವೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7939412583708276221">ಹೇಗಾದರೂ ಇರಿಸಿ</translation>
 <translation id="7939997691108949385"><ph name="MANAGEMENT_URL" /> ನಲ್ಲಿ ನಿರ್ವಾಹಕರಿಗೆ ಈ ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರಿಗಾಗಿ ನಿರ್ಬಂಧಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="7943385054491506837">US ಕೋಲ್‌ಮ್ಯಾಕ್</translation>

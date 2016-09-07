@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Režim ukážky</translation>
 <translation id="1481244281142949601">Ste v adekvátnej karanténe.</translation>
 <translation id="1482124012545051544">Zálohovanie nových fotiek (počet: <ph name="FILE_COUNT" />) je pripravené</translation>
+<translation id="1483493594462132177">Odoslať</translation>
 <translation id="148466539719134488">Švajčiarska klávesnica</translation>
 <translation id="1485015260175968628">Teraz môže:</translation>
 <translation id="1486096554574027028">Vyhľadávanie hesiel</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Otočiť &amp;v smere hodinových ručičiek</translation>
 <translation id="1852799913675865625">Pri čítaní súboru sa vyskytla chyba: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Pridať umiestnenie...</translation>
-<translation id="1857166538520940818">Pripojiť súbor:</translation>
 <translation id="1858585891038687145">Dôverovať tomuto certifikátu na identifikáciu tvorcov softvéru</translation>
 <translation id="1859234291848436338">Smer písania</translation>
 <translation id="1864111464094315414">Prihlásiť sa</translation>
@@ -1579,7 +1579,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3108145564672865299">Uzamknutie orientácie obrazovky</translation>
 <translation id="3108967419958202225">Vybrať...</translation>
 <translation id="3112378005171663295">Zbaliť</translation>
-<translation id="3113551216836192921">Pripojený súbor sa za účelom ladenia nahrá na servery Google.</translation>
 <translation id="3115147772012638511">Čakanie na vyrovnávaciu pamäť...</translation>
 <translation id="3116361045094675131">britská klávesnica</translation>
 <translation id="3117812041123364382">Povolenie/zakázanie plávajúcej virtuálnej klávesnice.</translation>
@@ -1894,7 +1893,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Stránky, ktoré sa nedajú načítať, keď je prehliadač offline, budú automaticky znova načítané iba vtedy, keď bude ich karta viditeľná.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Zrušiť sťahovanie}few{Zrušiť sťahovania}many{Zrušiť sťahovania}other{Zrušiť sťahovania}}</translation>
 <translation id="3512810056947640266">Webová adresa (voliteľné):</translation>
-<translation id="3517839692979918726">Aplikácia <ph name="APP_NAME" /> chce zdieľať obsah vašej obrazovky. Vyberte, čo chcete zdieľať.</translation>
 <translation id="3518086201899641494">Upozornenia na prihlasovacie portály</translation>
 <translation id="3519867315646775981">Prepis (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Povoľuje používateľom aktivovať zbierku neplatných reťazcov certifikátov TLS/SSL.</translation>
@@ -2010,7 +2008,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Čítať nastavenia dostupnosti</translation>
 <translation id="3654092442379740616">Chyba synchronizácie: Prehliadač <ph name="PRODUCT_NAME" /> je zastaraný a treba ho aktualizovať.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Aplikácia má trvalý prístup k jednému súboru.}few{Aplikácia má trvalý prístup k # súborom.}many{Aplikácia má trvalý prístup k # súboru.}other{Aplikácia má trvalý prístup k # súborom.}}</translation>
-<translation id="3656059567098593256">Aplikácia <ph name="APP_NAME" /> chce zdieľať obsah vašej obrazovky so stránkami <ph name="TARGET_NAME" />. Vyberte, čo chcete zdieľať.</translation>
 <translation id="3657468915905674858">Povoliť experiment PPAPI Win32k Lockdown.</translation>
 <translation id="3660234220361471169">Nedôveryhodné</translation>
 <translation id="3665589677786828986">Chrome zistil, že niektoré nastavenia boli poškodené iným programom, a preto obnovil pôvodné predvolené nastavenia.</translation>
@@ -2567,7 +2564,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4462159676511157176">Vlastné menné servery</translation>
 <translation id="4465830120256509958">brazílska klávesnica</translation>
 <translation id="4467100756425880649">Galéria Internetového obchodu Chrome</translation>
-<translation id="4467798014533545464">Zobraziť webovú adresu</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Všetky karty uložiť ako záložky...</translation>
 <translation id="4476590490540813026">Športovkyňa</translation>
@@ -3764,7 +3760,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="614998064310228828">Model zariadenia:</translation>
 <translation id="6150555451039504280">Zmenšiť/zväčšiť</translation>
 <translation id="6150853954427645995">Ak chcete tento súbor uložiť na použitie offline, prejdite online, kliknite na súbor pravým tlačidlom a vyberte možnosť <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="6151323131516309312">Stlačte kláves <ph name="SEARCH_KEY" /> na prehľadanie stránky <ph name="SITE_NAME" /></translation>
+<translation id="6151323131516309312">Stlačte kláves <ph name="SEARCH_KEY" /> na prehľadanie webu <ph name="SITE_NAME" /></translation>
 <translation id="6153980591772830952">Povoliť experimentálne overenie jazyka Asm.js a konvertovanie do formátu WebAssembly, keď je platné</translation>
 <translation id="6154697846084421647">Používateľ prihlásený</translation>
 <translation id="6156863943908443225">Vyrovnávacia pamäť skriptov</translation>
@@ -4628,6 +4624,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7393449708074241536">Táto akcia natrvalo odstráni niekoľko položiek (počet: <ph name="TOTAL_COUNT" />) z tohto zariadenia.</translation>
 <translation id="7396845648024431313">Aplikácia <ph name="APP_NAME" /> sa spustí pri spustení systému a bude fungovať na pozadí aj po zatvorení všetkých okien programu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Povoliť všetkým webom používať generovanie kľúčov vo formulároch</translation>
+<translation id="7400418766976504921">Webová adresa</translation>
 <translation id="740083207982962331">Počkajte, kým sa zariadenie Chromebox reštartuje...</translation>
 <translation id="7401543881546089382">Odstrániť odkaz</translation>
 <translation id="7403358905955888520">Zakázať pravidlo zariadenia na automatické zisťovanie časového pásma systému.</translation>
@@ -5003,7 +5000,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7928710562641958568">Vysunúť zariadenie</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> zdieľa vašu obrazovku a zvuk.</translation>
 <translation id="7938594894617528435">Momentálne offline</translation>
-<translation id="7939374455203157513">Povoliť cloudové služby</translation>
 <translation id="7939412583708276221">Aj tak ponechať</translation>
 <translation id="7939997691108949385">Správca bude môcť nakonfigurovať obmedzenia a nastavenia pre tohto kontrolovaného používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Americká klávesnica s rozložením klávesov Colemak</translation>

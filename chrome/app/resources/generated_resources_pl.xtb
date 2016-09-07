@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Tryb demo</translation>
 <translation id="1481244281142949601">Piaskownica jest bezpieczna.</translation>
 <translation id="1482124012545051544">Gotów do utworzenia kopii zapasowej <ph name="FILE_COUNT" /> nowych zdjęć</translation>
+<translation id="1483493594462132177">Wyślij</translation>
 <translation id="148466539719134488">szwajcarska klawiatura</translation>
 <translation id="1485015260175968628">Może teraz:</translation>
 <translation id="1486096554574027028">Szukaj haseł</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Obróć w &amp;prawo</translation>
 <translation id="1852799913675865625">Wystąpił błąd podczas próby odczytu pliku: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Dodaj lokalizację...</translation>
-<translation id="1857166538520940818">Dołącz plik:</translation>
 <translation id="1858585891038687145">Ufaj temu certyfikatowi przy identyfikowaniu producentów oprogramowania</translation>
 <translation id="1859234291848436338">Kierunek pisania</translation>
 <translation id="1864111464094315414">Zaloguj się</translation>
@@ -691,7 +691,7 @@
 <translation id="1934636348456381428">Włącz eksperymentalną implementację nakładanych pasków przewijania. Aby były one animowane, musisz też włączyć komponowanie w wątku.</translation>
 <translation id="1936157145127842922">Pokaż w folderze</translation>
 <translation id="1936717151811561466">Fiński</translation>
-<translation id="1937256809970138538">Powiedz „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
+<translation id="1937256809970138538">Powiedz „OK, Google”, gdy ekran jest włączony i odblokowany</translation>
 <translation id="1942765061641586207">Rozdzielczość grafiki</translation>
 <translation id="1944921356641260203">Znaleziono aktualizację</translation>
 <translation id="1947424002851288782">Klawiatura niemiecka</translation>
@@ -1411,7 +1411,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2890678560483811744">Odwołanie do strony spoza zakresu</translation>
 <translation id="2893168226686371498">Domyślna przeglądarka</translation>
 <translation id="289426338439836048">Inna sieć komórkowa</translation>
-<translation id="2894745200702272315">Włącza eksperymentalną wersję funkcji wykrywania słowa-klucza „Ok Google”, których działanie jest zależne od sprzętu.</translation>
+<translation id="2894745200702272315">Włącza eksperymentalną wersję funkcji wykrywania słowa-klucza „OK, Google”, których działanie jest zależne od sprzętu.</translation>
 <translation id="289695669188700754">Identyfikator klucza: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Czy na pewno chcesz otworzyć <ph name="TAB_COUNT" /> zakładki?</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> nie może skomunikować się z drukarką. Upewnij się, że jest ona podłączona, i spróbuj ponownie.</translation>
@@ -1467,7 +1467,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2964193600955408481">Wyłącz Wi-Fi</translation>
 <translation id="2964313852984024865">Edytuj</translation>
 <translation id="2966459079597787514">Klawiatura szwedzka</translation>
-<translation id="2966598748518102999">Zwiększ jakość wyszukiwania głosowego, przesyłając do Google nagranie słów „OK Google” i kilku wcześniejszych sekund.</translation>
+<translation id="2966598748518102999">Zwiększ jakość wyszukiwania głosowego, przesyłając do Google nagranie słów „OK, Google” i kilku wcześniejszych sekund.</translation>
 <translation id="2967544384642772068">Zakończ</translation>
 <translation id="2968792643335932010">Mniej kopii</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
@@ -1577,7 +1577,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3108145564672865299">Blokowanie orientacji ekranu</translation>
 <translation id="3108967419958202225">Wybierz</translation>
 <translation id="3112378005171663295">Zwiń</translation>
-<translation id="3113551216836192921">Dołączony plik jest przesyłany na serwery Google w celu debugowania.</translation>
 <translation id="3115147772012638511">Oczekiwanie na pamięć podręczną...</translation>
 <translation id="3116361045094675131">Klawiatura brytyjska</translation>
 <translation id="3117812041123364382">Włącz/wyłącz swobodną klawiaturę wirtualną.</translation>
@@ -1624,7 +1623,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3162559335345991374">Sieć Wi-Fi, której używasz, może wymagać otwarcia strony logowania.</translation>
 <translation id="316307797510303346">Używaj adresu <ph name="CUSTODIAN_EMAIL" /> do kontrolowania i wyświetlania stron, na które wchodzi ta osoba.
   Twoje dane logowania na konto są nieaktualne.</translation>
-<translation id="3166571619128686629">Kliknij lub powiedz „Ok Google”, by rozpocząć wyszukiwanie głosowe</translation>
+<translation id="3166571619128686629">Kliknij lub powiedz „OK, Google”, by rozpocząć wyszukiwanie głosowe</translation>
 <translation id="3170072451822350649">Możesz też pominąć logowanie i <ph name="LINK_START" />przeglądać internet jako gość<ph name="LINK_END" />.</translation>
 <translation id="3170544058711792988">Utrzymuj ostrość lupy na środku ekranu</translation>
 <translation id="3172213052701798825">Smart Lock Google na hasła</translation>
@@ -1677,7 +1676,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3241720467332021590">Irlandzki</translation>
 <translation id="3242118113727675434">Pokaż wyświetlacz HUD z punktami dotknięcia</translation>
 <translation id="3242765319725186192">Klucz wstępny:</translation>
-<translation id="3244621381664913240">Włącz uruchamianie wyszukiwania głosowego przez „OK Google”.</translation>
+<translation id="3244621381664913240">Włącz uruchamianie wyszukiwania głosowego przez „OK, Google”.</translation>
 <translation id="3245321423178950146">Nieznany wykonawca</translation>
 <translation id="324533084080637716">Strona ma znaczniki struktury artykułu</translation>
 <translation id="3251759466064201842">&lt;brak w certyfikacie&gt;</translation>
@@ -1892,7 +1891,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3512284449647229026">Strony, których nie uda się załadować, gdy przeglądarka jest offline, zostaną odświeżone automatycznie tylko po wyświetleniu ich kart.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Anuluj pobieranie}few{Anuluj pobieranie}many{Anuluj pobieranie}other{Anuluj pobieranie}}</translation>
 <translation id="3512810056947640266">Adres URL (opcjonalnie):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu. Wybierz elementy, które chcesz udostępnić.</translation>
 <translation id="3518086201899641494">Powiadomienia o portalach przechwytujących</translation>
 <translation id="3519867315646775981">Transliteracja (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Umożliwia użytkownikom wyrażenie zgody na zbieranie danych o nieprawidłowych łańcuchach certyfikatów TLS/SSL.</translation>
@@ -2008,7 +2006,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3654045516529121250">Odczyt ustawień ułatwień dostępu</translation>
 <translation id="3654092442379740616">Błąd synchronizacji: aplikacja <ph name="PRODUCT_NAME" /> jest nieaktualna i musi zostać zaktualizowana.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ma stały dostęp do jednego pliku.}few{Ma stały dostęp do # plików.}many{Ma stały dostęp do # plików.}other{Ma stały dostęp do # pliku.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu stronie <ph name="TARGET_NAME" />. Wybierz elementy, które chcesz udostępnić.</translation>
 <translation id="3657468915905674858">Włącz blokadę PPAPI Win32k.</translation>
 <translation id="3660234220361471169">Niezaufany</translation>
 <translation id="3665589677786828986">Przeglądarka Chrome wykryła, że niektóre z jej ustawień zostały zmodyfikowane przez inny program, i przywróciła im pierwotne wartości domyślne.</translation>
@@ -2126,7 +2123,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3811494700605067549">1 wybrany plik</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> i <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Zły certyfikat</translation>
-<translation id="3813984289128269159">OK Google</translation>
+<translation id="3813984289128269159">OK, Google</translation>
 <translation id="3815016854028376614">Metoda wprowadzania Zhuyin</translation>
 <translation id="3815571115159309122">Znaleziono nowe zdjęcia (<ph name="FILE_COUNT" />)
     <ph name="LINE_BREAK1" />
@@ -2565,7 +2562,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
 <translation id="4465830120256509958">Klawiatura brazylijska</translation>
 <translation id="4467100756425880649">Galeria Chrome Web Store</translation>
-<translation id="4467798014533545464">Pokaż URL</translation>
 <translation id="4470564870223067757">Zestaw Hangul 2</translation>
 <translation id="4474155171896946103">Dodaj wszystkie karty do zakładek...</translation>
 <translation id="4476590490540813026">Sportowiec</translation>
@@ -2599,7 +2595,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4532499992208253975">emloading</translation>
 <translation id="4533259260976001693">Zmniejsz/powiększ</translation>
 <translation id="4534166495582787863">Włącza klikanie trzema palcami na touchpadzie działające jak środkowy przycisk myszy.</translation>
-<translation id="4534799089889278411">Powiedz „Ok Google” na nowej karcie, google.com lub w Menu z aplikacjami</translation>
+<translation id="4534799089889278411">Powiedz „OK, Google” na nowej karcie, google.com lub w Menu z aplikacjami</translation>
 <translation id="4535127706710932914">Profil domyślny</translation>
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
 <translation id="4538417792467843292">Usuń słowo</translation>
@@ -3098,7 +3094,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5229189185761556138">Zarządzaj metodami wprowadzania</translation>
 <translation id="5229622432348746578">Wyłącz dźwięk przy udostępnianiu pulpitu</translation>
 <translation id="5230516054153933099">Okno</translation>
-<translation id="5232178406098309195">Gdy używasz dźwiękowych komend aktywacyjnych, takich jak „Ok Google”, lub klikniesz ikonę mikrofonu, prywatna Aktywność związana z głosem i dźwiękiem zapisuje niektóre wypowiedzi i dźwięki na Twoim koncie. Zapisywane jest nagranie wypowiedzi lub dźwięku wraz z dołączonymi kilkoma wcześniejszymi sekundami.</translation>
+<translation id="5232178406098309195">Gdy używasz dźwiękowych komend aktywacyjnych, takich jak „OK, Google”, lub klikniesz ikonę mikrofonu, prywatna Aktywność związana z głosem i dźwiękiem zapisuje niektóre wypowiedzi i dźwięki na Twoim koncie. Zapisywane jest nagranie wypowiedzi lub dźwięku wraz z dołączonymi kilkoma wcześniejszymi sekundami.</translation>
 <translation id="523299859570409035">Wyjątki dla powiadomień</translation>
 <translation id="5233019165164992427">Port debugowania NaCl</translation>
 <translation id="5233231016133573565">ID procesu</translation>
@@ -3117,7 +3113,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="524759338601046922">Ponownie wpisz nowy kod PIN:</translation>
 <translation id="5249624017678798539">Przeglądarka uległa awarii przed zakończeniem pobierania.</translation>
 <translation id="5252456968953390977">Roaming</translation>
-<translation id="5253753933804516447">Aktywuj wyszukiwanie głosowe po wypowiedzeniu komendy „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
+<translation id="5253753933804516447">Aktywuj wyszukiwanie głosowe po wypowiedzeniu komendy „OK, Google”, gdy ekran jest włączony i odblokowany</translation>
 <translation id="52550593576409946">Nie można uruchomić aplikacji kiosku.</translation>
 <translation id="5255315797444241226">Wprowadzone hasło jest nieprawidłowe.</translation>
 <translation id="5258266922137542658">PPAPI (w procesie)</translation>
@@ -3666,7 +3662,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6008241731410823808">Wysyła pakiety kontrolujące hiperlinki.</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016551720757758985">Potwierdzanie wykonania funkcji Powerwash z przywróceniem poprzedniej wersji</translation>
-<translation id="6016809788585079594">Powiedz „Ok Google” ostatni raz</translation>
+<translation id="6016809788585079594">Powiedz „OK, Google” ostatni raz</translation>
 <translation id="6017225534417889107">Zmień...</translation>
 <translation id="6017981840202692187">Dodaj do Aplikacji</translation>
 <translation id="6019169947004469866">Przytnij</translation>
@@ -3731,7 +3727,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6103830523912109737">Włącz interfejs API IME wejścia</translation>
 <translation id="6105158702728922449">Używać kamery i mikrofonu</translation>
 <translation id="6107012941649240045">Wystawiony dla</translation>
-<translation id="6107079717483424262">Rozpoznaje Twój głos, gdy mówisz „Ok Google”</translation>
+<translation id="6107079717483424262">Rozpoznaje Twój głos, gdy mówisz „OK, Google”</translation>
 <translation id="6110466548232134880">Tożsamość organizacji <ph name="ORGANIZATION" /> w lokalizacji <ph name="LOCALITY" /> została zweryfikowana przez <ph name="ISSUER" />. Serwer nie przekazał informacji o przejrzystości certyfikatu.</translation>
 <translation id="6111770213269631447">Transliteracja (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Dozwolone domyślnie</translation>
@@ -3773,7 +3769,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6166185671393271715">Importowanie haseł do Chrome</translation>
 <translation id="6169666352732958425">Nie można przesłać pulpitu.</translation>
-<translation id="6171550060231646388">Funkcje „Ok Google” dla emulowanego sprzętu</translation>
+<translation id="6171550060231646388">Funkcje „OK, Google” dla emulowanego sprzętu</translation>
 <translation id="6175314957787328458">Identyfikator GUID domeny firmy Microsoft</translation>
 <translation id="6178664161104547336">Wybór certyfikatu</translation>
 <translation id="6181431612547969857">Pobieranie zostało zablokowane</translation>
@@ -4358,7 +4354,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7013485839273047434">Pobierz więcej rozszerzeń</translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>
 <translation id="7015226785571892184">Gdy zaakceptujesz to żądanie, zostanie uruchomiona następująca aplikacja: <ph name="APPLICATION" /></translation>
-<translation id="7017004637493394352">Powiedz „Ok Google” jeszcze raz</translation>
+<translation id="7017004637493394352">Powiedz „OK, Google” jeszcze raz</translation>
 <translation id="7017219178341817193">Dodaj nową stronę</translation>
 <translation id="7017354871202642555">Nie można ustawić trybu po ustawieniu okna.</translation>
 <translation id="7017480957358237747">zezwalać na dostęp do określonych witryn lub blokować go,</translation>
@@ -4507,7 +4503,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7238585580608191973">Odcisk cyfrowy SHA-256</translation>
 <translation id="7240120331469437312">Alternatywna nazwa podmiotu certyfikatu</translation>
 <translation id="7241389281993241388">Zaloguj się do urządzenia <ph name="TOKEN_NAME" />, aby zaimportować certyfikat klienta.</translation>
-<translation id="7243055093079293866">Powiedz „Ok Google” na nowej karcie lub na google.com</translation>
+<translation id="7243055093079293866">Powiedz „OK, Google” na nowej karcie lub na google.com</translation>
 <translation id="7243632151880336635">Wyczyść i wyloguj</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (najlepsza)</translation>
 <translation id="724691107663265825">Strona, którą chcesz otworzyć, zawiera złośliwe oprogramowanie</translation>
@@ -4588,7 +4584,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7364745943115323529">Przesyłaj...</translation>
 <translation id="7364796246159120393">Wybierz plik</translation>
 <translation id="736515969993332243">Trwa skanowanie w poszukiwaniu sieci.</translation>
-<translation id="7366762109661450129">Powiedz „Ok Google”, gdy ekran jest włączony i odblokowany.</translation>
+<translation id="7366762109661450129">Powiedz „OK, Google”, gdy ekran jest włączony i odblokowany.</translation>
 <translation id="7366909168761621528">Dane przeglądarki</translation>
 <translation id="7369521049655330548">Wtyczki, które zostały zablokowane na tej stronie:</translation>
 <translation id="7371490661692457119">Domyślna szerokość kafelków</translation>
@@ -4614,6 +4610,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7393449708074241536">Spowoduje to trwałe usunięcie <ph name="TOTAL_COUNT" /> elementów z tego urządzenia.</translation>
 <translation id="7396845648024431313">Aplikacja <ph name="APP_NAME" /> zostanie włączona podczas uruchamiania systemu i będzie działać w tle nawet po zamknięciu wszystkich pozostałych okien przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Zezwalaj wszystkim stronom na generowanie kluczy w formularzach.</translation>
+<translation id="7400418766976504921">Adres URL</translation>
 <translation id="740083207982962331">Poczekaj, aż Chromebox uruchomi się ponownie...</translation>
 <translation id="7401543881546089382">Usuń skrót</translation>
 <translation id="7403358905955888520">Wyłącz zasadę automatycznego wykrywania systemowej strefy czasowej na urządzeniu.</translation>
@@ -4704,10 +4701,10 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7517569744831774757">Przywróć ustawienia do wartości domyślnych.</translation>
 <translation id="7517786267097410259">Utwórz hasło –</translation>
 <translation id="7518150891539970662">Dzienniki WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
-<translation id="7518657099163789435">Aby używać funkcji „Ok Google”, musisz włączyć Aktywność związaną z głosem i dźwiękiem</translation>
+<translation id="7518657099163789435">Aby używać funkcji „OK, Google”, musisz włączyć Aktywność związaną z głosem i dźwiękiem</translation>
 <translation id="7520821146909122639">Tłumaczę stronę…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7522255036471229694">Powiedz „OK Google”</translation>
+<translation id="7522255036471229694">Powiedz „OK, Google”</translation>
 <translation id="7525067979554623046">Utwórz</translation>
 <translation id="7529471622666797993"><ph name="BEGIN_LINK" />Zaawansowane ustawienia czcionek<ph name="END_LINK" /> (wymaga rozszerzenia)</translation>
 <translation id="7530016656428373557">Szybkość rozładowywania w watach</translation>
@@ -4953,7 +4950,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7881483672146086348">Wyświetl konto</translation>
 <translation id="7881969471599061635">Wyłącz napisy</translation>
 <translation id="7885253890047913815">Ostatnie urządzenia docelowe</translation>
-<translation id="7887192723714330082">Reaguje na „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
+<translation id="7887192723714330082">Reaguje na „OK, Google”, gdy ekran jest włączony i odblokowany</translation>
 <translation id="7887334752153342268">Duplikuj</translation>
 <translation id="7887864092952184874">Sparowano mysz Bluetooth</translation>
 <translation id="7892100671754994880">Następny użytkownik</translation>
@@ -4989,7 +4986,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7928710562641958568">Odłącz urządzenie</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> udostępnia ekran i dźwięk.</translation>
 <translation id="7938594894617528435">Aktualnie offline</translation>
-<translation id="7939374455203157513">Włącz usługi w chmurze</translation>
 <translation id="7939412583708276221">Zachowaj mimo to</translation>
 <translation id="7939997691108949385">Menedżer będzie mógł konfigurować ograniczenia i ustawienia dla użytkownika nadzorowanego na stronie <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">amerykańska klawiatura Colemak</translation>
@@ -5094,7 +5090,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="806705617346045388">Wykryto nietypowe zachowanie</translation>
 <translation id="806812017500012252">Uporządkuj według tytułu</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="8071942001314758122">Po prostu powiedz trzy razy „Ok Google”</translation>
+<translation id="8071942001314758122">Po prostu powiedz trzy razy „OK, Google”</translation>
 <translation id="8072988827236813198">Przypinanie kart</translation>
 <translation id="8074127646604999664">Zezwól niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
 <translation id="8079530767338315840">Powtórz</translation>
@@ -5389,7 +5385,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8490896350101740396">Zaktualizowano aplikacje kiosku: „<ph name="UPDATED_APPS" />”. Uruchom ponownie urządzenie, by zakończyć proces aktualizacji.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8494214181322051417">Nowość!</translation>
-<translation id="8495193314787127784">Włącz „OK Google”</translation>
+<translation id="8495193314787127784">Włącz „OK, Google”</translation>
 <translation id="8496717697661868878">Uruchom wtyczkę</translation>
 <translation id="8497392509610708671">W każdej chwili możesz to zmienić w <ph name="BEGIN_LINK" />ustawieniach Chrome<ph name="END_LINK" />.</translation>
 <translation id="8498716162437226120">Dodaj urządzenie Bluetooth</translation>
@@ -5435,7 +5431,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8565650234829130278">Próbowano zmienić wersję aplikacji na starszą.</translation>
 <translation id="8569682776816196752">Nie znaleziono urządzeń docelowych</translation>
 <translation id="8569764466147087991">Wybierz plik do otwarcia</translation>
-<translation id="8571032220281885258">Gdy powiesz „OK Google”, Chrome wyszuka to, co powiesz w następnej kolejności.</translation>
+<translation id="8571032220281885258">Gdy powiesz „OK, Google”, Chrome wyszuka to, co powiesz w następnej kolejności.</translation>
 <translation id="8571108619753148184">Serwer 4</translation>
 <translation id="8572832761467613633">Tylko Flash</translation>
 <translation id="8572981282494768930">Nie zezwalaj stronom na dostęp do kamery i mikrofonu</translation>

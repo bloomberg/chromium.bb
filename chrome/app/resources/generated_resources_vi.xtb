@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">Chế độ trình diễn</translation>
 <translation id="1481244281142949601">Hộp cát của bạn đã đầy.</translation>
 <translation id="1482124012545051544">Sẵn sàng sao lưu <ph name="FILE_COUNT" /> ảnh mới</translation>
+<translation id="1483493594462132177">Gửi</translation>
 <translation id="148466539719134488">Tiếng Thụy Sĩ</translation>
 <translation id="1485015260175968628">Tiện ích/ứng dụng giờ đây có thể:</translation>
 <translation id="1486096554574027028">Tìm kiếm mật khẩu</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">Xoay &amp;theo chiều kim đồng hồ</translation>
 <translation id="1852799913675865625">Đã có lỗi khi tìm cách đọc tệp: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Thêm vị trí...</translation>
-<translation id="1857166538520940818">Đính kém tệp:</translation>
 <translation id="1858585891038687145">Tin tưởng chứng chỉ này khi nhận dạng nhà sản xuất phần mềm</translation>
 <translation id="1859234291848436338">Hướng Ghi</translation>
 <translation id="1864111464094315414">Đăng nhập</translation>
@@ -1579,7 +1579,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3108145564672865299">Khóa đổi hướng màn hình</translation>
 <translation id="3108967419958202225">Chọn...</translation>
 <translation id="3112378005171663295">Thu gọn</translation>
-<translation id="3113551216836192921">Tệp đính kèm được tải lên máy chủ Google để gỡ lỗi.</translation>
 <translation id="3115147772012638511">Đang chờ bộ nhớ cache…</translation>
 <translation id="3116361045094675131">Bàn phím Vương quốc Anh</translation>
 <translation id="3117812041123364382">Bật/tắt bàn phím ảo nổi.</translation>
@@ -1805,7 +1804,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3399597614303179694">Bàn phím Macedonia</translation>
 <translation id="3401130144947259741">Nếu đã bật, các sự kiện theo dõi sẽ được xuất sang Theo dõi sự kiện cho Windows (ETW) và có thể chụp được bằng công cụ như UIForETW hoặc Xperf.</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
-<translation id="340485819826776184">Sử dụng dịch vụ dự đoán để giúp hoàn thành các tìm kiếm và URL được nhập trong thanh địa chỉ</translation>
+<translation id="340485819826776184">Sử dụng dịch vụ gợi ý để giúp hoàn thành các tìm kiếm và URL được nhập trong thanh địa chỉ</translation>
 <translation id="3405664148539009465">Tùy chỉnh phông chữ</translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">&amp;Hiển thị thanh dấu trang</translation>
@@ -1894,7 +1893,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Những trang không tải được khi trình duyệt ngoại tuyến sẽ chỉ tự động được tải lại nếu tab hiển thị.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Hủy tải xuống}other{Hủy tải xuống}}</translation>
 <translation id="3512810056947640266">URL (tùy chọn):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> muốn chia sẻ nội dung trên màn hình của bạn. Chọn nội dung bạn muốn chia sẻ.</translation>
 <translation id="3518086201899641494">Thông báo về cổng phát hiện</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Cho phép người dùng tham gia thu thập chuỗi chứng chỉ TLS/SSL không hợp lệ.</translation>
@@ -2010,7 +2008,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Đọc cài đặt trợ năng của bạn</translation>
 <translation id="3654092442379740616">Lỗi đồng bộ hóa:  <ph name="PRODUCT_NAME" /> đã cũ và cần được cập nhật.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ứng dụng có quyền truy cập vĩnh viễn vào một tệp.}other{Ứng dụng có quyền truy cập vĩnh viễn vào # tệp.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> muốn chia sẻ nội dung trên màn hình của bạn với <ph name="TARGET_NAME" />. Chọn nội dung bạn muốn chia sẻ.</translation>
 <translation id="3657468915905674858">Bật khóa PPAPI Win32k.</translation>
 <translation id="3660234220361471169">Không đáng tin cậy</translation>
 <translation id="3665589677786828986">Chrome phát hiện thấy rằng một số cài đặt của bạn đã bị lỗi do một chương trình khác gây ra và đặt lại các cài đặt đó về giá trị mặc định ban đầu.</translation>
@@ -2567,7 +2564,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4465830120256509958">Bàn phím tiếng Braxin</translation>
 <translation id="4467100756425880649">Thư viện của Cửa hàng Chrome trực tuyến</translation>
-<translation id="4467798014533545464">Hiển thị URL</translation>
 <translation id="4470564870223067757">Hangul 2 bộ</translation>
 <translation id="4474155171896946103">Đánh dấu tất cả các tab...</translation>
 <translation id="4476590490540813026">Vận động viên</translation>
@@ -4041,7 +4037,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Chỉ bật nếu bạn biết mình đang làm gì hoặc nếu bạn đã được yêu cầu bật vì việc thu thập dữ liệu có thể giảm hiệu suất hoạt động.</translation>
 <translation id="654233263479157500">Sử dụng dịch vụ web để giúp giải quyết lỗi điều hướng</translation>
 <translation id="6545665334409411530">Tốc độ lặp lại</translation>
-<translation id="6545834809683560467">Sử dụng dịch vụ truy vấn dự đoán để giúp hoàn thành các tìm kiếm và URL được nhập vào thanh địa chỉ hoặc hộp tìm kiếm của trình chạy ứng dụng</translation>
+<translation id="6545834809683560467">Sử dụng dịch vụ gợi ý để giúp hoàn thành các tìm kiếm và URL được nhập vào thanh địa chỉ hoặc hộp tìm kiếm của trình chạy ứng dụng</translation>
 <translation id="6546686722964485737">Tham gia mạng Wimax</translation>
 <translation id="6547316139431024316">Không cảnh báo lại đối với tiện ích này</translation>
 <translation id="6547354035488017500">Hãy giải phóng ít nhất 512 MB dung lượng, nếu không thiết bị sẽ không phản hồi. Để giải phóng dung lượng, hãy xóa các tệp khỏi bộ nhớ thiết bị.</translation>
@@ -4628,6 +4624,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="7393449708074241536">Thao tác này sẽ xóa vĩnh viễn <ph name="TOTAL_COUNT" /> mục khỏi thiết bị này.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> sẽ chạy khi khởi động hệ thống và tiếp tục chạy ở chế độ nền ngay cả khi bạn đã đóng tất cả các cửa sổ khác của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Cho phép tất cả các trang web sử dụng tính năng tạo khóa trong biểu mẫu.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Vui lòng chờ trong khi Chromebox của bạn khởi động lại...</translation>
 <translation id="7401543881546089382">Xóa phím tắt</translation>
 <translation id="7403358905955888520">Tắt chính sách thiết bị tự động phát hiện múi giờ hệ thống.</translation>
@@ -5003,7 +5000,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="7928710562641958568">Tháo thiết bị</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> đang chia sẻ màn hình và âm thanh của bạn.</translation>
 <translation id="7938594894617528435">Hiện đang ngoại tuyến</translation>
-<translation id="7939374455203157513">Bật dịch vụ đám mây</translation>
 <translation id="7939412583708276221">Vẫn tiếp tục</translation>
 <translation id="7939997691108949385">Người quản lý có thể định cấu hình các giới hạn và cài đặt cho người dùng bị giám sát này tại <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak Hoa Kỳ</translation>
@@ -5797,7 +5793,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9035022520814077154">Lỗi bảo mật</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Hiển thị văn bản gốc</translation>
-<translation id="9038649477754266430">Sử dụng dịch vụ truy vấn dự đoán để tải trang nhanh hơn</translation>
+<translation id="9038649477754266430">Sử dụng dịch vụ gợi ý để tải trang nhanh hơn</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">Tắt tiếng tab</translation>
 <translation id="9040185888511745258">Những kẻ tấn công trên trang <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ của bạn hoặc hiển thị thêm quảng cáo trên các trang bạn truy cập).</translation>

@@ -154,15 +154,15 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
      Si no se establece esta política, no se mostrarán las Condiciones de servicio.
 
       La política se debe establecer en una URL desde la que <ph name="PRODUCT_OS_NAME" /> podrá descargar las Condiciones de servicio. Las Condiciones de servicio deben ser texto sin formato, que actúe como texto/sin formato del tipo MIME. No se permite ningún tipo de marcado.</translation>
-<translation id="1757339646969878244">Configura las opciones de acceso remoto en el host de Escritorio remoto de Chrome.
+<translation id="1757339646969878244">Configura las opciones de acceso remoto en el host de Escritorio Remoto de Chrome.
 
-      El host de Escritorio remoto de Chrome es un servicio nativo que se ejecuta en el ordenador de destino al
+      El host de Escritorio Remoto de Chrome es un servicio nativo que se ejecuta en el ordenador de destino al
       cual el usuario puede conectarse mediante la aplicación Escritorio
-      remoto de Chrome. El servicio nativo se empaqueta y se ejecuta de forma
+      Remoto de Chrome. El servicio nativo se empaqueta y se ejecuta de forma
       independiente al navegador <ph name="PRODUCT_NAME" />.
 
       Estas políticas no se tienen en cuenta a menos que el
-      host de Escritorio remoto de Chrome esté instalado.</translation>
+      host de Escritorio Remoto de Chrome esté instalado.</translation>
 <translation id="1757688868319862958">Permite que <ph name="PRODUCT_NAME" /> ejecute complementos que requieran autorización.
 
       Si habilitas esta opción, se ejecutarán siempre los complementos actualizados.

@@ -289,6 +289,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4543661749405994812">Copy email address</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
+<translation id="4576023202210315647">Keep tab in Chrome</translation>
 <translation id="4581964774250883625">You’ve gone incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minute ago}other{# minutes ago}}</translation>
 <translation id="4605958867780575332">Item removed: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6865313869410766144">Autofill form data</translation>
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
-<translation id="6910211073230771657">Deleted</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -600,7 +600,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8137558756159375272">Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8173098127580644436">beginning of time</translation>
-<translation id="8187025609458112874">Can't share deleted files</translation>
 <translation id="8190358571722158785">1 day left</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8202097416529803614">Order summary</translation>

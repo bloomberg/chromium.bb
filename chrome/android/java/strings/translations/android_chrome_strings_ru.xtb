@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">Выбор папки</translation>
 <translation id="4543661749405994812">Скопировать адрес эл. почты</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
+<translation id="4576023202210315647">Сохранить вкладку в Chrome</translation>
 <translation id="4581964774250883625">Вы перешли в режим инкогнито.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="4605958867780575332">Удалено: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d открытая вкладка}one{%1$d открытая вкладка}few{%1$d открытые вкладки}many{%1$d открытых вкладок}other{%1$d открытой вкладки}}</translation>
-<translation id="6910211073230771657">Удалено</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8173098127580644436">все время</translation>
-<translation id="8187025609458112874">Невозможно поделиться файлами, поскольку они удалены</translation>
 <translation id="8190358571722158785">Остался 1 день</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8202097416529803614">Информация о заказе</translation>

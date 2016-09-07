@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">حالت نمایش</translation>
 <translation id="1481244281142949601">‏شما به حد کافی sandbox دارید.</translation>
 <translation id="1482124012545051544">آماده پشتیبان گرفتن از <ph name="FILE_COUNT" /> عکس جدید</translation>
+<translation id="1483493594462132177">ارسال</translation>
 <translation id="148466539719134488">سوئیسی</translation>
 <translation id="1485015260175968628">هم‌اکنون این می‌تواند:</translation>
 <translation id="1486096554574027028">جستجوی گذرواژه‌ها</translation>
@@ -638,7 +639,6 @@
 <translation id="1850508293116537636">چرخاندن در جهت &amp;عقربه‌های ساعت</translation>
 <translation id="1852799913675865625">خطایی در حین خواندن این فایل وجود داشت: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">افزودن موقعیت مکانی...</translation>
-<translation id="1857166538520940818">پیوست کردن فایل:</translation>
 <translation id="1858585891038687145">برای شناسایی سازندگان نرم‌افزار، به این گواهی اطمینان شود</translation>
 <translation id="1859234291848436338">جهت نوشتن</translation>
 <translation id="1864111464094315414">ورود به سیستم</translation>
@@ -1574,7 +1574,6 @@
 <translation id="3108145564672865299">قفل کردن جهت صفحه</translation>
 <translation id="3108967419958202225">انتخاب...</translation>
 <translation id="3112378005171663295">کوچک کردن</translation>
-<translation id="3113551216836192921">‏فایل‌های پیوست شده برای رفع اشکال به سرورهای Google ارسال می‌شوند.</translation>
 <translation id="3115147772012638511">منتظر حافظهٔ پنهان...</translation>
 <translation id="3116361045094675131">صفحه‌کلید انگلیسی</translation>
 <translation id="3117812041123364382">فعال/غیرفعال کردن صفحه‌کلید مجازی شناور.</translation>
@@ -1889,7 +1888,6 @@
 <translation id="3512284449647229026">صفحاتی که وقتی مرورگر آفلاین است، بارگیری نمی‌شوند، فقط زمانی به صورت خودکار بارگیری مجدد می‌شوند که برگه آنها قابل مشاهده باشد.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{لغو دانلود}one{لغو دانلود}other{لغو دانلود}}</translation>
 <translation id="3512810056947640266">نشانی وب (اختیاری):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> می‌خواهد محتوای صفحه شما را اشتراک‌گذاری کند. آنچه را که می‌خواهید به اشتراک بگذارید، انتخاب کنید.</translation>
 <translation id="3518086201899641494">اعلان‌های مربوط به پورتال‌های محدود</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
 <translation id="3522159121915794564">‏به کاربران امکان می‌دهد تا در جمع‌آوری زنجیره گواهینامه‌های TLS/SSL نامعتبر شرکت کنند.</translation>
@@ -2005,7 +2003,6 @@
 <translation id="3654045516529121250">خواندن تنظیمات دسترس‌پذیری خودتان</translation>
 <translation id="3654092442379740616">خطای همگام‌سازی: <ph name="PRODUCT_NAME" /> به‌روز نیست و باید به‌روز شود.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{به یک فایل دسترسی دائم دارد.}one{به # فایل دسترسی دائم دارد.}other{به # فایل دسترسی دائم دارد.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> می‌خواهد محتوای صفحه شما را با <ph name="TARGET_NAME" /> اشتراک‌گذاری کند. آنچه را که می‌خواهید به اشتراک بگذارید، انتخاب کنید.</translation>
 <translation id="3657468915905674858">‏فعال کردن PPAPI Win32k Lockdown.</translation>
 <translation id="3660234220361471169">غیر قابل اطمینان</translation>
 <translation id="3665589677786828986">‏Chrome تشخیص داد که برنامه دیگری برخی از تنظیمات شما را خراب کرده است و این تنظیمات را به پیش‌فرض‌های اولیه آن‌ها بازنشانی کرد.</translation>
@@ -2562,7 +2559,6 @@
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
 <translation id="4465830120256509958">صفحه‌کلید برزیلی</translation>
 <translation id="4467100756425880649">‏گالری فروشگاه وب Chrome</translation>
-<translation id="4467798014533545464">نمایش نشانی وب</translation>
 <translation id="4470564870223067757">مجموعه هانگول ۲</translation>
 <translation id="4474155171896946103">نشانک‌گذاری همه برگه‌ها...</translation>
 <translation id="4476590490540813026">ورزشکار</translation>
@@ -4622,6 +4618,7 @@
 <translation id="7393449708074241536">این کار <ph name="TOTAL_COUNT" /> مورد را برای همیشه از این دستگاه حذف می‌کند.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> در هنگام راه‌اندازی سیستم شروع به کار می‌کند و در پس‌زمینه همچنان فعال خواهد بود، حتی زمانی که تمام پنجره‌های دیگر <ph name="PRODUCT_NAME" /> را ببندید.</translation>
 <translation id="7396863776022882342">به همه سایت‌ها اجازه داده شود از تولید کلید در فرم‌ها استفاده کنند.</translation>
+<translation id="7400418766976504921">نشانی وب</translation>
 <translation id="740083207982962331">‏لطفاً صبر کنید تا Chromebox شما مجدداً راه‌اندازی شود...</translation>
 <translation id="7401543881546089382">حذف میان‌بر</translation>
 <translation id="7403358905955888520">خط‌مشی تشخیص خودکار منطقه‌زمانی سیستم را غیر‌فعال کنید.</translation>
@@ -4995,7 +4992,6 @@
 <translation id="7928710562641958568">خارج کردن دستگاه</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> درحال اشتراک‌گذاری صفحه‌نمایش و صوت شماست.</translation>
 <translation id="7938594894617528435">در حال حاضر آفلاین</translation>
-<translation id="7939374455203157513">فعال کردن سرویس‌های ابری</translation>
 <translation id="7939412583708276221">درهر حال حفظ شود</translation>
 <translation id="7939997691108949385">مدیر قادر خواهد بود محدودیت‌ها و تنظیمات این کاربر نظارت‌شده را در <ph name="MANAGEMENT_URL" /> پیکربندی کند.</translation>
 <translation id="7943385054491506837">کلماک آمریکایی</translation>

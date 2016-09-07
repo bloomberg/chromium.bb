@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">โหมดสาธิต</translation>
 <translation id="1481244281142949601">คุณได้ทดลองใช้ผลิตภัณฑ์พอสมควรแล้ว</translation>
 <translation id="1482124012545051544">พร้อมที่จะสำรองรูปภาพใหม่ <ph name="FILE_COUNT" /> รูปแล้ว</translation>
+<translation id="1483493594462132177">ส่ง</translation>
 <translation id="148466539719134488">สวิส</translation>
 <translation id="1485015260175968628">ส่วนขยายตอนนี้สามารถ:</translation>
 <translation id="1486096554574027028">ค้นหารหัสผ่าน</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">หมุน&amp;ตามเข็มนาฬิกา</translation>
 <translation id="1852799913675865625">เกิดข้อผิดพลาดขณะพยายามอ่านไฟล์: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">เพิ่มตำแหน่ง...</translation>
-<translation id="1857166538520940818">แนบไฟล์:</translation>
 <translation id="1858585891038687145">เชื่อถือใบรับรองนี้ในการระบุตัวตนผู้ผลิตซอฟต์แวร์</translation>
 <translation id="1859234291848436338">การเขียนเส้นทาง</translation>
 <translation id="1864111464094315414">ลงชื่อเข้าใช้</translation>
@@ -1577,7 +1577,6 @@
 <translation id="3108145564672865299">การล็อกการวางแนวหน้าจอ</translation>
 <translation id="3108967419958202225">เลือก...</translation>
 <translation id="3112378005171663295">ยุบ</translation>
-<translation id="3113551216836192921">ไฟล์ที่แนบได้รับการอัปโหลดไปยังเซิร์ฟเวอร์ Google เพื่อแก้ปัญหา</translation>
 <translation id="3115147772012638511">กำลังรอแคช...</translation>
 <translation id="3116361045094675131">แป้นพิมพ์ภาษาอังกฤษสหราชอาณาจักร</translation>
 <translation id="3117812041123364382">เปิดหรือปิดใช้แป้นพิมพ์เสมือนแบบลอย</translation>
@@ -1892,7 +1891,6 @@
 <translation id="3512284449647229026">จะมีการโหลดซ้ำหน้าที่ไม่สามารถโหลดขณะเบราว์เซอร์ออฟไลน์โดยอัตโนมัติ หากมองเห็นแท็บของหน้าเท่านั้น</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ยกเลิกการดาวน์โหลด}other{ยกเลิกการดาวน์โหลด}}</translation>
 <translation id="3512810056947640266">URL (ไม่บังคับ):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> ต้องการแชร์เนื้อหาบนหน้าจอของคุณ เลือกส่วนที่คุณต้องการแชร์</translation>
 <translation id="3518086201899641494">การแจ้งเตือนเกี่ยวกับ Captive Portal</translation>
 <translation id="3519867315646775981">การทับศัพท์ (shalom ← שלום)</translation>
 <translation id="3522159121915794564">อนุญาตให้ผู้ใช้เลือกใช้คอลเล็กชันของห่วงโซ่ใบอนุญาต TLS/SSL ที่ไม่ถูกต้อง</translation>
@@ -2008,7 +2006,6 @@
 <translation id="3654045516529121250">อ่านการตั้งค่าการเข้าถึง</translation>
 <translation id="3654092442379740616">การซิงค์มีข้อผิดพลาด: <ph name="PRODUCT_NAME" /> เก่าเกินไปและต้องมีการอัปเดต</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{แอปมีการเข้าถึงอย่างถาวรไปยัง 1 ไฟล์}other{แอปมีการเข้าถึงอย่างถาวรไปยัง # ไฟล์}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> ต้องการแชร์เนื้อหาบนหน้าจอของคุณกับ <ph name="TARGET_NAME" /> เลือกส่วนที่คุณต้องการแชร์</translation>
 <translation id="3657468915905674858">เปิดใช้ PPAPI Win32k Lockdown</translation>
 <translation id="3660234220361471169">ไม่น่าเชื่อถือ</translation>
 <translation id="3665589677786828986">Chrome ตรวจพบว่าการตั้งค่าของคุณบางส่วนได้รับความเสียหายจากโปรแกรมอื่น และรีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นเดิม</translation>
@@ -2303,7 +2300,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4072248638558688893">แป้นพิมพ์ภาษาทมิฬ (คำที่ใช้ออกเสียง)</translation>
 <translation id="4074900173531346617">ใบรับรองผู้เซ็นชื่อในอีเมล</translation>
-<translation id="4074945132384537841">เปิดใช้การให้สิทธิ์เข้าถึงและการนำสิทธ์เข้าถึงคุณลักษณะต่างๆ ออก โดยผ่านส่วนหัวของ HTTP นโยบายคุณลักษณะ</translation>
+<translation id="4074945132384537841">เปิดใช้การให้สิทธิ์เข้าถึงและการนำสิทธิ์เข้าถึงคุณลักษณะต่างๆ ออก โดยผ่านส่วนหัวของ HTTP นโยบายคุณลักษณะ</translation>
 <translation id="4075084141581903552">สามารถใช้การลงชื่อเข้าใช้อัตโนมัติกับ <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">เข้มงวด</translation>
 <translation id="408098233265424160">การตรวจหาระยะใกล้ของ Smart Lock</translation>
@@ -2565,7 +2562,6 @@
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4465830120256509958">แป้นพิมพ์ภาษาบราซิล</translation>
 <translation id="4467100756425880649">แกลเลอรี Chrome เว็บสโตร์</translation>
-<translation id="4467798014533545464">แสดง URL</translation>
 <translation id="4470564870223067757">ฮังกูลแบบ 2 ชุด</translation>
 <translation id="4474155171896946103">บุ๊กมาร์กแท็บทั้งหมด...</translation>
 <translation id="4476590490540813026">นักกีฬา</translation>
@@ -4624,6 +4620,7 @@
 <translation id="7393449708074241536">การดำเนินการนี้จะลบ <ph name="TOTAL_COUNT" /> รายการจากอุปกรณ์นี้อย่างถาวร</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> จะเปิดใช้งานเมื่อเริ่มต้นระบบและทำงานต่อไปในแบบเบื้องหลัง แม้คุณจะปิดหน้าต่าง <ph name="PRODUCT_NAME" /> อื่นๆ จนหมดแล้ว</translation>
 <translation id="7396863776022882342">อนุญาตให้ทุกเว็บไซต์ใช้การสร้างคีย์ในแบบฟอร์มได้</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">โปรดรอในขณะที่ Chromebox รีสตาร์ท...</translation>
 <translation id="7401543881546089382">ลบทางลัด</translation>
 <translation id="7403358905955888520">ปิดใช้นโยบายด้านอุปกรณ์ในการตรวจหาเขตเวลาของระบบโดยอัตโนมัติ</translation>
@@ -4999,7 +4996,6 @@
 <translation id="7928710562641958568">ยกเลิกการต่อเชื่อมอุปกรณ์</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> กำลังแชร์หน้าจอและเสียงของคุณ</translation>
 <translation id="7938594894617528435">ออฟไลน์อยู่ในปัจจุบัน</translation>
-<translation id="7939374455203157513">เปิดใช้บริการคลาวด์</translation>
 <translation id="7939412583708276221">เก็บเอาไว้ ไม่ว่าอย่างไรก็ตาม</translation>
 <translation id="7939997691108949385">ผู้จัดการจะสามารถกำหนดค่าข้อจำกัดและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้ที่ <ph name="MANAGEMENT_URL" /></translation>
 <translation id="7943385054491506837">Colemak แบบสหรัฐอเมริกา</translation>

@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demotilstand</translation>
 <translation id="1481244281142949601">Din sandkasse er sikker.</translation>
 <translation id="1482124012545051544">Klar til at sikkerhedskopiere <ph name="FILE_COUNT" /> nye billeder</translation>
+<translation id="1483493594462132177">Send</translation>
 <translation id="148466539719134488">Schweizisk</translation>
 <translation id="1485015260175968628">Nu kan den:</translation>
 <translation id="1486096554574027028">Søg i adgangskoder</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">Roter med &amp;uret</translation>
 <translation id="1852799913675865625">Der opstod en fejl under forsøg på at læse filen: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Tilføj placering...</translation>
-<translation id="1857166538520940818">Vedhæft fil:</translation>
 <translation id="1858585891038687145">Hav tillid til dette certifikat i forbindelse med identifikation af softwareproducenter</translation>
 <translation id="1859234291848436338">Skriveretning</translation>
 <translation id="1864111464094315414">Login</translation>
@@ -1577,7 +1577,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3108145564672865299">Låsning af skærmretningen</translation>
 <translation id="3108967419958202225">Vælg...</translation>
 <translation id="3112378005171663295">Skjul</translation>
-<translation id="3113551216836192921">Den vedhæftede fil uploades til Googles servere for fejlfinding.</translation>
 <translation id="3115147772012638511">Venter på cache...</translation>
 <translation id="3116361045094675131">Britisk tastatur</translation>
 <translation id="3117812041123364382">Aktivér/deaktiver svævende virtuelt tastatur.</translation>
@@ -1892,7 +1891,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sider, der ikke kan indlæses, mens browseren er offline, vil kun blive genindlæst automatisk, hvis deres fane er synlig.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annuller download}one{Annuller downloads}other{Annuller downloads}}</translation>
 <translation id="3512810056947640266">Webadresse (valgfrit):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> vil gerne dele indholdet af din skærm. Vælg det, du gerne vil dele.</translation>
 <translation id="3518086201899641494">Underretninger om captive portals</translation>
 <translation id="3519867315646775981">Translitteration (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Giver brugerne tilladelse til at vælge samlingen af ugyldige TLS/SSL-certifikatkæder.</translation>
@@ -2008,7 +2006,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Læse dine indstillinger for hjælpefunktioner</translation>
 <translation id="3654092442379740616">Synkroniseringsfejl: <ph name="PRODUCT_NAME" /> er forældet og skal opdateres.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent adgang til én fil.}one{Den har permanent adgang til # filer.}other{Den har permanent adgang til # filer.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> vil gerne dele indholdet af din skærm med <ph name="TARGET_NAME" />. Vælg det, du gerne vil dele.</translation>
 <translation id="3657468915905674858">Aktivér PPAPI-Win32k-lukning.</translation>
 <translation id="3660234220361471169">Ikke pålidelig</translation>
 <translation id="3665589677786828986">Chrome har registreret, at nogle af dine indstillinger er blevet ændret af et andet program, og har derfor gendannet standardindstillingerne.</translation>
@@ -2564,7 +2561,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4462159676511157176">Tilpassede navneservere</translation>
 <translation id="4465830120256509958">Brasiliansk tastatur</translation>
 <translation id="4467100756425880649">Chrome Webshop Galleri</translation>
-<translation id="4467798014533545464">Vis webadresse</translation>
 <translation id="4470564870223067757">Hangul 2-sæt</translation>
 <translation id="4474155171896946103">Tilføj alle faner som bogmærker...</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -4623,6 +4619,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7393449708074241536">Denne handling sletter <ph name="TOTAL_COUNT" /> elementer permanent fra denne enhed.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> vil starte ved opstart af systemet og fortsætte med at køre i baggrunden, selv når du har lukket alle andre vinduer i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Giv alle websites tilladelse til at bruge nøglegenerering i formularer.</translation>
+<translation id="7400418766976504921">Webadresse</translation>
 <translation id="740083207982962331">Vent, mens din Chromebox genstarter...</translation>
 <translation id="7401543881546089382">Slet genvej</translation>
 <translation id="7403358905955888520">Deaktiver enhedspolitikken til automatisk systemregistrering af tidszone.</translation>
@@ -4998,7 +4995,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7928710562641958568">Skub enheden ud</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deler din skærm og lyd.</translation>
 <translation id="7938594894617528435">I øjeblikket offline</translation>
-<translation id="7939374455203157513">Aktivér skytjenester</translation>
 <translation id="7939412583708276221">Behold alligevel</translation>
 <translation id="7939997691108949385">Administratoren kan konfigurere begrænsninger og indstillinger for den administrerede bruger på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Amerikansk (Colemak)</translation>

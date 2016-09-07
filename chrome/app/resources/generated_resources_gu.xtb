@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">ડેમો મોડ</translation>
 <translation id="1481244281142949601">તમારી પાસે પર્યાપ્ત રૂપે sandbox છે.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> નવા ફોટાનો બેકઅપ લેવા માટે તૈયાર</translation>
+<translation id="1483493594462132177">મોકલો</translation>
 <translation id="148466539719134488">સ્વીસ</translation>
 <translation id="1485015260175968628">તે હવે આ કરી શકે છે:</translation>
 <translation id="1486096554574027028">પાસવર્ડ્સ શોધો</translation>
@@ -636,7 +637,6 @@
 <translation id="1850508293116537636">&amp;ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1852799913675865625">ફાઇલ વાંચવાનો પ્રયાસ કરતી વખતે ભૂલ આવી હતી: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">સ્થાન ઉમેરો...</translation>
-<translation id="1857166538520940818">ફાઇલ જોડો:</translation>
 <translation id="1858585891038687145">સૉફ્ટવેર માર્કર્સને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો</translation>
 <translation id="1859234291848436338">લેખનના દિશાનિર્દેશ</translation>
 <translation id="1864111464094315414">લૉગિન</translation>
@@ -1574,7 +1574,6 @@
 <translation id="3108145564672865299">સ્ક્રીન ઓરિએન્ટેશન લૉકિંગ</translation>
 <translation id="3108967419958202225">પસંદ કરો...</translation>
 <translation id="3112378005171663295">સંકુચિત કરો</translation>
-<translation id="3113551216836192921">ડીબગ કરવા માટે Google સર્વર્સ પર જોડેલી ફાઇલ અપલોડ કરવામાં આવે છે.</translation>
 <translation id="3115147772012638511">કૅશ માટે રાહ જુએ છે...</translation>
 <translation id="3116361045094675131">યુકે કીબોર્ડ</translation>
 <translation id="3117812041123364382">ફ્લોટિંગ વર્ચ્યુઅલ કીબોર્ડને સક્ષમ/અક્ષમ કરો.</translation>
@@ -1889,7 +1888,6 @@
 <translation id="3512284449647229026">બ્રાઉઝર ઑફલાઇન હોય તે વખતે લોડ થવામાં નિષ્ફળ થયેલાં પૃષ્ઠો જ્યારે બ્રાઉઝર ફરીથી ઓનલાઇન થશે ત્યારે સ્વતઃ ફરીથી લોડ કરવામાં આવશે.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ડાઉનલોડ રદ કરો}one{ડાઉનલોડ્સ રદ કરો}other{ડાઉનલોડ્સ રદ કરો}}</translation>
 <translation id="3512810056947640266">URL (વૈકલ્પિક):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> તમારી સ્ક્રીનની સામગ્રીને શેર કરવા માગે છે. તમે શું શેર કરવા માગો છો તે પસંદ કરો.</translation>
 <translation id="3518086201899641494">કેપ્ટિવ પોર્ટલ્સ વિશે સૂચનાઓ</translation>
 <translation id="3519867315646775981">લિવ્યંતરણ (shalom ← שלום)</translation>
 <translation id="3522159121915794564">અમાન્ય TLS/SSL પ્રમાણપત્ર શૃંખલાઓના સંગ્રહને પસંદ કરવા માટે વપરાશકર્તાઓને મંજૂરી આપે છે.</translation>
@@ -2005,7 +2003,6 @@
 <translation id="3654045516529121250">તમારી ઍક્સેસિબિલિટી સેટિંગ્સ વાંચો</translation>
 <translation id="3654092442379740616">સમન્વયન ભૂલ: <ph name="PRODUCT_NAME" /> જૂનું છે અને તેને અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{તેને એક ફાઇલ માટે કાયમી ઍક્સેસ છે.}one{તેને # ફાઈલ્સ માટે કાયમી ઍક્સેસ છે.}other{તેને # ફાઈલ્સ માટે કાયમી ઍક્સેસ છે.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> તમારી સ્ક્રીનની સામગ્રીને <ph name="TARGET_NAME" /> સાથે શેર કરવા માગે છે. તમે શું શેર કરવા માગો છો તે પસંદ કરો.</translation>
 <translation id="3657468915905674858">PPAPI Win32k લોકડાઉન સક્ષમ કરો.</translation>
 <translation id="3660234220361471169">અવિશ્વસનીય</translation>
 <translation id="3665589677786828986">Chrome ને જાણ થઈ છે કે તમારી કેટલીક સેટિંગ્સ બીજા પ્રોગ્રામ દ્વારા દૂષિત કરવામાં આવેલી અને તેમને તેમના મૂળ ડિફોલ્ટ્સ પર ફરીથી સેટ કરી છે.</translation>
@@ -2562,7 +2559,6 @@
 <translation id="4462159676511157176">કસ્ટમ નામ સર્વર્સ</translation>
 <translation id="4465830120256509958">બ્રાઝિલિયન કીબોર્ડ</translation>
 <translation id="4467100756425880649">Chrome વેબ દુકાન ગૅલેરી</translation>
-<translation id="4467798014533545464">URL બતાવો</translation>
 <translation id="4470564870223067757">હંગુલ 2 સેટ</translation>
 <translation id="4474155171896946103">બધા ટૅબ્સ બુકમાર્ક  કરો...</translation>
 <translation id="4476590490540813026">ઍથ્લીટ</translation>
@@ -4622,6 +4618,7 @@
 <translation id="7393449708074241536">આ <ph name="TOTAL_COUNT" /> આઇટમ્સને આ ઉપકરણમાંથી સ્થાયી રૂપે કાઢી નાખશે.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> સિસ્ટમ શરૂ થવા પર લોંચ થશે અને તમે બાકી તમામ <ph name="PRODUCT_NAME" /> વિંડોઝ બંધ કરી દેશો તે પછી પણ તે પૃષ્ઠભૂમિમાં ચાલુ રહે છે.</translation>
 <translation id="7396863776022882342">તમામ સાઇટ્સને ફોર્મ્સમાં કી જનરેશનનો ઉપયોગ કરવાની મંજૂરી આપો</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">તમારું Chromebox પુનઃપ્રારંભ થાય ત્યાં સુધી કૃપા કરીને રાહ જુઓ...</translation>
 <translation id="7401543881546089382">શોર્ટકટ કાઢી નાખો</translation>
 <translation id="7403358905955888520">સિસ્ટમ સમયઝોન સ્વચલિત શોધ ઉપકરણ નીતિને અક્ષમ કરો.</translation>
@@ -4997,7 +4994,6 @@
 <translation id="7928710562641958568">ઉપકરણ હટાવો</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" />, તમારી સ્ક્રીન અને ઑડિઓને શેર કરી રહી છે.</translation>
 <translation id="7938594894617528435">હાલમાં ઑફલાઇન</translation>
-<translation id="7939374455203157513">મેઘ સેવાઓ સક્ષમ કરો</translation>
 <translation id="7939412583708276221">તો પણ રાખો</translation>
 <translation id="7939997691108949385">સંચાલક <ph name="MANAGEMENT_URL" /> પર આ નિરીક્ષણ કરેલા વપરાશકર્તા માટે પ્રતિબંધો અને સેટિંગ્સને ગોઠવવામાં સમર્થ હશે.</translation>
 <translation id="7943385054491506837">યુએસ કોલમેક</translation>

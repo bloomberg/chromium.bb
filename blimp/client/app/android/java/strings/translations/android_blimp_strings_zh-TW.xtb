@@ -30,11 +30,13 @@
 <translation id="6232798399907177395">關於 Blimp</translation>
 <translation id="6245894610106451476">已接收位元組 (KB)</translation>
 <translation id="6522797484310591766">立即登入</translation>
+<translation id="6965382102122355670">確定</translation>
 <translation id="704835510384979817">指派失敗。沒有相符的引擎版本。</translation>
 <translation id="7145680970336344212">重新啟動 Blimp</translation>
 <translation id="7536363920335771251">引擎連線已中斷 (原因：%1$s)</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7608553142876436780">引擎 IP</translation>
+<translation id="7658239707568436148">取消</translation>
 <translation id="7795546637165553439">Blimp 設定</translation>
 <translation id="7961542533680218955">指派成功。</translation>
 <translation id="8514856595257368555">已擷取憑證。</translation>

@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">डेमो मोड</translation>
 <translation id="1481244281142949601">आपके पास पर्याप्त सैंडबॉक्स है.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> नई फ़ोटो का बैक अप लेने के लिए तैयार है</translation>
+<translation id="1483493594462132177">भेजें</translation>
 <translation id="148466539719134488">स्विस</translation>
 <translation id="1485015260175968628">यह अब निम्न कर सकता है:</translation>
 <translation id="1486096554574027028">पासवर्ड खोजें</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">&amp;घड़ी की दिशा में घुमाएं</translation>
 <translation id="1852799913675865625">फ़ाइल पढ़ने का प्रयास करते समय कोई त्रुटि आई: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">स्थान जोड़ें...</translation>
-<translation id="1857166538520940818">फ़ाइल अटैच करें:</translation>
 <translation id="1858585891038687145">सॉफ़्टवेयर निर्माताओं की पहचान करने के लिए इस प्रमाणपत्र पर विश्वास करें</translation>
 <translation id="1859234291848436338">लिखने के निर्देश</translation>
 <translation id="1864111464094315414">प्रवेश करें</translation>
@@ -1577,7 +1577,6 @@
 <translation id="3108145564672865299">स्‍क्रीन अभिविन्‍यास लॉक करना</translation>
 <translation id="3108967419958202225">चुनें...</translation>
 <translation id="3112378005171663295">संक्षिप्त करें</translation>
-<translation id="3113551216836192921">डीबग करने के लिए अनुलग्न की गई फ़ाइल Google सर्वर पर अपलोड की गई है.</translation>
 <translation id="3115147772012638511">संचय की प्रतीक्षा कर रहा है...</translation>
 <translation id="3116361045094675131">यूके कीबोर्ड</translation>
 <translation id="3117812041123364382">गतिशील वर्चुअल कीबोर्ड को सक्षम/अक्षम करें.</translation>
@@ -1892,7 +1891,6 @@
 <translation id="3512284449647229026">ब्राउज़र के ऑफ़लाइन होने पर विफल होने वाले पृष्ठ केवल तभी स्वत:-रीलोड किए जाएंगे यदि टैब दृश्यमान हो.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{डाउनलोड रोकें}one{डाउनलोड रोकें}other{डाउनलोड रोकें}}</translation>
 <translation id="3512810056947640266">URL (वैकल्पिक):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्रियों को साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="3518086201899641494">कैप्टिव पोर्टल के बारे में सूचनाएं</translation>
 <translation id="3519867315646775981">लिप्यंतरण (shalom ← שלום)</translation>
 <translation id="3522159121915794564">उपयोगकर्ताओं को अमान्‍य TLS/SSL प्रमाणपत्र श्रृंखलाओं में ऑप्‍ट इन करने देता है.</translation>
@@ -2008,7 +2006,6 @@
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="3654092442379740616">समन्‍वयन त्रुटि:  <ph name="PRODUCT_NAME" /> पुराना है और इसे अपडेट करने की आवश्‍यकता है.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{उसे एक फ़ाइल की स्‍थायी ऐक्‍सेस प्राप्‍त है.}one{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}other{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्री को <ph name="TARGET_NAME" /> से साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="3657468915905674858">PPAPI Win32k लॉकडाउन सक्षम करें.</translation>
 <translation id="3660234220361471169">अविश्वसनीय</translation>
 <translation id="3665589677786828986">Chrome को पता चला है कि आपकी कुछ सेटिंग किसी दूसरे प्रोग्राम के द्वारा दूषित कर दी गई हैं और उन्हें उनके मूल डिफ़ॉल्ट पर रीसेट कर दिया गया है.</translation>
@@ -2564,7 +2561,6 @@
 <translation id="4462159676511157176">कस्टम नाम सर्वर</translation>
 <translation id="4465830120256509958">ब्राज़ीली कीबोर्ड</translation>
 <translation id="4467100756425880649">Chrome वेब स्‍टोर गैलरी</translation>
-<translation id="4467798014533545464">URL दिखाएं</translation>
 <translation id="4470564870223067757">हंगुल 2 सेट</translation>
 <translation id="4474155171896946103">सभी टैब बुकमार्क करें...</translation>
 <translation id="4476590490540813026">एथलीट</translation>
@@ -4626,6 +4622,7 @@
 <translation id="7393449708074241536">इससे इस डिवाइस से <ph name="TOTAL_COUNT" /> आइटम स्थायी रूप से हट जाएंगे.</translation>
 <translation id="7396845648024431313">सिस्‍टम प्रारंभ होने पर <ph name="APP_NAME" /> लॉन्‍च होगा और आपके द्वारा सभी अन्‍य <ph name="PRODUCT_NAME" /> विंडो बंद कर देने के बाद भी पृष्‍ठभूमि में चलता रहेगा.</translation>
 <translation id="7396863776022882342">सभी साइट को फ़ॉर्म में कुंजी जेनरेशन का उपयोग करने की अनुमति दें.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">कृपया अपना Chromebox पुन: प्रारंभ होने तक प्रतीक्षा करें...</translation>
 <translation id="7401543881546089382">शॉर्टकट हटाएं</translation>
 <translation id="7403358905955888520">सिस्टम समयक्षेत्र स्वचालित पहचान डिवाइस पॉलिसी अक्षम करें.</translation>
@@ -5001,7 +4998,6 @@
 <translation id="7928710562641958568">डिवाइस निकालें</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> आपकी स्क्रीन और ऑडियो को साझा कर रहा है.</translation>
 <translation id="7938594894617528435">वर्तमान में ऑफ़लाइन</translation>
-<translation id="7939374455203157513">क्लाउड सेवाएं सक्षम करें</translation>
 <translation id="7939412583708276221">फिर भी रखें</translation>
 <translation id="7939997691108949385">प्रबंधक <ph name="MANAGEMENT_URL" /> पर इस निगरानी में रखे गए उपयोगकर्ता के लिए प्रतिबंध और सेटिंग कॉन्फ़िगर करने के लिए उत्तरदायी होगा.</translation>
 <translation id="7943385054491506837">यूएस कोलमैक</translation>

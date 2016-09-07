@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">Избиране на папка</translation>
 <translation id="4543661749405994812">Копиране на имейл адреса</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
+<translation id="4576023202210315647">Запазване на раздела в Chrome</translation>
 <translation id="4581964774250883625">Преминахте в режим „инкогнито“.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{преди # минута}other{преди # минути}}</translation>
 <translation id="4605958867780575332">Елементът бе премахнат: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
 <translation id="6868088497967843822">Влезте в профила си, за да получите своите отметки, история, пароли и други настройки на всичките си устройства</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d отворен раздел}other{%1$d отворени раздела}}</translation>
-<translation id="6910211073230771657">Изтрито</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6963766334940102469">Изтриване на отметките</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="8173098127580644436">самото начало</translation>
-<translation id="8187025609458112874">Не можете да споделяте изтрити файлове</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
 <translation id="8200772114523450471">Възобновяване</translation>
 <translation id="8202097416529803614">Обобщена информация за поръчката</translation>

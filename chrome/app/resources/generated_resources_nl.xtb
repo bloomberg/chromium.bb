@@ -247,7 +247,7 @@
 <translation id="1354868058853714482">Adobe Reader is verouderd en is mogelijk onveilig om te gebruiken.</translation>
 <translation id="1355408554203439639">3D-softwareraster</translation>
 <translation id="1355542767438520308">Er is een fout opgetreden. Sommige items zijn mogelijk niet verwijderd.</translation>
-<translation id="1357589289913453911">Extensie-id</translation>
+<translation id="1357589289913453911">Extensie-ID</translation>
 <translation id="1358032944105037487">Japans toetsenbord</translation>
 <translation id="1358735829858566124">Het bestand of de map is niet bruikbaar.</translation>
 <translation id="1358741672408003399">Spelling en grammatica</translation>
@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demomodus</translation>
 <translation id="1481244281142949601">Je sandbox is correct.</translation>
 <translation id="1482124012545051544">Klaar om een back-up van <ph name="FILE_COUNT" /> nieuwe foto's te maken</translation>
+<translation id="1483493594462132177">Verzenden</translation>
 <translation id="148466539719134488">Zwitsers</translation>
 <translation id="1485015260175968628">De app/extensie kan nu het volgende doen:</translation>
 <translation id="1486096554574027028">Wachtwoorden zoeken</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Rechtsom &amp;draaien</translation>
 <translation id="1852799913675865625">Er is een fout opgetreden bij het lezen van het bestand: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Locatie toevoegen...</translation>
-<translation id="1857166538520940818">Bestand toevoegen:</translation>
 <translation id="1858585891038687145">Dit certificaat vertrouwen voor het identificeren van softwareontwikkelaars</translation>
 <translation id="1859234291848436338">Schrijfrichting</translation>
 <translation id="1864111464094315414">Aanmelden</translation>
@@ -1064,7 +1064,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2454247629720664989">Zoekwoord</translation>
 <translation id="2454955809499635160">Log in bij Chrome om de tabbladen van al je apparaten weer te geven.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> wil bestanden van <ph name="VOLUME_NAME" /> kopiëren.</translation>
-<translation id="2462724976360937186">Sleutel-id van certificeringsinstantie</translation>
+<translation id="2462724976360937186">Sleutel-ID van certificeringsinstantie</translation>
 <translation id="2467815441875554965">Contextueel zoeken</translation>
 <translation id="2469890184320718637">De tekst wordt weergegeven met ondertekende distance fields in plaats van bitmap alpha masks.</translation>
 <translation id="2470332835941011566"><ph name="URL" /> toestaan je te identificeren op basis van je beveiligingssleutel?</translation>
@@ -1578,7 +1578,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3108145564672865299">Schermstand vergrendelen</translation>
 <translation id="3108967419958202225">Kiezen...</translation>
 <translation id="3112378005171663295">Samenvouwen</translation>
-<translation id="3113551216836192921">Het bijgevoegde bestand is voor foutopsporing geüpload naar de servers van Google.</translation>
 <translation id="3115147772012638511">Wachten op cache...</translation>
 <translation id="3116361045094675131">Brits toetsenbord</translation>
 <translation id="3117812041123364382">Het zwevende virtuele toetsenbord in-/uitschakelen.</translation>
@@ -1893,7 +1892,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Pagina's die niet kunnen worden geladen wanneer de browser offline is, worden alleen automatisch opnieuw geladen wanneer het betreffende tabblad zichtbaar is.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Download annuleren}other{Downloads annuleren}}</translation>
 <translation id="3512810056947640266">URL (optioneel):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> wil de inhoud op je scherm delen. Kies wat je wilt delen.</translation>
 <translation id="3518086201899641494">Meldingen over captive portals</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Hiermee kunnen gebruikers zich aanmelden voor het verzamelen van ongeldige TLS/SSL-certificaatreeksen.</translation>
@@ -2009,7 +2007,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Je toegankelijkheidsinstellingen lezen</translation>
 <translation id="3654092442379740616">Synchronisatiefout: <ph name="PRODUCT_NAME" /> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{De app heeft permanent toegang tot één bestand.}other{De app heeft permanent toegang tot # bestanden.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> wil de inhoud op je scherm delen met <ph name="TARGET_NAME" />. Kies wat je wilt delen.</translation>
 <translation id="3657468915905674858">PPAPI Win32k Lockdown inschakelen.</translation>
 <translation id="3660234220361471169">Niet vertrouwd</translation>
 <translation id="3665589677786828986">Chrome heeft gedetecteerd dat sommige van je instellingen zijn beschadigd door een ander programma en heeft de instellingen teruggezet naar de oorspronkelijke standaardwaarden.</translation>
@@ -2566,7 +2563,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4465830120256509958">Braziliaans toetsenbord</translation>
 <translation id="4467100756425880649">Chrome Web Store-galerij</translation>
-<translation id="4467798014533545464">URL weergeven</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Bladwijzer toevoegen aan alle tabbladen...</translation>
 <translation id="4476590490540813026">Atlete</translation>
@@ -3103,7 +3099,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5232178406098309195">Wanneer je audioactiveringsopdrachten zoals "Ok Google" gebruikt of op een microfoonpictogram tikt, slaat je eigen versie van Spraak- en audioactiviteit wat gesproken tekst en andere audio op in je account. Er wordt een opname opgeslagen van de spraak/audio die op de opdracht volgt, plus een aantal seconden daarvoor.</translation>
 <translation id="523299859570409035">Uitzonderingen voor meldingen</translation>
 <translation id="5233019165164992427">Foutopsporingspoort voor Native Client</translation>
-<translation id="5233231016133573565">Proces-id</translation>
+<translation id="5233231016133573565">Proces-ID</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="5233736638227740678">&amp;Plakken</translation>
 <translation id="5234764350956374838">Sluiten</translation>
@@ -4627,6 +4623,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7393449708074241536">Hiermee worden <ph name="TOTAL_COUNT" /> items definitief van dit apparaat verwijderd.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wordt gestart zodra je het systeem opstart en blijft zelfs op de achtergrond actief als je alle andere vensters van <ph name="PRODUCT_NAME" /> sluit.</translation>
 <translation id="7396863776022882342">Alle sites toestaan de functie voor het genereren van sleutels te gebruiken in formulieren.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Wacht tot je Chromebox opnieuw is opgestart...</translation>
 <translation id="7401543881546089382">Snelle link verwijderen</translation>
 <translation id="7403358905955888520">Apparaatbeleid voor automatische tijdzonedetectie van het systeem uitschakelen.</translation>
@@ -5002,7 +4999,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7928710562641958568">Apparaat uitwerpen</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deelt je scherm en audio.</translation>
 <translation id="7938594894617528435">Op dit moment offline</translation>
-<translation id="7939374455203157513">Cloudservices inschakelen</translation>
 <translation id="7939412583708276221">Toch bewaren</translation>
 <translation id="7939997691108949385">De beheerder kan de beperkingen en instellingen voor deze gebruiker met beperkte rechten configureren op <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Amerikaans Colemak</translation>

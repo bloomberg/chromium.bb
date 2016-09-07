@@ -351,6 +351,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1480041086352807611">Modalità Demo</translation>
 <translation id="1481244281142949601">Sandbox adeguata.</translation>
 <translation id="1482124012545051544">Pronto per il backup di <ph name="FILE_COUNT" /> nuove foto</translation>
+<translation id="1483493594462132177">Invia</translation>
 <translation id="148466539719134488">Svizzero</translation>
 <translation id="1485015260175968628">Ora può:</translation>
 <translation id="1486096554574027028">Cerca password</translation>
@@ -640,7 +641,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1850508293116537636">Ruota in senso o&amp;rario</translation>
 <translation id="1852799913675865625">Si è verificato un errore durante la lettura del file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Aggiungi posizione...</translation>
-<translation id="1857166538520940818">Allega file:</translation>
 <translation id="1858585891038687145">Considera attendibile questo certificato per l'identificazione dei creatori di software</translation>
 <translation id="1859234291848436338">Direzione di scrittura</translation>
 <translation id="1864111464094315414">Accesso</translation>
@@ -1576,7 +1576,6 @@ Per ulteriori informazioni, visita il nostro <ph name="BEGIN_LINK" />Centro assi
 <translation id="3108145564672865299">Blocco dell'orientamento dello schermo</translation>
 <translation id="3108967419958202225">Scegli...</translation>
 <translation id="3112378005171663295">Comprimi</translation>
-<translation id="3113551216836192921">Il file allegato è caricato sui server Google per il debug.</translation>
 <translation id="3115147772012638511">In attesa di elaborazione cache...</translation>
 <translation id="3116361045094675131">Tastiera britannica</translation>
 <translation id="3117812041123364382">Attiva/Disattiva la tastiera virtuale mobile.</translation>
@@ -1889,7 +1888,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3512284449647229026">Le pagine che non vengono caricate quando il browser è offline vengono ricaricate automaticamente soltanto se la relativa scheda è visibile.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annulla download}other{Annulla download}}</translation>
 <translation id="3512810056947640266">URL (facoltativo):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> vorrebbe condividere i contenuti del tuo schermo. Scegli i contenuti che desideri condividere.</translation>
 <translation id="3518086201899641494">Notifiche relative a captive portal</translation>
 <translation id="3519867315646775981">Traslitterazione (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Consente agli utenti di attivare la raccolta di catene di certificati TLS/SSL non validi.</translation>
@@ -2005,7 +2003,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3654045516529121250">Lettura delle impostazioni di accessibilità</translation>
 <translation id="3654092442379740616">Errore di sincronizzazione. <ph name="PRODUCT_NAME" /> è obsoleto e deve essere aggiornato.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ha accesso permanente a un file.}other{Ha accesso permanente a # file.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> vorrebbe condividere i contenuti del tuo schermo con <ph name="TARGET_NAME" />. Scegli i contenuti che desideri condividere.</translation>
 <translation id="3657468915905674858">Attiva blocco Win32k PPAPI.</translation>
 <translation id="3660234220361471169">Non attendibile</translation>
 <translation id="3665589677786828986">Chrome ha rilevato che alcune impostazioni sono state danneggiate da un altro programma e le ha ripristinate con i valori originali predefiniti.</translation>
@@ -2562,7 +2559,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4462159676511157176">Assegna nomi personalizzati a server</translation>
 <translation id="4465830120256509958">Tastiera brasiliana</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
-<translation id="4467798014533545464">Mostra URL</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4611,6 +4607,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7393449708074241536">Verranno eliminati definitivamente <ph name="TOTAL_COUNT" /> elementi da questo dispositivo.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> si attiverà all'avvio del sistema e continuerà a funzionare in background anche dopo la chiusura di tutte le altre finestre di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Consenti ai siti di utilizzare la generazione di chiavi nei moduli.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Attendi che venga riavviato il Chromebox...</translation>
 <translation id="7401543881546089382">Elimina collegamento</translation>
 <translation id="7403358905955888520">Consente di disattivare le norme relative ai dispositivi per il rilevamento automatico del fuso orario del sistema.</translation>
@@ -4984,7 +4981,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7928710562641958568">Espelli dispositivo</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> condivide l'audio e il tuo schermo.</translation>
 <translation id="7938594894617528435">Attualmente offline</translation>
-<translation id="7939374455203157513">Attiva servizi cloud</translation>
 <translation id="7939412583708276221">Mantieni comunque</translation>
 <translation id="7939997691108949385">Il gestore potrà configurare limitazioni e impostazioni per questo utente supervisionato all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak USA</translation>

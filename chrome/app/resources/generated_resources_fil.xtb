@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Mode ng demo</translation>
 <translation id="1481244281142949601">Na-sandbox ka nang husto.</translation>
 <translation id="1482124012545051544">Handa nang mag-back up ng <ph name="FILE_COUNT" /> (na) bagong larawan</translation>
+<translation id="1483493594462132177">Ipadala</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1485015260175968628">Maaari na itong:</translation>
 <translation id="1486096554574027028">Maghanap ng mga password</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">I-rotate &amp;pakanan</translation>
 <translation id="1852799913675865625">Nagkaroon ng error habang sinusubukang basahin ang file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Magdagdag ng lokasyon...</translation>
-<translation id="1857166538520940818">Mag-attach ng file:</translation>
 <translation id="1858585891038687145">Pagkatiwalaan ang certificate na ito para sa pagtukoy sa mga gumawa ng software</translation>
 <translation id="1859234291848436338">Pagsulat ng Direksyon</translation>
 <translation id="1864111464094315414">Mag-login</translation>
@@ -1579,7 +1579,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3108145564672865299">Pagla-lock ng Oryentasyon ng Screen</translation>
 <translation id="3108967419958202225">Pumili...</translation>
 <translation id="3112378005171663295">Tiklupin</translation>
-<translation id="3113551216836192921">Na-upload na ang naka-attach na file sa mga server ng Google para sa pagde-debug.</translation>
 <translation id="3115147772012638511">Naghihintay para sa cache...</translation>
 <translation id="3116361045094675131">UK keyboard</translation>
 <translation id="3117812041123364382">I-enable/I-disable ang lumulutang na virtual na keyboard.</translation>
@@ -1894,7 +1893,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Ang mga page na hindi maglo-load habang offline ang browser ay awtomatiko lang na ire-reload kung nakikita ang tab ng mga ito.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Kanselahin ang Pag-download}one{Kanselahin ang Mga Pag-download}other{Kanselahin ang Mga Pag-download}}</translation>
 <translation id="3512810056947640266">URL (opsyonal):</translation>
-<translation id="3517839692979918726">Gustong ibahagi ng <ph name="APP_NAME" /> ang mga content ng iyong screen. Piliin ang gusto mong ibahagi.</translation>
 <translation id="3518086201899641494">Mga notification tungkol sa mga captive portal</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Pahintulutan ang mga user na mag-opt in sa collection ng mga hindi wastong chain ng certificate ng TLS/SSL.</translation>
@@ -2010,7 +2008,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Basahin ang iyong mga setting ng pagiging naa-access</translation>
 <translation id="3654092442379740616">Error sa Pag-sync:  Ang <ph name="PRODUCT_NAME" /> ay hindi na napapanahon at kinakailangang ma-update.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{May permanenteng access ito sa isang file.}one{May permanenteng access ito sa # file.}other{May permanenteng access ito sa # na file.}}</translation>
-<translation id="3656059567098593256">Gustong ibahagi ng <ph name="APP_NAME" /> ang content ng iyong screen sa <ph name="TARGET_NAME" />. Piliin ang gusto mong ibahagi.</translation>
 <translation id="3657468915905674858">I-enable ang Lockdown ng Win32k ng PPAPI.</translation>
 <translation id="3660234220361471169">Hindi pinagkakatiwalaan</translation>
 <translation id="3665589677786828986">Natunton ng Chrome na ilan sa iyong mga setting ay nasira ng isa pang program at ni-reset ang mga ito sa kanilang mga orihinal na default.</translation>
@@ -2568,7 +2565,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4462159676511157176">Custom na mga server ng pangalan</translation>
 <translation id="4465830120256509958">Brazilian na keyboard</translation>
 <translation id="4467100756425880649">Gallery ng Chrome Web Store</translation>
-<translation id="4467798014533545464">Ipakita ang URL</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">I-bookmark ang lahat ng tab...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4631,6 +4627,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="7393449708074241536">Permanente itong magde-delete ng <ph name="TOTAL_COUNT" /> (na) item sa device na ito.</translation>
 <translation id="7396845648024431313">Ilulunsad ang <ph name="APP_NAME" /> sa system startup at patuloy na paganahin sa background kahit na sa sandaling maisara mo ang lahat ng ibang mga window ng <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Payagan ang lahat ng site na gumamit ng pagbuo ng key sa mga form.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Mangyaring maghintay habang nagre-restart ang iyong Chromebox...</translation>
 <translation id="7401543881546089382">Tanggalin ang shortcut</translation>
 <translation id="7403358905955888520">I-disable ang patakaran sa device ng awtomatikong pag-detect ng timezone ng system.</translation>
@@ -5006,7 +5003,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="7928710562641958568">I-eject ang device</translation>
 <translation id="79312157130859720">Ibinabahagi ng <ph name="APP_NAME" /> ang iyong screen at audio.</translation>
 <translation id="7938594894617528435">Kasalukuyang offline</translation>
-<translation id="7939374455203157513">I-enable ang Mga Serbisyo sa Cloud</translation>
 <translation id="7939412583708276221">Panatilihin pa rin</translation>
 <translation id="7939997691108949385">Mako-configure ng manager ang mga paghihigpit at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">US Colemak</translation>

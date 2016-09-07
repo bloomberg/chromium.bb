@@ -289,6 +289,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4532845899244822526">Izbira mape</translation>
 <translation id="4543661749405994812">Kopiraj e-poštni naslov</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
+<translation id="4576023202210315647">Ohrani zavihek v Chromu</translation>
 <translation id="4581964774250883625">Zdaj se vaše brskanje ne shranjuje v zgodovino.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Pred # minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
 <translation id="4605958867780575332">Odstranjen element: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
 <translation id="6868088497967843822">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d odprt zavihek}one{%1$d odprt zavihek}two{%1$d odprta zavihka}few{%1$d odprti zavihki}other{%1$d odprtih zavihkov}}</translation>
-<translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
@@ -600,7 +600,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8137558756159375272">»Dotaknite se za iskanje« pošlje izbrano besedo in trenutno strank kot kontekst Iskanju Google. To lahko izklopite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Vsebina</translation>
 <translation id="8173098127580644436">od začetka</translation>
-<translation id="8187025609458112874">Izbrisanih datotek ni mogoče deliti z drugimi</translation>
 <translation id="8190358571722158785">Še 1 dan</translation>
 <translation id="8200772114523450471">Nadaljuj</translation>
 <translation id="8202097416529803614">Povzetek naročila</translation>

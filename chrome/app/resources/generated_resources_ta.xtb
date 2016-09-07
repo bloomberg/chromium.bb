@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">டெமோ பயன்முறை</translation>
 <translation id="1481244281142949601">நீங்கள் போதுமான அளவிற்கு சாண்ட்பாக்ஸ் செய்துவிட்டீர்கள்.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> புதிய படங்கள், காப்புப் பிரதி எடுக்கத் தயாராக உள்ளன</translation>
+<translation id="1483493594462132177">அனுப்பு</translation>
 <translation id="148466539719134488">சுவிஸ்</translation>
 <translation id="1485015260175968628">இப்போது பயன்பாடு அணுகக்கூடியவை:</translation>
 <translation id="1486096554574027028">கடவுச்சொற்களைத் தேடு</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">&amp;வலஞ்சுழியாகச் சுற்று</translation>
 <translation id="1852799913675865625">கோப்பு  <ph name="ERROR_TEXT" /> ஐப் படிக்க முயற்சிக்கும்போது பிழை ஏற்பட்டது.</translation>
 <translation id="1856715684130786728">இடத்தைச் சேர்...</translation>
-<translation id="1857166538520940818">கோப்பை இணை:</translation>
 <translation id="1858585891038687145">மென்பொருள் தயாரிப்பாளர்களை அடையாளங்காண, இந்தச் சான்றிதழை நம்பு</translation>
 <translation id="1859234291848436338">எழுதும் திசை</translation>
 <translation id="1864111464094315414">உள்நுழைவு</translation>
@@ -1036,7 +1036,7 @@
 <translation id="2422426094670600218">&lt;பெயரிடப்படாதது&gt;</translation>
 <translation id="2423578206845792524">படத்தை இவ்வாறு சே&amp;மி...</translation>
 <translation id="2424091190911472304">எப்போதும் <ph name="ORIGIN" /> இல் இயக்கு</translation>
-<translation id="2425040750078864123">Android WebAPK இல் PWAக்களைத் தொகுப்பாக்குவதை இயக்கும். பயன்பாட்டை உருவாக்க, chrome சேவையகத்திற்குத் தரவை அனுப்ப வேண்டும்.</translation>
+<translation id="2425040750078864123">PWAக்களை Android WebAPK ஆகத் தொகுப்பாக்குவதை இயக்கும். பயன்பாட்டை உருவாக்க, Chrome சேவையகத்திற்குத் தரவை அனுப்ப வேண்டும்.</translation>
 <translation id="2425632738803359658">மெட்டீரியல் வடிவப் பயனர் மெனுவைப் பயன்படுத்து</translation>
 <translation id="2425665904502185219">மொத்தக் கோப்பின் அளவு</translation>
 <translation id="2431394478374894294">விர்ச்சுவல் விசைப்பலகையில் குரல் உள்ளீட்டை இயக்கும்.</translation>
@@ -1078,7 +1078,7 @@
 <translation id="2479780645312551899">இந்த முறை எல்லா செருகுநிரல்களையும் இயக்கு</translation>
 <translation id="2481332092278989943">ஷெல்ஃபில் சேர்</translation>
 <translation id="2482081114970574549">இணையக்காட்சி சார்ந்த செயலுக்குப் பதில் iframe-சார்ந்த உள்நுழைவுச் செயலைப் பயன்படுத்தும்.</translation>
-<translation id="2482878487686419369">அறிவிக்கைகள்</translation>
+<translation id="2482878487686419369">அறிவிப்புகள்</translation>
 <translation id="2485056306054380289">சேவையக CA சான்றிதழ்:</translation>
 <translation id="2489316678672211764">செருகுநிரல் <ph name="PLUGIN_NAME" /> பதிலளிக்கவில்லை.</translation>
 <translation id="2489428929217601177">கடந்த நாள்</translation>
@@ -1578,7 +1578,6 @@
 <translation id="3108145564672865299">திரை திசையமைப்புப் பூட்டுதல்</translation>
 <translation id="3108967419958202225">தேர்வுசெய்க...</translation>
 <translation id="3112378005171663295">சுருக்கு</translation>
-<translation id="3113551216836192921">இணைக்கப்பட்ட கோப்பானது பிழைத்திருத்தத்திற்காக Google சேவையகங்களில் பதிவேற்றப்பட்டது.</translation>
 <translation id="3115147772012638511">தேக்ககத்திற்காக காத்திருக்கிறது...</translation>
 <translation id="3116361045094675131">யுகே விசைப்பலகை</translation>
 <translation id="3117812041123364382">மிதக்கும் விர்ச்சுவல் விசைப்பலகையை இயக்கும்/முடக்கும்.</translation>
@@ -1892,7 +1891,6 @@
 <translation id="3512284449647229026">உலாவி ஆஃப்லைனில் இருக்கும்போது ஏற்ற முடியாமல் இருந்த பக்கங்கள், அவற்றின் தாவல் தெரிவுநிலையில் இருந்தால் மட்டுமே தானாக மீண்டும் ஏற்றப்படும்.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{பதிவிறக்கத்தை ரத்துசெய்}other{பதிவிறக்கங்களை ரத்துசெய்}}</translation>
 <translation id="3512810056947640266">URL (விரும்பினால்):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> உங்கள் திரையின் உள்ளடக்கங்களைப் பகிர விரும்புகிறது. என்ன பகிர விரும்புகிறீர்கள் என்பதைத் தேர்வுசெய்யவும்.</translation>
 <translation id="3518086201899641494">கேப்டிவ் போர்ட்டல்கள் குறித்த அறிவிப்புகள்</translation>
 <translation id="3519867315646775981">ஒலிபெயர்ப்பு (shalom ← שלום)</translation>
 <translation id="3522159121915794564">தவறான TLS/SSL சான்றிதழ் தொடர்களின் தொகுப்பில் சேர்வதற்கு பயனர்களை அனுமதிக்கும்.</translation>
@@ -2008,7 +2006,6 @@
 <translation id="3654045516529121250">உங்கள் அணுகல்தன்மை அமைப்புகளைப் படித்தல்</translation>
 <translation id="3654092442379740616">ஒத்திசைவுப் பிழை:  <ph name="PRODUCT_NAME" /> காலாவதியானதால், அதைப் புதுப்பிக்க வேண்டும்.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ஒரு கோப்பிற்கு நிரந்தர அணுகலைக் கொண்டுள்ளது.}other{# கோப்புகளுக்கு நிரந்தர அணுகலைக் கொண்டுள்ளது.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> உங்கள் திரையின் உள்ளடக்கத்தை <ph name="TARGET_NAME" /> உடன் பகிர விரும்புகிறது. என்ன பகிர விரும்புகிறீர்கள் என்பதைத் தேர்வுசெய்யவும்.</translation>
 <translation id="3657468915905674858">PPAPI Win32k பூட்டை இயக்கு.</translation>
 <translation id="3660234220361471169">நம்பகமில்லாதது</translation>
 <translation id="3665589677786828986">மற்றொரு நிரலால் உங்கள் அமைப்புகளில் சில சிதைந்துள்ளதை Chrome கண்டறிந்ததுடன், அவற்றை அசல் இயல்புநிலைகளுக்கு மீட்டமைக்கிறது.</translation>
@@ -2566,7 +2563,6 @@
 <translation id="4462159676511157176">தனிப்பயன் பெயர் சேவையகங்கள்</translation>
 <translation id="4465830120256509958">பிரேசிலியன் விசைப்பலகை</translation>
 <translation id="4467100756425880649">Chrome இணைய அங்காடி கேலரி</translation>
-<translation id="4467798014533545464">URL ஐக் காட்டு</translation>
 <translation id="4470564870223067757">ஹாங்குல் 2 செட்</translation>
 <translation id="4474155171896946103">அனைத்து தாவல்களையும் புக்மார்க்கிடுக...</translation>
 <translation id="4476590490540813026">தடகள வீராங்கனை</translation>
@@ -4615,6 +4611,7 @@
 <translation id="7393449708074241536">இது, இந்தச் சாதனத்திலிருந்து <ph name="TOTAL_COUNT" /> உருப்படிகளை நிரந்தரமாக நீக்கும்.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> ஆனது முறைமை தொடக்கத்தின்போதே தொடங்கப்படும், மேலும் நீங்கள் பிற <ph name="PRODUCT_NAME" /> சாளரங்களை மூடி விட்டாலும் கூட பின்னணியில் தொடர்ந்து இயங்கும்.</translation>
 <translation id="7396863776022882342">படிவங்களில் விசை உருவாக்கத்தைப் பயன்படுத்த எல்லா தளங்களையும் அனுமதி.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Chromebox மறு துவக்குகிறது, சிறிது நேரம் காத்திருக்கவும்...</translation>
 <translation id="7401543881546089382">குறுக்குவழியை அகற்றவும்</translation>
 <translation id="7403358905955888520">system timezone automatic detection சாதனக் கொள்கையை முடக்கு.</translation>
@@ -4988,7 +4985,6 @@
 <translation id="7928710562641958568">சாதனத்தை வெளித்தள்ளு</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> உங்கள் திரையையும் ஆடியோவையும் பகிர்கிறது.</translation>
 <translation id="7938594894617528435">தற்போது ஆஃப்லைனில் உள்ளது</translation>
-<translation id="7939374455203157513">மேகக்கணிச் சேவைகளை இயக்கு</translation>
 <translation id="7939412583708276221">எப்படியும் வைத்திரு</translation>
 <translation id="7939997691108949385">இந்தக் கண்காணிக்கப்படும் பயனருக்கான கட்டுப்பாடுகள் மற்றும் அமைப்புகளை நிர்வாகியால் <ph name="MANAGEMENT_URL" /> இல் உள்ளமைக்க முடியும்.</translation>
 <translation id="7943385054491506837">யு.எஸ். கோல்மேக்</translation>
@@ -5430,7 +5426,7 @@
 <translation id="8559748832541950395">நீங்கள் விரும்பும் போது இந்த அமைப்பை மாற்றலாம் அல்லது <ph name="BEGIN_LINK" />உங்கள் தனிப்பட்ட தரவை நிர்வகிக்கலாம்<ph name="END_LINK" />. குரல் மற்றும் ஆடியோ செயல்பாடு இயக்கப்பட்டிருக்கும் போது, இந்தத் தரவு, உங்களின் எந்த உள்நுழைந்துள்ள சாதனங்களில் இருந்தும் சேமிக்கப்படலாம் என்பதை நினைவில் கொள்ளவும்.</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8562413501751825163">இறக்குமதி செய்யும் முன்பு Firefox ஐ மூடுக</translation>
-<translation id="8562442412584451930">திரையைப் பூட்டை நிர்வகி</translation>
+<translation id="8562442412584451930">திரைப் பூட்டை நிர்வகி</translation>
 <translation id="8564827370391515078">128</translation>
 <translation id="8565650234829130278">பயன்பாட்டைத் தரமிறக்க முயற்சித்துள்ளீர்கள்.</translation>
 <translation id="8569682776816196752">எந்த இலக்குகளும் கண்டறியப்படவில்லை</translation>

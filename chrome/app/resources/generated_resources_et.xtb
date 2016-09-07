@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demorežiim</translation>
 <translation id="1481244281142949601">Teie liivakast on piisav.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> uue foto varundamiseks valmis</translation>
+<translation id="1483493594462132177">Saada</translation>
 <translation id="148466539719134488">Šveitsi</translation>
 <translation id="1485015260175968628">See võib nüüd:</translation>
 <translation id="1486096554574027028">Otsi paroole</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Pööra &amp;päripäeva</translation>
 <translation id="1852799913675865625">Ilmnes viga, kui proovisite lugeda faili: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">Lisa asukoht ...</translation>
-<translation id="1857166538520940818">Faili manustamine:</translation>
 <translation id="1858585891038687145">Usalda seda sertifikaati tarkvaraloojate tuvastamiseks</translation>
 <translation id="1859234291848436338">Writing Direction (Kirjutamise suund)</translation>
 <translation id="1864111464094315414">Sisselogimine</translation>
@@ -1578,7 +1578,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3108145564672865299">Ekraanisuuna lukustamine</translation>
 <translation id="3108967419958202225">Valige ...</translation>
 <translation id="3112378005171663295">Ahenda</translation>
-<translation id="3113551216836192921">Manustatud fail laaditakse silumiseks üles Google'i serveritesse.</translation>
 <translation id="3115147772012638511">Puhvri ootel...</translation>
 <translation id="3116361045094675131">Ühendkuningriigi klaviatuur</translation>
 <translation id="3117812041123364382">Hõljuva virtuaalse klaviatuuri lubamine/keelamine.</translation>
@@ -1893,7 +1892,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Lehed, mida ei õnnestu laadida siis, kui brauseril puudub võrguühendus, laaditakse automaatselt uuesti ainult siis, kui vaheleht on nähtav.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Tühista allalaadimine}other{Tühista allalaadimised}}</translation>
 <translation id="3512810056947640266">URL (valikuline):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> soovib jagada teie ekraani sisu. Valige, mida soovite jagada.</translation>
 <translation id="3518086201899641494">Märguanded kontrollportaali kohta</translation>
 <translation id="3519867315646775981">Transliteratsioon (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Võimaldab kasutajatel lubada sobimatute TLS-/SSL-i sertifikaadiahelate kogumist.</translation>
@@ -2009,7 +2007,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Juurdepääsetavuse seadete lugemine</translation>
 <translation id="3654092442379740616">Sünkroonimisviga: <ph name="PRODUCT_NAME" /> on aegunud ja vajab värskendamist.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Sellel on püsiv juurdepääs ühele failile.}other{Sellel on püsiv juurdepääs # failile.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> soovib jagada teie ekraani sisu aadressiga <ph name="TARGET_NAME" />. Valige, mida soovite jagada.</translation>
 <translation id="3657468915905674858">PPAPI Win32k lukustamise lubamine.</translation>
 <translation id="3660234220361471169">Mitteusaldusväärne</translation>
 <translation id="3665589677786828986">Chrome tuvastas, et teine programm rikkus teie seadeid, ja lähtestas need algsetele vaikevalikutele.</translation>
@@ -2565,7 +2562,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4462159676511157176">Kohandatud nimeserverid</translation>
 <translation id="4465830120256509958">Brasiilia klaviatuur</translation>
 <translation id="4467100756425880649">Chrome'i veebipoe galerii</translation>
-<translation id="4467798014533545464">URL-i kuvamine</translation>
 <translation id="4470564870223067757">Hanguli 2. seade</translation>
 <translation id="4474155171896946103">Lisa kõik vahelehed järjehoidjatesse...</translation>
 <translation id="4476590490540813026">Sportlane</translation>
@@ -4626,6 +4622,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="7393449708074241536">See kustutab sellest seadmest jäädavalt <ph name="TOTAL_COUNT" /> üksust.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> käivitub süsteemi käivitamisel ja jätkab tööd taustal ka siis, kui sulgete kõik muud rakenduse <ph name="PRODUCT_NAME" /> aknad.</translation>
 <translation id="7396863776022882342">Luba kõikidel saitidel vormidel võtme loomist kasutada.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Oodake, kuni Chromebox taaskäivitub ...</translation>
 <translation id="7401543881546089382">Otsetee kustutamine</translation>
 <translation id="7403358905955888520">Luba süsteemi ajavööndi automaatse tuvastamise seadmereeglid.</translation>
@@ -5001,7 +4998,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="7928710562641958568">Seadme väljutamine</translation>
 <translation id="79312157130859720">Rakendus <ph name="APP_NAME" /> jagab teie ekraani ja heli.</translation>
 <translation id="7938594894617528435">Praegu võrguühenduseta</translation>
-<translation id="7939374455203157513">Luba pilveteenused</translation>
 <translation id="7939412583708276221">Säilita ikkagi</translation>
 <translation id="7939997691108949385">Haldur saab valvatava kasutaja piiranguid ja seadeid seadistada aadressil <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">USA Colemak</translation>

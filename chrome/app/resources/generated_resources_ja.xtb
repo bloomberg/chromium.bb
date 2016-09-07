@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">デモ モード</translation>
 <translation id="1481244281142949601">適切なサンドボックスを使用しています。</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> 枚の新しい写真をバックアップする準備ができました</translation>
+<translation id="1483493594462132177">送信</translation>
 <translation id="148466539719134488">スイス語</translation>
 <translation id="1485015260175968628">次の権限に現在アクセス可能:</translation>
 <translation id="1486096554574027028">パスワードを検索</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">時計回りに回転(&amp;C)</translation>
 <translation id="1852799913675865625">ファイルの読み込み中にエラーが発生しました: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">位置情報を追加...</translation>
-<translation id="1857166538520940818">添付ファイル:</translation>
 <translation id="1858585891038687145">ソフトウェア作成元の識別でこの証明書を信頼します</translation>
 <translation id="1859234291848436338">文章の方向</translation>
 <translation id="1864111464094315414">ログイン</translation>
@@ -1578,7 +1578,6 @@
 <translation id="3108145564672865299">画面の向きのロック</translation>
 <translation id="3108967419958202225">選択...</translation>
 <translation id="3112378005171663295">折りたたむ</translation>
-<translation id="3113551216836192921">添付ファイルはデバッグ用に Google サーバーにアップロードされます。</translation>
 <translation id="3115147772012638511">キャッシュを待機しています...</translation>
 <translation id="3116361045094675131">英語（英国）のキーボード</translation>
 <translation id="3117812041123364382">フローティング仮想キーボードを有効または無効にします。</translation>
@@ -1893,7 +1892,6 @@
 <translation id="3512284449647229026">ブラウザがオフラインのときに読み込めなかったページは、タブが表示されている場合のみ自動再読み込みします。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ダウンロードをキャンセル}other{ダウンロードをキャンセル}}</translation>
 <translation id="3512810056947640266">URL（省略可）:</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> が画面コンテンツの共有をリクエストしています。共有する部分を選択してください。</translation>
 <translation id="3518086201899641494">キャプティブ ポータルに関する通知</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522159121915794564">無効な TLS / SSL 証明書チェーンの収集を有効にすることをユーザーに許可します。</translation>
@@ -2009,7 +2007,6 @@
 <translation id="3654045516529121250">ユーザー補助設定の読み取り</translation>
 <translation id="3654092442379740616">同期エラー: <ph name="PRODUCT_NAME" /> が最新ではないため、更新する必要があります。</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{1 個のファイルに永続的にアクセスできます。}other{# 個のファイルに永続的にアクセスできます。}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> が <ph name="TARGET_NAME" /> との画面コンテンツの共有をリクエストしています。共有する部分を選択してください。</translation>
 <translation id="3657468915905674858">PPAPI Win32k のロックダウンを有効にする</translation>
 <translation id="3660234220361471169">信頼されていない</translation>
 <translation id="3665589677786828986">設定の一部が別のプログラムによって変更されていたため、元のデフォルト設定に戻しました。</translation>
@@ -2566,7 +2563,6 @@
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4465830120256509958">ポルトガル語（ブラジル）のキーボード</translation>
 <translation id="4467100756425880649">Chrome ウェブストア ギャラリー</translation>
-<translation id="4467798014533545464">URL を表示</translation>
 <translation id="4470564870223067757">ハングル（2 ボル式）</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
 <translation id="4476590490540813026">競技選手</translation>
@@ -4628,6 +4624,7 @@
 <translation id="7393449708074241536">このデバイスから <ph name="TOTAL_COUNT" /> 件の項目が完全に削除されます。</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME" /> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
 <translation id="7396863776022882342">すべてのサイトに対してフォームでのキー生成の使用を許可する</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Chromebox を再起動しています。しばらくお待ちください...</translation>
 <translation id="7401543881546089382">ショートカットを削除</translation>
 <translation id="7403358905955888520">システムによるタイムゾーン自動検出の端末ポリシーを無効にします。</translation>
@@ -5003,7 +5000,6 @@
 <translation id="7928710562641958568">デバイスの取り出し</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> が画面と音声を共有しています。</translation>
 <translation id="7938594894617528435">現在オフライン</translation>
-<translation id="7939374455203157513">クラウド サービスを有効にする</translation>
 <translation id="7939412583708276221">続行する</translation>
 <translation id="7939997691108949385">管理者は、この監視対象ユーザーの制限と設定を <ph name="MANAGEMENT_URL" /> で指定できます。</translation>
 <translation id="7943385054491506837">US Colemak 配列</translation>

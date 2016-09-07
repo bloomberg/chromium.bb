@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">בחר תיקייה</translation>
 <translation id="4543661749405994812">העתק כתובת אימייל</translation>
 <translation id="4572422548854449519">כניסה אל חשבון מנוהל</translation>
+<translation id="4576023202210315647">‏שמור את הכרטיסייה ב-Chrome</translation>
 <translation id="4581964774250883625">עברת למצב גלישה בסתר</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{לפני דקה}two{לפני # דקות}many{לפני # דקות}other{לפני # דקות}}</translation>
 <translation id="4605958867780575332">פריטים שהוסרו: <ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת}two{שתי כרטיסיות פתוחות}many{‏%1$d כרטיסיות פתוחות}other{‏%1$d כרטיסיות פתוחות}}</translation>
-<translation id="6910211073230771657">נמחק</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6965382102122355670">אישור</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="8173098127580644436">משחר ההיסטוריה</translation>
-<translation id="8187025609458112874">לא ניתן לשתף קבצים שנמחקו</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8202097416529803614">סיכום הזמנה</translation>

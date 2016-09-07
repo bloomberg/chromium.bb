@@ -289,6 +289,7 @@
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4572422548854449519">请登录受管理的帐户</translation>
+<translation id="4576023202210315647">将标签页保存在 Chrome 中</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4605958867780575332">以下项已移除：<ph name="ITEM_TITLE" /></translation>
@@ -493,7 +494,6 @@
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
-<translation id="6910211073230771657">已删除</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -600,7 +600,6 @@
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8173098127580644436">自始至今</translation>
-<translation id="8187025609458112874">无法共享已删除的文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8202097416529803614">订单摘要</translation>

@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">示範模式</translation>
 <translation id="1481244281142949601">您具備充分的沙箱防護。</translation>
 <translation id="1482124012545051544">可立即備份 <ph name="FILE_COUNT" /> 張新相片</translation>
+<translation id="1483493594462132177">傳送</translation>
 <translation id="148466539719134488">瑞士文</translation>
 <translation id="1485015260175968628">新的可用權限：</translation>
 <translation id="1486096554574027028">搜尋密碼</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">順時針旋轉(&amp;C)</translation>
 <translation id="1852799913675865625">嘗試讀取檔案時發生錯誤：<ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">新增位置...</translation>
-<translation id="1857166538520940818">附加檔案：</translation>
 <translation id="1858585891038687145">信任這個用於識別軟體製造商的憑證</translation>
 <translation id="1859234291848436338">文字方向</translation>
 <translation id="1864111464094315414">登入</translation>
@@ -1577,7 +1577,6 @@
 <translation id="3108145564672865299">螢幕方向鎖定功能</translation>
 <translation id="3108967419958202225">選擇...</translation>
 <translation id="3112378005171663295">收合</translation>
-<translation id="3113551216836192921">附加檔案會上傳到 Google 伺服器進行偵錯。</translation>
 <translation id="3115147772012638511">等候快取...</translation>
 <translation id="3116361045094675131">英式鍵盤</translation>
 <translation id="3117812041123364382">啟用/停用浮動虛擬鍵盤。</translation>
@@ -1892,7 +1891,6 @@
 <translation id="3512284449647229026">如果網頁在瀏覽器離線時載入失敗，系統只會在分頁顯示情況下自動重新載入網頁。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{取消一項下載作業}other{取消多項下載作業}}</translation>
 <translation id="3512810056947640266">網址 (選填)：</translation>
-<translation id="3517839692979918726">「<ph name="APP_NAME" />」要求分享您的螢幕內容，請選擇您要分享的內容類型。</translation>
 <translation id="3518086201899641494">認證網頁通知</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
 <translation id="3522159121915794564">允許使用者選擇採用無效 TLS/SSL 憑證鏈集合。</translation>
@@ -2008,7 +2006,6 @@
 <translation id="3654045516529121250">讀取您的協助工具設定</translation>
 <translation id="3654092442379740616">同步功能發生錯誤：<ph name="PRODUCT_NAME" /> 版本過舊，必須更新。</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{應用程式可永久存取 1 個檔案。}other{應用程式可永久存取 # 個檔案。}}</translation>
-<translation id="3656059567098593256">「<ph name="APP_NAME" />」要求與 <ph name="TARGET_NAME" /> 分享您的螢幕內容，請選擇您要分享的內容類型。</translation>
 <translation id="3657468915905674858">啟用 PPAPI Win32k 鎖定。</translation>
 <translation id="3660234220361471169">不受信任</translation>
 <translation id="3665589677786828986">Chrome 偵測到另一個程式竄改了部分瀏覽器設定，現已將這些設定重設為原始預設值。</translation>
@@ -2564,7 +2561,6 @@
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4465830120256509958">巴西文鍵盤</translation>
 <translation id="4467100756425880649">Chrome 線上應用程式商店擴充功能庫</translation>
-<translation id="4467798014533545464">顯示網址</translation>
 <translation id="4470564870223067757">韓文 2 Set</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
 <translation id="4476590490540813026">運動員</translation>
@@ -4616,6 +4612,7 @@
 <translation id="7393449708074241536">這會將 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 會隨著系統一併啟動，即使在所有 <ph name="PRODUCT_NAME" /> 視窗都關閉後仍會在背景繼續執行。</translation>
 <translation id="7396863776022882342">允許所有網站在表單中使用金鑰產生功能。</translation>
+<translation id="7400418766976504921">網址</translation>
 <translation id="740083207982962331">Chromebox 正在重新啟動，請稍候...</translation>
 <translation id="7401543881546089382">刪除捷徑</translation>
 <translation id="7403358905955888520">停用系統時區自動偵測裝置政策。</translation>
@@ -4990,7 +4987,6 @@
 <translation id="7928710562641958568">退出裝置</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共用您的畫面和音訊。</translation>
 <translation id="7938594894617528435">目前離線</translation>
-<translation id="7939374455203157513">啟用雲端服務</translation>
 <translation id="7939412583708276221">保留</translation>
 <translation id="7939997691108949385">管理員可以前往 <ph name="MANAGEMENT_URL" /> 修改這位受監管使用者的限制和設定。</translation>
 <translation id="7943385054491506837">Colemak 美式配置</translation>

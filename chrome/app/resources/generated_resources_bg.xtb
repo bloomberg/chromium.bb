@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Демонстрационен режим</translation>
 <translation id="1481244281142949601">Вие сте в подходяща тестова среда.</translation>
 <translation id="1482124012545051544">Готовност за създаване на резервни копия на <ph name="FILE_COUNT" /> нови снимки</translation>
+<translation id="1483493594462132177">Изпращане</translation>
 <translation id="148466539719134488">Швейцарска клавиатура</translation>
 <translation id="1485015260175968628">То вече има възможност за:</translation>
 <translation id="1486096554574027028">Търсене в паролите</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">Завъртане &amp;по часовниковата стрелка</translation>
 <translation id="1852799913675865625">Възникна грешка при опита за четене от файла: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Добавяне на местоположение...</translation>
-<translation id="1857166538520940818">Прикачване на файл:</translation>
 <translation id="1858585891038687145">Да се има доверие на този сертификат за идентифициране на производители на софтуер</translation>
 <translation id="1859234291848436338">Посока на писане</translation>
 <translation id="1864111464094315414">Вход</translation>
@@ -1574,7 +1574,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3108145564672865299">Заключване на ориентацията на екрана</translation>
 <translation id="3108967419958202225">Изберете...</translation>
 <translation id="3112378005171663295">Свиване</translation>
-<translation id="3113551216836192921">Прикаченият файл е качен в сървърите на Google за отстраняване на грешки.</translation>
 <translation id="3115147772012638511">Кешът се изчаква...</translation>
 <translation id="3116361045094675131">Британска клавиатура</translation>
 <translation id="3117812041123364382">Активиране/деактивиране на плаващата виртуална клавиатура.</translation>
@@ -1889,7 +1888,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3512284449647229026">Страниците, които не се заредят успешно, докато браузърът е офлайн, ще се презареждат автоматично само ако разделите им са видими.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Анулиране на изтеглянето}other{Анулиране на изтеглянията}}</translation>
 <translation id="3512810056947640266">URL адрес (по избор):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви. Изберете какво да се сподели.</translation>
 <translation id="3518086201899641494">Известия за портали за удостоверяване</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Разрешава на потребителите да се включат в събирането на невалидни вериги от TLS/SSL сертификати.</translation>
@@ -2005,7 +2003,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3654045516529121250">Четене на настройките ви за достъпност</translation>
 <translation id="3654092442379740616">Грешка при синхронизирането:  <ph name="PRODUCT_NAME" /> е стара версия и трябва да се актуализира.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Има постоянен достъп до един файл.}other{Има постоянен достъп до # файла.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви с/ъс <ph name="TARGET_NAME" />. Изберете какво да се сподели.</translation>
 <translation id="3657468915905674858">Активиране на заключването на Win32k с поддръжка за приставки с PPAPI.</translation>
 <translation id="3660234220361471169">Ненадеждни</translation>
 <translation id="3665589677786828986">Chrome установи, че някои от настройките ви са повредени от друга програма, и възстанови първоначалните им стандартни стойности.</translation>
@@ -2562,7 +2559,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
 <translation id="4465830120256509958">Бразилска клавиатура</translation>
 <translation id="4467100756425880649">Галерия на уеб магазина на Chrome</translation>
-<translation id="4467798014533545464">Показване на URL адреса</translation>
 <translation id="4470564870223067757">Хангъл, 2 набора</translation>
 <translation id="4474155171896946103">Запазване на отметки към всички раздели…</translation>
 <translation id="4476590490540813026">Спортист</translation>
@@ -4622,6 +4618,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7393449708074241536"><ph name="TOTAL_COUNT" /> елемента ще се изтрият за постоянно от това устройство.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> ще се изпълнява при стартиране на системата и ще продължи да работи на заден план дори след като затворите всички други прозорци на <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Разрешаване на всички сайтове да използват функцията за генериране на ключове във формуляри.</translation>
+<translation id="7400418766976504921">URL адрес</translation>
 <translation id="740083207982962331">Моля, изчакайте, докато вашият Chromebox се рестартира...</translation>
 <translation id="7401543881546089382">Изтриване на прекия път</translation>
 <translation id="7403358905955888520">Деактивирайте правилото за устройства, засягащо системната функция за автоматично откриване на часовата зона.</translation>
@@ -4997,7 +4994,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7928710562641958568">Изваждане на устройството</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> споделя екрана и звука ви.</translation>
 <translation id="7938594894617528435">Понастоящем е офлайн</translation>
-<translation id="7939374455203157513">Активиране на услугите в облака</translation>
 <translation id="7939412583708276221">Запазване въпреки това</translation>
 <translation id="7939997691108949385">Мениджърът ще може да конфигурира ограничения и настройки за този контролиран потребител на адрес <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Американска (Коулмак) клавиатура</translation>

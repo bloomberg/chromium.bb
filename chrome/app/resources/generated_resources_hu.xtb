@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demó üzemmód</translation>
 <translation id="1481244281142949601">Az Ön sandbox-technológiája megfelelő.</translation>
 <translation id="1482124012545051544">A rendszer készen áll <ph name="FILE_COUNT" /> új fotó biztonsági mentésére</translation>
+<translation id="1483493594462132177">Küldés</translation>
 <translation id="148466539719134488">svájci</translation>
 <translation id="1485015260175968628">Most már megteheti a következőket:</translation>
 <translation id="1486096554574027028">Jelszavak keresése</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Forgatás &amp;jobbra</translation>
 <translation id="1852799913675865625">Hiba lépett fel a fájl olvasása közben: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Hely hozzáadása...</translation>
-<translation id="1857166538520940818">Fájl csatolása:</translation>
 <translation id="1858585891038687145">Bízzon meg ebben a tanúsítványban a szoftvergyártók azonosításakor</translation>
 <translation id="1859234291848436338">Írás iránya</translation>
 <translation id="1864111464094315414">Bejelentkezés</translation>
@@ -1578,7 +1578,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="3108145564672865299">Képernyő-elforgatás zárolása</translation>
 <translation id="3108967419958202225">Válasszon...</translation>
 <translation id="3112378005171663295">Listanézet</translation>
-<translation id="3113551216836192921">A mellékelt fájl a Google szervereire lesz feltöltve hibakeresés céljából.</translation>
 <translation id="3115147772012638511">Betöltés a gyorsítótárból folyamatban...</translation>
 <translation id="3116361045094675131">Brit billentyűzet</translation>
 <translation id="3117812041123364382">Lebegő virtuális billentyűzet be-/kikapcsolása</translation>
@@ -1893,7 +1892,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Azok az oldalak, amelyek nem tudnak betöltődni a böngésző offline állapotában, csak akkor töltődnek újra automatikusan, ha lapjuk látható.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Letöltés megszakítása}other{Letöltések megszakítása}}</translation>
 <translation id="3512810056947640266">URL (nem kötelező):</translation>
-<translation id="3517839692979918726">A(z) <ph name="APP_NAME" /> alkalmazás szeretné megosztani képernyőjének tartalmát. Válassza ki, hogy mit kíván megosztani.</translation>
 <translation id="3518086201899641494">Captive (előzetes hitelesítést igénylő) portálokkal kapcsolatos értesítések</translation>
 <translation id="3519867315646775981">Átírás (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Lehetővé teszi a felhasználók számára az érvénytelen TLS/SSL tanúsítványláncok gyűjtését.</translation>
@@ -2009,7 +2007,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">A kisegítő lehetőségek beállításainak áttekintése</translation>
 <translation id="3654092442379740616">Szinkronizálási hiba: A <ph name="PRODUCT_NAME" /> elavult, így frissítése szükséges.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Állandó hozzáférése van egy fájlhoz.}other{Állandó hozzáférése van # fájlhoz.}}</translation>
-<translation id="3656059567098593256">A(z) <ph name="APP_NAME" /> alkalmazás szeretné megosztani képernyője tartalmát a következővel: <ph name="TARGET_NAME" />. Válassza ki, hogy mit szeretne megosztani.</translation>
 <translation id="3657468915905674858">PPAPI Win32k-lezárás engedélyezése</translation>
 <translation id="3660234220361471169">Nem megbízható</translation>
 <translation id="3665589677786828986">A Chrome azt észlelte, hogy egy másik program miatt megsérült néhány beállítás, ezért visszaállítja őket az eredeti alapértelmezett értékekre.</translation>
@@ -2564,7 +2561,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4462159676511157176">Egyéni névszerverek</translation>
 <translation id="4465830120256509958">Brazil billentyűzet</translation>
 <translation id="4467100756425880649">Chrome Internetes áruház Galéria</translation>
-<translation id="4467798014533545464">URL megjelenítése</translation>
 <translation id="4470564870223067757">Hangul 2 készlet</translation>
 <translation id="4474155171896946103">Összes lap hozzáadása a könyvjelzőkhöz...</translation>
 <translation id="4476590490540813026">Atléta</translation>
@@ -4624,6 +4620,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7393449708074241536">Ezzel véglegesen töröl <ph name="TOTAL_COUNT" /> elemet erről az eszközről.</translation>
 <translation id="7396845648024431313">A(z) <ph name="APP_NAME" />  el fog indulni a rendszer indításakor, és akkor is tovább fut a háttérben, ha már bezárta az összes többi <ph name="PRODUCT_NAME" />-ablakot.</translation>
 <translation id="7396863776022882342">Kulcsgenerálás használatának engedélyezése az űrlapokban minden webhely esetében.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Kérjük, várjon, míg a Chromebox újraindul…</translation>
 <translation id="7401543881546089382">Billentyűkód törlése</translation>
 <translation id="7403358905955888520">A rendszeridőzóna automatikus érzékelésére vonatkozó eszközházirend kikapcsolása.</translation>
@@ -4999,7 +4996,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7928710562641958568">Eszköz kiadása</translation>
 <translation id="79312157130859720">A(z) <ph name="APP_NAME" /> megosztja a képernyőt és a hangot.</translation>
 <translation id="7938594894617528435">Jelenleg offline</translation>
-<translation id="7939374455203157513">Felhőszolgáltatások engedélyezése</translation>
 <translation id="7939412583708276221">Megtartás</translation>
 <translation id="7939997691108949385">A kezelő a következő címen konfigurálhatja az erre a felügyelt felhasználóra vonatkozó korlátozásokat és beállításokat: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">USA Colemak</translation>

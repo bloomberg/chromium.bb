@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">নমুনা মোড</translation>
 <translation id="1481244281142949601">আপনি পর্যাপ্তরূপে স্যান্ডবক্সভুক্ত হয়েছেন৷</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" />টি নতুন ফটোর ব্যাকআপ নিতে প্রস্তুত</translation>
+<translation id="1483493594462132177">পাঠান</translation>
 <translation id="148466539719134488">সুইস</translation>
 <translation id="1485015260175968628">এটি এখন করতে পারে:</translation>
 <translation id="1486096554574027028">পাসওয়ার্ড অনুসন্ধান করুন</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1852799913675865625"><ph name="ERROR_TEXT" /> ফাইলটি পড়ার চেষ্টা করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="1856715684130786728">অবস্থান যোগ করুন...</translation>
-<translation id="1857166538520940818">ফাইল সংযুক্ত করুন:</translation>
 <translation id="1858585891038687145">সফ্টওয়্যার প্রস্তুতকারকদের শনাক্তকরণের জন্য এই শংসাপত্রটিকে বিশ্বাস করুন</translation>
 <translation id="1859234291848436338">লিখন নির্দেশনা</translation>
 <translation id="1864111464094315414">লগইন</translation>
@@ -1036,7 +1036,7 @@
 <translation id="2422426094670600218">&lt;নামবিহীন&gt;</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="2424091190911472304">সর্বদা <ph name="ORIGIN" /> এ চালু রাখুন</translation>
-<translation id="2425040750078864123">PWAs কে একটি Android WebAPK এ প্যাকেজিং করা সক্ষম করে। অ্যাপ্লিকেশানটি সৃষ্টি করতে একটি chrome সার্ভারে ডেটা পাঠানোর প্রয়োজন হয়।</translation>
+<translation id="2425040750078864123">PWAs কে একটি Android WebAPK তে প্যাকেজিং করা সক্ষম করে। অ্যাপ্লিকেশানটি সৃষ্টি করতে একটি chrome সার্ভারে ডেটা পাঠানোর প্রয়োজন হয়।</translation>
 <translation id="2425632738803359658">মেটারিয়াল ডিজাইন ব্যবহারকারী মেনু ব্যবহার করুন</translation>
 <translation id="2425665904502185219">ফাইলের মোট আকার</translation>
 <translation id="2431394478374894294">ভার্চুয়াল কীবোর্ডে ভয়েস ইনপুট সক্ষম করে।</translation>
@@ -1577,7 +1577,6 @@
 <translation id="3108145564672865299">স্ক্রীন সজ্জা লক করা</translation>
 <translation id="3108967419958202225">বেছে নিন...</translation>
 <translation id="3112378005171663295">সঙ্কুচিত করুন</translation>
-<translation id="3113551216836192921">ডিবাগিং করার জন্য সংযুক্ত ফাইলটিকে Google সার্ভারগুলিতে আপলোড করা হয়েছে৷</translation>
 <translation id="3115147772012638511">ক্যাশের অপেক্ষা করা হচ্ছে...</translation>
 <translation id="3116361045094675131">ইউকে কীবোর্ড</translation>
 <translation id="3117812041123364382">ভাসমান ভার্চুয়াল কীবোর্ড সক্ষম/অক্ষম করুন।</translation>
@@ -1888,7 +1887,6 @@
 <translation id="3512284449647229026">ব্রাউজার অফলাইন থাকাকালীন লোড হতে ব্যর্থ হওয়া পৃষ্ঠাগুলি শুধুমাত্র তখনই স্বয়ংক্রিয়ভাবে পুনরায় লোড হবে যখন তাদের ট্যাব দৃশ্যমান হবে।</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ডাউনলোড বাতিল করুন}one{ডাউনলোডগুলি বাতিল করুন}other{ডাউনলোডগুলি বাতিল করুন}}</translation>
 <translation id="3512810056947640266">URL (ঐচ্ছিক):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> আপনার স্ক্রীনের সামগ্রী শেয়ার করতে চায়৷ আপনি কি শেয়ার করতে চান তা বেছে নিন।</translation>
 <translation id="3518086201899641494">ক্যাপটিভ পোর্টালগুলির সম্বন্ধে বিজ্ঞপ্তিগুলি</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
 <translation id="3522159121915794564">অবৈধ TLS/SSL শংসাপত্রের চেইনসমূহ সংগ্রহ নির্বাচন করতে ব্যবহারকারীদের মঞ্জুরি দেয়৷</translation>
@@ -2004,7 +2002,6 @@
 <translation id="3654045516529121250">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পড়ুন</translation>
 <translation id="3654092442379740616">সিঙ্ক ত্রুটি: <ph name="PRODUCT_NAME" /> তারিখ সীমার বাইরে এবং আপডেট করা প্রয়োজন৷</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{একটি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}one{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}other{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> আপনার স্ক্রীনের সামগ্রী <ph name="TARGET_NAME" /> এর সঙ্গে শেয়ার করতে চায়৷ আপনি কি শেয়ার করতে চান তা বেছে নিন।</translation>
 <translation id="3657468915905674858">PPAPI Win32k লকডাউন সক্ষম করুন।</translation>
 <translation id="3660234220361471169">অবিশ্বস্থ</translation>
 <translation id="3665589677786828986">Chrome সনাক্ত করেছে যে অন্য কোনো প্রোগ্রাম আপনার কিছু সেটিংস ক্ষতিগ্রস্ত করেছে এবং সেগুলিকে তাদের মূল ডিফল্টে পুনরায় সেট করেছে।</translation>
@@ -2559,7 +2556,6 @@
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
 <translation id="4465830120256509958">ব্রাজিলিয় কীবোর্ড</translation>
 <translation id="4467100756425880649">Chrome ওয়েব দোকান গ্যালারি</translation>
-<translation id="4467798014533545464">URL দেখান</translation>
 <translation id="4470564870223067757">হাঙ্গুল ২ সেট</translation>
 <translation id="4474155171896946103">সব কটি ট্যাব বুকমার্ক করুন...</translation>
 <translation id="4476590490540813026">ক্রীড়াবিদ</translation>
@@ -4617,6 +4613,7 @@
 <translation id="7393449708074241536">এটি স্থায়ীভাবে এই ডিভাইস থেকে <ph name="TOTAL_COUNT" />টি আইটেম মুছে ফেলবে।</translation>
 <translation id="7396845648024431313">সিস্টেমের প্রারম্ভে <ph name="APP_NAME" /> শুরু হবে এবং এমনকি আপনি অন্য সব <ph name="PRODUCT_NAME" /> উইনডোকে বন্ধ করার পরেও পৃষ্টভূমিতে চালনার জন্য অবিরত রাখা হবে৷</translation>
 <translation id="7396863776022882342">ফর্মের মধ্যে কী তৈরিকরণ ব্যবহার করতে সমস্ত সাইটকে অনুমতি দিন।</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">আপনার Chromebox রিস্টার্ট না হওয়া পর্যন্ত দয়া করে অপেক্ষা করুন...</translation>
 <translation id="7401543881546089382">শর্টকাট মুছুন</translation>
 <translation id="7403358905955888520">সিস্টেম সময় অঞ্চল স্বয়ংক্রিয় শনাক্তকরণ ডিভাইস নীতি অক্ষম করে।</translation>
@@ -4992,7 +4989,6 @@
 <translation id="7928710562641958568">বের করে দেওযার ডিভাইস</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> আপনার স্ক্রীন এবং অডিও শেয়ার করছে।</translation>
 <translation id="7938594894617528435">বর্তমানে অফলাইন</translation>
-<translation id="7939374455203157513">ক্লাউড পরিষেবাগুলি সক্ষম করুন</translation>
 <translation id="7939412583708276221">যে কোনও অবস্থাতেই রাখুন</translation>
 <translation id="7939997691108949385">পরিচালক <ph name="MANAGEMENT_URL" /> এ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য বিধিনিষেধ এবং সেটিংস কনফিগার করতে সক্ষম হবেন৷</translation>
 <translation id="7943385054491506837">মার্কিন যুক্তরাষ্ট্রীয় কোলেম্যাক</translation>

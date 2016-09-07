@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">الوضع التجريبي</translation>
 <translation id="1481244281142949601">لديك صناديق حماية كافية.</translation>
 <translation id="1482124012545051544">جاهز لنسخ <ph name="FILE_COUNT" /> من الصور الجديدة احتياطيًا</translation>
+<translation id="1483493594462132177">إرسال</translation>
 <translation id="148466539719134488">السويسرية</translation>
 <translation id="1485015260175968628">يمكنه الآن:</translation>
 <translation id="1486096554574027028">بحث عن كلمات المرور</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">تدوير &amp;في اتجاه عقارب الساعة</translation>
 <translation id="1852799913675865625">حدث خطأ أثناء محاولة قراءة الملف: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">إضافة موقع...</translation>
-<translation id="1857166538520940818">إرفاق ملف:</translation>
 <translation id="1858585891038687145">الوثوق بهذه الشهادة لتحديد هوية مصممي البرامج</translation>
 <translation id="1859234291848436338">اتجاه الكتابة</translation>
 <translation id="1864111464094315414">تسجيل الدخول</translation>
@@ -1577,7 +1577,6 @@
 <translation id="3108145564672865299">قفل اتجاه الشاشة</translation>
 <translation id="3108967419958202225">اختيار...</translation>
 <translation id="3112378005171663295">تصغير</translation>
-<translation id="3113551216836192921">‏تم تحميل الملف المرفق إلى خوادم Google لتصحيح الخطأ.</translation>
 <translation id="3115147772012638511">في انتظار ذاكرة التخزين المؤقت ...</translation>
 <translation id="3116361045094675131">لوحة المفاتيح البريطانية</translation>
 <translation id="3117812041123364382">تمكين/تعطيل لوحة المفاتيح الظاهرية العائمة</translation>
@@ -1890,7 +1889,6 @@
 <translation id="3512284449647229026">لن تتم إعادة التحميل التلقائي للصفحات التي يخفق تحميلها أثناء عدم اتصال المتصفح بالإنترنت، إلا إذا كانت علامة تبويبها مرئية.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{إلغاء التنزيل}zero{إلغاء التنزيلات}two{إلغاء تنزيلين}few{إلغاء التنزيلات}many{إلغاء التنزيلات}other{إلغاء التنزيلات}}</translation>
 <translation id="3512810056947640266">‏عنوان URL (اختياري):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> يود أن يشارك محتويات شاشتك. اختر ما ترغب في مشاركته.</translation>
 <translation id="3518086201899641494">إشعارات حول بوابات التقييد</translation>
 <translation id="3519867315646775981">التحويل الصوتي (שלום ← شالوم)</translation>
 <translation id="3522159121915794564">يسمح للمستخدمين تمكين مجموعة سلاسل شهادات طبقة النقل الآمنة/ طبقة المقابس الآمنة غير الصالحة.</translation>
@@ -2006,7 +2004,6 @@
 <translation id="3654045516529121250">الاطلاع على إعدادات إمكانية الوصول</translation>
 <translation id="3654092442379740616">خطأ في المزامنة: <ph name="PRODUCT_NAME" /> قديم ويجب تحديثه.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه حق الوصول الدائم إلى ملف واحد.}zero{لديه حق الوصول الدائم إلى # من الملفات.}two{لديه حق الوصول الدائم إلى ملفين (#).}few{ لديه حق الوصول الدائم إلى # ملفات.}many{لديه حق الوصول الدائم إلى # ملفًا.}other{لديه حق الوصول الدائم إلى # من الملفات.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> يود أن يشارك محتوى شاشتك مع <ph name="TARGET_NAME" />. اختر ما ترغب في مشاركته.</translation>
 <translation id="3657468915905674858">‏تمكين إغلاق PPAPI Win32k.</translation>
 <translation id="3660234220361471169">غير موثوق بها</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة الافتراضية الأصلية.</translation>
@@ -2560,7 +2557,6 @@
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4465830120256509958">لوحة المفاتيح البرازيلية</translation>
 <translation id="4467100756425880649">‏معرض سوق Chrome الإلكتروني</translation>
-<translation id="4467798014533545464">‏إظهار عنوان URL</translation>
 <translation id="4470564870223067757">المجموعة رقم 2 الهانغولية</translation>
 <translation id="4474155171896946103">وضع إشارات على كل علامات التبويب...</translation>
 <translation id="4476590490540813026">رياضي</translation>
@@ -4622,6 +4618,7 @@
 <translation id="7393449708074241536">سيؤدي هذا إلى حذف <ph name="TOTAL_COUNT" /> من العناصر من هذا الجهاز نهائيًا.</translation>
 <translation id="7396845648024431313">سيتم تشغيل <ph name="APP_NAME" /> عند بدء تشغيل النظام وسيستمر تشغيله في الخلفية حتى بعد إغلاق كل نوافذ <ph name="PRODUCT_NAME" /> الأخرى.</translation>
 <translation id="7396863776022882342">السماح لجميع مواقع الويب باستخدام إنشاء مفتاح في النماذج.</translation>
+<translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="740083207982962331">‏يُرجى الانتظار لحين إعادة تشغيل Chromebox...</translation>
 <translation id="7401543881546089382">حذف الاختصار</translation>
 <translation id="7403358905955888520">تعطيل سياسة الجهاز للاكتشاف التلقائي للمنطقة الزمنية للنظام.</translation>
@@ -4997,7 +4994,6 @@
 <translation id="7928710562641958568">إخراج الجهاز</translation>
 <translation id="79312157130859720">يشارك <ph name="APP_NAME" /> الشاشة والصوت.</translation>
 <translation id="7938594894617528435">في وضع عدم الاتصال حاليًا</translation>
-<translation id="7939374455203157513">تمكين خدمات السحاب</translation>
 <translation id="7939412583708276221">المتابعة على أية حال</translation>
 <translation id="7939997691108949385">سيتمكن المشرف من تهيئة القيود والإعدادات لهذا المستخدم الذي يخضع للإشراف على <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">‏الأمريكية Colemak</translation>

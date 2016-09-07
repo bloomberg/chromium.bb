@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Режим демонстрације</translation>
 <translation id="1481244281142949601">Налазите се у адекватном заштићеном окружењу.</translation>
 <translation id="1482124012545051544">Све је спремно за прављење резервних копија нових слика (<ph name="FILE_COUNT" />)</translation>
+<translation id="1483493594462132177">Пошаљи</translation>
 <translation id="148466539719134488">швајцарска</translation>
 <translation id="1485015260175968628">Сада може да:</translation>
 <translation id="1486096554574027028">Претражите лозинке</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">Окрећи &amp;у смеру кретања казаљке на сату</translation>
 <translation id="1852799913675865625">Дошло је до грешке при покушају читања датотеке: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Додај локацију...</translation>
-<translation id="1857166538520940818">Приложи датотеку:</translation>
 <translation id="1858585891038687145">Овај сертификат је поуздан за идентификацију произвођача софтвера</translation>
 <translation id="1859234291848436338">Writing Direction (Смер писања)</translation>
 <translation id="1864111464094315414">Пријављивање</translation>
@@ -1574,7 +1574,6 @@
 <translation id="3108145564672865299">Закључавање положаја екрана</translation>
 <translation id="3108967419958202225">Изаберите...</translation>
 <translation id="3112378005171663295">Скупите</translation>
-<translation id="3113551216836192921">Приложена датотека је отпремљена на Google сервере ради отклањања грешака.</translation>
 <translation id="3115147772012638511">Чека се кеш меморија...</translation>
 <translation id="3116361045094675131">Језик тастатуре: енглески (УК)</translation>
 <translation id="3117812041123364382">Омогућава или онемогућава плутајућу виртуелну тастатуру.</translation>
@@ -1889,7 +1888,6 @@
 <translation id="3512284449647229026">Странице које не успеју да се учитају док је прегледач офлајн ће се аутоматски поново учитати само ако је картица видљива.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Откажи преузимање}one{Откажи преузимања}few{Откажи преузимања}other{Откажи преузимања}}</translation>
 <translation id="3512810056947640266">URL (опционално):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> жели да дели садржај екрана. Изаберите шта желите да делите.</translation>
 <translation id="3518086201899641494">Обавештења о порталима за проверу</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Омогућава корисницима да изаберу прикупљање ланаца неважећих TLS/SSL сертификата.</translation>
@@ -2005,7 +2003,6 @@
 <translation id="3654045516529121250">Читање подешавања приступачности</translation>
 <translation id="3654092442379740616">Грешка при синхронизацији: Производ <ph name="PRODUCT_NAME" /> је застарео и треба да га ажурирате.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Има сталан приступ једној датотеци.}one{Има сталан приступ # датотеци.}few{Има сталан приступ за # датотеке.}other{Има сталан приступ за # датотека.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> жели да дели садржај екрана са <ph name="TARGET_NAME" />. Изаберите шта желите да делите.</translation>
 <translation id="3657468915905674858">Омогући Win32k закључавање за PPAPI.</translation>
 <translation id="3660234220361471169">Непоуздани</translation>
 <translation id="3665589677786828986">Chrome је открио да је други програм оштетио нека од подешавања и ресетовао их је на првобитне подразумеване вредности.</translation>
@@ -2562,7 +2559,6 @@
 <translation id="4462159676511157176">Прилагођени сервери назива</translation>
 <translation id="4465830120256509958">Језик тастатуре: португалски (Бразил)</translation>
 <translation id="4467100756425880649">Галерија Chrome веб-продавнице</translation>
-<translation id="4467798014533545464">Прикажи URL</translation>
 <translation id="4470564870223067757">Хангул, 2 реда</translation>
 <translation id="4474155171896946103">Обележи све картице...</translation>
 <translation id="4476590490540813026">Спортисткиња</translation>
@@ -4618,6 +4614,7 @@
 <translation id="7393449708074241536">То ће трајно избрисати ставке (<ph name="TOTAL_COUNT" />) са овог уређаја.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> ће се покренути приликом покретања система и наставити да ради у позадини чак и када затворите све остале <ph name="PRODUCT_NAME" /> прозоре.</translation>
 <translation id="7396863776022882342">Дозволи свим сајтовима да користе генерисање шифара у обрасцима.</translation>
+<translation id="7400418766976504921">URL адреса</translation>
 <translation id="740083207982962331">Сачекајте док се Chromebox поново покрене...</translation>
 <translation id="7401543881546089382">Избришите пречицу</translation>
 <translation id="7403358905955888520">Онемогућава смернице за уређаје за аутоматско откривање временске зоне система.</translation>
@@ -4993,7 +4990,6 @@
 <translation id="7928710562641958568">Избаци уређај</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> дели екран и звук.</translation>
 <translation id="7938594894617528435">Тренутно је ван мреже</translation>
-<translation id="7939374455203157513">Омогући Cloud услуге</translation>
 <translation id="7939412583708276221">Ипак задржи</translation>
 <translation id="7939997691108949385">Менаџер ће моћи да конфигурише ограничења и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">америчка Colemak</translation>

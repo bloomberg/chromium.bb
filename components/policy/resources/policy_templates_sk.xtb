@@ -1606,7 +1606,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať aktiváciou alebo deaktiváciou klávesnice na obrazovke. Voľba používateľa však nebude trvalá a po opätovnom zobrazení prihlasovacej obrazovky alebo nečinnosti používateľa na prihlasovacej obrazovke počas jednej minúty sa obnoví pôvodné nastavenie.
 
           Ak toto pravidlo nenastavíte, bude pri prvom zobrazení prihlasovacej obrazovky klávesnica na obrazovke deaktivovaná. Používatelia budú môcť klávesnicu na obrazovke kedykoľvek aktivovať alebo deaktivovať a zvolený stav na prihlasovacej obrazovke pretrvá aj u iných používateľov.</translation>
-<translation id="6573305661369899995">Nastavenie externého zdroja pre obmedzenia webový adries</translation>
+<translation id="6573305661369899995">Nastavenie externého zdroja na obmedzenie webových adries</translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
 <translation id="6628646143828354685">Umožňuje nastaviť, či môžu weby získať prístup k zariadeniam Bluetooth v blízkosti. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k zariadeniam Bluetooth v blízkosti.
 

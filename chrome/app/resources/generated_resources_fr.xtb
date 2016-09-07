@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Mode démonstration</translation>
 <translation id="1481244281142949601">Votre système Sandbox est correctement configuré.</translation>
 <translation id="1482124012545051544">Prêt à sauvegarder <ph name="FILE_COUNT" /> nouvelles photos</translation>
+<translation id="1483493594462132177">Envoyer</translation>
 <translation id="148466539719134488">Suisse</translation>
 <translation id="1485015260175968628">Elle peut désormais :</translation>
 <translation id="1486096554574027028">Rechercher</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Rotation &amp;dans le sens des aiguilles d'une montre</translation>
 <translation id="1852799913675865625">Une erreur s'est produite lors de la tentative de lecture du fichier : <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Ajouter un emplacement…</translation>
-<translation id="1857166538520940818">Joindre le fichier :</translation>
 <translation id="1858585891038687145">Considérer ce certificat comme fiable pour identifier les développeurs de logiciels</translation>
 <translation id="1859234291848436338">Sens de l'écriture</translation>
 <translation id="1864111464094315414">Connexion</translation>
@@ -1577,7 +1577,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3108145564672865299">Verrouillage de l'orientation de l'écran</translation>
 <translation id="3108967419958202225">Sélectionner...</translation>
 <translation id="3112378005171663295">Réduire</translation>
-<translation id="3113551216836192921">Le fichier joint est importé sur les serveurs de Google pour le débogage.</translation>
 <translation id="3115147772012638511">En attente de l'affichage du cache</translation>
 <translation id="3116361045094675131">Clavier britannique</translation>
 <translation id="3117812041123364382">Activer ou désactiver le clavier virtuel flottant</translation>
@@ -1892,7 +1891,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Les pages dont le chargement a échoué pendant que le navigateur était en mode hors connexion ne seront automatiquement rechargées que si l'onglet correspondant est visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annuler le téléchargement}one{Annuler le téléchargement}other{Annuler les téléchargements}}</translation>
 <translation id="3512810056947640266">URL (facultatif) :</translation>
-<translation id="3517839692979918726">Une demande de partage du contenu de votre écran a été envoyée depuis <ph name="APP_NAME" />. Veuillez sélectionner ce que vous acceptez de partager.</translation>
 <translation id="3518086201899641494">Notifications au sujet des portails captifs</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Autoriser les utilisateurs à récupérer les chaînes de certificats TLS/SSL non valides</translation>
@@ -2008,7 +2006,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Lire vos paramètres d'accessibilité</translation>
 <translation id="3654092442379740616">Erreur de synchronisation. <ph name="PRODUCT_NAME" /> est obsolète et doit être mis à jour.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{L'application possède un accès permanent à un fichier.}one{L'application possède un accès permanent à # fichier.}other{L'application possède un accès permanent à # fichiers.}}</translation>
-<translation id="3656059567098593256">Une demande de partage du contenu de votre écran avec <ph name="TARGET_NAME" /> a été envoyée depuis <ph name="APP_NAME" />. Veuillez sélectionner ce que vous acceptez de partager.</translation>
 <translation id="3657468915905674858">Activer le blocage PPAPI Win32k Lockdown</translation>
 <translation id="3660234220361471169">Non approuvé</translation>
 <translation id="3665589677786828986">Chrome a détecté que certains de vos paramètres ont été corrompus par un autre programme. Leurs valeurs par défaut ont été rétablies.</translation>
@@ -2565,7 +2562,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
 <translation id="4465830120256509958">Clavier brésilien</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
-<translation id="4467798014533545464">Afficher l'URL</translation>
 <translation id="4470564870223067757">Hangûl, dubeol-sik</translation>
 <translation id="4474155171896946103">Ajouter tous les onglets aux favoris...</translation>
 <translation id="4476590490540813026">Athlète</translation>
@@ -4624,6 +4620,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7393449708074241536">Cette action aura pour effet de supprimer définitivement <ph name="TOTAL_COUNT" /> éléments de cet appareil.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> sera lancé au démarrage du système et continuera de s'exécuter en arrière-plan, même si toutes les fenêtres de <ph name="PRODUCT_NAME" /> sont fermées.</translation>
 <translation id="7396863776022882342">Autoriser tous les sites à utiliser la génération de clé dans les formulaires.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Veuillez patienter pendant que votre Chromebox redémarre…</translation>
 <translation id="7401543881546089382">Supprimer le raccourci</translation>
 <translation id="7403358905955888520">Désactiver la règle de détection automatique du fuseau horaire du système sur l'appareil.</translation>
@@ -4999,7 +4996,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7928710562641958568">Éjecter l'appareil</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> partage votre écran et un contenu audio.</translation>
 <translation id="7938594894617528435">Actuellement hors connexion</translation>
-<translation id="7939374455203157513">Activer les services Google Cloud</translation>
 <translation id="7939412583708276221">Conserver quand même</translation>
 <translation id="7939997691108949385">Le gestionnaire pourra configurer les restrictions et les paramètres de l'utilisateur supervisé à l'adresse <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Colemak américain</translation>

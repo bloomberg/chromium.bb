@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Demoläge</translation>
 <translation id="1481244281142949601">Din sandlåda ger tillräckligt skydd.</translation>
 <translation id="1482124012545051544">Klar att säkerhetskopiera <ph name="FILE_COUNT" /> nya foton</translation>
+<translation id="1483493594462132177">Skicka</translation>
 <translation id="148466539719134488">Schweiziska</translation>
 <translation id="1485015260175968628">Appen eller tillägget kan nu:</translation>
 <translation id="1486096554574027028">Sök efter lösenord</translation>
@@ -639,7 +640,6 @@
 <translation id="1850508293116537636">Rotera &amp;medurs</translation>
 <translation id="1852799913675865625">Ett fel uppstod när följande fil skulle läsas: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Lägg till plats ...</translation>
-<translation id="1857166538520940818">Bifoga fil:</translation>
 <translation id="1858585891038687145">Lita på det här certifikatet för identifiering av programskapare</translation>
 <translation id="1859234291848436338">Skrivriktning</translation>
 <translation id="1864111464094315414">Inloggning</translation>
@@ -1577,7 +1577,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3108145564672865299">Låsning av skärmens riktning</translation>
 <translation id="3108967419958202225">Välj...</translation>
 <translation id="3112378005171663295">Komprimera</translation>
-<translation id="3113551216836192921">Den bifogade filen laddas upp till Googles servrar för felsökning.</translation>
 <translation id="3115147772012638511">Väntar på cache-minnet...</translation>
 <translation id="3116361045094675131">Brittiskt tangentbord</translation>
 <translation id="3117812041123364382">Aktivera/inaktivera flytande virtuellt tangentbord</translation>
@@ -1892,7 +1891,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sidor som inte kan läsas in när webbläsaren är offline läses bara in automatiskt om deras flikar är synliga.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Avbryt nedladdningen}other{Avbryt nedladdningarna}}</translation>
 <translation id="3512810056947640266">Webbadress (valfritt):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> vill dela innehållet på din skärm. Välj det du vill dela.</translation>
 <translation id="3518086201899641494">Meddelanden om infångstportaler</translation>
 <translation id="3519867315646775981">Translitterera (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Tillåter att användarna tillåter att ogiltiga TLS/SSL-certifikatkedjor samlas in.</translation>
@@ -2008,7 +2006,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
 <translation id="3654092442379740616">Synkroniseringsfel. <ph name="PRODUCT_NAME" /> är inaktuellt och behöver uppdateras.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent åtkomst till en fil.}other{Den har permanent åtkomst till # filer.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> vill dela innehållet på din skärm med <ph name="TARGET_NAME" />. Välj det du vill dela.</translation>
 <translation id="3657468915905674858">Aktivera PPAPI-låsning under Win32k.</translation>
 <translation id="3660234220361471169">Opålitliga</translation>
 <translation id="3665589677786828986">Chrome har upptäckt att visa av inställningarna har skadats av ett annat program och återställer dem till standardinställningarna.</translation>
@@ -2303,7 +2300,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: inloggningsfel</translation>
 <translation id="4072248638558688893">Tangentbord för tamil (fonetiskt)</translation>
 <translation id="4074900173531346617">Certifikat för e-postsignering</translation>
-<translation id="4074945132384537841">Ger åtkomst till och behörighet att ta bort funktioner i Feature-Policy i HTTP-huvudet.</translation>
+<translation id="4074945132384537841">Ger åtkomst till och behörighet att ta bort funktioner via Feature-Policy i HTTP-huvudet.</translation>
 <translation id="4075084141581903552">Automatisk inloggning är tillgängligt <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">Alltid</translation>
 <translation id="408098233265424160">Närhetsidentifiering i Smart Lock</translation>
@@ -2565,7 +2562,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4462159676511157176">Anpassade namnservrar</translation>
 <translation id="4465830120256509958">Brasilianskt tangentbord</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
-<translation id="4467798014533545464">Visa webbadress</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Lägg till bokmärke på alla flikar...</translation>
 <translation id="4476590490540813026">Idrottare</translation>
@@ -4623,6 +4619,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7393449708074241536">Det här innebär att minst <ph name="TOTAL_COUNT" /> objekt raderas permanent från den här enheten.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> startas när systemet startas och fortsätter att köras i bakgrunden även när du har stängt alla andra fönster i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Tillåt alla webbplatser att använda nyckelgenerering i formulär</translation>
+<translation id="7400418766976504921">Webbadress</translation>
 <translation id="740083207982962331">Vänta medan Chromebox startas om ...</translation>
 <translation id="7401543881546089382">Ta bort genväg</translation>
 <translation id="7403358905955888520">Inaktivera systemets policy för automatisk tidszonsangivelse.</translation>
@@ -4998,7 +4995,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7928710562641958568">Mata ut enhet</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> delar skärmen och ljudet.</translation>
 <translation id="7938594894617528435">Offline just nu</translation>
-<translation id="7939374455203157513">Aktivera molntjänster</translation>
 <translation id="7939412583708276221">Behåll ändå</translation>
 <translation id="7939997691108949385">Övervakaren kommer att kunna konfigurera begränsningar och inställningar för denna hanterade användare på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">USA (colemak)</translation>

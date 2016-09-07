@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Modo demo</translation>
 <translation id="1481244281142949601">Estás protegido de forma adecuada en un entorno de pruebas.</translation>
 <translation id="1482124012545051544">Ya es posible crear una copia de seguridad de <ph name="FILE_COUNT" /> fotos nuevas.</translation>
+<translation id="1483493594462132177">Enviar</translation>
 <translation id="148466539719134488">Suizo</translation>
 <translation id="1485015260175968628">Ahora puede:</translation>
 <translation id="1486096554574027028">Buscar contraseñas</translation>
@@ -637,7 +638,6 @@
 <translation id="1850508293116537636">Girar &amp;a la derecha</translation>
 <translation id="1852799913675865625">Se produjo un error al intentar leer el archivo: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Agregar ubicación...</translation>
-<translation id="1857166538520940818">Adjuntar archivo:</translation>
 <translation id="1858585891038687145">Confiar en este certificado para identificar fabricantes de software</translation>
 <translation id="1859234291848436338">Sentido de la escritura</translation>
 <translation id="1864111464094315414">Acceder</translation>
@@ -1574,7 +1574,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3108145564672865299">Bloqueo de la orientación de la pantalla</translation>
 <translation id="3108967419958202225">Elige...</translation>
 <translation id="3112378005171663295">Ocultar</translation>
-<translation id="3113551216836192921">Se subió el archivo adjunto a los servidores de Google para realizar la depuración.</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3116361045094675131">Teclado en inglés del Reino Unido</translation>
 <translation id="3117812041123364382">Permite habilitar o inhabilitar el teclado virtual flotante.</translation>
@@ -1889,7 +1888,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Las páginas que no se cargan cuando el navegador está sin conexión se volverán cargarán automáticamente solo si la pestaña está visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar descarga}other{Cancelar descargas}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> desea compartir el contenido de tu pantalla. Elige lo que quieras compartir.</translation>
 <translation id="3518086201899641494">Notificaciones sobre portales cautivos</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Permite a los usuarios optar por recopilar las cadenas de certificados de TLS/SSL no válidas.</translation>
@@ -2005,7 +2003,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Leer la configuración de accesibilidad</translation>
 <translation id="3654092442379740616">Error de sincronización: <ph name="PRODUCT_NAME" /> caducó y necesita que lo actualices.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> desea compartir el contenido de la pantalla con <ph name="TARGET_NAME" />. Elige lo que quieras compartir.</translation>
 <translation id="3657468915905674858">Habilitar bloqueo de Win32k para PPAPI</translation>
 <translation id="3660234220361471169">No es de confianza</translation>
 <translation id="3665589677786828986">Chrome detectó que otro programa dañó algunas opciones de configuración, por lo que la restableció a los valores predeterminados.</translation>
@@ -2562,7 +2559,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4465830120256509958">Teclado en portugués de Brasil</translation>
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
-<translation id="4467798014533545464">Mostrar URL</translation>
 <translation id="4470564870223067757">Hangul de doble alternancia</translation>
 <translation id="4474155171896946103">Agregar a marcadores todas las pestañas...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4621,6 +4617,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7393449708074241536">Esta acción borrará permanentemente <ph name="TOTAL_COUNT" /> elementos de este dispositivo.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Permitir que todos los sitios utilicen la generación de claves en formularios</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Espera mientras se reinicia la Chromebox.</translation>
 <translation id="7401543881546089382">Eliminar acceso directo</translation>
 <translation id="7403358905955888520">Inhabilita la política del dispositivo para la detección automática de la zona horaria del sistema.</translation>
@@ -4996,7 +4993,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7928710562641958568">Dispositivo de expulsión</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> comparte tu pantalla y audio.</translation>
 <translation id="7938594894617528435">Sin conexión actualmente</translation>
-<translation id="7939374455203157513">Habilitar los servicios de nube</translation>
 <translation id="7939412583708276221">Continuar de todos modos</translation>
 <translation id="7939997691108949385">El administrador podrá configurar restricciones y parámetros de configuración para este usuario supervisado en <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Inglés (Estados Unidos; Colemak)</translation>

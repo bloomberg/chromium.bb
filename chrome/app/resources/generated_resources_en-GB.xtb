@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">Demo mode</translation>
 <translation id="1481244281142949601">You are adequately sandboxed.</translation>
 <translation id="1482124012545051544">Ready to backup <ph name="FILE_COUNT" /> new photos</translation>
+<translation id="1483493594462132177">send</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1485015260175968628">It can now:</translation>
 <translation id="1486096554574027028">Search passwords</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">Rotate &amp;clockwise</translation>
 <translation id="1852799913675865625">There was an error while trying to read the file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Add location...</translation>
-<translation id="1857166538520940818">Attach file:</translation>
 <translation id="1858585891038687145">Trust this certificate for identifying software makers</translation>
 <translation id="1859234291848436338">Writing Direction</translation>
 <translation id="1864111464094315414">Login</translation>
@@ -1578,7 +1578,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3108145564672865299">Screen Orientation locking</translation>
 <translation id="3108967419958202225">Choose...</translation>
 <translation id="3112378005171663295">Collapse</translation>
-<translation id="3113551216836192921">The attached file is uploaded to Google servers for debugging.</translation>
 <translation id="3115147772012638511">Waiting for cache...</translation>
 <translation id="3116361045094675131">UK keyboard</translation>
 <translation id="3117812041123364382">Enable/Disable floating virtual keyboard.</translation>
@@ -1893,7 +1892,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancel Download}other{Cancel Downloads}}</translation>
 <translation id="3512810056947640266">URL (optional):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> would like to share the contents of your screen. Choose what you'd like to share.</translation>
 <translation id="3518086201899641494">Notifications about captive portals</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Allows users to opt in to the collection of invalid TLS/SSL certificate chains.</translation>
@@ -2009,7 +2007,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="3654092442379740616">Sync Error:  <ph name="PRODUCT_NAME" /> is out of date and needs to be updated.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{It has permanent access to one file.}other{It has permanent access to # files.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> would like to share the content of your screen with <ph name="TARGET_NAME" />. Choose what you'd like to share.</translation>
 <translation id="3657468915905674858">Enable PPAPI Win32k Lockdown.</translation>
 <translation id="3660234220361471169">Untrusted</translation>
 <translation id="3665589677786828986">Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.</translation>
@@ -2566,7 +2563,6 @@ Press any key to continue exploring.</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4465830120256509958">Brazilian keyboard</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
-<translation id="4467798014533545464">Show URL</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
 <translation id="4476590490540813026">Athlete</translation>
@@ -4628,6 +4624,7 @@ Press any key to continue exploring.</translation>
 <translation id="7393449708074241536">This will permanently delete <ph name="TOTAL_COUNT" /> items from this device.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> will launch at system startup and continue to run in the background, even once you've closed all other <ph name="PRODUCT_NAME" /> windows.</translation>
 <translation id="7396863776022882342">Allow all sites to use key generation in forms.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Please wait while your Chromebox restarts...</translation>
 <translation id="7401543881546089382">Delete shortcut</translation>
 <translation id="7403358905955888520">Disable system time zone automatic detection device policy.</translation>
@@ -5003,7 +5000,6 @@ Press any key to continue exploring.</translation>
 <translation id="7928710562641958568">Eject device</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> is sharing your screen and audio.</translation>
 <translation id="7938594894617528435">Currently offline</translation>
-<translation id="7939374455203157513">Enable Cloud Services</translation>
 <translation id="7939412583708276221">Keep anyway</translation>
 <translation id="7939997691108949385">The manager will be able to configure restrictions and settings for this supervised user at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">US Colemak</translation>

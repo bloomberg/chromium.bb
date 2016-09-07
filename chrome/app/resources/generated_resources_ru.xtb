@@ -351,6 +351,7 @@
 <translation id="1480041086352807611">Демонстрационный режим</translation>
 <translation id="1481244281142949601">Вы находитесь в корректной тестовой среде</translation>
 <translation id="1482124012545051544">Будет сохранено <ph name="FILE_COUNT" /> фото</translation>
+<translation id="1483493594462132177">Отправить</translation>
 <translation id="148466539719134488">Швейцарская</translation>
 <translation id="1485015260175968628">Разрешения:</translation>
 <translation id="1486096554574027028">Поиск паролей</translation>
@@ -640,7 +641,6 @@
 <translation id="1850508293116537636">Повернуть &amp;по часовой стрелке</translation>
 <translation id="1852799913675865625">Произошла ошибка при чтении файла: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Добавить папку...</translation>
-<translation id="1857166538520940818">Прикрепить файл:</translation>
 <translation id="1858585891038687145">Доверять этому сертификату при идентификации производителей ПО</translation>
 <translation id="1859234291848436338">Направление письма</translation>
 <translation id="1864111464094315414">Вход</translation>
@@ -1579,7 +1579,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3108145564672865299">Блокировка ориентации экрана</translation>
 <translation id="3108967419958202225">Выберите...</translation>
 <translation id="3112378005171663295">Свернуть</translation>
-<translation id="3113551216836192921">Прикрепленный файл загружается на серверы Google для отладки.</translation>
 <translation id="3115147772012638511">Ожидание кеша…</translation>
 <translation id="3116361045094675131">Английская раскладка</translation>
 <translation id="3117812041123364382">Позволяет включить/отключить всплывающую виртуальную клавиатуру.</translation>
@@ -1894,7 +1893,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3512284449647229026">Страницы, не загруженные из-за отсутствия интернет-подключения, будут автоматически перезагружены, только если вкладка активна.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Отменить скачивание}one{Отменить скачивание}few{Отменить скачивание}many{Отменить скачивание}other{Отменить скачивание}}</translation>
 <translation id="3512810056947640266">URL (необязательно):</translation>
-<translation id="3517839692979918726"><ph name="APP_NAME" /> хочет предоставить доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
 <translation id="3518086201899641494">Уведомления об адаптивных порталах</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Позволяет пользователям включить коллекцию цепочек недействительных сертификатов TLS/SSL.</translation>
@@ -2010,7 +2008,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3654045516529121250">Чтение настроек специальных возможностей</translation>
 <translation id="3654092442379740616">Ошибка синхронизации. Программа <ph name="PRODUCT_NAME" /> устарела, обновите ее.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{С постоянным доступом к 1 файлу.}one{С постоянным доступом к # файлу.}few{С постоянным доступом к # файлам.}many{С постоянным доступом к # файлам.}other{С постоянным доступом к # файла.}}</translation>
-<translation id="3656059567098593256"><ph name="APP_NAME" /> хочет предоставить <ph name="TARGET_NAME" /> доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
 <translation id="3657468915905674858">Использовать закрытую среду Win32k для плагинов PPAPI</translation>
 <translation id="3660234220361471169">Недоверенный</translation>
 <translation id="3665589677786828986">Некоторые настройки Chrome недавно были изменены посторонней программой. Браузер восстановил их значения по умолчанию.</translation>
@@ -2567,7 +2564,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4462159676511157176">Другие серверы имен</translation>
 <translation id="4465830120256509958">Бразильская раскладка</translation>
 <translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
-<translation id="4467798014533545464">Показ URL</translation>
 <translation id="4470564870223067757">Корейская раскладка (Dubeolsik)</translation>
 <translation id="4474155171896946103">Добавить все вкладки в закладки…</translation>
 <translation id="4476590490540813026">Спортсмен</translation>
@@ -4627,6 +4623,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7393449708074241536">С устройства будет удалено несколько объектов (<ph name="TOTAL_COUNT" />).</translation>
 <translation id="7396845648024431313">Приложение <ph name="APP_NAME" /> будет запущено при старте системы и продолжит работу в фоновом режиме даже после закрытия всех окон <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Разрешить всем сайтам создавать ключи в формах</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Дождитесь завершения перезагрузки Chromebox.</translation>
 <translation id="7401543881546089382">Удалить ярлык</translation>
 <translation id="7403358905955888520">Отключает автоматическое определение часового пояса на устройстве.</translation>
@@ -5002,7 +4999,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7928710562641958568">Извлечь устройство</translation>
 <translation id="79312157130859720">Приложение "<ph name="APP_NAME" />" предоставило доступ к экрану и аудио.</translation>
 <translation id="7938594894617528435">Сейчас не в Сети</translation>
-<translation id="7939374455203157513">Включить облачные сервисы Google</translation>
 <translation id="7939412583708276221">Все равно продолжить</translation>
 <translation id="7939997691108949385">Менеджер сможет устанавливать ограничения и настройки для этого контролируемого профиля на странице <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">США (Colemak)</translation>

@@ -352,6 +352,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1480041086352807611">Režim ukázky</translation>
 <translation id="1481244281142949601">Jste v adekvátně izolovaném prostoru.</translation>
 <translation id="1482124012545051544">Počet nových fotek připravených k zálohování: <ph name="FILE_COUNT" /></translation>
+<translation id="1483493594462132177">Odeslat</translation>
 <translation id="148466539719134488">Švýcarská klávesnice</translation>
 <translation id="1485015260175968628">Nyní může:</translation>
 <translation id="1486096554574027028">Prohledávat hesla</translation>
@@ -641,7 +642,6 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="1850508293116537636">Otočit &amp;ve směru hodinových ručiček</translation>
 <translation id="1852799913675865625">Došlo k chybě při čtení souboru: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Přidat polohu...</translation>
-<translation id="1857166538520940818">Připojit soubor:</translation>
 <translation id="1858585891038687145">Důvěřovat tomuto certifikátu při ověřování identity výrobců softwaru</translation>
 <translation id="1859234291848436338">Směr textu</translation>
 <translation id="1864111464094315414">Přihlásit</translation>
@@ -1578,7 +1578,6 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3108145564672865299">Zámek orientace obrazovky</translation>
 <translation id="3108967419958202225">Zvolit...</translation>
 <translation id="3112378005171663295">Sbalit</translation>
-<translation id="3113551216836192921">Připojený soubor bude nahrán na servery Google za účelem ladění.</translation>
 <translation id="3115147772012638511">Čekání na mezipaměť</translation>
 <translation id="3116361045094675131">Britská klávesnice</translation>
 <translation id="3117812041123364382">Umožňuje aktivovat či zakázat plovoucí virtuální klávesnici.</translation>
@@ -1891,7 +1890,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3512284449647229026">Stránky, které se v prohlížeči nepodaří načíst v režimu offline, budou automaticky načteny znovu, bude-li karta viditelná.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Zrušit stahování}few{Zrušit stahování}many{Zrušit stahování}other{Zrušit stahování}}</translation>
 <translation id="3512810056947640266">Adresa URL (nepovinné):</translation>
-<translation id="3517839692979918726">Aplikace <ph name="APP_NAME" /> chce sdílet obsah vaší obrazovky. Vyberte, co chcete sdílet.</translation>
 <translation id="3518086201899641494">Oznámení o captive portálech</translation>
 <translation id="3519867315646775981">Přepis (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Umožňuje uživatelům zapojit se do shromažďování neplatných řetězců certifikátů TLS/SSL.</translation>
@@ -2007,7 +2005,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3654045516529121250">Čtení nastavení usnadnění přístupu</translation>
 <translation id="3654092442379740616">Chyba synchronizace: Prohlížeč <ph name="PRODUCT_NAME" /> je zastaralý a potřebuje aktualizovat.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Má trvalý přístup k jednomu souboru.}few{Má trvalý přístup ke # souborům.}many{Má trvalý přístup k # souboru.}other{Má trvalý přístup k # souborům.}}</translation>
-<translation id="3656059567098593256">Aplikace <ph name="APP_NAME" /> chce sdílet obsah vaší obrazovky se stránkou <ph name="TARGET_NAME" />. Vyberte, co chcete sdílet.</translation>
 <translation id="3657468915905674858">Aktivovat uzamknutí pluginů PPAPI podle zásady Win32k</translation>
 <translation id="3660234220361471169">Nedůvěryhodný</translation>
 <translation id="3665589677786828986">Prohlížeč Chrome zjistil, že některá z vašich nastavení byla upravena jiným programem, a obnovil je na původní výchozí hodnoty.</translation>
@@ -2563,7 +2560,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4465830120256509958">Brazilská klávesnice</translation>
 <translation id="4467100756425880649">Galerie Internetového obchodu Chrome</translation>
-<translation id="4467798014533545464">Zobrazit adresu URL</translation>
 <translation id="4470564870223067757">Hangul – 2 sady</translation>
 <translation id="4474155171896946103">Přidat do záložek všechny karty...</translation>
 <translation id="4476590490540813026">Sportovkyně</translation>
@@ -4618,6 +4614,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="7393449708074241536">Touto akcí z tohoto zařízení trvale smažete následující počet položek: <ph name="TOTAL_COUNT" />.</translation>
 <translation id="7396845648024431313">Aplikace <ph name="APP_NAME" /> se spustí při zapnutí systému a poběží na pozadí i v případě, že zavřete všechna okna prohlížeče <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Povolit generování klíčů ve formulářích všem webům</translation>
+<translation id="7400418766976504921">Adresa URL</translation>
 <translation id="740083207982962331">Vyčkejte, než se zařízení Chromebox restartuje...</translation>
 <translation id="7401543881546089382">Smazat zkratku</translation>
 <translation id="7403358905955888520">Deaktivovat zásadu zařízení pro automatické zjišťování časového pásma systému.</translation>
@@ -4991,7 +4988,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="7928710562641958568">Vysunout zařízení</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> sdílí vaši obrazovku a zvuk.</translation>
 <translation id="7938594894617528435">Momentálně offline</translation>
-<translation id="7939374455203157513">Aktivovat cloudové služby</translation>
 <translation id="7939412583708276221">Přesto ponechat</translation>
 <translation id="7939997691108949385">Správce bude moci konfigurovat omezení a nastavení pro tohoto uživatele na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Americká klávesnice Colemak</translation>

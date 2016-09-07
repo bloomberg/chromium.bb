@@ -284,7 +284,7 @@
 <translation id="1399648040768741453">Teclado telugu (fonético)</translation>
 <translation id="140240131475089220">Depuração silenciosa</translation>
 <translation id="140250605646987970">Encontrámos o seu telemóvel. No entanto, o Smart Lock só funciona em dispositivos com o Android 5.0 ou superior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
-<translation id="1403519882106291341">Termos de Utilização do Google Chrome SO</translation>
+<translation id="1403519882106291341">Termos de Utilização do Google SO Chrome</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1405476660552109915">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> guarde a sua conta para este site?</translation>
 <translation id="1406500794671479665">A confirmar...</translation>
@@ -352,6 +352,7 @@
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="1481244281142949601">Está correctamente isolado relativamente a processos.</translation>
 <translation id="1482124012545051544">Pronto para fazer uma cópia de segurança de <ph name="FILE_COUNT" /> novas fotografias</translation>
+<translation id="1483493594462132177">Enviar</translation>
 <translation id="148466539719134488">Suíço</translation>
 <translation id="1485015260175968628">Esta pode agora:</translation>
 <translation id="1486096554574027028">Pesquisar palavras-passe</translation>
@@ -641,7 +642,6 @@
 <translation id="1850508293116537636">Rodar para a &amp;direita</translation>
 <translation id="1852799913675865625">Ocorreu um erro ao tentar ler o ficheiro: <ph name="ERROR_TEXT" /></translation>
 <translation id="1856715684130786728">Adicionar localização...</translation>
-<translation id="1857166538520940818">Anexar ficheiro:</translation>
 <translation id="1858585891038687145">Confiar neste certificado para identificar fabricantes de software</translation>
 <translation id="1859234291848436338">Direcção da escrita</translation>
 <translation id="1864111464094315414">Início de sessão</translation>
@@ -1579,7 +1579,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3108145564672865299">Bloqueio da orientação do ecrã</translation>
 <translation id="3108967419958202225">Escolher...</translation>
 <translation id="3112378005171663295">Reduzir</translation>
-<translation id="3113551216836192921">O ficheiro anexado é carregado para os servidores da Google para depuração.</translation>
 <translation id="3115147772012638511">A aguardar pela cache...</translation>
 <translation id="3116361045094675131">Teclado inglês</translation>
 <translation id="3117812041123364382">Ative/desative o teclado virtual flutuante.</translation>
@@ -1894,7 +1893,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">As páginas que não são carregadas enquanto o navegador está offline apenas serão atualizadas automaticamente se o respetivo separador estiver visível.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}other{Cancelar transferências}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="3517839692979918726">O <ph name="APP_NAME" /> pretende partilhar o conteúdo do seu ecrã. Escolha o que pretende partilhar.</translation>
 <translation id="3518086201899641494">Notificações acerca de portais cativos</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Permite aos utilizadores optar pela recolha de cadeias de certificados TLS/SSL inválidos.</translation>
@@ -2010,7 +2008,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3654045516529121250">Ler definições de acessibilidade</translation>
 <translation id="3654092442379740616">Erro de Sincronização: o <ph name="PRODUCT_NAME" /> está desatualizado e tem de ser atualizado.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um ficheiro.}other{Tem acesso permanente a # ficheiros.}}</translation>
-<translation id="3656059567098593256">O <ph name="APP_NAME" /> pretende partilhar o conteúdo do seu ecrã com <ph name="TARGET_NAME" />. Escolha o que pretende partilhar.</translation>
 <translation id="3657468915905674858">Ativar bloqueio Win32k PPAPI.</translation>
 <translation id="3660234220361471169">Não fidedigno</translation>
 <translation id="3665589677786828986">O Chrome detetou que algumas das suas definições foram danificadas por outro programa e repôs as respetivas predefinições originais.</translation>
@@ -2567,7 +2564,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4462159676511157176">Servidores de nome personalizado</translation>
 <translation id="4465830120256509958">Teclado brasileiro</translation>
 <translation id="4467100756425880649">Galeria da Web Store do Chrome</translation>
-<translation id="4467798014533545464">Mostrar URL</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4474155171896946103">Adicionar todos os separadores aos marcadores...</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -4627,6 +4623,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7393449708074241536">Esta ação elimina permanentemente <ph name="TOTAL_COUNT" /> itens deste dispositivo.</translation>
 <translation id="7396845648024431313">O <ph name="APP_NAME" /> é iniciado no arranque do sistema e continua a ser executado em segundo plano, mesmo depois de fechar todas as restantes janelas do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7396863776022882342">Permitir que todos os sites utilizem a geração de chaves em formulários.</translation>
+<translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Aguarde enquanto o Chromebox é reiniciado...</translation>
 <translation id="7401543881546089382">Eliminar atalho</translation>
 <translation id="7403358905955888520">Desativar a política do dispositivo de deteção automática do fuso horário do sistema.</translation>
@@ -5002,7 +4999,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7928710562641958568">Ejetar aparelho</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> está a partilhar o ecrã e o áudio.</translation>
 <translation id="7938594894617528435">Atualmente offline</translation>
-<translation id="7939374455203157513">Ativar serviços na nuvem</translation>
 <translation id="7939412583708276221">Manter na mesma</translation>
 <translation id="7939997691108949385">O gestor poderá configurar restrições e definições para este utilizador supervisionado em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">EUA Colemak</translation>

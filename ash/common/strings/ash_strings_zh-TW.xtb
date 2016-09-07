@@ -94,7 +94,6 @@
 <translation id="3621712662352432595">音訊設定</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
 <translation id="3626281679859535460">亮度</translation>
-<translation id="3678715477168044796"><ph name="DISPLAY_NAME" />：<ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 的解析度已變更為 <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">啟用 Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
@@ -130,7 +129,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + Shift + 空格鍵</translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
-<translation id="511445211639755999"><ph name="RESOLUTION" />，<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5238774010593222950">無法登入其他帳戶。</translation>
