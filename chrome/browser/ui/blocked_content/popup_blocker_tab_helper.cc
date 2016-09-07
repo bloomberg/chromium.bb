@@ -90,25 +90,26 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
           creator, creator, CONTENT_SETTINGS_TYPE_POPUPS, std::string()) ==
           CONTENT_SETTING_ALLOW) {
     return false;
-  } else {
-    if (blocked_popups_.size() < kMaximumNumberOfPopups) {
-      blocked_popups_.Add(new BlockedRequest(params, window_features));
-      TabSpecificContentSettings::FromWebContents(web_contents())->
-          OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
-    }
-    return true;
   }
+
+  AddBlockedPopup(params, window_features);
+  return true;
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(const BlockedWindowParams& params) {
-  chrome::NavigateParams nav_params =
-      params.CreateNavigateParams(web_contents());
+  AddBlockedPopup(params.CreateNavigateParams(web_contents()),
+                  params.features());
+}
 
-  if (blocked_popups_.size() < kMaximumNumberOfPopups) {
-    blocked_popups_.Add(new BlockedRequest(nav_params, params.features()));
-    TabSpecificContentSettings::FromWebContents(web_contents())->
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
-  }
+void PopupBlockerTabHelper::AddBlockedPopup(
+    const chrome::NavigateParams& params,
+    const WebWindowFeatures& window_features) {
+  if (blocked_popups_.size() >= kMaximumNumberOfPopups)
+    return;
+
+  blocked_popups_.Add(new BlockedRequest(params, window_features));
+  TabSpecificContentSettings::FromWebContents(web_contents())->
+      OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
 }
 
 void PopupBlockerTabHelper::ShowBlockedPopup(int32_t id) {
