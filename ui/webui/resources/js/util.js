@@ -393,6 +393,31 @@ function quoteString(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 }
 
+/**
+ * Calls |callback| and stops listening the first time any event in |eventNames|
+ * is triggered on |target|.
+ * @param {!EventTarget} target
+ * @param {!Array<string>|string} eventNames Array or space-delimited string of
+ *     event names to listen to (e.g. 'click mousedown').
+ * @param {function(!Event)} callback Called at most once. The
+ *     optional return value is passed on by the listener.
+ */
+function listenOnce(target, eventNames, callback) {
+  if (!Array.isArray(eventNames))
+    eventNames = eventNames.split(/ +/);
+
+  var removeAllAndCallCallback = function(event) {
+    eventNames.forEach(function(eventName) {
+      target.removeEventListener(eventName, removeAllAndCallCallback, false);
+    });
+    return callback(event);
+  };
+
+  eventNames.forEach(function(eventName) {
+    target.addEventListener(eventName, removeAllAndCallCallback, false);
+  });
+}
+
 // <if expr="is_ios">
 // Polyfill 'key' in KeyboardEvent for iOS.
 // This function is not intended to be complete but should

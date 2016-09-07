@@ -36,9 +36,6 @@ Polymer({
      * @private {!GuestModePageVisibility}
      */
     pageVisibility_: Object,
-
-    /** @private */
-    drawerOpened_: Boolean,
   },
 
   /**
@@ -51,8 +48,14 @@ Polymer({
       this.$$('settings-main').searchContents(e.detail);
     }.bind(this));
 
+    // Lazy-create the drawer the first time it is opened or swiped into view.
+    var drawer = assert(this.$$('app-drawer'));
+    listenOnce(drawer, 'track opened-changed', function() {
+      this.$.drawerTemplate.if = true;
+    }.bind(this));
+
     window.addEventListener('popstate', function(e) {
-      this.$$('app-drawer').close();
+      drawer.close();
     }.bind(this));
 
     if (loadTimeData.getBoolean('isGuest')) {
