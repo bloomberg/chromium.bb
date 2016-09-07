@@ -63,6 +63,7 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
     return;
   BlinkAXTreeSource tree_source(render_frame);
   tree_source.SetRoot(root);
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
   BlinkAXTreeSerializer serializer(&tree_source);
   serializer.set_max_node_count(kMaxSnapshotNodeCount);
   serializer.SerializeChanges(context.root(), response);
@@ -249,6 +250,7 @@ void RenderAccessibilityImpl::SetPdfTreeSource(
   pdf_tree_source_ = pdf_tree_source;
   pdf_serializer_.reset(new PdfAXTreeSerializer(pdf_tree_source_));
 
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   WebAXObject root = tree_source_.GetRoot();
   if (!root.updateLayoutAndCheckValidity())
     return;
@@ -320,6 +322,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     while (!obj.isDetached() && obj.accessibilityIsIgnored())
       obj = obj.parentObject();
 
+    ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+
     // Make sure it's a descendant of our root node - exceptions include the
     // scroll area that's the parent of the main document (we ignore it), and
     // possibly nodes attached to a different document.
@@ -367,6 +371,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
 
   // Update layout on the root of the tree.
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   WebAXObject root = tree_source_.GetRoot();
   if (!root.updateLayoutAndCheckValidity())
     return;
@@ -461,6 +466,7 @@ void RenderAccessibilityImpl::OnHitTest(gfx::Point point) {
   // message back to the browser to do the hit test in the child frame,
   // recursively.
   AXContentNodeData data;
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   tree_source_.SerializeNode(obj, &data);
   if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
       data.HasContentIntAttribute(
@@ -475,6 +481,7 @@ void RenderAccessibilityImpl::OnHitTest(gfx::Point point) {
 }
 
 void RenderAccessibilityImpl::OnSetAccessibilityFocus(int acc_obj_id) {
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   if (tree_source_.accessibility_focus_id() == acc_obj_id)
     return;
 

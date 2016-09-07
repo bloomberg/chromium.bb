@@ -113,22 +113,55 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
 
 }  // namespace
 
+ScopedFreezeBlinkAXTreeSource::ScopedFreezeBlinkAXTreeSource(
+    BlinkAXTreeSource* tree_source)
+    : tree_source_(tree_source) {
+  tree_source_->Freeze();
+}
+
+ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
+  tree_source_->Thaw();
+}
+
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
     : render_frame_(render_frame),
-      accessibility_focus_id_(-1) {
-}
+      accessibility_focus_id_(-1),
+      frozen_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
 
+void BlinkAXTreeSource::Freeze() {
+  CHECK(!frozen_);
+  frozen_ = true;
+
+  if (render_frame_ && render_frame_->GetWebFrame())
+    document_ = render_frame_->GetWebFrame()->document();
+  else
+    document_ = WebDocument();
+
+  root_ = ComputeRoot();
+
+  if (!document_.isNull())
+    focus_ = document_.focusedAccessibilityObject();
+  else
+    focus_ = WebAXObject();
+}
+
+void BlinkAXTreeSource::Thaw() {
+  CHECK(frozen_);
+  frozen_ = false;
+}
+
 void BlinkAXTreeSource::SetRoot(blink::WebAXObject root) {
-  root_ = root;
+  CHECK(!frozen_);
+  explicit_root_ = root;
 }
 
 bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
-  const blink::WebAXObject& root = GetRoot();
+  CHECK(frozen_);
   while (IsValid(node)) {
-    if (node.equals(root))
+    if (node.equals(root()))
       return true;
     node = GetParent(node);
   }
@@ -136,25 +169,23 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
 }
 
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
-  blink::WebDocument document = BlinkAXTreeSource::GetMainDocument();
-  const blink::WebAXObject& root = GetRoot();
-
+  CHECK(frozen_);
   tree_data->doctype = "html";
-  tree_data->loaded = root.isLoaded();
-  tree_data->loading_progress = root.estimatedLoadingProgress();
-  tree_data->mimetype = document.isXHTMLDocument() ? "text/xhtml" : "text/html";
-  tree_data->title = document.title().utf8();
-  tree_data->url = document.url().string().utf8();
+  tree_data->loaded = root().isLoaded();
+  tree_data->loading_progress = root().estimatedLoadingProgress();
+  tree_data->mimetype =
+      document().isXHTMLDocument() ? "text/xhtml" : "text/html";
+  tree_data->title = document().title().utf8();
+  tree_data->url = document().url().string().utf8();
 
-  WebAXObject focus = document.focusedAccessibilityObject();
-  if (!focus.isNull())
-    tree_data->focus_id = focus.axID();
+  if (!focus().isNull())
+    tree_data->focus_id = focus().axID();
 
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   blink::WebAXTextAffinity anchor_affinity, focus_affinity;
-  root.selection(anchor_object, anchor_offset, anchor_affinity,
-                 focus_object, focus_offset, focus_affinity);
+  root().selection(anchor_object, anchor_offset, anchor_affinity, focus_object,
+                   focus_offset, focus_affinity);
   if (!anchor_object.isNull() && !focus_object.isNull() &&
       anchor_offset >= 0 && focus_offset >= 0) {
     int32_t anchor_id = anchor_object.axID();
@@ -168,7 +199,7 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   }
 
   // Get the tree ID for this frame and the parent frame.
-  WebLocalFrame* web_frame = document.frame();
+  WebLocalFrame* web_frame = document().frame();
   if (web_frame) {
     RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
     tree_data->routing_id = render_frame->GetRoutingID();
@@ -185,9 +216,10 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
-  if (!root_.isNull())
+  if (frozen_)
     return root_;
-  return GetMainDocument().accessibilityObject();
+  else
+    return ComputeRoot();
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetFromId(int32_t id) const {
@@ -201,10 +233,12 @@ int32_t BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
 void BlinkAXTreeSource::GetChildren(
     blink::WebAXObject parent,
     std::vector<blink::WebAXObject>* out_children) const {
+  CHECK(frozen_);
+
   if (parent.role() == blink::WebAXRoleStaticText) {
+    int32_t focus_id = focus().axID();
     blink::WebAXObject ancestor = parent;
     while (!ancestor.isDetached()) {
-      int32_t focus_id = GetMainDocument().focusedAccessibilityObject().axID();
       if (ancestor.axID() == accessibility_focus_id_ ||
           (ancestor.axID() == focus_id && ancestor.isEditable())) {
         parent.loadInlineTextBoxes();
@@ -237,12 +271,13 @@ void BlinkAXTreeSource::GetChildren(
 
 blink::WebAXObject BlinkAXTreeSource::GetParent(
     blink::WebAXObject node) const {
+  CHECK(frozen_);
+
   // Blink returns ignored objects when walking up the parent chain,
   // we have to skip those here. Also, stop when we get to the root
   // element.
-  blink::WebAXObject root = GetRoot();
   do {
-    if (node.equals(root))
+    if (node.equals(root()))
       return blink::WebAXObject();
     node = node.parentObject();
   } while (!node.isDetached() && node.accessibilityIsIgnored());
@@ -698,9 +733,22 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
-  if (render_frame_ && render_frame_->GetWebFrame())
-    return render_frame_->GetWebFrame()->document();
-  return WebDocument();
+  CHECK(frozen_);
+  return document_;
+}
+
+WebAXObject BlinkAXTreeSource::ComputeRoot() const {
+  if (!explicit_root_.isNull())
+    return explicit_root_;
+
+  if (!render_frame_ || !render_frame_->GetWebFrame())
+    return WebAXObject();
+
+  WebDocument document = render_frame_->GetWebFrame()->document();
+  if (!document.isNull())
+    return document.accessibilityObject();
+
+  return WebAXObject();
 }
 
 }  // namespace content
