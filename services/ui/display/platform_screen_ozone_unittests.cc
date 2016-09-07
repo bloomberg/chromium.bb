@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/display/platform_screen.h"
-#include "services/ui/display/platform_screen_impl_ozone.h"
+#include "services/ui/display/platform_screen_ozone.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -101,7 +101,7 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
 };
 
 // Test fixture with helpers to act like ui::DisplayConfigurator and send
-// OnDisplayModeChanged() to PlatformScreenImplOzone.
+// OnDisplayModeChanged() to PlatformScreenOzone.
 class PlatformScreenOzoneTest : public testing::Test {
  public:
   PlatformScreenOzoneTest() {}
@@ -170,7 +170,7 @@ class PlatformScreenOzoneTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     ui::OzonePlatform::InitializeForUI();
-    platform_screen_ = base::MakeUnique<PlatformScreenImplOzone>();
+    platform_screen_ = base::MakeUnique<PlatformScreenOzone>();
     platform_screen_->Init(&delegate_);
 
     // Double check the expected display exists and clear counters.
@@ -191,7 +191,7 @@ class PlatformScreenOzoneTest : public testing::Test {
   }
 
   TestPlatformScreenDelegate delegate_;
-  std::unique_ptr<PlatformScreenImplOzone> platform_screen_;
+  std::unique_ptr<PlatformScreenOzone> platform_screen_;
   std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 };
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/platform_screen_impl.h"
+#include "services/ui/display/platform_screen_stub.h"
 
 #include <memory>
 
@@ -21,26 +21,26 @@ const int64_t kDisplayId = 1;
 
 // static
 std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::MakeUnique<PlatformScreenImpl>();
+  return base::MakeUnique<PlatformScreenStub>();
 }
 
-PlatformScreenImpl::PlatformScreenImpl() : weak_ptr_factory_(this) {}
+PlatformScreenStub::PlatformScreenStub() : weak_ptr_factory_(this) {}
 
-PlatformScreenImpl::~PlatformScreenImpl() {}
+PlatformScreenStub::~PlatformScreenStub() {}
 
-void PlatformScreenImpl::FixedSizeScreenConfiguration() {
+void PlatformScreenStub::FixedSizeScreenConfiguration() {
   delegate_->OnDisplayAdded(this, kDisplayId, gfx::Rect(1024, 768));
 }
 
-void PlatformScreenImpl::Init(PlatformScreenDelegate* delegate) {
+void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PlatformScreenImpl::FixedSizeScreenConfiguration,
+      FROM_HERE, base::Bind(&PlatformScreenStub::FixedSizeScreenConfiguration,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-int64_t PlatformScreenImpl::GetPrimaryDisplayId() const {
+int64_t PlatformScreenStub::GetPrimaryDisplayId() const {
   return kDisplayId;
 }
 

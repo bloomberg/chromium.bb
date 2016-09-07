@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/platform_screen_impl_ozone.h"
+#include "services/ui/display/platform_screen_ozone.h"
 
 #include <memory>
 
@@ -27,16 +27,16 @@ const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 // static
 std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::MakeUnique<PlatformScreenImplOzone>();
+  return base::MakeUnique<PlatformScreenOzone>();
 }
 
-PlatformScreenImplOzone::PlatformScreenImplOzone() {}
+PlatformScreenOzone::PlatformScreenOzone() {}
 
-PlatformScreenImplOzone::~PlatformScreenImplOzone() {
+PlatformScreenOzone::~PlatformScreenOzone() {
   display_configurator_.RemoveObserver(this);
 }
 
-void PlatformScreenImplOzone::Init(PlatformScreenDelegate* delegate) {
+void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 
@@ -60,11 +60,11 @@ void PlatformScreenImplOzone::Init(PlatformScreenDelegate* delegate) {
   }
 }
 
-int64_t PlatformScreenImplOzone::GetPrimaryDisplayId() const {
+int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
-void PlatformScreenImplOzone::ProcessRemovedDisplays(
+void PlatformScreenOzone::ProcessRemovedDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   std::vector<int64_t> current_ids;
   for (ui::DisplaySnapshot* snapshot : snapshots)
@@ -91,7 +91,7 @@ void PlatformScreenImplOzone::ProcessRemovedDisplays(
   }
 }
 
-void PlatformScreenImplOzone::ProcessModifiedDisplays(
+void PlatformScreenOzone::ProcessModifiedDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   for (ui::DisplaySnapshot* snapshot : snapshots) {
     auto iter = GetCachedDisplayIterator(snapshot->display_id());
@@ -106,7 +106,7 @@ void PlatformScreenImplOzone::ProcessModifiedDisplays(
   }
 }
 
-void PlatformScreenImplOzone::UpdateCachedDisplays() {
+void PlatformScreenOzone::UpdateCachedDisplays() {
   // Walk through cached displays after processing the snapshots to find any
   // removed or modified displays. This ensures that we only send one update per
   // display to the delegate.
@@ -135,7 +135,7 @@ void PlatformScreenImplOzone::UpdateCachedDisplays() {
   }
 }
 
-void PlatformScreenImplOzone::AddNewDisplays(
+void PlatformScreenOzone::AddNewDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   for (ui::DisplaySnapshot* snapshot : snapshots) {
     const int64_t id = snapshot->display_id();
@@ -159,15 +159,15 @@ void PlatformScreenImplOzone::AddNewDisplays(
   }
 }
 
-PlatformScreenImplOzone::CachedDisplayIterator
-PlatformScreenImplOzone::GetCachedDisplayIterator(int64_t display_id) {
+PlatformScreenOzone::CachedDisplayIterator
+PlatformScreenOzone::GetCachedDisplayIterator(int64_t display_id) {
   return std::find_if(cached_displays_.begin(), cached_displays_.end(),
                       [display_id](const DisplayInfo& display_info) {
                         return display_info.id == display_id;
                       });
 }
 
-void PlatformScreenImplOzone::OnDisplayModeChanged(
+void PlatformScreenOzone::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   ProcessRemovedDisplays(displays);
   ProcessModifiedDisplays(displays);
@@ -175,7 +175,7 @@ void PlatformScreenImplOzone::OnDisplayModeChanged(
   AddNewDisplays(displays);
 }
 
-void PlatformScreenImplOzone::OnDisplayModeChangeFailed(
+void PlatformScreenOzone::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";

@@ -19,18 +19,18 @@ source_set("display") {
 
   if (use_ozone && is_chromeos) {
     sources += [
-      "platform_screen_impl_ozone.cc",
-      "platform_screen_impl_ozone.h",
+      "platform_screen_ozone.cc",
+      "platform_screen_ozone.h",
     ]
 
     deps += [
       "//skia",
-      "//ui/ozone:ozone",
+      "//ui/ozone",
     ]
   } else {
     sources += [
-      "platform_screen_impl.cc",
-      "platform_screen_impl.h",
+      "platform_screen_stub.cc",
+      "platform_screen_stub.h",
     ]
   }
 }

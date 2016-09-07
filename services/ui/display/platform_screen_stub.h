@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_
-#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_
+#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_STUB_H_
+#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_STUB_H_
 
 #include <stdint.h>
 
@@ -13,12 +13,12 @@
 
 namespace display {
 
-// PlatformScreenImpl provides the necessary functionality to configure all
-// attached physical displays on non-ozone platforms.
-class PlatformScreenImpl : public PlatformScreen {
+// PlatformScreenStub provides the necessary functionality to configure a fixed
+// 1024x768 display for non-ozone platforms.
+class PlatformScreenStub : public PlatformScreen {
  public:
-  PlatformScreenImpl();
-  ~PlatformScreenImpl() override;
+  PlatformScreenStub();
+  ~PlatformScreenStub() override;
 
  private:
   // Fake creation of a single 1024x768 display.
@@ -30,11 +30,11 @@ class PlatformScreenImpl : public PlatformScreen {
 
   PlatformScreenDelegate* delegate_ = nullptr;
 
-  base::WeakPtrFactory<PlatformScreenImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PlatformScreenStub> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformScreenImpl);
+  DISALLOW_COPY_AND_ASSIGN(PlatformScreenStub);
 };
 
 }  // namespace display
 
-#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_
+#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_STUB_H_

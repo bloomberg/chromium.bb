@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_OZONE_H_
-#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_OZONE_H_
+#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_OZONE_H_
+#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_OZONE_H_
 
 #include <stdint.h>
 
@@ -18,13 +18,13 @@
 
 namespace display {
 
-// PlatformScreenImplOzone provides the necessary functionality to configure all
+// PlatformScreenOzone provides the necessary functionality to configure all
 // attached physical displays on the ozone platform.
-class PlatformScreenImplOzone : public PlatformScreen,
-                                public ui::DisplayConfigurator::Observer {
+class PlatformScreenOzone : public PlatformScreen,
+                            public ui::DisplayConfigurator::Observer {
  public:
-  PlatformScreenImplOzone();
-  ~PlatformScreenImplOzone() override;
+  PlatformScreenOzone();
+  ~PlatformScreenOzone() override;
 
   // PlatformScreen:
   void Init(PlatformScreenDelegate* delegate) override;
@@ -92,9 +92,9 @@ class PlatformScreenImplOzone : public PlatformScreen,
   std::vector<DisplayInfo> cached_displays_;
   gfx::Point next_display_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformScreenImplOzone);
+  DISALLOW_COPY_AND_ASSIGN(PlatformScreenOzone);
 };
 
 }  // namespace display
 
-#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_OZONE_H_
+#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_OZONE_H_
