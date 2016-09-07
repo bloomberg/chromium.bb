@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "webm/element.h"
-#include "webm/id.h"
+#include "element.h"
+#include "id.h"
 
 /**
  \file

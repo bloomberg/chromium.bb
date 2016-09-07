@@ -13,8 +13,8 @@
 #include <initializer_list>
 #include <vector>
 
-#include "webm/reader.h"
-#include "webm/status.h"
+#include "reader.h"
+#include "status.h"
 
 /**
  \file

@@ -10,9 +10,9 @@
 
 #include <cstdint>
 
-#include "webm/dom_types.h"
-#include "webm/reader.h"
-#include "webm/status.h"
+#include "dom_types.h"
+#include "reader.h"
+#include "status.h"
 
 /**
  \file

@@ -10,9 +10,9 @@
 
 #include <memory>
 
-#include "webm/callback.h"
-#include "webm/reader.h"
-#include "webm/status.h"
+#include "callback.h"
+#include "reader.h"
+#include "status.h"
 
 /**
  \file
