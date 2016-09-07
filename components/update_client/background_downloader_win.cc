@@ -12,6 +12,7 @@
 #include <functional>
 #include <iomanip>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -873,8 +874,8 @@ HRESULT BackgroundDownloader::ClearGit() {
   };
 
   for (auto cookie : cookies) {
-    hr = git->RevokeInterfaceFromGlobal(cookie);
-    DCHECK(SUCCEEDED(hr));
+    // TODO(sorin): check the result of the call, see crbug.com/644857.
+    git->RevokeInterfaceFromGlobal(cookie);
   }
 
   return S_OK;
