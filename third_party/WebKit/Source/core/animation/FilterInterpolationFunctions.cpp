@@ -251,7 +251,7 @@ FilterOperation* FilterInterpolationFunctions::createFilter(const InterpolableVa
     }
 
     case FilterOperation::BLUR: {
-        Length stdDeviation = CSSLengthInterpolationType::resolveInterpolableLength(interpolableValue, nonInterpolableValue.typeNonInterpolableValue(), state.cssToLengthConversionData(), ValueRangeNonNegative);
+        Length stdDeviation = CSSLengthInterpolationType::createLength(interpolableValue, nonInterpolableValue.typeNonInterpolableValue(), state.cssToLengthConversionData(), ValueRangeNonNegative);
         return BlurFilterOperation::create(stdDeviation);
     }
 

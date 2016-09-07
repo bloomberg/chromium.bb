@@ -122,9 +122,9 @@ void CSSTranslateInterpolationType::apply(const InterpolableValue& interpolableV
 {
     const InterpolableList& list = toInterpolableList(interpolableValue);
     const CSSToLengthConversionData& conversionData = environment.state().cssToLengthConversionData();
-    Length x = CSSLengthInterpolationType::resolveInterpolableLength(*list.get(TranslateX), nullptr, conversionData, ValueRangeAll);
-    Length y = CSSLengthInterpolationType::resolveInterpolableLength(*list.get(TranslateY), nullptr, conversionData, ValueRangeAll);
-    float z = CSSLengthInterpolationType::resolveInterpolableLength(*list.get(TranslateZ), nullptr, conversionData, ValueRangeAll).pixels();
+    Length x = CSSLengthInterpolationType::createLength(*list.get(TranslateX), nullptr, conversionData, ValueRangeAll);
+    Length y = CSSLengthInterpolationType::createLength(*list.get(TranslateY), nullptr, conversionData, ValueRangeAll);
+    float z = CSSLengthInterpolationType::createLength(*list.get(TranslateZ), nullptr, conversionData, ValueRangeAll).pixels();
 
     RefPtr<TranslateTransformOperation> result = nullptr;
     if (!x.isZero() || !y.isZero() || z != 0)

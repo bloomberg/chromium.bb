@@ -22,7 +22,7 @@ public:
     void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
-    static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
+    static Length createLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
     static std::unique_ptr<InterpolableValue> createInterpolablePixels(double pixels);
     static InterpolationValue createInterpolablePercent(double percent);
     static InterpolationValue maybeConvertCSSValue(const CSSValue&);

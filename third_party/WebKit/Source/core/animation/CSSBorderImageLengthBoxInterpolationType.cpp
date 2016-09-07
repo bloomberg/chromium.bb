@@ -267,7 +267,7 @@ void CSSBorderImageLengthBoxInterpolationType::apply(const InterpolableValue& in
     const auto& convertSide = [&sideNumbers, &list, &environment, &nonInterpolableValues](size_t index) -> BorderImageLength {
         if (sideNumbers.isNumber[index])
             return clampTo<double>(toInterpolableNumber(list.get(index))->value(), 0);
-        return CSSLengthInterpolationType::resolveInterpolableLength(*list.get(index), nonInterpolableValues[index].get(), environment.state().cssToLengthConversionData(), ValueRangeNonNegative);
+        return CSSLengthInterpolationType::createLength(*list.get(index), nonInterpolableValues[index].get(), environment.state().cssToLengthConversionData(), ValueRangeNonNegative);
     };
     BorderImageLengthBox box(
         convertSide(SideTop),

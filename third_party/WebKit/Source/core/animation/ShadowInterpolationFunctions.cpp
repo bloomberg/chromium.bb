@@ -139,10 +139,10 @@ ShadowData ShadowInterpolationFunctions::createShadowData(const InterpolableValu
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const ShadowNonInterpolableValue& shadowNonInterpolableValue = toShadowNonInterpolableValue(*nonInterpolableValue);
     const CSSToLengthConversionData& conversionData = state.cssToLengthConversionData();
-    Length shadowX = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowX), nullptr, conversionData);
-    Length shadowY = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowY), nullptr, conversionData);
-    Length shadowBlur = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowBlur), nullptr, conversionData, ValueRangeNonNegative);
-    Length shadowSpread = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowSpread), nullptr, conversionData);
+    Length shadowX = CSSLengthInterpolationType::createLength(*interpolableList.get(ShadowX), nullptr, conversionData);
+    Length shadowY = CSSLengthInterpolationType::createLength(*interpolableList.get(ShadowY), nullptr, conversionData);
+    Length shadowBlur = CSSLengthInterpolationType::createLength(*interpolableList.get(ShadowBlur), nullptr, conversionData, ValueRangeNonNegative);
+    Length shadowSpread = CSSLengthInterpolationType::createLength(*interpolableList.get(ShadowSpread), nullptr, conversionData);
     DCHECK(shadowX.isFixed() && shadowY.isFixed() && shadowBlur.isFixed() && shadowSpread.isFixed());
     return ShadowData(
         FloatPoint(shadowX.value(), shadowY.value()), shadowBlur.value(), shadowSpread.value(), shadowNonInterpolableValue.style(),

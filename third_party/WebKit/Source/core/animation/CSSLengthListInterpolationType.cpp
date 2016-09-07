@@ -129,7 +129,7 @@ void CSSLengthListInterpolationType::apply(const InterpolableValue& interpolable
     DCHECK_EQ(nonInterpolableList.length(), length);
     Vector<Length> result(length);
     for (size_t i = 0; i < length; i++) {
-        result[i] = CSSLengthInterpolationType::resolveInterpolableLength(
+        result[i] = CSSLengthInterpolationType::createLength(
             *interpolableList.get(i),
             nonInterpolableList.get(i),
             environment.state().cssToLengthConversionData(),

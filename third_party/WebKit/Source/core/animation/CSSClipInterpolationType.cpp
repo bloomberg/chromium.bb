@@ -255,7 +255,7 @@ void CSSClipInterpolationType::apply(const InterpolableValue& interpolableValue,
     {
         if (isAuto)
             return Length(Auto);
-        return CSSLengthInterpolationType::resolveInterpolableLength(*list.get(index), nullptr, environment.state().cssToLengthConversionData(), ValueRangeAll);
+        return CSSLengthInterpolationType::createLength(*list.get(index), nullptr, environment.state().cssToLengthConversionData(), ValueRangeAll);
     };
     environment.state().style()->setClip(LengthBox(
         convertIndex(autos.isTopAuto, ClipTop),

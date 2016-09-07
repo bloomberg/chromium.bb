@@ -199,7 +199,7 @@ void CSSTextIndentInterpolationType::apply(const InterpolableValue& interpolable
 {
     const CSSTextIndentNonInterpolableValue& cssTextIndentNonInterpolableValue = toCSSTextIndentNonInterpolableValue(*nonInterpolableValue);
     ComputedStyle& style = *environment.state().style();
-    style.setTextIndent(CSSLengthInterpolationType::resolveInterpolableLength(
+    style.setTextIndent(CSSLengthInterpolationType::createLength(
         interpolableValue,
         cssTextIndentNonInterpolableValue.lengthNonInterpolableValue(),
         environment.state().cssToLengthConversionData(),

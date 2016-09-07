@@ -100,7 +100,7 @@ BasicShapeCenterCoordinate createCoordinate(const InterpolableValue& interpolabl
 {
     return BasicShapeCenterCoordinate(
         BasicShapeCenterCoordinate::TopLeft,
-        CSSLengthInterpolationType::resolveInterpolableLength(interpolableValue, nullptr, conversionData));
+        CSSLengthInterpolationType::createLength(interpolableValue, nullptr, conversionData));
 }
 
 std::unique_ptr<InterpolableValue> convertCSSRadius(const CSSPrimitiveValue* radius)
@@ -124,7 +124,7 @@ std::unique_ptr<InterpolableValue> createNeutralInterpolableRadius()
 
 BasicShapeRadius createRadius(const InterpolableValue& interpolableValue, const CSSToLengthConversionData& conversionData)
 {
-    return BasicShapeRadius(CSSLengthInterpolationType::resolveInterpolableLength(interpolableValue, nullptr, conversionData, ValueRangeNonNegative));
+    return BasicShapeRadius(CSSLengthInterpolationType::createLength(interpolableValue, nullptr, conversionData, ValueRangeNonNegative));
 }
 
 std::unique_ptr<InterpolableValue> convertCSSLength(const CSSValue* length)
@@ -152,8 +152,8 @@ std::unique_ptr<InterpolableValue> convertCSSBorderRadiusHeight(const CSSValuePa
 LengthSize createBorderRadius(const InterpolableValue& width, const InterpolableValue& height, const CSSToLengthConversionData& conversionData)
 {
     return LengthSize(
-        CSSLengthInterpolationType::resolveInterpolableLength(width, nullptr, conversionData, ValueRangeNonNegative),
-        CSSLengthInterpolationType::resolveInterpolableLength(height, nullptr, conversionData, ValueRangeNonNegative));
+        CSSLengthInterpolationType::createLength(width, nullptr, conversionData, ValueRangeNonNegative),
+        CSSLengthInterpolationType::createLength(height, nullptr, conversionData, ValueRangeNonNegative));
 }
 
 namespace CircleFunctions {
@@ -360,10 +360,10 @@ PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableVal
 {
     RefPtr<BasicShapeInset> inset = BasicShapeInset::create();
     const InterpolableList& list = toInterpolableList(interpolableValue);
-    inset->setTop(CSSLengthInterpolationType::resolveInterpolableLength(*list.get(InsetTopIndex), nullptr, conversionData));
-    inset->setRight(CSSLengthInterpolationType::resolveInterpolableLength(*list.get(InsetRightIndex), nullptr, conversionData));
-    inset->setBottom(CSSLengthInterpolationType::resolveInterpolableLength(*list.get(InsetBottomIndex), nullptr, conversionData));
-    inset->setLeft(CSSLengthInterpolationType::resolveInterpolableLength(*list.get(InsetLeftIndex), nullptr, conversionData));
+    inset->setTop(CSSLengthInterpolationType::createLength(*list.get(InsetTopIndex), nullptr, conversionData));
+    inset->setRight(CSSLengthInterpolationType::createLength(*list.get(InsetRightIndex), nullptr, conversionData));
+    inset->setBottom(CSSLengthInterpolationType::createLength(*list.get(InsetBottomIndex), nullptr, conversionData));
+    inset->setLeft(CSSLengthInterpolationType::createLength(*list.get(InsetLeftIndex), nullptr, conversionData));
 
     inset->setTopLeftRadius(createBorderRadius(*list.get(InsetBorderTopLeftWidthIndex), *list.get(InsetBorderTopLeftHeightIndex), conversionData));
     inset->setTopRightRadius(createBorderRadius(*list.get(InsetBorderTopRightWidthIndex), *list.get(InsetBorderTopRightHeightIndex), conversionData));
@@ -412,8 +412,8 @@ PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableVal
     DCHECK_EQ(size % 2, 0U);
     for (size_t i = 0; i < size; i += 2) {
         polygon->appendPoint(
-            CSSLengthInterpolationType::resolveInterpolableLength(*list.get(i), nullptr, conversionData),
-            CSSLengthInterpolationType::resolveInterpolableLength(*list.get(i + 1), nullptr, conversionData));
+            CSSLengthInterpolationType::createLength(*list.get(i), nullptr, conversionData),
+            CSSLengthInterpolationType::createLength(*list.get(i + 1), nullptr, conversionData));
     }
     return polygon.release();
 }
