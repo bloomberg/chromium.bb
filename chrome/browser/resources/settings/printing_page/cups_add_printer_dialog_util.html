@@ -1,6 +1,10 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="/printing_page/cups_printers_browser_proxy.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -28,6 +32,45 @@
         </paper-item>
       </template>
     </div>
+  </template>
+</dom-module>
+
+<dom-module id="drop-down-search-box">
+  <template>
+    <style include="settings-shared">
+      iron-dropdown,
+      paper-input-container {
+        width: 270px;
+      }
+
+      paper-input-container {
+        --paper-input-container-color: var(--google-grey-500);
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
+      }
+
+      iron-dropdown .dropdown-content paper-item {
+        min-height: 40px;
+      }
+    </style>
+    <paper-input-container no-label-float>
+      <input is="iron-input" type="search" on-tap="onTap_"
+          on-search="onInputValueChanged_" on-blur="onBlur_" incremental>
+      <paper-icon-button suffix id="searchIcon" icon="cr:search" hidden>
+      </paper-icon-button>
+      <paper-icon-button suffix id="dropdownIcon" icon="cr:arrow-drop-down">
+      </paper-icon-button>
+    </paper-input-container>
+    <iron-dropdown horizontal-align="left" vertical-align="top"
+        vertical-offset="47">
+      <div class="dropdown-content">
+        <template is="dom-repeat" items="[[items]]"
+            filter="[[filterItems_(searchTerm_)]]">
+          <paper-item on-tap="onSelect_">[[item]]</paper-item>
+        </template>
+      </div>
+    </iron-dropdown>
   </template>
 </dom-module>
 

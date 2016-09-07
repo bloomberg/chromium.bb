@@ -1091,6 +1091,12 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"printerProtocolUsb", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB},
     {"printerConfiguringMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
+    {"searchingPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_PRINTER},
+    {"printerNotFound", IDS_SETTINGS_PRINTING_CUPS_PRINTER_NOT_FOUND_PRINTER},
+    {"printerFound", IDS_SETTINGS_PRINTING_CUPS_PRINTER_FOUND_PRINTER},
+    {"selectManufacturerModelMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_MANUFACTURER_MODEL},
+    {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

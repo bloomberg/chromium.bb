@@ -11,6 +11,8 @@
  * - 'add-printer-maually-dialog' is a dialog in which user can manually enter
  *   the information to set up a new printer.
  * - 'add-printer-configuring-dialog' is the configuring-in-progress dialog.
+ * - 'add-printer-manufacturer-model-dialog' is a dialog in which the user can
+ *   manually select the manufacture and model of the new printer.
  */
 
 /**
@@ -21,6 +23,7 @@ var AddPrinterDialogs = {
   DISCOVERY: 'add-printer-discovery-dialog',
   MANUALLY: 'add-printer-maually-dialog',
   CONFIGURING: 'add-printer-configuring-dialog',
+  MANUFACTURER: 'add-printer-manufacturer-model-dialog',
 };
 
 Polymer({
@@ -98,6 +101,103 @@ Polymer({
   },
 
   /** @private */
+  switchToManufacturerDialog_: function() {
+    this.$$('add-printer-dialog').close();
+    this.fire('open-manufacturer-model-dialog');
+  },
+
+  /** @private */
+  onAddressChanged_: function() {
+    this.$.searchInProgress.hidden = false;
+    this.$.searchFound.hidden = true;
+    this.$.searchNotFound.hidden = true;
+
+    var value = this.$.printerAddressInput.value;
+    if (this.isValidIpAddress_(value)) {
+      // TODO(xdai): Check if the printer address exists after the API is ready.
+      this.$.searchInProgress.hidden = true;
+      this.$.searchFound.hidden = false;
+      this.$.searchNotFound.hidden = true;
+    } else {
+      this.$.searchInProgress.hidden = true;
+      this.$.searchFound.hidden = true;
+      this.$.searchNotFound.hidden = false;
+    }
+  },
+
+  /**
+   * @param {string} ip
+   * @return {boolean}
+   * @private
+   */
+  isValidIpAddress_: function(ip) {
+    var addressRegex = RegExp('^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
+                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
+                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
+                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])$');
+    return addressRegex.test(ip);
+  },
+
+  /**
+   * @param {string} printerName
+   * @param {string} printerAddress
+   * @return {boolean}
+   * @private
+   */
+  addPrinterNotAllowed_: function(printerName, printerAddress) {
+    return !printerName || !printerAddress ||
+           !this.isValidIpAddress_(printerAddress);
+  },
+});
+
+Polymer({
+  is: 'add-printer-manufacturer-model-dialog',
+
+  properties: {
+    /** @type {!CupsPrinterInfo} */
+    newPrinter: {
+      type: Object,
+      notify: true,
+    },
+
+    /** @type {!Array<string>} */
+    manufacturerList: {
+      type: Array,
+    },
+
+    /** @type {!Array<string>} */
+    modelList: {
+      type: Array,
+    },
+  },
+
+  observers: [
+    'selectedManufacturerChanged_(newPrinter.printerManufacturer)',
+  ],
+
+  /** @override */
+  ready: function() {
+    // TODO(xdai): Get available manufacturerList after the API is ready.
+  },
+
+  /** @private */
+  selectedManufacturerChanged_: function() {
+    // TODO(xdai): Get available modelList for a selected manufacturer after
+    // the API is ready.
+  },
+
+  /** @private */
+  switchToManualAddDialog_: function() {
+    this.$$('add-printer-dialog').close();
+    this.fire('open-manually-add-printer-dialog');
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.$$('add-printer-dialog').close();
+  },
+
+  /** @private */
   switchToConfiguringDialog_: function() {
     this.$$('add-printer-dialog').close();
     this.fire('open-configuring-printer-dialog');
@@ -152,6 +252,9 @@ Polymer({
 
     /** @private {boolean} */
     showConfiguringDialog_: Boolean,
+
+    /** @private {boolean} */
+    showManufacturerDialog_: Boolean,
   },
 
   listeners: {
@@ -159,6 +262,7 @@ Polymer({
     'open-manually-add-printer-dialog': 'openManuallyAddPrinterDialog_',
     'open-configuring-printer-dialog': 'openConfiguringPrinterDialog_',
     'open-discovery-printers-dialog': 'openDiscoveryPrintersDialog_',
+    'open-manufacturer-model-dialog': 'openManufacturerModelDialog_',
   },
 
   /** Opens the Add printer discovery dialog. */
@@ -185,6 +289,12 @@ Polymer({
   },
 
   /** @private */
+  openManufacturerModelDialog_: function() {
+    this.switchDialog_(this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
+                       'showManufacturerDialog_');
+  },
+
+  /** @private */
   configuringDialogClosed_: function() {
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.switchDialog_(
@@ -192,6 +302,9 @@ Polymer({
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
       this.switchDialog_(
           this.currentDialog_, this.previousDialog_, 'showManuallyAddDialog_');
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+      this.switchDialog_(
+          this.currentDialog_, this.previousDialog_, 'showManufacturerDialog_');
     }
   },
 
@@ -223,8 +336,10 @@ Polymer({
   getConfiguringPrinterName_: function() {
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY)
       return this.selectedPrinter.printerName;
-    if (this.previousDialog_ == AddPrinterDialogs.MANUALLY)
+    if (this.previousDialog_ == AddPrinterDialogs.MANUALLY ||
+        this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       return this.newPrinter.printerName;
+    }
     return '';
   },
 });
