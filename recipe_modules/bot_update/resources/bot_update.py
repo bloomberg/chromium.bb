@@ -86,6 +86,13 @@ BUILD_INTERNAL_DIR = check_dir(
 CHROMIUM_GIT_HOST = 'https://chromium.googlesource.com'
 CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
 
+# Official builds use buildspecs, so this is a special case.
+BUILDSPEC_TYPE = collections.namedtuple('buildspec',
+    ('container', 'version'))
+BUILDSPEC_RE = (r'^/chrome-internal/trunk/tools/buildspec/'
+                 '(build|branches|releases)/(.+)$')
+GIT_BUILDSPEC_PATH = ('https://chrome-internal.googlesource.com/chrome/tools/'
+                      'buildspec')
 BRANCH_HEADS_REFSPEC = '+refs/branch-heads/*'
 
 BUILDSPEC_COMMIT_RE = (
@@ -106,10 +113,49 @@ COMMIT_POSITION_RE = re.compile(r'(.+)@\{#(\d+)\}')
 # Regular expression to parse gclient's revinfo entries.
 REVINFO_RE = re.compile(r'^([^:]+):\s+([^@]+)@(.+)$')
 
+# Used by 'ResolveSvnRevisionFromGitiles'
+GIT_SVN_PROJECT_MAP = {
+  'webkit': {
+    'svn_url': 'svn://svn.chromium.org/blink',
+    'branch_map': [
+      (r'trunk', r'refs/heads/master'),
+      (r'branches/([^/]+)', r'refs/branch-heads/\1'),
+    ],
+  },
+  'v8': {
+    'svn_url': 'https://v8.googlecode.com/svn',
+    'branch_map': [
+      (r'trunk', r'refs/heads/candidates'),
+      (r'branches/bleeding_edge', r'refs/heads/master'),
+      (r'branches/([^/]+)', r'refs/branch-heads/\1'),
+    ],
+  },
+  'nacl': {
+    'svn_url': 'svn://svn.chromium.org/native_client',
+    'branch_map': [
+      (r'trunk/src/native_client', r'refs/heads/master'),
+    ],
+  },
+}
+
+# Key for the 'git-svn' ID metadata commit footer entry.
+GIT_SVN_ID_FOOTER_KEY = 'git-svn-id'
+# e.g., git-svn-id: https://v8.googlecode.com/svn/trunk@23117
+#     ce2b1a6d-e550-0410-aec6-3dcde31c8c00
+GIT_SVN_ID_RE = re.compile(r'((?:\w+)://[^@]+)@(\d+)\s+(?:[a-zA-Z0-9\-]+)')
+
+
+# This is the git mirror of the buildspecs repository. We could rely on the svn
+# checkout, now that the git buildspecs are checked in alongside the svn
+# buildspecs, but we're going to want to pull all the buildspecs from here
+# eventually anyhow, and there's already some logic to pull from git (for the
+# old git_buildspecs.git repo), so just stick with that.
+GIT_BUILDSPEC_REPO = (
+    'https://chrome-internal.googlesource.com/chrome/tools/buildspec')
 
 # Copied from scripts/recipes/chromium.py.
 GOT_REVISION_MAPPINGS = {
-    CHROMIUM_SRC_URL: {
+    '/chrome/trunk/src': {
         'src/': 'got_revision',
         'src/native_client/': 'got_nacl_revision',
         'src/tools/swarm_client/': 'got_swarm_client_revision',
@@ -136,6 +182,18 @@ step has two main advantages over them:
   * it only operates in Git, so the logic can be clearer and cleaner; and
   * it is a slave-side script, so its behavior can be modified without
     restarting the master.
+
+Why Git, you ask? Because that is the direction that the Chromium project is
+heading. This step is an integral part of the transition from using the SVN repo
+at chrome/trunk/src to using the Git repo src.git. Please pardon the dust while
+we fully convert everything to Git. This message will get out of your way
+eventually, and the waterfall will be a happier place because of it.
+
+This step can be activated or deactivated independently on every builder on
+every master. When it is active, the "gclient revert" and "update" steps become
+no-ops. When it is inactive, it prints this message, cleans up after itself, and
+lets everything else continue as though nothing has changed. Eventually, when
+everything is stable enough, this step will replace them entirely.
 
 Debugging information:
 (master/builder/slave may be unspecified on recipes)
@@ -186,6 +244,16 @@ if BUILD_INTERNAL_DIR:
     print 'If this is an internal bot, this step may be erroneously inactive.'
   internal_data = local_vars
 
+RECOGNIZED_PATHS = {
+    # If SVN path matches key, the entire URL is rewritten to the Git url.
+    '/chrome/trunk/src':
+        CHROMIUM_SRC_URL,
+    '/chrome/trunk/src/tools/cros.DEPS':
+        CHROMIUM_GIT_HOST + '/chromium/src/tools/cros.DEPS.git',
+    '/chrome-internal/trunk/src-internal':
+        'https://chrome-internal.googlesource.com/chrome/src-internal.git',
+}
+RECOGNIZED_PATHS.update(internal_data.get('RECOGNIZED_PATHS', {}))
 
 ENABLED_MASTERS = [
     'bot_update.always_on',
@@ -269,6 +337,17 @@ DISABLED_BUILDERS.update(internal_data.get('DISABLED_BUILDERS', {}))
 DISABLED_SLAVES = {}
 DISABLED_SLAVES.update(internal_data.get('DISABLED_SLAVES', {}))
 
+# These masters work only in Git, meaning for got_revision, always output
+# a git hash rather than a SVN rev.
+GIT_MASTERS = [
+    'client.v8',
+    'client.v8.branches',
+    'client.v8.ports',
+    'tryserver.v8',
+]
+GIT_MASTERS += internal_data.get('GIT_MASTERS', [])
+
+
 # How many times to try before giving up.
 ATTEMPTS = 5
 
@@ -305,7 +384,16 @@ class GclientSyncFailed(SubprocessFailed):
   pass
 
 
+class SVNRevisionNotFound(Exception):
+  pass
+
+
 class InvalidDiff(Exception):
+  pass
+
+
+class Inactive(Exception):
+  """Not really an exception, just used to exit early cleanly."""
   pass
 
 
@@ -465,6 +553,20 @@ def check_valid_host(master, builder, slave):
           and not check_disabled(master, builder, slave))
 
 
+def maybe_ignore_revision(revision, buildspec):
+  """Handle builders that don't care what buildbot tells them to build.
+
+  This is especially the case with branch builders that build from buildspecs
+  and/or trigger off multiple repositories, where the --revision passed in has
+  nothing to do with the solution being built. Clearing the revision in this
+  case causes bot_update to use HEAD rather that trying to checkout an
+  inappropriate version of the solution.
+  """
+  if buildspec and buildspec.container == 'branches':
+    return []
+  return revision
+
+
 def solutions_printer(solutions):
   """Prints gclient solution to stdout."""
   print 'Gclient Solutions'
@@ -499,17 +601,51 @@ def solutions_printer(solutions):
     print
 
 
-def modify_solutions(input_solutions):
+def solutions_to_git(input_solutions):
   """Modifies urls in solutions to point at Git repos.
 
-  returns: new solution dictionary
+  returns: (git solution, svn root of first solution) tuple.
   """
   assert input_solutions
   solutions = copy.deepcopy(input_solutions)
+  first_solution = True
+  buildspec = None
   for solution in solutions:
     original_url = solution['url']
     parsed_url = urlparse.urlparse(original_url)
     parsed_path = parsed_url.path
+
+    # Rewrite SVN urls into Git urls.
+    buildspec_m = re.match(BUILDSPEC_RE, parsed_path)
+    if first_solution and buildspec_m:
+      solution['url'] = GIT_BUILDSPEC_PATH
+      buildspec = BUILDSPEC_TYPE(
+          container=buildspec_m.group(1),
+          version=buildspec_m.group(2),
+      )
+      solution['deps_file'] = path.join(buildspec.container, buildspec.version,
+                                        'DEPS')
+    elif parsed_path in RECOGNIZED_PATHS:
+      solution['url'] = RECOGNIZED_PATHS[parsed_path]
+      solution['deps_file'] = '.DEPS.git'
+    elif parsed_url.scheme == 'https' and 'googlesource' in parsed_url.netloc:
+      pass
+    else:
+      print 'Warning: %s' % ('path %r not recognized' % parsed_path,)
+
+    # Strip out deps containing $$V8_REV$$, etc.
+    if 'custom_deps' in solution:
+      new_custom_deps = {}
+      for deps_name, deps_value in solution['custom_deps'].iteritems():
+        if deps_value and '$$' in deps_value:
+          print 'Dropping %s:%s from custom deps' % (deps_name, deps_value)
+        else:
+          new_custom_deps[deps_name] = deps_value
+      solution['custom_deps'] = new_custom_deps
+
+    if first_solution:
+      root = parsed_path
+      first_solution = False
 
     solution['managed'] = False
     # We don't want gclient to be using a safesync URL. Instead it should
@@ -518,8 +654,7 @@ def modify_solutions(input_solutions):
       print 'Removing safesync url %s from %s' % (solution['safesync_url'],
                                                   parsed_path)
       del solution['safesync_url']
-
-  return solutions
+  return solutions, root, buildspec
 
 
 def remove(target):
@@ -530,15 +665,28 @@ def remove(target):
   os.rename(target, path.join(dead_folder, uuid.uuid4().hex))
 
 
-def ensure_no_checkout(dir_names):
-  """Ensure that there is no undesired checkout under build/."""
-  build_dir = os.getcwd()
-  has_checkout = any(path.exists(path.join(build_dir, dir_name, '.git'))
+def ensure_no_checkout(dir_names, scm_dirname):
+  """Ensure that there is no undesired checkout under build/.
+
+  If there is an incorrect checkout under build/, then
+  move build/ to build.dead/
+  This function will check each directory in dir_names.
+
+  scm_dirname is expected to be either ['.svn', '.git']
+  """
+  assert scm_dirname in ['.svn', '.git', '*']
+  has_checkout = any(path.exists(path.join(os.getcwd(), dir_name, scm_dirname))
                      for dir_name in dir_names)
-  if has_checkout:
+
+  if has_checkout or scm_dirname == '*':
+    build_dir = os.getcwd()
+    prefix = ''
+    if scm_dirname != '*':
+      prefix = '%s detected in checkout, ' % scm_dirname
+
     for filename in os.listdir(build_dir):
       deletion_target = path.join(build_dir, filename)
-      print '.git detected in checkout, deleting %s...' % deletion_target,
+      print '%sdeleting %s...' % (prefix, deletion_target),
       remove(deletion_target)
       print 'done'
 
@@ -632,6 +780,32 @@ def get_commit_message_footer(message, key):
   return get_commit_message_footer_map(message).get(key)
 
 
+def get_svn_rev(git_hash, dir_name):
+  log = git('log', '-1', git_hash, cwd=dir_name)
+  git_svn_id = get_commit_message_footer(log, GIT_SVN_ID_FOOTER_KEY)
+  if not git_svn_id:
+    return None
+  m = GIT_SVN_ID_RE.match(git_svn_id)
+  if not m:
+    return None
+  return int(m.group(2))
+
+
+def get_git_hash(revision, branch, sln_dir):
+  """We want to search for the SVN revision on the git-svn branch.
+
+  Note that git will search backwards from origin/master.
+  """
+  match = "^%s: [^ ]*@%s " % (GIT_SVN_ID_FOOTER_KEY, revision)
+  ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
+  cmd = ['log', '-E', '--grep', match, '--format=%H', '--max-count=1', ref]
+  result = git(*cmd, cwd=sln_dir).strip()
+  if result:
+    return result
+  raise SVNRevisionNotFound('We can\'t resolve svn r%s into a git hash in %s' %
+                            (revision, sln_dir))
+
+
 def emit_log_lines(name, lines):
   for line in lines.splitlines():
     print '@@@STEP_LOG_LINE@%s@%s@@@' % (name, line)
@@ -686,11 +860,16 @@ def force_revision(folder_name, revision):
     branch, revision = split_revision
 
   if revision and revision.upper() != 'HEAD':
-    git('checkout', '--force', revision, cwd=folder_name)
+    if revision and revision.isdigit() and len(revision) < 40:
+      # rev_num is really a svn revision number, convert it into a git hash.
+      git_ref = get_git_hash(int(revision), branch, folder_name)
+    else:
+      # rev_num is actually a git hash or ref, we can just use it.
+      git_ref = revision
+    git('checkout', '--force', git_ref, cwd=folder_name)
   else:
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
     git('checkout', '--force', ref, cwd=folder_name)
-
 
 def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
   build_dir = os.getcwd()
@@ -752,6 +931,16 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         else:
           raise
         remove(sln_dir)
+      except SVNRevisionNotFound:
+        tries_left -= 1
+        if tries_left > 0:
+          # If we don't have the correct revision, wait and try again.
+          print 'We can\'t find revision %s.' % revision
+          print 'The svn to git replicator is probably falling behind.'
+          print 'waiting 5 seconds and trying again...'
+          time.sleep(5)
+        else:
+          raise
 
     git('clean', '-dff', cwd=sln_dir)
 
@@ -770,6 +959,51 @@ def _download(url):
     except Exception:
       if attempt == ATTEMPTS - 1:
         raise
+
+
+def parse_diff(diff):
+  """Takes a unified diff and returns a list of diffed files and their diffs.
+
+  The return format is a list of pairs of:
+    (<filename>, <diff contents>)
+  <diff contents> is inclusive of the diff line.
+  """
+  result = []
+  current_diff = ''
+  current_header = None
+  for line in diff.splitlines():
+    # "diff" is for git style patches, and "Index: " is for SVN style patches.
+    if line.startswith('diff') or line.startswith('Index: '):
+      if current_header:
+        # If we are in a diff portion, then save the diff.
+        result.append((current_header, '%s\n' % current_diff))
+      git_header_match = re.match(r'diff (?:--git )?(\S+) (\S+)', line)
+      svn_header_match = re.match(r'Index: (.*)', line)
+
+      if git_header_match:
+        # First, see if its a git style header.
+        from_file = git_header_match.group(1)
+        to_file = git_header_match.group(2)
+        if from_file != to_file and from_file.startswith('a/'):
+          # Sometimes git prepends 'a/' and 'b/' in front of file paths.
+          from_file = from_file[2:]
+        current_header = from_file
+
+      elif svn_header_match:
+        # Otherwise, check if its an SVN style header.
+        current_header = svn_header_match.group(1)
+
+      else:
+        # Otherwise... I'm not really sure what to do with this.
+        raise InvalidDiff('Can\'t process header: %s\nFull diff:\n%s' %
+                          (line, diff))
+
+      current_diff = ''
+    current_diff += '%s\n' % line
+  if current_header:
+    # We hit EOF, gotta save the last diff.
+    result.append((current_header, current_diff))
+  return result
 
 
 def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
@@ -869,13 +1103,52 @@ def emit_flag(flag_file):
     f.write('Success!')
 
 
+def get_commit_position_for_git_svn(url, revision):
+  """Generates a commit position string for a 'git-svn' URL/revision.
+
+  If the 'git-svn' URL maps to a known project, we will construct a commit
+  position branch value by applying substitution on the SVN URL.
+  """
+  # Identify the base URL so we can strip off trunk/branch name
+  project_config = branch = None
+  for _, project_config in GIT_SVN_PROJECT_MAP.iteritems():
+    if url.startswith(project_config['svn_url']):
+      branch = url[len(project_config['svn_url']):]
+      break
+
+  if branch:
+    # Strip any leading slashes
+    branch = branch.lstrip('/')
+
+    # Try and map the branch
+    for pattern, repl in project_config.get('branch_map', ()):
+      nbranch, subn = re.subn(pattern, repl, branch, count=1)
+      if subn:
+        print 'INFO: Mapped SVN branch to Git branch [%s] => [%s]' % (
+            branch, nbranch)
+        branch = nbranch
+        break
+  else:
+    # Use generic 'svn' branch
+    print 'INFO: Could not resolve project for SVN URL %r' % (url,)
+    branch = 'svn'
+  return '%s@{#%s}' % (branch, revision)
+
+
 def get_commit_position(git_path, revision='HEAD'):
   """Dumps the 'git' log for a specific revision and parses out the commit
   position.
 
   If a commit position metadata key is found, its value will be returned.
+
+  Otherwise, we will search for a 'git-svn' metadata entry. If one is found,
+  we will compose a commit position from it, using its SVN revision value as
+  the revision.
+
+  If the 'git-svn' URL maps to a known project, we will construct a commit
+  position branch value by truncating the URL, mapping 'trunk' to
+  "refs/heads/master". Otherwise, we will return the generic branch, 'svn'.
   """
-  # TODO(iannucci): Use git-footers for this.
   git_log = git('log', '--format=%B', '-n1', revision, cwd=git_path)
   footer_map = get_commit_message_footer_map(git_log)
 
@@ -884,11 +1157,23 @@ def get_commit_position(git_path, revision='HEAD'):
            footer_map.get(COMMIT_ORIGINAL_POSITION_FOOTER_KEY))
   if value:
     return value
+
+  # Compose a commit position from 'git-svn' metadata
+  value = footer_map.get(GIT_SVN_ID_FOOTER_KEY)
+  if value:
+    m = GIT_SVN_ID_RE.match(value)
+    if not m:
+      raise ValueError("Invalid 'git-svn' value: [%s]" % (value,))
+    return get_commit_position_for_git_svn(m.group(1), m.group(2))
   return None
 
 
-def parse_got_revision(gclient_output, got_revision_mapping):
-  """Translate git gclient revision mapping to build properties."""
+def parse_got_revision(gclient_output, got_revision_mapping, use_svn_revs):
+  """Translate git gclient revision mapping to build properties.
+
+  If use_svn_revs is True, then translate git hashes in the revision mapping
+  to svn revision numbers.
+  """
   properties = {}
   solutions_output = {
       # Make sure path always ends with a single slash.
@@ -907,7 +1192,13 @@ def parse_got_revision(gclient_output, got_revision_mapping):
     else:
       # Since we are using .DEPS.git, everything had better be git.
       assert solution_output.get('scm') == 'git'
-      revision = git('rev-parse', 'HEAD', cwd=dir_name).strip()
+      git_revision = git('rev-parse', 'HEAD', cwd=dir_name).strip()
+      if use_svn_revs:
+        revision = get_svn_rev(git_revision, dir_name)
+        if not revision:
+          revision = git_revision
+      else:
+        revision = git_revision
       commit_position = get_commit_position(dir_name)
 
     properties[property_name] = revision
@@ -939,6 +1230,7 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
                                    revisions)
     if not revision:
       continue
+    # TODO(hinoka): Catch SVNRevisionNotFound error maybe?
     git('fetch', 'origin', cwd=deps_name)
     force_revision(deps_name, revision)
 
@@ -947,7 +1239,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, rietveld_server,
                     gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
                     revision_mapping, apply_issue_email_file,
-                    apply_issue_key_file, gyp_env, shallow, runhooks,
+                    apply_issue_key_file, buildspec, gyp_env, shallow, runhooks,
                     refs, git_cache_dir, gerrit_reset):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
@@ -984,12 +1276,20 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
-  gclient_output = gclient_sync(BRANCH_HEADS_REFSPEC in refs, shallow)
+  gclient_output = gclient_sync(buildspec or BRANCH_HEADS_REFSPEC in refs,
+                                shallow)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
-  if git('ls-files', '.DEPS.git', cwd=first_sln).strip():
+  if (not buildspec and
+      git('ls-files', '.DEPS.git', cwd=first_sln).strip()):
     git('checkout', 'HEAD', '--', '.DEPS.git', cwd=first_sln)
+
+  if buildspec and runhooks:
+    # Run gclient runhooks if we're on an official builder.
+    # TODO(hinoka): Remove this when the official builders run their own
+    #               runhooks step.
+    gclient_runhooks(gyp_env)
 
   # Finally, ensure that all DEPS are pinned to the correct revision.
   dir_names = [sln['name'] for sln in solutions]
@@ -1036,9 +1336,15 @@ def parse_revisions(revisions, root):
       # This is an alt_root@revision argument.
       current_root, current_rev = split_revision
 
+      # We want to normalize svn/git urls into .git urls.
       parsed_root = urlparse.urlparse(current_root)
-      if parsed_root.scheme in ['http', 'https']:
-        # We want to normalize git urls into .git urls.
+      if parsed_root.scheme == 'svn':
+        if parsed_root.path in RECOGNIZED_PATHS:
+          normalized_root = RECOGNIZED_PATHS[parsed_root.path]
+        else:
+          print 'WARNING: SVN path %s not recognized, ignoring' % current_root
+          continue
+      elif parsed_root.scheme in ['http', 'https']:
         normalized_root = 'https://%s/%s' % (parsed_root.netloc,
                                              parsed_root.path)
         if not normalized_root.endswith('.git'):
@@ -1094,10 +1400,13 @@ def parse_args():
                    help=('Same as revision_mapping, except its a path to a json'
                          ' file containing that format.'))
   parse.add_option('--revision', action='append', default=[],
-                   help='Revision to check out. Can be any form of git ref. '
-                        'Can prepend root@<rev> to specify which repository, '
-                        'where root is either a filesystem path or git https '
-                        'url. To specify Tip of Tree, set rev to HEAD. ')
+                   help='Revision to check out. Can be an SVN revision number, '
+                        'git hash, or any form of git ref.  Can prepend '
+                        'root@<rev> to specify which repository, where root '
+                        'is either a filesystem path, git https url, or '
+                        'svn url. To specify Tip of Tree, set rev to HEAD.'
+                        'To specify a git branch and an SVN rev, <rev> can be '
+                        'set to <branch>:<revision>.')
   parse.add_option('--output_manifest', action='store_true',
                    help=('Add manifest json to the json output.'))
   parse.add_option('--slave_name', default=socket.getfqdn().split('.')[0],
@@ -1171,12 +1480,20 @@ def prepare(options, git_slns, active):
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   # If we're active now, but the flag file doesn't exist (we weren't active
   # last run) or vice versa, blow away all checkouts.
-  if options.clobber or (bool(active) != bool(check_flag(options.flag_file))):
-    ensure_no_checkout(dir_names)
+  if bool(active) != bool(check_flag(options.flag_file)):
+    ensure_no_checkout(dir_names, '*')
   if options.output_json:
     # Make sure we tell recipes that we didn't run if the script exits here.
     emit_json(options.output_json, did_run=active)
-  emit_flag(options.flag_file)
+  if active:
+    if options.clobber:
+      ensure_no_checkout(dir_names, '*')
+    else:
+      ensure_no_checkout(dir_names, '.svn')
+    emit_flag(options.flag_file)
+  else:
+    delete_flag(options.flag_file)
+    raise Inactive  # This is caught in main() and we exit cleanly.
 
   # Do a shallow checkout if the disk is less than 100GB.
   total_disk_space, free_disk_space = get_total_disk_space()
@@ -1203,7 +1520,8 @@ def prepare(options, git_slns, active):
   return revisions, step_text
 
 
-def checkout(options, git_slns, specs, master, revisions, step_text):
+def checkout(options, git_slns, specs, buildspec, master,
+             svn_root, revisions, step_text):
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   try:
@@ -1233,6 +1551,7 @@ def checkout(options, git_slns, specs, master, revisions, step_text):
           apply_issue_key_file=options.apply_issue_key_file,
 
           # For official builders.
+          buildspec=buildspec,
           gyp_env=options.gyp_env,
           runhooks=not options.no_runhooks,
 
@@ -1244,7 +1563,7 @@ def checkout(options, git_slns, specs, master, revisions, step_text):
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'
-      ensure_no_checkout(dir_names)
+      ensure_no_checkout(dir_names, '*')
       gclient_output = ensure_checkout(**checkout_parameters)
   except PatchFailed as e:
     if options.output_json:
@@ -1264,8 +1583,11 @@ def checkout(options, git_slns, specs, master, revisions, step_text):
       print '@@@STEP_TEXT@%s PATCH FAILED@@@' % step_text
     raise
 
+  # Revision is an svn revision, unless it's a git master.
+  use_svn_rev = master not in GIT_MASTERS
+
   # Take care of got_revisions outputs.
-  revision_mapping = GOT_REVISION_MAPPINGS.get(git_slns[0]['url'], {})
+  revision_mapping = dict(GOT_REVISION_MAPPINGS.get(svn_root, {}))
   if options.revision_mapping:
     revision_mapping.update(options.revision_mapping)
 
@@ -1275,7 +1597,8 @@ def checkout(options, git_slns, specs, master, revisions, step_text):
   if not revision_mapping:
     revision_mapping[first_sln] = 'got_revision'
 
-  got_revisions = parse_got_revision(gclient_output, revision_mapping)
+  got_revisions = parse_got_revision(gclient_output, revision_mapping,
+                                     use_svn_rev)
 
   if not got_revisions:
     # TODO(hinoka): We should probably bail out here, but in the interest
@@ -1349,16 +1672,21 @@ def main():
   # Parse, munipulate, and print the gclient solutions.
   specs = {}
   exec(options.specs, specs)
-  orig_solutions = specs.get('solutions', [])
-  git_slns = modify_solutions(orig_solutions)
+  svn_solutions = specs.get('solutions', [])
+  git_slns, svn_root, buildspec = solutions_to_git(svn_solutions)
+  options.revision = maybe_ignore_revision(options.revision, buildspec)
 
   solutions_printer(git_slns)
 
   try:
     # Dun dun dun, the main part of bot_update.
     revisions, step_text = prepare(options, git_slns, active)
-    checkout(options, git_slns, specs, master, revisions, step_text)
+    checkout(options, git_slns, specs, buildspec, master, svn_root, revisions,
+             step_text)
 
+  except Inactive:
+    # Not active, should count as passing.
+    pass
   except PatchFailed as e:
     emit_flag(options.flag_file)
     # Return a specific non-zero exit code for patch failure (because it is
