@@ -152,7 +152,6 @@ class VIEWS_EXPORT Textfield : public View,
   }
   base::string16 GetPlaceholderText() const;
 
-  SkColor placeholder_text_color() const { return placeholder_text_color_; }
   void set_placeholder_text_color(SkColor color) {
     placeholder_text_color_ = color;
   }
@@ -428,6 +427,7 @@ class VIEWS_EXPORT Textfield : public View,
   base::string16 placeholder_text_;
 
   // Placeholder text color.
+  // TODO(estade): remove this when Harmony/MD is default.
   SkColor placeholder_text_color_;
 
   // The accessible name of the text field.

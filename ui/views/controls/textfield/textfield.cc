@@ -1829,7 +1829,10 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   gfx::RenderText* render_text = GetRenderText();
   if (text().empty() && !GetPlaceholderText().empty()) {
     canvas->DrawStringRect(GetPlaceholderText(), GetFontList(),
-        placeholder_text_color(), render_text->display_rect());
+                           ui::MaterialDesignController::IsSecondaryUiMaterial()
+                               ? SkColorSetA(GetTextColor(), 0x83)
+                               : placeholder_text_color_,
+                           render_text->display_rect());
   }
 
   // Draw the text, cursor, and selection.
