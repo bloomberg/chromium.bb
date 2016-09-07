@@ -10,7 +10,7 @@ import("//build/config/mac/symbols.gni")
 # and shared_libraries for ios_app_bundle and ios_framework_bundle. This is a
 # temporary flag that will be removed once scoped_nsobject_unittest{_arc}.mm
 # tests are passing with this flag set to true (see crbug.com/637065)
-_use_intermediate_source_set = false
+_use_intermediate_source_set = true
 
 # Invokes lipo on multiple arch-specific binaries to create a fat binary.
 #
