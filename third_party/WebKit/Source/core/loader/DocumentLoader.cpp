@@ -464,7 +464,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     if (m_writer)
         return;
 
-    const AtomicString& encoding = m_frame->host()->overrideEncoding().isNull() ? response().textEncodingName() : m_frame->host()->overrideEncoding();
+    const AtomicString& encoding = response().textEncodingName();
 
     // Prepare a DocumentInit before clearing the frame, because it may need to
     // inherit an aliased security context.

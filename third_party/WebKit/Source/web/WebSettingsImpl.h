@@ -176,7 +176,6 @@ public:
     void setTextTrackTextSize(const WebString&) override;
     void setThreadedScrollingEnabled(bool) override;
     void setTouchDragDropEnabled(bool) override;
-    void setUsesEncodingDetector(bool) override;
     void setUseLegacyBackgroundSizeShorthandBehavior(bool) override;
     void setViewportStyle(WebViewportStyle) override;
     void setUseSolidColorScrollbars(bool) override;

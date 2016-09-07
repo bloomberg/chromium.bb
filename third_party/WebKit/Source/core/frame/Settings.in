@@ -71,7 +71,6 @@ textAreasAreResizable initial=false, invalidate=Style
 acceleratedCompositingEnabled initial=true, invalidate=AcceleratedCompositing
 
 offlineWebApplicationCacheEnabled initial=true
-usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
 
 # FIXME: This should really be disabled by default as it makes platforms that

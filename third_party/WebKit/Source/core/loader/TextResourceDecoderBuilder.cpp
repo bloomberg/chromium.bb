@@ -134,7 +134,7 @@ inline std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::createDe
     const WTF::TextEncoding encodingFromDomain = getEncodingFromDomain(document->url());
     if (LocalFrame* frame = document->frame()) {
         if (Settings* settings = frame->settings())
-            return TextResourceDecoder::create(m_mimeType, encodingFromDomain.isValid() ? encodingFromDomain : settings->defaultTextEncodingName(), settings->usesEncodingDetector());
+            return TextResourceDecoder::create(m_mimeType, encodingFromDomain.isValid() ? encodingFromDomain : settings->defaultTextEncodingName(), true);
     }
 
     return TextResourceDecoder::create(m_mimeType, encodingFromDomain);

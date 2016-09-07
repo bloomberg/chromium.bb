@@ -748,6 +748,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 8/2016.
   profile_prefs->ClearPref(prefs::kStaticEncodings);
   profile_prefs->ClearPref(prefs::kRecentlySelectedEncoding);
+
+  // Added 9/2016.
+  profile_prefs->ClearPref(prefs::kWebKitUsesUniversalDetector);
 }
 
 }  // namespace chrome

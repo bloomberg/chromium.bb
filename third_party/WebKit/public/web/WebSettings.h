@@ -263,7 +263,6 @@ public:
     virtual void setViewportStyle(WebViewportStyle) = 0;
     virtual void setUseSolidColorScrollbars(bool) = 0;
     virtual void setUseWideViewport(bool) = 0;
-    virtual void setUsesEncodingDetector(bool) = 0;
     virtual void setV8CacheOptions(V8CacheOptions) = 0;
     virtual void setV8CacheStrategiesForCacheStorage(V8CacheStrategiesForCacheStorage) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;

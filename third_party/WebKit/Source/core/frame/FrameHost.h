@@ -110,9 +110,6 @@ public:
     EventHandlerRegistry& eventHandlerRegistry();
     const EventHandlerRegistry& eventHandlerRegistry() const;
 
-    const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
-    void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
-
     ConsoleMessageStorage& consoleMessageStorage();
     const ConsoleMessageStorage& consoleMessageStorage() const;
 

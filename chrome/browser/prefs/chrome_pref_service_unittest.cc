@@ -108,8 +108,6 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
                                new base::FundamentalValue(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
                                new base::FundamentalValue(false));
-    pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
-                               new base::FundamentalValue(true));
     pref_services->SetUserPref("webkit.webprefs.foo",
                                new base::StringValue("bar"));
   }
@@ -125,7 +123,6 @@ TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
   EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
   EXPECT_EQ(20, webkit_prefs.default_font_size);
   EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
-  EXPECT_TRUE(webkit_prefs.uses_universal_detector);
 
   // These should still be the default values.
 #if defined(OS_MACOSX)

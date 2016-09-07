@@ -2890,30 +2890,6 @@ WebString WebViewImpl::pageEncoding() const
     return m_page->deprecatedLocalMainFrame()->document()->encodingName();
 }
 
-void WebViewImpl::setPageEncoding(const WebString& encodingName)
-{
-    if (!m_page)
-        return;
-
-    // Only change override encoding, don't change default encoding.
-    // Note that the new encoding must be 0 if it isn't supposed to be set.
-    AtomicString newEncodingName;
-    if (!encodingName.isEmpty())
-        newEncodingName = encodingName;
-    m_page->frameHost().setOverrideEncoding(newEncodingName);
-
-    if (m_page->mainFrame()->isLocalFrame()) {
-        if (!m_page->deprecatedLocalMainFrame()->loader().currentItem())
-            return;
-        FrameLoadRequest request = FrameLoadRequest(
-            nullptr,
-            m_page->deprecatedLocalMainFrame()->loader().resourceRequestForReload(
-                FrameLoadTypeReload, KURL(), ClientRedirectPolicy::ClientRedirect));
-        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-        m_page->deprecatedLocalMainFrame()->loader().load(request, FrameLoadTypeReload);
-    }
-}
-
 WebFrame* WebViewImpl::mainFrame()
 {
     return WebFrame::fromFrame(m_page ? m_page->mainFrame() : nullptr);

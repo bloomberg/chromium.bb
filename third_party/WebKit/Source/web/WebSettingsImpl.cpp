@@ -337,11 +337,6 @@ void WebSettingsImpl::setSpatialNavigationEnabled(bool enabled)
     m_settings->setSpatialNavigationEnabled(enabled);
 }
 
-void WebSettingsImpl::setUsesEncodingDetector(bool usesDetector)
-{
-    m_settings->setUsesEncodingDetector(usesDetector);
-}
-
 void WebSettingsImpl::setTextAreasAreResizable(bool areResizable)
 {
     m_settings->setTextAreasAreResizable(areResizable);

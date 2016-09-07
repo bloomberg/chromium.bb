@@ -817,6 +817,11 @@ crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
+# Tentatively disabled until encoding autodetection on XML is properly handled.
+crbug.com/597488 dom/xhtml/level3/core/documentgetinputencoding01.xhtml [ Failure ]
+crbug.com/597488 fast/encoding/default-xhtml-encoding.xhtml [ Failure ]
+crbug.com/597488 fast/encoding/meta-in-xhtml.xhtml [ Failure ]
+
 # These are the failing tests because Chrome implements the changes proposed to the spec.
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_capture_suppressing_mouse-manual.html [ Skip ]
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]

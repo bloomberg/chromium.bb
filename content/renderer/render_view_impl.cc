@@ -962,7 +962,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setImagesEnabled(prefs.images_enabled);
   settings->setPluginsEnabled(prefs.plugins_enabled);
   settings->setDOMPasteAllowed(prefs.dom_paste_enabled);
-  settings->setUsesEncodingDetector(prefs.uses_universal_detector);
   settings->setTextAreasAreResizable(prefs.text_areas_are_resizable);
   settings->setAllowScriptsToCloseWindows(prefs.allow_scripts_to_close_windows);
   settings->setDownloadableBinaryFontsEnabled(prefs.remote_fonts_enabled);

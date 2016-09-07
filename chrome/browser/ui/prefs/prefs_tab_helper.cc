@@ -65,7 +65,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
 namespace {
 
 // The list of prefs we want to observe.
-const char* kPrefsToObserve[] = {
+const char* const kPrefsToObserve[] = {
 #if defined(ENABLE_EXTENSIONS)
   prefs::kAnimationPolicy,
 #endif
@@ -91,7 +91,6 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitPluginsEnabled,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitTextAreasAreResizable,
-  prefs::kWebKitUsesUniversalDetector,
   prefs::kWebKitWebSecurityEnabled,
 };
 
@@ -601,7 +600,7 @@ void PrefsTabHelper::RegisterProfilePrefs(
                             IDS_MINIMUM_LOGICAL_FONT_SIZE);
   registry->RegisterBooleanPref(
       prefs::kWebKitUsesUniversalDetector,
-      l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true",
+      true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

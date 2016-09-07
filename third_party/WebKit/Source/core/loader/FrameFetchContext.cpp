@@ -259,8 +259,6 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
         FrameLoadType frameLoadType = frame()->loader().loadType();
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
             return WebCachePolicy::ReturnCacheDataDontLoad;
-        if (!frame()->host()->overrideEncoding().isEmpty())
-            return WebCachePolicy::ReturnCacheDataElseLoad;
         if (frameLoadType == FrameLoadTypeReloadMainResource || request.isConditional() || request.httpMethod() == "POST")
             return WebCachePolicy::ValidatingCacheData;
 

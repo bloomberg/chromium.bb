@@ -416,12 +416,6 @@ TEST_F(FrameFetchContextTest, MainResource)
     document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
     EXPECT_EQ(WebCachePolicy::ReturnCacheDataDontLoad, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
-    // Enconding overriden
-    document->frame()->loader().setLoadType(FrameLoadTypeStandard);
-    document->frame()->host()->setOverrideEncoding("foo");
-    EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
-    document->frame()->host()->setOverrideEncoding(AtomicString());
-
     // FrameLoadTypeReloadMainResource
     document->frame()->loader().setLoadType(FrameLoadTypeReloadMainResource);
     EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));

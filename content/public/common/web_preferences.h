@@ -98,7 +98,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool plugins_enabled;
   bool dom_paste_enabled;
   bool shrinks_standalone_images_to_fit;
-  bool uses_universal_detector;
   bool text_areas_are_resizable;
   bool allow_scripts_to_close_windows;
   bool remote_fonts_enabled;

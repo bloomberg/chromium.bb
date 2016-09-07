@@ -146,7 +146,6 @@ public:
     // Corresponds to the encoding of the main frame.  Setting the page
     // encoding may cause the main frame to reload.
     virtual WebString pageEncoding() const = 0;
-    virtual void setPageEncoding(const WebString&) = 0;
 
     // Controls whether pressing Tab key advances focus to links.
     virtual bool tabsToLinks() const = 0;

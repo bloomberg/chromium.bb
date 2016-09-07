@@ -262,10 +262,6 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   for (size_t i = 0; i < arraysize(kTestDatas); ++i) {
-    // Enable auto detect.
-    browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kWebKitUsesUniversalDetector, true);
-
     base::FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
     GURL url =
