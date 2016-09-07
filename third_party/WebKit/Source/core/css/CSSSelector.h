@@ -262,6 +262,7 @@ public:
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
     bool isUserActionPseudoClass() const;
     bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
+    bool isIdClassOrAttributeSelector() const;
 
     RelationType relation() const { return static_cast<RelationType>(m_relation); }
     void setRelation(RelationType relation)
@@ -495,6 +496,13 @@ inline bool CSSSelector::isUserActionPseudoClass() const
         || m_pseudoType == PseudoActive
         || m_pseudoType == PseudoFocus
         || m_pseudoType == PseudoDrag;
+}
+
+inline bool CSSSelector::isIdClassOrAttributeSelector() const
+{
+    return isAttributeSelector()
+        || match() == CSSSelector::Id
+        || match() == CSSSelector::Class;
 }
 
 } // namespace blink

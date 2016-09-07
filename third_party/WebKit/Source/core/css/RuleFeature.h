@@ -80,13 +80,13 @@ public:
 
     bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
-        ASSERT(!attributeName.isEmpty());
+        DCHECK(!attributeName.isEmpty());
         return m_attributeInvalidationSets.contains(attributeName);
     }
 
     bool hasSelectorForClass(const AtomicString& classValue) const
     {
-        ASSERT(!classValue.isEmpty());
+        DCHECK(!classValue.isEmpty());
         return m_classInvalidationSets.contains(classValue);
     }
 
@@ -117,7 +117,7 @@ public:
     bool isAlive() const { return m_isAlive; }
 
 protected:
-    InvalidationSet* invalidationSetForSelector(const CSSSelector&, InvalidationType);
+    InvalidationSet* invalidationSetForSimpleSelector(const CSSSelector&, InvalidationType);
 
 private:
     // Each map entry is either a DescendantInvalidationSet or SiblingInvalidationSet.
@@ -152,15 +152,17 @@ private:
     struct InvalidationSetFeatures {
         DISALLOW_NEW();
 
+        void add(const InvalidationSetFeatures& other);
+        bool hasFeatures() const;
+
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
         Vector<AtomicString> ids;
         Vector<AtomicString> tagNames;
-        unsigned maxDirectAdjacentSelectors = UINT_MAX;
+        unsigned maxDirectAdjacentSelectors = 0;
         bool customPseudoElement = false;
         bool hasBeforeOrAfter = false;
         bool treeBoundaryCrossing = false;
-        bool adjacent = false;
         bool insertionPointCrossing = false;
         bool forceSubtree = false;
         bool contentPseudoCrossing = false;
@@ -168,15 +170,26 @@ private:
         bool hasNthPseudo = false;
     };
 
-    static bool extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
+    static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
 
     enum UseFeaturesType { UseFeatures, ForceSubtree };
 
     enum PositionType { Subject, Ancestor };
-    std::pair<const CSSSelector*, UseFeaturesType> extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, PositionType, CSSSelector::PseudoType = CSSSelector::PseudoUnknown);
+
+    void extractInvalidationSetFeaturesFromSimpleSelector(const CSSSelector&, InvalidationSetFeatures&);
+    const CSSSelector* extractInvalidationSetFeaturesFromCompound(const CSSSelector&, InvalidationSetFeatures&, PositionType, CSSSelector::PseudoType = CSSSelector::PseudoUnknown);
+    const CSSSelector* extractInvalidationSetFeaturesFromSelectorList(const CSSSelector&, InvalidationSetFeatures&, PositionType);
+    void updateFeaturesFromCombinator(const CSSSelector&,
+        const CSSSelector* lastCompoundSelectorInAdjacentChain,
+        InvalidationSetFeatures& lastCompoundInAdjacentChainFeatures,
+        InvalidationSetFeatures*& siblingFeatures,
+        InvalidationSetFeatures& descendantFeatures);
 
     void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
-    void addFeaturesToInvalidationSets(const CSSSelector*, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
+    void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures& descendantFeatures);
+    const CSSSelector* addFeaturesToInvalidationSetsForCompoundSelector(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
+    void addFeaturesToInvalidationSetsForSimpleSelector(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
+    void addFeaturesToInvalidationSetsForSelectorList(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
     void addFeaturesToUniversalSiblingInvalidationSet(const InvalidationSetFeatures& siblingFeatures, const InvalidationSetFeatures& descendantFeatures);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);
