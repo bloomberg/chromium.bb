@@ -15,13 +15,11 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_definition.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
-
-class Texture;
-class TextureManager;
 
 // Manages resources scoped beyond the context or context group level
 // and across threads and driver level share groups by synchronizing
@@ -32,11 +30,11 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
 
   // MailboxManager implementation:
   Texture* ConsumeTexture(const Mailbox& mailbox) override;
-  void ProduceTexture(const Mailbox& mailbox, Texture* texture) override;
+  void ProduceTexture(const Mailbox& mailbox, TextureBase* texture) override;
   bool UsesSync() override;
   void PushTextureUpdates(const SyncToken& token) override;
   void PullTextureUpdates(const SyncToken& token) override;
-  void TextureDeleted(Texture* texture) override;
+  void TextureDeleted(TextureBase* texture) override;
 
  private:
   friend class base::RefCounted<MailboxManager>;
@@ -84,7 +82,7 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
     unsigned version;
     scoped_refptr<TextureGroup> group;
   };
-  static void UpdateDefinitionLocked(Texture* texture,
+  static void UpdateDefinitionLocked(TextureBase* texture,
                                      TextureGroupRef* group_ref);
 
   typedef std::map<Texture*, TextureGroupRef> TextureToGroupMap;

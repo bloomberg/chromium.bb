@@ -353,10 +353,28 @@ void TextureManager::Destroy(bool have_context) {
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
+TextureBase::TextureBase(GLuint service_id)
+    : service_id_(service_id), mailbox_manager_(nullptr) {}
+
+TextureBase::~TextureBase() {
+  DCHECK_EQ(nullptr, mailbox_manager_);
+}
+
+void TextureBase::DeleteFromMailboxManager() {
+  if (mailbox_manager_) {
+    mailbox_manager_->TextureDeleted(this);
+    mailbox_manager_ = nullptr;
+  }
+}
+
+void TextureBase::SetMailboxManager(MailboxManager* mailbox_manager) {
+  DCHECK(!mailbox_manager_ || mailbox_manager_ == mailbox_manager);
+  mailbox_manager_ = mailbox_manager;
+}
+
 Texture::Texture(GLuint service_id)
-    : mailbox_manager_(NULL),
+    : TextureBase(service_id),
       memory_tracking_ref_(NULL),
-      service_id_(service_id),
       owned_service_id_(service_id),
       cleared_(true),
       num_uncleared_mips_(0),
@@ -385,8 +403,7 @@ Texture::Texture(GLuint service_id)
       emulating_rgb_(false) {}
 
 Texture::~Texture() {
-  if (mailbox_manager_)
-    mailbox_manager_->TextureDeleted(this);
+  DeleteFromMailboxManager();
 }
 
 void Texture::AddTextureRef(TextureRef* ref) {
@@ -599,11 +616,6 @@ void Texture::AddToSignature(
   signature->append(TextureTag, sizeof(TextureTag));
   signature->append(reinterpret_cast<const char*>(&signature_data),
                     sizeof(signature_data));
-}
-
-void Texture::SetMailboxManager(MailboxManager* mailbox_manager) {
-  DCHECK(!mailbox_manager_ || mailbox_manager_ == mailbox_manager);
-  mailbox_manager_ = mailbox_manager;
 }
 
 void Texture::MarkMipmapsGenerated() {

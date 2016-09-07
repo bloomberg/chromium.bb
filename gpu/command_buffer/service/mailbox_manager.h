@@ -17,7 +17,7 @@ struct SyncToken;
 
 namespace gles2 {
 
-class Texture;
+class TextureBase;
 
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
@@ -26,10 +26,10 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
       const GpuPreferences& gpu_preferences);
 
   // Look up the texture definition from the named mailbox.
-  virtual Texture* ConsumeTexture(const Mailbox& mailbox) = 0;
+  virtual TextureBase* ConsumeTexture(const Mailbox& mailbox) = 0;
 
   // Put the texture into the named mailbox.
-  virtual void ProduceTexture(const Mailbox& mailbox, Texture* texture) = 0;
+  virtual void ProduceTexture(const Mailbox& mailbox, TextureBase* texture) = 0;
 
   // If |true| then Pull/PushTextureUpdates() needs to be called.
   virtual bool UsesSync() = 0;
@@ -39,7 +39,7 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   virtual void PullTextureUpdates(const SyncToken& token) = 0;
 
   // Destroy any mailbox that reference the given texture.
-  virtual void TextureDeleted(Texture* texture) = 0;
+  virtual void TextureDeleted(TextureBase* texture) = 0;
 
  protected:
   MailboxManager() {}

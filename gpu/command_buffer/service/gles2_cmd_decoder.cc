@@ -4791,7 +4791,9 @@ void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
 }
 
 void GLES2DecoderImpl::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
-  Texture* texture = mailbox_manager()->ConsumeTexture(mailbox);
+  Texture* texture =
+      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
+
   for (auto it = saved_back_textures_.begin(); it != saved_back_textures_.end();
        ++it) {
     if (texture != it->back_texture->texture_ref()->texture())
@@ -16051,7 +16053,9 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
         "glConsumeTextureCHROMIUM", "unknown texture for target");
     return;
   }
-  Texture* texture = group_->mailbox_manager()->ConsumeTexture(mailbox);
+
+  Texture* texture =
+      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -16111,7 +16115,8 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
         "glCreateAndConsumeTextureCHROMIUM", "client id already in use");
     return;
   }
-  Texture* texture = group_->mailbox_manager()->ConsumeTexture(mailbox);
+  Texture* texture =
+      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
     EnsureTextureForClientId(target, client_id);
     LOCAL_SET_GL_ERROR(

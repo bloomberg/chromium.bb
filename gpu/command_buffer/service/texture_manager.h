@@ -38,13 +38,37 @@ class ErrorState;
 class FeatureInfo;
 class FramebufferManager;
 class MailboxManager;
+class Texture;
 class TextureManager;
 class TextureRef;
+
+class GPU_EXPORT TextureBase {
+ public:
+  explicit TextureBase(GLuint service_id);
+  virtual ~TextureBase();
+
+  // The service side OpenGL id of the texture.
+  GLuint service_id() const { return service_id_; }
+
+ protected:
+  // The id of the texture.
+  GLuint service_id_;
+
+  void DeleteFromMailboxManager();
+
+ private:
+  friend class MailboxManagerSync;
+  friend class MailboxManagerImpl;
+
+  void SetMailboxManager(MailboxManager* mailbox_manager);
+
+  MailboxManager* mailbox_manager_;
+};
 
 // Info about Textures currently in the system.
 // This class wraps a real GL texture, keeping track of its meta-data. It is
 // jointly owned by possibly multiple TextureRef.
-class GPU_EXPORT Texture {
+class GPU_EXPORT Texture final : public TextureBase {
  public:
   enum ImageState {
     // If an image is associated with the texture and image state is UNBOUND,
@@ -140,11 +164,6 @@ class GPU_EXPORT Texture {
   uint32_t estimated_size() const { return estimated_size_; }
 
   bool CanRenderTo(const FeatureInfo* feature_info, GLint level) const;
-
-  // The service side OpenGL id of the texture.
-  GLuint service_id() const {
-    return service_id_;
-  }
 
   void SetServiceId(GLuint service_id) {
     DCHECK(service_id);
@@ -289,7 +308,7 @@ class GPU_EXPORT Texture {
   friend class TextureRef;
   friend class TextureTestHelper;
 
-  ~Texture();
+  ~Texture() override;
   void AddTextureRef(TextureRef* ref);
   void RemoveTextureRef(TextureRef* ref, bool have_context);
   MemoryTypeTracker* GetMemTracker();
@@ -480,8 +499,6 @@ class GPU_EXPORT Texture {
       const FeatureInfo* feature_info,
       GLenum target, GLint level, std::string* signature) const;
 
-  void SetMailboxManager(MailboxManager* mailbox_manager);
-
   // Updates the unsafe textures count in all the managers referencing this
   // texture.
   void UpdateSafeToRenderFrom(bool cleared);
@@ -527,8 +544,6 @@ class GPU_EXPORT Texture {
   GLenum GetCompatibilitySwizzleForChannel(GLenum channel);
   void SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle);
 
-  MailboxManager* mailbox_manager_;
-
   // Info about each face and level of texture.
   std::vector<FaceInfo> face_infos_;
 
@@ -539,9 +554,6 @@ class GPU_EXPORT Texture {
   // The single TextureRef that accounts for memory for this texture. Must be
   // one of refs_.
   TextureRef* memory_tracking_ref_;
-
-  // The id of the texture.
-  GLuint service_id_;
 
   // The id of the texture that we are responsible for deleting.  Normally, this
   // is the same as |service_id_|, unless a GLStreamTextureImage with its own

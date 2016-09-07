@@ -218,8 +218,11 @@ Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
 }
 
 void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
-                                        Texture* texture) {
+                                        TextureBase* texture_base) {
   base::AutoLock lock(g_lock.Get());
+
+  Texture* texture = static_cast<Texture*>(texture_base);
+  DCHECK(texture != nullptr);
 
   TextureToGroupMap::iterator tex_it = texture_to_group_.find(texture);
   TextureGroup* group_for_mailbox = TextureGroup::FromName(mailbox);
@@ -262,8 +265,12 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
   DCHECK(texture->mailbox_manager_ == this);
 }
 
-void MailboxManagerSync::TextureDeleted(Texture* texture) {
+void MailboxManagerSync::TextureDeleted(TextureBase* texture_base) {
   base::AutoLock lock(g_lock.Get());
+
+  Texture* texture = static_cast<Texture*>(texture_base);
+  DCHECK(texture != nullptr);
+
   TextureToGroupMap::iterator tex_it = texture_to_group_.find(texture);
   DCHECK(tex_it != texture_to_group_.end());
   TextureGroup* group_for_texture = tex_it->second.group.get();
@@ -272,10 +279,12 @@ void MailboxManagerSync::TextureDeleted(Texture* texture) {
   texture_to_group_.erase(tex_it);
 }
 
-void MailboxManagerSync::UpdateDefinitionLocked(
-    Texture* texture,
-    TextureGroupRef* group_ref) {
+void MailboxManagerSync::UpdateDefinitionLocked(TextureBase* texture_base,
+                                                TextureGroupRef* group_ref) {
   g_lock.Get().AssertAcquired();
+
+  Texture* texture = static_cast<Texture*>(texture_base);
+  DCHECK(texture != nullptr);
 
   if (SkipTextureWorkarounds(texture))
     return;
