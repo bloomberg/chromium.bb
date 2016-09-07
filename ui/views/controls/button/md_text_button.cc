@@ -238,6 +238,11 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   focus_ring_->SetVisible(false);
   set_request_focus_on_press(false);
   LabelButton::SetFontList(GetMdFontList());
+
+  // Paint to a layer so that the canvas is snapped to pixel boundaries (useful
+  // for fractional DSF).
+  SetPaintToLayer(true);
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 MdTextButton::~MdTextButton() {}
@@ -296,7 +301,8 @@ void MdTextButton::UpdateColors() {
                       ui::NativeTheme::kColorId_CallToActionColor)
                 : is_default()
                       ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
-                      : SK_ColorTRANSPARENT;
+                      : theme->GetSystemColor(
+                            ui::NativeTheme::kColorId_DialogBackground);
 
   bg_color = PlatformStyle::BackgroundColorForMdButton(bg_color, state());
 
@@ -305,6 +311,7 @@ void MdTextButton::UpdateColors() {
                              ? SkColorSetA(SK_ColorBLACK, kStrokeOpacity)
                              : SkColorSetA(SK_ColorWHITE, 2 * kStrokeOpacity);
 
+  DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(
                 bg_color, stroke_color, kInkDropSmallCornerRadius)));

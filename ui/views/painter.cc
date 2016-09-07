@@ -65,8 +65,7 @@ void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
 
-  gfx::RectF border_rect_f((gfx::SizeF(size)));
-  border_rect_f.Scale(scale);
+  gfx::RectF border_rect_f(gfx::ScaleToEnclosingRect(gfx::Rect(size), scale));
   const SkScalar scaled_corner_radius = SkFloatToScalar(radius_ * scale);
 
   SkPaint paint;

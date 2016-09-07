@@ -51,8 +51,7 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
     gfx::ScopedCanvas scoped(canvas);
     float dsf = canvas->UndoDeviceScaleFactor();
     // Scale the rect and snap to pixel boundaries.
-    gfx::RectF rect = gfx::RectF(gfx::ToEnclosedRect(
-        ScaleRect(gfx::RectF(view.GetLocalBounds()), dsf, dsf)));
+    gfx::RectF rect(gfx::ScaleToEnclosingRect(view.GetLocalBounds(), dsf));
     rect.Inset(gfx::InsetsF(0.5f));
     SkPath path;
     float corner_radius_px = kCornerRadiusDp * dsf;
