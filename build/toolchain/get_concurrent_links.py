@@ -67,7 +67,7 @@ def main():
   parser.add_option('--mem_per_link_gb', action="store", type="int", default=8)
   parser.add_option('--reserve_mem_gb', action="store", type="int", default=0)
   parser.disable_interspersed_args()
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
 
   print _GetDefaultConcurrentLinks(options.mem_per_link_gb,
                                    options.reserve_mem_gb)
