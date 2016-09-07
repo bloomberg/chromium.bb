@@ -172,4 +172,4 @@ QUIC_FLAG(bool, FLAGS_quic_send_scfg_ttl, true)
 // If true, only open limited number of quic sessions per epoll event. Leave the
 // rest to next event. This flag can be turned on only if
 // --quic_buffer_packet_till_chlo is true.
-QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, false)
+QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, true)
