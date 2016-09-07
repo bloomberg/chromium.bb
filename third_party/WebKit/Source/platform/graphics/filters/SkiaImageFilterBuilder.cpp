@@ -114,7 +114,6 @@ void buildFilterOperations(const FilterOperations& operations, CompositorFilterO
 
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
                 currentColorSpace = filterEffect->operatingColorSpace();
-                filterEffect->determineMaximumEffectRect(MapRectForward);
                 filters->appendReferenceFilter(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
             }
             break;

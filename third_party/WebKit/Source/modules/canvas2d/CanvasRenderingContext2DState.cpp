@@ -323,7 +323,6 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &floatCanvasSize, &fillPaintForFilter, &strokePaintForFilter);
 
         if (FilterEffect* lastEffect = filterEffectBuilder->lastEffect()) {
-            lastEffect->determineMaximumEffectRect(DetermineMaxEffectRectNone);
             m_resolvedFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
             if (m_resolvedFilter) {
                 updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());

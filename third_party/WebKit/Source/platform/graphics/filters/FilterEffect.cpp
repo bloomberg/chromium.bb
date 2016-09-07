@@ -24,10 +24,8 @@
 #include "platform/graphics/filters/FilterEffect.h"
 
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
-#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 
 namespace blink {
 
@@ -129,7 +127,7 @@ TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const
     return ts;
 }
 
-FloatRect FilterEffect::determineMaximumEffectRect(DetermineMaxEffectRectFlags flags)
+FloatRect FilterEffect::determineMaximumEffectRect()
 {
     DCHECK(getFilter());
     Filter* filter = getFilter();
@@ -138,7 +136,7 @@ FloatRect FilterEffect::determineMaximumEffectRect(DetermineMaxEffectRectFlags f
     // side-effects. (It computes the maximum effect rect of the input.)
     FloatRect absoluteInputUnion;
     for (auto& effect : m_inputEffects)
-        absoluteInputUnion.unite(effect->determineMaximumEffectRect(flags));
+        absoluteInputUnion.unite(effect->determineMaximumEffectRect());
 
     FloatRect absoluteSubregion;
     switch (getFilterEffectType()) {
@@ -158,12 +156,8 @@ FloatRect FilterEffect::determineMaximumEffectRect(DetermineMaxEffectRectFlags f
         break;
     }
 
-    if (flags & MapRectForward)
-        absoluteSubregion = mapRect(absoluteSubregion);
-
     // Clip every filter effect to the filter region.
-    if (flags & ClipToFilterRegion)
-        absoluteSubregion.intersect(filter->absoluteFilterRegion());
+    absoluteSubregion.intersect(filter->absoluteFilterRegion());
 
     m_maxEffectRect = absoluteSubregion;
     return absoluteSubregion;

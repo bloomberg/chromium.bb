@@ -31,8 +31,6 @@
 #include "platform/heap/Handle.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -49,14 +47,6 @@ enum FilterEffectType {
     FilterEffectTypeTile,
     FilterEffectTypeSourceInput
 };
-
-enum DetermineMaxEffectRectFlag {
-    DetermineMaxEffectRectNone = 0,
-    MapRectForward = 1,
-    ClipToFilterRegion = 1 << 1
-};
-
-typedef int DetermineMaxEffectRectFlags;
 
 class PLATFORM_EXPORT FilterEffect : public GarbageCollectedFinalized<FilterEffect> {
     WTF_MAKE_NONCOPYABLE(FilterEffect);
@@ -115,7 +105,7 @@ public:
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
 
-    FloatRect determineMaximumEffectRect(DetermineMaxEffectRectFlags);
+    FloatRect determineMaximumEffectRect();
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
     virtual bool affectsTransparentPixels() { return false; }
