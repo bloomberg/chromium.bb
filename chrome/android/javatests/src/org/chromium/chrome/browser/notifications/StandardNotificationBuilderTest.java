@@ -120,4 +120,41 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
                     notification.extras.getString(Notification.EXTRA_TEMPLATE));
         }
     }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testSetSmallIcon() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilderBase notificationBuilder = new StandardNotificationBuilder(context);
+
+        Bitmap bitmap =
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.chrome_sync_logo);
+
+        notificationBuilder.setSmallIcon(R.drawable.ic_chrome);
+        notificationBuilder.setSmallIcon(bitmap); // Should override on M+
+
+        Notification notification = notificationBuilder.build();
+
+        Bitmap result = NotificationTestUtil.getSmallIconFromNotification(context, notification);
+
+        assertNotNull(result);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Check the white overlay was applied.
+            Bitmap expected = bitmap.copy(bitmap.getConfig(), true);
+            NotificationBuilderBase.applyWhiteOverlayToBitmap(expected);
+            assertTrue(expected.sameAs(result));
+
+            // Check using the same bitmap on another builder gives the same result.
+            NotificationBuilderBase otherBuilder = new StandardNotificationBuilder(context);
+            otherBuilder.setSmallIcon(bitmap);
+            Notification otherNotification = otherBuilder.build();
+            assertTrue(expected.sameAs(
+                    NotificationTestUtil.getSmallIconFromNotification(context, otherNotification)));
+        } else {
+            Bitmap expected =
+                    BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
+            assertTrue(expected.sameAs(result));
+        }
+    }
 }

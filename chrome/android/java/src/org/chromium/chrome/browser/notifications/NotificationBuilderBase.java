@@ -147,10 +147,12 @@ public abstract class NotificationBuilderBase {
      * will take precedence over one specified as a resource id.
      */
     public NotificationBuilderBase setSmallIcon(@Nullable Bitmap iconBitmap) {
+        Bitmap copyOfBitmap = null;
         if (iconBitmap != null) {
-            applyWhiteOverlayToBitmap(iconBitmap);
+            copyOfBitmap = iconBitmap.copy(iconBitmap.getConfig(), true /* isMutable */);
+            applyWhiteOverlayToBitmap(copyOfBitmap);
         }
-        mSmallIconBitmap = iconBitmap;
+        mSmallIconBitmap = copyOfBitmap;
         return this;
     }
 
