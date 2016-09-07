@@ -65,7 +65,7 @@
 // applicationShouldTerminateAfterLastWindowClosed: to make sure that the
 // application does correctly terminate after closing the installer, but does
 // not terminate when we call orderOut: to hide the installer during its
-// tear-down steps. If the user force-quits the application, the below delegate
+// tear-down steps. If the user quits the application, the below delegate
 // method gets called. However, when orderOut is called, the below delegate
 // method does not get called.
 - (BOOL)windowShouldClose:(id)sender {
