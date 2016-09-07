@@ -2714,9 +2714,9 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 }
 
-class NonUserInputTextUpdateWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class NonUserInputTextUpdateWebWidgetClient: public FrameTestHelpers::TestWebWidgetClient {
 public:
-    NonUserInputTextUpdateWebViewClient() : m_textIsUpdated(false) { }
+    NonUserInputTextUpdateWebWidgetClient() : m_textIsUpdated(false) { }
 
     // WebWidgetClient methods
     void didUpdateTextOfFocusedElementByNonUserInput() override
@@ -2741,10 +2741,9 @@ private:
 // This test verifies the text input flags are correctly exposed to script.
 TEST_F(WebViewTest, TextInputFlags)
 {
-    NonUserInputTextUpdateWebViewClient client;
     std::string url = m_baseURL + "text_input_flags.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "text_input_flags.html");
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
     webViewImpl->setInitialFocus(false);
 
     WebLocalFrameImpl* frame = webViewImpl->mainFrameImpl();
@@ -2791,10 +2790,10 @@ TEST_F(WebViewTest, TextInputFlags)
 // called iff value of a focused element is modified via script.
 TEST_F(WebViewTest, NonUserInputTextUpdate)
 {
-    NonUserInputTextUpdateWebViewClient client;
+    NonUserInputTextUpdateWebWidgetClient client;
     std::string url = m_baseURL + "non_user_input_text_update.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "non_user_input_text_update.html");
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, nullptr, nullptr, &client);
     webViewImpl->setInitialFocus(false);
 
     WebLocalFrameImpl* frame = webViewImpl->mainFrameImpl();

@@ -305,7 +305,6 @@ class CONTENT_EXPORT RenderViewImpl
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& positionInViewport,
                      const blink::WebFloatSize& velocityInViewport) override;
-  void didUpdateTextOfFocusedElementByNonUserInput() override;
   void hasTouchEventHandlers(bool has_handlers) override;
   void resetInputMethod() override;
   blink::WebScreenInfo screenInfo() override;

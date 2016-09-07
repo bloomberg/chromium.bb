@@ -256,7 +256,7 @@ public:
     // Input method editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void willSetInputMethodState() { }
-    virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
+    virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) { }
     virtual void showImeIfNeeded() { }
 
     virtual void registerViewportLayers() const { }

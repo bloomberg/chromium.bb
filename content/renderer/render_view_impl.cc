@@ -2039,10 +2039,6 @@ void RenderViewImpl::didOverscroll(
                               positionInViewport, velocityInViewport);
 }
 
-void RenderViewImpl::didUpdateTextOfFocusedElementByNonUserInput() {
-  RenderWidget::didUpdateTextOfFocusedElementByNonUserInput();
-}
-
 void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
   RenderWidget::hasTouchEventHandlers(has_handlers);
 }

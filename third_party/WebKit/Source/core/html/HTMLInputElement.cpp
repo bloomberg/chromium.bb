@@ -1046,7 +1046,7 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
         pseudoStateChanged(CSSSelector::PseudoOutOfRange);
     }
     if (document().focusedElement() == this)
-        document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput();
+        document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput(*document().frame());
 }
 
 void HTMLInputElement::updateView()

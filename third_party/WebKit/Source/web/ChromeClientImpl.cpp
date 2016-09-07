@@ -986,10 +986,10 @@ void ChromeClientImpl::willSetInputMethodState()
         m_webView->client()->resetInputMethod();
 }
 
-void ChromeClientImpl::didUpdateTextOfFocusedElementByNonUserInput()
+void ChromeClientImpl::didUpdateTextOfFocusedElementByNonUserInput(LocalFrame& frame)
 {
-    if (m_webView->client())
-        m_webView->client()->didUpdateTextOfFocusedElementByNonUserInput();
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame.localFrameRoot());
+    webFrame->frameWidget()->client()->didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void ChromeClientImpl::showImeIfNeeded()

@@ -263,7 +263,6 @@ public:
     void convertWindowToViewport(WebFloatRect* rect) override {}
     void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override {}
     void didOverscroll(const WebFloatSize& overscrollDelta, const WebFloatSize& accumulatedOverscroll, const WebFloatPoint& positionInViewport, const WebFloatSize& velocityInViewport) override {}
-    void didUpdateTextOfFocusedElementByNonUserInput() override {}
     void hasTouchEventHandlers(bool) override {}
     void initializeLayerTreeView() override {}
     void onMouseDown(const WebNode& mouseDownNode) override {}

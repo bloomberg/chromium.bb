@@ -170,7 +170,7 @@ public:
 
     void didCancelCompositionOnSelectionChange() override;
     void willSetInputMethodState() override;
-    void didUpdateTextOfFocusedElementByNonUserInput() override;
+    void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) override;
     void showImeIfNeeded() override;
 
     void registerViewportLayers() const override;
