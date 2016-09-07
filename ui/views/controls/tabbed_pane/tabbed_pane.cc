@@ -275,7 +275,7 @@ void MdTab::OnStateChanged() {
       : theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor);
   title()->SetEnabledColor(font_color);
 
-  gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
+  gfx::Font::Weight font_weight = gfx::Font::Weight::MEDIUM;
 #if defined(OS_WIN)
   if (selected())
     font_weight = gfx::Font::Weight::BOLD;
