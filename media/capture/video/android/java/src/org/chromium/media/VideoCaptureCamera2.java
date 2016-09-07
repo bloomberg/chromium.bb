@@ -243,6 +243,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
+    private Handler mMainHandler = null;
 
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
@@ -456,8 +457,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         try {
             return manager.getCameraIdList().length;
         } catch (CameraAccessException | SecurityException ex) {
-            // SecurityException is an undocumented exception, but has been seen in
-            // http://crbug/605424.
+            // SecurityException is undocumented but seen in the wild: https://crbug/605424.
             Log.e(TAG, "getNumberOfCameras: getCameraIdList(): ", ex);
             return 0;
         }
@@ -585,10 +585,20 @@ public class VideoCaptureCamera2 extends VideoCapture {
         changeCameraStateAndNotify(CameraState.OPENING);
         final CameraManager manager =
                 (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
-        final Handler mainHandler = new Handler(mContext.getMainLooper());
+
+        if (!mUseBackgroundThreadForTesting) {
+            mMainHandler = new Handler(mContext.getMainLooper());
+        } else {
+            // Usually we deliver frames on |mContext|s thread, but unit tests
+            // occupy its Looper; deliver frames on a background thread instead.
+            HandlerThread thread = new HandlerThread("CameraPicture");
+            thread.start();
+            mMainHandler = new Handler(thread.getLooper());
+        }
+
         final CrStateListener stateListener = new CrStateListener();
         try {
-            manager.openCamera(Integer.toString(mId), stateListener, mainHandler);
+            manager.openCamera(Integer.toString(mId), stateListener, mMainHandler);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "allocate: manager.openCamera: ", ex);
             return false;
@@ -623,6 +633,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
         if (mCameraDevice == null) return false;
         mCameraDevice.close();
+
+        if (mUseBackgroundThreadForTesting) mMainHandler.getLooper().quit();
+
         changeCameraStateAndNotify(CameraState.STOPPED);
         mCropRect = new Rect();
         return true;

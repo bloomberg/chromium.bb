@@ -91,6 +91,11 @@ class VideoCaptureFactory {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
+    @CalledByNative
+    static boolean isLegacyOrDeprecatedDevice(Context context, int id) {
+        return !isLReleaseOrLater() || VideoCaptureCamera2.isLegacyDevice(context, id);
+    }
+
     // Factory methods.
     @CalledByNative
     static VideoCapture createVideoCapture(

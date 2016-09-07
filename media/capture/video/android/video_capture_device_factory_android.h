@@ -24,7 +24,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
       int id,
       jlong nativeVideoCaptureDeviceAndroid);
 
-  VideoCaptureDeviceFactoryAndroid() {}
+  VideoCaptureDeviceFactoryAndroid() : test_mode_(false) {}
   ~VideoCaptureDeviceFactoryAndroid() override {}
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
@@ -34,7 +34,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
   void GetSupportedFormats(const VideoCaptureDeviceDescriptor& device,
                            VideoCaptureFormats* supported_formats) override;
 
+  static bool IsLegacyOrDeprecatedDevice(const std::string& device_id);
+
+  // Configures all subsequent CreateDevice()s in test mode.
+  void ConfigureForTesting() { test_mode_ = true; }
+
  private:
+  // Switch to indicate that all created Java capturers will be in test mode.
+  bool test_mode_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryAndroid);
 };
 }  // namespace media
