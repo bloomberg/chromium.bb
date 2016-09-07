@@ -97,16 +97,6 @@ cr.define('md_history.history_item_test', function() {
         });
       });
 
-      test('long titles are trimmed', function() {
-        var item = document.createElement('history-item');
-        var longtitle = '0123456789'.repeat(100);
-        item.item =
-            createHistoryEntry('2016-06-30', 'http://example.com/' + longtitle);
-
-        var label = item.$$('history-searched-label');
-        assertEquals(TITLE_MAX_LENGTH, label.title.length);
-      });
-
       teardown(function() {
         element.historyData_ = [];
         element.searchedTerm = '';

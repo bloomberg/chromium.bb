@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
   // TODO(tsergeant): Get this test working on MD History, which loads very
   // asynchronously and causes this test to fail.
-  MdHistoryUI::DisableForTesting();
+  MdHistoryUI::SetEnabledForTesting(false);
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

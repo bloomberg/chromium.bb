@@ -21,8 +21,9 @@ class MdHistoryUI : public content::WebUIController {
   ~MdHistoryUI() override;
 
   static bool IsEnabled(Profile* profile);
-  // Reset the current list of features and explicitly disable MD History.
-  static void DisableForTesting();
+
+  // Reset the current list of features and explicitly set MD History enabled.
+  static void SetEnabledForTesting(bool enabled);
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);

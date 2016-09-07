@@ -182,9 +182,9 @@
           <div class="website-icon" id="icon"></div>
           <div id="title-and-domain">
             <a href="[[item.url]]" id="title" class="website-title"
-                title="[[cropItemTitle_(item.title)]]"
-                on-click="onLinkClick_" on-contextmenu="onLinkRightClick_">
-              <history-searched-label title="[[cropItemTitle_(item.title)]]"
+                title="[[item.title]]" on-click="onLinkClick_"
+                on-contextmenu="onLinkRightClick_">
+              <history-searched-label title="[[item.title]]"
                   search-term="[[searchTerm]]"></history-searched-label>
             </a>
             <span id="domain">[[item.domain]]</span>

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -31,6 +32,10 @@
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/md_history_ui.h"
+#endif
 
 namespace {
 
@@ -99,6 +104,7 @@ class BrowsingHistoryHandlerWithWebUIForTesting
   explicit BrowsingHistoryHandlerWithWebUIForTesting(content::WebUI* web_ui) {
     set_web_ui(web_ui);
   }
+  using BrowsingHistoryHandler::QueryComplete;
 };
 
 }  // namespace
@@ -116,6 +122,7 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
     builder.AddTestingFactory(WebHistoryServiceFactory::GetInstance(),
                               &BuildFakeWebHistoryService);
     profile_ = builder.Build();
+    profile_->CreateBookmarkModel(false);
 
     sync_service_ = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetForProfile(profile_.get()));
@@ -304,3 +311,40 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     EXPECT_EQ(2U, web_ui()->call_data().size());
   }
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
+  MdHistoryUI::SetEnabledForTesting(true);
+
+  history::URLResult long_result(
+      GURL("http://looooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ngurlislong.com"), base::Time());
+  ASSERT_GT(long_result.url().spec().size(), 300u);
+
+  history::QueryResults results;
+  results.AppendURLBySwapping(&long_result);
+
+  BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  web_ui()->ClearTrackedCalls();
+
+  handler.QueryComplete(base::string16(), history::QueryOptions(), &results);
+  ASSERT_FALSE(web_ui()->call_data().empty());
+
+  const base::ListValue* arg2;
+  ASSERT_TRUE(web_ui()->call_data().front()->arg2()->GetAsList(&arg2));
+
+  const base::DictionaryValue* first_entry;
+  ASSERT_TRUE(arg2->GetDictionary(0, &first_entry));
+
+  base::string16 title;
+  ASSERT_TRUE(first_entry->GetString("title", &title));
+
+  ASSERT_EQ(0u, title.find(base::ASCIIToUTF16("http://loooo")));
+  EXPECT_EQ(300u, title.size());
+}
+#endif

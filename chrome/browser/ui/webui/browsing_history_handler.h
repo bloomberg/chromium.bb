@@ -70,13 +70,15 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     virtual ~HistoryEntry();
 
     // Formats this entry's URL and title and adds them to |result|.
-    void SetUrlAndTitle(base::DictionaryValue* result) const;
+    void SetUrlAndTitle(base::DictionaryValue* result,
+                        bool limit_title_length) const;
 
     // Converts the entry to a DictionaryValue to be owned by the caller.
     std::unique_ptr<base::DictionaryValue> ToValue(
         bookmarks::BookmarkModel* bookmark_model,
         SupervisedUserService* supervised_user_service,
-        const ProfileSyncService* sync_service) const;
+        const ProfileSyncService* sync_service,
+        bool limit_title_length) const;
 
     // Comparison function for sorting HistoryEntries from newest to oldest.
     static bool SortByTimeDescending(
@@ -135,6 +137,13 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   static void MergeDuplicateResults(
       std::vector<BrowsingHistoryHandler::HistoryEntry>* results);
 
+ protected:
+  // Callback from the history system when a history query has completed.
+  // Exposed for testing.
+  void QueryComplete(const base::string16& search_text,
+                     const history::QueryOptions& options,
+                     history::QueryResults* results);
+
  private:
   // The range for which to return results:
   // - ALLTIME: allows access to all the results in a paginated way.
@@ -157,11 +166,6 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Callback from |web_history_timer_| when a response from web history has
   // not been received in time.
   void WebHistoryTimeout();
-
-  // Callback from the history system when a history query has completed.
-  void QueryComplete(const base::string16& search_text,
-                     const history::QueryOptions& options,
-                     history::QueryResults* results);
 
   // Callback from the WebHistoryService when a query has completed.
   void WebHistoryQueryComplete(const base::string16& search_text,

@@ -215,10 +215,12 @@ bool MdHistoryUI::IsEnabled(Profile* profile) {
 }
 
 // static
-void MdHistoryUI::DisableForTesting() {
+void MdHistoryUI::SetEnabledForTesting(bool enabled) {
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      std::string(), features::kMaterialDesignHistory.name);
+
+  const std::string& name = features::kMaterialDesignHistory.name;
+  feature_list->InitializeFromCommandLine(enabled ? name : "",
+                                          enabled ? "" : name);
   base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::SetInstance(std::move(feature_list));
 }

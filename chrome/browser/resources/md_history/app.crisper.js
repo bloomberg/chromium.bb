@@ -6881,9 +6881,6 @@ cr.define('md_history', function() {
       if (!search) return this.item.dateRelativeDay;
       var resultId = numberOfItems == 1 ? 'searchResult' : 'searchResults';
       return loadTimeData.getStringF('foundSearchResults', numberOfItems, loadTimeData.getString(resultId), search);
-    },
-    cropItemTitle_: function(title) {
-      return title.length > TITLE_MAX_LENGTH ? title.substr(0, TITLE_MAX_LENGTH) : title;
     }
   });
   HistoryItem.needsTimeGap = function(visits, currentIndex, searchedTerm) {

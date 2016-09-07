@@ -42,7 +42,7 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     // Disable MD History to test non-MD history page.
-    MdHistoryUI::DisableForTesting();
+    MdHistoryUI::SetEnabledForTesting(false);
   }
 
  private:

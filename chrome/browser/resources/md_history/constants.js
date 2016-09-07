@@ -13,14 +13,6 @@
 var BROWSING_GAP_TIME = 15 * 60 * 1000;
 
 /**
- * Maximum length of a history item title. Anything longer than this will be
- * cropped to fit within this limit. This value is large enough that it will not
- * be noticeable in a 960px wide history-item.
- * @const
- */
-var TITLE_MAX_LENGTH = 300;
-
-/**
  * The largest bucket value for UMA histogram, based on entry ID. All entries
  * with IDs greater than this will be included in this bucket.
  * @const

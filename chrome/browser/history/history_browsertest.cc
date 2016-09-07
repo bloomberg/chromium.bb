@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
 IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MAYBE_HistorySearchXSS) {
   // TODO(tsergeant): Enable this test on MD History once it is possible to pass
   // in a query via URL (crbug.com/619799).
-  MdHistoryUI::DisableForTesting();
+  MdHistoryUI::SetEnabledForTesting(false);
 
   GURL url(std::string(chrome::kChromeUIHistoryURL) +
       "#q=%3Cimg%20src%3Dx%3Ax%20onerror%3D%22document.title%3D'XSS'%22%3E");

@@ -162,18 +162,6 @@ cr.define('md_history', function() {
       return loadTimeData.getStringF('foundSearchResults', numberOfItems,
           loadTimeData.getString(resultId), search);
     },
-
-    /**
-     * Crop long item titles to reduce their effect on layout performance. See
-     * crbug.com/621347.
-     * @param {string} title
-     * @return {string}
-     */
-    cropItemTitle_: function(title) {
-      return (title.length > TITLE_MAX_LENGTH) ?
-          title.substr(0, TITLE_MAX_LENGTH) :
-          title;
-    }
   });
 
   /**
