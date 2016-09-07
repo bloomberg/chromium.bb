@@ -2008,6 +2008,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-font-cache-scaling", IDS_FLAGS_FONT_CACHE_SCALING_NAME,
      IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontCacheScaling)},
+    {"enable-framebusting-needs-sameorigin-or-usergesture",
+     IDS_FLAGS_FRAMEBUSTING_NAME, IDS_FLAGS_FRAMEBUSTING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFramebustingNeedsSameOriginOrUserGesture)},
 #if defined(OS_ANDROID)
     {"enable-vr-shell", IDS_FLAGS_ENABLE_VR_SHELL_NAME,
      IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION, kOsAndroid,

@@ -1,0 +1,11 @@
+<html>
+<body>
+The navigation should fail and this iframe should be blocked. This text shouldn't appear.
+<script>
+window.onload = function()
+{
+    top.location = "http://localhost:8000/security/frameNavigation/resources/navigation-changed-iframe.html";
+}
+</script>
+</body>
+</html>

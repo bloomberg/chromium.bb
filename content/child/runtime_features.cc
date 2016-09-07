@@ -262,6 +262,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       "FontCacheScaling",
       base::FeatureList::IsEnabled(features::kFontCacheScaling));
 
+  WebRuntimeFeatures::enableFeatureFromString(
+      "FramebustingNeedsSameOriginOrUserGesture",
+      base::FeatureList::IsEnabled(
+          features::kFramebustingNeedsSameOriginOrUserGesture));
+
   if (base::FeatureList::IsEnabled(features::kParseHTMLOnMainThread))
     WebRuntimeFeatures::enableFeatureFromString("ParseHTMLOnMainThread", true);
 

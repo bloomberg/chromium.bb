@@ -94,6 +94,7 @@ FeaturePolicy status=experimental
 FileAPIBlobClose status=experimental
 FileSystem status=stable
 ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
+FramebustingNeedsSameOriginOrUserGesture status=stable
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 GamepadExtensions

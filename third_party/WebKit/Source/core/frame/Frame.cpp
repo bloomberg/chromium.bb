@@ -42,6 +42,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
@@ -168,19 +169,28 @@ bool Frame::canNavigate(const Frame& targetFrame)
     String errorReason;
     bool isAllowedNavigation = canNavigateWithoutFramebusting(targetFrame, errorReason);
 
-    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
     if (targetFrame != this && !securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top()) {
         DEFINE_STATIC_LOCAL(EnumerationHistogram, framebustHistogram, ("WebCore.Framebust", 4));
         const unsigned userGestureBit = 0x1;
         const unsigned allowedBit = 0x2;
         unsigned framebustParams = 0;
         UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
-        if (UserGestureIndicator::processingUserGesture())
+        bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+        if (hasUserGesture)
             framebustParams |= userGestureBit;
         if (isAllowedNavigation)
             framebustParams |= allowedBit;
         framebustHistogram.count(framebustParams);
-        return true;
+        // Frame-busting used to be generally allowed in most situations, but may now blocked if there is no user gesture.
+        if (!RuntimeEnabledFeatures::framebustingNeedsSameOriginOrUserGestureEnabled())
+            return true;
+        if (hasUserGesture || isAllowedNavigation)
+            return true;
+        errorReason = "The frame attempting navigation is targeting its top-level window, but is neither same-origin with its target nor is it processing a user gesture. See https://www.chromestatus.com/features/5851021045661696.";
+        printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
+        if (isLocalFrame())
+            toLocalFrame(this)->navigationScheduler().schedulePageBlock(toLocalFrame(this)->document());
+        return false;
     }
     if (!isAllowedNavigation && !errorReason.isNull())
         printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
@@ -196,6 +206,10 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame, String& rea
 
         // They can also navigate popups, if the 'allow-sandbox-escape-via-popup' flag is specified.
         if (targetFrame == targetFrame.tree().top() && targetFrame.tree().top() != tree().top() && !securityContext()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
+            return true;
+
+        // Top navigation can be opted-in.
+        if (!securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top())
             return true;
 
         // Otherwise, block the navigation.
