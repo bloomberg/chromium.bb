@@ -22,6 +22,11 @@ declare_args() {
   # it will evaluate to 0. Overriding this when is_debug=false is useful for
   # doing engineering builds.
   cast_is_debug = is_debug
+
+  # If true, Chromecast WebUI resources are included in a build.
+  # TODO(antz): default to false for audio-only builds, might need further
+  # clean up (b/27119303)
+  enable_chromecast_webui = !is_cast_audio_only && !is_android
 }
 
 declare_args() {
