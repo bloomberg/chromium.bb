@@ -6,13 +6,11 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8HiddenValue.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/streams/ReadableStreamController.h"
 #include "core/streams/ReadableStreamOperations.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
@@ -23,20 +21,6 @@
 #include <memory>
 
 namespace blink {
-
-namespace {
-
-bool isTerminating(ScriptState* scriptState)
-{
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    if (!executionContext)
-        return true;
-    if (!executionContext->isWorkerGlobalScope())
-        return false;
-    return toWorkerGlobalScope(executionContext)->scriptController()->isExecutionTerminating();
-}
-
-} // namespace
 
 class BodyStreamBuffer::LoaderClient final : public GarbageCollectedFinalized<LoaderClient>, public ActiveDOMObject, public FetchDataLoader::Client {
     WTF_MAKE_NONCOPYABLE(LoaderClient);
@@ -105,28 +89,14 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, std::unique_ptr<Fet
     , m_reader(m_handle->obtainFetchDataReader(this))
     , m_madeFromReadableStream(false)
 {
-    if (isTerminating(scriptState)) {
-        m_reader = nullptr;
-        m_handle = nullptr;
-        return;
-    }
     v8::Local<v8::Value> bodyValue = toV8(this, scriptState);
-    if (bodyValue.IsEmpty()) {
-        DCHECK(isTerminating(scriptState));
-        m_reader = nullptr;
-        m_handle = nullptr;
-        return;
-    }
+    DCHECK(!bodyValue.IsEmpty());
     DCHECK(bodyValue->IsObject());
     v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
 
     ScriptValue readableStream = ReadableStreamOperations::createReadableStream(
         scriptState, this, ReadableStreamOperations::createCountQueuingStrategy(scriptState, 0));
-    if (isTerminating(scriptState)) {
-        m_reader = nullptr;
-        m_handle = nullptr;
-        return;
-    }
+    DCHECK(!readableStream.isEmpty());
     V8HiddenValue::setHiddenValue(scriptState, body, V8HiddenValue::internalBodyStream(scriptState->isolate()), readableStream.v8Value());
 }
 
@@ -136,13 +106,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
     , m_madeFromReadableStream(true)
 {
     DCHECK(ReadableStreamOperations::isReadableStream(scriptState, stream));
-    if (isTerminating(scriptState))
-        return;
     v8::Local<v8::Value> bodyValue = toV8(this, scriptState);
-    if (bodyValue.IsEmpty()) {
-        DCHECK(isTerminating(scriptState));
-        return;
-    }
+    DCHECK(!bodyValue.IsEmpty());
     DCHECK(bodyValue->IsObject());
     v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
 
@@ -152,13 +117,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
 ScriptValue BodyStreamBuffer::stream()
 {
     ScriptState::Scope scope(m_scriptState.get());
-    if (isTerminating(m_scriptState.get()))
-        return ScriptValue();
     v8::Local<v8::Value> bodyValue = toV8(this, m_scriptState.get());
-    if (bodyValue.IsEmpty()) {
-        DCHECK(isTerminating(m_scriptState.get()));
-        return ScriptValue();
-    }
+    DCHECK(!bodyValue.IsEmpty());
     DCHECK(bodyValue->IsObject());
     v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
     return ScriptValue(m_scriptState.get(), V8HiddenValue::getHiddenValue(m_scriptState.get(), body, V8HiddenValue::internalBodyStream(m_scriptState->isolate())));
