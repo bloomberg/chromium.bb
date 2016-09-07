@@ -65,6 +65,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/widget/root_view.h"
@@ -126,12 +127,15 @@ const int kInterruptedAnimationDurationMs = 2500;
 const int kDisabledOnOpenDuration = 3000;
 
 // The separator is drawn as a border. It's one dp wide.
-class SeparatorBorder : public views::Border {
+class SeparatorBorder : public views::FocusableBorder {
  public:
   explicit SeparatorBorder(SkColor color) : color_(color) {}
   ~SeparatorBorder() override {}
 
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    if (view.HasFocus())
+      return FocusableBorder::Paint(view, canvas);
+
     int end_x = base::i18n::IsRTL() ? 0 : view.width() - 1;
     canvas->DrawLine(gfx::Point(end_x, kTopBottomPadding),
                      gfx::Point(end_x, view.height() - kTopBottomPadding),
@@ -612,9 +616,6 @@ void DownloadItemViewMd::OnPaint(gfx::Canvas* canvas) {
   DrawFilename(canvas);
   DrawIcon(canvas);
   OnPaintBorder(canvas);
-
-  if (HasFocus())
-    views::MdTextButton::PaintMdFocusRing(canvas, this, 1, SK_AlphaOPAQUE);
 }
 
 int DownloadItemViewMd::GetYForFilenameText() const {

@@ -25,9 +25,8 @@ namespace {
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
-// The stroke width of the focus border in normal and call to action mode.
-const int kFocusBorderThickness = 1;
-const int kFocusBorderThicknessCta = 2;
+// The stroke width of the focus border in dp.
+const int kFocusBorderThickness = 2;
 
 // The corner radius of the focus border roundrect.
 const int kFocusBorderCornerRadius = 3;
@@ -58,25 +57,30 @@ namespace internal {
 
 class MdFocusRing : public View {
  public:
-  MdFocusRing() : thickness_(kFocusBorderThickness) {
+  MdFocusRing() {
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
   }
   ~MdFocusRing() override {}
 
-  int thickness() const { return thickness_; }
-  void set_thickness(int thickness) { thickness_ = thickness; }
-
   // View:
   bool CanProcessEventsWithinSubtree() const override { return false; }
 
   void OnPaint(gfx::Canvas* canvas) override {
-    MdTextButton::PaintMdFocusRing(canvas, this, thickness_, 0x33);
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setColor(
+        SkColorSetA(GetNativeTheme()->GetSystemColor(
+                        ui::NativeTheme::kColorId_FocusedBorderColor),
+                    0x66));
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(kFocusBorderThickness);
+    gfx::RectF rect(GetLocalBounds());
+    rect.Inset(gfx::InsetsF(kFocusBorderThickness / 2.f));
+    canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
   }
 
  private:
-  int thickness_;
-
   DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
 };
 
@@ -118,37 +122,18 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
   return button;
 }
 
-// static
-void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas,
-                                    views::View* view,
-                                    int thickness,
-                                    SkAlpha alpha) {
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setColor(SkColorSetA(view->GetNativeTheme()->GetSystemColor(
-                                 ui::NativeTheme::kColorId_CallToActionColor),
-                             alpha));
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(thickness);
-  gfx::RectF rect(view->GetLocalBounds());
-  rect.Inset(gfx::InsetsF(thickness / 2.f));
-  canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
-}
-
 void MdTextButton::SetCallToAction(bool cta) {
   if (is_cta_ == cta)
     return;
 
   is_cta_ = cta;
-  focus_ring_->set_thickness(cta ? kFocusBorderThicknessCta
-                                 : kFocusBorderThickness);
   UpdateColors();
 }
 
 void MdTextButton::Layout() {
   LabelButton::Layout();
   gfx::Rect focus_bounds = GetLocalBounds();
-  focus_bounds.Inset(gfx::Insets(-focus_ring_->thickness()));
+  focus_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
   focus_ring_->SetBoundsRect(focus_bounds);
 }
 

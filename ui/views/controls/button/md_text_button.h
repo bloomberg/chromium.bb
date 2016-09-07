@@ -32,12 +32,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static MdTextButton* CreateMdButton(ButtonListener* listener,
                                       const base::string16& text);
 
-  // Paint an MD-style focus ring on the given canvas at the given bounds.
-  static void PaintMdFocusRing(gfx::Canvas* canvas,
-                               View* view,
-                               int thickness,
-                               SkAlpha alpha);
-
   // See |is_cta_|.
   void SetCallToAction(bool cta);
   void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
