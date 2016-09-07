@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_handle.h"
@@ -5871,6 +5872,90 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     web_contents->GetController().GoBack();
     observer.Wait();
   }
+
+  // Verify the expected origin through JavaScript. It also has the additional
+  // verification of the process also being still alive.
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, "domAutomationController.send(document.origin)", &origin));
+  EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
+}
+
+// A BrowserMessageFilter that drops FrameHostMsg_DidCommitProvisionaLoad IPC
+// message for a specified URL and runs a callback on the UI thread.
+class CommitMessageFilter : public BrowserMessageFilter {
+ public:
+  CommitMessageFilter(const GURL& url, base::Closure on_commit)
+      : BrowserMessageFilter(FrameMsgStart), url_(url), on_commit_(on_commit) {}
+
+ protected:
+  ~CommitMessageFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() != FrameHostMsg_DidCommitProvisionalLoad::ID)
+      return false;
+
+    // Parse the IPC message so the URL can be checked agains the expected one.
+    base::PickleIterator iter(message);
+    FrameHostMsg_DidCommitProvisionalLoad_Params validated_params;
+    if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::Read(
+            &message, &iter, &validated_params)) {
+      return false;
+    }
+
+    // Only handle the message if the URLs are matching.
+    if (validated_params.url != url_)
+      return false;
+
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_commit_);
+    return true;
+  }
+
+  GURL url_;
+  base::Closure on_commit_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommitMessageFilter);
+};
+
+// Test which simulates a race condition between a cross-origin, same-process
+// navigation and a same page session history navigation. When such a race
+// occurs, the renderer will commit the cross-origin navigation, updating its
+// version of the current document sequence number, and will send an IPC to the
+// browser process. The session history navigation comes after the commit for
+// the cross-origin navigation and updates the URL, but not the origin of the
+// document. This results in mismatch between the two and causes the renderer
+// process to be killed. See https://crbug.com/630103.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       RaceCrossOriginNavigationAndSamePageHistoryNavigation) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to a simple page and then perform an in-page navigation.
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL same_page_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+  EXPECT_TRUE(NavigateToURL(shell(), same_page_url));
+  EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
+
+  // Create a CommitMessageFilter, which will drop the commit IPC for a
+  // cross-origin, same process navigation and will perform a GoBack.
+  GURL cross_origin_url(
+      embedded_test_server()->GetURL("suborigin.a.com", "/title2.html"));
+  scoped_refptr<CommitMessageFilter> filter = new CommitMessageFilter(
+      cross_origin_url,
+      base::Bind(&NavigationControllerImpl::GoBack,
+                 base::Unretained(&web_contents->GetController())));
+  web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+
+  // Navigate cross-origin, which will fail and the back navigation should have
+  // succeeded.
+  EXPECT_FALSE(NavigateToURL(shell(), cross_origin_url));
+  EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
 
   // Verify the expected origin through JavaScript. It also has the additional
   // verification of the process also being still alive.
