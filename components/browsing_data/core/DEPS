@@ -2,6 +2,7 @@ include_rules = [
   "+components/autofill/core/browser",
   "+components/history/core/browser",
   "+components/password_manager/core/browser",
+  "+components/pref_registry",
   "+components/prefs",
   "+components/sync/driver",
   "+components/webdata/common",

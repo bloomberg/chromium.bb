@@ -69,6 +69,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -487,6 +488,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
+  browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
 #if defined(ENABLE_APP_LIST)
   app_list::AppListPrefs::RegisterProfilePrefs(registry);

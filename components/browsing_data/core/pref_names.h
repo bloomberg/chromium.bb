@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_BROWSING_DATA_CORE_PREF_NAMES_H_
 #define COMPONENTS_BROWSING_DATA_CORE_PREF_NAMES_H_
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace browsing_data {
 
 namespace prefs {
@@ -19,6 +23,12 @@ extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
 extern const char kDeleteHostedAppsData[];
 extern const char kDeleteMediaLicenses[];
+
+extern const char kLastClearBrowsingDataTime[];
+extern const char kClearBrowsingDataHistoryNoticeShownTimes[];
+
+// Registers the Clear Browsing Data UI prefs.
+void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace prefs
 

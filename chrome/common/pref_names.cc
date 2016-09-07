@@ -908,12 +908,6 @@ const char kEolNotificationDismissed[] = "eol_notification_dismissed";
 // visible on the toolbar.
 const char kShowHomeButton[] = "browser.show_home_button";
 
-// Clear Browsing Data dialog preferences.
-const char kLastClearBrowsingDataTime[] =
-    "browser.last_clear_browsing_data_time";
-const char kClearBrowsingDataHistoryNoticeShownTimes[] =
-    "browser.clear_data.history_notice_shown_times";
-
 // Boolean pref to define the default setting for "block offensive words".
 // The old key value is kept to avoid unnecessary migration code.
 const char kSpeechRecognitionFilterProfanities[] =

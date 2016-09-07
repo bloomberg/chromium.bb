@@ -141,11 +141,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kURLsToRestoreOnStartupOld);
 
   // Register prefs used by Clear Browsing Data UI.
-  registry->RegisterIntegerPref(
-      prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
-  registry->RegisterIntegerPref(
-      browsing_data::prefs::kDeleteTimePeriod, 0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
   ios::GetChromeBrowserProvider()->RegisterProfilePrefs(registry);
 }

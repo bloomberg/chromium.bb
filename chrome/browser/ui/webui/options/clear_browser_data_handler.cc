@@ -133,7 +133,8 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
   auto availability = IncognitoModePrefs::GetAvailability(profile->GetPrefs());
   if (availability == IncognitoModePrefs::ENABLED) {
     base::Time last_clear_time = base::Time::FromInternalValue(
-        profile->GetPrefs()->GetInt64(prefs::kLastClearBrowsingDataTime));
+        profile->GetPrefs()->GetInt64(
+            browsing_data::prefs::kLastClearBrowsingDataTime));
 
     const base::TimeDelta since_clear = base::Time::Now() - last_clear_time;
     if (since_clear < base::TimeDelta::FromHours(base::Time::kHoursPerDay)) {
@@ -326,7 +327,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
   // Store the clear browsing data time. Next time the clear browsing data
   // dialog is open, this time is used to decide whether to display an info
   // banner or not.
-  prefs->SetInt64(prefs::kLastClearBrowsingDataTime,
+  prefs->SetInt64(browsing_data::prefs::kLastClearBrowsingDataTime,
                   base::Time::Now().ToInternalValue());
 }
 
@@ -335,8 +336,8 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   remover_ = nullptr;
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  int notice_shown_times =
-      prefs->GetInteger(prefs::kClearBrowsingDataHistoryNoticeShownTimes);
+  int notice_shown_times = prefs->GetInteger(
+      browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
 
   // When the deletion is complete, we might show an additional dialog with
   // a notice about other forms of browsing history. This is the case if
@@ -350,8 +351,9 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
 
   if (show_notice) {
     // Increment the preference.
-    prefs->SetInteger(prefs::kClearBrowsingDataHistoryNoticeShownTimes,
-                      notice_shown_times + 1);
+    prefs->SetInteger(
+        browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes,
+        notice_shown_times + 1);
   }
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -403,8 +405,8 @@ void ClearBrowserDataHandler::RefreshHistoryNotice() {
   // If the dialog with history notice has been shown less than
   // |kMaxTimesHistoryNoticeShown| times, we might have to show it when the
   // user deletes history. Find out if the conditions are met.
-  int notice_shown_times = Profile::FromWebUI(web_ui())->GetPrefs()->
-      GetInteger(prefs::kClearBrowsingDataHistoryNoticeShownTimes);
+  int notice_shown_times = Profile::FromWebUI(web_ui())->GetPrefs()->GetInteger(
+      browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
 
   if (notice_shown_times < kMaxTimesHistoryNoticeShown) {
     browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(

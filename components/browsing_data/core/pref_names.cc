@@ -4,6 +4,8 @@
 
 #include "components/browsing_data/core/pref_names.h"
 
+#include "components/pref_registry/pref_registry_syncable.h"
+
 namespace browsing_data {
 
 namespace prefs {
@@ -20,6 +22,48 @@ const char kDeletePasswords[] = "browser.clear_data.passwords";
 const char kDeleteFormData[] = "browser.clear_data.form_data";
 const char kDeleteHostedAppsData[] = "browser.clear_data.hosted_apps_data";
 const char kDeleteMediaLicenses[] = "browser.clear_data.media_licenses";
+
+// Other Clear Browsing Data preferences.
+const char kLastClearBrowsingDataTime[] =
+  "browser.last_clear_browsing_data_time";
+const char kClearBrowsingDataHistoryNoticeShownTimes[] =
+  "browser.clear_data.history_notice_shown_times";
+
+void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      kDeleteTimePeriod, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteBrowsingHistory, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteCache, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteCookies, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeletePasswords, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteFormData, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      kClearBrowsingDataHistoryNoticeShownTimes, 0);
+
+#if !defined(OS_IOS)
+  registry->RegisterBooleanPref(
+      kDeleteDownloadHistory, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteHostedAppsData, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kDeleteMediaLicenses, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime, 0);
+#endif  // !defined(OS_IOS)
+}
 
 }  // namespace prefs
 

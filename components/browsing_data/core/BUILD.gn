@@ -27,6 +27,7 @@ static_library("core") {
     "//components/autofill/core/browser",
     "//components/history/core/browser",
     "//components/password_manager/core/browser",
+    "//components/pref_registry:pref_registry",
     "//components/prefs:prefs",
     "//components/strings",
     "//components/sync",
