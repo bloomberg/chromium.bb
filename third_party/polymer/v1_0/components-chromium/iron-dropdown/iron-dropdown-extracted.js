@@ -122,8 +122,15 @@
           this._refitOnScrollRAF = null;
         },
 
+        attached: function () {
+          if (!this.sizingTarget || this.sizingTarget === this) {
+            this.sizingTarget = this.containedElement;
+          }
+        },
+
         detached: function() {
           this.cancelAnimation();
+          document.removeEventListener('scroll', this._boundOnCaptureScroll);
           Polymer.IronDropdownScrollManager.removeScrollLock(this);
         },
 
@@ -136,7 +143,6 @@
             this.cancel();
           } else {
             this.cancelAnimation();
-            this.sizingTarget = this.containedElement || this.sizingTarget;
             this._updateAnimationConfig();
             this._saveScrollPosition();
             if (this.opened) {

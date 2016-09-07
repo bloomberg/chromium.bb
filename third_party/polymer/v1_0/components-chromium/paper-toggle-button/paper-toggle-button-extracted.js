@@ -28,6 +28,12 @@ Polymer({
         track: '_ontrack'
       },
 
+      attached: function() {
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          this.setScrollDirection('y');
+        });
+      },
+
       _ontrack: function(event) {
         var track = event.detail;
         if (track.state === 'start') {

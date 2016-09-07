@@ -32,7 +32,7 @@ Polymer({
       },
 
       /**
-       * Set noAnimation to true to disable animations
+       * Set noAnimation to true to disable animations.
        *
        * @attribute noAnimation
        */
@@ -40,6 +40,14 @@ Polymer({
         type: Boolean
       },
 
+      /**
+       * Stores the desired size of the collapse body.
+       * @private
+       */
+      _desiredSize: {
+        type: String,
+        value: ''
+      }
     },
 
     get dimension() {
@@ -100,20 +108,24 @@ Polymer({
      * @param {boolean=} animated if `true` updates the size with an animation, otherwise without.
      */
     updateSize: function(size, animated) {
+      // Consider 'auto' as '', to take full size.
+      size = size === 'auto' ? '' : size;
       // No change!
-      var curSize = this.style[this._dimensionMax];
-      if (curSize === size || (size === 'auto' && !curSize)) {
+      if (this._desiredSize === size) {
         return;
       }
 
+      this._desiredSize = size;
+
       this._updateTransition(false);
+      var willAnimate = animated && !this.noAnimation && this._isDisplayed;
       // If we can animate, must do some prep work.
-      if (animated && !this.noAnimation && this._isDisplayed) {
+      if (willAnimate) {
         // Animation will start at the current size.
         var startSize = this._calcSize();
         // For `auto` we must calculate what is the final size for the animation.
         // After the transition is done, _transitionEnd will set the size back to `auto`.
-        if (size === 'auto') {
+        if (size === '') {
           this.style[this._dimensionMax] = '';
           size = this._calcSize();
         }
@@ -124,12 +136,14 @@ Polymer({
         this.scrollTop = this.scrollTop;
         // Enable animation.
         this._updateTransition(true);
+        // If final size is the same as startSize it will not animate.
+        willAnimate = (size !== startSize);
       }
       // Set the final size.
-      if (size === 'auto') {
-        this.style[this._dimensionMax] = '';
-      } else {
-        this.style[this._dimensionMax] = size;
+      this.style[this._dimensionMax] = size;
+      // If it won't animate, call transitionEnd to set correct classes.
+      if (!willAnimate) {
+        this._transitionEnd();
       }
     },
 
@@ -168,15 +182,10 @@ Polymer({
       if (this.opened) {
         this.focus();
       }
-      if (this.noAnimation) {
-        this._transitionEnd();
-      }
     },
 
     _transitionEnd: function() {
-      if (this.opened) {
-        this.style[this._dimensionMax] = '';
-      }
+      this.style[this._dimensionMax] = this._desiredSize;
       this.toggleClass('iron-collapse-closed', !this.opened);
       this.toggleClass('iron-collapse-opened', this.opened);
       this._updateTransition(false);

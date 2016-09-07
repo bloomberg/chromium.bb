@@ -1,6 +1,6 @@
 {
   "name": "iron-dropdown",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "An unstyled element that works similarly to a native browser select",
   "authors": [
     "The Polymer Authors"
@@ -21,7 +21,7 @@
   "dependencies": {
     "polymer": "polymer/polymer#^1.1.0",
     "iron-behaviors": "polymerelements/iron-behaviors#^1.0.0",
-    "iron-overlay-behavior": "polymerelements/iron-overlay-behavior#^1.0.0",
+    "iron-overlay-behavior": "polymerelements/iron-overlay-behavior#^1.8.6",
     "iron-resizable-behavior": "polymerelements/iron-resizable-behavior#^1.0.0",
     "neon-animation": "polymerelements/neon-animation#^1.0.0"
   },

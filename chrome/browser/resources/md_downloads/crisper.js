@@ -1929,6 +1929,9 @@ Polymer.IronScrollTargetBehavior = {
         return;
       }
       Polymer.dom.flush();
+      if (!this._itemsRendered) {
+        return;
+      }
       idx = Math.min(Math.max(idx, 0), this._virtualCount - 1);
       if (!this._isIndexRendered(idx) || idx >= this._maxVirtualStart) {
         this._virtualStart = this.grid ? idx - this._itemsPerRow * 2 : idx - 1;
@@ -1936,8 +1939,7 @@ Polymer.IronScrollTargetBehavior = {
       this._manageFocus();
       this._assignModels();
       this._updateMetrics();
-      var estPhysicalTop = Math.floor(this._virtualStart / this._itemsPerRow) * this._physicalAverage;
-      this._physicalTop = estPhysicalTop;
+      this._physicalTop = Math.floor(this._virtualStart / this._itemsPerRow) * this._physicalAverage;
       var currentTopItem = this._physicalStart;
       var currentVirtualItem = this._virtualStart;
       var targetOffsetTop = 0;
@@ -2055,7 +2057,7 @@ Polymer.IronScrollTargetBehavior = {
       model.tabIndex = SECRET_TABINDEX;
       activeElTabIndex = activeEl ? activeEl.tabIndex : -1;
       model.tabIndex = modelTabIndex;
-      if (activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
+      if (activeEl && physicalItem !== activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
         return;
       }
       this.toggleSelectionForItem(model[this.as]);
@@ -4123,8 +4125,11 @@ Polymer.IronMenuBehaviorImpl = {
     for (var i = 1; i < length + 1; i++) {
       var item = this.items[(curFocusIndex - i + length) % length];
       if (!item.hasAttribute('disabled')) {
+        var owner = Polymer.dom(item).getOwnerRoot() || document;
         this._setFocusedItem(item);
-        return;
+        if (Polymer.dom(owner).activeElement == item) {
+          return;
+        }
       }
     }
   },
@@ -4134,8 +4139,11 @@ Polymer.IronMenuBehaviorImpl = {
     for (var i = 1; i < length + 1; i++) {
       var item = this.items[(curFocusIndex + i) % length];
       if (!item.hasAttribute('disabled')) {
+        var owner = Polymer.dom(item).getOwnerRoot() || document;
         this._setFocusedItem(item);
-        return;
+        if (Polymer.dom(owner).activeElement == item) {
+          return;
+        }
       }
     }
   },
@@ -5601,8 +5609,14 @@ Polymer({
       this._scrollLeft = 0;
       this._refitOnScrollRAF = null;
     },
+    attached: function() {
+      if (!this.sizingTarget || this.sizingTarget === this) {
+        this.sizingTarget = this.containedElement;
+      }
+    },
     detached: function() {
       this.cancelAnimation();
+      document.removeEventListener('scroll', this._boundOnCaptureScroll);
       Polymer.IronDropdownScrollManager.removeScrollLock(this);
     },
     _openedChanged: function() {
@@ -5610,7 +5624,6 @@ Polymer({
         this.cancel();
       } else {
         this.cancelAnimation();
-        this.sizingTarget = this.containedElement || this.sizingTarget;
         this._updateAnimationConfig();
         this._saveScrollPosition();
         if (this.opened) {

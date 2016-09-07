@@ -539,6 +539,7 @@ paper-ripple {
 
         width: var(--iron-icon-width, 24px);
         height: var(--iron-icon-height, 24px);
+        ;
 }
 
 </style>
@@ -3526,6 +3527,8 @@ paper-tabs {
         white-space: nowrap;
         cursor: pointer;
         --calculated-paper-checkbox-size: var(--paper-checkbox-size, 18px);
+        
+        --calculated-paper-checkbox-ink-size: var(--paper-checkbox-ink-size, -1px);
         font-family: var(--paper-font-common-base_-_font-family); -webkit-font-smoothing: var(--paper-font-common-base_-_-webkit-font-smoothing);
         line-height: 0;
         -webkit-tap-highlight-color: transparent;
@@ -3558,22 +3561,22 @@ paper-tabs {
   position: absolute;
 
         
-        top: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
-        left: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
-        width: calc(2.66 * var(--calculated-paper-checkbox-size));
-        height: calc(2.66 * var(--calculated-paper-checkbox-size));
-        color: var(--paper-checkbox-unchecked-ink-color,var(--primary-text-color));;
+        top: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
+        left: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
+        width: var(--calculated-paper-checkbox-ink-size);
+        height: var(--calculated-paper-checkbox-ink-size);
+        color: var(--paper-checkbox-unchecked-ink-color, var(--primary-text-color));
         opacity: 0.6;
         pointer-events: none;
 }
 
 :host-context([dir="rtl"]) #ink {
-  right: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
+  right: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
         left: auto;
 }
 
 #ink[checked] {
-  color: var(--paper-checkbox-checked-ink-color,var(--primary-color));;
+  color: var(--paper-checkbox-checked-ink-color, var(--primary-color));
 }
 
 #checkbox {
@@ -3581,7 +3584,7 @@ paper-tabs {
         box-sizing: border-box;
         height: 100%;
         border: solid 2px;
-        border-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
+        border-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
         border-radius: 2px;
         pointer-events: none;
         -webkit-transition: background-color 140ms, border-color 140ms;
@@ -3616,8 +3619,8 @@ paper-tabs {
 }
 
 #checkbox.checked {
-  background-color: var(--paper-checkbox-checked-color,var(--primary-color));;
-        border-color: var(--paper-checkbox-checked-color,var(--primary-color));;
+  background-color: var(--paper-checkbox-checked-color, var(--primary-color));
+        border-color: var(--paper-checkbox-checked-color, var(--primary-color));
 }
 
 #checkmark {
@@ -3647,12 +3650,12 @@ paper-tabs {
         padding-left: var(--paper-checkbox-label-spacing, 8px);
         white-space: normal;
         line-height: normal;
-        color: var(--paper-checkbox-label-color,var(--primary-text-color));;
+        color: var(--paper-checkbox-label-color, var(--primary-text-color));
         ;
 }
 
 :host([checked]) #checkboxLabel {
-  color: var(--paper-checkbox-label-checked-color,var(--paper-checkbox-label-color));;
+  color: var(--paper-checkbox-label-checked-color, var(--paper-checkbox-label-color, var(--primary-text-color)));
         ;
 }
 
@@ -3667,11 +3670,11 @@ paper-tabs {
 
 :host([disabled]) #checkbox {
   opacity: 0.5;
-        border-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
+        border-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
 }
 
 :host([disabled][checked]) #checkbox {
-  background-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
+  background-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
         opacity: 0.5;
 }
 
@@ -3680,7 +3683,7 @@ paper-tabs {
 }
 
 #checkbox.invalid:not(.checked) {
-  border-color: var(--paper-checkbox-error-color,var(--error-color));;
+  border-color: var(--paper-checkbox-error-color, var(--error-color));
 }
 
 </style>

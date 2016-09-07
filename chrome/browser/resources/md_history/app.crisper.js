@@ -3363,8 +3363,11 @@ Polymer.IronMenuBehaviorImpl = {
     for (var i = 1; i < length + 1; i++) {
       var item = this.items[(curFocusIndex - i + length) % length];
       if (!item.hasAttribute('disabled')) {
+        var owner = Polymer.dom(item).getOwnerRoot() || document;
         this._setFocusedItem(item);
-        return;
+        if (Polymer.dom(owner).activeElement == item) {
+          return;
+        }
       }
     }
   },
@@ -3374,8 +3377,11 @@ Polymer.IronMenuBehaviorImpl = {
     for (var i = 1; i < length + 1; i++) {
       var item = this.items[(curFocusIndex + i) % length];
       if (!item.hasAttribute('disabled')) {
+        var owner = Polymer.dom(item).getOwnerRoot() || document;
         this._setFocusedItem(item);
-        return;
+        if (Polymer.dom(owner).activeElement == item) {
+          return;
+        }
       }
     }
   },
@@ -6007,8 +6013,14 @@ Polymer({
       this._scrollLeft = 0;
       this._refitOnScrollRAF = null;
     },
+    attached: function() {
+      if (!this.sizingTarget || this.sizingTarget === this) {
+        this.sizingTarget = this.containedElement;
+      }
+    },
     detached: function() {
       this.cancelAnimation();
+      document.removeEventListener('scroll', this._boundOnCaptureScroll);
       Polymer.IronDropdownScrollManager.removeScrollLock(this);
     },
     _openedChanged: function() {
@@ -6016,7 +6028,6 @@ Polymer({
         this.cancel();
       } else {
         this.cancelAnimation();
-        this.sizingTarget = this.containedElement || this.sizingTarget;
         this._updateAnimationConfig();
         this._saveScrollPosition();
         if (this.opened) {
@@ -6424,6 +6435,10 @@ Polymer({
     },
     noAnimation: {
       type: Boolean
+    },
+    _desiredSize: {
+      type: String,
+      value: ''
     }
   },
   get dimension() {
@@ -6456,25 +6471,27 @@ Polymer({
     this.opened = false;
   },
   updateSize: function(size, animated) {
-    var curSize = this.style[this._dimensionMax];
-    if (curSize === size || size === 'auto' && !curSize) {
+    size = size === 'auto' ? '' : size;
+    if (this._desiredSize === size) {
       return;
     }
+    this._desiredSize = size;
     this._updateTransition(false);
-    if (animated && !this.noAnimation && this._isDisplayed) {
+    var willAnimate = animated && !this.noAnimation && this._isDisplayed;
+    if (willAnimate) {
       var startSize = this._calcSize();
-      if (size === 'auto') {
+      if (size === '') {
         this.style[this._dimensionMax] = '';
         size = this._calcSize();
       }
       this.style[this._dimensionMax] = startSize;
       this.scrollTop = this.scrollTop;
       this._updateTransition(true);
+      willAnimate = size !== startSize;
     }
-    if (size === 'auto') {
-      this.style[this._dimensionMax] = '';
-    } else {
-      this.style[this._dimensionMax] = size;
+    this.style[this._dimensionMax] = size;
+    if (!willAnimate) {
+      this._transitionEnd();
     }
   },
   enableTransition: function(enabled) {
@@ -6499,14 +6516,9 @@ Polymer({
     if (this.opened) {
       this.focus();
     }
-    if (this.noAnimation) {
-      this._transitionEnd();
-    }
   },
   _transitionEnd: function() {
-    if (this.opened) {
-      this.style[this._dimensionMax] = '';
-    }
+    this.style[this._dimensionMax] = this._desiredSize;
     this.toggleClass('iron-collapse-closed', !this.opened);
     this.toggleClass('iron-collapse-opened', this.opened);
     this._updateTransition(false);
@@ -6636,6 +6648,18 @@ Polymer({
     ariaActiveAttribute: {
       type: String,
       value: 'aria-checked'
+    }
+  },
+  attached: function() {
+    var inkSize = this.getComputedStyleValue('--calculated-paper-checkbox-ink-size');
+    if (inkSize === '-1px') {
+      var checkboxSize = parseFloat(this.getComputedStyleValue('--calculated-paper-checkbox-size'));
+      var defaultInkSize = Math.floor(8 / 3 * checkboxSize);
+      if (defaultInkSize % 2 !== checkboxSize % 2) {
+        defaultInkSize++;
+      }
+      this.customStyle['--paper-checkbox-ink-size'] = defaultInkSize + 'px';
+      this.updateStyles();
     }
   },
   _computeCheckboxClass: function(checked, invalid) {
@@ -7706,6 +7730,9 @@ Polymer({
         return;
       }
       Polymer.dom.flush();
+      if (!this._itemsRendered) {
+        return;
+      }
       idx = Math.min(Math.max(idx, 0), this._virtualCount - 1);
       if (!this._isIndexRendered(idx) || idx >= this._maxVirtualStart) {
         this._virtualStart = this.grid ? idx - this._itemsPerRow * 2 : idx - 1;
@@ -7713,8 +7740,7 @@ Polymer({
       this._manageFocus();
       this._assignModels();
       this._updateMetrics();
-      var estPhysicalTop = Math.floor(this._virtualStart / this._itemsPerRow) * this._physicalAverage;
-      this._physicalTop = estPhysicalTop;
+      this._physicalTop = Math.floor(this._virtualStart / this._itemsPerRow) * this._physicalAverage;
       var currentTopItem = this._physicalStart;
       var currentVirtualItem = this._virtualStart;
       var targetOffsetTop = 0;
@@ -7832,7 +7858,7 @@ Polymer({
       model.tabIndex = SECRET_TABINDEX;
       activeElTabIndex = activeEl ? activeEl.tabIndex : -1;
       model.tabIndex = modelTabIndex;
-      if (activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
+      if (activeEl && physicalItem !== activeEl && physicalItem.contains(activeEl) && activeElTabIndex !== SECRET_TABINDEX) {
         return;
       }
       this.toggleSelectionForItem(model[this.as]);

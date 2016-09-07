@@ -300,7 +300,7 @@
       /**
        * To be used to express what combination of keys  will trigger the relative
        * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`
-       * @type {Object}
+       * @type {!Object}
        */
       keyBindings: {},
 
