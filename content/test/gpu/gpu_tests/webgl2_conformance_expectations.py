@@ -67,20 +67,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Win / AMD
 
-    # Fail on all AMD configurations
-    self.Fail('deqp/functional/gles3/textureshadow/2d*',
-        ['win', 'amd'], bug=638323)
-    self.Fail('deqp/functional/gles3/textureshadow/cube*',
-        ['win', 'amd'], bug=638323)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'texstorage2d_format_depth_stencil.html',
-        ['win', 'amd'], bug=614178)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'texstorage3d_format_depth_stencil.html',
-        ['win', 'amd'], bug=614178)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
-        ['win', 'amd'], bug=483282)
-
     # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
@@ -101,12 +87,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/2d_array*',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturefiltering/cube*',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturespecification/'
-        'teximage2d_depth.html',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturespecification/'
-        'texsubimage2d_depth.html',
         ['win', ('amd', 0x6613)], bug=638323)
 
     # It's unfortunate that these suppressions need to be so broad, but
