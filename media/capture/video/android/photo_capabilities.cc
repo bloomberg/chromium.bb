@@ -126,4 +126,10 @@ PhotoCapabilities::AndroidFillLightMode PhotoCapabilities::getFillLightMode()
       Java_PhotoCapabilities_getFillLightMode(AttachCurrentThread(), object_));
 }
 
+bool PhotoCapabilities::getRedEyeReduction() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getRedEyeReduction(AttachCurrentThread(),
+                                                   object_);
+}
+
 }  // namespace media

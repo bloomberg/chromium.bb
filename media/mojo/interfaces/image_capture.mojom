@@ -31,6 +31,7 @@ struct PhotoCapabilities {
   Range exposure_compensation;
   MeteringMode white_balance_mode;
   FillLightMode fill_light_mode;
+  bool red_eye_reduction;
 };
 
 // Equivalent to idl Point2D.

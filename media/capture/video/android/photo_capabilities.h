@@ -61,6 +61,7 @@ class PhotoCapabilities {
   int getCurrentExposureCompensation() const;
   AndroidMeteringMode getWhiteBalanceMode() const;
   AndroidFillLightMode getFillLightMode() const;
+  bool getRedEyeReduction() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;

@@ -393,7 +393,10 @@ public abstract class VideoCaptureCamera
                     builder.setFillLightMode(AndroidFillLightMode.OFF);
                     break;
                 case android.hardware.Camera.Parameters.FLASH_MODE_AUTO:
+                    builder.setFillLightMode(AndroidFillLightMode.AUTO);
+                    break;
                 case android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE:
+                    builder.setRedEyeReduction(true);
                     builder.setFillLightMode(AndroidFillLightMode.AUTO);
                     break;
                 case android.hardware.Camera.Parameters.FLASH_MODE_ON:

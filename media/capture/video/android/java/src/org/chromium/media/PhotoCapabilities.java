@@ -31,12 +31,14 @@ class PhotoCapabilities {
     public final int currentExposureCompensation;
     public final int whiteBalanceMode;
     public final int fillLightMode;
+    public final boolean redEyeReduction;
 
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
             int minZoom, int currentZoom, int focusMode, int exposureMode,
             int maxExposureCompensation, int minExposureCompensation,
-            int currentExposureCompensation, int whiteBalanceMode, int fillLightMode) {
+            int currentExposureCompensation, int whiteBalanceMode, int fillLightMode,
+            boolean redEyeReduction) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -56,6 +58,7 @@ class PhotoCapabilities {
         this.currentExposureCompensation = currentExposureCompensation;
         this.whiteBalanceMode = whiteBalanceMode;
         this.fillLightMode = fillLightMode;
+        this.redEyeReduction = redEyeReduction;
     }
 
     @CalledByNative
@@ -153,6 +156,11 @@ class PhotoCapabilities {
         return fillLightMode;
     }
 
+    @CalledByNative
+    public boolean getRedEyeReduction() {
+        return redEyeReduction;
+    }
+
     public static class Builder {
         public int maxIso;
         public int minIso;
@@ -173,6 +181,7 @@ class PhotoCapabilities {
         public int currentExposureCompensation;
         public int whiteBalanceMode;
         public int fillLightMode;
+        public boolean redEyeReduction;
 
         public Builder() {}
 
@@ -271,11 +280,16 @@ class PhotoCapabilities {
             return this;
         }
 
+        public Builder setRedEyeReduction(boolean redEyeReduction) {
+            this.redEyeReduction = redEyeReduction;
+            return this;
+        }
+
         public PhotoCapabilities build() {
             return new PhotoCapabilities(maxIso, minIso, currentIso, maxHeight, minHeight,
                     currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
                     focusMode, exposureMode, maxExposureCompensation, minExposureCompensation,
-                    currentExposureCompensation, whiteBalanceMode, fillLightMode);
+                    currentExposureCompensation, whiteBalanceMode, fillLightMode, redEyeReduction);
         }
     }
 }

@@ -88,6 +88,9 @@ async_test(function(t) {
           fillLightModeNames[mock_capabilities.fill_light_mode],
           'fillLightMode');
 
+      assert_true(capabilities.redEyeReduction,
+          mock_capabilities.red_eye_reduction, 'redEyeReduction');
+
       t.done();
     })
     .catch(error => {

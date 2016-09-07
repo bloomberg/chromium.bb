@@ -47,6 +47,9 @@ public:
     String fillLightMode() const;
     void setFillLightMode(media::mojom::blink::FillLightMode fillLightMode) { m_fillLightMode = fillLightMode; }
 
+    bool redEyeReduction() const  { return m_redEyeReduction; }
+    void setRedEyeReduction(bool redEyeReduction) { m_redEyeReduction = redEyeReduction; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -61,6 +64,7 @@ private:
     Member<MediaSettingsRange> m_exposureCompensation;
     media::mojom::blink::MeteringMode m_whiteBalanceMode = media::mojom::blink::MeteringMode::NONE;
     media::mojom::blink::FillLightMode m_fillLightMode = media::mojom::blink::FillLightMode::NONE;
+    bool m_redEyeReduction;
 };
 
 } // namespace blink

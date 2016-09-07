@@ -271,6 +271,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setExposureCompensation(exposureCompensation);
         caps->setWhiteBalanceMode(capabilities->white_balance_mode);
         caps->setFillLightMode(capabilities->fill_light_mode);
+        caps->setRedEyeReduction(capabilities->red_eye_reduction);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

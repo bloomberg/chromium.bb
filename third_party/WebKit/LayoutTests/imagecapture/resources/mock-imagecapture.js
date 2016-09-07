@@ -25,6 +25,7 @@ let mockImageCaptureReady = define(
           exposure_compensation : { min : -200, max : 200, current : 33},
           white_balance_mode : imageCapture.MeteringMode.CONTINUOUS,
           fill_light_mode : imageCapture.FillLightMode.AUTO,
+          red_eye_reduction : true,
       }};
       this.settings_ = null;
     }

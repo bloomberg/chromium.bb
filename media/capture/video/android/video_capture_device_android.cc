@@ -522,6 +522,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       ToMojomMeteringMode(caps.getWhiteBalanceMode());
   photo_capabilities->fill_light_mode =
       ToMojomFillLightMode(caps.getFillLightMode());
+  photo_capabilities->red_eye_reduction = caps.getRedEyeReduction();
 
   callback.Run(std::move(photo_capabilities));
 }

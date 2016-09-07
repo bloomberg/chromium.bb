@@ -724,8 +724,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } else {
             // CONTROL_AE_MODE overrides FLASH_MODE control unless it's in ON or OFF states.
             switch (mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)) {
-                case CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH:
                 case CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE:
+                    builder.setRedEyeReduction(true);
+                    builder.setFillLightMode(AndroidFillLightMode.AUTO);
+                    break;
+                case CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH:
                     builder.setFillLightMode(AndroidFillLightMode.AUTO);
                     break;
                 case CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH:

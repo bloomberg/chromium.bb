@@ -31,6 +31,7 @@ enum FillLightMode {
     readonly attribute MediaSettingsRange exposureCompensation;
     readonly attribute MeteringMode whiteBalanceMode;
     readonly attribute FillLightMode fillLightMode;
+    readonly attribute boolean redEyeReduction;
     // TODO(mcasas): Implement all other PhotoCapabilities fields
     // https://crbug.com/518807
 };

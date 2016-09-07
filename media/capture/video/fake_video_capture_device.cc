@@ -206,6 +206,7 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->exposure_compensation->min = 0;
   photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
   photo_capabilities->fill_light_mode = mojom::FillLightMode::NONE;
+  photo_capabilities->red_eye_reduction = false;
   callback.Run(std::move(photo_capabilities));
 }
 
