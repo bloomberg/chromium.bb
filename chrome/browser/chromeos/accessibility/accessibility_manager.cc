@@ -213,6 +213,13 @@ void InjectChromeVoxContentScript(
     int render_view_id,
     const base::Closure& done_cb);
 
+void AddChromeVoxExtensionToComponentLoader(
+    extensions::ComponentLoader* component_loader,
+    base::Closure done_cb) {
+  component_loader->AddComponentFromDir(
+      GetChromeVoxPath(), extension_misc::kChromeVoxExtensionId, done_cb);
+}
+
 void LoadChromeVoxExtension(
     Profile* profile,
     RenderViewHost* render_view_host,
@@ -228,7 +235,9 @@ void LoadChromeVoxExtension(
         render_view_host->GetRoutingID(),
         done_cb);
   }
-  extension_service->component_loader()->AddChromeVoxExtension(done_cb);
+
+  AddChromeVoxExtensionToComponentLoader(extension_service->component_loader(),
+                                         done_cb);
 }
 
 void InjectChromeVoxContentScript(
@@ -613,6 +622,16 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  // If ChromeVox was already enabled, but not for this profile,
+  // add it to this profile.
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  auto* component_loader = extension_service->component_loader();
+  bool is_already_loaded =
+      component_loader->Exists(extension_misc::kChromeVoxExtensionId);
+  if (spoken_feedback_enabled_ && enabled && !is_already_loaded)
+    AddChromeVoxExtensionToComponentLoader(component_loader, base::Closure());
 
   if (spoken_feedback_enabled_ == enabled)
     return;
