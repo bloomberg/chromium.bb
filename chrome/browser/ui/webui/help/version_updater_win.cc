@@ -115,6 +115,8 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
 
 void VersionUpdaterWin::BeginUpdateCheckInBlockingPool(
     bool install_update_if_possible) {
+  // Disconnect from any previous attempts to avoid redundant callbacks.
+  weak_factory_.InvalidateWeakPtrs();
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
   BeginUpdateCheck(blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
