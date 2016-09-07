@@ -402,6 +402,7 @@ android_apk("cronet_sample_apk") {
     proguard_configs = [
       "proguard.cfg",
       "sample/javatests/proguard.cfg",
+      "//base/android/base_proguard_config.flags",
     ]
   }
 }
@@ -717,6 +718,7 @@ android_apk("cronet_perf_test_apk") {
   proguard_configs = [
     "proguard.cfg",
     "test/javaperftests/proguard.cfg",
+    "//base/android/base_proguard_config.flags",
   ]
 }
 
@@ -901,7 +903,6 @@ copy("cronet_package_copy") {
     "$root_out_dir/lib.java/components/cronet/android/cronet_api.jar",
     "//AUTHORS",
     "//chrome/VERSION",
-    "//components/cronet/android/proguard.cfg",
   ]
   outputs = [
     "$_package_dir/{{source_file_part}}",
@@ -909,6 +910,20 @@ copy("cronet_package_copy") {
 
   deps = [
     ":cronet_api",
+  ]
+}
+
+action("cronet_combine_proguard_flags") {
+  script = "//components/cronet/tools/generate_proguard_file.py"
+  outputs = [
+    "$_package_dir/proguard.cfg",
+  ]
+
+  args = [
+    "--output-file",
+    rebase_path("$_package_dir/proguard.cfg", root_build_dir),
+    rebase_path("//base/android/base_proguard_config.flags", root_build_dir),
+    rebase_path("//components/cronet/android/proguard.cfg", root_build_dir),
   ]
 }
 
@@ -963,6 +978,7 @@ group("cronet_package") {
   # not including any deps in cronet_package target otherwise.
   if (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon) {
     deps = [
+      ":cronet_combine_proguard_flags",
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
