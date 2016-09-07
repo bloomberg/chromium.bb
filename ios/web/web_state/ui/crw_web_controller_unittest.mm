@@ -8,12 +8,9 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/ios/ios_util.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/histogram_tester.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
@@ -43,16 +40,12 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "third_party/ocmock/ocmock_extensions.h"
-#import "ui/base/test/ios/keyboard_appearance_listener.h"
 #include "ui/base/test/ios/ui_view_test_utils.h"
 
 using web::NavigationManagerImpl;
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
-@property(nonatomic, readonly) CRWWebControllerContainerView* containerView;
-- (void)setJsMessageQueueThrottled:(BOOL)throttle;
-- (void)removeDocumentLoadCommandsFromQueue;
 - (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
                                  toItem:(web::NavigationItem*)toItem;
 @end
@@ -760,33 +753,11 @@ TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
 typedef web::WebTestWithWebController CRWWebControllerJSExecutionTest;
 
-// Tests that a script correctly evaluates to string.
-TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIExecution) {
-  LoadHtml(@"<p></p>");
-  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"true"));
-  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"false"));
-}
-
 // Tests that a script correctly evaluates to boolean.
 TEST_F(CRWWebControllerJSExecutionTest, Execution) {
   LoadHtml(@"<p></p>");
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"true"));
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"false"));
-}
-
-// Tests that a script is not evaluated on windowID mismatch.
-TEST_F(CRWWebControllerJSExecutionTest, LegacyAPIWindowIdMissmatch) {
-  LoadHtml(@"<p></p>");
-  // Script is evaluated since windowID is matched.
-  ExecuteJavaScript(@"window.test1 = '1';");
-  EXPECT_NSEQ(@"1", ExecuteJavaScript(@"window.test1"));
-
-  // Change windowID.
-  ExecuteJavaScript(@"__gCrWeb['windowId'] = '';");
-
-  // Script is not evaluated because of windowID mismatch.
-  ExecuteJavaScript(@"window.test2 = '2';");
-  EXPECT_FALSE(ExecuteJavaScript(@"window.test2"));
 }
 
 // Tests that a script is not executed on windowID mismatch.
