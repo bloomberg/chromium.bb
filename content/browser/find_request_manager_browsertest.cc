@@ -553,6 +553,35 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue627799)) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
+  TestNavigationObserver navigation_observer(contents());
+  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+
+  blink::WebFindOptions default_options;
+  Find("result", default_options);
+  delegate()->WaitForFinalReply();
+
+  // Initially, there are no matches on the page.
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(0, results.number_of_matches);
+  EXPECT_EQ(0, results.active_match_ordinal);
+
+  // Load a page with matches.
+  LoadAndWait("/find_in_simple_page.html");
+
+  Find("result", default_options);
+  delegate()->WaitForFinalReply();
+
+  // There should now be matches found. When the bug was present, there were
+  // still no matches found.
+  results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(5, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
+}
+
 #if defined(OS_ANDROID)
 // Tests requesting find match rects.
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {

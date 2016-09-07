@@ -200,6 +200,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         reportFindInPageSelection(selectionRect, m_activeMatchIndex + 1, identifier);
     }
 
+    m_lastFindRequestCompletedWithNoMatches = false;
     return true;
 }
 
