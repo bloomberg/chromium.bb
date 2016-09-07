@@ -124,7 +124,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
         base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
                    base::Unretained(this)));
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return advertisement_;
   }
 
@@ -136,7 +136,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
         base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
                    base::Unretained(this)));
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TriggerReleased(scoped_refptr<BluetoothAdvertisement> advertisement) {

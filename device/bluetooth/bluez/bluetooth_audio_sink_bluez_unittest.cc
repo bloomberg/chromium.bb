@@ -446,7 +446,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, MediaRemovedDuringActiveState) {
 
   fake_transport_->SetState(media_endpoint_->object_path(), "pending");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Acquire is called when the state of |audio_sink_| becomes STATE_PENDING,
   // and Acquire will trigger state change. Therefore, the state will be
@@ -533,7 +533,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, TransportRemovedDuringActiveState) {
 
   fake_transport_->SetState(media_endpoint_->object_path(), "pending");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Acquire is called when the state of |audio_sink_| becomes STATE_PENDING,
   // and Acquire will trigger state change. Therefore, the state will be
@@ -706,7 +706,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, UnregisterAudioSinkDuringActiveState) {
 
   fake_transport_->SetState(media_endpoint_->object_path(), "pending");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Acquire is called when the state of |audio_sink_| becomes STATE_PENDING,
   // and Acquire will trigger state change. Therefore, the state will be
@@ -834,7 +834,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, AcquireFD) {
   std::vector<char> data_one(16, 0x12);
   fake_transport_->WriteData(media_endpoint_->object_path(), data_one);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Acquire is called when the state of |audio_sink_| becomes STATE_PENDING,
   // and Acquire will trigger state change. Therefore, the state will be
@@ -877,7 +877,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, PauseAndResume) {
   std::vector<char> data_one(16, 0x12);
   fake_transport_->WriteData(media_endpoint_->object_path(), data_one);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_one);
   EXPECT_EQ(observer_->read_mtu_,
@@ -897,7 +897,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, PauseAndResume) {
   std::vector<char> data_two(8, 0x10);
   fake_transport_->WriteData(media_endpoint_->object_path(), data_two);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_two);
   EXPECT_EQ(observer_->read_mtu_,
@@ -935,7 +935,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, ContinuouslyStreaming) {
   std::vector<char> data_one(16, 0x12);
   fake_transport_->WriteData(media_endpoint_->object_path(), data_one);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_one);
   EXPECT_EQ(observer_->read_mtu_,
@@ -946,7 +946,7 @@ TEST_F(BluetoothAudioSinkBlueZTest, ContinuouslyStreaming) {
   std::vector<char> data_two(8, 0x10);
   fake_transport_->WriteData(media_endpoint_->object_path(), data_two);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(observer_->data_, data_two);
   EXPECT_EQ(observer_->read_mtu_,
