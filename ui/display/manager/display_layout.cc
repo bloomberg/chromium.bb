@@ -36,7 +36,7 @@ bool IsIdInList(int64_t id, const DisplayIdList& list) {
   return iter != list.end();
 }
 
-Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+Display* FindDisplayById(Displays* display_list, int64_t id) {
   auto iter =
       std::find_if(display_list->begin(), display_list->end(),
                    [id](const Display& display) { return display.id() == id; });
@@ -182,7 +182,7 @@ DisplayLayout::DisplayLayout()
 
 DisplayLayout::~DisplayLayout() {}
 
-void DisplayLayout::ApplyToDisplayList(DisplayList* display_list,
+void DisplayLayout::ApplyToDisplayList(Displays* display_list,
                                        std::vector<int64_t>* updated_ids,
                                        int minimum_offset_overlap) const {
   // Layout from primary, then dependent displays.
@@ -310,7 +310,7 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
 
 // static
 bool DisplayLayout::ApplyDisplayPlacement(const DisplayPlacement& placement,
-                                          DisplayList* display_list,
+                                          Displays* display_list,
                                           int minimum_offset_overlap) {
   const Display& parent_display =
       *FindDisplayById(display_list, placement.parent_display_id);

@@ -248,12 +248,12 @@ class ASH_EXPORT DisplayManager
   // displays that will be removed if |UpdateDisplaysWith| is currently
   // executing.
   // See https://crbug.com/632755
-  const display::DisplayList& active_only_display_list() const {
+  const display::Displays& active_only_display_list() const {
     return is_updating_display_list_ ? active_only_display_list_
                                      : active_display_list();
   }
 
-  const display::DisplayList& active_display_list() const {
+  const display::Displays& active_display_list() const {
     return active_display_list_;
   }
 
@@ -268,7 +268,7 @@ class ASH_EXPORT DisplayManager
   // Returns the mirroring status.
   bool IsInMirrorMode() const;
   int64_t mirroring_display_id() const { return mirroring_display_id_; }
-  const display::DisplayList& software_mirroring_display_list() const {
+  const display::Displays& software_mirroring_display_list() const {
     return software_mirroring_display_list_;
   }
 
@@ -415,7 +415,7 @@ class ASH_EXPORT DisplayManager
   // the layout registered for the display pair. For more than 2 displays,
   // the bounds are updated using horizontal layout.
   void UpdateNonPrimaryDisplayBoundsForLayout(
-      display::DisplayList* display_list,
+      display::Displays* display_list,
       std::vector<size_t>* updated_indices);
 
   void CreateMirrorWindowIfAny();
@@ -425,7 +425,7 @@ class ASH_EXPORT DisplayManager
   // Applies the |layout| and updates the bounds of displays in |display_list|.
   // |updated_ids| contains the ids for displays whose bounds have changed.
   void ApplyDisplayLayout(const display::DisplayLayout& layout,
-                          display::DisplayList* display_list,
+                          display::Displays* display_list,
                           std::vector<int64_t>* updated_ids);
 
   Delegate* delegate_;  // not owned.
@@ -437,11 +437,11 @@ class ASH_EXPORT DisplayManager
   int64_t first_display_id_;
 
   // List of current active displays.
-  display::DisplayList active_display_list_;
+  display::Displays active_display_list_;
   // This list does not include the displays that will be removed if
   // |UpdateDisplaysWith| is under execution.
   // See https://crbug.com/632755
-  display::DisplayList active_only_display_list_;
+  display::Displays active_only_display_list_;
 
   // True if active_display_list is being modified and has displays that are not
   // presently active.
@@ -469,7 +469,7 @@ class ASH_EXPORT DisplayManager
   MultiDisplayMode current_default_multi_display_mode_;
 
   int64_t mirroring_display_id_;
-  display::DisplayList software_mirroring_display_list_;
+  display::Displays software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_;

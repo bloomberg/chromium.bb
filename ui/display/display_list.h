@@ -2,29 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_DISPLAY_LIST_H_
-#define UI_VIEWS_MUS_DISPLAY_LIST_H_
+#ifndef UI_DISPLAY_DISPLAY_LIST_H_
+#define UI_DISPLAY_DISPLAY_LIST_H_
 
 #include <stdint.h>
 
 #include <vector>
 
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
-#include "ui/views/mus/mus_export.h"
+#include "ui/display/display_export.h"
 
 namespace display {
+
 class Display;
 class DisplayObserver;
-}
-
-namespace views {
 
 // Maintains an ordered list of display::Displays as well as operations to add,
 // remove and update said list. Additionally maintains display::DisplayObservers
 // and updates them as appropriate.
-class VIEWS_MUS_EXPORT DisplayList {
+class DISPLAY_EXPORT DisplayList {
  public:
   using Displays = std::vector<display::Display>;
 
@@ -64,6 +61,6 @@ class VIEWS_MUS_EXPORT DisplayList {
   DISALLOW_COPY_AND_ASSIGN(DisplayList);
 };
 
-}  // namespace views
+}  // namespace display
 
-#endif  // UI_VIEWS_MUS_DISPLAY_LIST_H_
+#endif  // UI_DISPLAY_DISPLAY_LIST_H_

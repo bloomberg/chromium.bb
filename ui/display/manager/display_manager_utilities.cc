@@ -263,7 +263,7 @@ int FindDisplayIndexContainingPoint(
   return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
-display::DisplayIdList CreateDisplayIdList(const display::DisplayList& list) {
+display::DisplayIdList CreateDisplayIdList(const display::Displays& list) {
   return GenerateDisplayIdList(
       list.begin(), list.end(),
       [](const display::Display& display) { return display.id(); });

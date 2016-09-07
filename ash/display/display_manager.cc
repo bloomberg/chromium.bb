@@ -677,12 +677,12 @@ void DisplayManager::UpdateDisplaysWith(
   if (delegate_)
     delegate_->CloseMirroringDisplayIfNotNecessary();
 
-  display::DisplayList new_displays;
-  display::DisplayList removed_displays;
+  display::Displays new_displays;
+  display::Displays removed_displays;
   std::map<size_t, uint32_t> display_changes;
   std::vector<size_t> added_display_indices;
 
-  display::DisplayList::iterator curr_iter = active_display_list_.begin();
+  display::Displays::iterator curr_iter = active_display_list_.begin();
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();
 
   while (curr_iter != active_display_list_.end() ||
@@ -980,7 +980,7 @@ void DisplayManager::AddRemoveDisplay() {
 void DisplayManager::ToggleDisplayScaleFactor() {
   DCHECK(!active_display_list_.empty());
   DisplayInfoList new_display_info_list;
-  for (display::DisplayList::const_iterator iter = active_display_list_.begin();
+  for (display::Displays::const_iterator iter = active_display_list_.begin();
        iter != active_display_list_.end(); ++iter) {
     display::ManagedDisplayInfo display_info = GetDisplayInfo(iter->id());
     display_info.set_device_scale_factor(
@@ -1335,7 +1335,7 @@ display::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
 }
 
 void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
-    display::DisplayList* display_list,
+    display::Displays* display_list,
     std::vector<size_t>* updated_indices) {
   if (display_list->size() == 1u)
     return;
@@ -1372,7 +1372,7 @@ void DisplayManager::CreateMirrorWindowIfAny() {
 }
 
 void DisplayManager::ApplyDisplayLayout(const display::DisplayLayout& layout,
-                                        display::DisplayList* display_list,
+                                        display::Displays* display_list,
                                         std::vector<int64_t>* updated_ids) {
   layout.ApplyToDisplayList(display_list, updated_ids,
                             kMinimumOverlapForInvalidOffset);

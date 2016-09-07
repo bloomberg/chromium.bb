@@ -14,7 +14,7 @@
 namespace display {
 
 TEST(DisplayLayoutTest, Empty) {
-  DisplayList display_list;
+  Displays display_list;
   std::vector<int64_t> updated_ids;
 
   DisplayLayout display_layout;
@@ -25,7 +25,7 @@ TEST(DisplayLayoutTest, Empty) {
 }
 
 TEST(DisplayLayoutTest, SingleDisplayNoPlacements) {
-  DisplayList display_list;
+  Displays display_list;
   display_list.emplace_back(0, gfx::Rect(0, 0, 800, 600));
   std::vector<int64_t> updated_ids;
 
@@ -38,7 +38,7 @@ TEST(DisplayLayoutTest, SingleDisplayNoPlacements) {
 }
 
 TEST(DisplayLayoutTest, SingleDisplayNonRelevantPlacement) {
-  DisplayList display_list;
+  Displays display_list;
   display_list.emplace_back(0, gfx::Rect(0, 0, 800, 600));
   std::vector<int64_t> updated_ids;
 
@@ -88,7 +88,7 @@ TEST_P(TwoDisplays, Placement) {
   gfx::Rect expected_primary_display_bounds = std::get<5>(GetParam());
   gfx::Rect expected_secondary_display_bounds = std::get<6>(GetParam());
 
-  DisplayList display_list;
+  Displays display_list;
   display_list.emplace_back(0, primary_display_bounds);
   display_list.emplace_back(1, secondary_display_bounds);
   std::vector<int64_t> updated_ids;
@@ -262,7 +262,7 @@ INSTANTIATE_TEST_CASE_P(DisplayLayoutTestMinimumOverlap, TwoDisplays,
 //    [0][3]   [6]
 // [2]  [5]
 TEST(DisplayLayoutTest, MultipleDisplays) {
-  DisplayList display_list;
+  Displays display_list;
   display_list.emplace_back(0, gfx::Rect(0, 0, 100, 100));
   display_list.emplace_back(1, gfx::Rect(0, 0, 100, 100));
   display_list.emplace_back(2, gfx::Rect(0, 0, 100, 100));
@@ -335,7 +335,7 @@ TEST_P(TwoDisplaysBottomRightReference, Placement) {
   gfx::Rect expected_primary_display_bounds = std::get<5>(GetParam());
   gfx::Rect expected_secondary_display_bounds = std::get<6>(GetParam());
 
-  DisplayList display_list;
+  Displays display_list;
   display_list.emplace_back(0, primary_display_bounds);
   display_list.emplace_back(1, secondary_display_bounds);
   std::vector<int64_t> updated_ids;

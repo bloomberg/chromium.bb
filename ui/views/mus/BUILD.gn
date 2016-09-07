@@ -17,8 +17,6 @@ component("mus") {
     "aura_init.h",
     "clipboard_mus.cc",
     "clipboard_mus.h",
-    "display_list.cc",
-    "display_list.h",
     "input_method_mus.cc",
     "input_method_mus.h",
     "mus_export.h",
@@ -150,7 +148,6 @@ test("views_mus_unittests") {
   testonly = true
 
   sources = [
-    "display_list_unittest.cc",
     "input_method_mus_unittest.cc",
     "native_widget_mus_unittest.cc",
     "os_exchange_data_provider_mus_unittest.cc",

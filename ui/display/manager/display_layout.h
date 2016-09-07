@@ -27,7 +27,7 @@ class Display;
 // DisplayLayoutStore.
 using DisplayIdList = std::vector<int64_t>;
 
-using DisplayList = std::vector<Display>;
+using Displays = std::vector<Display>;
 
 // DisplayPlacement specifies where the display (D) is placed relative to
 // parent (P) display. In the following example, D given by |display_id| is
@@ -92,7 +92,7 @@ class DISPLAY_EXPORT DisplayLayout final {
   // |updated_ids| (optional) contains the ids for displays whose bounds have
   // changed. |minimum_offset_overlap| represents the minimum required overlap
   // between displays.
-  void ApplyToDisplayList(DisplayList* display_list,
+  void ApplyToDisplayList(Displays* display_list,
                           std::vector<int64_t>* updated_ids,
                           int minimum_offset_overlap) const;
 
@@ -127,7 +127,7 @@ class DISPLAY_EXPORT DisplayLayout final {
   // Apply the display placement to |display_list|.
   // Returns true if the display bounds were updated.
   static bool ApplyDisplayPlacement(const DisplayPlacement& placement,
-                                    DisplayList* display_list,
+                                    Displays* display_list,
                                     int minimum_offset_overlap);
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayout);

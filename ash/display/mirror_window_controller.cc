@@ -333,10 +333,9 @@ display::Display MirrorWindowController::GetDisplayForRootWindow(
     if (pair.second->ash_host->AsWindowTreeHost()->window() == root) {
       // Sanity check to catch an error early.
       int64_t id = pair.first;
-      const display::DisplayList& list =
-          Shell::GetInstance()
-              ->display_manager()
-              ->software_mirroring_display_list();
+      const display::Displays& list = Shell::GetInstance()
+                                          ->display_manager()
+                                          ->software_mirroring_display_list();
       auto iter = std::find_if(
           list.begin(), list.end(),
           [id](const display::Display& display) { return display.id() == id; });

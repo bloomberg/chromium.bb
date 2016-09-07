@@ -95,7 +95,7 @@ display::DisplayIdList GenerateDisplayIdList(
 
 // Creates sorted display::DisplayIdList.
 DISPLAY_EXPORT display::DisplayIdList CreateDisplayIdList(
-    const display::DisplayList& list);
+    const display::Displays& list);
 
 DISPLAY_EXPORT std::string DisplayIdListToString(
     const display::DisplayIdList& list);

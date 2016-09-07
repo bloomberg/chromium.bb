@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/display_list.h"
+#include "ui/display/display_list.h"
 
-#include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
 
-namespace views {
+namespace display {
 
 DisplayList::DisplayList() {}
 
@@ -93,8 +92,8 @@ void DisplayList::RemoveDisplay(int64_t id) {
   auto iter = FindDisplayById(id);
   DCHECK(displays_.end() != iter);
   if (primary_display_index_ == static_cast<int>(iter - displays_.begin())) {
-    // We expect the primary to change before removing it. The only case we
-    // allow removal of the primary is if it is the list display.
+    // The primary display can only be removed if it is the last display.
+    // Users must choose a new primary before removing an old primary display.
     DCHECK_EQ(1u, displays_.size());
     primary_display_index_ = -1;
   } else if (primary_display_index_ >
@@ -106,4 +105,4 @@ void DisplayList::RemoveDisplay(int64_t id) {
   FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
                     OnDisplayRemoved(display));
 }
-}  // namespace views
+}  // namespace display

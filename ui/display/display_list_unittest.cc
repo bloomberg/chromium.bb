@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/display_list.h"
+#include "ui/display/display_list.h"
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 
 using display::Display;
 
-namespace views {
+namespace display {
 namespace {
 
 class DisplayObserverImpl : public display::DisplayObserver {
@@ -110,4 +110,4 @@ TEST(DisplayListTest, AddUpdateRemove) {
 }
 
 }  // namespace
-}  // namespace views
+}  // namespace display

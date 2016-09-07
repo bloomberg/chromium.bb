@@ -117,7 +117,7 @@ void WmTestBase::UpdateDisplay(const std::string& display_spec) {
   roots[0]->display_.set_work_area(work_area);
   roots[0]->root()->SetBounds(gfx::Rect(bounds.size()));
   test_helper_->screen()->display_list()->UpdateDisplay(
-      roots[0]->display(), views::DisplayList::Type::PRIMARY);
+      roots[0]->display(), display::DisplayList::Type::PRIMARY);
 }
 
 ui::Window* WmTestBase::GetPrimaryRootWindow() {

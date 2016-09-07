@@ -36,7 +36,7 @@ DisplayInfoList CreateDisplayInfoListFromString(
       specs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   size_t index = 0;
 
-  display::DisplayList list =
+  display::Displays list =
       display_manager->IsInUnifiedMode()
           ? display_manager->software_mirroring_display_list()
           : display_manager->active_display_list();

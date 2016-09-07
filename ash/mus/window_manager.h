@@ -20,7 +20,7 @@
 
 namespace display {
 class Display;
-class Screen;
+class ScreenBase;
 }
 
 namespace shell {
@@ -141,7 +141,7 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   base::ObserverList<WindowManagerObserver> observers_;
 
-  std::unique_ptr<display::Screen> screen_;
+  std::unique_ptr<display::ScreenBase> screen_;
 
   std::unique_ptr<WmShellMus> shell_;
 

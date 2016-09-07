@@ -62,7 +62,7 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager()->window_tree_client();
 
   screen_->display_list()->AddDisplay(display,
-                                      views::DisplayList::Type::PRIMARY);
+                                      display::DisplayList::Type::PRIMARY);
 
   ui::WindowTreeClientPrivate(window_tree_client)
       .CallWmNewDisplayAdded(display);

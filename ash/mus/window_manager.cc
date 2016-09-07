@@ -36,12 +36,7 @@
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 
-namespace ash {
-namespace mus {
-
-void AssertTrue(bool success) {
-  DCHECK(success);
-}
+namespace {
 
 // TODO(jamescook): Port ash::sysui::AppListPresenterMus and eliminate this.
 class AppListPresenterStub : public app_list::AppListPresenter {
@@ -65,6 +60,11 @@ class AppListPresenterStub : public app_list::AppListPresenter {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterStub);
 };
+
+}  // namespace
+
+namespace ash {
+namespace mus {
 
 WindowManager::WindowManager(shell::Connector* connector)
     : connector_(connector) {}
@@ -161,7 +161,7 @@ void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
 RootWindowController* WindowManager::CreateRootWindowController(
     ui::Window* window,
     const display::Display& display) {
-  // TODO(sky): there is timing issues with using ScreenMus.
+  // TODO(sky): There are timing issues with using ScreenMus.
   if (!screen_) {
     std::unique_ptr<views::ScreenMus> screen(new views::ScreenMus(nullptr));
     screen->Init(connector_);
@@ -267,8 +267,7 @@ bool WindowManager::OnWmSetProperty(
     ui::Window* window,
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
-  // TODO(sky): constrain this to set of keys we know about, and allowed
-  // values.
+  // TODO(sky): constrain this to set of keys we know about, and allowed values.
   return name == ui::mojom::WindowManager::kShowState_Property ||
          name == ui::mojom::WindowManager::kPreferredSize_Property ||
          name == ui::mojom::WindowManager::kResizeBehavior_Property ||
