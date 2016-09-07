@@ -667,8 +667,15 @@ void BrowsingDataRemover::RemoveImpl(
 
     // The SSL Host State that tracks SSL interstitial "proceed" decisions may
     // include origins that the user has visited, so it must be cleared.
-    if (profile_->GetSSLHostStateDelegate())
-      profile_->GetSSLHostStateDelegate()->Clear();
+    // TODO(msramek): We can reuse the plugin filter here, since both plugins
+    // and SSL host state are scoped to hosts and represent them as std::string.
+    // Rename the method to indicate its more general usage.
+    if (profile_->GetSSLHostStateDelegate()) {
+      profile_->GetSSLHostStateDelegate()->Clear(
+          filter_builder.IsEmptyBlacklist()
+              ? base::Callback<bool(const std::string&)>()
+              : filter_builder.BuildPluginFilter());
+    }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
     precache::PrecacheManager* precache_manager =
@@ -851,17 +858,17 @@ void BrowsingDataRemover::RemoveImpl(
 #endif
 
   if (remove_mask & REMOVE_SITE_USAGE_DATA) {
-    ClearSettingsForOneTypeWithPredicate(
-        HostContentSettingsMapFactory::GetForProfile(profile_),
-        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-        base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneTypeWithPredicate(
+            CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
   }
 
   if (remove_mask & REMOVE_SITE_USAGE_DATA || remove_mask & REMOVE_HISTORY) {
-    ClearSettingsForOneTypeWithPredicate(
-        HostContentSettingsMapFactory::GetForProfile(profile_),
-        CONTENT_SETTINGS_TYPE_APP_BANNER,
-        base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneTypeWithPredicate(
+            CONTENT_SETTINGS_TYPE_APP_BANNER,
+            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
 
     PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile_, filter);
   }
@@ -1225,24 +1232,6 @@ BrowsingDataRemover::RemovalTask::RemovalTask(
       observer(observer) {}
 
 BrowsingDataRemover::RemovalTask::~RemovalTask() {}
-
-void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
-    HostContentSettingsMap* content_settings_map,
-    ContentSettingsType content_type,
-    const base::Callback<bool(const ContentSettingsPattern& primary_pattern,
-                              const ContentSettingsPattern& secondary_pattern)>&
-        predicate) {
-  ContentSettingsForOneType settings;
-  content_settings_map->GetSettingsForOneType(content_type, std::string(),
-                                              &settings);
-  for (const ContentSettingPatternSource& setting : settings) {
-    if (predicate.Run(setting.primary_pattern, setting.secondary_pattern)) {
-      content_settings_map->SetWebsiteSettingCustomScope(
-          setting.primary_pattern, setting.secondary_pattern, content_type,
-          std::string(), nullptr);
-    }
-  }
-}
 
 bool BrowsingDataRemover::AllDone() {
   return !waiting_for_synchronous_clear_operations_ &&

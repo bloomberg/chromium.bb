@@ -54,7 +54,8 @@ class AwSSLHostStateDelegate : public content::SSLHostStateDelegate {
                  const net::X509Certificate& cert,
                  net::CertStatus error) override;
 
-  void Clear() override;
+  void Clear(
+      const base::Callback<bool(const std::string&)>& host_filter) override;
 
   // Queries whether |cert| is allowed or denied for |host| and |error|.
   content::SSLHostStateDelegate::CertJudgment QueryPolicy(

@@ -171,12 +171,6 @@ const base::FilePath::CharType kDomStorageOrigin3[] =
 const base::FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
     "chrome-extension_abcdefghijklmnopqrstuvwxyz_0.localstorage");
 
-bool MatchPrimaryPattern(const ContentSettingsPattern& expected_primary,
-                         const ContentSettingsPattern& primary_pattern,
-                         const ContentSettingsPattern& secondary_pattern) {
-  return expected_primary == primary_pattern;
-}
-
 #if defined(OS_CHROMEOS)
 void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -2610,91 +2604,6 @@ TEST_F(BrowsingDataRemoverTest, RemoveContentSettingsWithBlacklist) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin3),
             host_settings[2].primary_pattern)
       << host_settings[2].primary_pattern.ToString();
-}
-
-TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  ContentSettingsForOneType host_settings;
-
-  // Patterns with wildcards.
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.org");
-  ContentSettingsPattern pattern2 =
-      ContentSettingsPattern::FromString("[*.]example.net");
-
-  // Patterns without wildcards.
-  GURL url1("https://www.google.com/");
-  GURL url2("https://www.google.com/maps");
-  GURL url3("http://www.google.com/maps");
-  GURL url3_origin_only("http://www.google.com/");
-
-  host_content_settings_map->SetContentSettingCustomScope(
-      pattern2, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
-  host_content_settings_map->SetContentSettingCustomScope(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), CONTENT_SETTING_BLOCK);
-  host_content_settings_map->SetWebsiteSettingCustomScope(
-      pattern2, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
-
-  // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
-  BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_COOKIES,
-      base::Bind(&MatchPrimaryPattern, pattern2));
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &host_settings);
-  // |host_settings| contains default & block.
-  EXPECT_EQ(2U, host_settings.size());
-  EXPECT_EQ(pattern, host_settings[0].primary_pattern);
-  EXPECT_EQ("*", host_settings[0].secondary_pattern.ToString());
-  EXPECT_EQ("*", host_settings[1].primary_pattern.ToString());
-  EXPECT_EQ("*", host_settings[1].secondary_pattern.ToString());
-
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), &host_settings);
-  // |host_settings| contains block.
-  EXPECT_EQ(1U, host_settings.size());
-  EXPECT_EQ(pattern2, host_settings[0].primary_pattern);
-  EXPECT_EQ("*", host_settings[0].secondary_pattern.ToString());
-
-  // Next, test that we do correct pattern matching w/ an origin policy item.
-  // We verify that we have no settings stored.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), &host_settings);
-  EXPECT_EQ(0u, host_settings.size());
-  // Add settings.
-  host_content_settings_map->SetWebsiteSettingDefaultScope(
-      url1, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
-  // This setting should override the one above, as it's the same origin.
-  host_content_settings_map->SetWebsiteSettingDefaultScope(
-      url2, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
-  host_content_settings_map->SetWebsiteSettingDefaultScope(
-      url3, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
-  // Verify we only have two.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), &host_settings);
-  EXPECT_EQ(2u, host_settings.size());
-
-  // Clear the http one, which we should be able to do w/ the origin only, as
-  // the scope of CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT is
-  // REQUESTING_ORIGIN_ONLY_SCOPE.
-  ContentSettingsPattern http_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url3_origin_only);
-  BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-      base::Bind(&MatchPrimaryPattern, http_pattern));
-  // Verify we only have one, and it's url1.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), &host_settings);
-  EXPECT_EQ(1u, host_settings.size());
-  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
-            host_settings[0].primary_pattern);
 }
 
 // Test that removing cookies clears HTTP auth data.

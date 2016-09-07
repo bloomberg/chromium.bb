@@ -210,6 +210,14 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
+  // If |pattern_predicate| is null, this method is equivalent to the above.
+  // Otherwise, it only deletes exceptions matched by |pattern_predicate|.
+  void ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType content_type,
+      const base::Callback<bool(
+          const ContentSettingsPattern& primary_pattern,
+          const ContentSettingsPattern& secondary_pattern)>& pattern_predicate);
+
   static bool IsDefaultSettingAllowedForType(ContentSetting setting,
                                              ContentSettingsType content_type);
 

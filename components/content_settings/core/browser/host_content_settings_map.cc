@@ -723,6 +723,28 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   FlushLossyWebsiteSettings();
 }
 
+void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
+    ContentSettingsType content_type,
+    const base::Callback<bool(const ContentSettingsPattern& primary_pattern,
+                              const ContentSettingsPattern& secondary_pattern)>&
+        pattern_predicate) {
+  if (pattern_predicate.is_null()) {
+    ClearSettingsForOneType(content_type);
+    return;
+  }
+
+  ContentSettingsForOneType settings;
+  GetSettingsForOneType(content_type, std::string(), &settings);
+  for (const ContentSettingPatternSource& setting : settings) {
+    if (pattern_predicate.Run(setting.primary_pattern,
+                              setting.secondary_pattern)) {
+      SetWebsiteSettingCustomScope(setting.primary_pattern,
+                                   setting.secondary_pattern, content_type,
+                                   std::string(), nullptr);
+    }
+  }
+}
+
 // TODO(raymes): Remove this function. Consider making it a property of
 // ContentSettingsInfo or removing it altogether (it's unclear whether we should
 // be restricting allowed default values at this layer).

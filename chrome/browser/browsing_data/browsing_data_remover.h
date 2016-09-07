@@ -305,8 +305,6 @@ class BrowsingDataRemover : public KeyedService
   // The clear API needs to be able to toggle removing_ in order to test that
   // only one BrowsingDataRemover instance can be called at a time.
   FRIEND_TEST_ALL_PREFIXES(ExtensionBrowsingDataTest, OneAtATime);
-  // Testing our static method, ClearSettingsForOneTypeWithPredicate.
-  FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverTest, ClearWithPredicate);
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverTest, MultipleTasks);
 
@@ -336,17 +334,6 @@ class BrowsingDataRemover : public KeyedService
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
     Observer* observer;
   };
-
-  // Clears all host-specific settings for one content type that satisfy the
-  // given predicate.
-  //
-  // This should only be called on the UI thread.
-  static void ClearSettingsForOneTypeWithPredicate(
-      HostContentSettingsMap* content_settings_map,
-      ContentSettingsType content_type,
-      const base::Callback<
-          bool(const ContentSettingsPattern& primary_pattern,
-               const ContentSettingsPattern& secondary_pattern)>& predicate);
 
   void Shutdown() override;
 

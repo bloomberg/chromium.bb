@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/callback.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -319,7 +320,7 @@ void NavigationControllerAndroid::ClearSslPreferences(
   content::SSLHostStateDelegate* delegate =
       navigation_controller_->GetBrowserContext()->GetSSLHostStateDelegate();
   if (delegate)
-    delegate->Clear();
+    delegate->Clear(base::Callback<bool(const std::string&)>());
 }
 
 bool NavigationControllerAndroid::GetUseDesktopUserAgent(

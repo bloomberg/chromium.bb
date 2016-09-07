@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -137,6 +139,18 @@ void MigrateOldSettings(HostContentSettingsMap* map) {
       }
     }
   }
+}
+
+bool HostFilterToPatternFilter(
+    const base::Callback<bool(const std::string&)>& host_filter,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  // We only ever set origin-scoped exceptions which are of the form
+  // "https://<host>:443". That is a valid URL, so we can compare |host_filter|
+  // against its host.
+  GURL url = GURL(primary_pattern.ToString());
+  DCHECK(url.is_valid());
+  return host_filter.Run(url.host());
 }
 
 }  // namespace
@@ -313,9 +327,22 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
                                      std::string(), std::move(value));
 }
 
-void ChromeSSLHostStateDelegate::Clear() {
+void ChromeSSLHostStateDelegate::Clear(
+    const base::Callback<bool(const std::string&)>& host_filter) {
+  // Convert host matching to content settings pattern matching. Content
+  // settings deletion is done synchronously on the UI thread, so we can use
+  // |host_filter| by reference.
+  base::Callback<bool(const ContentSettingsPattern& primary_pattern,
+                      const ContentSettingsPattern& secondary_pattern)>
+      pattern_filter;
+  if (!host_filter.is_null()) {
+    pattern_filter =
+        base::Bind(&HostFilterToPatternFilter, base::ConstRef(host_filter));
+  }
+
   HostContentSettingsMapFactory::GetForProfile(profile_)
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
+      ->ClearSettingsForOneTypeWithPredicate(
+          CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, pattern_filter);
 }
 
 content::SSLHostStateDelegate::CertJudgment

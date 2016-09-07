@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
@@ -51,8 +52,10 @@ class SSLHostStateDelegate {
                          const net::X509Certificate& cert,
                          net::CertStatus error) = 0;
 
-  // Clear all allow preferences.
-  virtual void Clear() = 0;
+  // Clear allow preferences matched by |host_filter|. If the filter is null,
+  // clear all preferences.
+  virtual void Clear(
+      const base::Callback<bool(const std::string&)>& host_filter) = 0;
 
   // Queries whether |cert| is allowed for |host| and |error|. Returns true in
   // |expired_previous_decision| if a previous user decision expired immediately

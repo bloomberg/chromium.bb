@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
@@ -50,6 +51,10 @@ scoped_refptr<net::X509Certificate> GetOkCert() {
 void SetFinchConfig(base::CommandLine* command_line, const std::string& group) {
   command_line->AppendSwitchASCII("--force-fieldtrials",
                                   "RevertCertificateErrorDecisions/" + group);
+}
+
+bool CStrStringMatcher(const char* a, const std::string& b) {
+  return a == b;
 }
 
 }  // namespace
@@ -171,11 +176,22 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
   state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kExampleHost, *cert, net::CERT_STATUS_DATE_INVALID);
 
-  // Do a full clear, then make sure that both kWWWGoogleHost, which had a
-  // decision made, and kExampleHost, which was untouched, are now in a denied
-  // state.
-  state->Clear();
+  EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost));
+  EXPECT_TRUE(state->HasAllowException(kExampleHost));
+
+  // Clear data for kWWWGoogleHost. kExampleHost will not be modified.
+  state->Clear(
+      base::Bind(&CStrStringMatcher, base::Unretained(kWWWGoogleHost)));
+
+  EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost));
+  EXPECT_TRUE(state->HasAllowException(kExampleHost));
+
+  // Do a full clear, then make sure that both kWWWGoogleHost and kExampleHost,
+  // which had a decision made, and kGoogleHost, which was untouched, are now
+  // in a denied state.
+  state->Clear(base::Callback<bool(const std::string&)>());
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
@@ -183,6 +199,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
   EXPECT_FALSE(state->HasAllowException(kExampleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kExampleHost, *cert,
+                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+  EXPECT_FALSE(state->HasAllowException(kGoogleHost));
+  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
+            state->QueryPolicy(kGoogleHost, *cert,
                                net::CERT_STATUS_DATE_INVALID, &unused_value));
 }
 
