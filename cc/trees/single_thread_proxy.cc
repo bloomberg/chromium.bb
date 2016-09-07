@@ -188,21 +188,12 @@ void SingleThreadProxy::DoCommit() {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoCommit");
   DCHECK(task_runner_provider_->IsMainThread());
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("461509 SingleThreadProxy::DoCommit1"));
   layer_tree_host_->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host_->id());
 
   // Commit immediately.
   {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit2"));
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
 
@@ -215,19 +206,9 @@ void SingleThreadProxy::DoCommit() {
     layer_tree_host_impl_->ReadyToCommit();
     layer_tree_host_impl_->BeginCommit();
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile6(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit6"));
     if (layer_tree_host_impl_->EvictedUIResourcesExist())
       layer_tree_host_->RecreateUIResources();
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile7(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit7"));
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
     if (scheduler_on_impl_thread_)
@@ -235,11 +216,6 @@ void SingleThreadProxy::DoCommit() {
 
     layer_tree_host_impl_->CommitComplete();
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile8(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit8"));
     // Commit goes directly to the active tree, but we need to synchronously
     // "activate" the tree still during commit to satisfy any potential
     // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
@@ -575,12 +551,6 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     DebugScopedSetImplThread impl(task_runner_provider_);
     base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite1"));
-
     // We guard PrepareToDraw() with CanDraw() because it always returns a valid
     // frame, so can only be used when such a frame is possible. Since
     // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
@@ -600,53 +570,21 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     BlockingTaskRunner::CapturePostTasks blocked(
         task_runner_provider_->blocking_main_thread_task_runner());
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite2"));
     draw_result = layer_tree_host_impl_->PrepareToDraw(frame);
     draw_frame = draw_result == DRAW_SUCCESS;
     if (draw_frame) {
-      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-      // is fixed.
-      tracked_objects::ScopedTracker tracking_profile3(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "461509 SingleThreadProxy::DoComposite3"));
       layer_tree_host_impl_->DrawLayers(frame);
-
-      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-      // is fixed.
-      tracked_objects::ScopedTracker tracking_profile8(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "461509 SingleThreadProxy::DoComposite8"));
       if (layer_tree_host_impl_->SwapBuffers(*frame)) {
         if (scheduler_on_impl_thread_)
           scheduler_on_impl_thread_->DidSwapBuffers();
         client_->DidPostSwapBuffers();
       }
     }
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite4"));
     layer_tree_host_impl_->DidDrawAllLayers(*frame);
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite5"));
     bool start_ready_animations = draw_frame;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
   }
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile9(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461509 SingleThreadProxy::DoComposite9"));
   DidCommitAndDrawFrame();
 
   return draw_result;
