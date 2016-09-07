@@ -12,6 +12,7 @@
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/public/web_state/url_verification_constants.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 
@@ -74,30 +75,33 @@ void WebTestWithWebState::DidProcessTask(
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
-  ASSERT_FALSE(web_state()->IsLoading());
+  // Sets MIME type to "text/html" once navigation is committed.
+  class MimeTypeUpdater : public WebStateObserver {
+   public:
+    explicit MimeTypeUpdater(WebState* web_state)
+        : WebStateObserver(web_state) {}
+    // WebStateObserver overrides:
+    void NavigationItemCommitted(const LoadCommittedDetails&) override {
+      // loadHTML:forURL: does not notify web view delegate about received
+      // response, so web controller does not get a chance to properly update
+      // MIME type and it should be set manually after navigation is committed
+      // but before WebState signal load completion and clients will start
+      // checking if MIME type is in fact HTML.
+      static_cast<WebStateImpl*>(web_state())->SetContentsMimeType("text/html");
+    }
+  };
+  MimeTypeUpdater mime_type_updater(web_state());
 
+  // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
+  ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);
   [web_controller loadHTML:html forURL:url];
-
-  // Wait until the navigation is committed to update MIME type.
   ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
-  base::TimeDelta spin_delay = base::TimeDelta::FromMilliseconds(1);
-  while (web_controller.loadPhase != PAGE_LOADING) {
-    ASSERT_NE(PAGE_LOADED, web_controller.loadPhase);
-    base::test::ios::SpinRunLoopWithMaxDelay(spin_delay);
-  }
-
-  // loadHTML:forURL: does not notify web view delegate about received response,
-  // so web controller does not get a chance to properly update MIME type and it
-  // should be set manually after navigation is committed but before WebState
-  // signal load completion and clients will start checking if MIME type is in
-  // fact HTML.
-  [web_controller webStateImpl]->SetContentsMimeType("text/html");
 
   // Wait until the page is loaded.
-  ASSERT_EQ(PAGE_LOADING, web_controller.loadPhase);
-  while (web_controller.loadPhase != PAGE_LOADED)
-    base::test::ios::SpinRunLoopWithMaxDelay(spin_delay);
+  base::test::ios::WaitUntilCondition(^{
+    return web_controller.loadPhase == PAGE_LOADED;
+  });
 
   // Wait until scripts execution becomes possible.
   base::test::ios::WaitUntilCondition(^bool {
