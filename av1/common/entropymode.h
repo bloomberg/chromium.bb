@@ -158,6 +158,9 @@ typedef struct FRAME_COUNTS {
 
 extern const aom_prob
     av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
+#if CONFIG_DAALA_EC
+extern aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+#endif
 
 #if CONFIG_PALETTE
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
@@ -175,6 +178,10 @@ extern const aom_prob av1_default_palette_uv_color_prob
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
+#if CONFIG_DAALA_EC
+extern int av1_intra_mode_ind[INTRA_MODES];
+extern int av1_intra_mode_inv[INTRA_MODES];
+#endif
 #if CONFIG_MOTION_VAR
 extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 #endif  // CONFIG_MOTION_VAR
