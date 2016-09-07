@@ -401,7 +401,6 @@ TEST_F(FetchFormDataConsumerHandleTest, ZeroByteReadDoesNotAffectDrainingForComp
     size_t readSize;
     EXPECT_EQ(kShouldWait, reader->read(nullptr, 0, kNone, &readSize));
     testing::runPendingTasks();
-    EXPECT_EQ(kOk, reader->read(nullptr, 0, kNone, &readSize));
     RefPtr<EncodedFormData> formData = reader->drainAsFormData();
     ASSERT_TRUE(formData);
     EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
