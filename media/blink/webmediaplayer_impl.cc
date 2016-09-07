@@ -775,8 +775,7 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
 
 void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
                                const blink::WebRect& rect,
-                               unsigned char alpha,
-                               SkXfermode::Mode mode) {
+                               SkPaint& paint) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
@@ -796,7 +795,7 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
       return;  // The context has been lost since and can't setup a GrContext.
   }
   skcanvas_video_renderer_.Paint(video_frame, canvas, gfx::RectF(gfx_rect),
-                                 alpha, mode, pipeline_metadata_.video_rotation,
+                                 paint, pipeline_metadata_.video_rotation,
                                  context_3d);
 }
 

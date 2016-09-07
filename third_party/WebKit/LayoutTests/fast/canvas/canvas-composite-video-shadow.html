@@ -29,6 +29,10 @@
     <script type="application/x-javascript">
       function drawImage(context, compositeIndex, alpha) {
         context.globalCompositeOperation = compositeTypes[compositeIndex];
+        context.shadowOffsetX = -2;
+        context.shadowOffsetY = 2;
+        context.shadowBlur = 8;
+        context.shadowColor = "purple";
         if (alpha)
           context.globalAlpha = 0.5;
         var videoElement = document.getElementById('video');

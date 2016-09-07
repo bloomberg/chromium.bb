@@ -51,7 +51,7 @@ public:
     unsigned droppedFrameCount() const override { return 0; };
     size_t audioDecodedByteCount() const override { return 0; };
     size_t videoDecodedByteCount() const override { return 0; };
-    void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) override { };
+    void paint(WebCanvas*, const WebRect&, SkPaint&) override { };
 };
 
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {

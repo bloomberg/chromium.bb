@@ -332,27 +332,25 @@ SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {
 void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                                   SkCanvas* canvas,
                                   const gfx::RectF& dest_rect,
-                                  uint8_t alpha,
-                                  SkXfermode::Mode mode,
+                                  SkPaint& paint,
                                   VideoRotation video_rotation,
                                   const Context3D& context_3d) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (alpha == 0) {
+  if (paint.getAlpha() == 0) {
     return;
   }
 
   SkRect dest;
   dest.set(dest_rect.x(), dest_rect.y(), dest_rect.right(), dest_rect.bottom());
 
-  SkPaint paint;
-  paint.setAlpha(alpha);
-
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
   if (!video_frame.get() || video_frame->natural_size().IsEmpty() ||
       !(media::IsYuvPlanar(video_frame->format()) ||
         video_frame->HasTextures())) {
-    canvas->drawRect(dest, paint);
+    SkPaint blackWithAlphaPaint;
+    blackWithAlphaPaint.setAlpha(paint.getAlpha());
+    canvas->drawRect(dest, blackWithAlphaPaint);
     canvas->flush();
     return;
   }
@@ -361,8 +359,13 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   if (!UpdateLastImage(video_frame, context_3d))
     return;
 
-  paint.setXfermodeMode(mode);
-  paint.setFilterQuality(kLow_SkFilterQuality);
+  SkPaint videoPaint;
+  videoPaint.setAlpha(paint.getAlpha());
+  SkXfermode::Mode mode;
+  if (!SkXfermode::AsMode(paint.getXfermode(), &mode))
+    mode = SkXfermode::kSrcOver_Mode;
+  videoPaint.setXfermodeMode(mode);
+  videoPaint.setFilterQuality(paint.getFilterQuality());
 
   const bool need_rotation = video_rotation != VIDEO_ROTATION_0;
   const bool need_scaling =
@@ -412,9 +415,9 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // threads. (skbug.com/4321).
   if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
     sk_sp<SkImage> swImage = last_image_->makeNonTextureImage();
-    canvas->drawImage(swImage, 0, 0, &paint);
+    canvas->drawImage(swImage, 0, 0, &videoPaint);
   } else {
-    canvas->drawImage(last_image_.get(), 0, 0, &paint);
+    canvas->drawImage(last_image_.get(), 0, 0, &videoPaint);
   }
 
   if (need_transform)
@@ -432,8 +435,11 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
                                  SkCanvas* canvas,
                                  const Context3D& context_3d) {
-  Paint(video_frame, canvas, gfx::RectF(video_frame->visible_rect()), 0xff,
-        SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, context_3d);
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setFilterQuality(kLow_SkFilterQuality);
+  Paint(video_frame, canvas, gfx::RectF(video_frame->visible_rect()), paint,
+        media::VIDEO_ROTATION_0, context_3d);
 }
 
 namespace {

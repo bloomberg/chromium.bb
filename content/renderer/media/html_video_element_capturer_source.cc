@@ -135,9 +135,12 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const blink::WebSize resolution = web_media_player_->naturalSize();
 
   SkCanvas* canvas = surface_->getCanvas();
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setFilterQuality(kLow_SkFilterQuality);
   web_media_player_->paint(
       canvas, blink::WebRect(0, 0, resolution.width, resolution.height),
-      0xFF /* alpha */, SkXfermode::kSrc_Mode);
+      paint);
   DCHECK_NE(kUnknown_SkColorType, canvas->imageInfo().colorType());
   DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
   DCHECK_EQ(canvas->imageInfo().height(), resolution.height);

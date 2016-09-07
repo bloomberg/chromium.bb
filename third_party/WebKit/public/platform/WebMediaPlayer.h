@@ -37,8 +37,8 @@
 #include "WebMediaSource.h"
 #include "WebSetSinkIdCallbacks.h"
 #include "WebString.h"
-#include "WebTimeRange.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+
+class SkPaint;
 
 namespace gpu {
 namespace gles2 {
@@ -167,7 +167,7 @@ public:
     virtual size_t audioDecodedByteCount() const = 0;
     virtual size_t videoDecodedByteCount() const = 0;
 
-    virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) = 0;
+    virtual void paint(WebCanvas*, const WebRect&, SkPaint&) = 0;
 
     // TODO(dshwang): remove non-|target| version. crbug.com/349871
     virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*, unsigned texture, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }

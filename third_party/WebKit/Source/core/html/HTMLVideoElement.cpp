@@ -204,8 +204,16 @@ void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas, const IntRect& destRe
     if (!paint || !SkXfermode::AsMode(paint->getXfermode(), &mode))
         mode = SkXfermode::kSrcOver_Mode;
 
-    // TODO(junov, foolip): crbug.com/456529 Pass the whole SkPaint instead of only alpha and xfermode
-    webMediaPlayer()->paint(canvas, destRect, paint ? paint->getAlpha() : 0xFF, mode);
+    SkPaint mediaPaint;
+    if (paint) {
+        mediaPaint = *paint;
+    } else {
+        mediaPaint.setAlpha(0xFF);
+        mediaPaint.setFilterQuality(kLow_SkFilterQuality);
+    }
+    mediaPaint.setXfermodeMode(mode);
+
+    webMediaPlayer()->paint(canvas, destRect, mediaPaint);
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)

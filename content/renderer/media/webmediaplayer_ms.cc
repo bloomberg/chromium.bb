@@ -333,8 +333,7 @@ bool WebMediaPlayerMS::didLoadingProgress() {
 
 void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
                              const blink::WebRect& rect,
-                             unsigned char alpha,
-                             SkXfermode::Mode mode) {
+                             SkPaint& paint) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -352,7 +351,7 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
     DCHECK(context_3d.gl);
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(frame, canvas, dest_rect, alpha, mode,
+  video_renderer_.Paint(frame, canvas, dest_rect, paint,
                         video_rotation_, context_3d);
 }
 

@@ -681,6 +681,14 @@ crbug.com/613728 fast/table/border-collapsing/cached-change-table-border-width.h
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
+# The failure in the next line is due to virtual/gpu bots using osmesa
+# Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
+# when we swith to swiftshader.
+crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
+crbug.com/640214 fast/canvas/canvas-composite-video-shadow.html [ NeedsRebaseline ]
+crbug.com/640214 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ NeedsRebaseline ]
+crbug.com/640214 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-video-shadow.html [ NeedsRebaseline ]
+
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash ]
 

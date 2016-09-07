@@ -620,8 +620,7 @@ bool WebMediaPlayerAndroid::didLoadingProgress() {
 
 void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   const blink::WebRect& rect,
-                                  unsigned char alpha,
-                                  SkXfermode::Mode mode) {
+                                  SkPaint& paint) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   std::unique_ptr<blink::WebGraphicsContext3DProvider> provider(
       blink::Platform::current()
@@ -669,12 +668,15 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   // readbacked to system memory then draw onto the canvas.
   SkRect dest;
   dest.set(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
-  SkPaint paint;
-  paint.setAlpha(alpha);
-  paint.setXfermodeMode(mode);
+  SkPaint video_paint;
+  video_paint.setAlpha(paint.getAlpha());
+  SkXfermode::Mode mode;
+  if (!SkXfermode::AsMode(paint.getXfermode(), &mode))
+    mode = SkXfermode::kSrcOver_Mode;
+  video_paint.setXfermodeMode(mode);
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
-  canvas->drawImageRect(image, dest, &paint);
+  canvas->drawImageRect(image, dest, &video_paint);
 
   // Ensure the Skia draw of the GL texture is flushed to GL, delete the
   // mailboxed texture from this context, and then signal that we're done with
