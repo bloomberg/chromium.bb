@@ -501,6 +501,11 @@ group("both_gn_and_gyp") {
     ]
   }
 
+  # TODO(sugoi) bug 644737: Remove the '!is_clang' condition once __nop is supported by clang-cl
+  if (is_linux || (is_win && !is_clang)) {
+    deps += [ "//third_party/swiftshader" ]
+  }
+
   # TODO(GYP): Figure out which of these should (and can) build
   # for chromeos/ios.
   if (!is_chromeos && !is_ios) {
