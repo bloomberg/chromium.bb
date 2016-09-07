@@ -223,11 +223,13 @@ static void TestArithmetic(const char* dst, int line) {
   TEST_EXPECTED_VALUE(1, checked_dst /= 1);
 
   // Generic negation.
-  TEST_EXPECTED_VALUE(0, -CheckedNumeric<Dst>());
-  TEST_EXPECTED_VALUE(-1, -CheckedNumeric<Dst>(1));
-  TEST_EXPECTED_VALUE(1, -CheckedNumeric<Dst>(-1));
-  TEST_EXPECTED_VALUE(static_cast<Dst>(DstLimits::max() * -1),
-                      -CheckedNumeric<Dst>(DstLimits::max()));
+  if (DstLimits::is_signed) {
+    TEST_EXPECTED_VALUE(0, -CheckedNumeric<Dst>());
+    TEST_EXPECTED_VALUE(-1, -CheckedNumeric<Dst>(1));
+    TEST_EXPECTED_VALUE(1, -CheckedNumeric<Dst>(-1));
+    TEST_EXPECTED_VALUE(static_cast<Dst>(DstLimits::max() * -1),
+                        -CheckedNumeric<Dst>(DstLimits::max()));
+  }
 
   // Generic absolute value.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>().Abs());
@@ -252,12 +254,14 @@ static void TestArithmetic(const char* dst, int line) {
   // Generic multiplication.
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>() * 1));
   TEST_EXPECTED_VALUE(1, (CheckedNumeric<Dst>(1) * 1));
-  TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) * 2));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * 0));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
                         DstLimits::max());
+  if (DstLimits::is_signed) {
+    TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) * 2));
+  }
 
   // Generic division.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() / 1);
