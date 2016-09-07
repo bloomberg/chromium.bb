@@ -80466,6 +80466,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1548" label="MetaRefresh"/>
   <int value="1549" label="MetaSetCookieWhenCSPBlocksInlineScript"/>
   <int value="1550" label="MetaRefreshWhenCSPBlocksInlineScript"/>
+  <int value="1551" label="PanScrollingStart"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

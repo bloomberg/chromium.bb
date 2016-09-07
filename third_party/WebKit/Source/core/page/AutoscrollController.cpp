@@ -223,6 +223,7 @@ void AutoscrollController::startPanScrolling(LayoutBox* scrollable, const IntPoi
     m_autoscrollLayoutObject = scrollable;
     m_panScrollStartPos = lastKnownMousePosition;
 
+    UseCounter::count(m_page->mainFrame(), UseCounter::PanScrollingStart);
     startAutoscroll();
 }
 #else
