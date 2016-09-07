@@ -1127,12 +1127,7 @@ void Editor::addToKillRing(const EphemeralRange& range)
     if (m_shouldStartNewKillRingSequence)
         killRing().startNewSequence();
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
-
+    DCHECK(!frame().document()->needsLayoutTreeUpdate());
     String text = plainText(range);
     killRing().append(text);
     m_shouldStartNewKillRingSequence = false;
