@@ -30,6 +30,45 @@ class PrefHashStoreImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImplTest);
 };
 
+TEST_F(PrefHashStoreImplTest, ComputeMac) {
+  base::StringValue string_1("string1");
+  base::StringValue string_2("string2");
+  PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
+
+  std::string computed_mac_1 = pref_hash_store.ComputeMac("path1", &string_1);
+  std::string computed_mac_2 = pref_hash_store.ComputeMac("path1", &string_2);
+  std::string computed_mac_3 = pref_hash_store.ComputeMac("path2", &string_1);
+
+  // Quick sanity checks here, see pref_hash_calculator_unittest.cc for more
+  // complete tests.
+  EXPECT_EQ(computed_mac_1, pref_hash_store.ComputeMac("path1", &string_1));
+  EXPECT_NE(computed_mac_1, computed_mac_2);
+  EXPECT_NE(computed_mac_1, computed_mac_3);
+  EXPECT_EQ(64U, computed_mac_1.size());
+}
+
+TEST_F(PrefHashStoreImplTest, ComputeSplitMacs) {
+  base::DictionaryValue dict;
+  dict.Set("a", new base::StringValue("string1"));
+  dict.Set("b", new base::StringValue("string2"));
+  PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
+
+  std::unique_ptr<base::DictionaryValue> computed_macs =
+      pref_hash_store.ComputeSplitMacs("foo.bar", &dict);
+
+  std::string mac_1;
+  std::string mac_2;
+  ASSERT_TRUE(computed_macs->GetString("a", &mac_1));
+  ASSERT_TRUE(computed_macs->GetString("b", &mac_2));
+
+  EXPECT_EQ(2U, computed_macs->size());
+
+  base::StringValue string_1("string1");
+  base::StringValue string_2("string2");
+  EXPECT_EQ(pref_hash_store.ComputeMac("foo.bar.a", &string_1), mac_1);
+  EXPECT_EQ(pref_hash_store.ComputeMac("foo.bar.b", &string_2), mac_2);
+}
+
 TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   base::StringValue string_1("string1");
   base::StringValue string_2("string2");

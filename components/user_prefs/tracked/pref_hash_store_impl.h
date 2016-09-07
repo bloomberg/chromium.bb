@@ -5,16 +5,10 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
 #define COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
 
-#include <memory>
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/user_prefs/tracked/pref_hash_calculator.h"
 #include "components/user_prefs/tracked/pref_hash_store.h"
-
-class HashStoreContents;
-class PrefHashStoreTransaction;
 
 // Implements PrefHashStoreImpl by storing preference hashes in a
 // HashStoreContents.
@@ -48,6 +42,12 @@ class PrefHashStoreImpl : public PrefHashStore {
   // PrefHashStore implementation.
   std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
       HashStoreContents* storage) override;
+
+  std::string ComputeMac(const std::string& path,
+                         const base::Value* new_value) override;
+  std::unique_ptr<base::DictionaryValue> ComputeSplitMacs(
+      const std::string& path,
+      const base::DictionaryValue* split_values) override;
 
  private:
   class PrefHashStoreTransactionImpl;

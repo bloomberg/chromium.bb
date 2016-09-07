@@ -158,6 +158,11 @@ class MockPrefHashStore : public PrefHashStore {
   // PrefHashStore implementation.
   std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
       HashStoreContents* storage) override;
+  std::string ComputeMac(const std::string& path,
+                         const base::Value* new_value) override;
+  std::unique_ptr<base::DictionaryValue> ComputeSplitMacs(
+      const std::string& path,
+      const base::DictionaryValue* split_values) override;
 
  private:
   // A MockPrefHashStoreTransaction is handed to the caller on
@@ -252,6 +257,23 @@ std::unique_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction(
   return std::unique_ptr<PrefHashStoreTransaction>(
       new MockPrefHashStoreTransaction(this));
 }
+
+std::string MockPrefHashStore::ComputeMac(const std::string& path,
+                                          const base::Value* new_value) {
+  return "atomic mac for: " + path;
+};
+
+std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
+    const std::string& path,
+    const base::DictionaryValue* split_values) {
+  std::unique_ptr<base::DictionaryValue> macs_dict(new base::DictionaryValue);
+  for (base::DictionaryValue::Iterator it(*split_values); !it.IsAtEnd();
+       it.Advance()) {
+    macs_dict->SetStringWithoutPathExpansion(
+        it.key(), "split mac for: " + path + "/" + it.key());
+  }
+  return macs_dict;
+};
 
 PrefHashStoreTransaction::ValueState MockPrefHashStore::RecordCheckValue(
     const std::string& path,
