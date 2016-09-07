@@ -196,11 +196,11 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
 gfx::Size GetMaximumCursorSize(int fd) {
   uint64_t width = 0, height = 0;
   if (drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &width)) {
-    PLOG(WARNING) << "Unable to get cursor width capability";
+    VPLOG(1) << "Unable to get cursor width capability";
     return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
   }
   if (drmGetCap(fd, DRM_CAP_CURSOR_HEIGHT, &height)) {
-    PLOG(WARNING) << "Unable to get cursor height capability";
+    VPLOG(1) << "Unable to get cursor height capability";
     return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
   }
 

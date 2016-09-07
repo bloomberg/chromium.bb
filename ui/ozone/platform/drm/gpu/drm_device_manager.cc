@@ -50,7 +50,8 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
   scoped_refptr<DrmDevice> device = drm_device_generator_->CreateDevice(
       path, std::move(file), !primary_device_);
   if (!device) {
-    LOG(WARNING) << "Could not initialize DRM device for " << path.value();
+    // This is expected for non-modesetting devices like VGEM.
+    VLOG(1) << "Could not initialize DRM device for " << path.value();
     return false;
   }
 
