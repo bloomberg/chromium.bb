@@ -49,10 +49,6 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kStable;
   }
-  IceState ice_state() override {
-    NOTIMPLEMENTED();
-    return PeerConnectionInterface::kIceNew;
-  }
   IceConnectionState ice_connection_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceConnectionNew;
