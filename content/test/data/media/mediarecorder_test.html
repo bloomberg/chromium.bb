@@ -413,15 +413,16 @@ function testIllegalPauseThrowsDOMError() {
 }
 
 // Tests that a remote peer connection stream can be successfully recorded.
-function testRecordRemotePeerConnection() {
+function testRecordRemotePeerConnection(codec) {
   var videoSize = 0;
   var timeStamps = [];
+  const mimeType = codec ? "video/webm;codecs=" + String(codec) : "";
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(localStream) {
         return setupPeerConnection(localStream);
       })
       .then(function(remoteStream) {
-        return createMediaRecorder(remoteStream, DEFAULT_RECORDER_MIME_TYPE);
+        return createMediaRecorder(remoteStream, mimeType);
       })
       .then(function(recorder) {
         recorder.ondataavailable = function(event) {

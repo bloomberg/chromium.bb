@@ -148,8 +148,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, MediaRecorderPeerConnection) {
-  MakeTypicalCall("testRecordRemotePeerConnection();", kMediaRecorderHtmlFile);
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MediaRecorderPeerConnection) {
+  MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
+  MakeTypicalCall(base::StringPrintf("testRecordRemotePeerConnection(\"%s\");",
+                                     GetParam().video_codec.c_str()),
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,

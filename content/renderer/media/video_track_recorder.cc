@@ -626,8 +626,11 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   // Lower resolutions may fall back to SW encoder in some platforms, i.e. Mac.
   // In that case, the encoder expects more frames before returning result.
   // Therefore, a copy is necessary to release the current frame.
+  // Only STORAGE_SHMEM backed frames can be shared with GPU process, therefore
+  // a copy is required for other storage types.
   scoped_refptr<media::VideoFrame> video_frame = frame;
-  if (vea_requested_input_size_ != input_size_ ||
+  if (video_frame->storage_type() != VideoFrame::STORAGE_SHMEM ||
+      vea_requested_input_size_ != input_size_ ||
       input_size_.width() < kVEAEncoderMinResolutionWidth ||
       input_size_.height() < kVEAEncoderMinResolutionHeight) {
     // Create SharedMemory backed input buffers as necessary. These SharedMemory
