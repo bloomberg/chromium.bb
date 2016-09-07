@@ -26,7 +26,7 @@
 
           mediasource_test(function(test, mediaElement, mediaSource)
           {
-              assert_throws("InvalidAccessError",
+              assert_throws({name: "TypeError"},
                           function() { mediaSource.addSourceBuffer(""); },
                           "addSourceBuffer() threw an exception when passed an empty string.");
               test.done();
@@ -39,7 +39,7 @@
                           "addSourceBuffer() threw an exception when passed null.");
               test.done();
           }, "Test addSourceBuffer() with null");
-          
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               assert_throws("NotSupportedError",
@@ -90,7 +90,7 @@
               assert_equals(mediaSource.activeSourceBuffers.length, 0, "SourceBuffer is not in mediaSource.activeSourceBuffers");
               test.done();
           }, "Test addSourceBuffer() video only");
-          
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               var mimetype = MediaSourceUtil.AUDIO_ONLY_TYPE;

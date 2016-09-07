@@ -136,15 +136,21 @@ void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState, const 
     exceptionState.throwDOMException(error, message);
 }
 
+void MediaSource::logAndThrowTypeError(ExceptionState& exceptionState, const String& message)
+{
+    BLINK_MSLOG << __func__ << " (message=" << message << ")";
+    exceptionState.throwTypeError(message);
+}
+
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
 {
     BLINK_MSLOG << __func__ << " this=" << this << " type=" << type;
 
-    // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
-    // 1. If type is an empty string then throw an InvalidAccessError exception
+    // 2.2 https://www.w3.org/TR/media-source/#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type/
+    // 1. If type is an empty string then throw a TypeError exception
     // and abort these steps.
     if (type.isEmpty()) {
-        logAndThrowDOMException(exceptionState, InvalidAccessError, "The type provided is empty.");
+        logAndThrowTypeError(exceptionState, "The type provided is empty");
         return 0;
     }
 
@@ -441,15 +447,15 @@ void MediaSource::onTrackChanged(TrackBase* track)
 
 void MediaSource::setDuration(double duration, ExceptionState& exceptionState)
 {
-    // 2.1 http://www.w3.org/TR/media-source/#widl-MediaSource-duration
-    // 1. If the value being set is negative or NaN then throw an InvalidAccessError
+    // 2.1 https://www.w3.org/TR/media-source/#widl-MediaSource-duration
+    // 1. If the value being set is negative or NaN then throw a TypeError
     // exception and abort these steps.
     if (std::isnan(duration)) {
-        logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::notAFiniteNumber(duration, "duration"));
+        logAndThrowTypeError(exceptionState, ExceptionMessages::notAFiniteNumber(duration, "duration"));
         return;
     }
     if (duration < 0.0) {
-        logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("duration", duration, 0.0));
+        logAndThrowTypeError(exceptionState, ExceptionMessages::indexExceedsMinimumBound("duration", duration, 0.0));
         return;
     }
 
@@ -571,7 +577,7 @@ void MediaSource::setLiveSeekableRange(double start, double end, ExceptionState&
     // 3. If start is negative or greater than end, then throw a TypeError
     //    exception and abort these steps.
     if (start < 0 || start > end) {
-        exceptionState.throwTypeError(ExceptionMessages::indexOutsideRange("start value", start, 0.0, ExceptionMessages::InclusiveBound, end, ExceptionMessages::InclusiveBound));
+        logAndThrowTypeError(exceptionState, ExceptionMessages::indexOutsideRange("start value", start, 0.0, ExceptionMessages::InclusiveBound, end, ExceptionMessages::InclusiveBound));
         return;
     }
 

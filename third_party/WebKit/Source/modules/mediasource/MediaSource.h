@@ -65,6 +65,7 @@ public:
     ~MediaSource() override;
 
     static void logAndThrowDOMException(ExceptionState&, const ExceptionCode& error, const String& message);
+    static void logAndThrowTypeError(ExceptionState&, const String&);
 
     // MediaSource.idl methods
     SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }

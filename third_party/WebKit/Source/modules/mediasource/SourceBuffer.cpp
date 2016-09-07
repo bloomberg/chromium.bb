@@ -262,17 +262,17 @@ void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionS
 {
     BLINK_SBLOG << __func__ << " this=" << this << " start=" << start;
     // Section 3.1 appendWindowStart attribute setter steps.
-    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowStart
+    // https://www.w3.org/TR/media-source/#widl-SourceBuffer-appendWindowStart
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
 
-    // 3. If the new value is less than 0 or greater than or equal to appendWindowEnd then throw an InvalidAccessError
+    // 3. If the new value is less than 0 or greater than or equal to appendWindowEnd then throw a TypeError
     //    exception and abort these steps.
     if (start < 0 || start >= m_appendWindowEnd) {
-        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexOutsideRange("value", start, 0.0, ExceptionMessages::ExclusiveBound, m_appendWindowEnd, ExceptionMessages::InclusiveBound));
+        MediaSource::logAndThrowTypeError(exceptionState, ExceptionMessages::indexOutsideRange("value", start, 0.0, ExceptionMessages::ExclusiveBound, m_appendWindowEnd, ExceptionMessages::InclusiveBound));
         return;
     }
 
@@ -291,22 +291,22 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 {
     BLINK_SBLOG << __func__ << " this=" << this << " end=" << end;
     // Section 3.1 appendWindowEnd attribute setter steps.
-    // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowEnd
+    // https://www.w3.org/TR/media-source/#widl-SourceBuffer-appendWindowEnd
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
 
-    // 3. If the new value equals NaN, then throw an InvalidAccessError and abort these steps.
+    // 3. If the new value equals NaN, then throw a TypeError and abort these steps.
     if (std::isnan(end)) {
-        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::notAFiniteNumber(end));
+        MediaSource::logAndThrowTypeError(exceptionState, ExceptionMessages::notAFiniteNumber(end));
         return;
     }
-    // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
+    // 4. If the new value is less than or equal to appendWindowStart then throw a TypeError
     //    exception and abort these steps.
     if (end <= m_appendWindowStart) {
-        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("value", end, m_appendWindowStart));
+        MediaSource::logAndThrowTypeError(exceptionState, ExceptionMessages::indexExceedsMinimumBound("value", end, m_appendWindowStart));
         return;
     }
 
@@ -398,25 +398,25 @@ void SourceBuffer::remove(double start, double end, ExceptionState& exceptionSta
     BLINK_SBLOG << __func__ << " this=" << this << " start=" << start << " end=" << end;
 
     // Section 3.2 remove() method steps.
-    // 1. If duration equals NaN, then throw an InvalidAccessError exception and abort these steps.
-    // 2. If start is negative or greater than duration, then throw an InvalidAccessError exception and abort these steps.
-
-    if (start < 0 || (m_source && (std::isnan(m_source->duration()) || start > m_source->duration()))) {
-        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, ExceptionMessages::indexOutsideRange("start", start, 0.0, ExceptionMessages::ExclusiveBound, !m_source || std::isnan(m_source->duration()) ? 0 : m_source->duration(), ExceptionMessages::ExclusiveBound));
-        return;
-    }
-
-    // 3. If end is less than or equal to start or end equals NaN, then throw an InvalidAccessError exception and abort these steps.
-    if (end <= start || std::isnan(end)) {
-        MediaSource::logAndThrowDOMException(exceptionState, InvalidAccessError, "The end value provided (" + String::number(end) + ") must be greater than the start value provided (" + String::number(start) + ").");
-        return;
-    }
-
-    // 4. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
+    // https://www.w3.org/TR/media-source/#widl-SourceBuffer-remove-void-double-start-unrestricted-double-end
+    // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
-    // 5. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
     if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
+
+    // 3. If duration equals NaN, then throw a TypeError exception and abort these steps.
+    // 4. If start is negative or greater than duration, then throw a TypeError exception and abort these steps.
+    if (start < 0 || std::isnan(m_source->duration()) || start > m_source->duration()) {
+        MediaSource::logAndThrowTypeError(exceptionState, ExceptionMessages::indexOutsideRange("start", start, 0.0, ExceptionMessages::ExclusiveBound, std::isnan(m_source->duration()) ? 0 : m_source->duration(), ExceptionMessages::ExclusiveBound));
+        return;
+    }
+
+    // 5. If end is less than or equal to start or end equals NaN, then throw a TypeError exception and abort these steps.
+    if (end <= start || std::isnan(end)) {
+        MediaSource::logAndThrowTypeError(exceptionState, "The end value provided (" + String::number(end) + ") must be greater than the start value provided (" + String::number(start) + ").");
+        return;
+    }
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::remove", this);
 
