@@ -44,19 +44,26 @@ enum GridTrackSizeType {
 
 // This class represents a <track-size> from the spec. Althought there are 3 different types of
 // <track-size> there is always an equivalent minmax() representation that could represent any of
-// them. The only special case is fit-content(argument) which is similar to minmax(auto, max-content)
-// except that the track size is clamped at argument if it is greater than the auto minimum. At the
-// GridTrackSize level we don't need to worry about clamping so we treat that case exactly as
-// minmax(auto, max-content) althought we store the argument for later use in m_maxTrackBreadth.
+// them. The only special case is fit-content(argument) which is similar to minmax(auto,
+// max-content) except that the track size is clamped at argument if it is greater than the auto
+// minimum. At the GridTrackSize level we don't need to worry about clamping so we treat that case
+// exactly as auto.
+//
+// We're using a separate attribute to store fit-content argument even though we could directly use
+// m_maxTrackBreadth. The reason why we don't do it is because the maxTrackBreadh() call is a hot
+// spot, so adding a conditional statement there (to distinguish between fit-content and any other
+// case) was causing a severe performance drop.
 class GridTrackSize {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     GridTrackSize(const GridLength& length, GridTrackSizeType trackSizeType = LengthTrackSizing)
         : m_type(trackSizeType)
         , m_minTrackBreadth(trackSizeType == FitContentTrackSizing ? Length(Auto) : length)
-        , m_maxTrackBreadth(length)
+        , m_maxTrackBreadth(trackSizeType == FitContentTrackSizing ? Length(Auto) : length)
+        , m_fitContentTrackBreadth(trackSizeType == FitContentTrackSizing ? length : GridLength(Length(Fixed)))
     {
         DCHECK(trackSizeType == LengthTrackSizing || trackSizeType == FitContentTrackSizing);
+        DCHECK(trackSizeType != FitContentTrackSizing || length.isLength());
         cacheMinMaxTrackBreadthTypes();
     }
 
@@ -64,19 +71,19 @@ public:
         : m_type(MinMaxTrackSizing)
         , m_minTrackBreadth(minTrackBreadth)
         , m_maxTrackBreadth(maxTrackBreadth)
+        , m_fitContentTrackBreadth(GridLength(Length(Fixed)))
     {
         cacheMinMaxTrackBreadthTypes();
     }
 
-    GridLength length() const
+    const GridLength& fitContentTrackBreadth() const
     {
-        DCHECK(m_type == LengthTrackSizing || m_type == FitContentTrackSizing);
-        DCHECK(m_minTrackBreadth == m_maxTrackBreadth || m_type == FitContentTrackSizing);
-        return m_maxTrackBreadth;
+        DCHECK(m_type == FitContentTrackSizing);
+        return m_fitContentTrackBreadth;
     }
 
-    GridLength minTrackBreadth() const { return m_minTrackBreadth; }
-    GridLength maxTrackBreadth() const { return isFitContent() ? GridLength(Length(MaxContent)) : m_maxTrackBreadth; }
+    const GridLength& minTrackBreadth() const { return m_minTrackBreadth; }
+    const GridLength& maxTrackBreadth() const { return m_maxTrackBreadth; }
 
     GridTrackSizeType type() const { return m_type; }
 
@@ -115,12 +122,14 @@ private:
     GridTrackSizeType m_type;
     GridLength m_minTrackBreadth;
     GridLength m_maxTrackBreadth;
-    bool m_minTrackBreadthIsAuto;
-    bool m_minTrackBreadthIsMaxContent;
-    bool m_minTrackBreadthIsMinContent;
-    bool m_maxTrackBreadthIsAuto;
-    bool m_maxTrackBreadthIsMaxContent;
-    bool m_maxTrackBreadthIsMinContent;
+    GridLength m_fitContentTrackBreadth;
+
+    bool m_minTrackBreadthIsAuto : 1;
+    bool m_maxTrackBreadthIsAuto : 1;
+    bool m_minTrackBreadthIsMaxContent : 1;
+    bool m_minTrackBreadthIsMinContent : 1;
+    bool m_maxTrackBreadthIsMaxContent : 1;
+    bool m_maxTrackBreadthIsMinContent : 1;
 };
 
 } // namespace blink

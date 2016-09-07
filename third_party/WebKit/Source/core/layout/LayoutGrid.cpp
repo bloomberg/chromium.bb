@@ -672,7 +672,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         track.setInfinitelyGrowable(false);
 
         if (trackSize.isFitContent()) {
-            GridLength gridLength = trackSize.length();
+            GridLength gridLength = trackSize.fitContentTrackBreadth();
             if (!gridLength.hasPercentage() || hasDefiniteFreeSpace)
                 track.setGrowthLimitCap(valueForLength(gridLength.length(), maxSize));
         }
@@ -1143,10 +1143,8 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(Grid
         track.setGrowthLimit(std::max(track.growthLimit(), minContentForChild(gridItem, direction, sizingData)));
     } else if (trackSize.hasMaxContentOrAutoMaxTrackBreadth()) {
         LayoutUnit growthLimit = maxContentForChild(gridItem, direction, sizingData);
-        if (trackSize.isFitContent()) {
-            DCHECK(trackSize.length().isLength());
-            growthLimit = std::min(growthLimit, valueForLength(trackSize.length().length(), sizingData.availableSpace()));
-        }
+        if (trackSize.isFitContent())
+            growthLimit = std::min(growthLimit, valueForLength(trackSize.fitContentTrackBreadth().length(), sizingData.availableSpace()));
         track.setGrowthLimit(std::max(track.growthLimit(), growthLimit));
     }
 }

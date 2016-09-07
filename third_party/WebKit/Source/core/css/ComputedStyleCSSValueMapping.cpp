@@ -719,7 +719,7 @@ static CSSValue* specifiedValueForGridTrackSize(const GridTrackSize& trackSize, 
 {
     switch (trackSize.type()) {
     case LengthTrackSizing:
-        return specifiedValueForGridTrackBreadth(trackSize.length(), style);
+        return specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style);
     case MinMaxTrackSizing: {
         auto* minMaxTrackBreadths = CSSFunctionValue::create(CSSValueMinmax);
         minMaxTrackBreadths->append(*specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style));
@@ -727,7 +727,7 @@ static CSSValue* specifiedValueForGridTrackSize(const GridTrackSize& trackSize, 
         return minMaxTrackBreadths;
     } case FitContentTrackSizing: {
         auto* fitContentTrackBreadth = CSSFunctionValue::create(CSSValueFitContent);
-        fitContentTrackBreadth->append(*specifiedValueForGridTrackBreadth(trackSize.length(), style));
+        fitContentTrackBreadth->append(*specifiedValueForGridTrackBreadth(trackSize.fitContentTrackBreadth(), style));
         return fitContentTrackBreadth;
     }
     }
