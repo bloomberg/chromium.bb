@@ -15,6 +15,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
@@ -261,18 +262,17 @@ MdTab::MdTab(TabbedPane* tabbed_pane,
 MdTab::~MdTab() {}
 
 void MdTab::OnStateChanged() {
-  // These values are directly from the Harmony specs for tabbed panes.
-  const SkColor kSelectedBorderColor = SkColorSetRGB(0x42, 0x85, 0xF4);
-  const SkColor kNormalBorderColor = SkColorSetARGB(0x23, 0x00, 0x00, 0x00);
-  const SkColor kSelectedFontColor = SkColorSetRGB(0x42, 0x85, 0xF4);
-  const SkColor kNormalFontColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
-
-  SkColor border_color = selected() ? kSelectedBorderColor : kNormalBorderColor;
+  ui::NativeTheme* theme = GetNativeTheme();
+  SkColor border_color = theme->GetSystemColor(
+      selected() ? ui::NativeTheme::kColorId_FocusedBorderColor
+                 : ui::NativeTheme::kColorId_UnfocusedBorderColor);
   int border_thickness = selected() ? 2 : 1;
   SetBorder(
       Border::CreateSolidSidedBorder(0, 0, border_thickness, 0, border_color));
 
-  SkColor font_color = selected() ? kSelectedFontColor : kNormalFontColor;
+  SkColor font_color = selected()
+      ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+      : theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor);
   title()->SetEnabledColor(font_color);
 
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
