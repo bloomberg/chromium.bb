@@ -795,6 +795,7 @@ interface Document : Node
     getter lastModified
     getter links
     getter onabort
+    getter onauxclick
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
@@ -949,6 +950,7 @@ interface Document : Node
     setter dir
     setter domain
     setter onabort
+    setter onauxclick
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -1641,6 +1643,7 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
+    getter onauxclick
     getter onblur
     getter oncancel
     getter oncanplay
@@ -1722,6 +1725,7 @@ interface HTMLElement : Element
     setter innerText
     setter lang
     setter onabort
+    setter onauxclick
     setter onblur
     setter oncancel
     setter oncanplay
@@ -4095,6 +4099,7 @@ interface SVGElement : Element
     getter className
     getter dataset
     getter onabort
+    getter onauxclick
     getter onblur
     getter oncancel
     getter oncanplay
@@ -4165,6 +4170,7 @@ interface SVGElement : Element
     method constructor
     method focus
     setter onabort
+    setter onauxclick
     setter onblur
     setter oncancel
     setter oncanplay
@@ -6565,6 +6571,7 @@ interface webkitURL
     attribute onanimationend
     attribute onanimationiteration
     attribute onanimationstart
+    attribute onauxclick
     attribute onbeforeunload
     attribute onblur
     attribute oncancel
