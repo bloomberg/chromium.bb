@@ -22,6 +22,7 @@ message CastLogsProto {
     enum CastProductType {
       CAST_PRODUCT_TYPE_UNKNOWN = 0;
       CAST_PRODUCT_TYPE_CHROMECAST = 1;
+      CAST_PRODUCT_TYPE_TV = 2;
       CAST_PRODUCT_TYPE_AUDIO = 3;
       CAST_PRODUCT_TYPE_ANDROID_TV = 4;
     }
@@ -182,6 +183,10 @@ message CastLogsProto {
 
     // System version which the cast_shell is running.
     optional fixed64 system_build_number = 2;
+
+    // An identifier that is specific to the combination of app and device, in
+    // this case the one used by backdrop.
+    optional string backdrop_app_device_id = 3;
   }
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;
 
