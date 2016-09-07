@@ -92,8 +92,11 @@ enum InstallStatus {
                               // version is still running.
   OLD_VERSION_DOWNGRADE = 59,  // Successfully downgrade chrome to an older
                                // version.
+  SETUP_SINGLETON_ACQUISITION_FAILED = 60,  // The setup process could not
+                                            // acquire the exclusive right to
+                                            // modify the Chrome installation.
 
-  MAX_INSTALL_STATUS   = 60,  // Bump this out to make space for new results.
+  MAX_INSTALL_STATUS   = 61,  // Bump this out to make space for new results.
 };
 
 // The type of an update archive.

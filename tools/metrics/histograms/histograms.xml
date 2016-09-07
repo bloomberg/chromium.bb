@@ -55126,6 +55126,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Setup.Install.SingletonAcquisitionResult"
+    enum="SetupSingletonAcquisitionResult">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The result of trying to acquire a setup singleton. On Windows, a setup.exe
+    process must hold the setup singleton of a Chrome installation when it makes
+    changes to it.
+  </summary>
+</histogram>
+
 <histogram name="Setup.Install.StrandedChromeIsUsed" enum="BooleanUsage">
   <owner>grt@chromium.org</owner>
   <summary>
@@ -83803,6 +83813,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="57" label="UNPACKING_FAILED"/>
   <int value="58" label="IN_USE_DOWNGRADE"/>
   <int value="59" label="OLD_VERSION_DOWNGRADE"/>
+  <int value="60" label="SETUP_SINGLETON_ACQUISITION_FAILED"/>
 </enum>
 
 <enum name="InstantControllerEvent" type="int">
@@ -93942,6 +93953,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="56" label="Autoupdates could not be enabled."/>
   <int value="57"
       label="Unpacking the (possibly patched) uncompressed archive failed."/>
+</enum>
+
+<enum name="SetupSingletonAcquisitionResult" type="int">
+  <int value="0" label="The setup singleton was acquired successfully."/>
+  <int value="1" label="Acquisition of the exit event mutex timed out."/>
+  <int value="2" label="Acquisition of the setup mutex timed out."/>
 </enum>
 
 <enum name="SHA1Status" type="int">

@@ -51,6 +51,7 @@
 #include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/setup/installer_metrics.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/setup/setup_singleton.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -1089,9 +1090,9 @@ installer::InstallStatus RegisterDevChrome(
 // various tasks other than installation (renaming chrome.exe, showing eula
 // among others). This function returns true if any such command line option
 // has been found and processed (so setup.exe should exit at that point).
-bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
-                                    const base::FilePath& setup_exe,
+bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
                                     const base::CommandLine& cmd_line,
+                                    InstallationState* original_state,
                                     InstallerState* installer_state,
                                     int* exit_code) {
   // This option is independent of all others so doesn't belong in the if/else
@@ -1158,7 +1159,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
 
     if (installer::EULA_REJECTED != *exit_code) {
       if (GoogleUpdateSettings::SetEULAConsent(
-              original_state, BrowserDistribution::GetDistribution(), true)) {
+              *original_state, BrowserDistribution::GetDistribution(), true)) {
         CreateEULASentinel(BrowserDistribution::GetDistribution());
       }
       // For a metro-originated launch, we now need to launch back into metro.
@@ -1185,7 +1186,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterDevChrome)) {
     installer::InstallStatus status = RegisterDevChrome(
-        original_state, *installer_state, setup_exe, cmd_line);
+        *original_state, *installer_state, setup_exe, cmd_line);
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
@@ -1238,7 +1239,14 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
     // If --rename-chrome-exe is specified, we want to rename the executables
     // and exit.
-    *exit_code = RenameChromeExecutables(original_state, installer_state);
+    std::unique_ptr<installer::SetupSingleton> setup_singleton(
+        installer::SetupSingleton::Acquire(
+            cmd_line, MasterPreferences::ForCurrentProcess(), original_state,
+            installer_state));
+    if (!setup_singleton)
+      *exit_code = installer::SETUP_SINGLETON_ACQUISITION_FAILED;
+    else
+      *exit_code = RenameChromeExecutables(*original_state, installer_state);
   } else if (cmd_line.HasSwitch(
                  installer::switches::kRemoveChromeRegistration)) {
     // This is almost reverse of --register-chrome-browser option above.
@@ -1813,8 +1821,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   PathService::Get(base::FILE_EXE, &setup_exe);
 
   int exit_code = 0;
-  if (HandleNonInstallCmdLineOptions(
-          original_state, setup_exe, cmd_line, &installer_state, &exit_code)) {
+  if (HandleNonInstallCmdLineOptions(setup_exe, cmd_line, &original_state,
+                                     &installer_state, &exit_code)) {
     return exit_code;
   }
 
@@ -1841,6 +1849,16 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
           IDS_INSTALL_INSUFFICIENT_RIGHTS_BASE, NULL);
       return installer::INSUFFICIENT_RIGHTS;
     }
+  }
+
+  std::unique_ptr<installer::SetupSingleton> setup_singleton(
+      installer::SetupSingleton::Acquire(cmd_line, prefs, &original_state,
+                                         &installer_state));
+  if (!setup_singleton) {
+    installer_state.WriteInstallerResult(
+        installer::SETUP_SINGLETON_ACQUISITION_FAILED,
+        IDS_INSTALL_SINGLETON_ACQUISITION_FAILED_BASE, nullptr);
+    return installer::SETUP_SINGLETON_ACQUISITION_FAILED;
   }
 
   UninstallMultiChromeFrameIfPresent(cmd_line, prefs,

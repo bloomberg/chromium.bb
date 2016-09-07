@@ -119,6 +119,11 @@ class InstallerState {
   // The full path to the place where the operand resides.
   const base::FilePath& target_path() const { return target_path_; }
 
+  // Sets the value returned by target_path().
+  void set_target_path_for_testing(const base::FilePath& target_path) {
+    target_path_ = target_path;
+  }
+
   // True if the "msi" preference is set or if a product with the "msi" state
   // flag is set is to be operated on.
   bool is_msi() const { return msi_; }

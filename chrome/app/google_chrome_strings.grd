@@ -439,6 +439,9 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_INSTALL_OS_ERROR" desc="Error displayed when any Windows API call fails and we do not have more specific information.">
           An operating system error occurred during installation. Please download Google Chrome again.
         </message>
+        <message name="IDS_INSTALL_SINGLETON_ACQUISITION_FAILED" desc="Error displayed when the installer cannot run because another installer is already running.">
+          Another operation on Google Chrome is in progress. Please try again later.
+        </message>
         <message name="IDS_INSTALL_TEMP_DIR_FAILED" desc="Error displayed when we fail to create temporary directory during installation.">
           The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.
         </message>
