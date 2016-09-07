@@ -1320,7 +1320,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
                     LOG(ERROR) << "and more...";
                 }
                 ++mismatchingPixels;
-                *newBitmap.getAddr32(x, y) = SkColorSetARGB(0x80, 0xFF, 0, 0xFF); // Half translucent magenta.
+                *newBitmap.getAddr32(x, y) = SkColorSetARGB(0xFF, 0xA0, 0, 0); // Dark red.
             } else {
                 *newBitmap.getAddr32(x, y) = SK_ColorTRANSPARENT;
             }
