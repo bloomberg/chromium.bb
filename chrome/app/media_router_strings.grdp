@@ -60,7 +60,7 @@
   </message>
   <if expr="_google_chrome">
     <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE" desc="Title of a menu item which, on click, toggles the preference to opt in or out of cloud services.">
-     Enable Cloud Services
+     Enable cloud services
     </message>
   </if>
   <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
