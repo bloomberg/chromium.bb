@@ -238,8 +238,11 @@ void DownloadManagerService::OnHistoryQueryComplete() {
 
 void DownloadManagerService::OnDownloadUpdated(
     content::DownloadManager* manager, content::DownloadItem* item) {
+  if (java_ref_.is_null())
+    return;
+
   // Ignore anything that isn't a completed download notification.
-  if (!item->IsDone() || java_ref_.is_null())
+  if (item->GetState() != content::DownloadItem::DownloadState::COMPLETE)
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
