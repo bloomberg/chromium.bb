@@ -269,35 +269,35 @@ RawResourceClientStateChecker::~RawResourceClientStateChecker()
 {
 }
 
-void RawResourceClientStateChecker::willAddClient()
+NEVER_INLINE void RawResourceClientStateChecker::willAddClient()
 {
     SECURITY_CHECK(m_state == NotAddedAsClient);
     m_state = Started;
 }
 
-void RawResourceClientStateChecker::willRemoveClient()
+NEVER_INLINE void RawResourceClientStateChecker::willRemoveClient()
 {
     SECURITY_CHECK(m_state != NotAddedAsClient);
     m_state = NotAddedAsClient;
 }
 
-void RawResourceClientStateChecker::redirectReceived()
+NEVER_INLINE void RawResourceClientStateChecker::redirectReceived()
 {
     SECURITY_CHECK(m_state == Started);
 }
 
-void RawResourceClientStateChecker::redirectBlocked()
+NEVER_INLINE void RawResourceClientStateChecker::redirectBlocked()
 {
     SECURITY_CHECK(m_state == Started);
     m_state = RedirectBlocked;
 }
 
-void RawResourceClientStateChecker::dataSent()
+NEVER_INLINE void RawResourceClientStateChecker::dataSent()
 {
     SECURITY_CHECK(m_state == Started);
 }
 
-void RawResourceClientStateChecker::responseReceived()
+NEVER_INLINE void RawResourceClientStateChecker::responseReceived()
 {
     // TODO(hiroshige): Temporarily we use DCHECK() here instead of CHECK(),
     // due to crbug.com/640960.
@@ -305,25 +305,25 @@ void RawResourceClientStateChecker::responseReceived()
     m_state = ResponseReceived;
 }
 
-void RawResourceClientStateChecker::setSerializedCachedMetadata()
+NEVER_INLINE void RawResourceClientStateChecker::setSerializedCachedMetadata()
 {
     SECURITY_CHECK(m_state == ResponseReceived);
     m_state = SetSerializedCachedMetadata;
 }
 
-void RawResourceClientStateChecker::dataReceived()
+NEVER_INLINE void RawResourceClientStateChecker::dataReceived()
 {
     SECURITY_CHECK(m_state == ResponseReceived || m_state == SetSerializedCachedMetadata || m_state == DataReceived);
     m_state = DataReceived;
 }
 
-void RawResourceClientStateChecker::dataDownloaded()
+NEVER_INLINE void RawResourceClientStateChecker::dataDownloaded()
 {
     SECURITY_CHECK(m_state == ResponseReceived || m_state == SetSerializedCachedMetadata || m_state == DataDownloaded);
     m_state = DataDownloaded;
 }
 
-void RawResourceClientStateChecker::notifyFinished(Resource* resource)
+NEVER_INLINE void RawResourceClientStateChecker::notifyFinished(Resource* resource)
 {
     SECURITY_CHECK(m_state != NotAddedAsClient);
     SECURITY_CHECK(m_state != NotifyFinished);
