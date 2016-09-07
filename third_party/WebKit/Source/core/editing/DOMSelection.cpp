@@ -225,14 +225,10 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
 
     if (!isValidForPosition(node))
         return;
-    Range* range = Range::create(node->document());
-    range->setStart(node, offset, exceptionState);
+    Range::checkNodeWOffset(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    range->setEnd(node, offset, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    m_frame->selection().setSelectedRange(range, TextAffinity::Downstream, m_frame->selection().isDirectional() ? SelectionDirectionalMode::Directional : SelectionDirectionalMode::NonDirectional);
+    m_frame->selection().setSelection(VisibleSelection(Position(node, offset), m_frame->selection().isDirectional()));
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)

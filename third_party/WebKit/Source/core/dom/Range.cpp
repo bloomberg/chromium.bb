@@ -915,7 +915,7 @@ void Range::detach()
     // This is now a no-op as per the DOM specification.
 }
 
-Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionState) const
+Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionState)
 {
     switch (n->getNodeType()) {
     case Node::kDocumentTypeNode:

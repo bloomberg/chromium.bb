@@ -138,6 +138,8 @@ public:
     ClientRectList* getClientRects() const;
     ClientRect* getBoundingClientRect() const;
 
+    static Node* checkNodeWOffset(Node*, int offset, ExceptionState&);
+
     DECLARE_TRACE();
 
 private:
@@ -146,7 +148,6 @@ private:
 
     void setDocument(Document&);
 
-    Node* checkNodeWOffset(Node*, int offset, ExceptionState&) const;
     void checkNodeBA(Node*, ExceptionState&) const;
     void checkExtractPrecondition(ExceptionState&);
 
