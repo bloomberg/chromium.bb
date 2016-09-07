@@ -42,7 +42,7 @@ Dump styles after inspector was reopened:
 element.style { ()
 
 [expanded] 
-#testDiv, my-custom-tag { (<style>…</style>)
+#testDiv, my-custom-tag { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 
 [expanded] 
 #testDiv { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)

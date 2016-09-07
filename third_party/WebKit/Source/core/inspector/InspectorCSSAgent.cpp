@@ -615,7 +615,6 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrame
     , m_networkAgent(networkAgent)
     , m_resourceContentLoader(resourceContentLoader)
     , m_resourceContainer(resourceContainer)
-    , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
     , m_resourceContentLoaderClientId(resourceContentLoader->createClientId())
 {
@@ -649,7 +648,6 @@ void InspectorCSSAgent::reset()
     m_documentToCSSStyleSheets.clear();
     m_invalidatedDocuments.clear();
     m_nodeToInspectorStyleSheet.clear();
-    m_documentToViaInspectorStyleSheet.clear();
     resetNonPersistentData();
 }
 
@@ -721,8 +719,6 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
         return;
 
     m_invalidatedDocuments.add(document);
-    if (m_creatingViaInspectorStyleSheet)
-        flushPendingProtocolNotifications();
 }
 
 void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
@@ -1318,7 +1314,7 @@ void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String&
         return;
     }
 
-    InspectorStyleSheet* inspectorStyleSheet = viaInspectorStyleSheet(document, true);
+    InspectorStyleSheet* inspectorStyleSheet = viaInspectorStyleSheet(document);
     if (!inspectorStyleSheet) {
         *errorString = "No target stylesheet found";
         return;
@@ -1592,8 +1588,6 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
         inspectorStyleSheet = InspectorStyleSheet::create(m_networkAgent, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this, m_resourceContainer);
         m_idToInspectorStyleSheet.set(inspectorStyleSheet->id(), inspectorStyleSheet);
         m_cssStyleSheetToInspectorStyleSheet.set(styleSheet, inspectorStyleSheet);
-        if (m_creatingViaInspectorStyleSheet)
-            m_documentToViaInspectorStyleSheet.add(document, inspectorStyleSheet);
     }
     return inspectorStyleSheet;
 }
@@ -1627,46 +1621,19 @@ InspectorStyleSheet* InspectorCSSAgent::inspectorStyleSheetForRule(CSSStyleRule*
     return bindStyleSheet(rule->parentStyleSheet());
 }
 
-InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* document, bool createIfAbsent)
+InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* document)
 {
-    if (!document) {
-        ASSERT(!createIfAbsent);
+    if (!document)
         return nullptr;
-    }
 
     if (!document->isHTMLDocument() && !document->isSVGDocument())
         return nullptr;
 
-    InspectorStyleSheet* inspectorStyleSheet = m_documentToViaInspectorStyleSheet.get(document);
-    if (inspectorStyleSheet || !createIfAbsent)
-        return inspectorStyleSheet;
+    CSSStyleSheet& inspectorSheet = document->styleEngine().ensureInspectorStyleSheet();
 
-    TrackExceptionState exceptionState;
-    Element* styleElement = document->createElement("style", exceptionState);
-    if (!exceptionState.hadException())
-        styleElement->setAttribute("type", "text/css", exceptionState);
-    if (!exceptionState.hadException()) {
-        ContainerNode* targetNode;
-        // HEAD is absent in ImageDocuments, for example.
-        if (document->head())
-            targetNode = document->head();
-        else if (document->body())
-            targetNode = document->body();
-        else
-            return nullptr;
+    flushPendingProtocolNotifications();
 
-        InlineStyleOverrideScope overrideScope(document);
-        m_creatingViaInspectorStyleSheet = true;
-        targetNode->appendChild(styleElement, exceptionState);
-        // At this point the added stylesheet will get bound through the updateActiveStyleSheets() invocation.
-        // We just need to pick the respective InspectorStyleSheet from m_documentToViaInspectorStyleSheet.
-        m_creatingViaInspectorStyleSheet = false;
-    }
-
-    if (exceptionState.hadException())
-        return nullptr;
-
-    return m_documentToViaInspectorStyleSheet.get(document);
+    return m_cssStyleSheetToInspectorStyleSheet.get(&inspectorSheet);
 }
 
 InspectorStyleSheet* InspectorCSSAgent::assertInspectorStyleSheetForId(ErrorString* errorString, const String& styleSheetId)
@@ -1695,20 +1662,17 @@ InspectorStyleSheetBase* InspectorCSSAgent::assertStyleSheetForId(ErrorString* e
 
 protocol::CSS::StyleSheetOrigin InspectorCSSAgent::detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument)
 {
-    if (m_creatingViaInspectorStyleSheet)
-        return protocol::CSS::StyleSheetOriginEnum::Inspector;
+    DCHECK(pageStyleSheet);
 
-    protocol::CSS::StyleSheetOrigin origin = protocol::CSS::StyleSheetOriginEnum::Regular;
-    if (pageStyleSheet && !pageStyleSheet->ownerNode() && pageStyleSheet->href().isEmpty())
-        origin = protocol::CSS::StyleSheetOriginEnum::UserAgent;
-    else if (pageStyleSheet && pageStyleSheet->ownerNode() && pageStyleSheet->ownerNode()->isDocumentNode())
-        origin = protocol::CSS::StyleSheetOriginEnum::Injected;
-    else {
-        InspectorStyleSheet* viaInspectorStyleSheetForOwner = viaInspectorStyleSheet(ownerDocument, false);
-        if (viaInspectorStyleSheetForOwner && pageStyleSheet == viaInspectorStyleSheetForOwner->pageStyleSheet())
-            origin = protocol::CSS::StyleSheetOriginEnum::Inspector;
+    if (!pageStyleSheet->ownerNode() && pageStyleSheet->href().isEmpty())
+        return protocol::CSS::StyleSheetOriginEnum::UserAgent;
+
+    if (pageStyleSheet->ownerNode() && pageStyleSheet->ownerNode()->isDocumentNode()) {
+        if (pageStyleSheet == ownerDocument->styleEngine().inspectorStyleSheet())
+            return protocol::CSS::StyleSheetOriginEnum::Inspector;
+        return protocol::CSS::StyleSheetOriginEnum::Injected;
     }
-    return origin;
+    return protocol::CSS::StyleSheetOriginEnum::Regular;
 }
 
 std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSStyleRule* rule)
@@ -1788,8 +1752,6 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttrib
 
 void InspectorCSSAgent::didRemoveDocument(Document* document)
 {
-    if (document)
-        m_documentToViaInspectorStyleSheet.remove(document);
 }
 
 void InspectorCSSAgent::didRemoveDOMNode(Node* node)
@@ -2083,7 +2045,6 @@ DEFINE_TRACE(InspectorCSSAgent)
     visitor->trace(m_documentToCSSStyleSheets);
     visitor->trace(m_invalidatedDocuments);
     visitor->trace(m_nodeToInspectorStyleSheet);
-    visitor->trace(m_documentToViaInspectorStyleSheet);
     visitor->trace(m_inspectorUserAgentStyleSheet);
     InspectorBaseAgent::trace(visitor);
 }

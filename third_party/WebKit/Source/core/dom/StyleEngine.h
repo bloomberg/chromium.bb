@@ -80,6 +80,7 @@ public:
     const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList(TreeScope&);
 
     const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const { return m_injectedAuthorStyleSheets; }
+    CSSStyleSheet* inspectorStyleSheet() const { return m_inspectorStyleSheet; }
 
     const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
@@ -91,6 +92,7 @@ public:
     void watchedSelectorsChanged();
 
     void injectAuthorSheet(StyleSheetContents* authorSheet);
+    CSSStyleSheet& ensureInspectorStyleSheet();
 
     void clearMediaQueryRuleSetStyleSheets();
     void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
@@ -240,6 +242,7 @@ private:
     int m_pendingRenderBlockingStylesheets = 0;
 
     HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;
+    Member<CSSStyleSheet> m_inspectorStyleSheet;
 
     Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
 

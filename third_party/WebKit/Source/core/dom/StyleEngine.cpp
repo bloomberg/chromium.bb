@@ -133,6 +133,18 @@ void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet)
     resolverChanged(AnalyzedStyleUpdate);
 }
 
+CSSStyleSheet& StyleEngine::ensureInspectorStyleSheet()
+{
+    if (m_inspectorStyleSheet)
+        return *m_inspectorStyleSheet;
+
+    StyleSheetContents* contents = StyleSheetContents::create(CSSParserContext(*m_document, nullptr));
+    m_inspectorStyleSheet = CSSStyleSheet::create(contents, m_document);
+    markDocumentDirty();
+    resolverChanged(AnalyzedStyleUpdate);
+    return *m_inspectorStyleSheet;
+}
+
 void StyleEngine::addPendingSheet(StyleEngineContext &context)
 {
     m_pendingScriptBlockingStylesheets++;
@@ -815,6 +827,7 @@ DEFINE_TRACE(StyleEngine)
 {
     visitor->trace(m_document);
     visitor->trace(m_injectedAuthorStyleSheets);
+    visitor->trace(m_inspectorStyleSheet);
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
     visitor->trace(m_resolver);

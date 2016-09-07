@@ -981,7 +981,9 @@ InspectorStyleSheet::InspectorStyleSheet(InspectorNetworkAgent* networkAgent, CS
     , m_documentURL(documentURL)
 {
     String text;
-    bool success = inlineStyleSheetText(&text);
+    bool success = inspectorStyleSheetText(&text);
+    if (!success)
+        success = inlineStyleSheetText(&text);
     if (!success)
         success = resourceStyleSheetText(&text);
     if (success)
@@ -1353,6 +1355,8 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
         Element* element = ownerStyleElement();
         if (element)
             m_resourceContainer->storeStyleElementContent(DOMNodeIds::idForNode(element), text);
+        else if (m_origin == protocol::CSS::StyleSheetOriginEnum::Inspector)
+            m_resourceContainer->storeStyleElementContent(DOMNodeIds::idForNode(m_pageStyleSheet->ownerDocument()), text);
         else
             m_resourceContainer->storeStyleSheetContent(finalURL(), text);
     }
@@ -1745,6 +1749,18 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result)
     if (m_resourceContainer->loadStyleElementContent(DOMNodeIds::idForNode(ownerElement), result))
         return true;
     *result = ownerElement->textContent();
+    return true;
+}
+
+bool InspectorStyleSheet::inspectorStyleSheetText(String* result)
+{
+    if (m_origin != protocol::CSS::StyleSheetOriginEnum::Inspector)
+        return false;
+    if (!m_pageStyleSheet->ownerDocument())
+        return false;
+    if (m_resourceContainer->loadStyleElementContent(DOMNodeIds::idForNode(m_pageStyleSheet->ownerDocument()), result))
+        return true;
+    *result = "";
     return true;
 }
 

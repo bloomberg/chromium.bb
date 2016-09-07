@@ -78,6 +78,8 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, Docum
     DCHECK_EQ(&document().styleEngine(), &engine);
     collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
     collectStyleSheetsFromCandidates(engine, collector);
+    if (engine.inspectorStyleSheet())
+        collector.appendActiveStyleSheet(engine.inspectorStyleSheet());
 }
 
 void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)

@@ -184,7 +184,7 @@ private:
     String unbindStyleSheet(InspectorStyleSheet*);
     InspectorStyleSheet* inspectorStyleSheetForRule(CSSStyleRule*);
 
-    InspectorStyleSheet* viaInspectorStyleSheet(Document*, bool createIfAbsent);
+    InspectorStyleSheet* viaInspectorStyleSheet(Document*);
     InspectorStyleSheet* assertInspectorStyleSheetForId(ErrorString*, const String&);
     InspectorStyleSheetBase* assertStyleSheetForId(ErrorString*, const String&);
     String detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
@@ -219,12 +219,10 @@ private:
     HeapHashSet<Member<Document>> m_invalidatedDocuments;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
-    HeapHashMap<Member<Document>, Member<InspectorStyleSheet>> m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
     Member<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
-    bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
     int m_resourceContentLoaderClientId;
 
