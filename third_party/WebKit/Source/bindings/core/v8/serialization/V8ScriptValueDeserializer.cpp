@@ -38,7 +38,7 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::deserialize()
     v8::Local<v8::Context> context = m_scriptState->context();
 
     bool readHeader;
-    if (!m_deserializer.ReadHeader().To(&readHeader))
+    if (!m_deserializer.ReadHeader(context).To(&readHeader))
         return v8::Null(isolate);
     DCHECK(readHeader);
     m_version = m_deserializer.GetWireFormatVersion();
