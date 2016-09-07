@@ -254,7 +254,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(1, network_delegate_.completed_requests());
@@ -267,7 +267,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // The request_failed() method is named confusingly but all it checks is
   // whether the request got as far as calling NotifyHeadersComplete.
@@ -283,7 +283,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ModifyHeadersAndStatus) {
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // The request_failed() method is named confusingly but all it checks is
   // whether the request got as far as calling NotifyHeadersComplete.
@@ -328,7 +328,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(bytes_to_read, url_request_delegate_.bytes_received());
@@ -359,7 +359,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest,
   SetRange(req_.get(), offset, bytes_available_reported);
   req_->Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(bytes_to_read, url_request_delegate_.bytes_received());
