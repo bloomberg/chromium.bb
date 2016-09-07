@@ -141,7 +141,13 @@ class ManagedBookmarkServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarkServiceTest);
 };
 
-TEST_F(ManagedBookmarkServiceTest, EmptyManagedNode) {
+// Crashes on Android only. http://crbug.com/644570
+#if defined(OS_ANDROID)
+#define MAYBE_EmptyManagedNode DISABLED_EmptyManagedNode
+#else
+#define MAYBE_EmptyManagedNode EmptyManagedNode
+#endif
+TEST_F(ManagedBookmarkServiceTest, MAYBE_EmptyManagedNode) {
   // Verifies that the managed node is empty and invisible when the policy is
   // not set.
   model_->RemoveObserver(&observer_);
