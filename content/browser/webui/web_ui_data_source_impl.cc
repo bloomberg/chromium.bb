@@ -252,7 +252,8 @@ void WebUIDataSourceImpl::StartDataRequest(
   // TODO(dschuyler): improve filtering of which resource to run template
   // expansion upon. TODO(dbeam): make a streaming filter that works on gzipped
   // content.
-  if (GetMimeType(path) == "text/html" && !source()->IsGzipped(path)) {
+  if (response.get() && GetMimeType(path) == "text/html" &&
+      !source()->IsGzipped(path)) {
     std::string replaced = ui::ReplaceTemplateExpressions(
         base::StringPiece(response->front_as<char>(), response->size()),
         replacements_);
