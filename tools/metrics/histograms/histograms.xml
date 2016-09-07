@@ -104306,7 +104306,11 @@ To add a new entry, add it with any value and run test to compute valid value.
              loading and again for each redirect."/>
   <suffix name="Safe"
       label="Resources that were checked and deemed safe. Logged when the URL
-             check is completed."/>
+             check is completed.">
+    <obsolete>
+      Deprecated in 9/2016.
+    </obsolete>
+  </suffix>
   <suffix name="Skipped"
       label="Resources that were not checked because they are not active-ish
              content types. Only used on mobile. Logged before the resource

@@ -35,11 +35,6 @@ namespace {
 // aborted, and the URL will be treated as if it were safe.
 const int kCheckUrlTimeoutMs = 5000;
 
-void RecordHistogramResourceTypeSafe(content::ResourceType resource_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Safe", resource_type,
-                            content::RESOURCE_TYPE_LAST_TYPE);
-}
-
 // Return a dictionary with "url"=|url-spec| and optionally
 // |name|=|value| (if not null), for netlogging.
 // This will also add a reference to the original request's net_log ID.
@@ -243,7 +238,6 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
       threat_type_ == safe_browsing::SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
 
   if (threat_type == safe_browsing::SB_THREAT_TYPE_SAFE) {
-    RecordHistogramResourceTypeSafe(resource_type_);
     if (defer_state_ != DEFERRED_NONE) {
       // Log how much time the safe browsing check cost us.
       ui_manager_->LogPauseDelay(base::TimeTicks::Now() - defer_start_time_);
@@ -361,7 +355,6 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
                             content::RESOURCE_TYPE_LAST_TYPE);
 
   if (succeeded_synchronously) {
-    RecordHistogramResourceTypeSafe(resource_type_);
     threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
     ui_manager_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;
