@@ -521,12 +521,4 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
   return throttles;
 }
 
-#if defined(VIDEO_HOLE)
-content::ExternalVideoSurfaceContainer*
-AwContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
-    content::WebContents* web_contents) {
-  return native_factory_->CreateExternalVideoSurfaceContainer(web_contents);
-}
-#endif
-
 }  // namespace android_webview

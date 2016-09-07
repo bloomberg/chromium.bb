@@ -212,18 +212,6 @@ void AwSettings::UpdateRendererPreferencesLocked(
     update_prefs = true;
   }
 
-  bool video_overlay =
-      Java_AwSettings_getVideoOverlayForEmbeddedVideoEnabledLocked(env, obj);
-  bool force_video_overlay =
-      Java_AwSettings_getForceVideoOverlayForTests(env, obj);
-  if (video_overlay !=
-          prefs->use_video_overlay_for_embedded_encrypted_video ||
-      force_video_overlay != prefs->use_view_overlay_for_all_video) {
-    prefs->use_video_overlay_for_embedded_encrypted_video = video_overlay;
-    prefs->use_view_overlay_for_all_video = force_video_overlay;
-    update_prefs = true;
-  }
-
   if (prefs->accept_languages.compare(
           AwContentBrowserClient::GetAcceptLangsImpl())) {
     prefs->accept_languages = AwContentBrowserClient::GetAcceptLangsImpl();

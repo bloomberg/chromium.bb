@@ -31,7 +31,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
-#include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -258,14 +257,5 @@ AwMessagePortService* AwMainDelegate::CreateAwMessagePortService() {
 AwLocaleManager* AwMainDelegate::CreateAwLocaleManager() {
   return new AwLocaleManagerImpl();
 }
-
-#if defined(VIDEO_HOLE)
-content::ExternalVideoSurfaceContainer*
-AwMainDelegate::CreateExternalVideoSurfaceContainer(
-    content::WebContents* web_contents) {
-  return external_video_surface::ExternalVideoSurfaceContainerImpl::Create(
-      web_contents);
-}
-#endif
 
 }  // namespace android_webview

@@ -116,9 +116,6 @@ source_set("native") {
     "token_binding_manager_bridge.cc",
     "token_binding_manager_bridge.h",
   ]
-  if (enable_video_hole) {
-    deps += [ "//components/external_video_surface:external_video_surface" ]
-  }
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser:browser" ]

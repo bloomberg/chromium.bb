@@ -553,11 +553,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean flag) {
-        mAwSettings.setVideoOverlayForEmbeddedVideoEnabled(flag);
+        // No-op, see http://crbug.com/616583
     }
 
     @Override
     public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
-        return mAwSettings.getVideoOverlayForEmbeddedVideoEnabled();
+        // Always false, see http://crbug.com/616583
+        return false;
     }
 }

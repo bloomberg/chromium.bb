@@ -88,7 +88,6 @@ public class AwSettings {
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
 
-    private boolean mForceVideoOverlayForTests = false;
     private boolean mOffscreenPreRaster = false;
     private int mDisabledMenuItems = MENU_ITEM_NONE;
 
@@ -1696,46 +1695,6 @@ public class AwSettings {
         }
     }
 
-    /**
-     * Sets whether to use the video overlay for the embedded video.
-     * @param flag whether to enable the video overlay for the embedded video.
-     */
-    public void setVideoOverlayForEmbeddedVideoEnabled(final boolean enabled) {
-        // No-op, see http://crbug.com/616583
-    }
-
-    /**
-     * Gets whether to use the video overlay for the embedded video.
-     * @return true if the WebView enables the video overlay for the embedded video.
-     */
-    public boolean getVideoOverlayForEmbeddedVideoEnabled() {
-        // Always false, see http://crbug.com/616583
-        return false;
-    }
-
-    @CalledByNative
-    private boolean getVideoOverlayForEmbeddedVideoEnabledLocked() {
-        // Always false, see http://crbug.com/616583
-        return false;
-    }
-
-    @VisibleForTesting
-    public void setForceVideoOverlayForTests(final boolean enabled) {
-        synchronized (mAwSettingsLock) {
-            if (mForceVideoOverlayForTests != enabled) {
-                mForceVideoOverlayForTests = enabled;
-                mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mNativeAwSettings != 0) {
-                            nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
-                        }
-                    }
-                });
-            }
-        }
-    }
-
     @VisibleForTesting
     public void updateAcceptLanguages() {
         synchronized (mAwSettingsLock) {
@@ -1748,12 +1707,6 @@ public class AwSettings {
                 }
             });
         }
-    }
-
-    @CalledByNative
-    private boolean getForceVideoOverlayForTests() {
-        assert Thread.holdsLock(mAwSettingsLock);
-        return mForceVideoOverlayForTests;
     }
 
     @CalledByNative

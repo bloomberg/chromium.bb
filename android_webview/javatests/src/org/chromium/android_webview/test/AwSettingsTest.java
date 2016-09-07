@@ -2730,7 +2730,7 @@ public class AwSettingsTest extends AwTestBase {
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
-        assertTrue(VideoTestUtil.runVideoTest(this, false, false, WAIT_TIMEOUT_MS));
+        assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
     }
 
     @DisableHardwareAccelerationForTest
@@ -2738,7 +2738,7 @@ public class AwSettingsTest extends AwTestBase {
     @Feature({"AndroidWebView", "Preferences"})
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
-        assertFalse(VideoTestUtil.runVideoTest(this, true, false, scaleTimeout(5000)));
+        assertFalse(VideoTestUtil.runVideoTest(this, true, scaleTimeout(5000)));
     }
 
     @SmallTest

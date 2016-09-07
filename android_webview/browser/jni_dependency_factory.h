@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace content {
-class ExternalVideoSurfaceContainer;
 class WebContents;
 class WebContentsViewDelegate;
 }  // namespace content
@@ -33,10 +32,6 @@ class JniDependencyFactory {
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
   virtual AwMessagePortService* CreateAwMessagePortService() = 0;
   virtual AwLocaleManager* CreateAwLocaleManager() = 0;
-#if defined(VIDEO_HOLE)
-  virtual content::ExternalVideoSurfaceContainer*
-      CreateExternalVideoSurfaceContainer(content::WebContents* contents) = 0;
-#endif
 };
 
 }  // namespace android_webview

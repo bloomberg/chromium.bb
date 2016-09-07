@@ -53,10 +53,6 @@ class AwMainDelegate : public content::ContentMainDelegate,
   AwWebPreferencesPopulater* CreateWebPreferencesPopulater() override;
   AwMessagePortService* CreateAwMessagePortService() override;
   AwLocaleManager* CreateAwLocaleManager() override;
-#if defined(VIDEO_HOLE)
-  content::ExternalVideoSurfaceContainer* CreateExternalVideoSurfaceContainer(
-      content::WebContents* web_contents) override;
-#endif
 
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;
