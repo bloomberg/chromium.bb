@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -159,14 +160,10 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
-    std::string types = command_line.GetSwitchValueASCII(
-        switches::kGpuDriverBugWorkarounds);
     std::set<int> workarounds;
-    gpu::StringToFeatureSet(types, &workarounds);
-    if (workarounds.count(gpu::FORCE_DISCRETE_GPU) == 1)
-      ui::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
-    else if (workarounds.count(gpu::FORCE_INTEGRATED_GPU) == 1)
-      ui::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
+    gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(&workarounds,
+                                                            command_line);
+    gpu::InitializeDualGpusIfSupported(workarounds);
   }
 
   // Initialization of the OpenGL bindings may fail, in which case we
