@@ -199,14 +199,14 @@ const base::FilePath& ITunesDataProvider::auto_add_path() const {
 }
 
 bool ITunesDataProvider::KnownArtist(const ArtistName& artist) const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   return base::ContainsKey(library_, artist);
 }
 
 bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
                                     const AlbumName& album) const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   Library::const_iterator library_it = library_.find(artist);
   if (library_it == library_.end())
@@ -217,7 +217,7 @@ bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
 base::FilePath ITunesDataProvider::GetTrackLocation(
     const ArtistName& artist, const AlbumName& album,
     const TrackName& track) const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   Library::const_iterator library_it = library_.find(artist);
   if (library_it == library_.end())
@@ -235,7 +235,7 @@ base::FilePath ITunesDataProvider::GetTrackLocation(
 
 std::set<ITunesDataProvider::ArtistName>
 ITunesDataProvider::GetArtistNames() const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   std::set<ArtistName> result;
   Library::const_iterator it;
@@ -247,7 +247,7 @@ ITunesDataProvider::GetArtistNames() const {
 
 std::set<ITunesDataProvider::AlbumName> ITunesDataProvider::GetAlbumNames(
     const ArtistName& artist) const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   std::set<AlbumName> result;
   Library::const_iterator artist_lookup = library_.find(artist);
@@ -264,7 +264,7 @@ std::set<ITunesDataProvider::AlbumName> ITunesDataProvider::GetAlbumNames(
 
 ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
     const ArtistName& artist, const AlbumName& album) const {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(valid());
   Album result;
   Library::const_iterator artist_lookup = library_.find(artist);
@@ -279,7 +279,7 @@ ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
 void ITunesDataProvider::OnLibraryParsed(const ReadyCallback& ready_callback,
                                          bool result,
                                          const parser::Library& library) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   set_valid(result);
   if (valid()) {
     library_.clear();

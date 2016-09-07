@@ -155,7 +155,7 @@ base::FilePath ImportedMediaGalleryRegistry::ImportedRoot() {
 // static
 picasa::PicasaDataProvider*
 ImportedMediaGalleryRegistry::PicasaDataProvider() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(GetInstance()->picasa_data_provider_);
   return GetInstance()->picasa_data_provider_.get();
 }
@@ -163,7 +163,7 @@ ImportedMediaGalleryRegistry::PicasaDataProvider() {
 // static
 itunes::ITunesDataProvider*
 ImportedMediaGalleryRegistry::ITunesDataProvider() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(GetInstance()->itunes_data_provider_);
   return GetInstance()->itunes_data_provider_.get();
 }
@@ -183,26 +183,26 @@ ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void ImportedMediaGalleryRegistry::RegisterPicasaFileSystem(
     const base::FilePath& database_path) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(!picasa_data_provider_);
   picasa_data_provider_.reset(new picasa::PicasaDataProvider(database_path));
 }
 
 void ImportedMediaGalleryRegistry::RevokePicasaFileSystem() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(picasa_data_provider_);
   picasa_data_provider_.reset();
 }
 
 void ImportedMediaGalleryRegistry::RegisterITunesFileSystem(
     const base::FilePath& xml_library_path) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(!itunes_data_provider_);
   itunes_data_provider_.reset(new itunes::ITunesDataProvider(xml_library_path));
 }
 
 void ImportedMediaGalleryRegistry::RevokeITunesFileSystem() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(itunes_data_provider_);
   itunes_data_provider_.reset();
 }

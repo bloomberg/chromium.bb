@@ -121,7 +121,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
   // Simulates the actual writing process of moving all the database files
   // from the temporary directory to the database directory in a loop.
   void MoveTempFilesToDatabase() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     base::FileEnumerator file_enumerator(
         database_path_.DirName().AppendASCII(kPicasaTempDirName),
@@ -209,10 +209,10 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
   // Start the test. The data provider is refreshed before calling StartTest
   // and the result of the refresh is passed in.
-  virtual void VerifyRefreshResults(bool parse_success) {};
+  virtual void VerifyRefreshResults(bool parse_success) {}
 
   void TestDone() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     // The data provider must be destructed on the MediaTaskRunner. This is done
     // in a posted task rather than directly because TestDone is called by
@@ -240,7 +240,7 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
  private:
   void SetupFoldersAndDataProvider() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
     ASSERT_TRUE(test_folder_1_.CreateUniqueTempDir());
     ASSERT_TRUE(test_folder_2_.CreateUniqueTempDir());
     ASSERT_TRUE(picasa_root_dir_.CreateUniqueTempDir());
@@ -254,7 +254,7 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
   }
 
   virtual void StartTestOnMediaTaskRunner() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     data_provider()->RefreshData(
         RequestedDataType(),
@@ -263,7 +263,7 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
   }
 
   void DestructDataProviderThenQuit() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
     picasa_data_provider_.reset();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE, quit_closure_);
@@ -408,7 +408,7 @@ class PicasaDataProviderMultipleMixedCallbacksTest
   }
 
   void StartTestOnMediaTaskRunner() override {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     data_provider()->RefreshData(
         PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,
@@ -475,7 +475,7 @@ class PicasaDataProviderFileWatcherInvalidateTest
 
  private:
   void StartTestOnMediaTaskRunner() override {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     // Refresh before moving album table to database dir, guaranteeing failure.
     data_provider()->RefreshData(
@@ -499,7 +499,7 @@ class PicasaDataProviderInvalidateInflightTableReaderTest
 
  private:
   void StartTestOnMediaTaskRunner() override {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     // Refresh before the database files have been written.
     // This is guaranteed to fail to read the album table.
@@ -545,7 +545,7 @@ class PicasaDataProviderInvalidateInflightAlbumsIndexerTest
 
  private:
   void StartTestOnMediaTaskRunner() override {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
     data_provider()->RefreshData(
         PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,

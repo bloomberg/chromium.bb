@@ -50,7 +50,7 @@ void StartFilePathWatchOnMediaTaskRunner(
     const base::FilePath& path,
     const FileWatchStartedCallback& watch_started_callback,
     const base::FilePathWatcher::Callback& path_changed_callback) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&StartFilePathWatchOnFileThread,

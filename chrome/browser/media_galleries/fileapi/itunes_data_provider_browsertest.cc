@@ -149,7 +149,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
   virtual void StartTest(bool parse_success) = 0;
 
   void TestDone() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
     ImportedMediaGalleryRegistry* imported_registry =
         ImportedMediaGalleryRegistry::GetInstance();
     imported_registry->itunes_data_provider_.reset();
@@ -159,7 +159,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
 
  private:
   void StartTestOnMediaTaskRunner() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
     ImportedMediaGalleryRegistry* imported_registry =
         ImportedMediaGalleryRegistry::GetInstance();
     imported_registry->itunes_data_provider_.reset(
@@ -172,7 +172,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
   }
 
   void OnLibraryChanged() {
-    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+    MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
     if (!library_changed_callback_.is_null()) {
       library_changed_callback_.Run();
       library_changed_callback_.Reset();

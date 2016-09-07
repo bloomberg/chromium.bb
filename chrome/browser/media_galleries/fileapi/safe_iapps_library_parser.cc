@@ -33,7 +33,7 @@ void SafeIAppsLibraryParser::ParseITunesLibrary(
 }
 
 void SafeIAppsLibraryParser::Start() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
   // |library_file_| will be closed on the IO thread once it has been handed
   // off to the child process.

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,6 +57,11 @@ using storage::FileSystemURL;
 namespace {
 
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
+
+#if DCHECK_IS_ON()
+base::LazyInstance<base::SequenceChecker>::Leaky g_media_sequence_checker =
+    LAZY_INSTANCE_INITIALIZER;
+#endif
 
 void OnPreferencesInit(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -150,11 +156,10 @@ MediaFileSystemBackend::~MediaFileSystemBackend() {
 }
 
 // static
-bool MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(kMediaTaskRunnerName);
-  return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
+void MediaFileSystemBackend::AssertCurrentlyOnMediaSequence() {
+#if DCHECK_IS_ON()
+  DCHECK(g_media_sequence_checker.Get().CalledOnValidSequence());
+#endif
 }
 
 // static

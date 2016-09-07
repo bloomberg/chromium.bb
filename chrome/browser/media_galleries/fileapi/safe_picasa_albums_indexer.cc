@@ -35,7 +35,7 @@ const char kPicasaINIFilenameLegacy[] = "picasa.ini";
 SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(const AlbumMap& albums,
                                                  const AlbumMap& folders)
     : parser_state_(INITIAL_STATE) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
   folders_inis_.reserve(folders.size());
 
@@ -47,7 +47,7 @@ SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(const AlbumMap& albums,
 }
 
 void SafePicasaAlbumsIndexer::Start(const DoneCallback& callback) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(!callback.is_null());
 
   callback_ = callback;
@@ -58,7 +58,7 @@ SafePicasaAlbumsIndexer::~SafePicasaAlbumsIndexer() {
 }
 
 void SafePicasaAlbumsIndexer::ProcessFoldersBatch() {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
   for (int i = 0; i < kPicasaINIReadBatchSize && !folders_queue_.empty(); ++i) {
     base::FilePath folder_path = folders_queue_.front();

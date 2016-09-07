@@ -43,7 +43,10 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
       base::SequencedTaskRunner* media_task_runner);
   ~MediaFileSystemBackend() override;
 
-  static bool CurrentlyOnMediaTaskRunnerThread();
+  // Asserts that the current task is sequenced with any other task that calls
+  // this.
+  static void AssertCurrentlyOnMediaSequence();
+
   static scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner();
 
   // Construct the mount point for the gallery specified by |pref_id| in

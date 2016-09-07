@@ -26,11 +26,11 @@ SafePicasaAlbumTableReader::SafePicasaAlbumTableReader(
       parser_state_(INITIAL_STATE) {
   // TODO(tommycli): Add DCHECK to make sure |album_table_files| are all
   // opened read-only once security adds ability to check PlatformFiles.
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 }
 
 void SafePicasaAlbumTableReader::Start(const ParserCallback& callback) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(!callback.is_null());
 
   callback_ = callback;
