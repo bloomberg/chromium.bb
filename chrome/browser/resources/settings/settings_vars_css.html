@@ -3,6 +3,54 @@
 
 <!-- Common css variables for Material Design settings. -->
 <style is="custom-style">
+  /* We keep our vars in sort order, though some vars must be defined prior to
+   * others. The --settings-* vars are defined explicitly prior to the --paper-*
+   * and --iron-* vars.
+   */
+  :root {
+    /* Some colors use non-MD colors.  These custom colors are specified by
+     * UX design (bettes@). */
+
+    --settings-actionable: var(--cr-actionable);
+
+    --settings-background-color: rgb(241, 241, 241);
+    --settings-disabled-opacity: .65;
+    --settings-error-color: var(--paper-red-700);
+
+    --settings-list-frame-padding: {
+      -webkit-padding-end: 20px;
+      -webkit-padding-start: 56px;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    --settings-nav-grey: rgb(90, 90, 90);
+
+    --settings-page-vertical-margin: 21px;
+
+    --settings-row-min-height: 44px;
+    --settings-row-two-line-min-height: 56px;
+    --settings-secondary: {
+      color: var(--paper-grey-600);
+      font-weight: 400;
+      margin-top: 4px;
+    };
+    --settings-separator-line: var(--cr-separator-line);
+
+    --settings-title-bar-background-color: var(--google-blue-700);
+    --settings-title-bar-color: rgb(255, 255, 255);
+    --settings-title-search-color: rgb(192, 199, 205);
+    --settings-toggle-bar-size: {
+      height: 12px;
+      width: 28px;
+    };
+    --settings-toggle-button-size: {
+      height: 16px;
+      width: 16px;
+    };
+    --settings-toggle-color: var(--google-blue-500);
+  }
+
   :root {
     --checkbox-margin-start: 2px;
     --checkbox-size: 16px;
@@ -14,8 +62,8 @@
     --paper-checkbox-label-color: inherit;
     --paper-dialog-color: inherit;
     --paper-icon-button: {
-      width: 36px;
       height: 36px;
+      width: 36px;
     };
     --paper-input-max-width: 264px;
     --paper-item: {
@@ -24,53 +72,11 @@
     --paper-radio-button-label-color: inherit;
     --paper-radio-group-item-padding: 0;
 
-    --settings-toggle-bar-size: {
-      height: 12px;
-      width: 28px;
-    };
-    --settings-toggle-button-size: {
-      height: 16px;
-      width: 16px;
-    };
-    --settings-toggle-color: var(--google-blue-500);
-    --paper-toggle-button-checked-bar-color: var(--settings-toggle-color);
-    --paper-toggle-button-checked-button-color: var(--settings-toggle-color);
     --paper-toggle-button-checked-bar: var(--settings-toggle-bar-size);
+    --paper-toggle-button-checked-bar-color: var(--settings-toggle-color);
     --paper-toggle-button-checked-button: var(--settings-toggle-button-size);
+    --paper-toggle-button-checked-button-color: var(--settings-toggle-color);
     --paper-toggle-button-unchecked-bar: var(--settings-toggle-bar-size);
     --paper-toggle-button-unchecked-button: var(--settings-toggle-button-size);
-
-    --settings-actionable: var(--cr-actionable);
-
-    /* Custom grey for Alan (bettes@). */
-    --settings-background-color: rgb(241, 241, 241);
-    --settings-secondary: {
-      color: var(--paper-grey-600);
-      font-weight: 400;
-      margin-top: 4px;
-    };
-    --settings-disabled-opacity: .65;
-    --settings-error-color: var(--paper-red-700);
-
-    --settings-list-frame-padding: {
-      -webkit-padding-end: 20px;
-      -webkit-padding-start: 56px;
-      padding-bottom: 0;
-      padding-top: 0;
-    }
-
-    /* Some colors use non-MD colors.  These custom colors are specified by
-     * UX design (bettes@). */
-    --settings-nav-grey: rgb(90, 90, 90);
-
-    --settings-page-vertical-margin: 21px;
-
-    --settings-row-min-height: 44px;
-    --settings-row-two-line-min-height: 56px;
-    --settings-separator-line: var(--cr-separator-line);
-
-    --settings-title-bar-background-color: var(--google-blue-700);
-    --settings-title-bar-color: rgb(255, 255, 255);
-    --settings-title-search-color: rgb(192, 199, 205);
   }
 </style>
