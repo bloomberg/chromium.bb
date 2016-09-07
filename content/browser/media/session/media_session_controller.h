@@ -30,9 +30,6 @@ class CONTENT_EXPORT MediaSessionController :
                          MediaWebContentsObserver* media_web_contents_observer);
   ~MediaSessionController() override;
 
-  // Minimum duration of content for a MediaSession instance to be created.
-  enum { kMinimumDurationForContentSecs = 5 };
-
   // Clients must call this after construction and destroy the controller if it
   // returns false.  May be called more than once; does nothing if none of the
   // input parameters have changed since the last call.
