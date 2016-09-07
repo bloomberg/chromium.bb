@@ -1522,7 +1522,6 @@ void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLay
     LayoutRect layerBoundingBoxInFlowThread = layerBoundingBox ? *layerBoundingBox : physicalBoundingBox(offsetWithinPaginatedLayer);
     layerBoundingBoxInFlowThread.intersect(backgroundRectInFlowThread.rect());
 
-    // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
     LayoutFlowThread* enclosingFlowThread = toLayoutFlowThread(enclosingPaginationLayer()->layoutObject());
     LayoutPoint offsetOfPaginationLayerFromRoot; // Visual offset from the root layer to the nearest fragmentation context.
     bool rootLayerIsInsidePaginationLayer = rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer();
@@ -1533,12 +1532,13 @@ void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLay
     } else {
         offsetOfPaginationLayerFromRoot = enclosingPaginationLayer()->visualOffsetFromAncestor(rootLayer);
     }
-    LayoutRect dirtyRectInFlowThread(dirtyRect);
-    dirtyRectInFlowThread.moveBy(-offsetOfPaginationLayerFromRoot);
+    // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
+    LayoutRect dirtyRectInMulticolContainer(dirtyRect);
+    dirtyRectInMulticolContainer.move(enclosingPaginationLayer()->location() - offsetOfPaginationLayerFromRoot);
 
     // Tell the flow thread to collect the fragments. We pass enough information to create a minimal number of fragments based off the pages/columns
     // that intersect the actual dirtyRect as well as the pages/columns that intersect our layer's bounding box.
-    enclosingFlowThread->collectLayerFragments(fragments, layerBoundingBoxInFlowThread, dirtyRectInFlowThread);
+    enclosingFlowThread->collectLayerFragments(fragments, layerBoundingBoxInFlowThread, dirtyRectInMulticolContainer);
 
     if (fragments.isEmpty())
         return;

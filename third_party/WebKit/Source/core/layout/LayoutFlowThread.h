@@ -117,7 +117,7 @@ public:
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
-    void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRectInFlowThread);
+    void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRectInMulticolContainer);
 
     // Return the visual bounding box based on the supplied flow-thread bounding box. Both
     // rectangles are completely physical in terms of writing mode.
