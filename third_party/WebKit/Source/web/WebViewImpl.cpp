@@ -159,7 +159,7 @@
 #include "web/ContextFeaturesClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/DatabaseClientImpl.h"
-#include "web/DedicatedWorkerGlobalScopeProxyProviderImpl.h"
+#include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/InspectorOverlay.h"
@@ -463,7 +463,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client, WebPageVisibilityState visibilit
 
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
-    provideDedicatedWorkerGlobalScopeProxyProviderTo(*m_page, DedicatedWorkerGlobalScopeProxyProviderImpl::create());
+    provideDedicatedWorkerMessagingProxyProviderTo(*m_page, DedicatedWorkerMessagingProxyProviderImpl::create());
     StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl);
 
     setVisibilityState(visibilityState, true);

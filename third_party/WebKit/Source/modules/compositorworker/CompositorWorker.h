@@ -14,7 +14,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class InProcessWorkerGlobalScopeProxy;
+class InProcessWorkerMessagingProxy;
 
 class MODULES_EXPORT CompositorWorker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
@@ -24,7 +24,7 @@ public:
     ~CompositorWorker() override;
 
     const AtomicString& interfaceName() const override;
-    InProcessWorkerGlobalScopeProxy* createInProcessWorkerGlobalScopeProxy(ExecutionContext*) override;
+    InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(ExecutionContext*) override;
 
 private:
     explicit CompositorWorker(ExecutionContext*);

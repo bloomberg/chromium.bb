@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/DedicatedWorkerGlobalScopeProxyProviderImpl.h"
+#include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 
 #include "core/dom/Document.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
@@ -47,7 +47,7 @@
 
 namespace blink {
 
-InProcessWorkerGlobalScopeProxy* DedicatedWorkerGlobalScopeProxyProviderImpl::createWorkerGlobalScopeProxy(Worker* worker)
+InProcessWorkerMessagingProxy* DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(Worker* worker)
 {
     if (worker->getExecutionContext()->isDocument()) {
         Document* document = toDocument(worker->getExecutionContext());

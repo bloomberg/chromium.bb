@@ -29,7 +29,8 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/workers/InProcessWorkerGlobalScopeProxy.h"
+#include "core/dom/MessagePort.h"
+#include "core/inspector/ConsoleTypes.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -52,18 +53,15 @@ class WorkerThread;
 // TODO(nhiroki): "MessagingProxy" is not well-defined term among worker
 // components. Probably we should rename this to something more suitable.
 // (http://crbug.com/603785)
-class CORE_EXPORT InProcessWorkerMessagingProxy
-    : public InProcessWorkerGlobalScopeProxy
-    , private WorkerLoaderProxyProvider {
+class CORE_EXPORT InProcessWorkerMessagingProxy : private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
 public:
-    // Implementations of InProcessWorkerGlobalScopeProxy.
-    // (Only use these methods in the parent context thread.)
-    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) override;
-    void terminateWorkerGlobalScope() override;
-    void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>) override;
-    bool hasPendingActivity() const final;
-    void workerObjectDestroyed() override;
+    // These methods should only be used on the parent context thread.
+    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode);
+    void terminateWorkerGlobalScope();
+    void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>);
+    bool hasPendingActivity() const;
+    void workerObjectDestroyed();
 
     // These methods come from worker context thread via
     // InProcessWorkerObjectProxy and are called on the parent context thread.

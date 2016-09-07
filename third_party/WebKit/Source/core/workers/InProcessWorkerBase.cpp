@@ -10,7 +10,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/workers/InProcessWorkerGlobalScopeProxy.h"
+#include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -61,7 +61,7 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
         WTF::bind(&InProcessWorkerBase::onResponse, wrapPersistent(this)),
         WTF::bind(&InProcessWorkerBase::onFinished, wrapPersistent(this)));
 
-    m_contextProxy = createInProcessWorkerGlobalScopeProxy(context);
+    m_contextProxy = createInProcessWorkerMessagingProxy(context);
 
     return true;
 }

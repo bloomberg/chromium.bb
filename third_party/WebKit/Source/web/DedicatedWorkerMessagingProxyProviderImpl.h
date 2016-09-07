@@ -28,25 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/DedicatedWorkerGlobalScopeProxyProvider.h"
+#ifndef DedicatedWorkerMessagingProxyProviderImpl_h
+#define DedicatedWorkerMessagingProxyProviderImpl_h
 
-#include "core/page/Page.h"
+#include "core/workers/DedicatedWorkerMessagingProxyProvider.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-DedicatedWorkerGlobalScopeProxyProvider* DedicatedWorkerGlobalScopeProxyProvider::from(Page& page)
-{
-    return static_cast<DedicatedWorkerGlobalScopeProxyProvider*>(Supplement<Page>::from(page, supplementName()));
-}
+class DedicatedWorkerMessagingProxyProviderImpl final
+    : public GarbageCollectedFinalized<DedicatedWorkerMessagingProxyProviderImpl>
+    , public DedicatedWorkerMessagingProxyProvider {
+    USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorkerMessagingProxyProviderImpl);
+    WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProviderImpl);
+public:
+    static DedicatedWorkerMessagingProxyProviderImpl* create()
+    {
+        return new DedicatedWorkerMessagingProxyProviderImpl();
+    }
 
-const char* DedicatedWorkerGlobalScopeProxyProvider::supplementName()
-{
-    return "DedicatedWorkerGlobalScopeProxyProvider";
-}
+    ~DedicatedWorkerMessagingProxyProviderImpl() override { }
+    InProcessWorkerMessagingProxy* createWorkerMessagingProxy(Worker*) override;
 
-void provideDedicatedWorkerGlobalScopeProxyProviderTo(Page& page, DedicatedWorkerGlobalScopeProxyProvider* provider)
-{
-    Supplement<Page>::provideTo(page, DedicatedWorkerGlobalScopeProxyProvider::supplementName(), provider);
-}
+    DEFINE_INLINE_VIRTUAL_TRACE() { DedicatedWorkerMessagingProxyProvider::trace(visitor); }
+
+private:
+    DedicatedWorkerMessagingProxyProviderImpl() { }
+};
 
 } // namespace blink
+
+#endif // DedicatedWorkerMessagingProxyProviderImpl_h

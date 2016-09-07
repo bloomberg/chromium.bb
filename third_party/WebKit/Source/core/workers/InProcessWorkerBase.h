@@ -22,7 +22,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class InProcessWorkerGlobalScopeProxy;
+class InProcessWorkerMessagingProxy;
 class WorkerScriptLoader;
 
 // Base class for workers that operate in the same process as the document that
@@ -54,7 +54,7 @@ protected:
 
     // Creates a proxy to allow communicating with the worker's global scope. InProcessWorkerBase does not take ownership of the
     // created proxy. The proxy is expected to manage its own lifetime, and delete itself in response to terminateWorkerGlobalScope().
-    virtual InProcessWorkerGlobalScopeProxy* createInProcessWorkerGlobalScopeProxy(ExecutionContext*) = 0;
+    virtual InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(ExecutionContext*) = 0;
 
 private:
     // Callbacks for m_scriptLoader.
@@ -64,7 +64,7 @@ private:
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     Member<ContentSecurityPolicy> m_contentSecurityPolicy;
     String m_referrerPolicy;
-    InProcessWorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
+    InProcessWorkerMessagingProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 
 } // namespace blink

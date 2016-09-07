@@ -52,7 +52,7 @@ const AtomicString& CompositorWorker::interfaceName() const
     return EventTargetNames::CompositorWorker;
 }
 
-InProcessWorkerGlobalScopeProxy* CompositorWorker::createInProcessWorkerGlobalScopeProxy(ExecutionContext* context)
+InProcessWorkerMessagingProxy* CompositorWorker::createInProcessWorkerMessagingProxy(ExecutionContext* context)
 {
     Document* document = toDocument(context);
     WorkerClients* workerClients = WorkerClients::create();

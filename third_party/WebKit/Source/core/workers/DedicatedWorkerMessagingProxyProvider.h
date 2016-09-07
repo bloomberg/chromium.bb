@@ -28,34 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DedicatedWorkerGlobalScopeProxyProviderImpl_h
-#define DedicatedWorkerGlobalScopeProxyProviderImpl_h
+#ifndef DedicatedWorkerMessagingProxyProvider_h
+#define DedicatedWorkerMessagingProxyProvider_h
 
-#include "core/workers/DedicatedWorkerGlobalScopeProxyProvider.h"
+#include "core/CoreExport.h"
+#include "core/page/Page.h"
+#include "platform/Supplementable.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class DedicatedWorkerGlobalScopeProxyProviderImpl final
-    : public GarbageCollectedFinalized<DedicatedWorkerGlobalScopeProxyProviderImpl>
-    , public DedicatedWorkerGlobalScopeProxyProvider {
-    USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorkerGlobalScopeProxyProviderImpl);
-    WTF_MAKE_NONCOPYABLE(DedicatedWorkerGlobalScopeProxyProviderImpl);
+class InProcessWorkerMessagingProxy;
+class Page;
+class Worker;
+
+class DedicatedWorkerMessagingProxyProvider : public Supplement<Page> {
+    WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProvider);
 public:
-    static DedicatedWorkerGlobalScopeProxyProviderImpl* create()
-    {
-        return new DedicatedWorkerGlobalScopeProxyProviderImpl();
-    }
+    DedicatedWorkerMessagingProxyProvider() { }
+    virtual ~DedicatedWorkerMessagingProxyProvider() { }
 
-    ~DedicatedWorkerGlobalScopeProxyProviderImpl() override { }
-    InProcessWorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
+    virtual InProcessWorkerMessagingProxy* createWorkerMessagingProxy(Worker*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { DedicatedWorkerGlobalScopeProxyProvider::trace(visitor); }
-
-private:
-    DedicatedWorkerGlobalScopeProxyProviderImpl() { }
+    static DedicatedWorkerMessagingProxyProvider* from(Page&);
+    static const char* supplementName();
 };
+
+CORE_EXPORT void provideDedicatedWorkerMessagingProxyProviderTo(Page&, DedicatedWorkerMessagingProxyProvider*);
 
 } // namespace blink
 
-#endif // DedicatedWorkerGlobalScopeProxyProviderImpl_h
+#endif // DedicatedWorkerMessagingProxyProvider_h
