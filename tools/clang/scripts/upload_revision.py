@@ -21,9 +21,10 @@ THIS_DIR = os.path.dirname(__file__)
 UPDATE_PY_PATH = os.path.join(THIS_DIR, "update.py")
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
 
+is_win = sys.platform.startswith('win32')
 
 def PatchRevision(clang_revision, clang_sub_revision):
-  with open(UPDATE_PY_PATH, 'r') as f:
+  with open(UPDATE_PY_PATH, 'rb') as f:
     content = f.read()
   m = re.search("CLANG_REVISION = '([0-9]+)'", content)
   clang_old_revision = m.group(1)
@@ -33,13 +34,14 @@ def PatchRevision(clang_revision, clang_sub_revision):
   content = re.sub("CLANG_SUB_REVISION=[0-9]+",
                    "CLANG_SUB_REVISION={}".format(clang_sub_revision),
                    content, count=1)
-  with open(UPDATE_PY_PATH, 'w') as f:
+  with open(UPDATE_PY_PATH, 'wb') as f:
     f.write(content)
   return clang_old_revision
 
 
 def Git(args):
-  subprocess.check_call(["git"] + args)
+  # Needs shell=True on Windows due to git.bat in depot_tools.
+  subprocess.check_call(["git"] + args, shell=is_win)
 
 def main():
   parser = argparse.ArgumentParser(description='upload new clang revision')
@@ -54,8 +56,9 @@ def main():
 
   clang_revision = args.clang_revision[0]
   clang_sub_revision = args.clang_sub_revision
+  # Needs shell=True on Windows due to git.bat in depot_tools.
   git_revision = subprocess.check_output(
-      ["git", "rev-parse", "origin/master"]).strip()
+      ["git", "rev-parse", "origin/master"], shell=is_win).strip()
   print "Making a patch for Clang revision r{}-{}".format(
       clang_revision, clang_sub_revision)
   print "Chrome revision: {}".format(git_revision)
