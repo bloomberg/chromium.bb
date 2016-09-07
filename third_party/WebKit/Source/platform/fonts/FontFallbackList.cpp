@@ -74,7 +74,7 @@ void FontFallbackList::releaseFontData()
             FontCache::fontCache()->releaseFontData(toSimpleFontData(m_fontList[i]));
         }
     }
-    m_shapeCache.reset(); // Clear the weak pointer to the cache instance.
+    m_shapeCache.clear(); // Clear the weak pointer to the cache instance.
 }
 
 bool FontFallbackList::loadingCustomFonts() const

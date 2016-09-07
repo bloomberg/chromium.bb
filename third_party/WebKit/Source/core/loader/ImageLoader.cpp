@@ -264,7 +264,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     // We don't need to call clearLoader here: Either we were called from the
     // task, or our caller updateFromElement cleared the task's loader (and set
     // m_pendingTask to null).
-    m_pendingTask.reset();
+    m_pendingTask.clear();
     // Make sure to only decrement the count when we exit this function
     std::unique_ptr<IncrementLoadEventDelayCount> loadDelayCounter;
     loadDelayCounter.swap(m_loadDelayCounter);
@@ -375,7 +375,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
     // now loading immediately, or we need to reset the task's state.
     if (m_pendingTask) {
         m_pendingTask->clearLoader();
-        m_pendingTask.reset();
+        m_pendingTask.clear();
     }
 
     KURL url = imageSourceToKURL(imageSourceURL);

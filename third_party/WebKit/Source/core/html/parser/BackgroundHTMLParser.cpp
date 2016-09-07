@@ -35,7 +35,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
 #include <memory>
@@ -85,17 +84,11 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& i
 
 #endif
 
-WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::create(std::unique_ptr<Configuration> config, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
+void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, std::unique_ptr<Configuration> config, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
 {
-    auto* backgroundParser = new BackgroundHTMLParser(std::move(config), std::move(loadingTaskRunner));
-    return backgroundParser->m_weakFactory.createWeakPtr();
+    new BackgroundHTMLParser(reference, std::move(config), documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData, std::move(loadingTaskRunner));
+    // Caller must free by calling stop().
 }
-
-void BackgroundHTMLParser::init(const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
-{
-    m_preloadScanner.reset(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData));
-}
-
 
 BackgroundHTMLParser::Configuration::Configuration()
     : outstandingTokenLimit(defaultOutstandingTokenLimit)
@@ -104,8 +97,8 @@ BackgroundHTMLParser::Configuration::Configuration()
 {
 }
 
-BackgroundHTMLParser::BackgroundHTMLParser(std::unique_ptr<Configuration> config, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
-    : m_weakFactory(this)
+BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, std::unique_ptr<Configuration> config, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, std::unique_ptr<WebTaskRunner> loadingTaskRunner)
+    : m_weakFactory(reference, this)
     , m_token(wrapUnique(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(config->options))
     , m_treeBuilderSimulator(config->options)
@@ -115,6 +108,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(std::unique_ptr<Configuration> config
     , m_pendingTokens(wrapUnique(new CompactHTMLTokenStream))
     , m_pendingTokenLimit(config->pendingTokenLimit)
     , m_xssAuditor(std::move(config->xssAuditor))
+    , m_preloadScanner(wrapUnique(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
     , m_decoder(std::move(config->decoder))
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_tokenizedChunkQueue(config->tokenizedChunkQueue.release())

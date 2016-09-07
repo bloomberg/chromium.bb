@@ -35,6 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
+#include "wtf/WeakPtr.h"
 #include <utility>
 
 namespace blink {
@@ -236,6 +237,9 @@ typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 } // namespace WTF
 
 namespace base {
+
+template <typename T>
+struct IsWeakReceiver<WTF::WeakPtr<T>> : std::true_type {};
 
 template <typename T>
 struct BindUnwrapTraits<WTF::RefPtr<T>> {
