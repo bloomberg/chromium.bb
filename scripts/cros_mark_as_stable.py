@@ -142,6 +142,10 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd,
                   'chrome-bot:\n\n%s', bad_cls)
     raise AssertionError('Unexpected CLs found during uprev stage.')
 
+  if staging_branch is not None:
+    logging.info('PFQ FAILED. Pushing uprev change to staging branch %s',
+                 staging_branch)
+
   description = git.RunGit(
       cwd,
       ['log', '--format=format:%s%n%n%b',
