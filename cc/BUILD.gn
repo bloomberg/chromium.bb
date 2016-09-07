@@ -1040,5 +1040,3 @@ test("cc_perftests") {
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
 }
-# When adding support for isolates, please have a look at run-time dependencies
-# in the cc_unittests_run target in cc_tests.gyp.

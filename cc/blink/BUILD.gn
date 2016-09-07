@@ -4,7 +4,6 @@
 
 import("//testing/test.gni")
 
-# GYP version: //cc/blink/cc_blink.gyp:cc_blink
 component("blink") {
   output_name = "cc_blink"
 
@@ -47,7 +46,6 @@ component("blink") {
   ]
 }
 
-# GYP version: //cc/blink/cc_blink_tests.gyp:cc_blink_unittests
 test("cc_blink_unittests") {
   sources = [
     "web_layer_impl_fixed_bounds_unittest.cc",
