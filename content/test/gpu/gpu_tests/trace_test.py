@@ -67,6 +67,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
 
   def WillNavigateToPage(self, page, tab):
     config = tracing_config.TracingConfig()
+    config.chrome_trace_config.category_filter.AddExcludedCategory('*')
     for cat in TOPLEVEL_CATEGORIES:
       config.chrome_trace_config.category_filter.AddDisabledByDefault(
           cat)
