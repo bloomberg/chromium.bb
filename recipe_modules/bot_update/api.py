@@ -11,15 +11,13 @@ from recipe_engine import recipe_api
 class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, mastername, buildername, slavename, issue, patchset,
-               patch_url, repository, gerrit_ref, rietveld, revision,
-               parent_got_revision, deps_revision_overrides, fail_patch,
-               *args, **kwargs):
+               repository, gerrit_ref, rietveld, revision, parent_got_revision,
+               deps_revision_overrides, fail_patch, *args, **kwargs):
     self._mastername = mastername
     self._buildername = buildername
     self._slavename = slavename
     self._issue = issue
     self._patchset = patchset
-    self._patch_url = patch_url
     self._repository = repository
     self._gerrit_ref = gerrit_ref
     self._rietveld = rietveld
@@ -113,13 +111,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
     if patch:
       issue = issue or self._issue
       patchset = patchset or self._patchset
-      patch_url = self._patch_url
       gerrit_repo = self._repository
       gerrit_ref = self._gerrit_ref
     else:
       # The trybot recipe sometimes wants to de-apply the patch. In which case
-      # we pretend the issue/patchset/patch_url never existed.
-      issue = patchset = patch_url = email_file = key_file = None
+      # we pretend the issue/patchset never existed.
+      issue = patchset = email_file = key_file = None
       gerrit_repo = gerrit_ref = None
 
     # Issue and patchset must come together.
@@ -127,9 +124,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       assert patchset
     if patchset:
       assert issue
-    if patch_url:
-      # If patch_url is present, bot_update will actually ignore issue/ps.
-      issue = patchset = None
 
     # The gerrit_ref and gerrit_repo must be together or not at all.  If one is
     # missing, clear both of them.
@@ -173,10 +167,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--revision_mapping_file', self.m.json.input(rev_map)],
         ['--git-cache-dir', cfg.cache_dir],
 
-        # 3. How to find the patch, if any (issue/patchset/patch_url).
+        # 3. How to find the patch, if any (issue/patchset).
         ['--issue', issue],
         ['--patchset', patchset],
-        ['--patch_url', patch_url],
         ['--rietveld_server', rietveld or self._rietveld],
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],

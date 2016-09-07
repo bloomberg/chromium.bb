@@ -1006,35 +1006,6 @@ def parse_diff(diff):
   return result
 
 
-def get_svn_patch(patch_url):
-  """Fetch patch from patch_url, return list of (filename, diff)"""
-  svn_exe = 'svn.bat' if sys.platform.startswith('win') else 'svn'
-  patch_data = call(svn_exe, 'cat', patch_url)
-  return parse_diff(patch_data)
-
-
-def apply_svn_patch(patch_root, patches, whitelist=None, blacklist=None):
-  """Expects a list of (filename, diff), applies it on top of patch_root."""
-  if whitelist:
-    patches = [(name, diff) for name, diff in patches if name in whitelist]
-  elif blacklist:
-    patches = [(name, diff) for name, diff in patches if name not in blacklist]
-  diffs = [diff for _, diff in patches]
-  patch = ''.join(diffs)
-
-  if patch:
-    print '===Patching files==='
-    for filename, _ in patches:
-      print 'Patching %s' % filename
-    try:
-      call(PATCH_TOOL, '-p0', '--remove-empty-files', '--force', '--forward',
-          stdin_data=patch, cwd=patch_root, tries=1)
-      for filename, _ in patches:
-        full_filename = path.abspath(path.join(patch_root, filename))
-        git('add', full_filename, cwd=path.dirname(full_filename))
-    except SubprocessFailed as e:
-      raise PatchFailed(e.message, e.code, e.output)
-
 def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
                          email_file, key_file, whitelist=None, blacklist=None):
   apply_issue_bin = ('apply_issue.bat' if sys.platform.startswith('win')
@@ -1265,7 +1236,7 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    patch_root, issue, patchset, patch_url, rietveld_server,
+                    patch_root, issue, patchset, rietveld_server,
                     gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
                     revision_mapping, apply_issue_email_file,
                     apply_issue_key_file, buildspec, gyp_env, shallow, runhooks,
@@ -1276,10 +1247,6 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   print 'Fetching Git checkout'
 
   git_ref = git_checkout(solutions, revisions, shallow, refs, git_cache_dir)
-
-  patches = None
-  if patch_url:
-    patches = get_svn_patch(patch_url)
 
   print '===Processing patch solutions==='
   already_patched = []
@@ -1293,10 +1260,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       relative_root = solution['name'][len(patch_root) + 1:]
       target = '/'.join([relative_root, 'DEPS']).lstrip('/')
       print '  relative root is %r, target is %r' % (relative_root, target)
-      if patches:
-        apply_svn_patch(patch_root, patches, whitelist=[target])
-        already_patched.append(target)
-      elif issue:
+      if issue:
         apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
                              revision_mapping, git_ref, apply_issue_email_file,
                              apply_issue_key_file, whitelist=[target])
@@ -1332,9 +1296,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   ensure_deps_revisions(gclient_output.get('solutions', {}),
                         dir_names, revisions)
   # Apply the rest of the patch here (sans DEPS)
-  if patches:
-    apply_svn_patch(patch_root, patches, blacklist=already_patched)
-  elif issue:
+  if issue:
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
                          revision_mapping, git_ref, apply_issue_email_file,
                          apply_issue_key_file, blacklist=already_patched)
@@ -1412,7 +1374,6 @@ def parse_args():
   parse.add_option('--apply_issue_key_file',
                    help='--private-key-file option passthrough for '
                         'apply_patch.py.')
-  parse.add_option('--patch_url', help='Optional URL to SVN patch.')
   parse.add_option('--root', dest='patch_root',
                    help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
@@ -1581,7 +1542,6 @@ def checkout(options, git_slns, specs, buildspec, master,
           patch_root=options.patch_root,
           issue=options.issue,
           patchset=options.patchset,
-          patch_url=options.patch_url,
           rietveld_server=options.rietveld_server,
           gerrit_repo=options.gerrit_repo,
           gerrit_ref=options.gerrit_ref,

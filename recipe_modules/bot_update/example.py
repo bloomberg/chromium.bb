@@ -84,7 +84,7 @@ def GenTests(api):
       slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
-      patch_url='http://src.chromium.org/foo/bar'
+      rietveld='https://rietveld.example.com/',
   )
   yield api.test('trychange') + api.properties(
       mastername='tryserver.chromium.linux',
@@ -104,7 +104,7 @@ def GenTests(api):
       slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
-      patch_url='http://src.chromium.org/foo/bar',
+      rietveld='https://rietveld.example.com/',
   ) + api.step_data('bot_update', retcode=1)
   yield api.test('tryjob_fail_patch') + api.properties(
       mastername='tryserver.chromium.linux',
@@ -112,7 +112,7 @@ def GenTests(api):
       slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
-      patch_url='http://src.chromium.org/foo/bar',
+      rietveld='https://rietveld.example.com/',
       fail_patch='apply',
   ) + api.step_data('bot_update', retcode=88)
   yield api.test('tryjob_fail_patch_download') + api.properties(
@@ -121,7 +121,7 @@ def GenTests(api):
       slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
-      patch_url='http://src.chromium.org/foo/bar',
+      rietveld='https://rietveld.example.com/',
       fail_patch='download'
   ) + api.step_data('bot_update', retcode=87)
   yield api.test('forced') + api.properties(
@@ -172,7 +172,7 @@ def GenTests(api):
       slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
-      patch_url='http://src.chromium.org/foo/bar',
+      rietveld='https://rietveld.example.com/',
       patch_project='v8',
       revisions={'src/v8': 'abc'}
   )
