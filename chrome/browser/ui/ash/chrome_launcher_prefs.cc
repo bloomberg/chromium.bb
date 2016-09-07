@@ -35,9 +35,9 @@ namespace launcher {
 namespace {
 
 // App ID of default pinned apps.
-const char* kDefaultPinnedApps[] = {
-    extension_misc::kGmailAppId, extension_misc::kGoogleDocAppId,
-    extension_misc::kYoutubeAppId, ArcSupportHost::kHostAppId};
+const char* kDefaultPinnedApps[] = {extension_misc::kGmailAppId,
+                                    extension_misc::kGoogleDocAppId,
+                                    extension_misc::kYoutubeAppId};
 
 base::ListValue* CreateDefaultPinnedAppsList() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
@@ -634,17 +634,6 @@ std::vector<std::string> GetPinnedAppsFromPrefs(
     pin_infos.insert(pin_infos.begin(),
                      PinInfo(extension_misc::kChromeAppId, front_position));
     app_service->SetPinPosition(extension_misc::kChromeAppId, front_position);
-  }
-
-  if (helper->IsValidIDForCurrentUser(ArcSupportHost::kHostAppId)) {
-    if (!app_service->GetSyncItem(ArcSupportHost::kHostAppId)) {
-      const syncer::StringOrdinal arc_host_position =
-          GetLastPinPosition(helper->profile());
-      pin_infos.insert(pin_infos.begin(),
-                       PinInfo(ArcSupportHost::kHostAppId, arc_host_position));
-      app_service->SetPinPosition(ArcSupportHost::kHostAppId,
-                                  arc_host_position);
-    }
   }
 
   // Convert to string array.

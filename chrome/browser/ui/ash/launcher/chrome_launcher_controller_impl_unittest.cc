@@ -3509,16 +3509,17 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
 
   // Initial run, Arc is not managed and disabled, Play Store pin should be
-  // available.
+  // available. (Note: Play Store pin is removed in M53, thus is unavailable
+  // in both managed or unmanaged case.)
   ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
-                   "AppList, Chrome, Play Store");
+                   "AppList, Chrome");
 
   // Arc is managed and enabled, Play Store pin should be available.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, new base::FundamentalValue(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true, arc::ArcAuthService::State::FETCHING_CODE,
-                   "AppList, Chrome, Play Store");
+                   "AppList, Chrome");
 
   // Arc is managed and disabled, Play Store pin should not be available.
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -3531,12 +3532,12 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
-                   "AppList, Chrome, Play Store");
+                   "AppList, Chrome");
 
   // Arc is not managed and enabled, Play Store pin should be available.
   EnableArc(true);
   ValidateArcState(true, false, arc::ArcAuthService::State::FETCHING_CODE,
-                   "AppList, Chrome, Play Store");
+                   "AppList, Chrome");
 
   // User disables Arc. Arc is not managed and disabled, Play Store pin should
   // be automatically removed.
