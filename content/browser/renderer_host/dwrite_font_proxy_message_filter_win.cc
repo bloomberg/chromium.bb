@@ -101,8 +101,9 @@ base::string16 GetWindowsFontsPath() {
 
 // These are the fonts that Blink tries to load in getLastResortFallbackFont,
 // and will crash if none can be loaded.
-const wchar_t* kLastResortFontNames[] = {L"Sans", L"Arial", L"MS UI Gothic",
-                                         L"Microsoft Sans Serif"};
+const wchar_t* kLastResortFontNames[] = {
+    L"Sans",     L"Arial",   L"MS UI Gothic",    L"Microsoft Sans Serif",
+    L"Segoe UI", L"Calibri", L"Times New Roman", L"Courier New"};
 
 // Feature to enable loading font files from outside the system font directory.
 const base::Feature kEnableCustomFonts {

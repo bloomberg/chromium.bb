@@ -148,6 +148,22 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
         DEFINE_STATIC_LOCAL(const FontFaceCreationParams, mssansserifCreationParams, (AtomicString("Microsoft Sans Serif")));
         fontPlatformData = getFontPlatformData(description, mssansserifCreationParams);
     }
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, segoeuiCreationParams, (AtomicString("Segoe UI")));
+        fontPlatformData = getFontPlatformData(description, segoeuiCreationParams);
+    }
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, calibriCreationParams, (AtomicString("Calibri")));
+        fontPlatformData = getFontPlatformData(description, calibriCreationParams);
+    }
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, timesnewromanCreationParams, (AtomicString("Times New Roman")));
+        fontPlatformData = getFontPlatformData(description, timesnewromanCreationParams);
+    }
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, couriernewCreationParams, (AtomicString("Courier New")));
+        fontPlatformData = getFontPlatformData(description, couriernewCreationParams);
+    }
 #endif
 
     ASSERT(fontPlatformData);
