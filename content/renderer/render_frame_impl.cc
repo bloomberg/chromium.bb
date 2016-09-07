@@ -5536,6 +5536,7 @@ void RenderFrameImpl::NavigateInternal(
           // happen.
           if (current_history_item_.isNull()) {
             history_load_type = blink::WebHistoryDifferentDocumentLoad;
+            NOTREACHED();
           } else {
             // Additionally, if the |current_history_item_|'s document
             // sequence number doesn't match the one sent from the browser, it
