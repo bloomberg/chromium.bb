@@ -264,6 +264,8 @@ split_static_library("browser") {
     "content_settings/web_site_settings_uma_util.h",
     "crash_upload_list/crash_upload_list.cc",
     "crash_upload_list/crash_upload_list.h",
+    "crash_upload_list/crash_upload_list_android.cc",
+    "crash_upload_list/crash_upload_list_android.h",
     "custom_handlers/protocol_handler_registry.cc",
     "custom_handlers/protocol_handler_registry.h",
     "custom_handlers/protocol_handler_registry_factory.cc",

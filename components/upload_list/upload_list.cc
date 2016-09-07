@@ -78,6 +78,10 @@ void UploadList::LoadUploadList(std::vector<UploadInfo>* uploads) {
   }
 }
 
+const base::FilePath& UploadList::upload_log_path() const {
+  return upload_log_path_;
+}
+
 void UploadList::ParseLogEntries(
     const std::vector<std::string>& log_entries,
     std::vector<UploadInfo>* uploads) {

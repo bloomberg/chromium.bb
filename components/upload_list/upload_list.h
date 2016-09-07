@@ -102,6 +102,8 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // Requests a user triggered upload for a crash report with a given id.
   virtual void RequestSingleCrashUpload(const std::string& local_id);
 
+  const base::FilePath& upload_log_path() const;
+
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
 

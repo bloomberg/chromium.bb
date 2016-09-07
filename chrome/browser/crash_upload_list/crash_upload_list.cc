@@ -15,6 +15,10 @@
 #include "chrome/browser/crash_upload_list/crash_upload_list_crashpad.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/crash_upload_list/crash_upload_list_android.h"
+#endif
+
 scoped_refptr<CrashUploadList> CreateCrashUploadList(
     UploadList::Delegate* delegate) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -25,7 +29,12 @@ scoped_refptr<CrashUploadList> CreateCrashUploadList(
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
+#if defined(OS_ANDROID)
+  return new CrashUploadListAndroid(delegate, upload_log_path,
+                                    content::BrowserThread::GetBlockingPool());
+#else
   return new CrashUploadList(delegate, upload_log_path,
                              content::BrowserThread::GetBlockingPool());
-#endif
+#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
