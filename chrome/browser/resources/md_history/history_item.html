@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://history/browser_service.html">
@@ -116,9 +117,25 @@
         height: 15px;
       }
 
+      #background-clip {
+        /* Prevent artifacts when zoomed by overlapping the next item. */
+        bottom: -0.4px;
+        clip: rect(auto 999px auto -5px); /* Clip the top and bottom edges. */
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      :host([is-card-end]) #background-clip {
+        bottom: 0;
+        clip: rect(auto 999px 500px -5px); /* Clip the top edge. */
+      }
+
       #background {
+        @apply(--shadow-elevation-2dp);
         background: #fff;
-        bottom: -1px;  /* Prevents shadow artifacts when zoomed */
+        bottom: 0;
         left: 0;
         position: absolute;
         right: 0;
@@ -130,19 +147,28 @@
         display: none;
       }
 
+      :host(:not([is-card-start])) #background {
+        top: -5px; /* Draw the box shadow up the full edge of the background. */
+      }
+
       :host([is-card-start]) #background {
         border-radius: 2px 2px 0 0;
       }
 
       :host([is-card-end]) #background {
         border-radius: 0 0 2px 2px;
-        bottom: 0;
+      }
+
+      :host([is-card-start][is-card-end]) #background {
+        border-radius: 2px;
       }
     </style>
 
     <div id="sizing-container">
       <div id="main-container">
-        <div id="background"></div>
+        <div id="background-clip">
+          <div id="background"></div>
+        </div>
         <div id="date-accessed" class="card-title">
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>

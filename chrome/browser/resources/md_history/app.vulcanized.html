@@ -2801,12 +2801,6 @@ h1 {
 </iron-iconset-svg>
 <style is="custom-style" css-build="shadow">html {
   --card-border-color: rgba(0, 0, 0, 0.14);
-    --card-box-shadow_-_box-shadow:  0 2px 2px rgba(0, 0, 0, .05),
-                  0 1px 4px rgba(0, 0, 0, .08),
-                  0 1px 1px rgba(0, 0, 0, .2);;
-    --card-container-filter_-_filter:  drop-shadow(0 2px 1px rgba(0, 0, 0, .05))
-              drop-shadow(0 1px 0px rgba(0, 0, 0, .08))
-              drop-shadow(0 1px 1px rgba(0, 0, 0, .2));;
     --card-first-last-item-padding: 8px;
     --card-max-width: 960px;
     --card-min-width: 550px;
@@ -3917,9 +3911,24 @@ paper-checkbox {
         height: 15px;
 }
 
+#background-clip {
+  bottom: -0.4px;
+        clip: rect(auto 999px auto -5px); 
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+}
+
+:host([is-card-end]) #background-clip {
+  bottom: 0;
+        clip: rect(auto 999px 500px -5px);
+}
+
 #background {
-  background: #fff;
-        bottom: -1px;  
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
+        background: #fff;
+        bottom: 0;
         left: 0;
         position: absolute;
         right: 0;
@@ -3931,20 +3940,29 @@ paper-checkbox {
   display: none;
 }
 
+:host(:not([is-card-start])) #background {
+  top: -5px;
+}
+
 :host([is-card-start]) #background {
   border-radius: 2px 2px 0 0;
 }
 
 :host([is-card-end]) #background {
   border-radius: 0 0 2px 2px;
-        bottom: 0;
+}
+
+:host([is-card-start][is-card-end]) #background {
+  border-radius: 2px;
 }
 
 </style>
 
     <div id="sizing-container">
       <div id="main-container">
-        <div id="background"></div>
+        <div id="background-clip">
+          <div id="background"></div>
+        </div>
         <div id="date-accessed" class="card-title">
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>
@@ -4085,7 +4103,7 @@ button.more-vert-button div {
 }
 
 .group-container {
-  box-shadow: var(--card-box-shadow_-_box-shadow);
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
         background: #fff;
         border-radius: 2px;
         margin-bottom: var(--card-padding-between);
@@ -4286,10 +4304,6 @@ button.more-vert-button div {
 :host {
   display: block;
         overflow: auto;
-}
-
-#infinite-list {
-  filter: var(--card-container-filter_-_filter);
 }
 
 history-item {
@@ -4607,7 +4621,7 @@ button.more-vert-button div {
 }
 
 #history-item-container {
-  box-shadow: var(--card-box-shadow_-_box-shadow);
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
         background: #fff;
         border-radius: 2px;
 }
