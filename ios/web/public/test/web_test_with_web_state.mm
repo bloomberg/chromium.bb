@@ -4,31 +4,12 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
-#import <WebKit/WebKit.h>
-
-#include "base/base64.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
-#import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
-
-// Helper Mock to stub out API with C++ objects in arguments.
-@interface WebDelegateMock : OCMockComplexTypeHelper
-@end
-
-@implementation WebDelegateMock
-// Stub implementation always returns YES.
-- (BOOL)webController:(CRWWebController*)webController
-        shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL
-          linkClicked:(BOOL)linkClicked {
-  return YES;
-}
-@end
 
 namespace {
 // Returns CRWWebController for the given |web_state|.
@@ -45,8 +26,6 @@ WebTestWithWebState::WebTestWithWebState() {}
 
 WebTestWithWebState::~WebTestWithWebState() {}
 
-static int s_html_load_count;
-
 void WebTestWithWebState::SetUp() {
   WebTest::SetUp();
   std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(GetBrowserState()));
@@ -56,22 +35,11 @@ void WebTestWithWebState::SetUp() {
 
   // Force generation of child views; necessary for some tests.
   [GetWebController(web_state_.get()) triggerPendingLoad];
-  s_html_load_count = 0;
 }
 
 void WebTestWithWebState::TearDown() {
   web_state_.reset();
   WebTest::TearDown();
-}
-
-void WebTestWithWebState::WillProcessTask(
-    const base::PendingTask& pending_task) {
-  // Nothing to do.
-}
-
-void WebTestWithWebState::DidProcessTask(
-    const base::PendingTask& pending_task) {
-  processed_a_task_ = true;
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
@@ -178,9 +146,12 @@ const web::WebState* WebTestWithWebState::web_state() const {
   return web_state_.get();
 }
 
-NSString* WebTestWithWebState::CreateLoadCheck() {
-  return [NSString stringWithFormat:@"<p style=\"display: none;\">%d</p>",
-                                    s_html_load_count++];
+void WebTestWithWebState::WillProcessTask(const base::PendingTask&) {
+  // Nothing to do.
+}
+
+void WebTestWithWebState::DidProcessTask(const base::PendingTask&) {
+  processed_a_task_ = true;
 }
 
 }  // namespace web
