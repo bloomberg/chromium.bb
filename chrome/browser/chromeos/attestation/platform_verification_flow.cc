@@ -14,11 +14,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
-#include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/attestation/attestation.pb.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -335,7 +335,7 @@ void PlatformVerificationFlow::OnChallengeReady(
     ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
-  SignedData signed_data_pb;
+  chromeos::attestation::SignedData signed_data_pb;
   if (response_data.empty() || !signed_data_pb.ParseFromString(response_data)) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to parse response data.";
     ReportError(context.callback, INTERNAL_ERROR);

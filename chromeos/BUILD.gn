@@ -24,6 +24,7 @@ component("chromeos") {
     "//dbus",
   ]
   deps = [
+    ":attestation_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
     "//base",
@@ -61,6 +62,7 @@ static_library("test_support") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
   public_deps = [
+    ":attestation_proto",
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
@@ -124,6 +126,7 @@ static_library("test_support_without_gmock") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
   deps = [
+    ":attestation_proto",
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
@@ -147,6 +150,7 @@ test("chromeos_unittests") {
     "//third_party/nss:system_nss_no_ssl_config",
   ]
   deps = [
+    ":attestation_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
     ":test_support",
@@ -199,6 +203,14 @@ proto_library("cryptohome_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/cryptohome"
+}
+
+proto_library("attestation_proto") {
+  sources = [
+    "dbus/proto/attestation.proto",
+  ]
+
+  proto_out_dir = "chromeos/attestation"
 }
 
 proto_library("cryptohome_signkey_proto") {

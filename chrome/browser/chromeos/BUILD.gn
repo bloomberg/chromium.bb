@@ -49,6 +49,7 @@ source_set("chromeos") {
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util:with_no_strings",
     "//chromeos",
+    "//chromeos:attestation_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:power_manager_proto",
@@ -1593,6 +1594,5 @@ proto_library("device_policy_proto") {
 proto_library("attestation_proto") {
   sources = [
     "attestation/attestation_key_payload.proto",
-    "attestation/attestation_signed_data.proto",
   ]
 }
