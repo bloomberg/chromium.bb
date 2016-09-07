@@ -1,4 +1,4 @@
-Test for regression against 
+Test for regression against
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

@@ -1285,3 +1285,5 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 crbug.com/v8/4577 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
+
+crbug.com/318925 [ Mac ] accessibility/element-role-mapping-focusable.html [ NeedsRebaseline ]
