@@ -4,12 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script is used to generate .gypi, .gni files and files in the
+# This script is used to generate .gni files and files in the
 # config/platform directories needed to build libvpx.
 # Every time libvpx source code is updated just run this script.
 #
 # Usage:
-# $ ./generate_gypi.sh [--disable-avx] [--only-configs]
+# $ ./generate_gni.sh [--disable-avx] [--only-configs]
 #
 # The following optional flags are supported:
 # --disable-avx : AVX+AVX2 support is disabled.
@@ -53,7 +53,7 @@ function write_license {
 # Search for source files with the same basename in vp8, vp9, and vpx_dsp. The
 # build can support such files but only when they are built into disparate
 # modules. Configuring such modules for both gyp and gn are tricky so avoid the
-# issue at least until vp10 is added.
+# issue at least until gyp is removed.
 function find_duplicates {
   local readonly duplicate_file_names=$(find \
     $BASE_DIR/$LIBVPX_SRC_DIR/vp8 \
@@ -75,40 +75,6 @@ function find_duplicates {
   fi
 }
 
-# Print gypi boilerplate header.
-# $1 - Output base name
-function write_gypi_header {
-  echo "{" >> $1
-}
-
-# Print gypi boilerplate footer.
-# $1 - Output base name
-function write_gypi_footer {
-  echo "}" >> $1
-}
-
-# Generate a gypi with a list of source files.
-# $1 - Array name for file list. This is processed with 'declare' below to
-#      regenerate the array locally.
-# $2 - Output file
-function write_gypi {
-  # Convert the first argument back in to an array.
-  local readonly file_list=(${!1})
-
-  rm -rf "$2"
-  write_license "$2"
-  write_gypi_header "$2"
-
-  echo "  'sources': [" >> "$2"
-  for f in ${file_list[@]}
-  do
-    echo "    '<(libvpx_source)/$f'," >> "$2"
-  done
-  echo "  ]," >> "$2"
-
-  write_gypi_footer "$2"
-}
-
 # Generate a gni with a list of source files.
 # $1 - Array name for file list. This is processed with 'declare' below to
 #      regenerate the array locally.
@@ -126,150 +92,18 @@ function write_gni {
   echo "]" >> "$3"
 }
 
-# Target template function
-# $1 - Array name for file list.
-# $2 - Output file
-# $3 - Target name
-# $4 - Compiler flag
-function write_target_definition {
-  declare -a sources_list=("${!1}")
-
-  echo "    {" >> "$2"
-  echo "      'target_name': '$3'," >> "$2"
-  echo "      'type': 'static_library'," >> "$2"
-  echo "      'include_dirs': [" >> "$2"
-  echo "        'source/config/<(OS_CATEGORY)/<(target_arch_full)'," >> "$2"
-  echo "        '<(libvpx_source)'," >> "$2"
-  echo "      ]," >> "$2"
-  echo "      'sources': [" >> "$2"
-  for f in $sources_list
-  do
-    echo "        '<(libvpx_source)/$f'," >> $2
-  done
-  echo "      ]," >> "$2"
-  if [[ $4 == fpu=neon ]]; then
-  echo "      'includes': [ 'ads2gas.gypi' ]," >> "$2"
-  echo "      'cflags!': [ '-mfpu=vfpv3-d16' ]," >> "$2"
-  echo "      'conditions': [" >> $2
-  echo "        # Disable GCC LTO in neon targets due to compiler bug" >> "$2"
-  echo "        # crbug.com/408997" >> "$2"
-  echo "        ['clang==0 and use_lto==1', {" >> "$2"
-  echo "          'cflags!': [" >> "$2"
-  echo "            '-flto'," >> "$2"
-  echo "            '-ffat-lto-objects'," >> "$2"
-  echo "          ]," >> "$2"
-  echo "        }]," >> "$2"
-  echo "      ]," >> "$2"
-  echo "      'cflags': [ '-m$4', ]," >> "$2"
-  echo "      'asmflags': [ '-m$4', ]," >> "$2"
-  else
-  echo "      'cflags': [ '-m$4', ]," >> "$2"
-  echo "      'xcode_settings': { 'OTHER_CFLAGS': [ '-m$4' ] }," >> "$2"
-  fi
-  if [[ -z $DISABLE_AVX && $4 == avx ]]; then
-  echo "      'msvs_settings': {" >> "$2"
-  echo "        'VCCLCompilerTool': {" >> "$2"
-  echo "          'EnableEnhancedInstructionSet': '3', # /arch:AVX" >> "$2"
-  echo "        }," >> "$2"
-  echo "      }," >> "$2"
-  fi
-  if [[ -z $DISABLE_AVX && $4 == avx2 ]]; then
-  echo "      'msvs_settings': {" >> "$2"
-  echo "        'VCCLCompilerTool': {" >> "$2"
-  echo "          'EnableEnhancedInstructionSet': '5', # /arch:AVX2" >> "$2"
-  echo "        }," >> "$2"
-  echo "      }," >> "$2"
-  fi
-  if [[ $4 == ssse3 || $4 == sse4.1 ]]; then
-  echo "      'conditions': [" >> "$2"
-  echo "        ['OS==\"win\" and clang==1', {" >> "$2"
-  echo "          # cl.exe's /arch flag doesn't have a setting for SSSE3/4, and cl.exe" >> "$2"
-  echo "          # doesn't need it for intrinsics. clang-cl does need it, though." >> "$2"
-  echo "          'msvs_settings': {" >> "$2"
-  echo "            'VCCLCompilerTool': { 'AdditionalOptions': [ '-m$4' ] }," >> "$2"
-  echo "          }," >> "$2"
-  echo "        }]," >> "$2"
-  echo "      ]," >> "$2"
-  fi
-  echo "    }," >> "$2"
-}
-
-
-# Generate a gypi which applies additional compiler flags based on the file
-# name.
-# $1 - Array name for file list.
-# $2 - Output file
-function write_intrinsics_gypi {
-  declare -a file_list=("${!1}")
-
-  local mmx_sources=$(echo "$file_list" | grep '_mmx\.c$')
-  local sse2_sources=$(echo "$file_list" | grep '_sse2\.c$')
-  local sse3_sources=$(echo "$file_list" | grep '_sse3\.c$')
-  local ssse3_sources=$(echo "$file_list" | grep '_ssse3\.c$')
-  local sse4_1_sources=$(echo "$file_list" | grep '_sse4\.c$')
-  local avx_sources=$(echo "$file_list" | grep '_avx\.c$')
-  local avx2_sources=$(echo "$file_list" | grep '_avx2\.c$')
-  local neon_sources=$(echo "$file_list" | grep '_neon\.c$\|\.asm$')
-
-  # Intrinsic functions and files are in flux. We can selectively generate them
-  # but we can not selectively include them in libvpx.gyp. Throw some errors
-  # when new targets are needed.
-
-  rm -rf "$2"
-  write_license "$2"
-  write_gypi_header "$2"
-
-  echo "  'targets': [" >> "$2"
-
-  # x86[_64]
-  if [ 0 -ne ${#mmx_sources} ]; then
-    write_target_definition mmx_sources[@] "$2" libvpx_intrinsics_mmx mmx
-  fi
-  if [ 0 -ne ${#sse2_sources} ]; then
-    write_target_definition sse2_sources[@] "$2" libvpx_intrinsics_sse2 sse2
-  fi
-  if [ 0 -ne ${#sse3_sources} ]; then
-    #write_target_definition sse3_sources[@] "$2" libvpx_intrinsics_sse3 sse3
-    echo "ERROR: Uncomment sse3 sections in libvpx.gyp"
-    exit 1
-  fi
-  if [ 0 -ne ${#ssse3_sources} ]; then
-    write_target_definition ssse3_sources[@] "$2" libvpx_intrinsics_ssse3 ssse3
-  fi
-  if [ 0 -ne ${#sse4_1_sources} ]; then
-    write_target_definition sse4_1_sources[@] "$2" libvpx_intrinsics_sse4_1 sse4.1
-  fi
-  if [[ -z $DISABLE_AVX && 0 -ne ${#avx_sources} ]]; then
-    write_target_definition avx_sources[@] "$2" libvpx_intrinsics_avx avx
-  fi
-  if [[ -z $DISABLE_AVX && 0 -ne ${#avx2_sources} ]]; then
-    write_target_definition avx2_sources[@] "$2" libvpx_intrinsics_avx2 avx2
-  fi
-
-  # arm neon
-  if [ 0 -ne ${#neon_sources} ]; then
-    write_target_definition neon_sources[@] "$2" libvpx_intrinsics_neon fpu=neon
-  fi
-
-  echo "  ]," >> "$2"
-
-  write_gypi_footer "$2"
-}
-
-# Convert a list of source files into gypi and gni files.
+# Convert a list of source files into gni files.
 # $1 - Input file.
-# $2 - Output gypi file base. Will generate additional .gypi files when
-#      different compilation flags are required.
 function convert_srcs_to_project_files {
   # Do the following here:
   # 1. Filter .c, .h, .s, .S and .asm files.
-  # 2. Move certain files to a separate include to allow applying different
+  # 2. Move certain files to a separate lists to allow applying different
   #    compiler options.
-  # 3. Replace .asm.s to .asm because gyp will do the conversion.
+  # 3. Replace .asm.s to .asm because gn will do the conversion.
 
   local source_list=$(grep -E '(\.c|\.h|\.S|\.s|\.asm)$' $1)
 
-  # Not sure why vpx_config is not included.
+  # Not sure why vpx_config.c is not included.
   source_list=$(echo "$source_list" | grep -v 'vpx_config\.c')
 
   # The actual ARM files end in .asm. We have rules to translate them to .S
@@ -293,14 +127,6 @@ function convert_srcs_to_project_files {
   source_list=$(comm -23 <(echo "$source_list") <(echo "$intrinsic_list"))
 
   local x86_list=$(echo "$source_list" | egrep '/x86/')
-
-  write_gypi source_list "$BASE_DIR/$2.gypi"
-
-  # All the files are in a single "element." Check if the first element has
-  # length 0.
-  if [ 0 -ne ${#intrinsic_list} ]; then
-    write_intrinsics_gypi intrinsic_list[@] "$BASE_DIR/$2_intrinsics.gypi"
-  fi
 
   # Write a single .gni file that includes all source files for all archs.
   if [ 0 -ne ${#x86_list} ]; then

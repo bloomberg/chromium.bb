@@ -28,18 +28,18 @@ Please follow these steps to update libvpx source code:
 
    Use the generated commit message for the roll.
 
-2. Generate .gypi, .gni and config files.
+2. Generate .gni and config files.
 
    cd third_party/libvpx
-   ./generate_gypi.sh
+   ./generate_gni.sh
 
 3. Update 'Branch' in README.chromium if necessary.
 
 Tools needed to build libvpx:
 
-- generate_gypi.sh
+- generate_gni.sh
 
-Generate config and .gypi files that contain the source list for each platform.
+Generate config and .gni files that contain the source list for each platform.
 Configuration for the build is taken from vpx_config.h for each platform.
 
 - lint_config.sh
