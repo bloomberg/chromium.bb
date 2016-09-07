@@ -262,17 +262,23 @@ std::string ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(
 
 void ArcAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
-  for (auto& it : task_id_to_app_window_) {
-    AppWindow* app_window = it.second.get();
-    if (user_email ==
-        user_manager::UserManager::Get()
-            ->GetPrimaryUser()
-            ->GetAccountId()
-            .GetUserEmail()) {
-      RegisterApp(app_window);
-    } else {
+  const std::string& primary_user_email = user_manager::UserManager::Get()
+                                              ->GetPrimaryUser()
+                                              ->GetAccountId()
+                                              .GetUserEmail();
+  if (user_email == primary_user_email) {
+    // Restore existing Arc window and create controllers for them.
+    AttachControllerToWindowsIfNeeded();
+    // Update active status.
+    OnTaskSetActive(active_task_id_);
+  } else {
+    // Remove all Arc apps and destroy its controllers. There is no mapping
+    // task id to app window because it is not safe when controller is missing.
+    for (auto& it : task_id_to_app_window_) {
+      AppWindow* app_window = it.second.get();
       UnregisterApp(app_window, true);
     }
+    task_id_to_app_window_.clear();
   }
 }
 
@@ -294,7 +300,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanging(
     bool visible) {
   // The application id property should be set at this time.
   if (visible)
-    MayAttachContollerToWindow(window);
+    AttachControllerToWindowIfNeeded(window);
 }
 
 void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
@@ -326,7 +332,12 @@ ArcAppWindowLauncherController::GetAppWindowForTask(int task_id) {
   return it->second.get();
 }
 
-void ArcAppWindowLauncherController::MayAttachContollerToWindow(
+void ArcAppWindowLauncherController::AttachControllerToWindowsIfNeeded() {
+  for (auto* window : observed_windows_)
+    AttachControllerToWindowIfNeeded(window);
+}
+
+void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
     aura::Window* window) {
   const std::string window_app_id = exo::ShellSurface::GetApplicationId(window);
   if (window_app_id.empty())
@@ -410,8 +421,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   task_id_to_shelf_app_id_[task_id] = GetShelfAppIdFromArcAppId(
       ArcAppListPrefs::GetAppId(package_name, activity_name));
 
-  for (auto* window : observed_windows_)
-    MayAttachContollerToWindow(window);
+  AttachControllerToWindowsIfNeeded();
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
@@ -443,8 +453,10 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
-  if (observed_profile_ != owner()->GetProfile())
+  if (observed_profile_ != owner()->GetProfile()) {
+    active_task_id_ = task_id;
     return;
+  }
 
   TaskIdToAppWindow::iterator previous_active_app_it =
       task_id_to_app_window_.find(active_task_id_);
@@ -583,9 +595,10 @@ void ArcAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
 void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window,
                                                    bool close_controller) {
   const std::string app_id = app_window->app_id();
+
   DCHECK(!app_id.empty());
   AppControllerMap::iterator it = app_controller_map_.find(app_id);
-  DCHECK(it != app_controller_map_.end());
+  CHECK(it != app_controller_map_.end());
 
   ArcAppWindowLauncherItemController* controller = it->second;
   controller->RemoveWindow(app_window);

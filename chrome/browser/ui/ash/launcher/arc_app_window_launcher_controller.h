@@ -99,7 +99,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   AppWindow* GetAppWindowForTask(int task_id);
 
-  void MayAttachContollerToWindow(aura::Window* window);
+  void AttachControllerToWindowIfNeeded(aura::Window* window);
+  void AttachControllerToWindowsIfNeeded();
 
   void SetOrientationLockForAppWindow(AppWindow* app_window);
 
