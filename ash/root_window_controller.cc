@@ -560,9 +560,6 @@ void RootWindowController::CloseChildWindows() {
     docked_layout_manager_->Shutdown();
     docked_layout_manager_ = NULL;
   }
-  aura::Window* root_window = GetRootWindow();
-  aura::client::SetDragDropClient(root_window, NULL);
-
   wm_shelf_aura_->ShutdownShelfWidget();
 
   // Close wallpaper widget first as it depends on tooltip.
@@ -570,10 +567,10 @@ void RootWindowController::CloseChildWindows() {
   animating_wallpaper_widget_controller_.reset();
 
   wm_root_window_controller_->DeleteWorkspaceController();
-  aura::client::SetTooltipClient(root_window, NULL);
 
   // Explicitly destroy top level windows. We do this as during part of
   // destruction such windows may query the RootWindow for state.
+  aura::Window* root_window = GetRootWindow();
   aura::WindowTracker non_toplevel_windows;
   non_toplevel_windows.Add(root_window);
   while (!non_toplevel_windows.windows().empty()) {
@@ -609,6 +606,9 @@ void RootWindowController::CloseChildWindows() {
   // Avoid notifying WmShelf that the shelf has been destroyed twice.
   if (wm_shelf_aura_->IsShelfInitialized())
     wm_shelf_aura_->ShutdownShelf();
+
+  aura::client::SetDragDropClient(root_window, nullptr);
+  aura::client::SetTooltipClient(root_window, nullptr);
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
