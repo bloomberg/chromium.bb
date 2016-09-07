@@ -185,7 +185,9 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation)
 IntRect FrameCaret::absoluteCaretBounds()
 {
     DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!m_frame->document()->needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(m_frame->document()->lifecycle());
+
     if (!isActive()) {
         clearCaretRect();
     }  else {

@@ -1157,6 +1157,12 @@ HTMLFormElement* FrameSelection::currentForm() const
 
 void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
 {
+    DCHECK(isAvailable());
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     LayoutRect rect;
 
     switch (getSelectionType()) {

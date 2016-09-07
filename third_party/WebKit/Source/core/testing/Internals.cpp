@@ -823,6 +823,7 @@ ClientRect* Internals::absoluteCaretBounds(ExceptionState& exceptionState)
         return ClientRect::create();
     }
 
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
     return ClientRect::create(document->frame()->selection().absoluteCaretBounds());
 }
 

@@ -82,6 +82,7 @@ void HTMLTextFormControlElementTest::forceLayoutFlag()
     frameRect.setWidth(frameRect.width() + 1);
     frameRect.setHeight(frameRect.height() + 1);
     page().frameView().setFrameRect(frameRect);
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 }
 
 TEST_F(HTMLTextFormControlElementTest, SetSelectionRange)
