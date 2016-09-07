@@ -64,8 +64,6 @@ public:
     void removeExtraNamedItem(const AtomicString& name);
     bool hasExtraNamedItem(const AtomicString& name);
 
-    static bool isCaseSensitiveAttribute(const QualifiedName&);
-
     Document* cloneDocumentWithoutChildren() final;
 
 protected:

@@ -197,40 +197,4 @@ void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
     removeItemFromMap(m_extraNamedItemCounts, name);
 }
 
-static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
-{
-    // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
-    // Mozilla treats all other values as case-sensitive, thus so do we.
-    HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
-
-    const QualifiedName* caseInsensitiveAttributes[] = {
-        &accept_charsetAttr, &acceptAttr, &alignAttr, &alinkAttr, &axisAttr,
-        &bgcolorAttr,
-        &charsetAttr, &checkedAttr, &clearAttr, &codetypeAttr, &colorAttr, &compactAttr,
-        &declareAttr, &deferAttr, &dirAttr, &directionAttr, &disabledAttr,
-        &enctypeAttr,
-        &faceAttr, &frameAttr,
-        &hreflangAttr, &http_equivAttr,
-        &langAttr, &languageAttr, &linkAttr,
-        &mediaAttr, &methodAttr, &multipleAttr,
-        &nohrefAttr, &noresizeAttr, &noshadeAttr, &nowrapAttr,
-        &readonlyAttr, &relAttr, &revAttr, &rulesAttr,
-        &scopeAttr, &scrollingAttr, &selectedAttr, &shapeAttr,
-        &targetAttr, &textAttr, &typeAttr,
-        &valignAttr, &valuetypeAttr, &vlinkAttr };
-
-    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
-    for (const QualifiedName* attr : caseInsensitiveAttributes)
-        attrSet->add(attr->localName().impl());
-
-    return attrSet;
-}
-
-bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
-{
-    static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
-    bool isPossibleHTMLAttr = !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
-    return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
-}
-
 } // namespace blink
