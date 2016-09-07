@@ -104,6 +104,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
 
+#if defined(ENABLE_APP_LIST)
+#include "chrome/browser/apps/drive/drive_app_mapping.h"
+#endif
+
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
@@ -150,7 +154,10 @@
 #include "chrome/browser/upgrade_detector.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/notifications/notification_platform_bridge_android.h"
+#include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
+#else
 #include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
@@ -205,11 +212,6 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/notifications/notification_platform_bridge_android.h"
-#include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
-#endif
-
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
@@ -224,20 +226,16 @@
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
 #endif
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/startup/default_browser_prompt.h"
-#endif
-
-#if defined(ENABLE_APP_LIST)
-#include "chrome/browser/apps/drive/drive_app_mapping.h"
 #endif
 
 namespace {
@@ -303,18 +301,27 @@ const char kDesktopSearchRedirectionInfobarShownPref[] =
 const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 const char kDisableSpdy[] = "spdy.disabled";
 
-void DeleteWebRTCIdentityStoreDBOnFileThread(base::FilePath profile_path) {
+// Deprecated 8/2016.
+const char kRecentlySelectedEncoding[] = "profile.recently_selected_encodings";
+const char kStaticEncodings[] = "intl.static_encodings";
+
+// Deprecated 9/2016.
+const char kWebKitUsesUniversalDetector[] =
+    "webkit.webprefs.uses_universal_detector";
+
+void DeleteWebRTCIdentityStoreDBOnFileThread(
+    const base::FilePath& profile_path) {
   base::DeleteFile(profile_path.Append(
       FILE_PATH_LITERAL("WebRTCIdentityStore")), false);
   base::DeleteFile(profile_path.Append(
       FILE_PATH_LITERAL("WebRTCIdentityStore-journal")), false);
 }
 
-void DeleteWebRTCIdentityStoreDB(Profile* profile) {
+void DeleteWebRTCIdentityStoreDB(const Profile& profile) {
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&DeleteWebRTCIdentityStoreDBOnFileThread, profile->GetPath()),
+      base::Bind(&DeleteWebRTCIdentityStoreDBOnFileThread, profile.GetPath()),
       base::TimeDelta::FromSeconds(120));
 }
 
@@ -642,8 +649,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(kNetworkPredictionEnabled, true);
   registry->RegisterBooleanPref(kDisableSpdy, false);
-  registry->RegisterStringPref(prefs::kStaticEncodings, std::string());
-  registry->RegisterStringPref(prefs::kRecentlySelectedEncoding, std::string());
+  registry->RegisterStringPref(kStaticEncodings, std::string());
+  registry->RegisterStringPref(kRecentlySelectedEncoding, std::string());
+  registry->RegisterBooleanPref(kWebKitUsesUniversalDetector, true);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -741,16 +749,16 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kDesktopSearchRedirectionInfobarShownPref);
 
   // Added 7/2016.
-  DeleteWebRTCIdentityStoreDB(profile);
+  DeleteWebRTCIdentityStoreDB(*profile);
   profile_prefs->ClearPref(kNetworkPredictionEnabled);
   profile_prefs->ClearPref(kDisableSpdy);
 
   // Added 8/2016.
-  profile_prefs->ClearPref(prefs::kStaticEncodings);
-  profile_prefs->ClearPref(prefs::kRecentlySelectedEncoding);
+  profile_prefs->ClearPref(kStaticEncodings);
+  profile_prefs->ClearPref(kRecentlySelectedEncoding);
 
   // Added 9/2016.
-  profile_prefs->ClearPref(prefs::kWebKitUsesUniversalDetector);
+  profile_prefs->ClearPref(kWebKitUsesUniversalDetector);
 }
 
 }  // namespace chrome

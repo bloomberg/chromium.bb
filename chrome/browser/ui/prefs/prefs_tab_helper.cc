@@ -598,10 +598,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
                             IDS_MINIMUM_FONT_SIZE);
   RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumLogicalFontSize,
                             IDS_MINIMUM_LOGICAL_FONT_SIZE);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitUsesUniversalDetector,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // static
