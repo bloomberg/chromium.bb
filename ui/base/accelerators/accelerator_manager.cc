@@ -27,9 +27,9 @@ void AcceleratorManager::Register(const Accelerator& accelerator,
   const bool is_first_target_for_accelerator = targets.empty();
 
   // All priority accelerators go to the front of the line.
-  if (priority) {
+  if (priority == kHighPriority) {
     DCHECK(!accelerators_[accelerator].first)
-        << "Only one _priority_ handler can be registered";
+        << "Only one high-priority handler can be registered";
     targets.push_front(target);
     // Mark that we have a priority accelerator at the front.
     accelerators_[accelerator].first = true;

@@ -41,6 +41,10 @@ CHROME_VIEWS_EXPORT bool GetStandardAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator);
 
+// Returns true if the command identified by |command_id| should be executed
+// repeatedly while its accelerator keys are held down.
+CHROME_VIEWS_EXPORT bool IsCommandRepeatable(int command_id);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_

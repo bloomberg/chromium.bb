@@ -2017,6 +2017,9 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK(iter != accelerator_table_.end());
   int command_id = iter->second;
 
+  if (accelerator.IsRepeat() && !chrome::IsCommandRepeatable(command_id))
+    return false;
+
   chrome::BrowserCommandController* controller = browser_->command_controller();
   if (!controller->block_command_execution())
     UpdateAcceleratorMetrics(accelerator, command_id);

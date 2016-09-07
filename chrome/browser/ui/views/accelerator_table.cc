@@ -179,7 +179,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // via WM_APPCOMMAND.
   { ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH },
   { ui::VKEY_M, ui::EF_SHIFT_DOWN | kPlatformModifier, IDC_SHOW_AVATAR_MENU},
-  // On ChromeOS, these keys are assigned to change UI scale.
+  // On Chrome OS, these keys are assigned to change UI scale.
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_ZOOM_MINUS },
@@ -197,6 +197,18 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #endif
 };
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);
+
+const int kRepeatableCommandIds[] = {
+  IDC_FIND_NEXT,
+  IDC_FIND_PREVIOUS,
+  IDC_FOCUS_NEXT_PANE,
+  IDC_FOCUS_PREVIOUS_PANE,
+  IDC_MOVE_TAB_NEXT,
+  IDC_MOVE_TAB_PREVIOUS,
+  IDC_SELECT_NEXT_TAB,
+  IDC_SELECT_PREVIOUS_TAB,
+};
+const size_t kRepeatableCommandIdsLength = arraysize(kRepeatableCommandIds);
 
 #if defined(USE_ASH)
 // Below we map Chrome command ids to Ash action ids for commands that have
@@ -263,6 +275,14 @@ bool GetStandardAcceleratorForCommandId(int command_id,
       return true;
     case IDC_PASTE:
       *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+      return true;
+  }
+  return false;
+}
+
+bool IsCommandRepeatable(int command_id) {
+  for (size_t i = 0; i < kRepeatableCommandIdsLength; ++i) {
+    if (kRepeatableCommandIds[i] == command_id)
       return true;
   }
   return false;
