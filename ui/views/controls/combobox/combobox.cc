@@ -406,10 +406,12 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
 #endif
 
   UpdateBorder();
-  // set_background() takes ownership but takes a raw pointer.
-  std::unique_ptr<Background> b =
-      PlatformStyle::CreateComboboxBackground(GetArrowContainerWidth());
-  set_background(b.release());
+  if (UseMd()) {
+    // set_background() takes ownership but takes a raw pointer.
+    std::unique_ptr<Background> b =
+        PlatformStyle::CreateComboboxBackground(GetArrowContainerWidth());
+    set_background(b.release());
+  }
 
   // Initialize the button images.
   Button::ButtonState button_states[] = {
@@ -537,7 +539,19 @@ void Combobox::Layout() {
 
 void Combobox::OnEnabledChanged() {
   View::OnEnabledChanged();
-  arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style_);
+  if (!UseMd())
+    arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style_);
+}
+
+void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (!UseMd())
+    return;
+
+  set_background(Background::CreateBackgroundPainter(
+      true, Painter::CreateSolidRoundRectPainter(
+                theme->GetSystemColor(
+                    ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+                FocusableBorder::kCornerRadiusDp)));
 }
 
 int Combobox::GetRowCount() {
@@ -770,8 +784,10 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int y = insets.top();
   int text_height = height() - insets.height();
   SkColor text_color = GetNativeTheme()->GetSystemColor(
-      enabled() ? ui::NativeTheme::kColorId_LabelEnabledColor :
-                  ui::NativeTheme::kColorId_LabelDisabledColor);
+      UseMd() ? (enabled() ? ui::NativeTheme::kColorId_TextfieldDefaultColor
+                           : ui::NativeTheme::kColorId_TextfieldReadOnlyColor)
+              : (enabled() ? ui::NativeTheme::kColorId_LabelEnabledColor
+                           : ui::NativeTheme::kColorId_LabelDisabledColor));
 
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());
@@ -815,8 +831,13 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     path.rLineTo(height, -height);
     path.close();
     SkPaint paint;
-    paint.setColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ButtonEnabledColor));
+    SkColor arrow_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonEnabledColor);
+    // TODO(estade): share this disabled alpha value with other places that use
+    // it.
+    if (!enabled())
+      arrow_color = SkColorSetA(arrow_color, 0x61);
+    paint.setColor(arrow_color);
     paint.setAntiAlias(true);
     canvas->DrawPath(path, paint);
   } else {

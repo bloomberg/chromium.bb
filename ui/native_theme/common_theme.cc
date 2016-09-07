@@ -25,10 +25,27 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     static const SkColor kPrimaryTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 
-    if (color_id == NativeTheme::kColorId_LabelEnabledColor)
-      return kPrimaryTextColor;
-    if (color_id == NativeTheme::kColorId_UnfocusedBorderColor)
-      return SkColorSetA(SK_ColorBLACK, 0x24);
+    switch (color_id) {
+      // Labels
+      case NativeTheme::kColorId_LabelEnabledColor:
+        return kPrimaryTextColor;
+
+      // FocusableBorder
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return SkColorSetA(SK_ColorBLACK, 0x24);
+
+      // Textfields
+      case NativeTheme::kColorId_TextfieldDefaultColor:
+        return kPrimaryTextColor;
+      case NativeTheme::kColorId_TextfieldDefaultBackground:
+        return base_theme->GetSystemColor(
+            NativeTheme::kColorId_DialogBackground);
+      case NativeTheme::kColorId_TextfieldReadOnlyColor:
+        return SkColorSetA(kPrimaryTextColor, 0x61);
+
+      default:
+       break;
+    }
   }
 
   // MD colors.

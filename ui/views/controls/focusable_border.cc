@@ -9,6 +9,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -85,9 +86,12 @@ void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {
 SkColor FocusableBorder::GetCurrentColor(const View& view) const {
   if (!use_default_color_)
     return override_color_;
-  return view.GetNativeTheme()->GetSystemColor(
+  SkColor color = view.GetNativeTheme()->GetSystemColor(
       view.HasFocus() ? ui::NativeTheme::kColorId_FocusedBorderColor :
                         ui::NativeTheme::kColorId_UnfocusedBorderColor);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !view.enabled())
+    color = color_utils::BlendTowardOppositeLuma(color, 0x61);
+  return color;
 }
 
 }  // namespace views

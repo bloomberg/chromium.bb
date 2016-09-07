@@ -98,6 +98,7 @@ class VIEWS_EXPORT Combobox : public View,
   void GetAccessibleState(ui::AXViewState* state) override;
   void Layout() override;
   void OnEnabledChanged() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Overridden from PrefixDelegate:
   int GetRowCount() override;

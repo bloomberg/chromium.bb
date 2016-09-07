@@ -357,7 +357,7 @@ SkColor Textfield::GetTextColor() const {
   if (!use_default_text_color_)
     return text_color_;
 
-  return GetNativeTheme()->GetSystemColor(read_only() ?
+  return GetNativeTheme()->GetSystemColor(read_only() || !enabled() ?
       ui::NativeTheme::kColorId_TextfieldReadOnlyColor :
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
@@ -377,7 +377,7 @@ SkColor Textfield::GetBackgroundColor() const {
   if (!use_default_background_color_)
     return background_color_;
 
-  return GetNativeTheme()->GetSystemColor(read_only() ?
+  return GetNativeTheme()->GetSystemColor(read_only() || !enabled() ?
       ui::NativeTheme::kColorId_TextfieldReadOnlyBackground :
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
