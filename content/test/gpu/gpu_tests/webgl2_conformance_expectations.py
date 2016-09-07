@@ -97,8 +97,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / Intel
-    self.Fail('conformance2/buffers/uniform-buffers.html',
-        ['win', 'intel'], bug=483282)
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
     self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html',
@@ -138,12 +136,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
-        ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=483282)
-    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
-        ['win', 'intel'], bug=628863)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win', 'intel'], bug=483282)
@@ -389,9 +383,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=636648)
 
     # Mac Intel
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['mac', 'intel'], bug=619264)
-
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
