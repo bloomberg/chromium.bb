@@ -242,7 +242,6 @@ void SkCanvasVideoRendererTest::PaintRotated(
   }
   SkPaint paint;
   paint.setXfermodeMode(mode);
-  paint.setAlpha(0xFF);
   paint.setFilterQuality(kLow_SkFilterQuality);
   renderer_.Paint(video_frame, canvas, dest_rect, paint, video_rotation,
                   Context3D());
