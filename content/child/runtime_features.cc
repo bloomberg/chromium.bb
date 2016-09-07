@@ -235,6 +235,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kNewMediaPlaybackUi))
     WebRuntimeFeatures::enableNewMediaPlaybackUi(true);
 
+  if (base::FeatureList::IsEnabled(
+          features::kNonValidatingReloadOnNormalReload)) {
+    WebRuntimeFeatures::enableReloadwithoutSubResourceCacheRevalidation(true);
+  }
+
   if (base::FeatureList::IsEnabled(features::kDocumentWriteEvaluator))
     WebRuntimeFeatures::enableDocumentWriteEvaluator(true);
 

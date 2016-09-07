@@ -320,6 +320,11 @@ void WebRuntimeFeatures::enableReducedReferrerGranularity(bool enable)
     RuntimeEnabledFeatures::setReducedReferrerGranularityEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableReloadwithoutSubResourceCacheRevalidation(bool enable)
+{
+    RuntimeEnabledFeatures::setReloadwithoutSubResourceCacheRevalidationEnabled(enable);
+}
+
 void WebRuntimeFeatures::enablePushMessaging(bool enable)
 {
     RuntimeEnabledFeatures::setPushMessagingEnabled(enable);

@@ -1350,15 +1350,20 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
+            // Add a sequence number as a comment to ensure WebView does not do
+            // something special for the same page load, for instance, restoring
+            // user state like a scroll position.
             return "<html><head>"
                     + (mWithViewPortTag ? "<meta name='viewport' content='width=3000' />" : "")
-                    + "</head>"
-                    + "<body></body></html>";
+                    + "</head><body><!-- "
+                    + mDataSequence++
+                    + " --></body></html>";
         }
 
         private final boolean mWithViewPortTag;
         private boolean mExpectScaleChange;
         private int mOnScaleChangedCallCount;
+        private int mDataSequence;
     }
 
     class AwSettingsForceZeroLayoutHeightTestHelper extends AwSettingsTestHelper<Boolean> {

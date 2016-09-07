@@ -122,11 +122,10 @@ bool isReloadLoadType(FrameLoadType type)
 
 static bool needsHistoryItemRestore(FrameLoadType type)
 {
-    // TODO(toyoshim): Check if this should return true for
-    // FrameLoadTypeReloadMainResource.
-    return type == FrameLoadTypeBackForward
-        || type == FrameLoadTypeReload
-        || type == FrameLoadTypeReloadBypassingCache;
+    if (!RuntimeEnabledFeatures::reloadwithoutSubResourceCacheRevalidationEnabled() && type == FrameLoadTypeReloadMainResource)
+        return false;
+    // TODO(toyoshim): Shall we return true for FrameLoadTypeInitialHistoryLoad too?
+    return type == FrameLoadTypeBackForward || isReloadLoadType(type);
 }
 
 // static
