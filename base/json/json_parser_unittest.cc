@@ -323,5 +323,10 @@ TEST_F(JSONParserTest, DecodeUnicodeNonCharacter) {
   EXPECT_FALSE(JSONReader::Read("[\"\\ud83f\\udffe\"]"));
 }
 
+TEST_F(JSONParserTest, DecodeNegativeEscapeSequence) {
+  EXPECT_FALSE(JSONReader::Read("[\"\\x-A\"]"));
+  EXPECT_FALSE(JSONReader::Read("[\"\\u-00A\"]"));
+}
+
 }  // namespace internal
 }  // namespace base

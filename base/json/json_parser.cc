@@ -670,7 +670,8 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           }
 
           int hex_digit = 0;
-          if (!HexStringToInt(StringPiece(NextChar(), 2), &hex_digit)) {
+          if (!HexStringToInt(StringPiece(NextChar(), 2), &hex_digit) ||
+              !IsValidCharacter(hex_digit)) {
             ReportError(JSONReader::JSON_INVALID_ESCAPE, -1);
             return false;
           }
