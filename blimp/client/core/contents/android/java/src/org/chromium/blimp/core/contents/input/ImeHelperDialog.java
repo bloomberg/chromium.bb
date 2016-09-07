@@ -68,6 +68,10 @@ public class ImeHelperDialog {
 
     @CalledByNative
     private void onShowImeRequested(int inputType, String text) {
+        if (mAlertDialog != null && mAlertDialog.isShowing()) {
+            mAlertDialog.dismiss();
+        }
+
         createTextInputPopup(inputType, text);
     }
 
