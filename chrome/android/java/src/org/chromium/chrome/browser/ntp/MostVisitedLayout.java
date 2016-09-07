@@ -57,7 +57,13 @@ public class MostVisitedLayout extends FrameLayout {
      * row.
      */
     public void setExtraVerticalSpacing(int spacing) {
+        if (mExtraVerticalSpacing == spacing) {
+            return;
+        }
         mExtraVerticalSpacing = spacing;
+
+        // Clear the measure cache for this view and make sure it will be remeasured.
+        forceLayout();
     }
 
     @Override

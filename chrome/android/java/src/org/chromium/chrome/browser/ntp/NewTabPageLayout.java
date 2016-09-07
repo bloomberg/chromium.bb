@@ -39,9 +39,12 @@ public class NewTabPageLayout extends LinearLayout {
     private int mSearchboxViewShadowWidth;
 
     private boolean mCardsUiEnabled;
-    private View mTopSpacer;  // Spacer above search logo.
-    private View mMiddleSpacer;  // Spacer between toolbar and Most Likely.
-    private View mBottomSpacer;  // Spacer below Most Likely.
+    private View mTopSpacer; // Spacer above search logo.
+    private View mMiddleSpacer; // Spacer between toolbar and Most Likely.
+    private View mBottomSpacer; // Spacer below Most Likely.
+
+    private View mLogoSpacer; // Spacer above the logo.
+    private View mSearchBoxSpacer; // Spacer above the search box.
 
     // Separate spacer below Most Likely to add enough space so the user can scroll with Most Likely
     // at the top of the screen.
@@ -74,6 +77,8 @@ public class NewTabPageLayout extends LinearLayout {
         mTopSpacer = findViewById(R.id.ntp_top_spacer);
         mMiddleSpacer = findViewById(R.id.ntp_middle_spacer);
         mBottomSpacer = findViewById(R.id.ntp_bottom_spacer);
+        mLogoSpacer = findViewById(R.id.search_provider_logo_spacer);
+        mSearchBoxSpacer = findViewById(R.id.search_box_spacer);
         mScrollCompensationSpacer = findViewById(R.id.ntp_scroll_spacer);
         mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
@@ -117,6 +122,9 @@ public class NewTabPageLayout extends LinearLayout {
     private void measureWithCardsUiEnabled(int widthMeasureSpec, int heightMeasureSpec) {
         assert mCardsUiEnabled;
 
+        mLogoSpacer.setVisibility(View.GONE);
+        mSearchBoxSpacer.setVisibility(View.GONE);
+
         // Remove the extra spacing before measuring because it might not be needed anymore.
         mMostVisitedLayout.setExtraVerticalSpacing(0);
 
@@ -133,9 +141,14 @@ public class NewTabPageLayout extends LinearLayout {
                 // Add some extra space if needed.
                 int currentBleed = getMeasuredHeight() - mParentViewportHeight;
                 int minimumBleed =
-                        (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.7);
+                        (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.44);
                 if (currentBleed < minimumBleed) {
-                    mMostVisitedLayout.setExtraVerticalSpacing(minimumBleed - currentBleed);
+                    int extraBleed = minimumBleed - currentBleed;
+                    mLogoSpacer.getLayoutParams().height = (int) (extraBleed * 0.25);
+                    mLogoSpacer.setVisibility(View.INVISIBLE);
+                    mSearchBoxSpacer.getLayoutParams().height = (int) (extraBleed * 0.25);
+                    mSearchBoxSpacer.setVisibility(View.INVISIBLE);
+                    mMostVisitedLayout.setExtraVerticalSpacing((int) (extraBleed * 0.5));
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             }

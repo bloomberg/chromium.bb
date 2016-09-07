@@ -24,6 +24,16 @@
         android:layout_weight="1"
         android:visibility="invisible" />
 
+    <!-- Spacer above the search provider logo that can be used to distribute extra space in order
+         to push part of Most Visited below the fold, suggesting that the page can be scrolled. This
+         is only used when there is not enough space to show the peeking card. -->
+    <View
+        android:id="@+id/search_provider_logo_spacer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:visibility="gone" />
+
     <!-- Search provider logo -->
     <org.chromium.chrome.browser.ntp.LogoView
         android:id="@+id/search_provider_logo"
@@ -33,6 +43,16 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="26dp"
         android:layout_marginBottom="23dp" />
+
+    <!-- Spacer above the search box that can be used to distribute extra space in order to push
+         part of Most Visited below the fold, suggesting that the page can be scrolled. This
+         is only used when there is not enough space to show the peeking card. -->
+    <View
+        android:id="@+id/search_box_spacer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:visibility="gone" />
 
     <!-- Search box -->
     <LinearLayout
