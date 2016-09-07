@@ -87,13 +87,13 @@
       "RECIPE_PACKAGE_REPO[depot_tools]/gclient.py",
       "config",
       "--spec",
-      "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
+      "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'Angle', 'url': 'https://chromium.googlesource.com/angle/angle.git'}]"
     ],
     "cwd": "[SLAVE_BUILD]/src/third_party",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
-    "name": "[spec: WebKit] gclient setup"
+    "name": "[spec: Angle] gclient setup"
   },
   {
     "cmd": [
@@ -111,7 +111,9 @@
       "--no-nag-max",
       "--delete_unversioned_trees",
       "--revision",
-      "third_party/WebKit@123",
+      "Angle@HEAD",
+      "--revision",
+      "src/third_party/angle@refs/heads/lkgr",
       "--output-json",
       "/path/to/tmp/json"
     ],
@@ -119,12 +121,12 @@
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
-    "name": "[spec: WebKit] gclient sync",
+    "name": "[spec: Angle] gclient sync",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"solutions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"WebKit/\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"3eebce6ea96f9e6c03e9252a4f8ef2ea9fe141c2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"Angle/\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"1fd70473fb3de634b409d4acaf49ffc1f90aae1f\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }, @@@",
       "@@@STEP_LOG_LINE@json.output@    \"src/blatley/\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"5e800497199d615131a76cd10651e74d7c8a0962\"@@@",
@@ -150,7 +152,7 @@
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
-    "name": "[spec: WebKit] gclient recurse (git config user.name)"
+    "name": "[spec: Angle] gclient recurse (git config user.name)"
   },
   {
     "cmd": [
@@ -167,7 +169,7 @@
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
-    "name": "[spec: WebKit] gclient recurse (git config user.email)"
+    "name": "[spec: Angle] gclient recurse (git config user.email)"
   },
   {
     "cmd": [

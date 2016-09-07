@@ -70,15 +70,12 @@ def RunSteps(api):
   api.gclient.c = src_cfg
   api.gclient.checkout()
 
-  api.gclient.spec_alias = 'WebKit'
+  api.gclient.spec_alias = 'Angle'
   bl_cfg = api.gclient.make_config()
   soln = bl_cfg.solutions.add()
-  soln.name = 'WebKit'
-  soln.url = 'svn://svn.chromium.org/blink/trunk'
-  bl_cfg.revisions['third_party/WebKit'] = '123'
-
-  # Use safesync url for lkgr.
-  soln.safesync_url = 'https://blink-status.appspot.com/lkgr'
+  soln.name = 'Angle'
+  soln.url = 'https://chromium.googlesource.com/angle/angle.git'
+  bl_cfg.revisions['src/third_party/angle'] = 'refs/heads/lkgr'
 
   bl_cfg.got_revision_mapping['src/blatley'] = 'got_blatley_revision'
   api.gclient.checkout(
