@@ -73,7 +73,7 @@ public class WebApkValidatorTest {
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
-            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertEquals(WEBAPK_PACKAGE_NAME, WebApkValidator.queryWebApkPackage(
@@ -92,7 +92,7 @@ public class WebApkValidatorTest {
             Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
-            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
@@ -113,7 +113,7 @@ public class WebApkValidatorTest {
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
-            mPackageManager.addPackage(newPackageInfoWithOneSignature(
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
             assertNull(WebApkValidator.queryWebApkPackage(
@@ -131,7 +131,7 @@ public class WebApkValidatorTest {
     public void testFindWebApkPackageReturnsPackageForValidWebApk() throws NameNotFoundException {
         List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
         infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
-        mPackageManager.addPackage(newPackageInfoWithOneSignature(
+        mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                 WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
         assertEquals(WEBAPK_PACKAGE_NAME,
@@ -146,27 +146,26 @@ public class WebApkValidatorTest {
     public void testFindWebApkPackageReturnsNullForInvalidPackageName() {
         List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
         infos.add(newResolveInfo(INVALID_WEBAPK_PACKAGE_NAME));
-        mPackageManager.addPackage(newPackageInfoWithOneSignature(
+        mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                 INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
         assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage} returns the WebAPK package name if a WebAPK
-     * has multiple signatures and one matches the expected signature.
+     * Tests {@link WebApkValidator.findWebApkPackage} returns null if a WebAPK has more than 2
+     * signatures, even if the second one matches the expected signature.
      */
     @Test
-    public void testFindWebApkPackageReturnsPackageForWebApkWithMultipleSignaturesAndOneMatched()
+    public void testFindWebApkPackageReturnsNullForMoreThanTwoSignatures()
             throws NameNotFoundException {
         List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
         infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
         Signature[] signatures = new Signature[] {new Signature(SIGNATURE_1),
-                new Signature(SIGNATURE_2), new Signature(EXPECTED_SIGNATURE)};
+                new Signature(EXPECTED_SIGNATURE), new Signature(SIGNATURE_2)};
         mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures));
 
-        assertEquals(WEBAPK_PACKAGE_NAME,
-                WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
     }
 
     /**
@@ -200,8 +199,10 @@ public class WebApkValidatorTest {
         return packageInfo;
     }
 
-    private static PackageInfo newPackageInfoWithOneSignature(
+    // The browser signature is expected to always be the second signature - the first (and any
+    // additional ones after the second) are ignored.
+    private static PackageInfo newPackageInfoWithBrowserSignature(
             String packageName, Signature signature) {
-        return newPackageInfo(packageName, new Signature[] {signature});
+        return newPackageInfo(packageName, new Signature[] {new Signature(""), signature});
     }
 }

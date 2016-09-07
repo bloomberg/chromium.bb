@@ -37,6 +37,17 @@ jinja_template("chrome_public_android_manifest") {
   ]
 }
 
+java_cpp_template("chrome_webapk_signature_srcjar") {
+  sources = [
+    "java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHostSignature.template",
+  ]
+  package_name = "org/chromium/chrome/browser/webapps"
+  inputs = [
+    "webapk/channel_keys.h",
+  ]
+  defines = [ "channel_" + android_channel ]
+}
+
 jinja_template("chrome_sync_shell_android_manifest") {
   input = "java/AndroidManifest.xml"
   output = chrome_sync_shell_android_manifest
@@ -220,6 +231,7 @@ android_library("chrome_java") {
 
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
+    ":chrome_webapk_signature_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_version_srcjar",
     ":resource_id_javagen",
