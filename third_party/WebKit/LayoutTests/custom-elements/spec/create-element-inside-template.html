@@ -8,15 +8,17 @@
 <script>
 'use strict';
 
-// Setup iframe to test the parser.
-iframe.srcdoc = `<template id="test"><a-a>innerHTML</a-a></template>`;
+iframe.srcdoc = `<template id="test"><a-a></a-a></template>`;
 setup({ explicit_done: true });
 iframe.onload = () => {
   let doc = iframe.contentDocument;
+  let w = doc.defaultView;
   let tmpl = doc.querySelector('#test');
   let element = tmpl.content.querySelector('a-a');
+  w.customElements.define('a-a', class extends w.HTMLElement {});
   test(function () {
-    assert_false(element.matches(':defined'));
+    assert_true(element.matches(':not(:defined)'));
+    assert_true(element instanceof w.HTMLElement);
   }, 'Custom element state in template content should be "not defined"');
   done();
 };
