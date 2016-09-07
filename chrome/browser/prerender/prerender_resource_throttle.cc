@@ -13,6 +13,7 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 
@@ -25,7 +26,7 @@ static const char kFollowOnlyWhenPrerenderShown[] =
     "follow-only-when-prerender-shown";
 
 PrerenderContents* g_prerender_contents_for_testing;
-}
+}  // namespace
 
 void PrerenderResourceThrottle::OverridePrerenderContentsForTesting(
     PrerenderContents* contents) {
@@ -67,6 +68,26 @@ void PrerenderResourceThrottle::WillRedirectRequest(
                  redirect_info.new_url));
 }
 
+void PrerenderResourceThrottle::WillProcessResponse(bool* defer) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
+  if (!info)
+    return;
+
+  bool is_no_store = false;
+  const net::HttpResponseInfo& response_info = request_->response_info();
+  if (response_info.headers.get()) {
+    is_no_store =
+        response_info.headers->HasHeaderValue("cache-control", "no-store");
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&PrerenderResourceThrottle::WillProcessResponseOnUI,
+                 content::IsResourceTypeFrame(info->GetResourceType()),
+                 is_no_store, info->GetChildID(), info->GetRenderFrameID()));
+}
+
 const char* PrerenderResourceThrottle::GetNameForLogging() const {
   return "PrerenderResourceThrottle";
 }
@@ -79,6 +100,7 @@ void PrerenderResourceThrottle::Cancel() {
   controller()->Cancel();
 }
 
+// static
 void PrerenderResourceThrottle::WillStartRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& method,
@@ -116,6 +138,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
                  &PrerenderResourceThrottle::Resume, throttle));
 }
 
+// static
 void PrerenderResourceThrottle::WillRedirectRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& follow_only_when_prerender_shown_header,
@@ -157,6 +180,24 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
                  &PrerenderResourceThrottle::Resume, throttle));
 }
 
+// static
+void PrerenderResourceThrottle::WillProcessResponseOnUI(bool is_main_resource,
+                                                        bool is_no_store,
+                                                        int render_process_id,
+                                                        int render_frame_id) {
+  PrerenderContents* prerender_contents =
+      PrerenderContentsFromRenderFrame(render_process_id, render_frame_id);
+  if (!prerender_contents)
+    return;
+
+  if (prerender_contents->prerender_mode() != PREFETCH_ONLY)
+    return;
+
+  prerender_contents->prerender_manager()->RecordResourcePrefetch(
+      prerender_contents->origin(), is_main_resource, is_no_store);
+}
+
+// static
 PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromRenderFrame(
     int render_process_id, int render_frame_id) {
   if (g_prerender_contents_for_testing)

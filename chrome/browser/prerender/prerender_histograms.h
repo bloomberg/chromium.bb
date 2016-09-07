@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -105,7 +106,12 @@ class PrerenderHistograms {
   void RecordNetworkBytes(Origin origin,
                           bool used,
                           int64_t prerender_bytes,
-                          int64_t profile_bytes);
+                          int64_t profile_bytes) const;
+
+  // Record resources loaded by NoStatePrefetch.
+  void RecordResourcePrefetch(Origin origin,
+                              bool is_main_resource,
+                              bool is_no_store) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
@@ -138,6 +144,8 @@ class PrerenderHistograms {
   // start recording events before the first prerender occurs.
   bool seen_any_pageload_;
   bool seen_pageload_started_after_prerender_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHistograms);
 };

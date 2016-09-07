@@ -551,6 +551,12 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   }
 }
 
+void PrerenderManager::RecordResourcePrefetch(Origin origin,
+                                              bool is_main_resource,
+                                              bool is_no_store) {
+  histograms_->RecordResourcePrefetch(origin, is_main_resource, is_no_store);
+}
+
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode() {
   return mode_;

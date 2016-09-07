@@ -7,17 +7,29 @@
 #include <string>
 
 #include "base/format_macros.h"
+#include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
-
-using predictors::AutocompleteActionPredictor;
 
 namespace prerender {
 
 namespace {
+
+// This enum is used to define the buckets for the
+// "Prerender.NoStatePrefetchResourceCount" histogram family.
+// Hence, existing enumerated constants should never be deleted or reordered,
+// and new constants should only be appended at the end of the enumeration.
+enum NoStatePrefetchResourceType {
+  MAIN_RESOURCE_CACHEABLE = 0,
+  MAIN_RESOURCE_NO_STORE = 1,
+  SUB_RESOURCE_CACHEABLE = 2,
+  SUB_RESOURCE_NO_STORE = 3,
+
+  NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT  // Must be the last.
+};
 
 // Time window for which we will record windowed PLTs from the last observed
 // link rel=prefetch tag. This is not intended to be the same as the prerender
@@ -354,7 +366,7 @@ void PrerenderHistograms::RecordFinalStatus(
 void PrerenderHistograms::RecordNetworkBytes(Origin origin,
                                              bool used,
                                              int64_t prerender_bytes,
-                                             int64_t profile_bytes) {
+                                             int64_t profile_bytes) const {
   const int kHistogramMin = 1;
   const int kHistogramMax = 100000000;  // 100M.
   const int kBucketCount = 50;
@@ -381,6 +393,28 @@ void PrerenderHistograms::RecordNetworkBytes(Origin origin,
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             name, prerender_bytes, kHistogramMin, kHistogramMax, kBucketCount));
   }
+}
+
+void PrerenderHistograms::RecordResourcePrefetch(Origin origin,
+                                                 bool is_main_resource,
+                                                 bool is_no_store) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NoStatePrefetchResourceType type =
+      is_main_resource
+          ? (is_no_store ? MAIN_RESOURCE_NO_STORE : MAIN_RESOURCE_CACHEABLE)
+          : (is_no_store ? SUB_RESOURCE_NO_STORE : SUB_RESOURCE_CACHEABLE);
+  DCHECK_LT(type, NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT);
+
+  std::string histogram_name =
+      GetHistogramName(origin, IsOriginWash(), "NoStatePrefetchResourceTypes");
+
+  // Unrolls UMA_HISTOGRAM_ENUMERATION, required to support dynamic histogram
+  // name.
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      histogram_name, 1, NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT,
+      NO_STATE_PREFETCH_RESOURCE_TYPE_COUNT + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(type);
 }
 
 bool PrerenderHistograms::IsOriginWash() const {

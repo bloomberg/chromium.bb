@@ -45401,6 +45401,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Prerender.NoStatePrefetchResourceTypes"
+    enum="NoStatePrefetchResourceType">
+  <owner>droger@chromium.org</owner>
+  <owner>mattcary@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Type of resources loaded by NoStatePrefetch, distinguishing cacheable
+    resources from no-store resources, and main resources from sub-resources.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.OmniboxNavigationsCouldPrerender">
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -88286,6 +88297,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Timed out"/>
 </enum>
 
+<enum name="NoStatePrefetchResourceType" type="int">
+  <int value="0" label="Main resource, cacheable"/>
+  <int value="1" label="Main resource, no-store"/>
+  <int value="2" label="Sub-resource, cacheable"/>
+  <int value="3" label="Sub-resource, no-store"/>
+</enum>
+
 <enum name="NotificationActionType" type="int">
   <int value="0" label="Unknown"/>
   <int value="1" label="Notification added"/>
@@ -103710,6 +103728,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.LocalPredictorTimeUntilUsed"/>
   <affected-histogram name="Prerender.NetworkBytesUsed"/>
   <affected-histogram name="Prerender.NetworkBytesWasted"/>
+  <affected-histogram name="Prerender.NoStatePrefetchResourceTypes"/>
   <affected-histogram name="Prerender.PageVisitedStatus"/>
   <affected-histogram name="Prerender.PerceivedPLT"/>
   <affected-histogram name="Prerender.PerceivedPLTFirstAfterMiss"/>

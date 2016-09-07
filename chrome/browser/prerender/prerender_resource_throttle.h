@@ -37,6 +37,7 @@ class PrerenderResourceThrottle
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
+  void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
 
   // Called by the PrerenderContents when a prerender becomes visible.
@@ -66,6 +67,11 @@ class PrerenderResourceThrottle
       int render_process_id,
       int render_frame_id,
       const GURL& new_url);
+
+  static void WillProcessResponseOnUI(bool is_main_resource,
+                                      bool is_no_store,
+                                      int render_process_id,
+                                      int render_frame_id);
 
   // Helper to return the PrerenderContents given a render frame id. May return
   // NULL if it's gone.

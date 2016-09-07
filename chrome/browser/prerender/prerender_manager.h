@@ -199,6 +199,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       double fraction_plt_elapsed_at_swap_in,
       const GURL& url);
 
+  // Called when a resource has been loaded by NoStatePrefetch.
+  void RecordResourcePrefetch(Origin origin,
+                              bool is_main_resource,
+                              bool is_no_store);
+
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
