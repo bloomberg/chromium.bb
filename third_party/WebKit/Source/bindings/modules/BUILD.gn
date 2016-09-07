@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//third_party/WebKit/Source/modules/modules.gni")
-import("//third_party/WebKit/Source/bindings/core/core.gni")
-import("//third_party/WebKit/Source/bindings/modules/modules.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 
@@ -22,7 +20,47 @@ group("bindings_modules_generated") {
 
 # GYP version: event_interfaces action in bindings_modules_generated
 generate_event_interfaces("modules_bindings_generated_event_interfaces") {
-  sources = modules_event_idl_files
+  sources = [
+    "//third_party/WebKit/Source/modules/app_banner/BeforeInstallPromptEvent.idl",
+    "//third_party/WebKit/Source/modules/background_sync/SyncEvent.idl",
+    "//third_party/WebKit/Source/modules/device_light/DeviceLightEvent.idl",
+    "//third_party/WebKit/Source/modules/device_orientation/DeviceMotionEvent.idl",
+    "//third_party/WebKit/Source/modules/device_orientation/DeviceOrientationEvent.idl",
+    "//third_party/WebKit/Source/modules/encryptedmedia/MediaEncryptedEvent.idl",
+    "//third_party/WebKit/Source/modules/encryptedmedia/MediaKeyMessageEvent.idl",
+    "//third_party/WebKit/Source/modules/gamepad/GamepadEvent.idl",
+    "//third_party/WebKit/Source/modules/indexeddb/IDBVersionChangeEvent.idl",
+    "//third_party/WebKit/Source/modules/mediarecorder/BlobEvent.idl",
+    "//third_party/WebKit/Source/modules/mediastream/MediaStreamEvent.idl",
+    "//third_party/WebKit/Source/modules/mediastream/MediaStreamTrackEvent.idl",
+    "//third_party/WebKit/Source/modules/notifications/NotificationEvent.idl",
+    "//third_party/WebKit/Source/modules/payments/PaymentRequestUpdateEvent.idl",
+    "//third_party/WebKit/Source/modules/peerconnection/RTCDTMFToneChangeEvent.idl",
+    "//third_party/WebKit/Source/modules/peerconnection/RTCDataChannelEvent.idl",
+    "//third_party/WebKit/Source/modules/peerconnection/RTCIceCandidateEvent.idl",
+    "//third_party/WebKit/Source/modules/presentation/PresentationConnectionAvailableEvent.idl",
+    "//third_party/WebKit/Source/modules/presentation/PresentationConnectionCloseEvent.idl",
+    "//third_party/WebKit/Source/modules/push_messaging/PushEvent.idl",
+    "//third_party/WebKit/Source/modules/sensor/SensorErrorEvent.idl",
+    "//third_party/WebKit/Source/modules/sensor/SensorReadingEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/ExtendableEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/ExtendableMessageEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/FetchEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/ForeignFetchEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/InstallEvent.idl",
+    "//third_party/WebKit/Source/modules/serviceworkers/ServiceWorkerMessageEvent.idl",
+    "//third_party/WebKit/Source/modules/speech/SpeechRecognitionError.idl",
+    "//third_party/WebKit/Source/modules/speech/SpeechRecognitionEvent.idl",
+    "//third_party/WebKit/Source/modules/speech/SpeechSynthesisEvent.idl",
+    "//third_party/WebKit/Source/modules/storage/StorageEvent.idl",
+    "//third_party/WebKit/Source/modules/vr/VRDisplayEvent.idl",
+    "//third_party/WebKit/Source/modules/webaudio/AudioProcessingEvent.idl",
+    "//third_party/WebKit/Source/modules/webaudio/OfflineAudioCompletionEvent.idl",
+    "//third_party/WebKit/Source/modules/webgl/WebGLContextEvent.idl",
+    "//third_party/WebKit/Source/modules/webmidi/MIDIConnectionEvent.idl",
+    "//third_party/WebKit/Source/modules/webmidi/MIDIMessageEvent.idl",
+    "//third_party/WebKit/Source/modules/websockets/CloseEvent.idl",
+  ]
   output_file = "EventModulesInterfaces.in"
   suffix = "Modules"
 }
@@ -62,9 +100,16 @@ make_names("bindings_modules_generated_event_target_modules_names") {
 
 # ------------------------------------------------------------------------------
 
-# GYP version: Source/bindings/modules/generated.gyp:interfaces_info_individual_modules
+# In GYP, paths needed to be passed separately for static and generated files,
+# as static files are listed in a temporary file (b/c too long for command
+# line), but generated files must be passed at the command line, as their paths
+# are not fixed at GYP time, when the temporary file is generated, because
+# their paths depend on the build directory, which varies.
+#
+# FIXME: GN does not have this limitation and we can combine the lists.
 compute_interfaces_info_individual("interfaces_info_individual_modules") {
-  sources_static = modules_static_idl_files
+  sources_static =
+      modules_definition_idl_files + modules_static_dependency_idl_files
   sources_generated = modules_generated_dependency_idl_files
   interfaces_info_file =
       "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"

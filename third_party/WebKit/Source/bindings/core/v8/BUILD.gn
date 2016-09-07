@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/WebKit/Source/bindings/bindings.gni")
-import("//third_party/WebKit/Source/bindings/core/idl.gni")
+import("//third_party/WebKit/Source/core/core_idl_files.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 

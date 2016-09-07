@@ -2,10 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-# The paths in this file are absolute since it is imported from different
-# source directories.
+# The paths in this file are absolute since this file is imported and the
+# file lists must be valid from multple "current directories".
+
+bindings_core_output_dir = "$bindings_output_dir/core"
+
+# Global constructors
+core_global_constructors_original_interfaces = [
+  "Window",
+  "SharedWorkerGlobalScope",
+  "DedicatedWorkerGlobalScope",
+]
+
+# The interfaces aren't technically files, but we can treat them as file names
+# to get process_file_template to generate lists of IDL files corresponding
+# to each interface.
+core_global_constructors_generated_idl_files =
+    process_file_template(
+        core_global_constructors_original_interfaces,
+        [ "$blink_core_output_dir/{{source_name_part}}CoreConstructors.idl" ])
 
 core_idl_files = get_path_info([
                                  "animation/KeyframeEffect.idl",
@@ -588,3 +606,30 @@ generated_webcore_testing_idl_files =
           "$blink_core_output_dir/testing/InternalSettingsGenerated.idl",
         ],
         "abspath")
+
+core_definition_idl_files = core_dictionary_idl_files + core_idl_files +
+                            core_idl_with_modules_dependency_files
+
+core_testing_definition_idl_files =
+    core_testing_dictionary_idl_files + webcore_testing_idl_files +
+    webcore_testing_idl_with_modules_dependency_files
+
+# Static IDL files
+core_static_interface_idl_files =
+    core_definition_idl_files + core_testing_definition_idl_files +
+    core_typedefs_enums_only_idl_files
+
+core_static_dependency_idl_files =
+    core_dependency_idl_files + webcore_testing_dependency_idl_files
+
+# Generated IDL files
+core_generated_interface_idl_files = generated_webcore_testing_idl_files  # interfaces
+core_generated_dependency_idl_files =
+    core_global_constructors_generated_idl_files  # partial interfaces
+
+# Dependency IDL files: don't generate individual bindings, but do process
+# in IDL dependency computation, and count as build dependencies
+# 'core_dependency_idl_files' is already used in Source/core, so avoid
+# collision
+core_all_dependency_idl_files =
+    core_static_dependency_idl_files + core_generated_dependency_idl_files

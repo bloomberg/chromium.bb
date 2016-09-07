@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/bindings/modules/idl.gni")
-import("//third_party/WebKit/Source/bindings/modules/modules.gni")
+import("//third_party/WebKit/Source/core/core_idl_files.gni")
+import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 
 bindings_scripts_dir = get_path_info(".", "abspath")
 bindings_scripts_output_dir = "$root_gen_dir/blink/bindings/scripts"
@@ -183,7 +183,7 @@ template("idl_compiler") {
     # FIXME: This is too conservative, and causes excess rebuilds:
     # compute this file-by-file.  http://crbug.com/341748
     # This should theoretically just be the IDL files passed in.
-    inputs += all_dependency_idl_files
+    inputs += core_all_dependency_idl_files + modules_all_dependency_idl_files
 
     sources = invoker.sources
     outputs = [

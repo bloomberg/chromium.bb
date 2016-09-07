@@ -7,12 +7,12 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
-import("//third_party/WebKit/Source/bindings/modules/modules.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 visibility = [ "//third_party/WebKit/Source/*" ]

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/bindings/core/core.gni")
-import("//third_party/WebKit/Source/bindings/core/idl.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core_idl_files.gni")
 
