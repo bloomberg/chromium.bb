@@ -5,11 +5,6 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
-content_jni_gypi_values = exec_script("//build/gypi_to_gn.py",
-                                      [ rebase_path("../../content_jni.gypi") ],
-                                      "scope",
-                                      [ "../../content_jni.gypi" ])
-
 android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
   import_include = "java/src"
@@ -290,7 +285,40 @@ generate_jar_jni("jar_jni") {
 }
 
 generate_jni("content_jni_headers") {
-  sources = rebase_path(content_jni_gypi_values.sources, "", "../..")
+  sources = [
+    "java/src/org/chromium/content/app/ChildProcessServiceImpl.java",
+    "java/src/org/chromium/content/app/ContentMain.java",
+    "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
+    "java/src/org/chromium/content/browser/BrowserStartupController.java",
+    "java/src/org/chromium/content/browser/ChildProcessLauncher.java",
+    "java/src/org/chromium/content/browser/ContentVideoView.java",
+    "java/src/org/chromium/content/browser/ContentViewCore.java",
+    "java/src/org/chromium/content/browser/ContentViewRenderView.java",
+    "java/src/org/chromium/content/browser/ContentViewStatics.java",
+    "java/src/org/chromium/content/browser/DeviceSensors.java",
+    "java/src/org/chromium/content/browser/InterfaceProvider.java",
+    "java/src/org/chromium/content/browser/InterfaceRegistrar.java",
+    "java/src/org/chromium/content/browser/InterfaceRegistry.java",
+    "java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java",
+    "java/src/org/chromium/content/browser/MediaResourceGetter.java",
+    "java/src/org/chromium/content/browser/MediaSessionDelegate.java",
+    "java/src/org/chromium/content/browser/MediaThrottler.java",
+    "java/src/org/chromium/content/browser/MotionEventSynthesizer.java",
+    "java/src/org/chromium/content/browser/ScreenOrientationProvider.java",
+    "java/src/org/chromium/content/browser/SpeechRecognition.java",
+    "java/src/org/chromium/content/browser/TimeZoneMonitor.java",
+    "java/src/org/chromium/content/browser/TracingControllerAndroid.java",
+    "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java",
+    "java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java",
+    "java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java",
+    "java/src/org/chromium/content/browser/input/HandleViewResources.java",
+    "java/src/org/chromium/content/browser/input/ImeAdapter.java",
+    "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
+    "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
+    "java/src/org/chromium/content_public/browser/LoadUrlParams.java",
+    "java/src/org/chromium/content_public/common/MediaMetadata.java",
+    "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
+  ]
   jni_package = "content"
 }
 
