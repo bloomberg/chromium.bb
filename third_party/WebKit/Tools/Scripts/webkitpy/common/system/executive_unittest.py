@@ -68,7 +68,8 @@ class ScriptErrorTest(unittest.TestCase):
 def never_ending_command():
     """Arguments for a command that will never end (useful for testing process
     killing). It should be a process that is unlikely to already be running
-    because all instances will be killed."""
+    because all instances will be killed.
+    """
     if sys.platform == 'win32':
         return ['wmic']
     return ['yes']
@@ -127,7 +128,8 @@ class ExecutiveTest(unittest.TestCase):
     def test_run_command_with_unicode(self):
         """Validate that it is safe to pass unicode() objects
         to Executive.run* methods, and they will return unicode()
-        objects by default unless decode_output=False"""
+        objects by default unless decode_output=False
+        """
         unicode_tor_input = u"WebKit \u2661 Tor Arne Vestb\u00F8!"
         if sys.platform == 'win32':
             encoding = 'mbcs'

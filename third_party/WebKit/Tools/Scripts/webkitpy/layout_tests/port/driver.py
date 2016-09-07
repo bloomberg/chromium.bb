@@ -55,7 +55,8 @@ class DriverInput(object):
 
 class DriverOutput(object):
     """Groups information about a output from driver for easy passing
-    and post-processing of data."""
+    and post-processing of data.
+    """
 
     def __init__(self, text, image, image_hash, audio, crash=False,
                  test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
@@ -266,7 +267,6 @@ class Driver(object):
         This returns the test name for a given URI, e.g., if you passed in
         "file:///src/LayoutTests/fast/html/keygen.html" it would return
         "fast/html/keygen.html".
-
         """
 
         # This looks like a bit of a hack, since the uri is used instead of test name.

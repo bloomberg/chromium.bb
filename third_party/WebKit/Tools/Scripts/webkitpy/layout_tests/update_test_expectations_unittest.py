@@ -30,8 +30,7 @@ class FakeBotTestExpectations(object):
 class FakeBotTestExpectationsFactory(object):
 
     def __init__(self):
-        """
-        The distinct results seen in at least one run of the test.
+        """The distinct results seen in at least one run of the test.
         E.g. if the bot results for mytest.html are:
             PASS PASS FAIL PASS TIMEOUT
         then _all_results_by_builder would be:
@@ -804,8 +803,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             updated_expectations, test_expectations_before)
 
     def test_harness_updates_file(self):
-        """Tests that the call harness updates the TestExpectations file.
-        """
+        """Tests that the call harness updates the TestExpectations file."""
 
         self._define_builders({
             "WebKit Linux": {
@@ -871,7 +869,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """Tests behavior when TestExpectations file doesn't exist.
 
         Tests that a warning is outputted if the TestExpectations file
-        doesn't exist."""
+        doesn't exist.
+        """
 
         # Setup the mock host and port.
         host = MockHost()

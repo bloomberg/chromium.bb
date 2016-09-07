@@ -48,7 +48,6 @@ class PatchReader(object):
 
         Args:
           text_file_reader: A TextFileReader instance.
-
         """
         self._text_file_reader = text_file_reader
 

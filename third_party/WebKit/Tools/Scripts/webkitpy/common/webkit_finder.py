@@ -44,7 +44,8 @@ class WebKitFinder(object):
     def webkit_base(self):
         """Returns the absolute path to the top of the WebKit tree.
 
-        Raises an AssertionError if the top dir can't be determined."""
+        Raises an AssertionError if the top dir can't be determined.
+        """
         # Note: This code somewhat duplicates the code in
         # scm.find_checkout_root(). However, that code only works if the top
         # of the SCM repository also matches the top of the WebKit tree. Some SVN users

@@ -57,7 +57,6 @@ def change_directory(filesystem, checkout_root, paths):
              This argument can be None or the empty list if a git commit
              or all changes under the checkout root should be checked.
       checkout_root: The path to the root of the WebKit checkout.
-
     """
     if paths is not None:
         paths = list(paths)

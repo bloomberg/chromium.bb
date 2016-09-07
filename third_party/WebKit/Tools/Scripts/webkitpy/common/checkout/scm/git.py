@@ -231,7 +231,8 @@ class Git(SCM):
     def create_patch(self, git_commit=None, changed_files=None):
         """Returns a byte array (str()) representing the patch file.
         Patch files are effectively binary since they may contain
-        files of multiple different encodings."""
+        files of multiple different encodings.
+        """
 
         # Put code changes at the top of the patch and layout tests
         # at the bottom, this makes for easier reviewing.

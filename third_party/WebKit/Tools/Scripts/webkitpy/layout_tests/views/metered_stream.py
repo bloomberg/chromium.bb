@@ -35,8 +35,7 @@ LOG_HANDLER_NAME = 'MeteredStreamLogHandler'
 
 
 class MeteredStream(object):
-    """
-    This class implements a stream wrapper that has 'meters' as well as
+    """This class implements a stream wrapper that has 'meters' as well as
     regular output. A 'meter' is a single line of text that can be erased
     and rewritten repeatedly, without producing multiple lines of output. It
     can be used to produce effects like progress bars.

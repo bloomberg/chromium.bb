@@ -27,7 +27,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Generates a fake TestExpectations file consisting of flaky tests from the bot
-corresponding to the give port."""
+corresponding to the give port.
+"""
 
 import json
 import logging

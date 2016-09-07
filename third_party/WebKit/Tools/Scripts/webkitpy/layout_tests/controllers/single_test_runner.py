@@ -332,7 +332,8 @@ class SingleTestRunner(object):
 
     def _get_normalized_output_text(self, output):
         """Returns the normalized text output, i.e. the output in which
-        the end-of-line characters are normalized to "\n"."""
+        the end-of-line characters are normalized to "\n".
+        """
         # Running tests on Windows produces "\r\n".  The "\n" part is helpfully
         # changed to "\r\n" by our system (Python/Cygwin), resulting in
         # "\r\r\n", when, in fact, we wanted to compare the text output with

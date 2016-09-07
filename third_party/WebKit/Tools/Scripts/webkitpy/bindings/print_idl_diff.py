@@ -115,8 +115,7 @@ class Colorize(object):
         self.out = out
 
     def reset_color(self):
-        """Reset text's color to default.
-        """
+        """Reset text's color to default."""
         self.out.write('\033[0m')
 
     def change_color(self, color):
@@ -130,13 +129,11 @@ class Colorize(object):
             raise Exception('Unsupported color.')
 
     def writeln(self, string):
-        """Print text with a line-break.
-        """
+        """Print text with a line-break."""
         self.out.write(string + '\n')
 
     def write(self, string):
-        """Print text without a line-break.
-        """
+        """Print text without a line-break."""
         self.out.write(string)
 
 

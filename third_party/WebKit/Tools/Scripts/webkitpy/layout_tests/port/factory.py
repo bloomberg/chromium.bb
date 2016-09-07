@@ -149,7 +149,8 @@ class PortFactory(object):
     def get(self, port_name=None, options=None, **kwargs):
         """Returns an object implementing the Port interface. If
         port_name is None, this routine attempts to guess at the most
-        appropriate port on this platform."""
+        appropriate port on this platform.
+        """
         port_name = port_name or self._default_port(options)
 
         _check_configuration_and_target(self._host.filesystem, options)
@@ -184,7 +185,8 @@ class PortFactory(object):
         by real ports. This does not include any "fake" names like "test"
         or "mock-mac", and it does not include any directories that are not.
 
-        If platform is not specified, we will glob-match all ports"""
+        If platform is not specified, we will glob-match all ports
+        """
         platform = platform or '*'
         return fnmatch.filter(self._host.builders.all_port_names(), platform)
 

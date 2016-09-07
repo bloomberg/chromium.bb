@@ -28,7 +28,8 @@
 
 """Starts a local HTTP server which displays layout test failures (given a test
 results directory), provides comparisons of expected and actual results (both
-images and text) and allows one-click rebaselining of tests."""
+images and text) and allows one-click rebaselining of tests.
+"""
 
 from webkitpy.common.host import Host
 from webkitpy.common.net.layouttestresults import LayoutTestResults

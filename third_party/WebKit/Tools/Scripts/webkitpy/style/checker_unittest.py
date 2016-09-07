@@ -72,7 +72,6 @@ class ConfigureLoggingTestBase(unittest.TestCase):
     Sub-classes should implement:
 
       is_verbose: The is_verbose value to pass to configure_logging().
-
     """
 
     def setUp(self):
@@ -100,7 +99,6 @@ class ConfigureLoggingTestBase(unittest.TestCase):
 
         This method ensures that the logging configuration set up
         for a unit test does not affect logging in other unit tests.
-
         """
         logger = self._log
         for handler in self._handlers:
@@ -633,7 +631,6 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
     """Test the StyleProcessor class with an emphasis on code coverage.
 
     This class makes heavy use of mock objects.
-
     """
 
     class MockDispatchedChecker(object):

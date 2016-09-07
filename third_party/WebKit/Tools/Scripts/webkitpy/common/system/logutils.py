@@ -47,7 +47,6 @@ def _normalize_path(path):
 
     Converts a path to an absolute path, removes any trailing slashes,
     removes any extension, and lower-cases it.
-
     """
     path = os.path.abspath(path)
     path = os.path.normpath(path)
@@ -86,7 +85,6 @@ def get_logger(path):
       from webkitpy.common.system import logutils
 
       _log = logutils.get_logger(__file__)
-
     """
     # Since we assign to _scripts_dir and _webkitpy_dir in this function,
     # we need to declare them global.
@@ -130,7 +128,6 @@ def _default_handlers(stream, logging_level):
 
     Args:
       stream: See the configure_logging() docstring.
-
     """
     # Create the filter.
     def should_log(record):
@@ -178,7 +175,6 @@ def configure_logging(logging_level=None, logger=None, stream=None,
       handlers: A list of logging.Handler instances to add to the logger
                 being configured.  If this parameter is provided, then the
                 stream parameter is not used.
-
     """
     # If the stream does not define an "encoding" data attribute, the
     # logging module can throw an error like the following:

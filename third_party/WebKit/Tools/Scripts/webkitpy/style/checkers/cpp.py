@@ -278,7 +278,6 @@ def up_to_unmatched_closing_paren(s):
       up_to_unmatched_closing_paren("a == (b + c)) { ")
       returns "a == (b + c)", " {".
       Returns None, None if there is no unmatched ')'
-
     """
     i = 1
     for pos, c in enumerate(s):
@@ -300,7 +299,6 @@ class _IncludeState(dict):
     Call check_next_include_order() once for each header in the file, passing
     in the type constants defined above. Calls in an illegal order will
     raise an _IncludeError with an appropriate error message.
-
     """
     # self._section will move monotonically through this set. If it ever
     # needs to move backwards, check_next_include_order will raise an error.
@@ -341,7 +339,6 @@ class _IncludeState(dict):
         Returns:
           The empty string if the header is in the right order, or an
           error message describing what's wrong.
-
         """
         if header_type == _PRIMARY_HEADER and file_is_header:
             return 'Header file should not contain itself.'
@@ -403,7 +400,8 @@ class Parameter(object):
 
 class SingleLineView(object):
     """Converts multiple lines into a single line (with line breaks replaced by a
-       space) to allow for easier searching."""
+       space) to allow for easier searching.
+    """
 
     def __init__(self, lines, start_position, end_position):
         """Create a SingleLineView instance.
@@ -439,7 +437,8 @@ class SingleLineView(object):
         Special cases:
         * Columns in the added spaces are considered part of the previous line.
         * Columns beyond the end of the line are consider part the last line
-        in the view."""
+        in the view.
+        """
         total_columns = 0
         row_offset = 0
         while row_offset < len(self._row_lengths) - 1 and single_line_column_number >= total_columns + self._row_lengths[row_offset]:
@@ -453,7 +452,8 @@ def create_skeleton_parameters(all_parameters):
 
     The skeleton only has one word for the parameter name, one word for the type,
     and commas after each parameter and only there. Everything in the skeleton
-    remains in the same columns as the original."""
+    remains in the same columns as the original.
+    """
     all_simplifications = (
         # Remove template parameters, function declaration parameters, etc.
         r'(<[^<>]*?>)|(\([^\(\)]*?\))|(\{[^\{\}]*?\})',
@@ -519,7 +519,6 @@ class _FunctionState(object):
 
     Attributes:
       min_confidence: The minimum confidence level to use while checking style.
-
     """
 
     _NORMAL_TRIGGER = 250  # for --v=0, 500 for --v=1, etc.
@@ -935,7 +934,6 @@ def get_legacy_header_guard_cpp_variable(filename):
     Returns:
       The CPP variable that should be used as a header guard in the
       named file.
-
     """
 
     # Restores original filename in case that style checker is invoked from Emacs's
@@ -961,7 +959,6 @@ def get_header_guard_cpp_variable(filename):
     Returns:
       The CPP variable that should be used as a header guard in the
       named file in Chromium-style.
-
     """
 
     # Restores original filename in case that style checker is invoked from Emacs's
@@ -3551,7 +3548,7 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
 
 
 def check_for_toFoo_definition(filename, pattern, error):
-    """ Reports for using static_cast instead of toFoo convenience function.
+    """Reports for using static_cast instead of toFoo convenience function.
 
     This function will output warnings to make sure you are actually using
     the added toFoo conversion functions rather than directly hard coding
@@ -3997,7 +3994,6 @@ def process_line(filename, file_extension,
                   state.
       error: A callable to which errors are reported, which takes arguments:
              line number, error level, and message
-
     """
     raw_lines = clean_lines.raw_lines
     detect_functions(clean_lines, line, function_state, error)
@@ -4154,7 +4150,6 @@ class CppChecker(object):
         Args:
           file_extension: A string that is the file extension, without
                           the leading dot.
-
         """
         self.file_extension = file_extension
         self.file_path = file_path

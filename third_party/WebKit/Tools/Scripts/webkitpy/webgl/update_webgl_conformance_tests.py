@@ -61,9 +61,7 @@ def translate_includes(text):
 
 
 def translate_khronos_test(text):
-    """
-    This method translates the contents of a Khronos test to a WebKit test.
-    """
+    """This method translates the contents of a Khronos test to a WebKit test."""
 
     translateFuncs = [
         remove_first_line_comment,

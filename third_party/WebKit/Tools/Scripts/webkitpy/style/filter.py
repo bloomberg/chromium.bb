@@ -37,7 +37,6 @@ def validate_filter_rules(filter_rules, all_categories):
                   with "+" or "-" or if a filter rule does not match
                   the beginning of some category name in the list
                   of all available categories.
-
     """
     for rule in filter_rules:
         if not (rule.startswith('+') or rule.startswith('-')):
@@ -70,7 +69,6 @@ class _CategoryFilter(object):
         Raises:
           ValueError: Invalid filter rule if a rule does not start with
                       plus ("+") or minus ("-").
-
         """
         if filter_rules is None:
             filter_rules = []
@@ -103,7 +101,6 @@ class _CategoryFilter(object):
         leading plus/minus (+/-) matches the beginning of the category
         name.  A plus (+) means the category should be checked, while a
         minus (-) means the category should not be checked.
-
         """
         if category in self._should_check_category:
             return self._should_check_category[category]
@@ -147,7 +144,6 @@ class FilterConfiguration(object):
                       words, the user rules take precedence over the
                       everything.  In practice, the user rules are
                       provided by the user from the command line.
-
         """
         if base_rules is None:
             base_rules = []
@@ -207,7 +203,6 @@ class FilterConfiguration(object):
 
          This method returns a tuple rather than a list so the return
          value can be passed to _filter_from_path_rules() without change.
-
         """
         path = path.lower()
         for (sub_paths, path_rules) in self._get_path_specific_lower():
@@ -223,7 +218,6 @@ class FilterConfiguration(object):
           path_rules: A tuple of path rules.  We require a tuple rather
                       than a list so the value can be used as a dictionary
                       key in self._path_rules_to_filter.
-
         """
         # We reuse the same CategoryFilter where possible to take
         # advantage of the caching they do.
@@ -273,6 +267,5 @@ class FilterConfiguration(object):
         Args:
           category: The category name.
           path: The path of the file being checked.
-
         """
         return self._filter_from_path(path).should_check(category)

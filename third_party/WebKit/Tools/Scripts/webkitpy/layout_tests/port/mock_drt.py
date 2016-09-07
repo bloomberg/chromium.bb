@@ -26,8 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-This is an implementation of the Port interface that overrides other
+"""This is an implementation of the Port interface that overrides other
 ports and changes the Driver binary to "MockDRT".
 
 The MockDRT objects emulate what a real DRT would do. In particular, they

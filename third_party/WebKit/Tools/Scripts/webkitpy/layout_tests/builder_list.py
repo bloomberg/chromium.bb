@@ -38,8 +38,7 @@ The actual constants are in webkitpy.common.config.builders.
 class BuilderList(object):
 
     def __init__(self, builders_dict):
-        """
-        The given dictionary maps builder names to dicts with the keys:
+        """The given dictionary maps builder names to dicts with the keys:
             "port_name": A fully qualified port name.
             "specifiers": TestExpectations specifiers for that config. Valid values are found in
                   TestExpectationsParser._configuration_tokens_list. specifiers is a list whose

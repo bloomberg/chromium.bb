@@ -102,7 +102,10 @@ class TestParserTest(unittest.TestCase):
         self.assertEqual(logs, 'Multiple references are not supported. Importing the first ref defined in somefile.html\n')
 
     def test_analyze_test_reftest_with_ref_support_Files(self):
-        """ Tests analyze_test() using a reftest that has refers to a reference file outside of the tests directory and the reference file has paths to other support files """
+        """Tests analyze_test() using a reftest that has refers to a
+        reference file outside of the tests directory and the reference
+        file has paths to other support files.
+        """
 
         test_html = """<html>
 <head>
@@ -133,7 +136,7 @@ class TestParserTest(unittest.TestCase):
         self.assertFalse('jstest' in test_info.keys(), 'test should not have been analyzed as a jstest')
 
     def test_analyze_jstest(self):
-        """ Tests analyze_test() using a jstest """
+        """Tests analyze_test() using a jstest"""
 
         test_html = """<head>
 <link href="/resources/testharness.css" rel="stylesheet" type="text/css">
@@ -151,7 +154,7 @@ class TestParserTest(unittest.TestCase):
         self.assertTrue('jstest' in test_info.keys(), 'test should be a jstest')
 
     def test_analyze_pixel_test_all_true(self):
-        """ Tests analyze_test() using a test that is neither a reftest or jstest with all=False """
+        """Tests analyze_test() using a test that is neither a reftest or jstest with all=False"""
 
         test_html = """<html>
 <head>
@@ -180,7 +183,7 @@ CONTENT OF TEST
         self.assertFalse('jstest' in test_info.keys(), 'test should not be a jstest')
 
     def test_analyze_pixel_test_all_false(self):
-        """ Tests analyze_test() using a test that is neither a reftest or jstest, with -all=False """
+        """Tests analyze_test() using a test that is neither a reftest or jstest, with -all=False"""
 
         test_html = """<html>
 <head>
@@ -204,7 +207,7 @@ CONTENT OF TEST
         self.assertEqual(test_info, None, 'test should have been skipped')
 
     def test_analyze_non_html_file(self):
-        """ Tests analyze_test() with a file that has no html"""
+        """Tests analyze_test() with a file that has no html"""
         # FIXME: use a mock filesystem
         parser = TestParser(os.path.join(os.path.dirname(__file__), 'test_parser.py'), MockHost())
         test_info = parser.analyze_test()

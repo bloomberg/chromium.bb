@@ -207,7 +207,8 @@ class TestExpectationParser(object):
 
     def _collect_matching_tests(self, expectation_line):
         """Convert the test specification to an absolute, normalized
-        path and make sure directories end with the OS path separator."""
+        path and make sure directories end with the OS path separator.
+        """
         if not self._all_tests:
             expectation_line.matching_tests = [expectation_line.path]
             return
@@ -264,7 +265,6 @@ class TestExpectationParser(object):
         [[bugs] [ "[" <configuration specifiers> "]" <name> [ "[" <expectations> "]" ["#" <comment>]
 
         Any errant whitespace is not preserved.
-
         """
         expectation_line = TestExpectationLine()
         expectation_line.original_string = expectation_string
@@ -626,7 +626,8 @@ class TestExpectationsModel(object):
 
     def _dict_of_sets(self, strings_to_constants):
         """Takes a dict of strings->constants and returns a dict mapping
-        each constant to an empty set."""
+        each constant to an empty set.
+        """
         d = {}
         for c in strings_to_constants.values():
             d[c] = set()
@@ -666,7 +667,8 @@ class TestExpectationsModel(object):
 
     def get_expectations_string(self, test):
         """Returns the expectations for the given test as an uppercase string.
-        If there are no expectations for the test, then "PASS" is returned."""
+        If there are no expectations for the test, then "PASS" is returned.
+        """
         if self.get_expectation_line(test).is_skipped_outside_expectations_file:
             return 'NOTRUN'
 
@@ -719,7 +721,8 @@ class TestExpectationsModel(object):
 
         This routine assumes the test has not been added before. If it has,
         use _clear_expectations_for_test() to reset the state prior to
-        calling this."""
+        calling this.
+        """
         self._test_to_expectations[test] = expectation_line.parsed_expectations
         for expectation in expectation_line.parsed_expectations:
             self._expectation_to_tests[expectation].add(test)
@@ -757,7 +760,8 @@ class TestExpectationsModel(object):
 
         Args:
           test: test to look for
-          dict: dict of sets of files"""
+          dict: dict of sets of files
+        """
         for set_of_tests in dict_of_sets_of_tests.itervalues():
             if test in set_of_tests:
                 set_of_tests.remove(test)
@@ -915,7 +919,8 @@ class TestExpectations(object):
         Args:
             result: actual result of a test execution
             expected_results: set of results listed in test_expectations
-            test_needs_rebaselining: whether test was marked as REBASELINE"""
+            test_needs_rebaselining: whether test was marked as REBASELINE
+        """
         if not set(expected_results) - set(TestExpectations.NON_TEST_OUTCOME_EXPECTATIONS):
             expected_results = set([PASS])
 
@@ -937,7 +942,8 @@ class TestExpectations(object):
         """Returns a copy of the expected results for a test, except that we
         drop any pixel failures and return the remaining expectations. For example,
         if we're not running pixel tests, then tests expected to fail as IMAGE
-        will PASS."""
+        will PASS.
+        """
         expected_results = expected_results.copy()
         if IMAGE in expected_results:
             expected_results.remove(IMAGE)
@@ -947,7 +953,8 @@ class TestExpectations(object):
     @staticmethod
     def remove_non_sanitizer_failures(expected_results):
         """Returns a copy of the expected results for a test, except that we
-        drop any failures that the sanitizers don't care about."""
+        drop any failures that the sanitizers don't care about.
+        """
         expected_results = expected_results.copy()
         for result in (IMAGE, FAIL, IMAGE_PLUS_TEXT):
             if result in expected_results:

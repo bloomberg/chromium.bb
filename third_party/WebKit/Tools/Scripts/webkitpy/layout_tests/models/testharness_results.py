@@ -11,9 +11,7 @@ TESTHARNESSREPORT_FOOTER = 'Harness: the test ran to completion.'
 
 
 def is_testharness_output(content_text):
-    """
-    Returns whether the content_text in parameter is a testharness output.
-    """
+    """Returns whether the content_text in parameter is a testharness output."""
 
     # Leading and trailing white spaces are accepted.
     lines = content_text.strip().splitlines()
@@ -32,8 +30,7 @@ def is_testharness_output(content_text):
 
 
 def is_testharness_output_passing(content_text):
-    """
-    Returns whether the content_text in parameter is a passing testharness output.
+    """Returns whether the content_text in parameter is a passing testharness output.
 
     Note:
         It is expected that the |content_text| is a testharness output.
@@ -82,8 +79,7 @@ def is_testharness_output_passing(content_text):
 
 
 def is_testharness_output_with_console_errors_or_warnings(content_text):
-    """
-    Returns whether the content_text in parameter is a testharness output with
+    """Returns whether the content_text in parameter is a testharness output with
     console errors.
 
     Note:

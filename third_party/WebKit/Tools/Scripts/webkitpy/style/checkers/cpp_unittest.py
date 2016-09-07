@@ -57,7 +57,8 @@ class ErrorCollector:
 
     def __init__(self, assert_fn, filter=None, lines_to_check=None):
         """assert_fn: a function to call when we notice a problem.
-           filter: filters the errors that we are concerned about."""
+           filter: filters the errors that we are concerned about.
+        """
         self._assert_fn = assert_fn
         self._errors = []
         self._lines_to_check = lines_to_check
@@ -237,7 +238,6 @@ class CppStyleTestBase(unittest.TestCase):
     Attributes:
       min_confidence: An integer that is the current minimum confidence
                       level for the tests.
-
     """
 
     # FIXME: Refactor the unit tests so the confidence level is passed
@@ -362,7 +362,8 @@ class CppStyleTestBase(unittest.TestCase):
         """Checks if the two positions are equal.
 
         position: a cpp_style.Position object.
-        tuple_position: a tuple (row, column) to compare against."""
+        tuple_position: a tuple (row, column) to compare against.
+        """
         self.assertEqual(position, cpp_style.Position(tuple_position[0], tuple_position[1]),
                          'position %s, tuple_position %s' % (position, tuple_position))
 

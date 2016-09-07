@@ -133,3 +133,20 @@ def f():
     """
     return x
 ''')
+
+    def test_format_docstrings_indentation(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO('''
+def f():
+    """This is a docstring
+       With extra indentation on this line.
+
+     """
+''')
+        main(host, ['-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), '''
+def f():
+    """This is a docstring
+       With extra indentation on this line.
+    """
+''')

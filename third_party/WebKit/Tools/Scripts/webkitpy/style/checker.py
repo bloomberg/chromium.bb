@@ -274,7 +274,6 @@ def check_webkit_style_configuration(options):
 
     Args:
       options: A CommandOptionValues instance.
-
     """
     filter_configuration = FilterConfiguration(
         base_rules=_BASE_FILTER_RULES,
@@ -296,7 +295,6 @@ def _create_log_handlers(stream):
 
     Args:
       stream: See the configure_logging() docstring.
-
     """
     # Handles logging.WARNING and above.
     error_handler = logging.StreamHandler(stream)
@@ -323,7 +321,6 @@ def _create_debug_log_handlers(stream):
 
     Args:
       stream: See the configure_logging() docstring.
-
     """
     handler = logging.StreamHandler(stream)
     formatter = logging.Formatter("%(name)s: %(levelname)-8s %(message)s")
@@ -350,7 +347,6 @@ def configure_logging(stream, logger=None, is_verbose=False):
               should be used only in unit tests.  Defaults to the
               root logger.
       is_verbose: A boolean value of whether logging should be verbose.
-
     """
     # If the stream does not define an "encoding" data attribute, the
     # logging module can throw an error like the following:
@@ -527,7 +523,6 @@ class StyleProcessorConfiguration(object):
 
       stderr_write: A function that takes a string as a parameter and
                     serves as stderr.write.
-
     """
 
     def __init__(self,
@@ -556,7 +551,6 @@ class StyleProcessorConfiguration(object):
 
           stderr_write: A function that takes a string as a parameter and
                         serves as stderr.write.
-
         """
         self._filter_configuration = filter_configuration
         self._output_format = output_format
@@ -578,7 +572,6 @@ class StyleProcessorConfiguration(object):
                                the application's confidence in the error.
                                A higher number means greater confidence.
           file_path: The path of the file being checked
-
         """
         if confidence_in_error < self.min_confidence:
             return False
@@ -614,7 +607,6 @@ class ProcessorBase(object):
         The TextFileReader class calls this method prior to reading in
         the lines of a file.  Use this method, for example, to prevent
         the style checker from reading binary files into memory.
-
         """
         raise NotImplementedError('Subclasses should implement.')
 
@@ -631,7 +623,6 @@ class ProcessorBase(object):
                     may support a "reportable_lines" parameter that represents
                     the line numbers of the lines for which style errors
                     should be reported.
-
         """
         raise NotImplementedError('Subclasses should implement.')
 
@@ -643,7 +634,6 @@ class StyleProcessor(ProcessorBase):
     Attributes:
       error_count: An integer that is the total number of reported
                    errors for the lifetime of this instance.
-
     """
 
     def __init__(self, configuration, mock_dispatcher=None,
@@ -661,7 +651,6 @@ class StyleProcessor(ProcessorBase):
                                        transforming carriage returns.
                                        This parameter is for unit testing.
                                        Defaults to CarriageReturnChecker.
-
         """
         if mock_dispatcher is None:
             dispatcher = CheckerDispatcher()
@@ -713,7 +702,6 @@ class StyleProcessor(ProcessorBase):
                         for all lines should be reported.  When not None, this
                         list normally contains the line numbers corresponding
                         to the modified lines of a patch.
-
         """
         _log.debug("Checking style: " + file_path)
 

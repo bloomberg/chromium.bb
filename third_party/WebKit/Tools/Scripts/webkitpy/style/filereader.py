@@ -51,7 +51,6 @@ class TextFileReader(object):
                                  processed this instance actually because
                                  the files don't have any modified lines
                                  but should be treated as processed.
-
     """
 
     def __init__(self, filesystem, processor):
@@ -59,7 +58,6 @@ class TextFileReader(object):
 
         Arguments:
           processor: A ProcessorBase instance.
-
         """
         # FIXME: Although TextFileReader requires a FileSystem it circumvents it in two places!
         self.filesystem = filesystem
@@ -72,7 +70,6 @@ class TextFileReader(object):
 
         Raises:
           IOError: If the file does not exist or cannot be read.
-
         """
         # Support the UNIX convention of using "-" for stdin.
         if file_path == '-':
@@ -107,7 +104,6 @@ class TextFileReader(object):
 
         Raises:
           SystemExit: If no file at file_path exists.
-
         """
         self.file_count += 1
 

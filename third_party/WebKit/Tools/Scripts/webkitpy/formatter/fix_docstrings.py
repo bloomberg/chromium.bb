@@ -12,6 +12,7 @@ import re
 
 from lib2to3.fixer_base import BaseFix
 from lib2to3.pgen2 import token
+from lib2to3.pygram import python_symbols
 
 
 class FixDocstrings(BaseFix):
@@ -20,7 +21,21 @@ class FixDocstrings(BaseFix):
     _accept_type = token.STRING
 
     def match(self, node):
-        return node.value.startswith('"""') and node.prev_sibling is None
+        """Returns True if the given node appears to be a docstring.
+
+        Docstrings should always have no previous siblings, and should be
+        direct children of simple_stmt.
+
+        Note: This may also match for some edge cases where there are
+        simple_stmt strings that aren't the first thing in a module, class
+        or function, and thus aren't considered docstrings; but changing these
+        strings should not change behavior.
+        """
+        # Pylint incorrectly warns that there's no member simple_stmt on python_symbols
+        # because the attribute is set dynamically.  pylint: disable=no-member
+        return (node.value.startswith('"""') and
+                node.prev_sibling is None and
+                node.parent.type == python_symbols.simple_stmt)
 
     def transform(self, node, results):
         # First, strip whitespace at the beginning and end.
@@ -29,7 +44,15 @@ class FixDocstrings(BaseFix):
 
         # For multi-line docstrings, the closing quotes should go on their own line.
         if '\n' in node.value:
-            indent = re.search(r'\n( *)\S', node.value).group(1)
+            indent = self._find_indent(node)
             node.value = re.sub(r'"""$', '\n' + indent + '"""', node.value)
 
         node.changed()
+
+    def _find_indent(self, node):
+        """Returns the indentation level of the docstring."""
+        # The parent is assumed to be a simple_stmt (the docstring statement)
+        # either preceded by an indentation, or nothing.
+        if not node.parent.prev_sibling or node.parent.prev_sibling.type != token.INDENT:
+            return ''
+        return node.parent.prev_sibling.value

@@ -239,7 +239,8 @@ class Worker(object):
     def start(self):
         """This method is called when the object is starting to be used and it is safe
         for the object to create state that does not need to be pickled (usually this means
-        it is called in a child process)."""
+        it is called in a child process).
+        """
         self._host = self._caller.host
         self._filesystem = self._host.filesystem
         self._port = self._host.port_factory.get(self._options.platform, self._options)
@@ -381,7 +382,8 @@ class Sharder(object):
     def _shard_in_two(self, test_inputs):
         """Returns two lists of shards, one with all the tests requiring a lock and one with the rest.
 
-        This is used when there's only one worker, to minimize the per-shard overhead."""
+        This is used when there's only one worker, to minimize the per-shard overhead.
+        """
         locked_inputs = []
         unlocked_inputs = []
         for test_input in test_inputs:
@@ -402,7 +404,8 @@ class Sharder(object):
     def _shard_every_file(self, test_inputs, run_singly):
         """Returns two lists of shards, each shard containing a single test file.
 
-        This mode gets maximal parallelism at the cost of much higher flakiness."""
+        This mode gets maximal parallelism at the cost of much higher flakiness.
+        """
         locked_shards = []
         unlocked_shards = []
         virtual_inputs = []
@@ -432,7 +435,8 @@ class Sharder(object):
         """Returns two lists of shards, each shard containing all the files in a directory.
 
         This is the default mode, and gets as much parallelism as we can while
-        minimizing flakiness caused by inter-test dependencies."""
+        minimizing flakiness caused by inter-test dependencies.
+        """
         locked_shards = []
         unlocked_shards = []
         unlocked_slow_shards = []
@@ -473,7 +477,8 @@ class Sharder(object):
 
     def _resize_shards(self, old_shards, max_new_shards, shard_name_prefix):
         """Takes a list of shards and redistributes the tests into no more
-        than |max_new_shards| new shards."""
+        than |max_new_shards| new shards.
+        """
 
         # This implementation assumes that each input shard only contains tests from a
         # single directory, and that tests in each shard must remain together; as a

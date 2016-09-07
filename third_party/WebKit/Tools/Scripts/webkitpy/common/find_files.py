@@ -41,7 +41,8 @@ will return everything except files in fast subfolder.
 
 If a callback is passed in, it will be called for the each file and the file
 will be included into the result if the callback returns True.
-The callback has to take three arguments: filesystem, dirname and filename."""
+The callback has to take three arguments: filesystem, dirname and filename.
+"""
 
 import itertools
 

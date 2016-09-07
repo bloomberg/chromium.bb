@@ -45,7 +45,6 @@ Methods:
                   5 means that we are certain of the problem, and the
                   value 1 means that it could be a legitimate construct.
       message: The error message to report.
-
 """
 
 
@@ -69,7 +68,6 @@ class DefaultStyleErrorHandler(object):
                         for all lines should be reported.  When it is not
                         None, this array normally contains the line numbers
                         corresponding to the modified lines of a patch.
-
         """
         if line_numbers is not None:
             line_numbers = set(line_numbers)
@@ -132,7 +130,6 @@ class DefaultStyleErrorHandler(object):
         """Handle the occurrence of a style error.
 
         See the docstring of this module for more information.
-
         """
         if not self.should_line_be_checked(line_number):
             return False

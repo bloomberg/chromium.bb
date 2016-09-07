@@ -32,7 +32,8 @@ Windows, we need to be running a Python module that can be imported
 (which means a file in sys.path that ends in .py). In addition, we need to
 ensure that sys.path / PYTHONPATH is set and propagating correctly.
 
-This module enforces that."""
+This module enforces that.
+"""
 
 import os
 import subprocess

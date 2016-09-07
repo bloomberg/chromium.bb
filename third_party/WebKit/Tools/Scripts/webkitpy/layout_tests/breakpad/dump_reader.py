@@ -37,7 +37,8 @@ class DumpReader(object):
     def check_is_functional(self):
         """This routine must be implemented by subclasses.
 
-        Returns True if this reader is functional."""
+        Returns True if this reader is functional.
+        """
         raise NotImplementedError()
 
     def crash_dumps_directory(self):
@@ -76,17 +77,20 @@ class DumpReader(object):
     def _get_pid_from_dump(self, dump_file):
         """This routine must be implemented by subclasses.
 
-        This routine returns the PID of the crashed process that produced the given dump_file."""
+        This routine returns the PID of the crashed process that produced the given dump_file.
+        """
         raise NotImplementedError()
 
     def _get_stack_from_dump(self, dump_file):
         """This routine must be implemented by subclasses.
 
-        Returns the stack stored in the given breakpad dump_file."""
+        Returns the stack stored in the given breakpad dump_file.
+        """
         raise NotImplementedError()
 
     def _file_extension(self):
         """This routine must be implemented by subclasses.
 
-        Returns the file extension of crash dumps written by breakpad."""
+        Returns the file extension of crash dumps written by breakpad.
+        """
         raise NotImplementedError()

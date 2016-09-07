@@ -126,7 +126,8 @@ class Executive(object):
 
     def kill_process(self, pid):
         """Attempts to kill the given pid.
-        Will fail silently if pid does not exist or insufficient permissions."""
+        Will fail silently if pid does not exist or insufficient permissions.
+        """
         if sys.platform == "win32":
             # We only use taskkill.exe on windows (not cygwin) because subprocess.pid
             # is a CYGWIN pid and taskkill.exe expects a windows pid.
@@ -332,7 +333,8 @@ class Executive(object):
 
     def command_for_printing(self, args):
         """Returns a print-ready string representing command args.
-        The string should be copy/paste ready for execution in a shell."""
+        The string should be copy/paste ready for execution in a shell.
+        """
         args = self._stringify_args(args)
         escaped_args = []
         for arg in args:

@@ -46,7 +46,8 @@ def get_port_class_name(port_name):
 class BrowserTestPortOverrides(object):
     """Set of overrides that every browser test platform port should have. This
     class should not be instantiated as certain functions depend on base. Port
-    to work."""
+    to work.
+    """
 
     def _driver_class(self):
         return browser_test_driver.BrowserTestDriver
@@ -59,7 +60,8 @@ class BrowserTestPortOverrides(object):
 
     def check_sys_deps(self, needs_http):
         """This function is meant to be a no-op since we don't want to actually
-        check for system dependencies."""
+        check for system dependencies.
+        """
         return test_run_results.OK_EXIT_STATUS
 
     def driver_name(self):

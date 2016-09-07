@@ -156,7 +156,8 @@ class DumpReaderMultipart(DumpReader):
     def _binaries_to_symbolize(self):
         """This routine must be implemented by subclasses.
 
-        Returns an array of binaries that need to be symbolized."""
+        Returns an array of binaries that need to be symbolized.
+        """
         raise NotImplementedError()
 
 

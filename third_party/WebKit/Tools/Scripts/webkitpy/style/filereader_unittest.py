@@ -35,7 +35,6 @@ class TextFileReaderTest(LoggingTestCase):
 
         This processor simply records the parameters passed to its process()
         method for later checking by the unittest test methods.
-
         """
 
         def __init__(self):

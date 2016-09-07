@@ -87,7 +87,6 @@ class ConfigureLoggingTestBase(unittest.TestCase):
 
         This method ensures that the logging configuration set up
         for a unit test does not affect logging in other unit tests.
-
         """
         logger = self._log
         for handler in self._handlers:

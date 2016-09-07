@@ -28,7 +28,6 @@ logging module.
 Inherit from the LoggingTestCase class for basic testing needs.  For
 more advanced needs (e.g. unit-testing methods that configure logging),
 see the TestLogStream class, and perhaps also the LogTesting class.
-
 """
 
 import logging
@@ -42,7 +41,6 @@ class TestLogStream(object):
     This is meant for passing to the logging.StreamHandler constructor.
     Log messages captured by instances of this object can be tested
     using self.assertMessages() below.
-
     """
 
     def __init__(self, test_case):
@@ -50,7 +48,6 @@ class TestLogStream(object):
 
         Args:
           test_case: A unittest.TestCase instance.
-
         """
         self._test_case = test_case
         self.messages = []
@@ -71,7 +68,6 @@ class TestLogStream(object):
         """Assert that the given messages match the logged messages.
 
         messages: A list of log message strings.
-
         """
         self._test_case.assertEqual(messages, self.messages)
 
@@ -96,7 +92,6 @@ class LogTesting(object):
                   # Check the resulting log messages.
                   self._log.assertMessages(["INFO: expected message #1",
                                           "WARNING: expected message #2"])
-
     """
 
     def __init__(self, test_stream, handler):
@@ -108,7 +103,6 @@ class LogTesting(object):
         Args:
           test_stream: A TestLogStream instance.
           handler: The handler added to the logger.
-
         """
         self._test_stream = test_stream
         self._handler = handler
@@ -143,7 +137,6 @@ class LogTesting(object):
           test_case: A unittest.TestCase instance.
           logging_level: An integer logging level that is the minimum level
                          of log messages you would like to test.
-
         """
         stream = TestLogStream(test_case)
         handler = logging.StreamHandler(stream)
@@ -188,7 +181,6 @@ class LogTesting(object):
 
         Args:
           messages: A list of log message strings.
-
         """
         try:
             self._test_stream.assertMessages(messages)
@@ -222,7 +214,6 @@ class LoggingTestCase(unittest.TestCase):
                   # Check the resulting log messages.
                   self.assertLog(["INFO: expected message #1",
                                   "WARNING: expected message #2"])
-
     """
 
     def setUp(self):
@@ -246,6 +237,5 @@ class LoggingTestCase(unittest.TestCase):
 
         Args:
           messages: A list of log message strings.
-
         """
         self._log.assertMessages(messages)

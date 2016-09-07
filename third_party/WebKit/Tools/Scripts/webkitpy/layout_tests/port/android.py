@@ -615,7 +615,8 @@ class AndroidPort(base.Port):
 
     def requires_http_server(self):
         """Chromium Android runs tests on devices, and uses the HTTP server to
-        serve the actual layout tests to the test driver."""
+        serve the actual layout tests to the test driver.
+        """
         return True
 
     def start_http_server(self, additional_dirs, number_of_drivers):

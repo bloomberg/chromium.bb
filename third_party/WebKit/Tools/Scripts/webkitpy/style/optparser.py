@@ -108,7 +108,6 @@ class DefaultCommandOptionValues(object):
     Attributes:
       output_format: A string that is the default output format.
       min_confidence: An integer that is the default minimum confidence level.
-
     """
 
     def __init__(self, min_confidence, output_format):
@@ -139,7 +138,6 @@ class CommandOptionValues(object):
       output_format: A string that is the output format.  The supported
                      output formats are "emacs" which emacs can parse
                      and "vs7" which Microsoft Visual Studio 7 can parse.
-
     """
 
     def __init__(self,
@@ -207,7 +205,6 @@ class ArgumentPrinter(object):
 
         Args:
           options: A CommandOptionValues instance.
-
         """
         flags = {}
         flags['min-confidence'] = options.min_confidence
@@ -246,7 +243,6 @@ class ArgumentParser(object):
       stderr_write: A function that takes a string as a parameter and
                     serves as stderr.write.  Defaults to sys.stderr.write.
                     This parameter should be specified only for unit tests.
-
     """
 
     def __init__(self,
@@ -272,7 +268,6 @@ class ArgumentParser(object):
                         attribute in the class docstring.
           stderr_write: See the documentation of the corresponding
                         attribute in the class docstring.
-
         """
         if base_filter_rules is None:
             base_filter_rules = []
@@ -391,7 +386,6 @@ class ArgumentParser(object):
         Args:
           flag_value: A string of comma-separated filter rules, for
                       example "-whitespace,+whitespace/indent".
-
         """
         filters = []
         for uncleaned_filter in flag_value.split(','):
@@ -412,7 +406,6 @@ class ArgumentParser(object):
 
           paths: The list of paths to check.
           options: A CommandOptionValues instance.
-
         """
         (options, paths) = self._parser.parse_args(args=args)
 

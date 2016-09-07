@@ -37,7 +37,6 @@ and concurrency.futures.ProcessPoolExecutor, with the following differences:
 
 If you don't need these features, use multiprocessing.Pool or concurrency.futures
 instead.
-
 """
 
 import cPickle
