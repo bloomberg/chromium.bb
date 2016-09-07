@@ -503,9 +503,9 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.settings = &settings;
   params.animation_host = cc::AnimationHost::CreateMainInstance();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  DCHECK(!host_->visible());
+  DCHECK(!host_->IsVisible());
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
-  host_->set_surface_client_id(surface_id_allocator_->client_id());
+  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
   host_->GetLayerTree()->SetViewportSize(size_);
   host_->GetLayerTree()->set_has_transparent_background(
       has_transparent_background_);
@@ -518,7 +518,7 @@ void CompositorImpl::CreateLayerTreeHost() {
 void CompositorImpl::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "CompositorImpl::SetVisible", "visible", visible);
   if (!visible) {
-    DCHECK(host_->visible());
+    DCHECK(host_->IsVisible());
 
     // Make a best effort to try to complete pending readbacks.
     // TODO(crbug.com/637035): Consider doing this in a better way,
@@ -562,7 +562,7 @@ void CompositorImpl::SetHasTransparentBackground(bool flag) {
 }
 
 void CompositorImpl::SetNeedsComposite() {
-  if (!host_->visible())
+  if (!host_->IsVisible())
     return;
   TRACE_EVENT0("compositor", "Compositor::SetNeedsComposite");
   host_->SetNeedsAnimate();
@@ -600,7 +600,7 @@ void CompositorImpl::HandlePendingOutputSurfaceRequest() {
   DCHECK(output_surface_request_pending_);
 
   // We might have been made invisible now.
-  if (!host_->visible())
+  if (!host_->IsVisible())
     return;
 
 #if defined(ENABLE_VULKAN)
@@ -664,7 +664,7 @@ void CompositorImpl::OnGpuChannelEstablished(
       break;
     case ui::ContextProviderFactory::GpuChannelHostResult::SUCCESS:
       // We don't need the context anymore if we are invisible.
-      if (!host_->visible())
+      if (!host_->IsVisible())
         return;
 
       DCHECK(window_);
@@ -712,7 +712,7 @@ void CompositorImpl::InitializeDisplay(
   display_.reset(new cc::Display(
       HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
-      host_->settings().renderer_settings, std::move(begin_frame_source),
+      host_->GetSettings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
@@ -774,7 +774,7 @@ void CompositorImpl::DidAbortSwapBuffers() {
   // This really gets called only once from
   // SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() when the
   // context was lost.
-  if (host_->visible())
+  if (host_->IsVisible())
     host_->SetNeedsCommit();
   client_->OnSwapBuffersCompleted(0);
 }
@@ -811,7 +811,7 @@ void CompositorImpl::OnNeedsBeginFramesChange(bool needs_begin_frames) {
 
 void CompositorImpl::SetNeedsAnimate() {
   needs_animate_ = true;
-  if (!host_->visible())
+  if (!host_->IsVisible())
     return;
 
   TRACE_EVENT0("compositor", "Compositor::SetNeedsAnimate");

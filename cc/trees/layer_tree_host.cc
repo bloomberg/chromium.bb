@@ -129,7 +129,7 @@ LayerTreeHost::InitParams::InitParams() {
 LayerTreeHost::InitParams::~InitParams() {
 }
 
-std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
+std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
@@ -140,7 +140,7 @@ std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
       std::move(params->external_begin_frame_source));
-  return layer_tree_host;
+  return std::move(layer_tree_host);
 }
 
 std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
@@ -155,7 +155,7 @@ std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
   return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
+std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteServer(
     RemoteProtoChannel* remote_proto_channel,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
@@ -173,10 +173,10 @@ std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteServer(
       new LayerTreeHost(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteServer(remote_proto_channel,
                                           params->main_task_runner);
-  return layer_tree_host;
+  return std::move(layer_tree_host);
 }
 
-std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
+std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteClient(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
@@ -195,7 +195,7 @@ std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateRemoteClient(
       new LayerTreeHost(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteClient(
       remote_proto_channel, params->main_task_runner, impl_task_runner);
-  return layer_tree_host;
+  return std::move(layer_tree_host);
 }
 
 LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
@@ -358,9 +358,33 @@ LayerTreeHost::~LayerTreeHost() {
   }
 }
 
+int LayerTreeHost::GetId() const {
+  return id_;
+}
+
+int LayerTreeHost::SourceFrameNumber() const {
+  return source_frame_number_;
+}
+
+LayerTree* LayerTreeHost::GetLayerTree() {
+  return layer_tree_.get();
+}
+
+const LayerTree* LayerTreeHost::GetLayerTree() const {
+  return layer_tree_.get();
+}
+
+TaskRunnerProvider* LayerTreeHost::GetTaskRunnerProvider() const {
+  return task_runner_provider_.get();
+}
+
+const LayerTreeSettings& LayerTreeHost::GetSettings() const {
+  return settings_;
+}
+
 void LayerTreeHost::WillBeginMainFrame() {
-  devtools_instrumentation::WillBeginMainThreadFrame(id(),
-                                                     source_frame_number());
+  devtools_instrumentation::WillBeginMainThreadFrame(GetId(),
+                                                     SourceFrameNumber());
   client_->WillBeginMainFrame();
 }
 
@@ -378,6 +402,10 @@ void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
 
 void LayerTreeHost::DidStopFlinging() {
   proxy_->MainThreadHasStoppedFlinging();
+}
+
+const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
+  return debug_state_;
 }
 
 void LayerTreeHost::RequestMainFrameUpdate() {
@@ -409,7 +437,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     next_commit_forces_redraw_ = false;
   }
 
-  sync_tree->set_source_frame_number(source_frame_number());
+  sync_tree->set_source_frame_number(SourceFrameNumber());
 
   if (layer_tree_->needs_full_tree_sync())
     TreeSynchronizer::SynchronizeTrees(layer_tree_->root_layer(), sync_tree);
@@ -647,6 +675,10 @@ void LayerTreeHost::SetVisible(bool visible) {
   proxy_->SetVisible(visible);
 }
 
+bool LayerTreeHost::IsVisible() const {
+  return visible_;
+}
+
 void LayerTreeHost::NotifyInputThrottledUntilCommit() {
   proxy_->NotifyInputThrottledUntilCommit();
 }
@@ -723,7 +755,7 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
 
 bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
-               source_frame_number());
+               SourceFrameNumber());
 
   layer_tree_->UpdateHudLayer(debug_state_.ShowHudInfo());
   UpdateHudLayer();
@@ -857,6 +889,10 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   ApplyViewportDeltas(info);
 }
 
+const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler() const {
+  return input_handler_weak_ptr_;
+}
+
 void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                                            TopControlsState current,
                                            bool animate) {
@@ -988,7 +1024,7 @@ void LayerTreeHost::OnCommitForSwapPromises() {
     swap_promise->OnCommit();
 }
 
-void LayerTreeHost::set_surface_client_id(uint32_t client_id) {
+void LayerTreeHost::SetSurfaceClientId(uint32_t client_id) {
   surface_client_id_ = client_id;
 }
 
@@ -1110,10 +1146,6 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
 
   surface_client_id_ = proto.surface_client_id();
   next_surface_sequence_ = proto.next_surface_sequence();
-}
-
-AnimationHost* LayerTreeHost::animation_host() const {
-  return layer_tree_->animation_host();
 }
 
 }  // namespace cc

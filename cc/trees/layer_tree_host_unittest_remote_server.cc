@@ -69,7 +69,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   int calls_received_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings settings_;
-  std::unique_ptr<LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<LayerTreeHostInterface> layer_tree_host_;
   RemoteProtoChannel::ProtoReceiver* receiver_;
   std::unique_ptr<FakeImageSerializationProcessor>
       image_serialization_processor_;
@@ -95,7 +95,9 @@ TEST_F(LayerTreeHostTestRemoteServerBeginMainFrame, BeginMainFrameNotAborted) {
   begin_frame_state.reset(new BeginMainFrameAndCommitState());
   begin_frame_state->scroll_info.reset(new ScrollAndScaleSet());
 
-  static_cast<ProxyMain*>(layer_tree_host_->proxy())
+  LayerTreeHost* layer_tree_host =
+      static_cast<LayerTreeHost*>(layer_tree_host_.get());
+  static_cast<ProxyMain*>(layer_tree_host->proxy())
       ->BeginMainFrame(std::move(begin_frame_state));
   EXPECT_EQ(calls_received_, 1);
 }

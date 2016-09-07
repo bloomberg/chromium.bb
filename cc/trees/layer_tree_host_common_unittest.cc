@@ -4910,7 +4910,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(host()->settings(), &task_runner_provider,
+  FakeLayerTreeHostImpl host_impl(host()->GetSettings(), &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.CreatePendingTree();
   std::unique_ptr<LayerImpl> root =
@@ -7029,7 +7029,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings = host()->settings();
+  LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
@@ -7515,7 +7515,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings = host()->settings();
+  LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
@@ -7642,7 +7642,7 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings = host()->settings();
+  LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
@@ -7721,7 +7721,7 @@ TEST_F(LayerTreeHostCommonTest,
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings = host()->settings();
+  LayerTreeSettings settings = host()->GetSettings();
   settings.layer_transforms_should_scale_layer_contents = false;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);

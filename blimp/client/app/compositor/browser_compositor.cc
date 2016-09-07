@@ -91,7 +91,7 @@ BrowserCompositor::BrowserCompositor(
 
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
   host_->GetLayerTree()->SetRootLayer(root_layer_);
-  host_->set_surface_client_id(surface_id_allocator_->client_id());
+  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
 }
 
 BrowserCompositor::~BrowserCompositor() {
@@ -122,7 +122,7 @@ void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   // Kill all references to the old widget.
   if (widget_ != gfx::kNullAcceleratedWidget) {
     // We are always visible if we have a widget.
-    DCHECK(host_->visible());
+    DCHECK(host_->IsVisible());
     host_->SetVisible(false);
     host_->ReleaseOutputSurface();
     display_.reset();
@@ -164,7 +164,7 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
   DCHECK(output_surface_request_pending_);
 
   // Can't handle the request right now since we don't have a widget.
-  if (!host_->visible())
+  if (!host_->IsVisible())
     return;
 
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget_);
@@ -188,7 +188,7 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
 
   display_ = base::MakeUnique<cc::Display>(
       nullptr /*shared_bitmap_manager*/, gpu_memory_buffer_manager,
-      host_->settings().renderer_settings, std::move(begin_frame_source),
+      host_->GetSettings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
   display_->SetVisible(true);

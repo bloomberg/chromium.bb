@@ -108,7 +108,7 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
+    EXPECT_EQ(1, layer_tree_host()->SourceFrameNumber());
     EndTest();
   }
 
@@ -202,7 +202,7 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
+    EXPECT_EQ(1, layer_tree_host()->SourceFrameNumber());
     EndTest();
   }
 
@@ -794,7 +794,7 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // child_ should create transform, effect, clip node.
         child_->SetForceRenderSurfaceForTesting(true);
@@ -917,7 +917,7 @@ class LayerTreeHostTestDamageWithReplica : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         break;
       case 1:
@@ -979,7 +979,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 2:
         // We rebuild property trees for this case to test the code path of
         // damage status synchronization when property trees are different.
@@ -1070,7 +1070,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
   void DidCommit() override {
     EffectTree& effect_tree = layer_tree()->property_trees()->effect_tree;
     EffectNode* node = effect_tree.Node(root_->effect_tree_index());
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         node->opacity = 0.5f;
         node->is_currently_animating_opacity = true;
@@ -1180,7 +1180,7 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
     TransformNode* node = transform_tree.Node(root_->transform_tree_index());
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         node->local = rotate10;
         node->is_currently_animating = true;
@@ -1267,7 +1267,7 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       gfx::Transform scale;
       scale.Scale(2.0, 2.0);
       LayerInternalsForTest(child_.get()).OnTransformAnimated(scale);
@@ -1338,7 +1338,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Root and mask layer should have the same source frame number as they
         // will be in the layer update list but the child is not as it has empty
@@ -1587,14 +1587,14 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // SetBounds grows the layer and exposes new content.
         scaled_layer_->SetBounds(gfx::Size(4, 4));
         break;
       default:
         // No extra commits.
-        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+        EXPECT_EQ(2, layer_tree_host()->SourceFrameNumber());
     }
   }
 
@@ -1643,7 +1643,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Changing the device scale factor causes a commit. It also changes
         // the content bounds of |scrollbar_|, which should not generate
@@ -1652,7 +1652,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
         break;
       default:
         // No extra commits.
-        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+        EXPECT_EQ(2, layer_tree_host()->SourceFrameNumber());
         break;
     }
   }
@@ -1690,7 +1690,7 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1)
+    if (layer_tree_host()->SourceFrameNumber() == 1)
       layer_tree()->SetDeviceScaleFactor(4.f);
   }
 
@@ -1886,7 +1886,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Test not owning the surface.
         parent_layer_->SetOpacity(1.0f);
@@ -1999,7 +1999,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1: {
         // Test not owning the surface.
         child_layer_->SetOpacity(0.5f);
@@ -2234,7 +2234,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_tree()->StartPageScaleAnimation(gfx::Vector2d(), false, 1.25f,
                                               base::TimeDelta());
@@ -2576,7 +2576,7 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
 
     // The expectations are based on the assumption that the default
     // LCD settings are:
-    EXPECT_TRUE(layer_tree_host()->settings().can_use_lcd_text);
+    EXPECT_TRUE(layer_tree_host()->GetSettings().can_use_lcd_text);
 
     LayerTreeHostTest::SetupTree();
     client_.set_bounds(root_layer->bounds());
@@ -2585,7 +2585,7 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         PostSetNeedsCommitToMainThread();
         break;
@@ -2774,8 +2774,8 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-        false /* synchronous_composite */,
+        layer_tree_host()->GetSettings().renderer_settings,
+        ImplThreadTaskRunner(), false /* synchronous_composite */,
         false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
     output_surface_ = output_surface.get();
@@ -2850,7 +2850,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   // Round 3: draw only (no commit)
 
   void DidCommit() override {
-    int commit = layer_tree_host()->source_frame_number();
+    int commit = layer_tree_host()->SourceFrameNumber();
     switch (commit) {
       case 2:
         // Round 2 done.
@@ -2861,7 +2861,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   }
 
   void DidCompleteSwapBuffers() override {
-    int commit = layer_tree_host()->source_frame_number();
+    int commit = layer_tree_host()->SourceFrameNumber();
     ++frame_;
     switch (frame_) {
       case 1:
@@ -2923,8 +2923,8 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-        false /* synchronous_composite */,
+        layer_tree_host()->GetSettings().renderer_settings,
+        ImplThreadTaskRunner(), false /* synchronous_composite */,
         false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
     output_surface_ = output_surface.get();
@@ -3004,7 +3004,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    int frame = layer_tree_host()->source_frame_number();
+    int frame = layer_tree_host()->SourceFrameNumber();
     switch (frame) {
       case 1:
         CreateResource();
@@ -3583,7 +3583,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         break;
       case 1: {
@@ -3633,7 +3633,7 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         break;
       case 1: {
@@ -3727,7 +3727,7 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   void DidCommitAndDrawFrame() override {
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         // All layers will need push properties as we set their layer tree host
@@ -3756,7 +3756,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
   void DidCommitAndDrawFrame() override {
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree()->SetRootLayer(root_);
@@ -3840,7 +3840,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
  protected:
   void DidCommitAndDrawFrame() override {
     LayerTree* layer_tree = layer_tree_host()->GetLayerTree();
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree->SetRootLayer(root_);
@@ -3889,7 +3889,7 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
  protected:
   void DidCommitAndDrawFrame() override {
     LayerTree* layer_tree = layer_tree_host()->GetLayerTree();
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree->SetRootLayer(root_);
@@ -3958,7 +3958,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
  protected:
   void DidCommitAndDrawFrame() override {
     LayerTree* layer_tree = layer_tree_host()->GetLayerTree();
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree->SetRootLayer(root_);
@@ -4023,7 +4023,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
  protected:
   void DidCommitAndDrawFrame() override {
     LayerTree* layer_tree = layer_tree_host()->GetLayerTree();
-    int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
+    int last_source_frame_number = layer_tree_host()->SourceFrameNumber() - 1;
     switch (last_source_frame_number) {
       case 0:
         layer_tree->SetRootLayer(root_);
@@ -4155,7 +4155,7 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
 
   void DidCommitAndDrawFrame() override {
     // After commit, invalidate the layer.  This should cause a commit.
-    if (layer_tree_host()->source_frame_number() == 1)
+    if (layer_tree_host()->SourceFrameNumber() == 1)
       invalidate_layer_->SetNeedsDisplay();
   }
 
@@ -4231,7 +4231,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
 
   void DidCommitAndDrawFrame() override {
     LayerTree* layer_tree = layer_tree_host()->GetLayerTree();
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // The layer type used does not need to push properties every frame.
         EXPECT_FALSE(
@@ -4442,9 +4442,9 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     // Lost context sometimes takes two frames to recreate. The third frame
     // is sometimes aborted, so wait until the fourth frame to verify that
     // the memory has been set, and the fifth frame to end the test.
-    if (layer_tree_host()->source_frame_number() < 5) {
+    if (layer_tree_host()->SourceFrameNumber() < 5) {
       layer_tree_host()->SetNeedsCommit();
-    } else if (layer_tree_host()->source_frame_number() == 5) {
+    } else if (layer_tree_host()->SourceFrameNumber() == 5) {
       EndTest();
     }
   }
@@ -4699,7 +4699,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
   }
 
   void ChangeFrame() {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_->SetBounds(gfx::Size(10, 11));
         layer_tree_host()->QueueSwapPromise(
@@ -4789,7 +4789,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
     // Safe to check frame number here because main thread is blocked.
-    if (layer_tree_host()->source_frame_number() == 0) {
+    if (layer_tree_host()->SourceFrameNumber() == 0) {
       host_impl->BlockNotifyReadyToActivateForTesting(true);
     } else {
       NOTREACHED();
@@ -4813,7 +4813,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   }
 
   void ChangeFrame() {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Make no changes so that we abort the next commit caused by queuing
         // the swap promise.
@@ -5025,7 +5025,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
   }
 
   void DidCommit() override {
-    int frame = layer_tree_host()->source_frame_number();
+    int frame = layer_tree_host()->SourceFrameNumber();
     switch (frame) {
       case 1:
         PostSetNeedsCommitToMainThread();
@@ -5562,15 +5562,16 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
       scoped_refptr<ContextProvider> worker_context_provider) override {
     bool synchronous_composite =
         !HasImplThread() &&
-        !layer_tree_host()->settings().single_thread_proxy_scheduler;
+        !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     // Relaiming resources is parameterized for this test.
     bool force_disable_reclaim_resources = !reclaim_resources_;
     return base::MakeUnique<TestDelegatingOutputSurface>(
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-        synchronous_composite, force_disable_reclaim_resources);
+        layer_tree_host()->GetSettings().renderer_settings,
+        ImplThreadTaskRunner(), synchronous_composite,
+        force_disable_reclaim_resources);
   }
 
   void BeginTest() override {
@@ -6333,7 +6334,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
         break;
@@ -6342,7 +6343,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
 
   void DidCommit() override {
     gfx::Transform transform;
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(CopyOutputCallback)));
@@ -6551,7 +6552,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         gfx::Size double_root_size(200, 200);
         layer_tree()->SetViewportSize(double_root_size);
@@ -6639,7 +6640,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         gfx::Size double_root_size(200, 200);
         layer_tree()->SetViewportSize(double_root_size);
@@ -6732,7 +6733,7 @@ class LayerTreeTestReflectionMaskLayerWithDifferentBounds
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         gfx::Size double_root_size(200, 200);
         layer_tree()->SetViewportSize(double_root_size);
@@ -6832,7 +6833,7 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Move the child to (-50, 0) instead. Now the mask should be moved to
         // still cover the layer being replicated.

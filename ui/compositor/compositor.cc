@@ -212,7 +212,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       animation_timeline_.get());
 
   host_->GetLayerTree()->SetRootLayer(root_web_layer_);
-  host_->set_surface_client_id(surface_id_allocator_->client_id());
+  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
   host_->SetVisible(true);
 }
 
@@ -270,7 +270,7 @@ void Compositor::SetOutputSurface(
   host_->SetOutputSurface(std::move(output_surface));
   // Visibility is reset when the output surface is lost, so update it to match
   // the Compositor's.
-  context_factory_->SetDisplayVisible(this, host_->visible());
+  context_factory_->SetDisplayVisible(this, host_->IsVisible());
 }
 
 void Compositor::ScheduleDraw() {
@@ -356,7 +356,7 @@ void Compositor::SetVisible(bool visible) {
 }
 
 bool Compositor::IsVisible() {
-  return host_->visible();
+  return host_->IsVisible();
 }
 
 bool Compositor::ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) {
@@ -517,7 +517,7 @@ void Compositor::SetOutputIsSecure(bool output_is_secure) {
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
-  return host_->debug_state();
+  return host_->GetDebugState();
 }
 
 void Compositor::SetLayerTreeDebugState(
@@ -526,7 +526,7 @@ void Compositor::SetLayerTreeDebugState(
 }
 
 const cc::RendererSettings& Compositor::GetRendererSettings() const {
-  return host_->settings().renderer_settings;
+  return host_->GetSettings().renderer_settings;
 }
 
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {

@@ -32,7 +32,7 @@ namespace cc {
 class CopyOutputRequest;
 class InputHandler;
 class Layer;
-class LayerTreeHost;
+class LayerTreeHostInterface;
 namespace proto {
 class CompositorMessage;
 }
@@ -206,7 +206,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
                          CompositorDependencies* compositor_deps);
 
   void Initialize(float device_scale_factor);
-  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+  cc::LayerTreeHostInterface* layer_tree_host() {
+    return layer_tree_host_.get();
+  }
 
  private:
   void LayoutAndUpdateLayers();
@@ -218,7 +220,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
   const bool threaded_;
-  std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<cc::LayerTreeHostInterface> layer_tree_host_;
   bool never_visible_;
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;

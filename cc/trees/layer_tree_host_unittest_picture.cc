@@ -46,7 +46,7 @@ class LayerTreeHostPictureTestTwinLayer
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Activate while there are pending and active twins in place.
         layer_tree_host()->SetNeedsCommit();
@@ -185,7 +185,7 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Change the picture layer's size along with the viewport, so it will
         // consider picking a new tile size.
@@ -386,7 +386,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // For the 2nd commit, change opacity to 0 so that the layer will not be
         // part of the visible frame.

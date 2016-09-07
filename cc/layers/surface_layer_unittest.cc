@@ -74,7 +74,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer->SetSurfaceId(SurfaceId(kArbitraryClientId, 1, 0), 1.f,
                       gfx::Size(1, 1));
-  layer_tree_host_->set_surface_client_id(1);
+  layer_tree_host_->SetSurfaceClientId(1);
   layer_tree_->SetRootLayer(layer);
 
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host2 =
@@ -84,7 +84,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer2->SetSurfaceId(SurfaceId(kArbitraryClientId, 1, 0), 1.f,
                        gfx::Size(1, 1));
-  layer_tree_host2->set_surface_client_id(2);
+  layer_tree_host2->SetSurfaceClientId(2);
   layer_tree_host2->SetRootLayer(layer2);
 
   // Layers haven't been removed, so no sequence should be satisfied.
@@ -126,7 +126,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
       : commit_count_(0), sequence_was_satisfied_(false) {}
 
   void BeginTest() override {
-    layer_tree_host()->set_surface_client_id(1);
+    layer_tree_host()->SetSurfaceClientId(1);
     layer_ = SurfaceLayer::Create(
         base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));

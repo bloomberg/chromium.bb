@@ -58,7 +58,7 @@ class BlimpCompositorForTesting : public BlimpCompositor {
     SendWebGestureEvent(gesture_event);
   }
 
-  cc::LayerTreeHost* host() const { return host_.get(); }
+  cc::LayerTreeHostInterface* host() const { return host_.get(); }
 };
 
 class BlimpCompositorTest : public testing::Test {
@@ -112,11 +112,11 @@ TEST_F(BlimpCompositorTest, ToggleVisibilityWithHost) {
 
   // Check that the visibility is set correctly on the host.
   EXPECT_NE(compositor_->host(), nullptr);
-  EXPECT_TRUE(compositor_->host()->visible());
+  EXPECT_TRUE(compositor_->host()->IsVisible());
 
   // Make the compositor invisible. This should make the |host_| invisible.
   compositor_->SetVisible(false);
-  EXPECT_FALSE(compositor_->host()->visible());
+  EXPECT_FALSE(compositor_->host()->IsVisible());
 
   SendShutdownMessage();
   EXPECT_EQ(compositor_->host(), nullptr);
@@ -132,7 +132,7 @@ TEST_F(BlimpCompositorTest, DestroyAndRecreateHost) {
   SendShutdownMessage();
   SendInitializeMessage();
   EXPECT_NE(compositor_->host(), nullptr);
-  EXPECT_TRUE(compositor_->host()->visible());
+  EXPECT_TRUE(compositor_->host()->IsVisible());
 }
 
 TEST_F(BlimpCompositorTest, MessagesHaveCorrectId) {

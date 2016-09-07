@@ -9,7 +9,7 @@
 
 namespace cc {
 
-class LayerTreeHost;
+class LayerTreeHostInterface;
 class LayerTreeHostImpl;
 
 // A SwapPromiseMonitor is used to monitor compositor state change that
@@ -27,7 +27,7 @@ class CC_EXPORT SwapPromiseMonitor {
   // and set layer_tree_host_impl to nullptr.
   // If the monitor lives on the impl thread, pass in layer_tree_host_impl
   // and set layer_tree_host to nullptr.
-  SwapPromiseMonitor(LayerTreeHost* layer_tree_host,
+  SwapPromiseMonitor(LayerTreeHostInterface* layer_tree_host,
                      LayerTreeHostImpl* layer_tree_host_impl);
   virtual ~SwapPromiseMonitor();
 
@@ -36,7 +36,7 @@ class CC_EXPORT SwapPromiseMonitor {
   virtual void OnForwardScrollUpdateToMainThreadOnImpl() = 0;
 
  protected:
-  LayerTreeHost* layer_tree_host_;
+  LayerTreeHostInterface* layer_tree_host_;
   LayerTreeHostImpl* layer_tree_host_impl_;
 };
 

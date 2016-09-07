@@ -241,9 +241,9 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   layer->SavePaintProperties();
   layer->Update();
 
-  EXPECT_EQ(0, host->source_frame_number());
+  EXPECT_EQ(0, host->SourceFrameNumber());
   host->CommitComplete();
-  EXPECT_EQ(1, host->source_frame_number());
+  EXPECT_EQ(1, host->SourceFrameNumber());
 
   layer->SetBounds(gfx::Size(0, 0));
   layer->SavePaintProperties();
@@ -376,9 +376,9 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   layer->SavePaintProperties();
   layer->Update();
 
-  EXPECT_EQ(0, host->source_frame_number());
+  EXPECT_EQ(0, host->SourceFrameNumber());
   host->CommitComplete();
-  EXPECT_EQ(1, host->source_frame_number());
+  EXPECT_EQ(1, host->SourceFrameNumber());
 
   layer->SavePaintProperties();
   layer->Update();
@@ -407,7 +407,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   layer->PushPropertiesTo(layer_impl);
 
   host->CommitComplete();
-  EXPECT_EQ(2, host->source_frame_number());
+  EXPECT_EQ(2, host->SourceFrameNumber());
 
   host_impl.ActivateSyncTree();
 
@@ -531,13 +531,13 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   layer->SetNeedsDisplay();
   host1->Composite(base::TimeTicks::Now());
   EXPECT_EQ(1, layer->update_count());
-  EXPECT_EQ(1, host1->source_frame_number());
+  EXPECT_EQ(1, host1->SourceFrameNumber());
 
   // The source frame number in |host1| is now higher than host2.
   layer->SetNeedsDisplay();
   host1->Composite(base::TimeTicks::Now());
   EXPECT_EQ(2, layer->update_count());
-  EXPECT_EQ(2, host1->source_frame_number());
+  EXPECT_EQ(2, host1->SourceFrameNumber());
 
   // Then moved to another LayerTreeHost.
   host1->GetLayerTree()->SetRootLayer(nullptr);
@@ -548,7 +548,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   layer->SetNeedsDisplay();
   host2->Composite(base::TimeTicks::Now());
   EXPECT_EQ(3, layer->update_count());
-  EXPECT_EQ(1, host2->source_frame_number());
+  EXPECT_EQ(1, host2->SourceFrameNumber());
 }
 
 }  // namespace

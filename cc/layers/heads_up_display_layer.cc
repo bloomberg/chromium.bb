@@ -40,7 +40,7 @@ void HeadsUpDisplayLayer::PrepareForCalculateDrawProperties(
   gfx::Transform matrix;
   matrix.MakeIdentity();
 
-  if (layer_tree_host()->debug_state().ShowHudRects()) {
+  if (layer_tree_host()->GetDebugState().ShowHudRects()) {
     bounds = device_viewport_in_layout_pixels;
   } else {
     int size = 256;

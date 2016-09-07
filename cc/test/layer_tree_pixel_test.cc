@@ -50,7 +50,7 @@ std::unique_ptr<TestDelegatingOutputSurface>
   }
   bool synchronous_composite =
       !HasImplThread() &&
-      !layer_tree_host()->settings().single_thread_proxy_scheduler;
+      !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
   // Allow resource reclaiming for partial raster tests to get back
   // resources from the Display.
   bool force_disable_reclaim_resources = false;

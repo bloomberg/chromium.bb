@@ -365,7 +365,7 @@ class LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface
 
   void WillBeginTest() override {
     // Override to not become visible.
-    DCHECK(!layer_tree_host()->visible());
+    DCHECK(!layer_tree_host()->IsVisible());
   }
 
   void BeginTest() override {
@@ -401,14 +401,14 @@ class LayerTreeHostClientTakeAwayOutputSurface
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void RequestNewOutputSurface() override {
-    if (layer_tree_host()->visible()) {
+    if (layer_tree_host()->IsVisible()) {
       setos_counter_++;
       LayerTreeHostContextTest::RequestNewOutputSurface();
     }
   }
 
   void HideAndReleaseOutputSurface() {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     layer_tree_host()->SetVisible(false);
     std::unique_ptr<OutputSurface> surface =
         layer_tree_host()->ReleaseOutputSurface();
@@ -420,7 +420,7 @@ class LayerTreeHostClientTakeAwayOutputSurface
   }
 
   void DidInitializeOutputSurface() override {
-    EXPECT_TRUE(layer_tree_host()->visible());
+    EXPECT_TRUE(layer_tree_host()->IsVisible());
     if (setos_counter_ == 1) {
       MainThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::
@@ -432,7 +432,7 @@ class LayerTreeHostClientTakeAwayOutputSurface
   }
 
   void MakeVisible() {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     layer_tree_host()->SetVisible(true);
   }
 
@@ -1045,7 +1045,7 @@ class LayerTreeHostContextTestDontUseLostResources
   void RequestNewOutputSurface() override {
     // This will get called twice:
     // First when we create the initial output surface...
-    if (layer_tree_host()->source_frame_number() > 0) {
+    if (layer_tree_host()->SourceFrameNumber() > 0) {
       // ... and then again after we forced the context to be lost.
       lost_context_ = true;
     }
@@ -1055,7 +1055,7 @@ class LayerTreeHostContextTestDontUseLostResources
   void DidCommitAndDrawFrame() override {
     ASSERT_TRUE(layer_tree()->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (layer_tree_host()->source_frame_number() < 5) {
+    if (layer_tree_host()->SourceFrameNumber() < 5) {
       layer_tree()->root_layer()->SetNeedsDisplay();
       layer_tree_host()->SetNeedsCommit();
     } else {
@@ -1192,7 +1192,7 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
   }
 
   void PostLoseContextToImplThread() {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostContextTest::LoseContext,
@@ -1205,7 +1205,7 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
 
  private:
   void StepCompleteOnMainThreadInternal(int step) {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     StepCompleteOnMainThread(step);
   }
 };
@@ -1226,7 +1226,7 @@ class UIResourceLostTestSimple : public UIResourceLostTest {
 class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
  public:
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
@@ -1381,7 +1381,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
 // commit.  Impl-side-painting only.
 class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
@@ -1464,7 +1464,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeActivateTree);
 class UIResourceLostEviction : public UIResourceLostTestSimple {
  public:
   void StepCompleteOnMainThread(int step) override {
-    EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
+    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());

@@ -32,7 +32,7 @@ class CompositorMessage;
 
 class ContextProvider;
 class Layer;
-class LayerTreeHost;
+class LayerTreeHostInterface;
 class LayerTreeSettings;
 class Surface;
 class SurfaceFactory;
@@ -178,7 +178,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   BlimpCompositorDependencies* compositor_dependencies_;
 
-  std::unique_ptr<cc::LayerTreeHost> host_;
+  std::unique_ptr<cc::LayerTreeHostInterface> host_;
 
   // Whether or not |host_| should be visible.  This is stored in case |host_|
   // is null when SetVisible() is called.

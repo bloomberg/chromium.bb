@@ -159,7 +159,7 @@ class LayerTreeHostTilesTestPartialInvalidation
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // We have done one frame, so the layer's content has been rastered.
         // Now we change the picture behind it to record something completely

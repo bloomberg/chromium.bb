@@ -472,7 +472,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       AttachPlayersToTimeline();
 
       scoped_refptr<Layer> layer = Layer::Create();
@@ -513,7 +513,7 @@ class LayerTreeHostAnimationTestCancelAnimateCommit
   void BeginMainFrame(const BeginFrameArgs& args) override {
     num_begin_frames_++;
     // No-op animate will cancel the commit.
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       EndTest();
       return;
     }
@@ -662,7 +662,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // The animation is longer than 1 BeginFrame interval.
         AddOpacityTransitionToPlayer(player_child_.get(), 0.1, 0.2f, 0.8f,
@@ -723,7 +723,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1: {
         std::unique_ptr<ScrollOffsetAnimationCurve> curve(
             ScrollOffsetAnimationCurve::Create(
@@ -783,7 +783,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Add an update after the first commit to trigger the animation takeover
       // path.
       layer_tree()
@@ -844,7 +844,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Add an update after the first commit to trigger the animation update
       // path.
       layer_tree()
@@ -856,7 +856,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
                       ->animation_host()
                       ->scroll_offset_animations()
                       .HasUpdatesForTesting());
-    } else if (layer_tree_host()->source_frame_number() == 2) {
+    } else if (layer_tree_host()->SourceFrameNumber() == 2) {
       // Verify that the update queue is cleared after the update is applied.
       EXPECT_FALSE(layer_tree()
                        ->animation_host()
@@ -960,7 +960,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void BeginMainFrame(const BeginFrameArgs& args) override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         break;
       case 1: {
@@ -1060,10 +1060,10 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       player_->AttachElement(layer_tree()->root_layer()->element_id());
       AddAnimatedTransformToPlayer(player_.get(), 4, 1, 1);
-    } else if (layer_tree_host()->source_frame_number() == 2) {
+    } else if (layer_tree_host()->SourceFrameNumber() == 2) {
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.f, 0.5f, true);
 
       scoped_refptr<Layer> layer = Layer::Create();
@@ -1245,7 +1245,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         EXPECT_TRUE(
             player_->element_animations()->has_element_in_active_list());
@@ -1325,7 +1325,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // First frame: add an animation to the root layer.
         AddAnimatedTransformToPlayer(player_.get(), 0.1, 5, 5);
@@ -1400,7 +1400,7 @@ class LayerTreeHostAnimationTestRemoveAnimation
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 5, 5);
         break;
@@ -1479,7 +1479,7 @@ class LayerTreeHostAnimationTestIsAnimating
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         AddAnimatedTransformToPlayer(player_.get(), 1.0, 5, 5);
         break;
@@ -1562,12 +1562,12 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1)
+    if (layer_tree_host()->SourceFrameNumber() == 1)
       AddAnimatedTransformToPlayer(player_child_.get(), 0.04, 5, 5);
   }
 
   void WillCommit() override {
-    if (layer_tree_host()->source_frame_number() == 2) {
+    if (layer_tree_host()->SourceFrameNumber() == 2) {
       // Block until the animation finishes on the compositor thread. Since
       // animations have already been ticked on the main thread, when the commit
       // happens the state on the main thread will be consistent with having a
@@ -1710,7 +1710,7 @@ class LayerTreeHostAnimationTestChangeAnimationPlayer
   void DidCommit() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginMainFrame() override {
-    if (layer_tree_host()->source_frame_number() == 2) {
+    if (layer_tree_host()->SourceFrameNumber() == 2) {
       // Destroy player.
       timeline_->DetachPlayer(player_.get());
       player_ = nullptr;
@@ -1762,7 +1762,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
   void DidCommit() override { PostSetNeedsCommitToMainThread(); }
 
   void UpdateLayerTreeHost() override {
-    if (layer_tree_host()->source_frame_number() == 2) {
+    if (layer_tree_host()->SourceFrameNumber() == 2) {
       // Destroy player.
       timeline_->DetachPlayer(player_.get());
       player_ = nullptr;
@@ -1832,13 +1832,13 @@ class LayerTreeHostAnimationTestRebuildPropertyTreesOnAnimationSetNeedsCommit
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    if (layer_tree_host()->source_frame_number() == 1 ||
-        layer_tree_host()->source_frame_number() == 2)
+    if (layer_tree_host()->SourceFrameNumber() == 1 ||
+        layer_tree_host()->SourceFrameNumber() == 2)
       PostSetNeedsCommitToMainThread();
   }
 
   void UpdateLayerTreeHost() override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       EXPECT_FALSE(layer_tree()->property_trees()->needs_rebuild);
       AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 5, 5);
     }

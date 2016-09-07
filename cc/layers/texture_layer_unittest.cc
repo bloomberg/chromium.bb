@@ -640,7 +640,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
       scoped_refptr<ContextProvider> worker_context_provider) override {
     bool synchronous_composite =
         !HasImplThread() &&
-        !layer_tree_host()->settings().single_thread_proxy_scheduler;
+        !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     // Allow relaim resources for this test so that mailboxes in the display
     // will be returned inside the commit that replaces them.
     bool force_disable_reclaim_resources = false;
@@ -648,8 +648,9 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-        synchronous_composite, force_disable_reclaim_resources);
+        layer_tree_host()->GetSettings().renderer_settings,
+        ImplThreadTaskRunner(), synchronous_composite,
+        force_disable_reclaim_resources);
   }
 
   // Make sure callback is received on main and doesn't block the impl thread.
@@ -805,13 +806,13 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   void DidCommit() override {
     // The first frame doesn't cause anything to be returned so it does not
     // need to wait for activation.
-    if (layer_tree_host()->source_frame_number() > 1) {
+    if (layer_tree_host()->SourceFrameNumber() > 1) {
       base::AutoLock lock(activate_count_lock_);
       // The activate happened before commit is done on the main side.
-      EXPECT_EQ(activate_count_, layer_tree_host()->source_frame_number());
+      EXPECT_EQ(activate_count_, layer_tree_host()->SourceFrameNumber());
     }
 
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // The first mailbox has been activated. Set a new mailbox, and
         // expect the next commit to finish *after* it is activated.
@@ -1055,7 +1056,7 @@ class TextureLayerNoExtraCommitForMailboxTest
   bool PrepareTextureMailbox(
       TextureMailbox* texture_mailbox,
       std::unique_ptr<SingleReleaseCallback>* release_callback) override {
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Once this has been committed, the mailbox will be released.
       *texture_mailbox = TextureMailbox();
       return true;
@@ -1091,7 +1092,7 @@ class TextureLayerNoExtraCommitForMailboxTest
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         EXPECT_FALSE(proxy()->MainFrameWillHappenForTesting());
         // Invalidate the texture layer to clear the mailbox before
@@ -1363,7 +1364,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Delete the TextureLayer on the main thread while the mailbox is in
         // the impl tree.
@@ -1433,7 +1434,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
+    switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Remove the TextureLayer on the main thread while the mailbox is in
         // the impl tree, but don't delete the TextureLayer until after the impl

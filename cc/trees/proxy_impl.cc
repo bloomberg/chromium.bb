@@ -41,7 +41,7 @@ ProxyImpl::ProxyImpl(
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source)
-    : layer_tree_host_id_(layer_tree_host->id()),
+    : layer_tree_host_id_(layer_tree_host->GetId()),
       commit_completion_waits_for_activation_(false),
       commit_completion_event_(nullptr),
       activation_completion_event_(nullptr),
@@ -67,9 +67,9 @@ ProxyImpl::ProxyImpl(
   DCHECK(!smoothness_priority_expiration_notifier_.delay().is_zero());
 
   layer_tree_host_impl_ = layer_tree_host->CreateLayerTreeHostImpl(this);
+  const LayerTreeSettings& settings = layer_tree_host->GetSettings();
 
-  SchedulerSettings scheduler_settings(
-      layer_tree_host->settings().ToSchedulerSettings());
+  SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
       new CompositorTimingHistory(
@@ -81,11 +81,11 @@ ProxyImpl::ProxyImpl(
   // external, it must be provided.  If from the output surface, it must
   // not be provided.
   // TODO(enne): Make all BFS come from the output surface.
-  DCHECK(layer_tree_host->settings().use_external_begin_frame_source ^
-         layer_tree_host->settings().use_output_surface_begin_frame_source);
-  DCHECK(!layer_tree_host->settings().use_external_begin_frame_source ||
+  DCHECK(settings.use_external_begin_frame_source ^
+         settings.use_output_surface_begin_frame_source);
+  DCHECK(!settings.use_external_begin_frame_source ||
          external_begin_frame_source_);
-  DCHECK(!layer_tree_host->settings().use_output_surface_begin_frame_source ||
+  DCHECK(!settings.use_output_surface_begin_frame_source ||
          !external_begin_frame_source_);
   scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),

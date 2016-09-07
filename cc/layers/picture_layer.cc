@@ -79,10 +79,10 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   if (!recording_source_)
     recording_source_.reset(new RecordingSource);
   recording_source_->SetSlowdownRasterScaleFactor(
-      host->debug_state().slow_down_raster_scale_factor);
+      host->GetDebugState().slow_down_raster_scale_factor);
   // If we need to enable image decode tasks, then we have to generate the
   // discardable images metadata.
-  const LayerTreeSettings& settings = layer_tree_host()->settings();
+  const LayerTreeSettings& settings = layer_tree_host()->GetSettings();
   recording_source_->SetGenerateDiscardableImagesMetadata(
       settings.image_decode_tasks_enabled);
 }
@@ -95,7 +95,7 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
 }
 
 bool PictureLayer::Update() {
-  update_source_frame_number_ = layer_tree_host()->source_frame_number();
+  update_source_frame_number_ = layer_tree_host()->SourceFrameNumber();
   bool updated = Layer::Update();
 
   gfx::Size layer_size = paint_properties().bounds;
@@ -105,11 +105,10 @@ bool PictureLayer::Update() {
       !contents_opaque() &&
       !picture_layer_inputs_.client->FillsBoundsCompletely());
 
-  TRACE_EVENT1("cc", "PictureLayer::Update",
-               "source_frame_number",
-               layer_tree_host()->source_frame_number());
+  TRACE_EVENT1("cc", "PictureLayer::Update", "source_frame_number",
+               layer_tree_host()->SourceFrameNumber());
   devtools_instrumentation::ScopedLayerTreeTask update_layer(
-      devtools_instrumentation::kUpdateLayer, id(), layer_tree_host()->id());
+      devtools_instrumentation::kUpdateLayer, id(), layer_tree_host()->GetId());
 
   // UpdateAndExpandInvalidation will give us an invalidation that covers
   // anything not explicitly recorded in this frame. We give this region
@@ -288,7 +287,7 @@ void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 }
 
 void PictureLayer::DropRecordingSourceContentIfInvalid() {
-  int source_frame_number = layer_tree_host()->source_frame_number();
+  int source_frame_number = layer_tree_host()->SourceFrameNumber();
   gfx::Size recording_source_bounds = recording_source_->GetSize();
 
   gfx::Size layer_bounds = bounds();

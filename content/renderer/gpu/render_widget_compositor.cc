@@ -589,7 +589,7 @@ cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
 }
 
 void RenderWidgetCompositor::SetNeverVisible() {
-  DCHECK(!layer_tree_host_->visible());
+  DCHECK(!layer_tree_host_->IsVisible());
   never_visible_ = true;
 }
 
@@ -607,7 +607,7 @@ void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
 }
 
 void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
-  cc::LayerTreeDebugState current = layer_tree_host_->debug_state();
+  cc::LayerTreeDebugState current = layer_tree_host_->GetDebugState();
   current.rasterize_only_visible_content = true;
   layer_tree_host_->SetDebugState(current);
 }
@@ -635,7 +635,7 @@ void RenderWidgetCompositor::QueueSwapPromise(
 }
 
 int RenderWidgetCompositor::GetSourceFrameNumber() const {
-  return layer_tree_host_->source_frame_number();
+  return layer_tree_host_->SourceFrameNumber();
 }
 
 void RenderWidgetCompositor::SetNeedsUpdateLayers() {
@@ -882,7 +882,7 @@ void CompositeAndReadbackAsyncCallback(
 
 bool RenderWidgetCompositor::CompositeIsSynchronous() const {
   if (!threaded_) {
-    DCHECK(!layer_tree_host_->settings().single_thread_proxy_scheduler);
+    DCHECK(!layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
     return true;
   }
   return false;
@@ -919,7 +919,7 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
     blink::WebCompositeAndReadbackAsyncCallback* callback) {
   DCHECK(!layout_and_paint_async_callback_);
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-      layer_tree_host_->task_runner_provider()->MainThreadTaskRunner();
+      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
           [](blink::WebCompositeAndReadbackAsyncCallback* callback,
@@ -955,29 +955,29 @@ void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
 }
 
 int RenderWidgetCompositor::layerTreeId() const {
-  return layer_tree_host_->id();
+  return layer_tree_host_->GetId();
 }
 
 void RenderWidgetCompositor::setShowFPSCounter(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_fps_counter = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowPaintRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_paint_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowDebugBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_debug_borders = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
   debug_state.show_non_fast_scrollable_rects = show;
@@ -1124,7 +1124,7 @@ void RenderWidgetCompositor::SendCompositorProto(
 }
 
 void RenderWidgetCompositor::SetSurfaceClientId(uint32_t surface_client_id) {
-  layer_tree_host_->set_surface_client_id(surface_client_id);
+  layer_tree_host_->SetSurfaceClientId(surface_client_id);
 }
 
 void RenderWidgetCompositor::OnHandleCompositorProto(

@@ -405,9 +405,10 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       LayerTreeHostImplClient* host_impl_client) override {
     std::unique_ptr<LayerTreeHostImpl> host_impl =
         LayerTreeHostImplForTesting::Create(
-            test_hooks_, settings(), host_impl_client, task_runner_provider(),
-            shared_bitmap_manager(), gpu_memory_buffer_manager(),
-            task_graph_runner(), rendering_stats_instrumentation());
+            test_hooks_, GetSettings(), host_impl_client,
+            GetTaskRunnerProvider(), shared_bitmap_manager(),
+            gpu_memory_buffer_manager(), task_graph_runner(),
+            rendering_stats_instrumentation());
     input_handler_weak_ptr_ = host_impl->AsWeakPtr();
     return host_impl;
   }
@@ -651,9 +652,9 @@ void LayerTreeTest::DoBeginTest() {
   ASSERT_TRUE(layer_tree_host_);
 
   main_task_runner_ =
-      layer_tree_host_->task_runner_provider()->MainThreadTaskRunner();
+      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   impl_task_runner_ =
-      layer_tree_host_->task_runner_provider()->ImplThreadTaskRunner();
+      layer_tree_host_->GetTaskRunnerProvider()->ImplThreadTaskRunner();
   if (!impl_task_runner_) {
     // For tests, if there's no impl thread, make things easier by just giving
     // the main thread task runner.
@@ -859,7 +860,7 @@ LayerTreeTest::CreateDelegatingOutputSurface(
     scoped_refptr<ContextProvider> worker_context_provider) {
   bool synchronous_composite =
       !HasImplThread() &&
-      !layer_tree_host()->settings().single_thread_proxy_scheduler;
+      !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
   // Disable reclaim resources by default to act like the Display lives
   // out-of-process.
   bool force_disable_reclaim_resources = true;
@@ -867,8 +868,9 @@ LayerTreeTest::CreateDelegatingOutputSurface(
       compositor_context_provider, std::move(worker_context_provider),
       CreateDisplayOutputSurface(compositor_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(),
-      layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
-      synchronous_composite, force_disable_reclaim_resources);
+      layer_tree_host()->GetSettings().renderer_settings,
+      ImplThreadTaskRunner(), synchronous_composite,
+      force_disable_reclaim_resources);
 }
 
 std::unique_ptr<OutputSurface> LayerTreeTest::CreateDisplayOutputSurface(
@@ -929,7 +931,7 @@ TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
   // anymore.
   DCHECK(host);
 
-  return host->task_runner_provider();
+  return host->GetTaskRunnerProvider();
 }
 
 LayerTreeHost* LayerTreeTest::layer_tree_host() {

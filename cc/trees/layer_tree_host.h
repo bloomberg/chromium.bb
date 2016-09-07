@@ -39,6 +39,7 @@
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_interface.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise_monitor.h"
@@ -81,7 +82,20 @@ namespace proto {
 class LayerTreeHost;
 }
 
-class CC_EXPORT LayerTreeHost {
+// This class is being refactored to an interface, see LayerTreeHostInterface,
+// which is the API for the cc embedder. When adding new code to this class,
+// consider the following:
+// 1) If its state/data that gets pushed to the LayerTreeImpl during commit, add
+//    it to the LayerTree.
+// 2) If it's a call from the embedder, add it to the LayerTreeHostInterface.
+// 3) If it's a call from any of the internal cc classes, i.e., LayerTree or
+//    PropertyTreeBuilder, etc., add it to the LayerTreeHostInterface.
+// 4) If it's a notification from the impl thread or a call from Proxy, add it
+//    to this class.
+// This class will be renamed to LayerTreeHostInProcess and will be the
+// LayerTreeHost implementation for when the impl thread for the compositor runs
+// in the same process, and thus uses a Proxy.
+class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
  public:
   // TODO(sad): InitParams should be a movable type so that it can be
   // std::move()d to the Create* functions.
@@ -101,7 +115,7 @@ class CC_EXPORT LayerTreeHost {
   };
 
   // The SharedBitmapManager will be used on the compositor thread.
-  static std::unique_ptr<LayerTreeHost> CreateThreaded(
+  static std::unique_ptr<LayerTreeHostInterface> CreateThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       InitParams* params);
 
@@ -109,7 +123,7 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostSingleThreadClient* single_thread_client,
       InitParams* params);
 
-  static std::unique_ptr<LayerTreeHost> CreateRemoteServer(
+  static std::unique_ptr<LayerTreeHostInterface> CreateRemoteServer(
       RemoteProtoChannel* remote_proto_channel,
       InitParams* params);
 
@@ -119,12 +133,55 @@ class CC_EXPORT LayerTreeHost {
   // a CompositorMessageToImpl::CloseImpl message from the server. This ensures
   // that the client will not send any compositor messages once the
   // LayerTreeHost on the server is destroyed.
-  static std::unique_ptr<LayerTreeHost> CreateRemoteClient(
+  static std::unique_ptr<LayerTreeHostInterface> CreateRemoteClient(
       RemoteProtoChannel* remote_proto_channel,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       InitParams* params);
 
-  virtual ~LayerTreeHost();
+  ~LayerTreeHost() override;
+
+  // LayerTreeHostInterface implementation.
+  int GetId() const override;
+  int SourceFrameNumber() const override;
+  LayerTree* GetLayerTree() override;
+  const LayerTree* GetLayerTree() const override;
+  TaskRunnerProvider* GetTaskRunnerProvider() const override;
+  const LayerTreeSettings& GetSettings() const override;
+  void SetSurfaceClientId(uint32_t client_id) override;
+  void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
+  void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise) override;
+  void SetHasGpuRasterizationTrigger(bool has_trigger) override;
+  void SetVisible(bool visible) override;
+  bool IsVisible() const override;
+  void SetOutputSurface(std::unique_ptr<OutputSurface> output_surface) override;
+  std::unique_ptr<OutputSurface> ReleaseOutputSurface() override;
+  void SetNeedsAnimate() override;
+  void SetNeedsUpdateLayers() override;
+  void SetNeedsCommit() override;
+  bool BeginMainFrameRequested() const override;
+  bool CommitRequested() const override;
+  void SetDeferCommits(bool defer_commits) override;
+  void LayoutAndUpdateLayers() override;
+  void Composite(base::TimeTicks frame_begin_time) override;
+  void SetNeedsRedraw() override;
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
+  void SetNextCommitForcesRedraw() override;
+  void NotifyInputThrottledUntilCommit() override;
+  void UpdateTopControlsState(TopControlsState constraints,
+                              TopControlsState current,
+                              bool animate) override;
+  const base::WeakPtr<InputHandler>& GetInputHandler() const override;
+  void DidStopFlinging() override;
+  void SetDebugState(const LayerTreeDebugState& debug_state) override;
+  const LayerTreeDebugState& GetDebugState() const override;
+  int ScheduleMicroBenchmark(
+      const std::string& benchmark_name,
+      std::unique_ptr<base::Value> value,
+      const MicroBenchmark::DoneCallback& callback) override;
+  bool SendMessageToMicroBenchmark(int id,
+                                   std::unique_ptr<base::Value> value) override;
+  void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) override;
+  void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) override;
 
   // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();
@@ -132,13 +189,10 @@ class CC_EXPORT LayerTreeHost {
   void BeginMainFrame(const BeginFrameArgs& args);
   void BeginMainFrameNotExpectedSoon();
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
-  void DidStopFlinging();
   void RequestMainFrameUpdate();
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();
-  void SetOutputSurface(std::unique_ptr<OutputSurface> output_surface);
-  std::unique_ptr<OutputSurface> ReleaseOutputSurface();
   void RequestNewOutputSurface();
   void DidInitializeOutputSurface();
   void DidFailToInitializeOutputSurface();
@@ -150,20 +204,9 @@ class CC_EXPORT LayerTreeHost {
   bool UpdateLayers();
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
+  void ApplyScrollAndScale(ScrollAndScaleSet* info);
 
   LayerTreeHostClient* client() { return client_; }
-  const base::WeakPtr<InputHandler>& GetInputHandler() {
-    return input_handler_weak_ptr_;
-  }
-
-  void NotifyInputThrottledUntilCommit();
-
-  void LayoutAndUpdateLayers();
-  void Composite(base::TimeTicks frame_begin_time);
-
-  void SetDeferCommits(bool defer_commits);
-
-  int source_frame_number() const { return source_frame_number_; }
 
   bool gpu_rasterization_histogram_recorded() const {
     return gpu_rasterization_histogram_recorded_;
@@ -175,46 +218,15 @@ class CC_EXPORT LayerTreeHost {
     return rendering_stats_instrumentation_.get();
   }
 
-  void SetNeedsAnimate();
-  virtual void SetNeedsUpdateLayers();
-  virtual void SetNeedsCommit();
-  void SetNeedsRedraw();
-  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
-  bool CommitRequested() const;
-  bool BeginMainFrameRequested() const;
-
   void SetNextCommitWaitsForActivation();
 
-  void SetNextCommitForcesRedraw();
-
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
-
-  const LayerTreeSettings& settings() const { return settings_; }
-
-  void SetDebugState(const LayerTreeDebugState& debug_state);
-  const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
   bool has_gpu_rasterization_trigger() const {
     return has_gpu_rasterization_trigger_;
   }
-  void SetHasGpuRasterizationTrigger(bool has_trigger);
-
-  void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
-
-  void SetVisible(bool visible);
-  bool visible() const { return visible_; }
-
-  void ApplyScrollAndScale(ScrollAndScaleSet* info);
-
-  void UpdateTopControlsState(TopControlsState constraints,
-                              TopControlsState current,
-                              bool animate);
 
   Proxy* proxy() const { return proxy_.get(); }
-  TaskRunnerProvider* task_runner_provider() const {
-    return task_runner_provider_.get();
-  }
-  AnimationHost* animation_host() const;
 
   // CreateUIResource creates a resource given a bitmap.  The bitmap is
   // generated via an interface function, which is called when initializing the
@@ -231,34 +243,12 @@ class CC_EXPORT LayerTreeHost {
 
   virtual gfx::Size GetUIResourceSize(UIResourceId id) const;
 
-  int id() const { return id_; }
-
-  // Returns the id of the benchmark on success, 0 otherwise.
-  int ScheduleMicroBenchmark(const std::string& benchmark_name,
-                             std::unique_ptr<base::Value> value,
-                             const MicroBenchmark::DoneCallback& callback);
-  // Returns true if the message was successfully delivered and handled.
-  bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
-
-  // When a SwapPromiseMonitor is created on the main thread, it calls
-  // InsertSwapPromiseMonitor() to register itself with LayerTreeHost.
-  // When the monitor is destroyed, it calls RemoveSwapPromiseMonitor()
-  // to unregister itself.
-  void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor);
-  void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor);
-
-  // Call this function when you expect there to be a swap buffer.
-  // See swap_promise.h for how to use SwapPromise.
-  void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise);
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
   std::vector<std::unique_ptr<SwapPromise>> TakeSwapPromises();
 
   size_t num_queued_swap_promises() const { return swap_promise_list_.size(); }
 
-  void set_surface_client_id(uint32_t client_id);
   SurfaceSequence CreateSurfaceSequence();
-
-  void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
@@ -291,9 +281,6 @@ class CC_EXPORT LayerTreeHost {
   ClientPictureCache* client_picture_cache() const {
     return client_picture_cache_ ? client_picture_cache_.get() : nullptr;
   }
-
-  LayerTree* GetLayerTree() { return layer_tree_.get(); }
-  const LayerTree* GetLayerTree() const { return layer_tree_.get(); }
 
   void ResetGpuRasterizationTracking();
 
@@ -356,6 +343,7 @@ class CC_EXPORT LayerTreeHost {
   enum { kNumFramesToConsiderBeforeGpuRasterization = 60 };
 
   void ApplyViewportDeltas(ScrollAndScaleSet* info);
+  void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(
       std::unique_ptr<Proxy> proxy,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);

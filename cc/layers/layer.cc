@@ -1132,7 +1132,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // If we did not SavePaintProperties() for the layer this frame, then push the
   // real property values, not the paint property values.
   bool use_paint_properties = paint_properties_.source_frame_number ==
-                              layer_tree_host_->source_frame_number();
+                              layer_tree_host_->SourceFrameNumber();
 
   layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
@@ -1209,7 +1209,7 @@ void Layer::TakeCopyRequests(
     std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
   for (auto& it : inputs_.copy_requests) {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-        layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
+        layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner();
     std::unique_ptr<CopyOutputRequest> original_request = std::move(it);
     const CopyOutputRequest& original_request_ref = *original_request;
     std::unique_ptr<CopyOutputRequest> main_thread_request =
@@ -1345,7 +1345,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
 
   bool use_paint_properties = layer_tree_host_ &&
                               paint_properties_.source_frame_number ==
-                                  layer_tree_host_->source_frame_number();
+                                  layer_tree_host_->SourceFrameNumber();
 
   Point3FToProto(inputs_.transform_origin, base->mutable_transform_origin());
   base->set_background_color(inputs_.background_color);
@@ -1567,15 +1567,14 @@ void Layer::SavePaintProperties() {
   // TODO(reveman): Save all layer properties that we depend on not
   // changing until PushProperties() has been called. crbug.com/231016
   paint_properties_.bounds = inputs_.bounds;
-  paint_properties_.source_frame_number =
-      layer_tree_host_->source_frame_number();
+  paint_properties_.source_frame_number = layer_tree_host_->SourceFrameNumber();
 }
 
 bool Layer::Update() {
   DCHECK(layer_tree_host_);
-  DCHECK_EQ(layer_tree_host_->source_frame_number(),
-            paint_properties_.source_frame_number) <<
-      "SavePaintProperties must be called for any layer that is painted.";
+  DCHECK_EQ(layer_tree_host_->SourceFrameNumber(),
+            paint_properties_.source_frame_number)
+      << "SavePaintProperties must be called for any layer that is painted.";
   return false;
 }
 

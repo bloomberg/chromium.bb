@@ -114,20 +114,20 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
 
-  gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
-
   // Used externally by blink for setting the PropertyTrees when
   // |settings_.use_layer_lists| is true. This is a SPV2 setting.
   PropertyTrees* property_trees() { return &property_trees_; }
 
-  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
+  void SetNeedsDisplayOnAllLayers();
 
   // Methods which should only be used internally in cc ------------------
   void RegisterLayer(Layer* layer);
   void UnregisterLayer(Layer* layer);
   Layer* LayerById(int id) const;
+
   bool UpdateLayers(const LayerList& update_layer_list,
                     bool* content_is_suitable_for_gpu);
+  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
@@ -142,6 +142,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void SetPageScaleFromImplSide(float page_scale);
   void SetElasticOverscrollFromImplSide(gfx::Vector2dF elastic_overscroll);
+  gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
 
   void UpdateHudLayer(bool show_hud_info);
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
@@ -173,8 +174,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   LayerListIterator<Layer> end() const;
   LayerListReverseIterator<Layer> rbegin();
   LayerListReverseIterator<Layer> rend();
-
-  void SetNeedsDisplayOnAllLayers();
   // ---------------------------------------------------------------------
 
  private:

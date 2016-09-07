@@ -16,7 +16,7 @@
 namespace cc {
 class Display;
 class Layer;
-class LayerTreeHost;
+class LayerTreeHostInterface;
 class SurfaceIdAllocator;
 class SurfaceManager;
 }  // namespace cc
@@ -86,7 +86,7 @@ class BrowserCompositor : public cc::LayerTreeHostClient,
 
   gfx::Size viewport_size_in_px_;
 
-  std::unique_ptr<cc::LayerTreeHost> host_;
+  std::unique_ptr<cc::LayerTreeHostInterface> host_;
   scoped_refptr<cc::Layer> root_layer_;
 
   base::Closure did_complete_swap_buffers_;

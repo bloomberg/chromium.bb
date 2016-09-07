@@ -48,7 +48,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_(layer_tree_host),
       task_runner_provider_(task_runner_provider),
-      layer_tree_host_id_(layer_tree_host->id()),
+      layer_tree_host_id_(layer_tree_host->GetId()),
       max_requested_pipeline_stage_(NO_PIPELINE_STAGE),
       current_pipeline_stage_(NO_PIPELINE_STAGE),
       final_pipeline_stage_(NO_PIPELINE_STAGE),
@@ -150,7 +150,7 @@ void ProxyMain::BeginMainFrame(
   final_pipeline_stage_ = max_requested_pipeline_stage_;
   max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
 
-  if (!layer_tree_host_->visible()) {
+  if (!layer_tree_host_->IsVisible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
     channel_main_->BeginMainFrameAbortedOnImpl(
@@ -193,7 +193,7 @@ void ProxyMain::BeginMainFrame(
 
   layer_tree_host_->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
-      layer_tree_host_->id());
+      layer_tree_host_->GetId());
 
   current_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
   if (!updated && can_cancel_this_commit) {
@@ -351,7 +351,7 @@ void ProxyMain::Start(
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_->IsThreaded() || layer_tree_host_->IsRemoteServer());
   DCHECK(channel_main_);
-  DCHECK(!layer_tree_host_->settings().use_external_begin_frame_source ||
+  DCHECK(!layer_tree_host_->GetSettings().use_external_begin_frame_source ||
          external_begin_frame_source);
 
   // Create LayerTreeHostImpl.

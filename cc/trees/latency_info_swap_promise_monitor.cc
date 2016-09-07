@@ -42,11 +42,10 @@ namespace cc {
 
 LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInterface* layer_tree_host,
     LayerTreeHostImpl* layer_tree_host_impl)
     : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
-      latency_(latency) {
-}
+      latency_(latency) {}
 
 LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
 }

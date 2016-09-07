@@ -97,7 +97,7 @@ class LayerTreeHostReadbackPixelTest
 
   void DidCommitAndDrawFrame() override {
     if (insert_copy_request_after_frame_count_ ==
-        layer_tree_host()->source_frame_number()) {
+        layer_tree_host()->SourceFrameNumber()) {
       Layer* const target =
           readback_target_ ? readback_target_ : layer_tree()->root_layer();
       target->RequestCopyOfOutput(CreateCopyOutputRequest());

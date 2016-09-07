@@ -171,7 +171,7 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
 void PaintedScrollbarLayer::UpdateInternalContentScale() {
   float scale = GetLayerTree()->device_scale_factor();
   if (layer_tree_host()
-          ->settings()
+          ->GetSettings()
           .layer_transforms_should_scale_layer_contents) {
     gfx::Transform transform;
     transform = draw_property_utils::ScreenSpaceTransform(

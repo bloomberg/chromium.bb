@@ -64,7 +64,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
 
   DisplayItemListSettings settings;
   settings.use_cached_picture =
-      layer_tree_host()->settings().use_cached_picture_raster;
+      layer_tree_host()->GetSettings().use_cached_picture_raster;
   scoped_refptr<DisplayItemList> display_list =
       DisplayItemList::Create(settings);
 

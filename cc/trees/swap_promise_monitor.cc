@@ -9,7 +9,7 @@
 
 namespace cc {
 
-SwapPromiseMonitor::SwapPromiseMonitor(LayerTreeHost* layer_tree_host,
+SwapPromiseMonitor::SwapPromiseMonitor(LayerTreeHostInterface* layer_tree_host,
                                        LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_(layer_tree_host),
       layer_tree_host_impl_(layer_tree_host_impl) {
