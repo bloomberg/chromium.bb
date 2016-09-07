@@ -34,6 +34,7 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
       configurator_(configurator),
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
+      alternative_proxies_broken_(false),
       net_log_(net_log) {
   DCHECK(config);
   DCHECK(configurator);
@@ -98,10 +99,55 @@ void DataReductionProxyDelegate::OnTunnelHeadersReceived(
 void DataReductionProxyDelegate::GetAlternativeProxy(
     const GURL& url,
     const net::ProxyServer& resolved_proxy_server,
-    net::ProxyServer* alternative_proxy_server) const {}
+    net::ProxyServer* alternative_proxy_server) const {
+  DCHECK(!alternative_proxy_server->is_valid());
+
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() ||
+      url.SchemeIsCryptographic()) {
+    return;
+  }
+
+  if (alternative_proxies_broken_ || !params::IsIncludedInQuicFieldTrial())
+    return;
+
+  if (!resolved_proxy_server.is_valid() || !resolved_proxy_server.is_https())
+    return;
+
+  if (!config_ ||
+      !config_->IsDataReductionProxy(resolved_proxy_server.host_port_pair(),
+                                     nullptr)) {
+    return;
+  }
+
+  if (!SupportsQUIC(resolved_proxy_server))
+    return;
+
+  // TODO(tbansal): Record UMA to measure how frequently this happens.
+  *alternative_proxy_server = net::ProxyServer(
+      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair());
+  DCHECK(alternative_proxy_server->is_valid());
+  return;
+}
 
 void DataReductionProxyDelegate::OnAlternativeProxyBroken(
-    const net::ProxyServer& alternative_proxy_server) {}
+    const net::ProxyServer& alternative_proxy_server) {
+  // TODO(tbansal): Record UMA to measure how frequently this happens.
+  // TODO(tbansal): Reset this on connection change events.
+  // Currently, DataReductionProxyDelegate does not maintain a list of broken
+  // proxies. If one alternative proxy is broken, use of all alternative proxies
+  // is disabled because it is likely that other QUIC proxies would be
+  // broken  too.
+  alternative_proxies_broken_ = true;
+}
+
+bool DataReductionProxyDelegate::SupportsQUIC(
+    const net::ProxyServer& proxy_server) const {
+  // Enable QUIC for whitelisted proxies.
+  // TODO(tbansal):  Use client config service to control this whitelist.
+  return proxy_server ==
+         net::ProxyServer::FromURI("proxy.googlezip.net:443",
+                                   net::ProxyServer::SCHEME_HTTPS);
+}
 
 void OnResolveProxyHandler(const GURL& url,
                            const std::string& method,

@@ -29,7 +29,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -66,11 +65,43 @@ net::ProxyServer GetProxyWithScheme(net::ProxyServer::Scheme scheme) {
     case net::ProxyServer::SCHEME_QUIC:
       return net::ProxyServer::FromURI("quic://origin.net:443",
                                        net::ProxyServer::SCHEME_QUIC);
+    case net::ProxyServer::SCHEME_DIRECT:
+      return net::ProxyServer::FromURI("DIRECT",
+                                       net::ProxyServer::SCHEME_DIRECT);
     default:
       NOTREACHED();
       return net::ProxyServer::FromURI("", net::ProxyServer::SCHEME_INVALID);
   }
 }
+
+class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
+ public:
+  TestDataReductionProxyDelegate(
+      DataReductionProxyConfig* config,
+      const DataReductionProxyConfigurator* configurator,
+      DataReductionProxyEventCreator* event_creator,
+      DataReductionProxyBypassStats* bypass_stats,
+      net::NetLog* net_log)
+      : DataReductionProxyDelegate(config,
+                                   configurator,
+                                   event_creator,
+                                   bypass_stats,
+                                   net_log) {}
+
+  ~TestDataReductionProxyDelegate() override {}
+
+  bool SupportsQUIC(const net::ProxyServer& proxy_server) const override {
+    return proxy_server ==
+           net::ProxyServer::FromURI("https://origin.net:443",
+                                     net::ProxyServer::SCHEME_HTTPS);
+  }
+
+  using DataReductionProxyDelegate::GetAlternativeProxy;
+  using DataReductionProxyDelegate::OnAlternativeProxyBroken;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyDelegate);
+};
 
 // Tests that the trusted SPDY proxy is verified correctly.
 TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
@@ -161,6 +192,138 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
               delegate.IsTrustedSpdyProxy(first_proxy) ||
                   delegate.IsTrustedSpdyProxy(second_proxy))
         << (&test - test_cases);
+  }
+}
+
+// Verifies that DataReductionProxyDelegate correctly implements
+// alternative proxy functionality.
+TEST(DataReductionProxyDelegate, AlternativeProxy) {
+  base::MessageLoopForIO message_loop_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithConfigClient()
+          .WithMockDataReductionProxyService()
+          .Build();
+
+  const struct {
+    bool is_in_quic_field_trial;
+    GURL gurl;
+    net::ProxyServer::Scheme first_proxy_scheme;
+    net::ProxyServer::Scheme second_proxy_scheme;
+  } tests[] = {
+      {false, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
+       net::ProxyServer::SCHEME_DIRECT},
+      {false, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
+       net::ProxyServer::SCHEME_HTTP},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
+       net::ProxyServer::SCHEME_DIRECT},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
+       net::ProxyServer::SCHEME_DIRECT},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_DIRECT,
+       net::ProxyServer::SCHEME_DIRECT},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
+       net::ProxyServer::SCHEME_DIRECT},
+      {true, GURL("https://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
+       net::ProxyServer::SCHEME_DIRECT},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_DIRECT,
+       net::ProxyServer::SCHEME_HTTPS},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
+       net::ProxyServer::SCHEME_HTTPS},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
+       net::ProxyServer::SCHEME_HTTPS},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
+       net::ProxyServer::SCHEME_HTTP},
+      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
+       net::ProxyServer::SCHEME_HTTPS},
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    // True if there should exist a valid alternative proxy server corresponding
+    // to the first proxy in the list of proxies available to the data reduction
+    // proxy.
+    const bool expect_alternative_proxy_server_to_first_proxy =
+        tests[i].is_in_quic_field_trial &&
+        !tests[i].gurl.SchemeIsCryptographic() &&
+        tests[i].first_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
+
+    // True if there should exist a valid alternative proxy server corresponding
+    // to the second proxy in the list of proxies available to the data
+    // reduction proxy.
+    const bool expect_alternative_proxy_server_to_second_proxy =
+        tests[i].is_in_quic_field_trial &&
+        !tests[i].gurl.SchemeIsCryptographic() &&
+        tests[i].second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
+
+    std::vector<net::ProxyServer> proxies_for_http;
+    net::ProxyServer first_proxy;
+    net::ProxyServer second_proxy;
+    if (tests[i].first_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
+      first_proxy = GetProxyWithScheme(tests[i].first_proxy_scheme);
+      proxies_for_http.push_back(first_proxy);
+    }
+    if (tests[i].second_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
+      second_proxy = GetProxyWithScheme(tests[i].second_proxy_scheme);
+      proxies_for_http.push_back(second_proxy);
+    }
+
+    std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
+        DataReductionProxyMutableConfigValues::CreateFromParams(
+            test_context->test_params());
+    config_values->UpdateValues(proxies_for_http);
+
+    std::unique_ptr<DataReductionProxyConfig> config(
+        new DataReductionProxyConfig(
+            message_loop_.task_runner(), test_context->net_log(),
+            std::move(config_values), test_context->configurator(),
+            test_context->event_creator()));
+
+    TestDataReductionProxyDelegate delegate(
+        config.get(), test_context->io_data()->configurator(),
+        test_context->io_data()->event_creator(),
+        test_context->io_data()->bypass_stats(),
+        test_context->io_data()->net_log());
+
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        params::GetQuicFieldTrialName(),
+        tests[i].is_in_quic_field_trial ? "Enabled" : "Control");
+
+    net::ProxyServer alternative_proxy_server_to_first_proxy;
+    net::ProxyServer alternative_proxy_server_to_second_proxy;
+
+    delegate.GetAlternativeProxy(tests[i].gurl, first_proxy,
+                                 &alternative_proxy_server_to_first_proxy);
+    EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
+              alternative_proxy_server_to_first_proxy.is_valid())
+        << i;
+
+    delegate.GetAlternativeProxy(tests[i].gurl, second_proxy,
+                                 &alternative_proxy_server_to_second_proxy);
+    EXPECT_EQ(expect_alternative_proxy_server_to_second_proxy,
+              alternative_proxy_server_to_second_proxy.is_valid());
+
+    EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
+              alternative_proxy_server_to_first_proxy.is_valid());
+    EXPECT_EQ(expect_alternative_proxy_server_to_second_proxy,
+              alternative_proxy_server_to_second_proxy.is_valid());
+
+    if (expect_alternative_proxy_server_to_first_proxy) {
+      // Verify that when the alternative proxy server is reported as broken,
+      // then it is no longer returned when GetAlternativeProxy is called.
+      EXPECT_EQ(
+          first_proxy.host_port_pair().host(),
+          alternative_proxy_server_to_first_proxy.host_port_pair().host());
+      EXPECT_EQ(
+          first_proxy.host_port_pair().port(),
+          alternative_proxy_server_to_first_proxy.host_port_pair().port());
+      EXPECT_EQ(net::ProxyServer::SCHEME_QUIC,
+                alternative_proxy_server_to_first_proxy.scheme());
+
+      delegate.OnAlternativeProxyBroken(first_proxy);
+      alternative_proxy_server_to_first_proxy = net::ProxyServer();
+      delegate.GetAlternativeProxy(tests[i].gurl, first_proxy,
+                                   &alternative_proxy_server_to_first_proxy);
+      EXPECT_FALSE(alternative_proxy_server_to_first_proxy.is_valid());
+    }
   }
 }
 

@@ -61,6 +61,10 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;
+
+ protected:
+  // Protected so that these methods are accessible for testing.
+  // net::ProxyDelegate implementation:
   void GetAlternativeProxy(
       const GURL& url,
       const net::ProxyServer& resolved_proxy_server,
@@ -68,11 +72,19 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   void OnAlternativeProxyBroken(
       const net::ProxyServer& alternative_proxy_server) override;
 
+  // Protected so that it can be overridden during testing.
+  // Returns true if |proxy_server| supports QUIC.
+  virtual bool SupportsQUIC(const net::ProxyServer& proxy_server) const;
+
  private:
   const DataReductionProxyConfig* config_;
   const DataReductionProxyConfigurator* configurator_;
   DataReductionProxyEventCreator* event_creator_;
   DataReductionProxyBypassStats* bypass_stats_;
+
+  // True if the use of alternate proxies is disabled.
+  bool alternative_proxies_broken_;
+
   net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDelegate);
