@@ -999,7 +999,7 @@ std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
   data->suggestions_url_post_params = suggest_url_post_params.as_string();
   data->instant_url_post_params = instant_url_post_params.as_string();
   data->image_url_post_params = image_url_post_params.as_string();
-  data->favicon_url = GURL(favicon_url.as_string());
+  data->favicon_url = GURL(favicon_url);
   data->show_in_default_list = true;
   data->safe_for_autoreplace = true;
   data->input_encodings.push_back(encoding.as_string());

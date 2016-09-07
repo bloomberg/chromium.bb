@@ -32,7 +32,7 @@ bool CreateFileResourceFromValue(const base::Value* value,
 // for JSONValueConverter::RegisterCustomField method.
 // TODO(mukai): make it return false in case of invalid |url_string|.
 bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
-  *result = GURL(url_string.as_string());
+  *result = GURL(url_string);
   return true;
 }
 

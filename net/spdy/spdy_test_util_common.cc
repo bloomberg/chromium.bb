@@ -47,7 +47,7 @@ namespace {
 // SPDY request.
 void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
               std::string* path) {
-  GURL gurl(url.as_string());
+  GURL gurl(url);
   path->assign(gurl.PathForRequest());
   scheme->assign(gurl.scheme());
   host->assign(gurl.host());
@@ -1092,7 +1092,7 @@ SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(
     base::StringPiece url,
     int64_t* content_length) const {
   std::string scheme, host, path;
-  ParseUrl(url.data(), &scheme, &host, &path);
+  ParseUrl(url, &scheme, &host, &path);
   SpdyHeaderBlock headers;
   headers[GetMethodKey()] = method.as_string();
   headers[GetHostKey()] = host.c_str();

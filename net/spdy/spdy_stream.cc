@@ -50,7 +50,7 @@ std::unique_ptr<base::Value> NetLogSpdyStreamWindowUpdateCallback(
   return std::move(dict);
 }
 
-bool ContainsUppercaseAscii(const std::string& str) {
+bool ContainsUppercaseAscii(base::StringPiece str) {
   return std::any_of(str.begin(), str.end(), base::IsAsciiUpper<char>);
 }
 
@@ -871,15 +871,14 @@ int SpdyStream::MergeWithResponseHeaders(
   for (SpdyHeaderBlock::const_iterator it = new_response_headers.begin();
       it != new_response_headers.end(); ++it) {
     // Disallow uppercase headers.
-    if (ContainsUppercaseAscii(it->first.as_string())) {
+    if (ContainsUppercaseAscii(it->first)) {
       session_->ResetStream(
           stream_id_, RST_STREAM_PROTOCOL_ERROR,
           "Upper case characters in header: " + it->first.as_string());
       return ERR_SPDY_PROTOCOL_ERROR;
     }
 
-    SpdyHeaderBlock::iterator it2 =
-        response_headers_.find(it->first.as_string());
+    SpdyHeaderBlock::iterator it2 = response_headers_.find(it->first);
     // Disallow duplicate headers.  This is just to be conservative.
     if (it2 != response_headers_.end()) {
       session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
