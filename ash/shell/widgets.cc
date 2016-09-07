@@ -54,11 +54,10 @@ class WidgetsWindow : public views::WidgetDelegateView {
 
 WidgetsWindow::WidgetsWindow()
     : button_(
-          views::MdTextButton::CreateMdButton(nullptr,
-                                              base::ASCIIToUTF16("Button"))),
-      disabled_button_(views::MdTextButton::CreateMdButton(
-          nullptr,
-          base::ASCIIToUTF16("Disabled button"))),
+          views::MdTextButton::Create(nullptr, base::ASCIIToUTF16("Button"))),
+      disabled_button_(
+          views::MdTextButton::Create(nullptr,
+                                      base::ASCIIToUTF16("Disabled button"))),
       checkbox_(new views::Checkbox(base::ASCIIToUTF16("Checkbox"))),
       checkbox_disabled_(
           new views::Checkbox(base::ASCIIToUTF16("Checkbox disabled"))),

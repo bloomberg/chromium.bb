@@ -72,11 +72,11 @@ void MakeButtonsInState(MdTextButton** primary,
                         ButtonListener* listener,
                         Button::ButtonState state) {
   const base::string16 button_text = base::ASCIIToUTF16("Button");
-  *primary = MdTextButton::CreateMdButton(listener, button_text);
+  *primary = MdTextButton::Create(listener, button_text);
   (*primary)->SetCallToAction(true);
   (*primary)->SetState(state);
 
-  *secondary = MdTextButton::CreateMdButton(listener, button_text);
+  *secondary = MdTextButton::Create(listener, button_text);
   (*secondary)->SetState(state);
 }
 

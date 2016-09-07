@@ -51,8 +51,7 @@ class ModalWindow : public views::WidgetDelegateView,
   explicit ModalWindow(ui::ModalType modal_type)
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
-        open_button_(
-            MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Moar!"))) {
+        open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
     AddChildView(open_button_);
   }
@@ -174,42 +173,38 @@ void InitWindowTypeLauncher() {
 
 WindowTypeLauncher::WindowTypeLauncher()
     : create_button_(
-          MdTextButton::CreateMdButton(this,
-                                       base::ASCIIToUTF16("Create Window"))),
+          MdTextButton::Create(this, base::ASCIIToUTF16("Create Window"))),
       panel_button_(
-          MdTextButton::CreateMdButton(this,
-                                       base::ASCIIToUTF16("Create Panel"))),
-      create_nonresizable_button_(MdTextButton::CreateMdButton(
+          MdTextButton::Create(this, base::ASCIIToUTF16("Create Panel"))),
+      create_nonresizable_button_(MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Create Non-Resizable Window"))),
-      bubble_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Create Pointy Bubble"))),
+      bubble_button_(
+          MdTextButton::Create(this,
+                               base::ASCIIToUTF16("Create Pointy Bubble"))),
       lock_button_(
-          MdTextButton::CreateMdButton(this,
-                                       base::ASCIIToUTF16("Lock Screen"))),
-      widgets_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Show Example Widgets"))),
-      system_modal_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Open System Modal Window"))),
-      window_modal_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Open Window Modal Window"))),
-      child_modal_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Open Child Modal Window"))),
-      transient_button_(MdTextButton::CreateMdButton(
+          MdTextButton::Create(this, base::ASCIIToUTF16("Lock Screen"))),
+      widgets_button_(
+          MdTextButton::Create(this,
+                               base::ASCIIToUTF16("Show Example Widgets"))),
+      system_modal_button_(
+          MdTextButton::Create(this,
+                               base::ASCIIToUTF16("Open System Modal Window"))),
+      window_modal_button_(
+          MdTextButton::Create(this,
+                               base::ASCIIToUTF16("Open Window Modal Window"))),
+      child_modal_button_(
+          MdTextButton::Create(this,
+                               base::ASCIIToUTF16("Open Child Modal Window"))),
+      transient_button_(MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
-      examples_button_(MdTextButton::CreateMdButton(
+      examples_button_(MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Open Views Examples Window"))),
-      show_hide_window_button_(MdTextButton::CreateMdButton(
-          this,
-          base::ASCIIToUTF16("Show/Hide a Window"))),
-      show_web_notification_(MdTextButton::CreateMdButton(
+      show_hide_window_button_(
+          MdTextButton::Create(this, base::ASCIIToUTF16("Show/Hide a Window"))),
+      show_web_notification_(MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Show a web/app notification"))) {
   views::GridLayout* layout = new views::GridLayout(this);

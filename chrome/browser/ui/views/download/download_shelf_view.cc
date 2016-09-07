@@ -168,7 +168,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                             rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   } else {
-    show_all_view_md_ = views::MdTextButton::CreateMdButton(
+    show_all_view_md_ = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
     show_all_view_ = show_all_view_md_;
 

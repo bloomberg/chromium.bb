@@ -27,8 +27,7 @@ class LockView : public views::WidgetDelegateView,
  public:
   LockView()
       : unlock_button_(
-            views::MdTextButton::CreateMdButton(this,
-                                                base::ASCIIToUTF16("Unlock"))) {
+            views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
     AddChildView(unlock_button_);
   }
   ~LockView() override {}

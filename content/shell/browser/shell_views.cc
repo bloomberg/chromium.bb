@@ -132,7 +132,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
           toolbar_layout->AddColumnSet(0);
       // Back button
       back_button_ =
-          views::MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Back"));
+          views::MdTextButton::Create(this, base::ASCIIToUTF16("Back"));
       gfx::Size back_button_size = back_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -140,8 +140,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     back_button_size.width(),
                                     back_button_size.width() / 2);
       // Forward button
-      forward_button_ = views::MdTextButton::CreateMdButton(
-          this, base::ASCIIToUTF16("Forward"));
+      forward_button_ =
+          views::MdTextButton::Create(this, base::ASCIIToUTF16("Forward"));
       gfx::Size forward_button_size = forward_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -149,8 +149,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     forward_button_size.width(),
                                     forward_button_size.width() / 2);
       // Refresh button
-      refresh_button_ = views::MdTextButton::CreateMdButton(
-          this, base::ASCIIToUTF16("Refresh"));
+      refresh_button_ =
+          views::MdTextButton::Create(this, base::ASCIIToUTF16("Refresh"));
       gfx::Size refresh_button_size = refresh_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -159,7 +159,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     refresh_button_size.width() / 2);
       // Stop button
       stop_button_ =
-          views::MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Stop"));
+          views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop"));
       gfx::Size stop_button_size = stop_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,

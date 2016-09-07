@@ -376,8 +376,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  LabelButton* button =
-      MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("Click me"));
+  LabelButton* button = MdTextButton::Create(NULL, ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->set_id(kFruitButtonID);
   left_container_->AddChildView(button);
@@ -472,19 +471,19 @@ void FocusTraversalTest::InitContentView() {
 
   y = 250;
   int width = 60;
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("OK"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("OK"));
   button->set_id(kOKButtonID);
   button->SetIsDefault(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("Cancel"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("Cancel"));
   button->set_id(kCancelButtonID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("Help"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("Help"));
   button->set_id(kHelpButtonID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
@@ -537,7 +536,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 10, 100, 20);
   text_field->set_id(kSearchTextfieldID);
 
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("Search"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->set_id(kSearchButtonID);
@@ -560,11 +559,11 @@ void FocusTraversalTest::InitContentView() {
   contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(kThumbnailContainerID);
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("Star"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->set_id(kThumbnailStarID);
-  button = MdTextButton::CreateMdButton(NULL, ASCIIToUTF16("SuperStar"));
+  button = MdTextButton::Create(NULL, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->set_id(kThumbnailSuperStarID);

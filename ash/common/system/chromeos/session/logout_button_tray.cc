@@ -107,7 +107,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
       show_logout_button_in_tray_(false) {
   if (MaterialDesignController::IsShelfMaterial()) {
     views::MdTextButton* button =
-        views::MdTextButton::CreateMdButton(this, base::string16());
+        views::MdTextButton::Create(this, base::string16());
     button->SetCallToAction(true);
     button->set_bg_color_override(gfx::kGoogleRed700);
     // Base font size + 2 = 14.

@@ -73,7 +73,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
       if (ui::MaterialDesignController::IsModeMaterial()) {
-        views::MdTextButton* button = views::MdTextButton::CreateMdButton(
+        views::MdTextButton* button = views::MdTextButton::Create(
             this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
         button->SetCallToAction(true);
         ok_button_ = button;
@@ -92,7 +92,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
       if (ui::MaterialDesignController::IsModeMaterial()) {
-        views::MdTextButton* button = views::MdTextButton::CreateMdButton(
+        views::MdTextButton* button = views::MdTextButton::Create(
             this,
             delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
         if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL) {

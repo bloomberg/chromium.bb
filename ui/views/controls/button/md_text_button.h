@@ -29,8 +29,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
                                               const base::string16& text);
   static LabelButton* CreateSecondaryUiBlueButton(ButtonListener* listener,
                                                   const base::string16& text);
-  static MdTextButton* CreateMdButton(ButtonListener* listener,
-                                      const base::string16& text);
+  static MdTextButton* Create(ButtonListener* listener,
+                              const base::string16& text);
 
   // See |is_cta_|.
   void SetCallToAction(bool cta);
@@ -57,7 +57,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void SetFontList(const gfx::FontList& font_list) override;
 
  private:
-  MdTextButton(ButtonListener* listener);
+  explicit MdTextButton(ButtonListener* listener);
   ~MdTextButton() override;
 
   void UpdatePadding();

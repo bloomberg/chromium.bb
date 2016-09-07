@@ -35,7 +35,7 @@ LabelButton* CreateButton(ButtonListener* listener,
                           const base::string16& text,
                           bool md) {
   if (md)
-    return MdTextButton::CreateMdButton(listener, text);
+    return MdTextButton::Create(listener, text);
 
   LabelButton* button = new LabelButton(listener, text);
   button->SetStyle(CustomButton::STYLE_BUTTON);
@@ -105,7 +105,7 @@ LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    MdTextButton* md_button = MdTextButton::CreateMdButton(listener, text);
+    MdTextButton* md_button = MdTextButton::Create(listener, text);
     md_button->SetCallToAction(true);
     return md_button;
   }
@@ -114,8 +114,8 @@ LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
 }
 
 // static
-MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
-                                           const base::string16& text) {
+MdTextButton* MdTextButton::Create(ButtonListener* listener,
+                                   const base::string16& text) {
   MdTextButton* button = new MdTextButton(listener);
   button->SetText(text);
   button->SetFocusForPlatform();

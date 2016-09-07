@@ -958,11 +958,11 @@ void DownloadItemViewMd::ShowWarningDialog() {
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = views::MdTextButton::CreateMdButton(
-        this, model_.GetWarningConfirmButtonText());
+    save_button_ =
+        views::MdTextButton::Create(this, model_.GetWarningConfirmButtonText());
     AddChildView(save_button_);
   }
-  discard_button_ = views::MdTextButton::CreateMdButton(
+  discard_button_ = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
   AddChildView(discard_button_);
 
