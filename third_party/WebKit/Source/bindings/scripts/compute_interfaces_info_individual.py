@@ -173,6 +173,7 @@ class InterfaceInfoCollector(object):
         self.enumerations = set()
         self.union_types = set()
         self.typedefs = {}
+        self.callback_functions = {}
 
     def add_paths_to_partials_dict(self, partial_interface_name, full_path,
                                    include_paths):
@@ -216,6 +217,9 @@ class InterfaceInfoCollector(object):
         this_union_types = collect_union_types_from_definitions(definitions)
         self.union_types.update(this_union_types)
         self.typedefs.update(definitions.typedefs)
+        for callback_function_name, callback_function in definitions.callback_functions.iteritems():
+            if 'ExperimentalCallbackFunction' in callback_function.extended_attributes:
+                self.callback_functions[callback_function_name] = callback_function
         # Check enum duplication.
         for enum_name in definitions.enumerations.keys():
             for defined_enum in self.enumerations:
@@ -321,6 +325,7 @@ class InterfaceInfoCollector(object):
     def get_component_info_as_dict(self):
         """Returns component wide information as a dict."""
         return {
+            'callback_functions': self.callback_functions,
             'enumerations': dict((enum.name, enum.values)
                                  for enum in self.enumerations),
             'typedefs': self.typedefs,

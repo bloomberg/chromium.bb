@@ -1506,6 +1506,10 @@ Without `[NoImplHeader]`, the IDL compiler assumes that there is XXX.h in the im
 
 These extended attributes are _temporary_ and are only in use while some change is in progress. Unless you are involved with the change, you can generally ignore them, and should not use them.
 
+### [ExperimentalCallbackFunction]
+
+Summary: `[ExperimentalCallbackFunction]` on a callback function is a flag to collect callback functions. Currently the code generator doesn't generate bindings for IDL callback functions (instead, it just uses `ScriptValue`). While generating bindings for callback functions, to change existing code which uses callback functions until the generated bindings are stabilized is undesirable. To implement bindings generation for IDL callback functions incrementally, [ExperimentalCallbackFunction] extended attribute is added. The code generator keeps using ScriptValue for IDL callback functions which don't have this extended attribute.
+
 ### [LegacyTreatAsPartialInterface] _(i)_
 
 Summary: `[LegacyTreatAsPartialInterface]` on an interface that is the target of an `implements` statement means that the interface is treated as a partial interface, meaning members are accessed via static member functions in a separate class, rather than as instance methods on the instance object `*impl` or class methods on the C++ class implementing the (main) interface. This is legacy from original implementation of `implements`, and is being removed ([Bug 360435](https://crbug.com/360435), nbarth@).

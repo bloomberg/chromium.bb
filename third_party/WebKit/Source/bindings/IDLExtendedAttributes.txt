@@ -51,6 +51,7 @@ DoNotCheckConstants
 DoNotCheckSecurity=|Setter
 DoNotTestNewObject
 EnforceRange
+ExperimentalCallbackFunction
 Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
