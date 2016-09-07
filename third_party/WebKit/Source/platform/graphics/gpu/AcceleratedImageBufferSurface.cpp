@@ -30,9 +30,8 @@
 
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "wtf/PtrUtil.h"
@@ -43,12 +42,11 @@ namespace blink {
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
     : ImageBufferSurface(size, opacityMode, colorSpace)
 {
-    m_contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-    if (!m_contextProvider)
+    if (!SharedGpuContext::isValid())
         return;
-    GrContext* grContext = m_contextProvider->grContext();
-    if (!grContext)
-        return;
+    GrContext* grContext = SharedGpuContext::gr();
+    m_contextId = SharedGpuContext::contextId();
+    CHECK(grContext);
 
     SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
@@ -58,6 +56,11 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     if (!m_surface.get())
         return;
     clear();
+}
+
+bool AcceleratedImageBufferSurface::isValid() const
+{
+    return m_surface && SharedGpuContext::isValid() && m_contextId == SharedGpuContext::contextId();
 }
 
 sk_sp<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)

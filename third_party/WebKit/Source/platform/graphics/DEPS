@@ -4,6 +4,7 @@ include_rules = [
     "+base/bind.h",
     "+base/callback.h",
     "+base/message_loop",
+    "+base/threading/thread_checker.h",
     "+cc",
     "-cc/blink",
     "+gpu/command_buffer/client/gles2_interface.h",
