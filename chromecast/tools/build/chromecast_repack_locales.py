@@ -45,6 +45,7 @@ def calc_inputs(locale):
   inputs = []
   if CHROMECAST_BRANDING != 'public':
     inputs.append(os.path.join(GRIT_DIR, 'app_strings_%s.pak' % locale))
+    inputs.append(os.path.join(GRIT_DIR, 'webui_localized_%s.pak' % locale))
   inputs.append(os.path.join(GRIT_DIR, 'chromecast_settings_%s.pak' % locale))
   return inputs
 
