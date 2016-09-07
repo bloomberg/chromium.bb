@@ -14,7 +14,6 @@ namespace {
 
 // Histogram names.
 const char kPressureLevel[] = "Memory.PressureLevel";
-const char kPressureLevelChange[] = "Memory.PressureLevelChange";
 
 }  // namespace
 
@@ -81,7 +80,6 @@ TEST_F(MemoryPressureStatsCollectorTest, EndToEnd) {
   // Upon construction no statistics should yet have been reported.
   ExpectAccumulated(0, 0, 0);
   ExpectReported(0, 0, 0);
-  histograms_.ExpectTotalCount(kPressureLevelChange, 0);
 
   // A first call should not invoke any reporting functions, but it should
   // modify member variables.
@@ -93,7 +91,6 @@ TEST_F(MemoryPressureStatsCollectorTest, EndToEnd) {
   EXPECT_EQ(tick_clock_.NowTicks(), collector_.last_update_time());
   ExpectAccumulated(0, 0, 0);
   ExpectReported(0, 0, 0);
-  histograms_.ExpectTotalCount(kPressureLevelChange, 0);
 
   // A subsequent call with the same pressure level should increment the
   // cumulative time but not make a report, as less than one second of time
@@ -106,7 +103,6 @@ TEST_F(MemoryPressureStatsCollectorTest, EndToEnd) {
   EXPECT_EQ(tick_clock_.NowTicks(), collector_.last_update_time());
   ExpectAccumulated(500, 0, 0);
   ExpectReported(0, 0, 0);
-  histograms_.ExpectTotalCount(kPressureLevelChange, 0);
 
   // Yet another call and this time a report should be made, as one second
   // of time has been accumulated. 500ms should remain unreported.
@@ -118,7 +114,6 @@ TEST_F(MemoryPressureStatsCollectorTest, EndToEnd) {
   EXPECT_EQ(tick_clock_.NowTicks(), collector_.last_update_time());
   ExpectAccumulated(500, 0, 0);
   ExpectReported(1, 0, 0);
-  histograms_.ExpectTotalCount(kPressureLevelChange, 0);
 
   // A subsequent call with a different pressure level should increment the
   // cumulative time and make several reports.
@@ -130,10 +125,6 @@ TEST_F(MemoryPressureStatsCollectorTest, EndToEnd) {
   EXPECT_EQ(tick_clock_.NowTicks(), collector_.last_update_time());
   ExpectAccumulated(500, 250, 0);
   ExpectReported(1, 2, 0);
-  histograms_.ExpectBucketCount(
-      kPressureLevelChange, UMA_MEMORY_PRESSURE_LEVEL_CHANGE_NONE_TO_MODERATE,
-      1);
-  histograms_.ExpectTotalCount(kPressureLevelChange, 1);
 }
 
 }  // namespace memory_pressure

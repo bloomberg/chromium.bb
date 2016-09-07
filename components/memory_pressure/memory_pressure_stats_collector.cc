@@ -50,37 +50,6 @@ MemoryPressureLevel MemoryPressureLevelFromUmaEnumValue(
   return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
-// Converts a pressure state change to an UMA enumeration value.
-MemoryPressureLevelChangeUMA MemoryPressureLevelChangeToUmaEnumValue(
-    MemoryPressureLevel old_level,
-    MemoryPressureLevel new_level) {
-  switch (old_level) {
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE: {
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_NONE_TO_MODERATE;
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_NONE_TO_CRITICAL;
-      break;  // Should never happen; handled by the NOTREACHED below.
-    }
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE: {
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_MODERATE_TO_NONE;
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_MODERATE_TO_CRITICAL;
-      break;  // Should never happen; handled by the NOTREACHED below.
-    }
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL: {
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_CRITICAL_TO_MODERATE;
-      if (new_level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE)
-        return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_CRITICAL_TO_MODERATE;
-      break;  // Should never happen; handled by the NOTREACHED below.
-    }
-  }
-  NOTREACHED();
-  return UMA_MEMORY_PRESSURE_LEVEL_CHANGE_NONE_TO_MODERATE;
-}
-
 }  // namespace
 
 MemoryPressureStatsCollector::MemoryPressureStatsCollector(
@@ -149,10 +118,7 @@ void MemoryPressureStatsCollector::ReportCumulativeTime(
 void MemoryPressureStatsCollector::ReportLevelChange(
     MemoryPressureLevel old_pressure_level,
     MemoryPressureLevel new_pressure_level) {
-  UMA_HISTOGRAM_ENUMERATION("Memory.PressureLevelChange",
-                            MemoryPressureLevelChangeToUmaEnumValue(
-                                old_pressure_level, new_pressure_level),
-                            UMA_MEMORY_PRESSURE_LEVEL_CHANGE_COUNT);
+  // TODO(chrisha): Report Memory.PressureLevelChange when this code is in use.
 }
 
 }  // namespace memory_pressure
