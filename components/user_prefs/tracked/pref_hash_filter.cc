@@ -132,9 +132,9 @@ void PrefHashFilter::ClearResetTime(PrefService* user_prefs) {
 }
 
 void PrefHashFilter::Initialize(base::DictionaryValue* pref_store_contents) {
+  DictionaryHashStoreContents dictionary_contents(pref_store_contents);
   std::unique_ptr<PrefHashStoreTransaction> hash_store_transaction(
-      pref_hash_store_->BeginTransaction(std::unique_ptr<HashStoreContents>(
-          new DictionaryHashStoreContents(pref_store_contents))));
+      pref_hash_store_->BeginTransaction(&dictionary_contents));
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end(); ++it) {
     const std::string& initialized_path = it->first;
@@ -161,9 +161,9 @@ void PrefHashFilter::FilterSerializeData(
   if (!changed_paths_.empty()) {
     base::TimeTicks checkpoint = base::TimeTicks::Now();
     {
+      DictionaryHashStoreContents dictionary_contents(pref_store_contents);
       std::unique_ptr<PrefHashStoreTransaction> hash_store_transaction(
-          pref_hash_store_->BeginTransaction(std::unique_ptr<HashStoreContents>(
-              new DictionaryHashStoreContents(pref_store_contents))));
+          pref_hash_store_->BeginTransaction(&dictionary_contents));
       for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
            it != changed_paths_.end(); ++it) {
         const std::string& changed_path = it->first;
@@ -191,9 +191,9 @@ void PrefHashFilter::FinalizeFilterOnLoad(
 
   bool did_reset = false;
   {
+    DictionaryHashStoreContents dictionary_contents(pref_store_contents.get());
     std::unique_ptr<PrefHashStoreTransaction> hash_store_transaction(
-        pref_hash_store_->BeginTransaction(std::unique_ptr<HashStoreContents>(
-            new DictionaryHashStoreContents(pref_store_contents.get()))));
+        pref_hash_store_->BeginTransaction(&dictionary_contents));
 
     CleanupDeprecatedTrackedPreferences(
         pref_store_contents.get(), hash_store_transaction.get());

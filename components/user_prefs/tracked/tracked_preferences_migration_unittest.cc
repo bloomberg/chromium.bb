@@ -162,10 +162,8 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     DCHECK(store);
 
     base::StringValue string_value(value);
-    pref_hash_store
-        ->BeginTransaction(std::unique_ptr<HashStoreContents>(
-            new DictionaryHashStoreContents(store)))
-        ->StoreHash(key, &string_value);
+    DictionaryHashStoreContents contents(store);
+    pref_hash_store->BeginTransaction(&contents)->StoreHash(key, &string_value);
   }
 
   // Returns true if the store opposite to |store_id| is observed for its next

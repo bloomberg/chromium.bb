@@ -21,8 +21,9 @@ class PrefHashStore {
   // of operations on the hash store. |storage| MAY be used as the backing store
   // depending on the implementation. Therefore the HashStoreContents used for
   // related transactions should correspond to the same underlying data store.
+  // |storage| must outlive the returned transaction.
   virtual std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
-      std::unique_ptr<HashStoreContents> storage) = 0;
+      HashStoreContents* storage) = 0;
 };
 
 #endif  // COMPONENTS_PREFS_TRACKED_PREF_HASH_STORE_H_

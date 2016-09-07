@@ -120,10 +120,9 @@ void ScheduleSourcePrefStoreCleanup(
 void CleanupMigratedHashes(const std::set<std::string>& migrated_pref_names,
                            PrefHashStore* origin_pref_hash_store,
                            base::DictionaryValue* origin_pref_store) {
+  DictionaryHashStoreContents dictionary_contents(origin_pref_store);
   std::unique_ptr<PrefHashStoreTransaction> transaction(
-      origin_pref_hash_store->BeginTransaction(
-          std::unique_ptr<HashStoreContents>(
-              new DictionaryHashStoreContents(origin_pref_store))));
+      origin_pref_hash_store->BeginTransaction(&dictionary_contents));
   for (std::set<std::string>::const_iterator it = migrated_pref_names.begin();
        it != migrated_pref_names.end();
        ++it) {
@@ -143,9 +142,9 @@ void MigratePrefsFromOldToNewStore(const std::set<std::string>& pref_names,
                                    bool* new_store_altered) {
   const base::DictionaryValue* old_hash_store_contents =
       DictionaryHashStoreContents(old_store).GetContents();
+  DictionaryHashStoreContents dictionary_contents(new_store);
   std::unique_ptr<PrefHashStoreTransaction> new_hash_store_transaction(
-      new_hash_store->BeginTransaction(std::unique_ptr<HashStoreContents>(
-          new DictionaryHashStoreContents(new_store))));
+      new_hash_store->BeginTransaction(&dictionary_contents));
 
   for (std::set<std::string>::const_iterator it = pref_names.begin();
        it != pref_names.end();

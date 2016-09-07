@@ -157,7 +157,7 @@ class MockPrefHashStore : public PrefHashStore {
 
   // PrefHashStore implementation.
   std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
-      std::unique_ptr<HashStoreContents> storage) override;
+      HashStoreContents* storage) override;
 
  private:
   // A MockPrefHashStoreTransaction is handed to the caller on
@@ -247,7 +247,7 @@ void MockPrefHashStore::SetInvalidKeysResult(
 }
 
 std::unique_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction(
-    std::unique_ptr<HashStoreContents> storage) {
+    HashStoreContents* storage) {
   EXPECT_FALSE(transaction_active_);
   return std::unique_ptr<PrefHashStoreTransaction>(
       new MockPrefHashStoreTransaction(this));

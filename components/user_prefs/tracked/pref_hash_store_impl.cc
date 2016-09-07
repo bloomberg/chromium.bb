@@ -20,7 +20,7 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   // Constructs a PrefHashStoreTransactionImpl which can use the private
   // members of its |outer| PrefHashStoreImpl.
   PrefHashStoreTransactionImpl(PrefHashStoreImpl* outer,
-                               std::unique_ptr<HashStoreContents> storage);
+                               HashStoreContents* storage);
   ~PrefHashStoreTransactionImpl() override;
 
   // PrefHashStoreTransaction implementation.
@@ -41,7 +41,7 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
 
  private:
   PrefHashStoreImpl* outer_;
-  std::unique_ptr<HashStoreContents> contents_;
+  HashStoreContents* contents_;
 
   bool super_mac_valid_;
   bool super_mac_dirty_;
@@ -59,14 +59,14 @@ PrefHashStoreImpl::~PrefHashStoreImpl() {
 }
 
 std::unique_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction(
-    std::unique_ptr<HashStoreContents> storage) {
+    HashStoreContents* storage) {
   return std::unique_ptr<PrefHashStoreTransaction>(
       new PrefHashStoreTransactionImpl(this, std::move(storage)));
 }
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
     PrefHashStoreImpl* outer,
-    std::unique_ptr<HashStoreContents> storage)
+    HashStoreContents* storage)
     : outer_(outer),
       contents_(std::move(storage)),
       super_mac_valid_(false),

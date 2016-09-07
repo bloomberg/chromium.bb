@@ -47,7 +47,7 @@ class PrefHashStoreImpl : public PrefHashStore {
 
   // PrefHashStore implementation.
   std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
-      std::unique_ptr<HashStoreContents> storage) override;
+      HashStoreContents* storage) override;
 
  private:
   class PrefHashStoreTransactionImpl;
