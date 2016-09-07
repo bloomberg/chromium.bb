@@ -9,6 +9,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/material_design_controller_test_api.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -87,13 +88,13 @@ TEST_P(PowerStatusTest, InitializeAndUpdate) {
   // PowerManagerClientStubImpl, which responds to power status update
   // requests, pretends there is a battery present, and generates some valid
   // power supply status data.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, test_observer_->power_changed_count());
 
   // Test RequestUpdate, test_obsever_ should be notified for power suuply
   // status change.
   power_status_->RequestStatusUpdate();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, test_observer_->power_changed_count());
 }
 

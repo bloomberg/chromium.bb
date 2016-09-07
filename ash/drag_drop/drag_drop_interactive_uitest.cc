@@ -8,6 +8,7 @@
 #include "ash/test/ash_interactive_ui_test_base.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -145,7 +146,7 @@ TEST_F(DragDropTest, MAYBE_DragDropAcrossMultiDisplay) {
   ui_controls::SendMouseMoveNotifyWhenDone(
       10, 10, base::Bind(&DragDropAcrossMultiDisplay_Step1));
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_TRUE(target_view->dropped());
 
