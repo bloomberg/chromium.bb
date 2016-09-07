@@ -215,7 +215,9 @@ ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,
     return empty_params;
 
   std::string header_value;
-  if (!request->response_headers()->GetNormalizedHeader(
+  net::HttpResponseHeaders* response_headers = request->response_headers();
+  if (!response_headers ||
+      !response_headers->GetNormalizedHeader(
           kChromeManageAccountsHeader, &header_value)) {
     return empty_params;
   }
