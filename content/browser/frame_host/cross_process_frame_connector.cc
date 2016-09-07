@@ -55,7 +55,13 @@ void CrossProcessFrameConnector::set_view(
     RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
   if (view_) {
-    if (is_scroll_bubbling_ && GetParentRenderWidgetHostView()) {
+    // The RenderWidgetHostDelegate needs to be checked because set_view() can
+    // be called during nested WebContents destruction. See
+    // https://crbug.com/644306.
+    if (is_scroll_bubbling_ && GetParentRenderWidgetHostView() &&
+        RenderWidgetHostImpl::From(
+            GetParentRenderWidgetHostView()->GetRenderWidgetHost())
+            ->delegate()) {
       RenderWidgetHostImpl::From(
           GetParentRenderWidgetHostView()->GetRenderWidgetHost())
           ->delegate()
