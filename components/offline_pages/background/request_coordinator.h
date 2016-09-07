@@ -152,6 +152,10 @@ class RequestCoordinator : public KeyedService,
     return is_busy_;
   }
 
+  // Returns whether processing is starting (before it is decided to actually
+  // process a request (is_busy()) at this time or not.
+  bool is_starting() { return is_starting_; }
+
   // Tracks whether the last offlining attempt got canceled.  This is reset by
   // the next StartProcessing() call.
   bool is_canceled() {
@@ -266,7 +270,10 @@ class RequestCoordinator : public KeyedService,
   // busy, prevent other requests.  This flag marks whether the offliner is in
   // use.
   bool is_busy_;
-  // True if the current request has been canceled.
+  // There is more than one path to start processing so this flag is used
+  // to avoid race conditions before is_busy_ is established.
+  bool is_starting_;
+  // True if the current processing window has been canceled.
   bool is_stopped_;
   // True if we should use the test connection type instead of the actual type.
   bool use_test_connection_type_;

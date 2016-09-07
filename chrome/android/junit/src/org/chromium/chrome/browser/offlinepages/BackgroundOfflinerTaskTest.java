@@ -112,14 +112,31 @@ public class BackgroundOfflinerTaskTest {
     public void testIncomingTask() {
         BackgroundOfflinerTask task =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
-        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1000);
         task.processBackgroundRequests(mTaskExtras, mDeviceConditions, waiter);
 
-        // Check with ShadowBackgroundBackgroundSchedulerProcessor that startProcessing got called.
-        assertTrue(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+        // Check with ShadowBackgroundBackgroundSchedulerProcessor that it started processing.
+        assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
         assertSame(mDeviceConditions, mStubBackgroundSchedulerProcessor.getDeviceConditions());
 
-        // TODO(dougarnett): Call processor callback and verify waiter signaled.
+        // Call the callback and then waiter should not block.
+        mStubBackgroundSchedulerProcessor.callback();
+        waiter.startWaiting();
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testIncomingTaskNotStarted() {
+        mStubBackgroundSchedulerProcessor.setFailToStart(true);
+        BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1000);
+        task.processBackgroundRequests(mTaskExtras, mDeviceConditions, waiter);
+
+        // Check with ShadowBackgroundBackgroundSchedulerProcessor that it did not start.
+        assertFalse(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
+
+        // The waiter should not block if startProcessing returned false.
+        waiter.startWaiting();
     }
 
     @Test
@@ -138,7 +155,7 @@ public class BackgroundOfflinerTaskTest {
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
 
         // Check with ShadowBackgroundBackgroundSchedulerProcessor that startProcessing got called.
-        assertTrue(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+        assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
         assertSame(mDeviceConditions, mStubBackgroundSchedulerProcessor.getDeviceConditions());
     }
 
@@ -162,7 +179,7 @@ public class BackgroundOfflinerTaskTest {
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
 
         // Check that startProcessing was NOT called.
-        assertFalse(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+        assertFalse(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
 
         // Now verify low battery level but with power connected will start processing.
         DeviceConditions deviceConditionsPowerConnected = new DeviceConditions(
@@ -196,7 +213,7 @@ public class BackgroundOfflinerTaskTest {
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
 
         // Check that startProcessing was NOT called.
-        assertFalse(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+        assertFalse(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
 
         // Now verify will start processing when Activity is stopped.
         ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STOPPED);

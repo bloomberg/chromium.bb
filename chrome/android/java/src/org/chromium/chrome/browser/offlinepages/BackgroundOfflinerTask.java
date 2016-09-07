@@ -100,6 +100,9 @@ public class BackgroundOfflinerTask {
         };
 
         // Pass the activation on to the bridge to the C++ RequestCoordinator.
-        mBridge.startProcessing(deviceConditions, callback);
+        if (!mBridge.startProcessing(deviceConditions, callback)) {
+            // Processing not started currently. Let callback know.
+            callback.onResult(false);
+        }
     }
 }

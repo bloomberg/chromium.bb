@@ -79,6 +79,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<RequestQueue> queue,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
+      is_starting_(false),
       is_stopped_(false),
       use_test_connection_type_(false),
       test_connection_type_(),
@@ -346,7 +347,9 @@ bool RequestCoordinator::StartProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
   current_conditions_.reset(new DeviceConditions(device_conditions));
-  if (is_busy_) return false;
+  if (is_starting_ || is_busy_)
+    return false;
+  is_starting_ = true;
 
   // Mark the time at which we started processing so we can check our time
   // budget.
@@ -384,6 +387,8 @@ void RequestCoordinator::TryNextRequest() {
   if (base::Time::Now() - operation_start_time_ >
       base::TimeDelta::FromSeconds(
           policy_->GetBackgroundProcessingTimeBudgetSeconds())) {
+    is_starting_ = false;
+
     // Let the scheduler know we are done processing.
     scheduler_callback_.Run(true);
 
@@ -401,12 +406,19 @@ void RequestCoordinator::TryNextRequest() {
 
 // Called by the request picker when a request has been picked.
 void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
-  // Send the request on to the offliner.
-  SendRequestToOffliner(request);
+  is_starting_ = false;
+
+  // Make sure we were not stopped while picking.
+  if (!is_stopped_) {
+    // Send the request on to the offliner.
+    SendRequestToOffliner(request);
+  }
 }
 
 void RequestCoordinator::RequestNotPicked(
     bool non_user_requested_tasks_remaining) {
+  is_starting_ = false;
+
   // Clear the outstanding "safety" task in the scheduler.
   scheduler_->Unschedule();
 

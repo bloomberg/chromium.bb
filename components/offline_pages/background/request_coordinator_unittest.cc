@@ -193,6 +193,8 @@ class RequestCoordinatorTest
     return coordinator_->is_busy();
   }
 
+  bool is_starting() { return coordinator_->is_starting(); }
+
   // Empty callback function.
   void EmptyCallbackFunction(bool result) {
   }
@@ -600,11 +602,14 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   base::Callback<void(bool)> callback = base::Bind(
       &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
   coordinator()->StartProcessing(device_conditions, callback);
+  EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, and make sure we pick schedule a task for non user
   // requested conditions.
   CallRequestNotPicked(true);
   PumpLoop();
+
+  EXPECT_FALSE(is_starting());
 
   // The scheduler should have been called to schedule the non-user requested
   // task.
@@ -674,12 +679,15 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+  EXPECT_TRUE(is_starting());
 
   // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
   coordinator()->StopProcessing();
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
+
+  EXPECT_FALSE(is_starting());
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
   // since we cancelled the event before it called offliner_->LoadAndSave().
@@ -711,12 +719,14 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+  EXPECT_TRUE(is_starting());
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
 
   // Coordinator should now be busy.
   EXPECT_TRUE(is_busy());
+  EXPECT_FALSE(is_starting());
 
   // Now we cancel it while the prerenderer is busy.
   coordinator()->StopProcessing();
@@ -811,6 +821,7 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   WaitForCallback();
   PumpLoop();
 
+  EXPECT_FALSE(is_starting());
   EXPECT_TRUE(OfflinerWasCanceled());
   EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
             last_offlining_status());
