@@ -41,7 +41,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
@@ -2784,100 +2783,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
-}
-
-// Tests that during a navigation transferred from one process to
-// another, the certificate is updated to be associated with the new
-// process.
-TEST_P(ResourceDispatcherHostTest, TransferNavigationCertificateUpdate) {
-  if (IsBrowserSideNavigationEnabled()) {
-    SUCCEED() << "Test is not applicable with browser side navigation enabled";
-    return;
-  }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
-
-  EXPECT_EQ(0, host_.pending_requests());
-
-  int render_view_id = 0;
-  int request_id = 1;
-
-  // Configure initial request.
-  SetResponse(
-      "HTTP/1.1 302 Found\n"
-      "Location: https://example.com/blech\n\n");
-
-  HandleScheme("https");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
-
-  MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
-                                  GURL("https://example2.com/blah"),
-                                  RESOURCE_TYPE_MAIN_FRAME);
-
-  // Now that the resource loader is blocked on the redirect, update the
-  // response and unblock by telling the AsyncResourceHandler to follow
-  // the redirect.
-  const std::string kResponseBody = "hello world";
-  SetResponse(
-      "HTTP/1.1 200 OK\n"
-      "Content-Type: text/html\n\n",
-      kResponseBody);
-  SetTestSSLCertificate();
-  ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  host_.OnMessageReceived(redirect_msg, filter_.get());
-  base::RunLoop().RunUntilIdle();
-
-  // Flush all the pending requests to get the response through the
-  // MimeTypeResourceHandler.`
-  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
-  }
-
-  // Restore, now that we've set up a transfer.
-  SetBrowserClientForTesting(old_client);
-
-  // This second filter is used to emulate a second process.
-  scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
-
-  int new_render_view_id = 1;
-  int new_request_id = 2;
-
-  ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("https://example.com/blech"));
-  request.transferred_request_child_id = filter_->child_id();
-  request.transferred_request_request_id = request_id;
-
-  // Before sending the transfer request, set up the mock cert store so
-  // that the test can assert that the cert id is set during transfer.
-  mock_cert_store_.set_default_cert_id(1);
-
-  ResourceHostMsg_RequestResource transfer_request_msg(new_render_view_id,
-                                                       new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
-  base::RunLoop().RunUntilIdle();
-
-  // Check generated messages.
-  ResourceIPCAccumulator::ClassifiedMessages msgs;
-  accum_.GetClassifiedMessages(&msgs);
-
-  ASSERT_EQ(2U, msgs.size());
-  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
-  CheckSuccessfulRequest(msgs[1], kResponseBody);
-
-  // Check that the cert id was as expected in ReceivedResponse.
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
-  base::PickleIterator iter(msgs[1][0]);
-  int sent_request_id;
-  ASSERT_TRUE(IPC::ReadParam(&msgs[1][0], &iter, &sent_request_id));
-  ResourceResponseHead response;
-  ASSERT_TRUE(IPC::ReadParam(&msgs[1][0], &iter, &response));
-  SSLStatus ssl;
-  ASSERT_TRUE(DeserializeSecurityInfo(response.security_info, &ssl));
-  EXPECT_EQ(1, ssl.cert_id);
 }
 
 // Test transferring two navigations with text/html, to ensure the resource

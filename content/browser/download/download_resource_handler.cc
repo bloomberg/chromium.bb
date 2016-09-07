@@ -173,7 +173,6 @@ bool DownloadResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void DownloadResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   core_.OnResponseCompleted(status);
 }

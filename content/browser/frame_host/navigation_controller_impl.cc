@@ -65,7 +65,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"

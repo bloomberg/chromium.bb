@@ -79,13 +79,12 @@ class MockRequestPeer : public content::RequestPeer {
                void(const char* data,
                     int data_length,
                     int encoded_data_length));
-  MOCK_METHOD6(OnCompletedRequest, void(
-      int error_code,
-      bool was_ignored_by_handler,
-      bool stale_copy_in_cache,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time,
-      int64_t total_transfer_size));
+  MOCK_METHOD5(OnCompletedRequest,
+               void(int error_code,
+                    bool was_ignored_by_handler,
+                    bool stale_copy_in_cache,
+                    const base::TimeTicks& completion_time,
+                    int64_t total_transfer_size));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRequestPeer);
@@ -155,10 +154,10 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_,
-              OnCompletedRequest(net::ERR_ABORTED, false, false, "",
+              OnCompletedRequest(net::ERR_ABORTED, false, false,
                                  base::TimeTicks(), -1));
 
-  filter_peer_->OnCompletedRequest(net::ERR_FAILED, false, false, std::string(),
+  filter_peer_->OnCompletedRequest(net::ERR_FAILED, false, false,
                                    base::TimeTicks(), -1);
 }
 
@@ -169,11 +168,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
-  EXPECT_CALL(*original_peer_, OnCompletedRequest(net::OK, false, false, "",
-                                                  base::TimeTicks(), -1));
+  EXPECT_CALL(*original_peer_,
+              OnCompletedRequest(net::OK, false, false, base::TimeTicks(), -1));
 
-  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
-                                   base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+                                   -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
@@ -188,12 +187,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   EXPECT_CALL(*original_peer_,
               OnReceivedDataInternal(StrEq(data.c_str()), data.length(), -1))
       .Times(1);
-  EXPECT_CALL(*original_peer_, OnCompletedRequest(net::OK, false, false, "",
-                                                  base::TimeTicks(), -1))
+  EXPECT_CALL(*original_peer_,
+              OnCompletedRequest(net::OK, false, false, base::TimeTicks(), -1))
       .Times(1);
 
-  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
-                                   base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+                                   -1);
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
@@ -202,12 +201,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   EXPECT_CALL(*original_peer_,
               OnReceivedDataInternal(StrEq(data.c_str()), data.length(), -1))
       .Times(1);
-  EXPECT_CALL(*original_peer_, OnCompletedRequest(net::OK, false, false, "",
-                                                  base::TimeTicks(), -1))
+  EXPECT_CALL(*original_peer_,
+              OnCompletedRequest(net::OK, false, false, base::TimeTicks(), -1))
       .Times(1);
   SetData("some text");
-  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
-                                   base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+                                   -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
@@ -230,11 +229,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   EXPECT_CALL(*original_peer_,
               OnReceivedDataInternal(StrEq(data.c_str()), data.length(), -1));
 
-  EXPECT_CALL(*original_peer_, OnCompletedRequest(net::OK, false, false, "",
-                                                  base::TimeTicks(), -1));
+  EXPECT_CALL(*original_peer_,
+              OnCompletedRequest(net::OK, false, false, base::TimeTicks(), -1));
 
-  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
-                                   base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+                                   -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
@@ -257,9 +256,9 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   EXPECT_CALL(*original_peer_, OnReceivedDataInternal(StrEq(message.c_str()),
                                                       message.length(), -1));
 
-  EXPECT_CALL(*original_peer_, OnCompletedRequest(net::OK, false, false, "",
-                                                  base::TimeTicks(), -1));
+  EXPECT_CALL(*original_peer_,
+              OnCompletedRequest(net::OK, false, false, base::TimeTicks(), -1));
 
-  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
-                                   base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+                                   -1);
 }

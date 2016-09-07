@@ -218,13 +218,12 @@ bool MimeSniffingResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void MimeSniffingResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   // Upon completion, act like a pass-through handler in case the downstream
   // handler defers OnResponseCompleted.
   state_ = STATE_STREAMING;
 
-  next_handler_->OnResponseCompleted(status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, defer);
 }
 
 void MimeSniffingResourceHandler::Resume() {

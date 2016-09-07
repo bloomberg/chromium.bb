@@ -220,7 +220,6 @@ specific_include_rules = {
     "+content/browser/ssl/ssl_client_auth_handler.h",
     "+content/browser/ssl/ssl_error_handler.h",
     "+content/common/content_export.h",
-    "+content/common/ssl_status_serialization.h",
     "+content/public/browser/cert_store.h",
     "+content/public/browser/resource_controller.h",
     "+content/public/browser/resource_dispatcher_host_login_delegate.h",
@@ -241,6 +240,7 @@ specific_include_rules = {
     "+content/public/common/content_switches.h",
     "+content/public/common/process_type.h",
     "+content/public/common/security_style.h",
+    "+content/public/common/ssl_status.h",
   ],
   "resource_handler_delegate\.h": [
     "-content",

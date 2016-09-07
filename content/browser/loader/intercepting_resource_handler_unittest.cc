@@ -102,7 +102,6 @@ class TestResourceHandler : public ResourceHandler {
   }
 
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override {
     EXPECT_FALSE(is_completed_);
     is_completed_ = true;

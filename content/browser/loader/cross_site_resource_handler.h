@@ -44,7 +44,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
   bool OnReadCompleted(int bytes_read, bool* defer) override;
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override;
 
   // We can now send the response to the new renderer, which will cause
@@ -82,7 +81,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool completed_during_transition_;
   bool did_defer_;
   net::URLRequestStatus completed_status_;
-  std::string completed_security_info_;
   scoped_refptr<ResourceResponse> response_;
 
   // TODO(nasko): WeakPtr is needed in --site-per-process, since all navigations

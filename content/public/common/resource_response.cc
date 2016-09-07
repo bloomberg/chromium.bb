@@ -18,7 +18,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   }
   new_response->head.mime_type = head.mime_type;
   new_response->head.charset = head.charset;
-  new_response->head.security_info = head.security_info;
   new_response->head.has_major_certificate_errors =
       head.has_major_certificate_errors;
   new_response->head.content_length = head.content_length;

@@ -571,11 +571,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void didRunInsecureContent(const blink::WebSecurityOrigin& origin,
                              const blink::WebURL& target) override;
   void didDisplayContentWithCertificateErrors(
-      const blink::WebURL& url,
-      const blink::WebCString& security_info) override;
-  void didRunContentWithCertificateErrors(
-      const blink::WebURL& url,
-      const blink::WebCString& security_info) override;
+      const blink::WebURL& url) override;
+  void didRunContentWithCertificateErrors(const blink::WebURL& url) override;
   void didChangePerformanceTiming() override;
   void didObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;

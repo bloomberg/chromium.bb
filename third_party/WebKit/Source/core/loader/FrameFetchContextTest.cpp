@@ -82,7 +82,7 @@ public:
         : EmptyFrameLoaderClient()
     {
     }
-    MOCK_METHOD2(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&));
+    MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
 };
 
 class FrameFetchContextTest : public ::testing::Test {
@@ -144,10 +144,9 @@ protected:
     void SetUp() override
     {
         url = KURL(KURL(), "https://example.test/foo");
-        securityInfo = "security info";
         mainResourceUrl = KURL(KURL(), "https://www.example.test");
         MockFrameLoaderClient* client = new MockFrameLoaderClient;
-        EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url, securityInfo));
+        EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url));
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500), nullptr, client);
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(mainResourceUrl), SubstituteData());
@@ -160,7 +159,6 @@ protected:
 
     KURL url;
     KURL mainResourceUrl;
-    CString securityInfo;
 };
 
 class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
@@ -547,7 +545,6 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     ResourceRequest resourceRequest(url);
     ResourceResponse response;
     response.setURL(url);
-    response.setSecurityInfo(securityInfo);
     response.setHasMajorCertificateErrors(true);
     Resource* resource = Resource::create(resourceRequest, Resource::Image);
     resource->setResponse(response);

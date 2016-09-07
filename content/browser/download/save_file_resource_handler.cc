@@ -90,7 +90,6 @@ bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void SaveFileResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   if (authorization_state_ != AuthorizationState::AUTHORIZED)
     DCHECK(!status.is_success());

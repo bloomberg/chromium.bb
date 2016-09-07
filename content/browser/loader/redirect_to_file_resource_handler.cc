@@ -228,17 +228,15 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int bytes_read,
 
 void RedirectToFileResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   if (writer_ && writer_->is_writing()) {
     completed_during_write_ = true;
     completed_status_ = status;
-    completed_security_info_ = security_info;
     did_defer_ = true;
     *defer = true;
     return;
   }
-  next_handler_->OnResponseCompleted(status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, defer);
 }
 
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
@@ -295,9 +293,7 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
     // this should run even in the |failed| case above, otherwise a failed write
     // leaves the handler stuck.
     bool defer = false;
-    next_handler_->OnResponseCompleted(completed_status_,
-                                       completed_security_info_,
-                                       &defer);
+    next_handler_->OnResponseCompleted(completed_status_, &defer);
     if (!defer) {
       ResumeIfDeferred();
     } else {

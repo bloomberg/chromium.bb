@@ -63,10 +63,9 @@ bool LayeredResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void LayeredResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   DCHECK(next_handler_.get());
-  next_handler_->OnResponseCompleted(status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, defer);
 }
 
 void LayeredResourceHandler::OnDataDownloaded(int bytes_downloaded) {

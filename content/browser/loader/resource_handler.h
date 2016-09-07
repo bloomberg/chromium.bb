@@ -92,7 +92,6 @@ class CONTENT_EXPORT ResourceHandler
   // |*defer| to true to defer destruction to a later time.  Otherwise, the
   // request will be destroyed upon return.
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
                                    bool* defer) = 0;
 
   // This notification is synthesized by the RedirectToFileResourceHandler

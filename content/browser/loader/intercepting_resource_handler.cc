@@ -125,7 +125,7 @@ void InterceptingResourceHandler::SendPayloadToOldHandler() {
     // If there is no payload, just finalize the request on the old handler.
     net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                  net::ERR_ABORTED);
-    next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
+    next_handler_->OnResponseCompleted(status, &defer_ignored);
     DCHECK(!defer_ignored);
     return;
   }
@@ -156,7 +156,7 @@ void InterceptingResourceHandler::SendPayloadToOldHandler() {
 
   // Finalize the request.
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
+  next_handler_->OnResponseCompleted(status, &defer_ignored);
   DCHECK(!defer_ignored);
 }
 

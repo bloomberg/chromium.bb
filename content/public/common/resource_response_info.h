@@ -50,10 +50,6 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // response's mime type.  This may be a derived value.
   std::string charset;
 
-  // An opaque string carrying security information pertaining to this
-  // response.  This may include information about the SSL connection used.
-  std::string security_info;
-
   // True if the resource was loaded in spite of certificate errors.
   bool has_major_certificate_errors;
 

@@ -265,7 +265,6 @@ MojoResult MojoAsyncResourceHandler::EndWrite(uint32_t written) {
 
 void MojoAsyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   shared_writer_ = nullptr;
   buffer_ = nullptr;
@@ -294,7 +293,6 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
   request_complete_data.error_code = error_code;
   request_complete_data.was_ignored_by_handler = was_ignored_by_handler;
   request_complete_data.exists_in_cache = request()->response_info().was_cached;
-  request_complete_data.security_info = security_info;
   request_complete_data.completion_time = base::TimeTicks::Now();
   request_complete_data.encoded_data_length =
       request()->GetTotalReceivedBytes();

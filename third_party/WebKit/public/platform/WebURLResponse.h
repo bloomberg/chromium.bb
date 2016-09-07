@@ -203,11 +203,6 @@ public:
     BLINK_PLATFORM_EXPORT WebURL appCacheManifestURL() const;
     BLINK_PLATFORM_EXPORT void setAppCacheManifestURL(const WebURL&);
 
-    // A consumer controlled value intended to be used to record opaque
-    // security info related to this request.
-    BLINK_PLATFORM_EXPORT WebCString securityInfo() const;
-    BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
-
     BLINK_PLATFORM_EXPORT void setHasMajorCertificateErrors(bool);
 
     BLINK_PLATFORM_EXPORT SecurityStyle getSecurityStyle() const;

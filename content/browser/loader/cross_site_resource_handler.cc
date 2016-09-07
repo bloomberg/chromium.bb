@@ -239,18 +239,16 @@ bool CrossSiteResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void CrossSiteResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   if (!in_cross_site_transition_) {
     // If we're not transferring, then we should pass this through.
-    next_handler_->OnResponseCompleted(status, security_info, defer);
+    next_handler_->OnResponseCompleted(status, defer);
     return;
   }
 
   // We have to buffer the call until after the transition completes.
   completed_during_transition_ = true;
   completed_status_ = status;
-  completed_security_info_ = security_info;
 
   // Defer to tell RDH not to notify the world or clean up the pending request.
   // We will do so in ResumeResponse.
@@ -288,7 +286,6 @@ void CrossSiteResourceHandler::ResumeResponse() {
   if (completed_during_transition_) {
     bool defer = false;
     next_handler_->OnResponseCompleted(completed_status_,
-                                       completed_security_info_,
                                        &defer);
     if (!defer)
       ResumeIfDeferred();

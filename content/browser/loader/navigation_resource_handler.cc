@@ -146,7 +146,6 @@ bool NavigationResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void NavigationResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   // If the request has already committed, close the stream and leave it as-is.
   //

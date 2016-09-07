@@ -547,10 +547,9 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted) {
   ResourceRequestInfoImpl::ForRequest(request_.get())
       ->set_was_ignored_by_handler(false);
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
-  std::string security_info = "info0";
 
   base::TimeTicks now1 = base::TimeTicks::Now();
-  handler_->OnResponseCompleted(status, security_info, &defer);
+  handler_->OnResponseCompleted(status, &defer);
   base::TimeTicks now2 = base::TimeTicks::Now();
   EXPECT_FALSE(defer);
 
@@ -558,7 +557,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted) {
   EXPECT_TRUE(url_loader_client_.has_received_completion());
   EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
   EXPECT_FALSE(url_loader_client_.completion_status().was_ignored_by_handler);
-  EXPECT_EQ("info0", url_loader_client_.completion_status().security_info);
   EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
   EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
@@ -582,10 +580,9 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted2) {
       ->set_was_ignored_by_handler(true);
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
-  std::string security_info = "info1";
 
   base::TimeTicks now1 = base::TimeTicks::Now();
-  handler_->OnResponseCompleted(status, security_info, &defer);
+  handler_->OnResponseCompleted(status, &defer);
   base::TimeTicks now2 = base::TimeTicks::Now();
   EXPECT_FALSE(defer);
 
@@ -594,7 +591,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted2) {
   EXPECT_EQ(net::ERR_ABORTED,
             url_loader_client_.completion_status().error_code);
   EXPECT_TRUE(url_loader_client_.completion_status().was_ignored_by_handler);
-  EXPECT_EQ("info1", url_loader_client_.completion_status().security_info);
   EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
   EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
@@ -607,7 +603,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithCanceledTimedOut) {
   bool defer = false;
 
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   EXPECT_FALSE(defer);
 
   url_loader_client_.RunUntilComplete();
@@ -622,7 +618,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithFailedTimedOut) {
   bool defer = false;
 
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   EXPECT_FALSE(defer);
 
   url_loader_client_.RunUntilComplete();
@@ -644,7 +640,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
   EXPECT_FALSE(defer);
 
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   EXPECT_FALSE(defer);
 
   url_loader_client_.RunUntilComplete();
@@ -682,7 +678,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseErrorDuringBodyTransmission) {
 
   defer = false;
   net::URLRequestStatus status(net::URLRequestStatus::FAILED, net::ERR_FAILED);
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   EXPECT_FALSE(defer);
 
   url_loader_client_.RunUntilComplete();
@@ -722,7 +718,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseErrorDuringBodyTransmission2) {
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
   bool defer = false;
   net::URLRequestStatus status(net::URLRequestStatus::FAILED, net::ERR_FAILED);
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   EXPECT_FALSE(defer);
 
   url_loader_client_.RunUntilComplete();
@@ -1002,7 +998,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, CancelWhileWaiting) {
   defer = false;
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
-  handler_->OnResponseCompleted(status, "security_info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());
   url_loader_client_.RunUntilComplete();
@@ -1055,7 +1051,7 @@ TEST_P(
   ASSERT_TRUE(handler_->OnReadCompleted(1, &defer));
   ASSERT_FALSE(defer);
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
-  handler_->OnResponseCompleted(status, "security info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   ASSERT_FALSE(defer);
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());
@@ -1115,7 +1111,7 @@ TEST_P(
   ASSERT_TRUE(handler_->OnReadCompleted(1, &defer));
   ASSERT_FALSE(defer);
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
-  handler_->OnResponseCompleted(status, "security info", &defer);
+  handler_->OnResponseCompleted(status, &defer);
   ASSERT_FALSE(defer);
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());

@@ -320,8 +320,6 @@ source_set("common") {
     "site_isolation_policy.cc",
     "site_isolation_policy.h",
     "speech_recognition_messages.h",
-    "ssl_status_serialization.cc",
-    "ssl_status_serialization.h",
     "swapped_out_messages.cc",
     "swapped_out_messages.h",
     "text_input_client_messages.h",

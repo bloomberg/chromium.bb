@@ -51,7 +51,6 @@ class StreamResourceHandler : public ResourceHandler {
   bool OnReadCompleted(int bytes_read, bool* defer) override;
 
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& sec_info,
                            bool* defer) override;
 
   void OnDataDownloaded(int bytes_downloaded) override;

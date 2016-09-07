@@ -28,9 +28,6 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
   // A copy of the data requested exists in the cache.
   bool exists_in_cache = false;
 
-  // Serialized security info; see content/common/ssl_status_serialization.h.
-  std::string security_info;
-
   // Time the request completed.
   base::TimeTicks completion_time;
 

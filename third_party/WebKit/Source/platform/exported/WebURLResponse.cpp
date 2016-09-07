@@ -304,17 +304,6 @@ void WebURLResponse::setAppCacheManifestURL(const WebURL& url)
     m_resourceResponse->setAppCacheManifestURL(url);
 }
 
-WebCString WebURLResponse::securityInfo() const
-{
-    // FIXME: getSecurityInfo is misnamed.
-    return m_resourceResponse->getSecurityInfo();
-}
-
-void WebURLResponse::setSecurityInfo(const WebCString& securityInfo)
-{
-    m_resourceResponse->setSecurityInfo(securityInfo);
-}
-
 void WebURLResponse::setHasMajorCertificateErrors(bool value)
 {
     m_resourceResponse->setHasMajorCertificateErrors(value);

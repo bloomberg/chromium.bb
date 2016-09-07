@@ -64,7 +64,6 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
                   int min_size) override;
   bool OnReadCompleted(int bytes_read, bool* defer) override;
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override;
 
  private:
@@ -110,7 +109,6 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   bool completed_during_write_;
   GURL will_start_url_;
   net::URLRequestStatus completed_status_;
-  std::string completed_security_info_;
 
   base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 

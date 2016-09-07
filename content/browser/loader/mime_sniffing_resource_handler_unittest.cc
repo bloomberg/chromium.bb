@@ -92,7 +92,6 @@ class TestResourceHandler : public ResourceHandler {
   }
 
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override {}
 
   void OnDataDownloaded(int bytes_downloaded) override { NOTREACHED(); }

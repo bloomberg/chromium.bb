@@ -182,7 +182,6 @@ int GetInfoFromDataURL(const GURL& url,
   info->headers = headers;
   info->mime_type.swap(mime_type);
   info->charset.swap(charset);
-  info->security_info.clear();
   info->content_length = data->length();
   info->encoded_data_length = 0;
   info->encoded_body_length = 0;
@@ -352,7 +351,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
-                          const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size);
 
@@ -400,7 +398,6 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
-                          const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override;
 
@@ -778,7 +775,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
-    const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
   if (ftp_listing_delegate_) {
@@ -899,8 +895,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
           base::MakeUnique<FixedReceivedData>(data.data(), size, 0, size));
   }
 
-  OnCompletedRequest(error_code, false, false, info.security_info,
-                     base::TimeTicks::Now(), 0);
+  OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0);
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -945,12 +940,11 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
     int error_code,
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
-    const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
   context_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                               stale_copy_in_cache, security_info,
-                               completion_time, total_transfer_size);
+                               stale_copy_in_cache, completion_time,
+                               total_transfer_size);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------
@@ -972,7 +966,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setMIMEType(WebString::fromUTF8(info.mime_type));
   response->setTextEncodingName(WebString::fromUTF8(info.charset));
   response->setExpectedContentLength(info.content_length);
-  response->setSecurityInfo(info.security_info);
   response->setHasMajorCertificateErrors(info.has_major_certificate_errors);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);

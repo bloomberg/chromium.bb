@@ -163,7 +163,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_httpHeaderFields.adopt(std::move(data->m_httpHeaders));
     setLastModifiedDate(data->m_lastModifiedDate);
     setResourceLoadTiming(data->m_resourceLoadTiming.release());
-    m_securityInfo = data->m_securityInfo;
     m_hasMajorCertificateErrors = data->m_hasMajorCertificateErrors;
     m_securityStyle = data->m_securityStyle;
     m_securityDetails.protocol = data->m_securityDetails.protocol;
@@ -221,7 +220,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_lastModifiedDate = lastModifiedDate();
     if (m_resourceLoadTiming)
         data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
-    data->m_securityInfo = CString(m_securityInfo.data(), m_securityInfo.length());
     data->m_hasMajorCertificateErrors = m_hasMajorCertificateErrors;
     data->m_securityStyle = m_securityStyle;
     data->m_securityDetails.protocol = m_securityDetails.protocol.isolatedCopy();

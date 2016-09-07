@@ -712,7 +712,6 @@
       'common/sandbox_mac_unittest_helper.h',
       'common/sandbox_mac_unittest_helper.mm',
       'common/service_worker/service_worker_utils_unittest.cc',
-      'common/ssl_status_serialization_unittest.cc',
       'common/webplugininfo_unittest.cc',
       'renderer/android/disambiguation_popup_helper_unittest.cc',
       'renderer/android/email_detector_unittest.cc',

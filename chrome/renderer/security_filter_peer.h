@@ -63,7 +63,6 @@ class BufferedPeer : public SecurityFilterPeer {
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
-                          const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override;
 
@@ -102,7 +101,6 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
-                          const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override;
 

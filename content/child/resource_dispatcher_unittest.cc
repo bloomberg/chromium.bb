@@ -96,7 +96,6 @@ class TestRequestPeer : public RequestPeer {
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
-                          const std::string& security_info,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size) override {
     if (context_->cancelled)
@@ -547,7 +546,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
     void OnCompletedRequest(int error_code,
                             bool was_ignored_by_handler,
                             bool stale_copy_in_cache,
-                            const std::string& security_info,
                             const base::TimeTicks& completion_time,
                             int64_t total_transfer_size) override {
       original_peer_->OnReceivedResponse(response_info_);
@@ -556,8 +554,8 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
             data_.data(), data_.size(), -1, data_.size()));
       }
       original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                         stale_copy_in_cache, security_info,
-                                         completion_time, total_transfer_size);
+                                         stale_copy_in_cache, completion_time,
+                                         total_transfer_size);
     }
 
    private:

@@ -113,7 +113,6 @@ bool SyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void SyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& security_info,
     bool* defer) {
   ResourceMessageFilter* filter = GetFilter();
   if (!filter)

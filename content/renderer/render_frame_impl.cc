@@ -4191,15 +4191,13 @@ void RenderFrameImpl::didRunInsecureContent(
 }
 
 void RenderFrameImpl::didDisplayContentWithCertificateErrors(
-    const blink::WebURL& url,
-    const blink::WebCString& security_info) {
+    const blink::WebURL& url) {
   Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
       routing_id_, url));
 }
 
 void RenderFrameImpl::didRunContentWithCertificateErrors(
-    const blink::WebURL& url,
-    const blink::WebCString& security_info) {
+    const blink::WebURL& url) {
   Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url));
 }
 

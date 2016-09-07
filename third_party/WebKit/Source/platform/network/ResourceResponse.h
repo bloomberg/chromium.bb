@@ -209,9 +209,6 @@ public:
     HTTPVersion httpVersion() const { return m_httpVersion; }
     void setHTTPVersion(HTTPVersion version) { m_httpVersion = version; }
 
-    const CString& getSecurityInfo() const { return m_securityInfo; }
-    void setSecurityInfo(const CString& securityInfo) { m_securityInfo = securityInfo; }
-
     bool hasMajorCertificateErrors() const { return m_hasMajorCertificateErrors; }
     void setHasMajorCertificateErrors(bool hasMajorCertificateErrors) { m_hasMajorCertificateErrors = hasMajorCertificateErrors; }
 
@@ -339,11 +336,6 @@ private:
     mutable double m_expires;
     mutable double m_lastModified;
 
-    // An opaque value that contains some information regarding the security of
-    // the connection for this request, such as SSL connection info (empty
-    // string if not over HTTPS).
-    CString m_securityInfo;
-
     // True if the resource was retrieved by the embedder in spite of
     // certificate errors.
     bool m_hasMajorCertificateErrors;
@@ -454,7 +446,6 @@ public:
     std::unique_ptr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     time_t m_lastModifiedDate;
     RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
-    CString m_securityInfo;
     bool m_hasMajorCertificateErrors;
     ResourceResponse::SecurityStyle m_securityStyle;
     ResourceResponse::SecurityDetails m_securityDetails;

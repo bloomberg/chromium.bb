@@ -70,7 +70,6 @@ class SaveFileResourceHandler : public ResourceHandler {
   bool OnReadCompleted(int bytes_read, bool* defer) override;
 
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override;
 
   // N/A to this flavor of SaveFileResourceHandler.

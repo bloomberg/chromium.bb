@@ -372,13 +372,13 @@ void MixedContentChecker::handleCertificateError(LocalFrame* frame, const Resour
     bool strictMixedContentCheckingForPlugin = effectiveFrame->settings() && effectiveFrame->settings()->strictMixedContentCheckingForPlugin();
     WebMixedContent::ContextType contextType = WebMixedContent::contextTypeFromRequestContext(requestContext, strictMixedContentCheckingForPlugin);
     if (contextType == WebMixedContent::ContextType::Blockable) {
-        client->didRunContentWithCertificateErrors(response.url(), response.getSecurityInfo());
+        client->didRunContentWithCertificateErrors(response.url());
     } else {
         // contextTypeFromRequestContext() never returns NotMixedContent (it
         // computes the type of mixed content, given that the content is
         // mixed).
         DCHECK(contextType != WebMixedContent::ContextType::NotMixedContent);
-        client->didDisplayContentWithCertificateErrors(response.url(), response.getSecurityInfo());
+        client->didDisplayContentWithCertificateErrors(response.url());
     }
 }
 

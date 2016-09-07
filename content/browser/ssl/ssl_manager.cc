@@ -16,7 +16,6 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"

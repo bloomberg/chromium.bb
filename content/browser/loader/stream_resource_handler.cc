@@ -53,7 +53,6 @@ bool StreamResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
 void StreamResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
-    const std::string& sec_info,
     bool* defer) {
   writer_.Finalize();
 }

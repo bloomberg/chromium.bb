@@ -26,7 +26,6 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/common/security_style_util.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/common/content_client.h"
@@ -35,6 +34,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
+#include "content/public/common/ssl_status.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -102,13 +102,14 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 
   if (request->ssl_info().cert.get()) {
     SSLStatus ssl_status;
+    // TODO(jam): keep this call temporarily since it's what adds the
+    // certificate to the CertStore.
     ResourceLoader::GetSSLStatusForRequest(
         request->url(), request->ssl_info(), info->GetChildID(),
         cert_store, &ssl_status);
-    response->head.security_info = SerializeSecurityInfo(ssl_status);
     response->head.has_major_certificate_errors =
-        net::IsCertStatusError(ssl_status.cert_status) &&
-        !net::IsCertStatusMinorError(ssl_status.cert_status);
+        net::IsCertStatusError(request->ssl_info().cert_status) &&
+        !net::IsCertStatusMinorError(request->ssl_info().cert_status);
     if (info->ShouldReportRawHeaders()) {
       // Only pass these members when the network panel of the DevTools is open,
       // i.e. ShouldReportRawHeaders() is set. These data are used to populate
@@ -678,14 +679,13 @@ void ResourceLoader::ResponseCompleted() {
   RecordHistograms();
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  std::string security_info;
   const net::SSLInfo& ssl_info = request_->ssl_info();
   if (ssl_info.cert.get() != NULL) {
     SSLStatus ssl_status;
+    // TODO(jam): keep this call temporarily since it's what adds the
+    // certificate to the CertStore.
     GetSSLStatusForRequest(request_->url(), ssl_info, info->GetChildID(),
                            cert_store_, &ssl_status);
-
-    security_info = SerializeSecurityInfo(ssl_status);
   }
 
   bool defer = false;
@@ -694,7 +694,7 @@ void ResourceLoader::ResponseCompleted() {
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseCompleted()"));
 
-    handler_->OnResponseCompleted(request_->status(), security_info, &defer);
+    handler_->OnResponseCompleted(request_->status(), &defer);
   }
   if (defer) {
     // The handler is not ready to die yet.  We will call DidFinishLoading when

@@ -478,10 +478,10 @@ public:
 
     // This frame has displayed inactive content (such as an image) from
     // a connection with certificate errors.
-    virtual void didDisplayContentWithCertificateErrors(const WebURL& url, const WebCString& securityInfo) {}
+    virtual void didDisplayContentWithCertificateErrors(const WebURL& url) {}
     // This frame has run active content (such as a script) from a
     // connection with certificate errors.
-    virtual void didRunContentWithCertificateErrors(const WebURL& url, const WebCString& securityInfo) {}
+    virtual void didRunContentWithCertificateErrors(const WebURL& url) {}
 
     // A performance timing event (e.g. first paint) occurred
     virtual void didChangePerformanceTiming() { }

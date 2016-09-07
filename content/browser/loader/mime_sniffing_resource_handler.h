@@ -85,7 +85,6 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
                   int min_size) override;
   bool OnReadCompleted(int bytes_read, bool* defer) override;
   void OnResponseCompleted(const net::URLRequestStatus& status,
-                           const std::string& security_info,
                            bool* defer) override;
 
   // ResourceController implementation:

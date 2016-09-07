@@ -339,7 +339,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
-    peer()->OnCompletedRequest(net::OK, false, false, "", base::TimeTicks(),
+    peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
                                strlen(kTestData));
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
@@ -349,7 +349,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
-    peer()->OnCompletedRequest(net::ERR_FAILED, false, false, "",
+    peer()->OnCompletedRequest(net::ERR_FAILED, false, false,
                                base::TimeTicks(), strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
     EXPECT_EQ(net::ERR_FAILED, client()->error().reason);
@@ -395,18 +395,6 @@ TEST_F(WebURLLoaderImplTest, Success) {
 TEST_F(WebURLLoaderImplTest, Redirect) {
   DoStartAsyncRequest();
   DoReceiveRedirect();
-  DoReceiveResponse();
-  DoReceiveData();
-  DoCompleteRequest();
-  EXPECT_FALSE(dispatcher()->canceled());
-  EXPECT_EQ(kTestData, client()->received_data());
-}
-
-// Tests that a redirect to an HTTPS URL with no security info does not
-// crash. Regression test for https://crbug.com/519120
-TEST_F(WebURLLoaderImplTest, RedirectToHTTPSWithEmptySecurityInfo) {
-  DoStartAsyncRequest();
-  DoReceiveHTTPSRedirect();
   DoReceiveResponse();
   DoReceiveData();
   DoCompleteRequest();
@@ -607,7 +595,7 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
   // Directory listings are only parsed once the request completes, so this will
   // cancel in DoReceiveDataFtp, before the request finishes.
   client()->set_delete_on_receive_data();
-  peer()->OnCompletedRequest(net::OK, false, false, "", base::TimeTicks(),
+  peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
                               strlen(kTestData));
   EXPECT_FALSE(client()->did_finish());
 }

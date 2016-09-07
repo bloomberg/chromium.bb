@@ -76,7 +76,6 @@
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/site_isolation_policy.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -424,7 +423,7 @@ void NotifyForEachFrameFromUI(
 void UpdateSSLStatus(int render_process_id,
                      int render_frame_host_id,
                      const GURL& url,
-                     int new_cert_id) {
+                     CertStore* cert_store) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
   if (!render_frame_host)
@@ -432,8 +431,18 @@ void UpdateSSLStatus(int render_process_id,
 
   NavigationHandleImpl* navigation_handle =
       render_frame_host->navigation_handle();
-  if (navigation_handle && navigation_handle->GetURL() == url)
-    navigation_handle->UpdateSSLCertId(new_cert_id);
+  if (!navigation_handle || navigation_handle->GetURL() != url)
+    return;
+
+  scoped_refptr<net::X509Certificate> cert;
+  if (!cert_store->RetrieveCert(
+          navigation_handle->ssl_status().cert_id, &cert)) {
+    NOTREACHED() << "Must have set an SSL certificate already.";
+    return;
+  }
+
+  int new_cert_id = cert_store->StoreCert(cert.get(), render_process_id);
+  navigation_handle->UpdateSSLCertId(new_cert_id);
 }
 
 }  // namespace
@@ -2306,7 +2315,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
 
     bool defer = false;
-    handler->OnResponseCompleted(request->status(), std::string(), &defer);
+    handler->OnResponseCompleted(request->status(), &defer);
     if (defer) {
       // TODO(darin): The handler is not ready for us to kill the request. Oops!
       NOTREACHED();
@@ -2630,33 +2639,17 @@ void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
     net::URLRequest* request,
     ResourceRequestInfoImpl* info) {
   const net::SSLInfo& ssl_info = request->ssl_info();
-  if (!ssl_info.cert)
+  if (info->GetResourceType() != RESOURCE_TYPE_MAIN_FRAME || !ssl_info.cert)
     return;
-  SSLStatus ssl;
-  // DeserializeSecurityInfo() often takes security info sent by a
-  // renderer as input, in which case it's important to check that the
-  // security info deserializes properly and kill the renderer if
-  // not. In this case, however, the security info has been provided by
-  // the ResourceLoader, so it does not need to be treated as untrusted
-  // data.
-  bool deserialized =
-      DeserializeSecurityInfo(response->head.security_info, &ssl);
-  DCHECK(deserialized);
-  ssl.cert_id = GetCertStore()->StoreCert(ssl_info.cert.get(),
-                                          info->GetChildID());
-  response->head.security_info = SerializeSecurityInfo(ssl);
-
-  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
-    int render_process_id, render_frame_id;
-    if (info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
-      BrowserThread::PostTask(BrowserThread::UI,
-                              FROM_HERE,
-                              base::Bind(UpdateSSLStatus,
-                                         render_process_id,
-                                         render_frame_id,
-                                         request->url(),
-                                         ssl.cert_id));
-    }
+  int render_process_id, render_frame_id;
+  if (info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(UpdateSSLStatus,
+                                       render_process_id,
+                                       render_frame_id,
+                                       request->url(),
+                                       GetCertStore()));
   }
 }
 
