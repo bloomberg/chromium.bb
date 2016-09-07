@@ -29,11 +29,7 @@ public:
     {
         return create(hasPercentage(a) || hasPercentage(b));
     }
-    static bool hasPercentage(const NonInterpolableValue* nonInterpolableValue)
-    {
-        DCHECK(!nonInterpolableValue || nonInterpolableValue->getType() == CSSLengthNonInterpolableValue::staticType);
-        return static_cast<bool>(nonInterpolableValue);
-    }
+    static bool hasPercentage(const NonInterpolableValue*);
 
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -43,6 +39,12 @@ private:
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSLengthNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSLengthNonInterpolableValue);
+
+bool CSSLengthNonInterpolableValue::hasPercentage(const NonInterpolableValue* nonInterpolableValue)
+{
+    DCHECK(isCSSLengthNonInterpolableValue(nonInterpolableValue));
+    return static_cast<bool>(nonInterpolableValue);
+}
 
 CSSLengthInterpolationType::CSSLengthInterpolationType(CSSPropertyID property)
     : CSSInterpolationType(property)
@@ -98,8 +100,10 @@ PairwiseInterpolationValue CSSLengthInterpolationType::staticMergeSingleConversi
         CSSLengthNonInterpolableValue::merge(start.nonInterpolableValue.get(), end.nonInterpolableValue.get()));
 }
 
-bool CSSLengthInterpolationType::nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*)
+bool CSSLengthInterpolationType::nonInterpolableValuesAreCompatible(const NonInterpolableValue* a, const NonInterpolableValue* b)
 {
+    DCHECK(isCSSLengthNonInterpolableValue(a));
+    DCHECK(isCSSLengthNonInterpolableValue(b));
     return true;
 }
 

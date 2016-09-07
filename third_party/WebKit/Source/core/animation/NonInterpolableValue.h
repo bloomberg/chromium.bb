@@ -28,7 +28,9 @@ public:
     NonInterpolableValue::Type T::staticType = &T::staticType;
 
 #define DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(T) \
-    DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, value->getType() == T::staticType, value.getType() == T::staticType);
+    inline bool is##T(const NonInterpolableValue* value) { return !value || value->getType() == T::staticType; } \
+    DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, is##T(value), is##T(&value));
+
 
 } // namespace blink
 
