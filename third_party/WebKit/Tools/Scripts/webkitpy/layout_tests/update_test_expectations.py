@@ -187,7 +187,7 @@ class RemoveFlakesOMatic(object):
         }
         """
         builder_results_by_path = {}
-        for builder_name in self._host.builders.all_builder_names():
+        for builder_name in self._host.builders.all_continuous_builder_names():
             expectations_for_builder = (
                 self._expectations_factory.expectations_for_builder(builder_name)
             )
