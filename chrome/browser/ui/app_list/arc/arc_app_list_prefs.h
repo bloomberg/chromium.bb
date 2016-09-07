@@ -185,6 +185,11 @@ class ArcAppListPrefs
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
+  // Constructs path to default app icon for specific scale factor. This path
+  // is used to resolve icon if no icon is available at |GetIconPath|.
+  base::FilePath MaybeGetIconPathForDefaultApp(
+      const std::string& app_id,
+      ui::ScaleFactor scale_factor) const;
 
   // Sets last launched time for the requested app.
   void SetLastLaunchTime(const std::string& app_id, const base::Time& time);
@@ -284,7 +289,8 @@ class ArcAppListPrefs
   std::vector<std::string> GetPackagesFromPrefs(bool installed) const;
 
   void AddApp(const arc::mojom::AppInfo& app_info);
-  void AddAppAndShortcut(const std::string& name,
+  void AddAppAndShortcut(bool app_ready,
+                         const std::string& name,
                          const std::string& package_name,
                          const std::string& activity,
                          const std::string& intent_uri,

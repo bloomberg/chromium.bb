@@ -8,9 +8,13 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system.h"
 
 namespace {
 
@@ -119,8 +123,9 @@ void ArcDefaultAppList::UseTestAppsDirectory() {
   use_test_apps_directory = true;
 }
 
-ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
+ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate,
+                                     content::BrowserContext* context)
+    : delegate_(delegate), context_(context), weak_ptr_factory_(this) {
   CHECK(delegate_);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -138,6 +143,25 @@ void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   apps_.swap(*apps.get());
+
+  // Register Play Store as default app. Some services and ArcSupportHost may
+  // not be available in tests.
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(context_)->extension_service();
+  const extensions::Extension* arc_host = service ?
+      service->GetInstalledExtension(ArcSupportHost::kHostAppId) : nullptr;
+  if (arc_host) {
+    std::unique_ptr<ArcDefaultAppList::AppInfo> play_store_app(
+        new ArcDefaultAppList::AppInfo(arc_host->name(),
+                                       arc::kPlayStorePackage,
+                                       arc::kPlayStoreActivity,
+                                       false /* oem */,
+                                       base::FilePath() /* app_path */));
+    apps_.insert(
+        std::pair<std::string,
+                  std::unique_ptr<ArcDefaultAppList::AppInfo>>(
+                      arc::kPlayStoreAppId, std::move(play_store_app)));
+  }
 
   // Initially consider packages are installed.
   for (const auto& app : apps_)

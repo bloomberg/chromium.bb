@@ -15,6 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace content {
+class BrowserContext;
+}
+
 // Contains map of default pre-installed apps and packages.
 class ArcDefaultAppList {
  public:
@@ -44,7 +48,7 @@ class ArcDefaultAppList {
   // Defines App id to default AppInfo mapping.
   using AppInfoMap = std::map<std::string, std::unique_ptr<AppInfo>>;
 
-  explicit ArcDefaultAppList(Delegate* delegate);
+  ArcDefaultAppList(Delegate* delegate, content::BrowserContext* context);
   ~ArcDefaultAppList();
 
   static void UseTestAppsDirectory();
@@ -74,6 +78,7 @@ class ArcDefaultAppList {
 
   // Unowned pointer.
   Delegate* const delegate_;
+  content::BrowserContext* const context_;
 
   AppInfoMap apps_;
   PacakageMap packages_;

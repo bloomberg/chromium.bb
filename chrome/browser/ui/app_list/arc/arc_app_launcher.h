@@ -28,6 +28,7 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
   // ArcAppListPrefs::Observer:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
+  void OnAppReadyChanged(const std::string& app_id, bool ready) override;
 
  private:
   void LaunchApp();

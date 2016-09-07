@@ -16,6 +16,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -31,6 +34,9 @@
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
@@ -358,6 +364,46 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppTest);
 };
+
+class ArcPlayStoreAppTest : public ArcAppModelBuilderTest {
+ public:
+  ArcPlayStoreAppTest() {}
+  ~ArcPlayStoreAppTest() override {}
+
+
+  void SetUp() override {
+    AppListTestBase::SetUp();
+    CreateArcHost();
+    arc_test()->SetUp(profile_.get());
+    CreateBuilder();
+  }
+
+ private:
+  void CreateArcHost() {
+    base::DictionaryValue manifest;
+    manifest.SetString(extensions::manifest_keys::kName,
+                       "Play Store");
+    manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetString(extensions::manifest_keys::kDescription,
+                       "Play Store for testing");
+
+    std::string error;
+    arc_support_host_ = extensions::Extension::Create(
+        base::FilePath(),
+        extensions::Manifest::UNPACKED,
+        manifest, extensions::Extension::NO_FLAGS,
+        ArcSupportHost::kHostAppId, &error);
+
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+    extension_service->AddExtension(arc_support_host_.get());
+  }
+
+  scoped_refptr<extensions::Extension> arc_support_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreAppTest);
+};
+
 
 TEST_F(ArcAppModelBuilderTest, ArcPackagePref) {
   ValidateHavePackages(std::vector<arc::mojom::ArcPackageInfo>());
@@ -843,6 +889,43 @@ TEST_F(ArcAppModelBuilderTest, LastLaunchTime) {
   ASSERT_NE(nullptr, app_info.get());
   ASSERT_LE(time_before, app_info->last_launch_time);
   ASSERT_GE(time_after, app_info->last_launch_time);
+}
+
+TEST_F(ArcPlayStoreAppTest, PlayStore) {
+  // Make sure PlayStore is available.
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
+      arc::kPlayStoreAppId);
+  ASSERT_TRUE(app_info);
+  EXPECT_FALSE(app_info->ready);
+
+  arc::mojom::AppInfo app;
+  std::vector<arc::mojom::AppInfo> apps;
+  app.name = "Play Store";
+  app.package_name = arc::kPlayStorePackage;
+  app.activity = arc::kPlayStoreActivity;
+  app.sticky = false;
+  apps.push_back(app);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps);
+
+  app_info = prefs->GetApp(arc::kPlayStoreAppId);
+  ASSERT_TRUE(app_info);
+  EXPECT_TRUE(app_info->ready);
+
+  arc_test()->arc_auth_service()->DisableArc();
+
+  app_info = prefs->GetApp(arc::kPlayStoreAppId);
+  ASSERT_TRUE(app_info);
+  EXPECT_FALSE(app_info->ready);
+
+  arc::LaunchApp(profile(), arc::kPlayStoreAppId);
+  EXPECT_TRUE(arc_test()->arc_auth_service()->IsArcEnabled());
 }
 
 // TODO(crbug.com/628425) -- reenable once this test is less flaky.

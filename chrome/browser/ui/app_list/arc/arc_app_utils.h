@@ -18,6 +18,8 @@ class BrowserContext;
 namespace arc {
 
 extern const char kPlayStoreAppId[];
+extern const char kPlayStorePackage[];
+extern const char kPlayStoreActivity[];
 extern const char kSettingsAppId[];
 
 using CanHandleResolutionCallback = base::Callback<void(bool)>;

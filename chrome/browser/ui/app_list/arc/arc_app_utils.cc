@@ -163,6 +163,8 @@ class LaunchAppWithoutSize {
 }  // namespace
 
 const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
+const char kPlayStorePackage[] = "com.android.vending";
+const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
@@ -219,15 +221,13 @@ bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                bool landscape_layout) {
-  const ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
-    if (!ash::Shell::HasInstance())
-      return false;
-
     ArcAuthService* auth_service = ArcAuthService::Get();
     DCHECK(auth_service);
 
+    bool arc_activated = false;
     if (!auth_service->IsArcEnabled()) {
       if (!prefs->IsDefault(app_id)) {
         NOTREACHED();
@@ -239,12 +239,22 @@ bool LaunchApp(content::BrowserContext* context,
         NOTREACHED();
         return false;
       }
+      arc_activated = true;
     }
 
-    ChromeLauncherController* chrome_controller =
-        ChromeLauncherController::instance();
-    DCHECK(chrome_controller);
-    chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(app_id);
+    // PlayStore item has special handling for shelf controllers. In order to
+    // avoid unwanted initial animation for PlayStore item do not create
+    // deferred launch request when PlayStore item enables Arc.
+    if (!arc_activated || app_id != kPlayStoreAppId) {
+      ChromeLauncherController* chrome_controller =
+          ChromeLauncherController::instance();
+      DCHECK(chrome_controller || !ash::Shell::HasInstance());
+      if (chrome_controller) {
+        chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
+            app_id);
+      }
+    }
+    prefs->SetLastLaunchTime(app_id, base::Time::Now());
     return true;
   }
 

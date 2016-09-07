@@ -84,7 +84,8 @@ class ArcAppIcon {
   void RequestIcon(ui::ScaleFactor scale_factor);
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadOnFileThread(
       ui::ScaleFactor scale_factor,
-      const base::FilePath& path);
+      const base::FilePath& path,
+      const base::FilePath& default_app_path);
   void OnIconRead(std::unique_ptr<ArcAppIcon::ReadResult> read_result);
   void Update(const gfx::ImageSkia* image);
   void DiscardDecodeRequest(DecodeRequest* request);

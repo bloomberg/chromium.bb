@@ -876,10 +876,11 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
     // Adding app to the prefs, and check that the app is accessible by id.
     prefs->AddAppAndShortcut(
-        app_info.name, app_info.package_name, app_info.activity,
-        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
-        false /* sticky */, true /* notifications_enabled */,
-        false /* shortcut */, true /* launchable */, app_info.orientation_lock);
+        true /* app_ready */, app_info.name, app_info.package_name,
+        app_info.activity, std::string() /* intent_uri */,
+        std::string() /* icon_resource_id */, false /* sticky */,
+        true /* notifications_enabled */, false /* shortcut */,
+        true /* launchable */, app_info.orientation_lock);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
