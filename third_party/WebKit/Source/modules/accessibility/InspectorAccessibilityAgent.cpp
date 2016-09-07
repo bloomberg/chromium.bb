@@ -381,6 +381,8 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         return;
 
     Document& document = node->document();
+    document.updateStyleAndLayoutIgnorePendingStylesheets();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
     std::unique_ptr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document);
     AXObjectCacheImpl* cacheImpl = toAXObjectCacheImpl(cache->get());
     AXObject* axObject = cacheImpl->getOrCreate(node);
