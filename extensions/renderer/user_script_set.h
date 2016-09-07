@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_USER_SCRIPT_SET_H_
 #define EXTENSIONS_RENDERER_USER_SCRIPT_SET_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -15,6 +16,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
 #include "extensions/common/user_script.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 class GURL;
 
@@ -73,6 +75,12 @@ class UserScriptSet {
                          const std::set<HostID>& changed_hosts,
                          bool whitelisted_only);
 
+  // Returns the contents of a script file.
+  // Note that copying is cheap as this uses WebString.
+  blink::WebString GetJsSource(const UserScript::File& file,
+                               bool emulate_greasemonkey);
+  blink::WebString GetCssSource(const UserScript::File& file);
+
  private:
   // Returns a new ScriptInjection for the given |script| to execute in the
   // |render_frame|, or NULL if the script should not execute.
@@ -90,6 +98,9 @@ class UserScriptSet {
 
   // The UserScripts this injector manages.
   UserScriptList scripts_;
+
+  // Map of user script file url -> source.
+  std::map<GURL, blink::WebString> script_sources_;
 
   // The associated observers.
   base::ObserverList<Observer> observers_;

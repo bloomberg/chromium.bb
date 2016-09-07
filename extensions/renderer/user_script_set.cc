@@ -31,6 +31,11 @@ namespace extensions {
 
 namespace {
 
+// These two strings are injected before and after the Greasemonkey API and
+// user script to wrap it in an anonymous scope.
+const char kUserScriptHead[] = "(function (unsafeWindow) {\n";
+const char kUserScriptTail[] = "\n})(window);";
+
 GURL GetDocumentUrlForFrame(blink::WebLocalFrame* frame) {
   GURL data_source_url = ScriptContext::GetDataSourceURLForFrame(frame);
   if (!data_source_url.is_empty() && frame->isViewSourceModeEnabled()) {
@@ -113,6 +118,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
   CHECK(iter.ReadUInt32(&num_scripts));
 
   scripts_.clear();
+  script_sources_.clear();
   scripts_.reserve(num_scripts);
   for (uint32_t i = 0; i < num_scripts; ++i) {
     std::unique_ptr<UserScript> script(new UserScript());
@@ -224,6 +230,48 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
                                         log_activity));
   }
   return injection;
+}
+
+blink::WebString UserScriptSet::GetJsSource(const UserScript::File& file,
+                                            bool emulate_greasemonkey) {
+  const GURL& url = file.url();
+  std::map<GURL, blink::WebString>::iterator iter = script_sources_.find(url);
+  if (iter != script_sources_.end())
+    return iter->second;
+
+  base::StringPiece script_content = file.GetContent();
+  blink::WebString source;
+  if (emulate_greasemonkey) {
+    // We add this dumb function wrapper for user scripts to emulate what
+    // Greasemonkey does. |script_content| becomes:
+    // concat(kUserScriptHead, script_content, kUserScriptTail).
+    std::string content;
+    content.reserve(strlen(kUserScriptHead) + script_content.length() +
+                    strlen(kUserScriptTail));
+    content.append(kUserScriptHead);
+    script_content.AppendToString(&content);
+    content.append(kUserScriptTail);
+    source = blink::WebString::fromUTF8(content);
+  } else {
+    source = blink::WebString::fromUTF8(script_content.data(),
+                                        script_content.length());
+  }
+  script_sources_[url] = source;
+  return source;
+}
+
+blink::WebString UserScriptSet::GetCssSource(const UserScript::File& file) {
+  const GURL& url = file.url();
+  std::map<GURL, blink::WebString>::iterator iter = script_sources_.find(url);
+  if (iter != script_sources_.end())
+    return iter->second;
+
+  base::StringPiece script_content = file.GetContent();
+  return script_sources_
+      .insert(std::make_pair(
+          url, blink::WebString::fromUTF8(script_content.data(),
+                                          script_content.length())))
+      .first->second;
 }
 
 }  // namespace extensions

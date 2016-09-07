@@ -63,6 +63,11 @@ class UserScriptInjector : public ScriptInjector,
   // this object.
   const UserScript* script_;
 
+  // The UserScriptSet that eventually owns the UserScript this
+  // UserScriptInjector points to.
+  // Outlives |this|.
+  UserScriptSet* const user_script_set_;
+
   // The id of the associated user script. We cache this because when we update
   // the |script_| associated with this injection, the old referance may be
   // deleted.

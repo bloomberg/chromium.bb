@@ -44,11 +44,6 @@ struct RoutingInfoKey {
 
 using RoutingInfoMap = std::map<RoutingInfoKey, bool>;
 
-// These two strings are injected before and after the Greasemonkey API and
-// user script to wrap it in an anonymous scope.
-const char kUserScriptHead[] = "(function (unsafeWindow) {\n";
-const char kUserScriptTail[] = "\n})(window);";
-
 // A map records whether a given |script_id| from a webview-added user script
 // is allowed to inject on the render of given |routing_id|.
 // Once a script is added, the decision of whether or not allowed to inject
@@ -91,6 +86,7 @@ UserScriptInjector::UserScriptInjector(const UserScript* script,
                                        UserScriptSet* script_list,
                                        bool is_declarative)
     : script_(script),
+      user_script_set_(script_list),
       script_id_(script_->id()),
       host_id_(script_->host_id()),
       is_declarative_(is_declarative),
@@ -206,35 +202,19 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
   DCHECK_EQ(script_->run_location(), run_location);
 
   const UserScript::FileList& js_scripts = script_->js_scripts();
-  sources.reserve(js_scripts.size());
-  for (const std::unique_ptr<UserScript::File>& file : js_scripts) {
-    base::StringPiece script_content = file->GetContent();
-    blink::WebString source;
-    if (script_->emulate_greasemonkey()) {
-      // We add this dumb function wrapper for user scripts to emulate what
-      // Greasemonkey does. |script_content| becomes:
-      // concat(kUserScriptHead, script_content, kUserScriptTail).
-      std::string content;
-      content.reserve(strlen(kUserScriptHead) + script_content.length() +
-                      strlen(kUserScriptTail));
-      content.append(kUserScriptHead);
-      script_content.AppendToString(&content);
-      content.append(kUserScriptTail);
-      // TODO(lazyboy): |content| is copied to |source|, should be avoided.
-      // Investigate if we can leverage WebString's cheap copying mechanism
-      // somehow.
-      source = blink::WebString::fromUTF8(content);
-    } else {
-      source = blink::WebString::fromUTF8(script_content.data(),
-                                          script_content.length());
-    }
-    sources.push_back(blink::WebScriptSource(source, file->url()));
-  }
+  sources.reserve(js_scripts.size() +
+                  (script_->emulate_greasemonkey() ? 1 : 0));
 
   // Emulate Greasemonkey API for scripts that were converted to extension
   // user scripts.
   if (script_->emulate_greasemonkey())
-    sources.insert(sources.begin(), g_greasemonkey_api.Get().GetSource());
+    sources.push_back(g_greasemonkey_api.Get().GetSource());
+
+  for (const std::unique_ptr<UserScript::File>& file : js_scripts) {
+    sources.push_back(blink::WebScriptSource(
+        user_script_set_->GetJsSource(*file, script_->emulate_greasemonkey()),
+        file->url()));
+  }
 
   return sources;
 }
@@ -249,14 +229,8 @@ std::vector<blink::WebString> UserScriptInjector::GetCssSources(
 
   const UserScript::FileList& css_scripts = script_->css_scripts();
   sources.reserve(css_scripts.size());
-  for (const std::unique_ptr<UserScript::File>& file : script_->css_scripts()) {
-    // TODO(lazyboy): |css_content| string is copied into blink::WebString for
-    // every frame in the current renderer process. Avoid the copy, possibly by
-    // only performing the copy once.
-    base::StringPiece css_content = file->GetContent();
-    sources.push_back(
-        blink::WebString::fromUTF8(css_content.data(), css_content.length()));
-  }
+  for (const std::unique_ptr<UserScript::File>& file : script_->css_scripts())
+    sources.push_back(user_script_set_->GetCssSource(*file));
   return sources;
 }
 
