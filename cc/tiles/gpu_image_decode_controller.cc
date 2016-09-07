@@ -907,12 +907,13 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
   std::unique_ptr<base::DiscardableMemory> backing_memory;
   {
     base::AutoUnlock unlock(lock_);
+
+    backing_memory = base::DiscardableMemoryAllocator::GetInstance()
+                         ->AllocateLockedDiscardableMemory(image_data->size);
+    CHECK(backing_memory);
+
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
-        backing_memory =
-            base::DiscardableMemoryAllocator::GetInstance()
-                ->AllocateLockedDiscardableMemory(image_data->size);
-        CHECK(backing_memory);
         SkImageInfo image_info = CreateImageInfoForDrawImage(
             draw_image, image_data->upload_scale_mip_level);
         // In order to match GPU scaling quality (which uses mip-maps at high
@@ -925,21 +926,19 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         if (!draw_image.image()->scalePixels(
                 image_pixmap, CalculateUploadScaleFilterQuality(draw_image),
                 SkImage::kDisallow_CachingHint)) {
+          backing_memory->Unlock();
           backing_memory.reset();
         }
         break;
       }
       case DecodedDataMode::GPU: {
-        backing_memory =
-            base::DiscardableMemoryAllocator::GetInstance()
-                ->AllocateLockedDiscardableMemory(image_data->size);
-        CHECK(backing_memory);
         auto params = SkImage::DeferredTextureImageUsageParams(
             draw_image.matrix(), draw_image.filter_quality(),
             image_data->upload_scale_mip_level);
         if (!draw_image.image()->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &params, 1,
                 backing_memory->data())) {
+          backing_memory->Unlock();
           backing_memory.reset();
         }
         break;
