@@ -288,7 +288,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       bool replace_entry);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool is_in_page);
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);

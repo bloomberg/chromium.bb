@@ -3198,6 +3198,75 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SamePageHasSSLState) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Checks that if a redirect occurs while the page is loading, the SSL state
+// reflects the final URL.
+IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectSSLState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  GURL https_url = https_server_.GetURL("/ssl/redirect.html?");
+  GURL http_url = embedded_test_server()->GetURL("/ssl/google.html");
+
+  GURL url(https_url.spec() + http_url.spec());
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckUnauthenticatedState(tab, AuthState::NONE);
+}
+
+// Checks that if a redirect occurs while the page is loading from a mixed
+// content to a valid HTTPS page, the SSL state reflects the final URL.
+IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectFromMixedContentSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+
+  GURL url =
+      GURL(https_server_.GetURL("/ssl/redirect_with_mixed_content.html").spec()
+      + "?" +
+      https_server_.GetURL("/ssl/google.html").spec());
+
+  // Load a page that displays insecure content.
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
+// Checks that if a redirect occurs while the page is loading from a valid HTTPS
+// page to a mixed content page, the SSL state reflects the final URL.
+IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectToMixedContentSSLState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  GURL url =
+      GURL(https_server_.GetURL("/ssl/redirect.html").spec()
+      + "?" +
+      https_server_.GetURL("/ssl/page_displays_insecure_content.html").spec());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::DISPLAYED_INSECURE_CONTENT);
+}
+
+// Checks that in-page navigations during page load preserves SSL state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, InPageNavigationDuringLoadSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_.GetURL("/ssl/in_page_navigation_during_load.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
+// Checks that in-page navigations after the page load preserves SSL state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, InPageNavigationAfterLoadSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(tab, "location.hash = Math.random()"));
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
 // TODO(jcampan): more tests to do below.
 
 // Visit a page over https that contains a frame with a redirect.

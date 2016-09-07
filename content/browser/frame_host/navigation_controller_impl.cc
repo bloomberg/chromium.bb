@@ -825,7 +825,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       details->did_replace_entry = details->is_in_page;
-      RendererDidNavigateToExistingPage(rfh, params);
+      RendererDidNavigateToExistingPage(rfh, params, details->is_in_page);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params);
@@ -1170,7 +1170,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_in_page) {
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
@@ -1178,6 +1179,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // in https://crbug.com/596707.
 
   NavigationEntryImpl* entry;
+  NavigationHandleImpl* handle = rfh->navigation_handle();
   if (params.intended_as_new_entry) {
     // This was intended as a new entry but the pending entry was lost in the
     // meanwhile and no new page was created. We are stuck at the last committed
@@ -1189,13 +1191,17 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
     // Needed for the restore case, where the serialized NavigationEntry doesn't
     // have the SSL state.
-    NavigationHandleImpl* handle = rfh->navigation_handle();
     entry->GetSSL() = handle->ssl_status();
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
     // navigations that are EXISTING_PAGE are reloads and location.replace,
     // which land us at the last committed entry.
     entry = GetLastCommittedEntry();
+
+    // If this is an in-page navigation, then there's no SSLStatus in the
+    // NavigationHandle so don't overwrite the existing entry's SSLStatus.
+    if (!is_in_page)
+      entry->GetSSL() = handle->ssl_status();
   }
   DCHECK(entry);
 
