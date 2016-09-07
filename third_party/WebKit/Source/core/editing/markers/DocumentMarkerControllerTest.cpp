@@ -248,6 +248,7 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
 TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest)
 {
     setBodyInnerHTML("<b>foo</b>");
+    document().updateStyleAndLayout();
     Element* bElement = toElement(document().body()->firstChild());
     EphemeralRange ephemeralRange = EphemeralRange::rangeOfContents(*bElement);
     Position startBElement = toPositionInDOMTree(ephemeralRange.startPosition());

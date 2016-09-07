@@ -265,6 +265,10 @@ void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult
 
 void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckingResult>& results)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     TextCheckingRequestData requestData = m_processingRequest->data();
     if (requestData.sequence() == sequence) {
         DocumentMarker::MarkerTypes markers = DocumentMarker::SpellCheckClientMarkers();

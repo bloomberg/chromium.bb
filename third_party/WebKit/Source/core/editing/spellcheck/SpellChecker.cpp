@@ -663,6 +663,11 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = frame().document();
     DCHECK(document);
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
+
     const EphemeralRange wordRange(removeMarkerStart, removeMarkerEnd);
     document->markers().removeMarkers(wordRange, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }
@@ -858,6 +863,11 @@ void SpellChecker::removeMarkers(const VisibleSelection& selection, DocumentMark
     const EphemeralRange range = selection.toNormalizedEphemeralRange();
     if (range.isNull())
         return;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     frame().document()->markers().removeMarkers(range, markerTypes);
 }
 
