@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -24,6 +26,35 @@ static const char kStartPlayerScript[] =
     "document.getElementById('long-video').play()";
 static const char kPausePlayerScript[] =
     "document.getElementById('long-video').pause()";
+
+enum class MediaSuspend {
+  ENABLED,
+  DISABLED,
+};
+
+enum class Pipeline {
+  WMPI,
+  WMPA,
+};
+
+enum class BackgroundResuming {
+  ENABLED,
+  DISABLED,
+};
+
+enum class SessionState {
+  ACTIVE,
+  SUSPENDED,
+  INACTIVE,
+};
+
+struct VisibilityTestData {
+  MediaSuspend media_suspend;
+  BackgroundResuming background_resuming;
+  SessionState session_state_before_hide;
+  SessionState session_state_after_hide;
+};
+
 }
 
 
@@ -34,7 +65,9 @@ static const char kPausePlayerScript[] =
 // include required tests. See
 // media_session_visibility_browsertest_instances.cc for examples.
 class MediaSessionVisibilityBrowserTest
-    : public ContentBrowserTest {
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tr1::tuple<VisibilityTestData, Pipeline>> {
  public:
   MediaSessionVisibilityBrowserTest() = default;
   ~MediaSessionVisibilityBrowserTest() override = default;
@@ -79,16 +112,90 @@ class MediaSessionVisibilityBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnableDisableResumingBackgroundVideos(false);
-
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #if !defined(OS_ANDROID)
     command_line->AppendSwitch(
         switches::kEnableDefaultMediaSession);
 #endif  // !defined(OS_ANDROID)
+
+    VisibilityTestData params = GetVisibilityTestData();
+
+    if (params.media_suspend == MediaSuspend::ENABLED)
+      command_line->AppendSwitch(switches::kEnableMediaSuspend);
+    else
+      command_line->AppendSwitch(switches::kDisableMediaSuspend);
+
+#if defined(OS_ANDROID)
+    Pipeline pipeline = std::tr1::get<1>(GetParam());
+    if (pipeline == Pipeline::WMPA)
+      command_line->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
+#endif  // defined(OS_ANDROID)
+
+    if (params.background_resuming == BackgroundResuming::ENABLED) {
+      command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                      media::kResumeBackgroundVideo.name);
+    } else {
+      command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                      media::kResumeBackgroundVideo.name);
+    }
   }
 
+  const VisibilityTestData& GetVisibilityTestData() {
+    return std::tr1::get<0>(GetParam());
+  }
+
+  void StartPlayer() {
+    LoadTestPage();
+
+    LOG(INFO) << "Starting player";
+    ClearMediaSessionStateLoopRunners();
+    RunScript(kStartPlayerScript);
+    LOG(INFO) << "Waiting for session to be active";
+    WaitForMediaSessionState(MediaSession::State::ACTIVE);
+  }
+
+  // Maybe pause the player depending on whether the session state before hide
+  // is SUSPENDED.
+  void MaybePausePlayer() {
+    ASSERT_TRUE(GetVisibilityTestData().session_state_before_hide
+                != SessionState::INACTIVE);
+    if (GetVisibilityTestData().session_state_before_hide
+        == SessionState::ACTIVE)
+      return;
+
+    LOG(INFO) << "Pausing player";
+    ClearMediaSessionStateLoopRunners();
+    RunScript(kPausePlayerScript);
+    LOG(INFO) << "Waiting for session to be suspended";
+    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
+  }
+
+  void HideTab() {
+    LOG(INFO) << "Hiding the tab";
+    ClearMediaSessionStateLoopRunners();
+    web_contents_->WasHidden();
+  }
+
+  void CheckSessionStateAfterHide() {
+    MediaSession::State state_before_hide =
+        ToMediaSessionState(GetVisibilityTestData().session_state_before_hide);
+    MediaSession::State state_after_hide =
+        ToMediaSessionState(GetVisibilityTestData().session_state_after_hide);
+
+    if (state_before_hide == state_after_hide) {
+      LOG(INFO) << "Waiting for 1 second and check session state is unchanged";
+      Wait(base::TimeDelta::FromSeconds(1));
+      ASSERT_EQ(media_session_->audio_focus_state_, state_after_hide);
+    } else {
+      LOG(INFO) << "Waiting for Session to change";
+      WaitForMediaSessionState(state_after_hide);
+    }
+
+    LOG(INFO) << "Test succeeded";
+  }
+
+ private:
   void LoadTestPage() {
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     shell()->LoadURL(GetTestUrl("media/session", "media-session.html"));
@@ -123,111 +230,21 @@ class MediaSessionVisibilityBrowserTest
     media_session_state_loop_runners_[state]->Run();
   }
 
- protected:
-  void TestSessionInactiveWhenHiddenAfterContentPause() {
-    LoadTestPage();
-
-    LOG(INFO) << "Starting player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kStartPlayerScript);
-    LOG(INFO) << "Waiting for Session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Pausing player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kPausePlayerScript);
-    LOG(INFO) << "Waiting for Session to be suspended";
-    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
-
-    LOG(INFO) << "Hiding the tab";
-    ClearMediaSessionStateLoopRunners();
-    web_contents_->WasHidden();
-    LOG(INFO) << "Waiting for Session to be inactive";
-    WaitForMediaSessionState(MediaSession::State::INACTIVE);
-
-    LOG(INFO) << "Test succeeded";
-  }
-
-  void TestSessionInactiveWhenHiddenWhilePlaying() {
-    LoadTestPage();
-
-    LOG(INFO) << "Starting player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kStartPlayerScript);
-    LOG(INFO) << "Waiting for Session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Hiding the tab";
-    ClearMediaSessionStateLoopRunners();
-    web_contents_->WasHidden();
-    LOG(INFO) << "Waiting for Session to be inactive";
-    WaitForMediaSessionState(MediaSession::State::INACTIVE);
-
-    LOG(INFO) << "Test succeeded";
-  }
-
-  void TestSessionSuspendedWhenHiddenWhilePlaying() {
-    LoadTestPage();
-
-    LOG(INFO) << "Starting player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kStartPlayerScript);
-    LOG(INFO) << "Waiting for Session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Hiding the tab";
-    ClearMediaSessionStateLoopRunners();
-    web_contents_->WasHidden();
-    LOG(INFO) << "Waiting for Session to be suspended";
-    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
-
-    LOG(INFO) << "Test succeeded";
-  }
-
-  void TestSessionSuspendedWhenHiddenAfterContentPause() {
-    LoadTestPage();
-
-    LOG(INFO) << "Starting player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kStartPlayerScript);
-    LOG(INFO) << "Waiting for Session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Pausing player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kPausePlayerScript);
-    LOG(INFO) << "Waiting for Session to be suspended";
-    WaitForMediaSessionState(MediaSession::State::SUSPENDED);
-
-    LOG(INFO) << "Hiding the tab";
-    // Wait for 1 second and check the MediaSession state.
-    // No better solution till now.
-    web_contents_->WasHidden();
-    Wait(base::TimeDelta::FromSeconds(1));
-    ASSERT_EQ(media_session_->audio_focus_state_,
-              MediaSession::State::SUSPENDED);
-
-    LOG(INFO) << "Test succeeded";
-  }
-
-  void TestSessionActiveWhenHiddenWhilePlaying() {
-    LoadTestPage();
-
-    LOG(INFO) << "Starting player";
-    ClearMediaSessionStateLoopRunners();
-    RunScript(kStartPlayerScript);
-    LOG(INFO) << "Waiting for Session to be active";
-    WaitForMediaSessionState(MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Hiding the tab";
-    // Wait for 1 second and check the MediaSession state.
-    // No better solution till now.
-    web_contents_->WasHidden();
-    Wait(base::TimeDelta::FromSeconds(1));
-    ASSERT_EQ(media_session_->audio_focus_state_,
-              MediaSession::State::ACTIVE);
-
-    LOG(INFO) << "Test succeeded";
+  MediaSession::State ToMediaSessionState(SessionState state) {
+    switch (state) {
+      case SessionState::ACTIVE:
+        return MediaSession::State::ACTIVE;
+        break;
+      case SessionState::SUSPENDED:
+        return MediaSession::State::SUSPENDED;
+        break;
+      case SessionState::INACTIVE:
+        return MediaSession::State::INACTIVE;
+        break;
+      default:
+        ADD_FAILURE() << "invalid SessionState to convert";
+        return MediaSession::State::INACTIVE;
+    }
   }
 
   WebContents* web_contents_;
@@ -243,114 +260,50 @@ class MediaSessionVisibilityBrowserTest
   std::unique_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
       media_session_state_callback_subscription_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MediaSessionVisibilityBrowserTest);
 };
 
-// Helper macro to include tests from the base class.
-#define INCLUDE_TEST_FROM_BASE_CLASS(test_fixture, test_name)   \
-  IN_PROC_BROWSER_TEST_F(test_fixture, test_name) {             \
-    test_name();                                                \
-  }
+namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-// Configuration instances.
-
-// UnifiedPipeline + SuspendOnHide
-class MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide :
-      public MediaSessionVisibilityBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MediaSessionVisibilityBrowserTest::SetUpCommandLine(command_line);
-#if !defined(OS_ANDROID)
-    command_line->AppendSwitch(switches::kEnableMediaSuspend);
-#endif  // defined(OS_ANDROID)
-  }
+VisibilityTestData kTestParams[] = {
+    { MediaSuspend::ENABLED, BackgroundResuming::DISABLED,
+      SessionState::SUSPENDED, SessionState::INACTIVE },
+    { MediaSuspend::ENABLED, BackgroundResuming::DISABLED,
+      SessionState::ACTIVE, SessionState::INACTIVE },
+    { MediaSuspend::ENABLED, BackgroundResuming::ENABLED,
+      SessionState::ACTIVE, SessionState::SUSPENDED },
+    { MediaSuspend::ENABLED, BackgroundResuming::ENABLED,
+      SessionState::SUSPENDED, SessionState::SUSPENDED },
+    { MediaSuspend::DISABLED, BackgroundResuming::DISABLED,
+      SessionState::SUSPENDED, SessionState::SUSPENDED },
+    { MediaSuspend::DISABLED, BackgroundResuming::DISABLED,
+      SessionState::ACTIVE, SessionState::ACTIVE },
+    { MediaSuspend::DISABLED, BackgroundResuming::ENABLED,
+      SessionState::ACTIVE, SessionState::ACTIVE },
+    { MediaSuspend::DISABLED, BackgroundResuming::ENABLED,
+      SessionState::SUSPENDED, SessionState::SUSPENDED },
 };
 
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenWhilePlaying)
-
-IN_PROC_BROWSER_TEST_F(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
-    TestSessionSuspendedWhenHiddenWhilePlaying) {
-  EnableDisableResumingBackgroundVideos(true);
-  TestSessionSuspendedWhenHiddenWhilePlaying();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_SuspendOnHide,
-    TestSessionSuspendedWhenHiddenAfterContentPause) {
-  EnableDisableResumingBackgroundVideos(true);
-  TestSessionSuspendedWhenHiddenAfterContentPause();
-}
-
-// UnifiedPipeline + NosuspendOnHide
-class MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide :
-      public MediaSessionVisibilityBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MediaSessionVisibilityBrowserTest::SetUpCommandLine(command_line);
+Pipeline kPipelines[] = {
+    Pipeline::WMPI,
 #if defined(OS_ANDROID)
-    command_line->AppendSwitch(switches::kDisableMediaSuspend);
+    Pipeline::WMPA,
 #endif  // defined(OS_ANDROID)
-  }
 };
 
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide,
-    TestSessionSuspendedWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide,
-    TestSessionActiveWhenHiddenWhilePlaying)
+}  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_F(
-    MediaSessionVisibilityBrowserTest_UnifiedPipeline_NosuspendOnHide,
-    TestSessionActiveWhenHiddenWhilePlayingWithResume) {
-  EnableDisableResumingBackgroundVideos(true);
-  TestSessionActiveWhenHiddenWhilePlaying();
+IN_PROC_BROWSER_TEST_P(MediaSessionVisibilityBrowserTest,
+                       TestEntryPoint) {
+  StartPlayer();
+  MaybePausePlayer();
+  HideTab();
+  CheckSessionStateAfterHide();
 }
 
-#if defined(OS_ANDROID)
-// AndroidPipeline + SuspendOnHide
-class MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide :
-      public MediaSessionVisibilityBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MediaSessionVisibilityBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
-  }
-};
-
-// The following tests are flaky. Re-enabling with logging to see what's
-// happening on the bots. See crbug.com/619096.
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_SuspendOnHide,
-    TestSessionInactiveWhenHiddenWhilePlaying)
-
-// AndroidPipeline + NosuspendOnHide
-class MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide :
-      public MediaSessionVisibilityBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MediaSessionVisibilityBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
-    command_line->AppendSwitch(switches::kDisableMediaSuspend);
-  }
-};
-
-// The following tests are flaky. Re-enabling with logging to see what's
-// happening on the bots. See crbug.com/619096.
-INCLUDE_TEST_FROM_BASE_CLASS(
-    MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
-    TestSessionSuspendedWhenHiddenAfterContentPause)
-INCLUDE_TEST_FROM_BASE_CLASS(
-   MediaSessionVisibilityBrowserTest_AndroidPipeline_NosuspendOnHide,
-   TestSessionActiveWhenHiddenWhilePlaying)
-
-#endif  // defined(OS_ANDROID)
+INSTANTIATE_TEST_CASE_P(MediaSessionVisibilityBrowserTestInstances,
+                        MediaSessionVisibilityBrowserTest,
+                        ::testing::Combine(::testing::ValuesIn(kTestParams),
+                                           ::testing::ValuesIn(kPipelines)));
 
 }  // namespace content
