@@ -230,7 +230,6 @@ private:
 
     void dispatchLoadEvent();
     void clearDocument();
-    void willDestroyDocumentInFrame();
 
     void willDetachFrameHost();
 

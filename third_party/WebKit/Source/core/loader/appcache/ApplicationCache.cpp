@@ -52,11 +52,11 @@ DEFINE_TRACE(ApplicationCache)
     DOMWindowProperty::trace(visitor);
 }
 
-void ApplicationCache::willDestroyGlobalObjectInFrame()
+void ApplicationCache::frameDestroyed()
 {
     if (ApplicationCacheHost* cacheHost = applicationCacheHost())
         cacheHost->setApplicationCache(0);
-    DOMWindowProperty::willDestroyGlobalObjectInFrame();
+    DOMWindowProperty::frameDestroyed();
 }
 
 ApplicationCacheHost* ApplicationCache::applicationCacheHost() const

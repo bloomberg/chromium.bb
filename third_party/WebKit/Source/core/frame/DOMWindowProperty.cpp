@@ -44,7 +44,7 @@ DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     }
 }
 
-void DOMWindowProperty::willDestroyGlobalObjectInFrame()
+void DOMWindowProperty::frameDestroyed()
 {
     // If the property is getting this callback it must have been
     // created with a LocalFrame and it should still have it.

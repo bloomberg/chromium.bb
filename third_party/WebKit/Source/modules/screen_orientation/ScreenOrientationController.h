@@ -55,7 +55,7 @@ private:
     void pageVisibilityChanged() override;
 
     // Inherited from DOMWindowProperty.
-    void willDestroyGlobalObjectInFrame() override;
+    void frameDestroyed() override;
 
     void notifyDispatcher();
 

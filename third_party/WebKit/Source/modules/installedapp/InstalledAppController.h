@@ -34,7 +34,7 @@ private:
     InstalledAppController(LocalFrame&, WebInstalledAppClient*);
 
     // Inherited from DOMWindowProperty.
-    void willDestroyGlobalObjectInFrame() override;
+    void frameDestroyed() override;
 
     WebInstalledAppClient* m_client;
 };

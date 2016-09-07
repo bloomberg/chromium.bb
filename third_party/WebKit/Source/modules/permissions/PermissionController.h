@@ -34,7 +34,7 @@ private:
     PermissionController(LocalFrame&, WebPermissionClient*);
 
     // Inherited from DOMWindowProperty.
-    void willDestroyGlobalObjectInFrame() override;
+    void frameDestroyed() override;
 
     WebPermissionClient* m_client;
 };

@@ -455,17 +455,13 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media)
 
 void LocalDOMWindow::frameDestroyed()
 {
-    willDestroyDocumentInFrame();
+    for (const auto& domWindowProperty : m_properties)
+        domWindowProperty->frameDestroyed();
+
     resetLocation();
     m_properties.clear();
     removeAllEventListeners();
     m_frame = nullptr;
-}
-
-void LocalDOMWindow::willDestroyDocumentInFrame()
-{
-    for (const auto& domWindowProperty : m_properties)
-        domWindowProperty->willDestroyGlobalObjectInFrame();
 }
 
 void LocalDOMWindow::registerProperty(DOMWindowProperty* property)

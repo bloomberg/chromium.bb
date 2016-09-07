@@ -43,7 +43,7 @@ WebPermissionClient* PermissionController::client() const
     return m_client;
 }
 
-void PermissionController::willDestroyGlobalObjectInFrame()
+void PermissionController::frameDestroyed()
 {
     m_client = nullptr;
 }

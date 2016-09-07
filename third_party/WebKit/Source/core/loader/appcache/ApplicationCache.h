@@ -49,7 +49,7 @@ public:
     {
     }
 
-    void willDestroyGlobalObjectInFrame() override;
+    void frameDestroyed() override;
 
     unsigned short status() const;
     void update(ExceptionState&);

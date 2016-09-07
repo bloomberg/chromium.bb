@@ -71,7 +71,7 @@ private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
     // Implementation of DOMWindowProperty.
-    void willDestroyGlobalObjectInFrame() override;
+    void frameDestroyed() override;
 
     // Return the connection associated with the given |connectionClient| or
     // null if it doesn't exist.

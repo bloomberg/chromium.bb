@@ -133,7 +133,7 @@ void PresentationController::registerConnection(PresentationConnection* connecti
     m_connections.add(connection);
 }
 
-void PresentationController::willDestroyGlobalObjectInFrame()
+void PresentationController::frameDestroyed()
 {
     if (m_client) {
         m_client->setController(nullptr);

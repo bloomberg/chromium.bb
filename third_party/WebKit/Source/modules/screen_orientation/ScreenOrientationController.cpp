@@ -199,7 +199,7 @@ bool ScreenOrientationController::hasLastData()
     return true;
 }
 
-void ScreenOrientationController::willDestroyGlobalObjectInFrame()
+void ScreenOrientationController::frameDestroyed()
 {
     m_client = nullptr;
 }
