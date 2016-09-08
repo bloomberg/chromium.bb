@@ -44,7 +44,6 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--force",
       "--output_manifest"
     ],
     "cwd": "[BUILDER_CACHE]/Linux_remote_run_Tester",
