@@ -121,12 +121,6 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     return snippets_fetcher_.get();
   }
 
-  // Returns a reason why the service is disabled, or DisabledReason::NONE
-  // if it's not.
-  DisabledReason disabled_reason() const {
-    return snippets_status_service_->disabled_reason();
-  }
-
   // (Re)schedules the periodic fetching of snippets. This is necessary because
   // the schedule depends on the time of day.
   void RescheduleFetching();

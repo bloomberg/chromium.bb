@@ -42,8 +42,6 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   // called when a significant change in state is detected.
   void Init(const DisabledReasonChangeCallback& callback);
 
-  DisabledReason disabled_reason() const { return disabled_reason_; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest,
                            SigninStateCompatibility);
