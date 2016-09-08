@@ -326,6 +326,10 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     // that case, and nothing in the text field will be removed.
     unsigned selectionLength = 0;
     if (focused()) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
+
         selectionLength = computeLengthForSubmission(document().frame()->selection().selectedText());
     }
     DCHECK_GE(currentLength, selectionLength);

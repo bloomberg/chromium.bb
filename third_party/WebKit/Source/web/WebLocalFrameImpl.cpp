@@ -1117,6 +1117,10 @@ WebString WebLocalFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     String text = frame()->selection().selectedText(TextIteratorEmitsObjectReplacementCharacter);
 #if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(text);

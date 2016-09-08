@@ -419,6 +419,10 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     // that case, and nothing in the text field will be removed.
     unsigned selectionLength = 0;
     if (element().focused()) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        element().document().updateStyleAndLayoutIgnorePendingStylesheets();
+
         selectionLength = element().document().frame()->selection().selectedText().length();
     }
     DCHECK_GE(oldLength, selectionLength);
