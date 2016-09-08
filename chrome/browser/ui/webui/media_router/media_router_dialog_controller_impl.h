@@ -33,7 +33,7 @@ class MediaRouterDialogControllerImpl :
   // Returns nullptr if there is no dialog.
   content::WebContents* GetMediaRouterDialog() const;
 
-  // |action| must always be non-null.
+  // Sets the action to notify when a dialog gets shown or hidden.
   void SetMediaRouterAction(const base::WeakPtr<MediaRouterAction>& action);
 
   // MediaRouterDialogController:

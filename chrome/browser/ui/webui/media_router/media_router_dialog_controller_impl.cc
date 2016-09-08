@@ -173,8 +173,7 @@ WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
 
 void MediaRouterDialogControllerImpl::SetMediaRouterAction(
     const base::WeakPtr<MediaRouterAction>& action) {
-  if (!action_)
-    action_ = action;
+  action_ = action;
 }
 
 bool MediaRouterDialogControllerImpl::IsShowingMediaRouterDialog() const {
