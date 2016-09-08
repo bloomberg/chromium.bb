@@ -1034,6 +1034,28 @@ TEST_F(BindTest, CapturelessLambda) {
   EXPECT_EQ(42, x);
 }
 
+TEST_F(BindTest, Cancellation) {
+  EXPECT_CALL(no_ref_, VoidMethod0()).Times(2);
+
+  WeakPtrFactory<NoRef> weak_factory(&no_ref_);
+  Closure cb = Bind(&NoRef::VoidMethod0, weak_factory.GetWeakPtr());
+  Closure cb2 = Bind(cb);
+
+  EXPECT_FALSE(cb.IsCancelled());
+  EXPECT_FALSE(cb2.IsCancelled());
+
+  cb.Run();
+  cb2.Run();
+
+  weak_factory.InvalidateWeakPtrs();
+
+  EXPECT_TRUE(cb.IsCancelled());
+  EXPECT_TRUE(cb2.IsCancelled());
+
+  cb.Run();
+  cb2.Run();
+}
+
 // Callback construction and assignment tests.
 //   - Construction from an InvokerStorageHolder should not cause ref/deref.
 //   - Assignment from other callback should only cause one ref

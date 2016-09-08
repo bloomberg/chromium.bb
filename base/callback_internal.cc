@@ -10,9 +10,12 @@ namespace base {
 namespace internal {
 
 BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
-                             void (*destructor)(BindStateBase*))
+                             void (*destructor)(BindStateBase*),
+                             bool (*is_cancelled)(const BindStateBase*))
       : polymorphic_invoke_(polymorphic_invoke),
-        ref_count_(0), destructor_(destructor) {}
+        ref_count_(0),
+        destructor_(destructor),
+        is_cancelled_(is_cancelled) {}
 
 void BindStateBase::AddRef() {
   AtomicRefCountInc(&ref_count_);
@@ -32,6 +35,11 @@ void CallbackBase<CopyMode::MoveOnly>::Reset() {
   // NULL the bind_state_ last, since it may be holding the last ref to whatever
   // object owns us, and we may be deleted after that.
   bind_state_ = nullptr;
+}
+
+bool CallbackBase<CopyMode::MoveOnly>::IsCancelled() const {
+  DCHECK(bind_state_);
+  return bind_state_->IsCancelled();
 }
 
 bool CallbackBase<CopyMode::MoveOnly>::EqualsInternal(

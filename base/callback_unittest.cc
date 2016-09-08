@@ -22,20 +22,26 @@ void NopInvokeFunc() {}
 // chance of colliding with another instantiation and breaking the
 // one-definition-rule.
 struct FakeBindState1 : internal::BindStateBase {
-  FakeBindState1() : BindStateBase(&NopInvokeFunc, &Destroy) {}
+  FakeBindState1() : BindStateBase(&NopInvokeFunc, &Destroy, &IsCancelled) {}
  private:
   ~FakeBindState1() {}
   static void Destroy(internal::BindStateBase* self) {
     delete static_cast<FakeBindState1*>(self);
   }
+  static bool IsCancelled(const internal::BindStateBase*) {
+    return false;
+  }
 };
 
 struct FakeBindState2 : internal::BindStateBase {
-  FakeBindState2() : BindStateBase(&NopInvokeFunc, &Destroy) {}
+  FakeBindState2() : BindStateBase(&NopInvokeFunc, &Destroy, &IsCancelled) {}
  private:
   ~FakeBindState2() {}
   static void Destroy(internal::BindStateBase* self) {
     delete static_cast<FakeBindState2*>(self);
+  }
+  static bool IsCancelled(const internal::BindStateBase*) {
+    return false;
   }
 };
 

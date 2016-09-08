@@ -36,13 +36,18 @@ class BASE_EXPORT BindStateBase {
 
  protected:
   BindStateBase(InvokeFuncStorage polymorphic_invoke,
-                void (*destructor)(BindStateBase*));
+                void (*destructor)(BindStateBase*),
+                bool (*is_cancelled)(const BindStateBase*));
   ~BindStateBase() = default;
 
  private:
   friend class scoped_refptr<BindStateBase>;
   template <CopyMode copy_mode>
   friend class CallbackBase;
+
+  bool IsCancelled() const {
+    return is_cancelled_(this);
+  }
 
   void AddRef();
   void Release();
@@ -57,6 +62,7 @@ class BASE_EXPORT BindStateBase {
 
   // Pointer to a function that will properly destroy |this|.
   void (*destructor_)(BindStateBase*);
+  bool (*is_cancelled_)(const BindStateBase*);
 
   DISALLOW_COPY_AND_ASSIGN(BindStateBase);
 };
@@ -74,6 +80,10 @@ class BASE_EXPORT CallbackBase<CopyMode::MoveOnly> {
   // Returns true if Callback is null (doesn't refer to anything).
   bool is_null() const { return bind_state_.get() == NULL; }
   explicit operator bool() const { return !is_null(); }
+
+  // Returns true if the callback invocation will be nop due to an cancellation.
+  // It's invalid to call this on uninitialized callback.
+  bool IsCancelled() const;
 
   // Returns the Callback into an uninitialized state.
   void Reset();
