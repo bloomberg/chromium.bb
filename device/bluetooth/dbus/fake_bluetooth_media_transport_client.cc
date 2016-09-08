@@ -323,8 +323,8 @@ void FakeBluetoothMediaTransportClient::AcquireInternal(
   DCHECK((fds[0] > kInvalidFd) && (fds[1] > kInvalidFd));
   transport->input_fd.reset(new base::File(fds[0]));
 
-  dbus::FileDescriptor out_fd(fds[1]);
-  callback.Run(&out_fd, kDefaultReadMtu, kDefaultWriteMtu);
+  base::ScopedFD out_fd(fds[1]);
+  callback.Run(std::move(out_fd), kDefaultReadMtu, kDefaultWriteMtu);
   SetState(endpoint_path, "active");
 }
 

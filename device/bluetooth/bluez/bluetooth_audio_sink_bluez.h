@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
@@ -137,7 +136,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkBlueZ
 
   // Called when the file descriptor, read MTU and write MTU are retrieved
   // successfully using |transport_path_|.
-  void OnAcquireSucceeded(dbus::FileDescriptor* fd,
+  void OnAcquireSucceeded(base::ScopedFD fd,
                           const uint16_t read_mtu,
                           const uint16_t write_mtu);
 

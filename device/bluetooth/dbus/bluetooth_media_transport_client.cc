@@ -223,7 +223,7 @@ class BluetoothMediaTransportClientImpl
                         dbus::Response* response) {
     DCHECK(response);
 
-    dbus::FileDescriptor fd;
+    base::ScopedFD fd;
     uint16_t read_mtu;
     uint16_t write_mtu;
 
@@ -231,15 +231,14 @@ class BluetoothMediaTransportClientImpl
     dbus::MessageReader reader(response);
     if (reader.PopFileDescriptor(&fd) && reader.PopUint16(&read_mtu) &&
         reader.PopUint16(&write_mtu)) {
-      fd.CheckValidity();
       DCHECK(fd.is_valid());
 
-      VLOG(1) << "OnAcquireSuccess - fd: " << fd.value()
+      VLOG(1) << "OnAcquireSuccess - fd: " << fd.get()
               << ", read MTU: " << read_mtu << ", write MTU: " << write_mtu;
 
       // The ownership of the file descriptor is transferred to the user
       // application.
-      callback.Run(&fd, read_mtu, write_mtu);
+      callback.Run(std::move(fd), read_mtu, write_mtu);
       return;
     }
 

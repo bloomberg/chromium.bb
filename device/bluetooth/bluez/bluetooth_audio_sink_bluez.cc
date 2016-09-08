@@ -26,7 +26,6 @@ namespace {
 // TODO(mcchou): Add the constant to dbus/service_constants.h.
 const char kBluetoothAudioSinkServicePath[] = "/org/chromium/AudioSink";
 
-const int kInvalidFd = -1;
 const uint16_t kInvalidReadMtu = 0;
 const uint16_t kInvalidWriteMtu = 0;
 
@@ -490,12 +489,10 @@ void BluetoothAudioSinkBlueZ::OnUnregisterFailed(
   error_callback.Run(BluetoothAudioSink::ERROR_NOT_UNREGISTERED);
 }
 
-void BluetoothAudioSinkBlueZ::OnAcquireSucceeded(dbus::FileDescriptor* fd,
+void BluetoothAudioSinkBlueZ::OnAcquireSucceeded(base::ScopedFD fd,
                                                  const uint16_t read_mtu,
                                                  const uint16_t write_mtu) {
-  CHECK(fd);
-  fd->CheckValidity();
-  CHECK(fd->is_valid() && fd->value() != kInvalidFd);
+  CHECK(fd.is_valid());
   CHECK_GT(read_mtu, kInvalidReadMtu);
   CHECK_GT(write_mtu, kInvalidWriteMtu);
 
@@ -510,9 +507,9 @@ void BluetoothAudioSinkBlueZ::OnAcquireSucceeded(dbus::FileDescriptor* fd,
   write_mtu_ = write_mtu;
 
   // Avoids closing the same file descriptor caused by reassignment.
-  if (!file_.get() || file_->GetPlatformFile() != fd->value()) {
+  if (!file_.get() || file_->GetPlatformFile() != fd.get()) {
     // Takes ownership of the file descriptor.
-    file_.reset(new base::File(fd->TakeValue()));
+    file_.reset(new base::File(fd.release()));
     DCHECK(file_->IsValid());
     VLOG(1) << "OnAcquireSucceeded - update file";
   }

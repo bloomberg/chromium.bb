@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -102,9 +102,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaTransportClient
 
   // The AcquireCallback is used by |Acquire| method of media tansport API tp
   // indicate the success of the method.
-  typedef base::Callback<void(dbus::FileDescriptor* fd,
+  typedef base::Callback<void(base::ScopedFD fd,
                               const uint16_t read_mtu,
-                              const uint16_t write_mtu)> AcquireCallback;
+                              const uint16_t write_mtu)>
+      AcquireCallback;
 
   // Adds and removes observers for events on all remote Media Transports. Check
   // the |object_path| parameter of observer methods to determine which Media
