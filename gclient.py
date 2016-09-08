@@ -214,7 +214,7 @@ class DependencySettings(GClientKeywords):
   """Immutable configuration settings."""
   def __init__(
       self, parent, url, safesync_url, managed, custom_deps, custom_vars,
-      custom_hooks, deps_file, should_process):
+      custom_hooks, deps_file, should_process, relative):
     GClientKeywords.__init__(self)
 
     # These are not mutable:
@@ -230,6 +230,11 @@ class DependencySettings(GClientKeywords):
     # recursion limit and controls gclient's behavior so it does not misbehave.
     self._managed = managed
     self._should_process = should_process
+    # If this is a recursed-upon sub-dependency, and the parent has
+    # use_relative_paths set, then this dependency should check out its own
+    # dependencies relative to that parent's path for this, rather than
+    # relative to the .gclient file.
+    self._relative = relative
     # This is a mutable value which has the list of 'target_os' OSes listed in
     # the current deps file.
     self.local_target_os = None
@@ -325,11 +330,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
   def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
-               custom_vars, custom_hooks, deps_file, should_process):
+               custom_vars, custom_hooks, deps_file, should_process,
+               relative):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, url, safesync_url, managed, custom_deps, custom_vars,
-        custom_hooks, deps_file, should_process)
+        custom_hooks, deps_file, should_process, relative)
 
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
@@ -686,24 +692,35 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # the dictionary using paths relative to the directory containing
     # the DEPS file.  Also update recursedeps if use_relative_paths is
     # enabled.
+    # If the deps file doesn't set use_relative_paths, but the parent did
+    # (and therefore set self.relative on this Dependency object), then we
+    # want to modify the deps and recursedeps by prepending the parent
+    # directory of this dependency.
     use_relative_paths = local_scope.get('use_relative_paths', False)
+    rel_prefix = None
     if use_relative_paths:
+      rel_prefix = self.name
+    elif self._relative:
+      rel_prefix = os.path.dirname(self.name)
+    if rel_prefix:
       logging.warning('use_relative_paths enabled.')
       rel_deps = {}
       for d, url in deps.items():
         # normpath is required to allow DEPS to use .. in their
         # dependency local path.
-        rel_deps[os.path.normpath(os.path.join(self.name, d))] = url
-      logging.warning('Updating deps by prepending %s.', self.name)
+        rel_deps[os.path.normpath(os.path.join(rel_prefix, d))] = url
+      logging.warning('Updating deps by prepending %s.', rel_prefix)
       deps = rel_deps
 
       # Update recursedeps if it's set.
       if self.recursedeps is not None:
-        logging.warning('Updating recursedeps by prepending %s.', self.name)
+        logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
         for depname, options in self.recursedeps.iteritems():
-          rel_deps[os.path.normpath(os.path.join(self.name, depname))] = options
+          rel_deps[
+              os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
+
 
     if 'allowed_hosts' in local_scope:
       try:
@@ -728,7 +745,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           deps_file = ent['deps_file']
       deps_to_add.append(Dependency(
           self, name, url, None, None, None, self.custom_vars, None,
-          deps_file, should_process))
+          deps_file, should_process, use_relative_paths))
     deps_to_add.sort(key=lambda x: x.name)
 
     # override named sets of hooks by the custom hooks
@@ -1217,7 +1234,7 @@ solutions = [
     # are processed.
     self._recursion_limit = 2
     Dependency.__init__(self, None, None, None, None, True, None, None, None,
-                        'unused', True)
+                        'unused', True, None)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -1308,7 +1325,8 @@ want to set 'managed': False in .gclient.
             s.get('custom_vars', {}),
             s.get('custom_hooks', []),
             s.get('deps_file', 'DEPS'),
-            True))
+            True,
+            None))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
