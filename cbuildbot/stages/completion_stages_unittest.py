@@ -754,6 +754,8 @@ class PublishUprevChangesStageTest(
     self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
                                            staging_branch=None)
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedChrome'))
+    metadata_dict = self._run.attrs.metadata.GetDict()
+    self.assertFalse(metadata_dict.has_key('UprevvedAndroid'))
 
   def testCheckSlaveUploadPrebuiltsTest(self):
     """Tests for CheckSlaveUploadPrebuiltsTest."""
@@ -814,3 +816,20 @@ class PublishUprevChangesStageTest(
     # No stage information for slave_c
     self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(
         mock_cidb, build_id))
+
+  def testAndroidPush(self):
+    """Test values for PublishUprevChanges with Android PFQ."""
+    self.build_type = constants.ANDROID_PFQ_TYPE
+    self._Prepare(bot_id='master-android-pfq',
+                  extra_config={'build_type': constants.BUILD_FROM_SOURCE_TYPE,
+                                'push_overlays': constants.PUBLIC_OVERLAYS,
+                                'master': True},
+                  extra_cmd_args=['--android_rev',
+                                  constants.ANDROID_REV_LATEST])
+    self._run.options.prebuilts = True
+    self.RunStage()
+    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
+                                           staging_branch=None)
+    self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedAndroid'))
+    metadata_dict = self._run.attrs.metadata.GetDict()
+    self.assertFalse(metadata_dict.has_key('UprevvedChrome'))
