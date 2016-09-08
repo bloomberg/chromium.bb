@@ -2548,6 +2548,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "asuka-release-afdo": {
