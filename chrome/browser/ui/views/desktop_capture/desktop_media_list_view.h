@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/browser/media/desktop_media_list_observer.h"
+#include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "ui/views/view.h"

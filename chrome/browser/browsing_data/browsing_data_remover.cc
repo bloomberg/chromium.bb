@@ -118,8 +118,8 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc_log_list.h"
-#include "chrome/browser/media/webrtc_log_util.h"
+#include "chrome/browser/media/webrtc/webrtc_log_list.h"
+#include "chrome/browser/media/webrtc/webrtc_log_util.h"
 #endif
 
 using base::UserMetricsAction;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 
-#include "chrome/browser/media/desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 #include "ui/accessibility/ax_view_state.h"

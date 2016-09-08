@@ -8,7 +8,7 @@
 #include "ash/common/media_delegate.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 
 class MediaDelegateChromeOS : public ash::MediaDelegate,
                               MediaCaptureDevicesDispatcher::Observer {

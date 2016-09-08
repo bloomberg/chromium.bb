@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/audio_debug_recordings_handler.h"
-#include "chrome/browser/media/webrtc_event_log_handler.h"
-#include "chrome/browser/media/webrtc_logging_handler_host.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_handler.h"
+#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
 #include "chrome/common/extensions/api/webrtc_logging_private.h"
 

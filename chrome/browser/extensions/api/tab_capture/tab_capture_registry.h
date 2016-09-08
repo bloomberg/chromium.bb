@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/common/extensions/api/tab_capture.h"
 #include "content/public/browser/media_request_state.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

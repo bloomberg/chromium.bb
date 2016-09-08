@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/media/desktop_media_list.h"
-#include "chrome/browser/media/desktop_media_picker.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_bridge.h"
 
 // A controller for the Desktop Media Picker. Presents the user with a list of

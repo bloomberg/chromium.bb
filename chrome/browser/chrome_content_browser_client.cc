@@ -49,7 +49,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/font_family_cache.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -316,8 +316,8 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/audio_debug_recordings_handler.h"
-#include "chrome/browser/media/webrtc_event_log_handler.h"
-#include "chrome/browser/media/webrtc_logging_handler_host.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_handler.h"
+#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)

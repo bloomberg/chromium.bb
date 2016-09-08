@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/media/desktop_media_list.h"
-#include "chrome/browser/media/desktop_media_list_observer.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 
 // The combined desktop media list of one or multiple input DesktopMediaLists.
 // The combined list is the concatenation of the input lists. The front of

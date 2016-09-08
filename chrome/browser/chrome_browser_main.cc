@@ -71,7 +71,7 @@
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -256,7 +256,7 @@
 #endif  // defined(ENABLE_RLZ)
 
 #if defined(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc_log_util.h"
+#include "chrome/browser/media/webrtc/webrtc_log_util.h"
 #endif  // defined(ENABLE_WEBRTC)
 
 #if defined(USE_AURA)

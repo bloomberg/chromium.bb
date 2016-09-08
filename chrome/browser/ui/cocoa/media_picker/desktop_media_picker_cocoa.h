@@ -8,7 +8,7 @@
 #include <memory>
 
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/media/desktop_media_picker.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker.h"
 
 @class DesktopMediaPickerControllerDeprecated;
 @class DesktopMediaPickerController;

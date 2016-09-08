@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/media/desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
 
 // Stores the data representing a |DesktopMediaPicker| source for displaying in
 // a |IKImageBrowserView|. Implements the |IKImageBrowserItem| informal
