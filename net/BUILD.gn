@@ -1959,6 +1959,7 @@ fuzzer_test("net_websocket_frame_parser_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_websocket_frame_parser_fuzzer.dict"
+  libfuzzer_options = [ "max_len=256" ]
 }
 
 fuzzer_test("net_http_chunked_decoder_fuzzer") {
