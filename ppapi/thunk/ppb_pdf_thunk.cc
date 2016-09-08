@@ -160,24 +160,34 @@ void SetAccessibilityPageInfo(
   enter.functions()->SetAccessibilityPageInfo(page_info, text_runs, chars);
 }
 
+void SetCrashData(PP_Instance instance,
+                  const char* pdf_url,
+                  const char* top_level_url) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetCrashData(pdf_url, top_level_url);
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
-  &GetFontFileWithFallback,
-  &GetFontTableForPrivateFontFile,
-  &SearchString,
-  &DidStartLoading,
-  &DidStopLoading,
-  &SetContentRestriction,
-  &UserMetricsRecordAction,
-  &HasUnsupportedFeature,
-  &SaveAs,
-  &Print,
-  &IsFeatureEnabled,
-  &SetSelectedText,
-  &SetLinkUnderCursor,
-  &GetV8ExternalSnapshotData,
-  &SetAccessibilityViewportInfo,
-  &SetAccessibilityDocInfo,
-  &SetAccessibilityPageInfo
+    &GetFontFileWithFallback,
+    &GetFontTableForPrivateFontFile,
+    &SearchString,
+    &DidStartLoading,
+    &DidStopLoading,
+    &SetContentRestriction,
+    &UserMetricsRecordAction,
+    &HasUnsupportedFeature,
+    &SaveAs,
+    &Print,
+    &IsFeatureEnabled,
+    &SetSelectedText,
+    &SetLinkUnderCursor,
+    &GetV8ExternalSnapshotData,
+    &SetAccessibilityViewportInfo,
+    &SetAccessibilityDocInfo,
+    &SetAccessibilityPageInfo,
+    &SetCrashData,
 };
 
 }  // namespace

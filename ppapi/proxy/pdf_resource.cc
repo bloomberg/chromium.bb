@@ -10,11 +10,13 @@
 #include <string.h>
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gin/v8_initializer.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/var.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
@@ -188,6 +190,13 @@ void PDFResource::SetAccessibilityPageInfo(
       chars, chars + page_info->char_count);
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityPageInfo(
                      *page_info, text_run_vector, char_vector));
+}
+
+void PDFResource::SetCrashData(const char* pdf_url, const char* top_level_url) {
+  if (pdf_url)
+    base::debug::SetCrashKeyValue("subresource_url", pdf_url);
+  if (top_level_url)
+    PluginGlobals::Get()->SetActiveURL(top_level_url);
 }
 
 }  // namespace proxy

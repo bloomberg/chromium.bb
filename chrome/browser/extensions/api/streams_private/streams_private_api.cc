@@ -85,7 +85,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   if (handler->HasPlugin()) {
     GURL handler_url(Extension::GetBaseURLFromExtensionId(extension_id).spec() +
                      handler->handler_url());
-    auto tab_id = ExtensionTabUtil::GetTabId(web_contents);
+    int tab_id = ExtensionTabUtil::GetTabId(web_contents);
     std::unique_ptr<StreamContainer> stream_container(new StreamContainer(
         std::move(stream), tab_id, embedded, handler_url, extension_id));
     MimeHandlerStreamManager::Get(browser_context_)

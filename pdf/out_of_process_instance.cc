@@ -343,6 +343,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 
   const char* stream_url = nullptr;
   const char* original_url = nullptr;
+  const char* top_level_url = nullptr;
   const char* headers = nullptr;
   for (uint32_t i = 0; i < argc; ++i) {
     bool success = true;
@@ -350,6 +351,8 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       original_url = argv[i];
     else if (strcmp(argn[i], "stream-url") == 0)
       stream_url = argv[i];
+    else if (strcmp(argn[i], "top-level-url") == 0)
+      top_level_url = argv[i];
     else if (strcmp(argn[i], "headers") == 0)
       headers = argv[i];
     else if (strcmp(argn[i], "background-color") == 0)
@@ -376,6 +379,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 
   LoadUrl(stream_url);
   url_ = original_url;
+  pp::PDF::SetCrashData(GetPluginInstance(), original_url, top_level_url);
   return engine_->New(original_url, headers);
 }
 

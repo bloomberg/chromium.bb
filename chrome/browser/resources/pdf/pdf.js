@@ -172,8 +172,12 @@ function PDFViewer(browserApi) {
   this.plugin_.setAttribute('background-color', backgroundColor);
   this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
 
-  if (!this.browserApi_.getStreamInfo().embedded)
+  if (this.browserApi_.getStreamInfo().embedded) {
+    this.plugin_.setAttribute('top-level-url',
+                              this.browserApi_.getStreamInfo().tabUrl);
+  } else {
     this.plugin_.setAttribute('full-frame', '');
+  }
   document.body.appendChild(this.plugin_);
 
   // Setup the button event listeners.

@@ -183,4 +183,14 @@ void PDF::SetAccessibilityPageInfo(
   }
 }
 
+// static
+void PDF::SetCrashData(const InstanceHandle& instance,
+                       const char* pdf_url,
+                       const char* top_level_url) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetCrashData(instance.pp_instance(), pdf_url,
+                                           top_level_url);
+  }
+}
+
 }  // namespace pp

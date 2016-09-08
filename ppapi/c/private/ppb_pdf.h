@@ -157,6 +157,11 @@ struct PPB_PDF {
       struct PP_PrivateAccessibilityPageInfo* page_info,
       struct PP_PrivateAccessibilityTextRunInfo text_runs[],
       struct PP_PrivateAccessibilityCharInfo chars[]);
+
+  // Sends information about the PDF's URL and the embedder's URL.
+  void (*SetCrashData)(PP_Instance instance,
+                       const char* pdf_url,
+                       const char* top_level_url);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

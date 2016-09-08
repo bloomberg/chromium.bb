@@ -152,15 +152,24 @@ function createBrowserApiForMimeHandlerView() {
   return new Promise(function(resolve, reject) {
     chrome.mimeHandlerPrivate.getStreamInfo(resolve);
   }).then(function(streamInfo) {
+    let promises = [];
     let manageZoom = !streamInfo.embedded && streamInfo.tabId != -1;
-    return new Promise(function(resolve, reject) {
-      if (!manageZoom) {
-        resolve();
-        return;
-      }
-      chrome.tabs.setZoomSettings(
-          streamInfo.tabId, {mode: 'manual', scope: 'per-tab'}, resolve);
-    }).then(function() { return BrowserApi.create(streamInfo, manageZoom); });
+    if (streamInfo.tabId != -1) {
+      promises.push(new Promise(function(resolve) {
+        chrome.tabs.get(streamInfo.tabId, resolve);
+      }).then(function(tab) {
+        if (tab)
+          streamInfo.tabUrl = tab.url;
+      }));
+    }
+    if (manageZoom) {
+      promises.push(new Promise(function(resolve) {
+        chrome.tabs.setZoomSettings(
+            streamInfo.tabId, {mode: 'manual', scope: 'per-tab'}, resolve);
+      }));
+    }
+    return Promise.all(promises).then(
+        function() { return BrowserApi.create(streamInfo, manageZoom); });
   });
 }
 
@@ -185,6 +194,7 @@ function createBrowserApiForStandaloneExtension() {
     }
     chrome.tabs.getCurrent(function(tab) {
       streamInfo.tabId = tab.id;
+      streamInfo.tabUrl = tab.url;
       resolve();
     });
   }).then(function() { return BrowserApi.create(streamInfo, false); });
