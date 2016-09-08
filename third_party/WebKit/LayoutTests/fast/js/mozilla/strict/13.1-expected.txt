@@ -116,10 +116,10 @@ PASS Function("'use strict'; function f(arguments){}") threw exception of type S
 PASS !!Function("function f(arguments){}") is true
 PASS true === true
 PASS Function("'use strict'; function f([arguments]){}") threw exception of type SyntaxError.
-PASS Function("function f([arguments]){}") threw exception of type SyntaxError.
+PASS !!Function("function f([arguments]){}") is true
 PASS true === true
 PASS Function("'use strict'; function f({x:arguments}){}") threw exception of type SyntaxError.
-PASS Function("function f({x:arguments}){}") threw exception of type SyntaxError.
+PASS !!Function("function f({x:arguments}){}") is true
 PASS true === true
 PASS Function("'use strict'; function arguments(){}") threw exception of type SyntaxError.
 PASS !!Function("function arguments(){}") is true
@@ -140,10 +140,10 @@ PASS Function("'use strict'; (function f(arguments){})") threw exception of type
 PASS !!Function("(function f(arguments){})") is true
 PASS true === true
 PASS Function("'use strict'; (function f([arguments]){})") threw exception of type SyntaxError.
-PASS Function("(function f([arguments]){})") threw exception of type SyntaxError.
+PASS !!Function("(function f([arguments]){})") is true
 PASS true === true
 PASS Function("'use strict'; (function f({x:arguments}){})") threw exception of type SyntaxError.
-PASS Function("(function f({x:arguments}){})") threw exception of type SyntaxError.
+PASS !!Function("(function f({x:arguments}){})") is true
 PASS true === true
 PASS Function("'use strict'; (function arguments(){})") threw exception of type SyntaxError.
 PASS !!Function("(function arguments(){})") is true
@@ -176,10 +176,10 @@ PASS Function("'use strict'; ({set x(arguments){}})") threw exception of type Sy
 PASS !!Function("({set x(arguments){}})") is true
 PASS true === true
 PASS Function("'use strict'; ({set x([arguments]){}})") threw exception of type SyntaxError.
-PASS Function("({set x([arguments]){}})") threw exception of type SyntaxError.
+PASS !!Function("({set x([arguments]){}})") is true
 PASS true === true
 PASS Function("'use strict'; ({set x({x:arguments}){}})") threw exception of type SyntaxError.
-PASS Function("({set x({x:arguments}){}})") threw exception of type SyntaxError.
+PASS !!Function("({set x({x:arguments}){}})") is true
 PASS true === true
 PASS Function("'use strict'; ({set x(arguments){\"use strict\";}})") threw exception of type SyntaxError.
 PASS Function("({set x(arguments){\"use strict\";}})") threw exception of type SyntaxError.
