@@ -278,7 +278,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
       DVLOG(4) << __func__ << ": invalid constraint byte=" << elem[i];
       return false;
     }
-    constraint_flags[i] = constr_byte;
+    constraint_flags[i - 4] = constr_byte;
   }
 
   return true;
