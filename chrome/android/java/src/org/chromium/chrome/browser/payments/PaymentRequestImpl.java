@@ -490,7 +490,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         LineItem uiTotal = new LineItem(
-                details.total.label, totalCurrency, formatter.format(details.total.amount.value));
+                details.total.label, formatter.getFormattedCurrencyCode(),
+                formatter.format(details.total.amount.value));
 
         List<LineItem> uiLineItems = getValidatedLineItems(details.displayItems, totalCurrency,
                 formatter);

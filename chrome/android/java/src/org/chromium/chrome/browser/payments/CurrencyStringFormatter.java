@@ -24,10 +24,23 @@ public class CurrencyStringFormatter {
     // Max currency code length. Maximum length of currency code can be at most 2048.
     private static final int MAX_CURRENCY_CODE_LEN = 2048;
 
+    // Currency code exceeding 6 chars will be ellipsized during formatting for display.
+    private static final int MAX_CURRENCY_CHARS = 6;
+
+    // Unicode character for ellipsis.
+    private static final String ELLIPSIS = "\u2026";
+
     // Formatting constants.
     private static final int DIGIT_GROUPING_SIZE = 3;
 
     private final Pattern mAmountValuePattern;
+
+    /**
+     * The currency formatted for display. Currency can be any string of at most
+     * 2048 characters.Currency code more than 6 character is formatted to first
+     * 5 characters and ellipsis.
+     */
+    public final String mFormattedCurrencyCode;
 
     /**
      * The symbol for the currency specified on the bill. For example, the symbol for "USD" is "$".
@@ -65,6 +78,10 @@ public class CurrencyStringFormatter {
         assert userLocale != null : "userLocale should not be null";
 
         mAmountValuePattern = Pattern.compile(AMOUNT_VALUE_PATTERN);
+
+        mFormattedCurrencyCode = currencyCode.length() <= MAX_CURRENCY_CHARS
+                ? currencyCode
+                : currencyCode.substring(0, MAX_CURRENCY_CHARS - 1) + ELLIPSIS;
 
         String currencySymbol;
         int defaultFractionDigits;
@@ -119,6 +136,11 @@ public class CurrencyStringFormatter {
      */
     public boolean isValidAmountCurrencyCode(String amountCurrencyCode) {
         return amountCurrencyCode != null && amountCurrencyCode.length() <= MAX_CURRENCY_CODE_LEN;
+    }
+
+    /** @return The currency code formatted for display. */
+    public String getFormattedCurrencyCode() {
+        return mFormattedCurrencyCode;
     }
 
     /**

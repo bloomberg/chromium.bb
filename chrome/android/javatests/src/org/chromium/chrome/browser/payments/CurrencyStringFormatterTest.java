@@ -84,4 +84,26 @@ public class CurrencyStringFormatterTest extends InstrumentationTestCase {
         CurrencyStringFormatter formatter = new CurrencyStringFormatter("PKR", new Locale("en-US"));
         assertEquals("5", formatter.format("5"));
     }
+
+    @SmallTest
+    public void testCurrency6Chars() throws Exception {
+        CurrencyStringFormatter formatter =
+                new CurrencyStringFormatter("ABCDEF", new Locale("en-US"));
+        assertEquals("ABCDEF", formatter.getFormattedCurrencyCode());
+    }
+
+    @SmallTest
+    public void testCurrencyEllipsized() throws Exception {
+        CurrencyStringFormatter formatter =
+                new CurrencyStringFormatter("ABCDEFG", new Locale("en-US"));
+        // Currency code more than 6 character is formatted to first 5 characters and ellipsis.
+        // "\u2026" is unicode for ellipsis.
+        assertEquals("ABCDE\u2026", formatter.getFormattedCurrencyCode());
+    }
+
+    @SmallTest
+    public void testCurrencyEmpty() throws Exception {
+        CurrencyStringFormatter formatter = new CurrencyStringFormatter("", new Locale("en-US"));
+        assertEquals("", formatter.getFormattedCurrencyCode());
+    }
 }
