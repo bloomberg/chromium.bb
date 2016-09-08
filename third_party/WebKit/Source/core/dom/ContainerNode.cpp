@@ -154,16 +154,32 @@ template <typename Functor>
 void ContainerNode::insertNodeVector(const NodeVector& targets, Node* next, const Functor& mutator)
 {
     InspectorInstrumentation::willInsertDOMNode(this);
-    for (const auto& targetNode : targets) {
-        DCHECK(targetNode);
-        {
-            EventDispatchForbiddenScope assertNoEventDispatch;
-            ScriptForbiddenScope forbidScript;
-
-            if (!mutator(*this, *targetNode, next))
+    NodeVector postInsertionNotificationTargets;
+    {
+        EventDispatchForbiddenScope assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
+        for (const auto& targetNode : targets) {
+            DCHECK(targetNode);
+            Node& child = *targetNode;
+            // TODO(tkent): mutator never returns false because scripts don't run in the loop.
+            if (!mutator(*this, child, next))
                 break;
+            ChildListMutationScope(*this).childAdded(child);
+            if (document().containsV1ShadowTree())
+                child.checkSlotChangeAfterInserted();
+            InspectorInstrumentation::didInsertDOMNode(&child);
+            notifyNodeInsertedInternal(child, postInsertionNotificationTargets);
         }
-        updateTreeAfterInsertion(*targetNode);
+    }
+    for (const auto& targetNode : targets)
+        childrenChanged(ChildrenChange::forInsertion(*targetNode, ChildrenChangeSourceAPI));
+    for (const auto& descendant : postInsertionNotificationTargets) {
+        if (descendant->isConnected())
+            descendant->didNotifySubtreeInsertionsToDocument();
+    }
+    for (const auto& targetNode : targets) {
+        if (targetNode->parentNode() == this)
+            dispatchChildInsertionEvents(*targetNode);
     }
     dispatchSubtreeModifiedEvent();
 }
@@ -1168,15 +1184,6 @@ static void dispatchChildRemovalEvents(Node& child)
         for (; c; c = NodeTraversal::next(*c, &child))
             c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemovedFromDocument, false));
     }
-}
-
-void ContainerNode::updateTreeAfterInsertion(Node& child)
-{
-    ChildListMutationScope(*this).childAdded(child);
-
-    notifyNodeInserted(child);
-
-    dispatchChildInsertionEvents(child);
 }
 
 bool ContainerNode::hasRestyleFlagInternal(DynamicRestyleFlags mask) const

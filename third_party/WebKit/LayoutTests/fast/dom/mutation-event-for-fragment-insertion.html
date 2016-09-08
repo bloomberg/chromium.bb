@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+function createContainerNode(test, expectedLength) {
+  var div = document.createElement('div');
+  var oldChild = document.createElement('span');
+  div.appendChild(oldChild);
+  document.body.appendChild(div);
+  div.dispatchCount = 0;
+  div.addEventListener('DOMNodeInserted', () => {
+    assert_equals(div.childNodes.length, expectedLength);
+    if (++div.dispatchCount == 2)
+      test.done();
+  }, false);
+  return div;
+}
+
+function createFragment() {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(document.createElement('span'));
+  fragment.appendChild(document.createElement('span'));
+  return fragment;
+}
+
+var test1 = async_test('appendChild: DOMNodeInserted event should be dispatched after all nodes in a DocumentFragment were inserted.');
+test1.step(() => {
+  createContainerNode(test1, 3).appendChild(createFragment());
+});
+
+var test2 = async_test('insertBefore: DOMNodeInserted event should be dispatched after all nodes in a DocumentFragment were inserted.');
+test2.step(() => {
+  createContainerNode(test2, 3).insertBefore(createFragment(), null);
+});
+
+var test3 = async_test('replaceChild: DOMNodeInserted event should be dispatched after all nodes in a DocumentFragment were inserted.');
+test3.step(() => {
+  var div = createContainerNode(test3, 2);
+  div.replaceChild(createFragment(), div.firstChild);
+});
+</script>
+</body>

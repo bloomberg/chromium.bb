@@ -249,7 +249,6 @@ private:
     friend class AdoptAndAppendChild;
     void insertBeforeCommon(Node& nextChild, Node& newChild);
     void appendChildCommon(Node& child);
-    void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
     void willRemoveChild(Node& child);
     void removeDetachedChildrenInContainer(ContainerNode&);
