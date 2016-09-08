@@ -120,22 +120,17 @@ def IsInClosurizedNamespace(symbol, closurized_namespaces):
   return False
 
 
-def MatchAlias(context):
-  """Match an alias statement (some identifier assigned to a variable).
-
-  Example alias: var MyClass = proj.longNamespace.MyClass.
+def _GetVarAssignmentTokens(context):
+  """Returns the tokens from context if it is a var assignment.
 
   Args:
-    context: An EcmaContext of type EcmaContext.VAR.
+    context: An EcmaContext.
 
   Returns:
-    If a valid alias, returns a tuple of alias and symbol, otherwise None.
+    If a var assignment, the tokens contained within it w/o the trailing
+    semicolon.
   """
   if context.type != ecmametadatapass.EcmaContext.VAR:
-    return
-
-  # The var's parent is a STATEMENT, which should be directly below goog.scope.
-  if not IsGoogScopeBlock(context.parent.parent):
     return
 
   # Get the tokens in this statement.
@@ -149,8 +144,6 @@ def MatchAlias(context):
   is_non_code_type = lambda t: t.type not in JavaScriptTokenType.NON_CODE_TYPES
   code_tokens = filter(is_non_code_type, statement_tokens)
 
-  # This section identifies statements of the alias form "var alias = symbol".
-
   # Pop off the semicolon if present.
   if code_tokens and code_tokens[-1].IsType(JavaScriptTokenType.SEMICOLON):
     code_tokens.pop()
@@ -158,15 +151,56 @@ def MatchAlias(context):
   if len(code_tokens) < 4:
     return
 
-  # Verify that this is of the form "var lvalue = identifier;".
-  # The identifier may span multiple lines and could be multiple tokens.
   if (code_tokens[0].IsKeyword('var') and
       code_tokens[1].IsType(JavaScriptTokenType.SIMPLE_LVALUE) and
-      code_tokens[2].IsOperator('=') and
-      all(t.IsType(JavaScriptTokenType.IDENTIFIER) for t in code_tokens[3:])):
+      code_tokens[2].IsOperator('=')):
+    return code_tokens
+
+
+def MatchAlias(context):
+  """Match an alias statement (some identifier assigned to a variable).
+
+  Example alias: var MyClass = proj.longNamespace.MyClass.
+
+  Args:
+    context: An EcmaContext of type EcmaContext.VAR.
+
+  Returns:
+    If a valid alias, returns a tuple of alias and symbol, otherwise None.
+  """
+  code_tokens = _GetVarAssignmentTokens(context)
+  if code_tokens is None:
+    return
+
+  if all(tokenutil.IsIdentifierOrDot(t) for t in code_tokens[3:]):
+    # var Foo = bar.Foo;
     alias, symbol = code_tokens[1], code_tokens[3]
-    # Mark both tokens as an alias definition to avoid counting them as usages.
+    # Mark both tokens as an alias definition to not count them as usages.
     alias.metadata.is_alias_definition = True
     symbol.metadata.is_alias_definition = True
-
     return alias.string, tokenutil.GetIdentifierForToken(symbol)
+
+
+def MatchModuleAlias(context):
+  """Match an alias statement in a goog.module style import.
+
+  Example alias: var MyClass = goog.require('proj.longNamespace.MyClass').
+
+  Args:
+    context: An EcmaContext.
+
+  Returns:
+    If a valid alias, returns a tuple of alias and symbol, otherwise None.
+  """
+  code_tokens = _GetVarAssignmentTokens(context)
+  if code_tokens is None:
+    return
+
+  if(code_tokens[3].IsType(JavaScriptTokenType.IDENTIFIER) and
+     code_tokens[3].string == 'goog.require'):
+    # var Foo = goog.require('bar.Foo');
+    alias = code_tokens[1]
+    symbol = tokenutil.GetStringAfterToken(code_tokens[3])
+    if symbol:
+      alias.metadata.is_alias_definition = True
+      return alias.string, symbol

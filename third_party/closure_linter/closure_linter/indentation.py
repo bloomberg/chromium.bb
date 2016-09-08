@@ -181,21 +181,11 @@ class IndentationRules(object):
     elif token_type == Type.KEYWORD and token.string in ('case', 'default'):
       self._Add(self._PopTo(Type.START_BLOCK))
 
-    elif is_first and token.string == '.':
-      # This token should have been on the previous line, so treat it as if it
-      # was there.
-      info = TokenInfo(token)
-      info.line_number = token.line_number - 1
-      self._Add(info)
-
     elif token_type == Type.SEMICOLON:
       self._PopTransient()
 
-    not_binary_operator = (token_type != Type.OPERATOR or
-                           token.metadata.IsUnaryOperator())
-    not_dot = token.string != '.'
-    if is_first and not_binary_operator and not_dot and token.type not in (
-        Type.COMMENT, Type.DOC_PREFIX, Type.STRING_TEXT):
+    if (is_first and
+        token_type not in (Type.COMMENT, Type.DOC_PREFIX, Type.STRING_TEXT)):
       if flags.FLAGS.debug_indentation:
         print 'Line #%d: stack %r' % (token.line_number, stack)
 
@@ -222,8 +212,7 @@ class IndentationRules(object):
         indentation_errors.append([
             errors.WRONG_INDENTATION,
             'Wrong indentation: expected any of {%s} but got %d' % (
-                ', '.join(
-                    ['%d' % x for x in expected]), actual),
+                ', '.join('%d' % x for x in expected if x < 80), actual),
             token,
             Position(actual, expected[0])])
         self._start_index_offset[token.line_number] = expected[0] - actual
@@ -254,6 +243,9 @@ class IndentationRules(object):
     # Add some tokens only if they appear at the end of the line.
     is_last = self._IsLastCodeInLine(token)
     if is_last:
+      next_code_token = tokenutil.GetNextCodeToken(token)
+      # Increase required indentation if this is an overlong wrapped statement
+      # ending in an operator.
       if token_type == Type.OPERATOR:
         if token.string == ':':
           if stack and stack[-1].token.string == '?':
@@ -274,7 +266,6 @@ class IndentationRules(object):
             # When in an object literal, acts as operator indicating line
             # continuations.
             self._Add(TokenInfo(token))
-            pass
           else:
             # ':' might also be a statement label, no effect on indentation in
             # this case.
@@ -288,9 +279,10 @@ class IndentationRules(object):
             self._Add(TokenInfo(token))
           elif token.metadata.context.type != Context.PARAMETERS:
             self._PopTransient()
-
-      elif (token.string.endswith('.')
-            and token_type in (Type.IDENTIFIER, Type.NORMAL)):
+      # Increase required indentation if this is the end of a statement that's
+      # continued with an operator on the next line (e.g. the '.').
+      elif (next_code_token and next_code_token.type == Type.OPERATOR and
+            not next_code_token.metadata.IsUnaryOperator()):
         self._Add(TokenInfo(token))
       elif token_type == Type.PARAMETERS and token.string.endswith(','):
         # Parameter lists.
@@ -376,6 +368,13 @@ class IndentationRules(object):
         override_is_hard_stop = (token_info.overridden_by and
                                  self._IsHardStop(
                                      token_info.overridden_by.token))
+        if token.type == Type.START_PAREN and token.previous:
+          # For someFunction(...) we allow to indent at the beginning of the
+          # identifier +4
+          prev = token.previous
+          if (prev.type == Type.IDENTIFIER and
+              prev.line_number == token.line_number):
+            hard_stops.add(prev.start_index + 4)
         if not override_is_hard_stop:
           start_index = token.start_index
           if token.line_number in self._start_index_offset:
@@ -457,6 +456,31 @@ class IndentationRules(object):
       if token.type not in Type.NON_CODE_TYPES:
         return False
 
+  def _AllFunctionPropertyAssignTokens(self, start_token, end_token):
+    """Checks if tokens are (likely) a valid function property assignment.
+
+    Args:
+      start_token: Start of the token range.
+      end_token: End of the token range.
+
+    Returns:
+      True if all tokens between start_token and end_token are legal tokens
+      within a function declaration and assignment into a property.
+    """
+    for token in tokenutil.GetTokenRange(start_token, end_token):
+      fn_decl_tokens = (Type.FUNCTION_DECLARATION,
+                        Type.PARAMETERS,
+                        Type.START_PARAMETERS,
+                        Type.END_PARAMETERS,
+                        Type.END_PAREN)
+      if (token.type not in fn_decl_tokens and
+          token.IsCode() and
+          not tokenutil.IsIdentifierOrDot(token) and
+          not token.IsAssignment() and
+          not (token.type == Type.OPERATOR and token.string == ',')):
+        return False
+    return True
+
   def _Add(self, token_info):
     """Adds the given token info to the stack.
 
@@ -468,11 +492,35 @@ class IndentationRules(object):
       return
 
     if token_info.is_block or token_info.token.type == Type.START_PAREN:
-      token_info.overridden_by = (
-          tokenutil.GoogScopeOrNoneFromStartBlock(token_info.token))
-      index = 1
-      while index <= len(self._stack):
-        stack_info = self._stack[-index]
+      scope_token = tokenutil.GoogScopeOrNoneFromStartBlock(token_info.token)
+      token_info.overridden_by = TokenInfo(scope_token) if scope_token else None
+
+      if (token_info.token.type == Type.START_BLOCK and
+          token_info.token.metadata.context.type == Context.BLOCK):
+        # Handle function() {} assignments: their block contents get special
+        # treatment and are allowed to just indent by two whitespace.
+        # For example
+        # long.long.name = function(
+        #     a) {
+        # In this case the { and the = are on different lines.  But the
+        # override should still apply for all previous stack tokens that are
+        # part of an assignment of a block.
+
+        has_assignment = any(x for x in self._stack if x.token.IsAssignment())
+        if has_assignment:
+          last_token = token_info.token.previous
+          for stack_info in reversed(self._stack):
+            if (last_token and
+                not self._AllFunctionPropertyAssignTokens(stack_info.token,
+                                                          last_token)):
+              break
+            stack_info.overridden_by = token_info
+            stack_info.is_permanent_override = True
+            last_token = stack_info.token
+
+      index = len(self._stack) - 1
+      while index >= 0:
+        stack_info = self._stack[index]
         stack_token = stack_info.token
 
         if stack_info.line_number == token_info.line_number:
@@ -492,21 +540,9 @@ class IndentationRules(object):
             close_block = token_info.token.metadata.context.end_token
             stack_info.is_permanent_override = close_block and (
                 close_block.line_number != token_info.token.line_number)
-        elif (token_info.token.type == Type.START_BLOCK and
-              token_info.token.metadata.context.type == Context.BLOCK and
-              (stack_token.IsAssignment() or
-               stack_token.type == Type.IDENTIFIER)):
-          # When starting a function block, the override can transcend lines.
-          # For example
-          # long.long.name = function(
-          #     a) {
-          # In this case the { and the = are on different lines.  But the
-          # override should still apply.
-          stack_info.overridden_by = token_info
-          stack_info.is_permanent_override = True
         else:
           break
-        index += 1
+        index -= 1
 
     self._stack.append(token_info)
 

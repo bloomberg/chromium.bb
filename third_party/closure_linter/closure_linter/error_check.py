@@ -89,6 +89,8 @@ def ShouldCheck(rule):
   Returns:
     True if the rule should be checked according to the flags, otherwise False.
   """
+  if 'no_' + rule in FLAGS.jslint_error:
+    return False
   if rule in FLAGS.jslint_error or Rule.ALL in FLAGS.jslint_error:
     return True
   # Checks strict rules.

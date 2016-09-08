@@ -171,6 +171,9 @@ class RequireProvideSorter(object):
             'goog.provide', 'goog.require', 'goog.setTestOnly']:
           # These 3 identifiers are at the top of the file. So if any other
           # identifier is encountered, return.
+          # TODO(user): Once it's decided what ordering goog.require
+          # should use, add 'goog.module' to the list above and implement the
+          # decision.
           break
       token = token.next
 

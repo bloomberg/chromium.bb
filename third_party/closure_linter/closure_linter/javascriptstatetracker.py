@@ -35,7 +35,8 @@ class JsDocFlag(statetracker.DocFlag):
       including braces.
     type_end_token: The last token specifying the flag JS type,
       including braces.
-    type: The JavaScript type spec.
+    type: The type spec string.
+    jstype: The type spec, a TypeAnnotation instance.
     name_token: The token specifying the flag name.
     name: The flag name
     description_start_token: The first token in the description.
@@ -52,14 +53,6 @@ class JsDocFlag(statetracker.DocFlag):
       'meaning', 'provideGoog', 'throws'])
 
   LEGAL_DOC = EXTENDED_DOC | statetracker.DocFlag.LEGAL_DOC
-
-  def __init__(self, flag_token):
-    """Creates the JsDocFlag object and attaches it to the given start token.
-
-    Args:
-      flag_token: The starting token of the flag.
-    """
-    statetracker.DocFlag.__init__(self, flag_token)
 
 
 class JavaScriptStateTracker(statetracker.StateTracker):

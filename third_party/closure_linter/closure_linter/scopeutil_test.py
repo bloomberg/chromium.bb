@@ -70,44 +70,56 @@ def _FindFirstContextOfType(token, context_type):
       return context
 
 
-def _WrapWithGoogScope(script):
-  """Wraps source code in a goog.scope statement."""
-  return 'goog.scope(function() {\n' + script + '\n});'
+def _ParseAssignment(script):
+  start_token = testutil.TokenizeSourceAndRunEcmaPass(script)
+  statement = _FindFirstContextOfType(
+      start_token, ecmametadatapass.EcmaContext.VAR)
+  return statement
 
 
 class StatementTest(googletest.TestCase):
 
   def assertAlias(self, expected_match, script):
-    start_token = testutil.TokenizeSourceAndRunEcmaPass(script)
-    statement = _FindFirstContextOfType(
-        start_token, ecmametadatapass.EcmaContext.VAR)
+    statement = _ParseAssignment(script)
     match = scopeutil.MatchAlias(statement)
+    self.assertEquals(expected_match, match)
+
+  def assertModuleAlias(self, expected_match, script):
+    statement = _ParseAssignment(script)
+    match = scopeutil.MatchModuleAlias(statement)
     self.assertEquals(expected_match, match)
 
   def testSimpleAliases(self):
     self.assertAlias(
         ('foo', 'goog.foo'),
-        _WrapWithGoogScope('var foo = goog.foo;'))
+        'var foo = goog.foo;')
 
     self.assertAlias(
         ('foo', 'goog.foo'),
-        _WrapWithGoogScope('var foo = goog.foo'))  # No semicolon
+        'var foo = goog.foo')  # No semicolon
 
   def testAliasWithComment(self):
     self.assertAlias(
         ('Component', 'goog.ui.Component'),
-        _WrapWithGoogScope('var Component = /* comment */ goog.ui.Component;'))
+        'var Component = /* comment */ goog.ui.Component;')
 
   def testMultilineAlias(self):
     self.assertAlias(
         ('Component', 'goog.ui.Component'),
-        _WrapWithGoogScope('var Component = \n  goog.ui.\n  Component;'))
+        'var Component = \n  goog.ui.\n  Component;')
 
   def testNonSymbolAliasVarStatements(self):
-    self.assertAlias(None, _WrapWithGoogScope('var foo = 3;'))
-    self.assertAlias(None, _WrapWithGoogScope('var foo = function() {};'))
-    self.assertAlias(None, _WrapWithGoogScope('for(var foo = bar;;){}'))
-    self.assertAlias(None, _WrapWithGoogScope('var foo = bar ? baz : qux;'))
+    self.assertAlias(None, 'var foo = 3;')
+    self.assertAlias(None, 'var foo = function() {};')
+    self.assertAlias(None, 'var foo = bar ? baz : qux;')
+
+  def testModuleAlias(self):
+    self.assertModuleAlias(
+        ('foo', 'goog.foo'),
+        'var foo = goog.require("goog.foo");')
+    self.assertModuleAlias(
+        None,
+        'var foo = goog.require(notastring);')
 
 
 class ScopeBlockTest(googletest.TestCase):

@@ -18,6 +18,7 @@
 
 __author__ = 'robbyw@google.com (Robert Walker)'
 
+import StringIO
 import sys
 
 import gflags as flags
@@ -30,6 +31,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_list('additional_extensions', None, 'List of additional file '
                   'extensions (not js) that should be treated as '
                   'JavaScript files.')
+flags.DEFINE_boolean('dry_run', False, 'Do not modify the file, only print it.')
 
 
 def main(argv=None):
@@ -47,11 +49,17 @@ def main(argv=None):
 
   files = fileflags.GetFileList(argv, 'JavaScript', suffixes)
 
-  fixer = error_fixer.ErrorFixer()
+  output_buffer = None
+  if FLAGS.dry_run:
+    output_buffer = StringIO.StringIO()
+
+  fixer = error_fixer.ErrorFixer(output_buffer)
 
   # Check the list of files.
   for filename in files:
     runner.Run(filename, fixer)
+    if FLAGS.dry_run:
+      print output_buffer.getvalue()
 
 
 if __name__ == '__main__':

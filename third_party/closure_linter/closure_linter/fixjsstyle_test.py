@@ -35,12 +35,20 @@ flags.FLAGS.closurized_namespaces = ('goog', 'dummy')
 class FixJsStyleTest(googletest.TestCase):
   """Test case to for gjslint auto-fixing."""
 
+  def setUp(self):
+    flags.FLAGS.dot_on_next_line = True
+
+  def tearDown(self):
+    flags.FLAGS.dot_on_next_line = False
+
   def testFixJsStyle(self):
     test_cases = [
         ['fixjsstyle.in.js', 'fixjsstyle.out.js'],
         ['indentation.js', 'fixjsstyle.indentation.out.js'],
-        ['fixjsstyle.html.in.html', 'fixjsstyle.html.out.html']]
+        ['fixjsstyle.html.in.html', 'fixjsstyle.html.out.html'],
+        ['fixjsstyle.oplineend.in.js', 'fixjsstyle.oplineend.out.js']]
     for [running_input_file, running_output_file] in test_cases:
+      print 'Checking %s vs %s' % (running_input_file, running_output_file)
       input_filename = None
       golden_filename = None
       current_filename = None
@@ -70,7 +78,213 @@ class FixJsStyleTest(googletest.TestCase):
       actual.seek(0)
       expected = open(golden_filename, 'r')
 
+      # Uncomment to generate new golden files and run
+      # open('/'.join(golden_filename.split('/')[4:]), 'w').write(actual.read())
+      # actual.seek(0)
+
       self.assertEqual(actual.readlines(), expected.readlines())
+
+  def testAddProvideFirstLine(self):
+    """Tests handling of case where goog.provide is added."""
+    original = [
+        'dummy.bb.cc = 1;',
+        ]
+
+    expected = [
+        'goog.provide(\'dummy.bb\');',
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testAddRequireFirstLine(self):
+    """Tests handling of case where goog.require is added."""
+    original = [
+        'a = dummy.bb.cc;',
+        ]
+
+    expected = [
+        'goog.require(\'dummy.bb\');',
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testDeleteProvideAndAddProvideFirstLine(self):
+    """Tests handling of case where goog.provide is deleted and added.
+
+       Bug 14832597.
+    """
+    original = [
+        'goog.provide(\'dummy.aa\');',
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    expected = [
+        'goog.provide(\'dummy.bb\');',
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        'goog.provide(\'dummy.aa\');',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testDeleteProvideAndAddRequireFirstLine(self):
+    """Tests handling where goog.provide is deleted and goog.require added.
+
+       Bug 14832597.
+    """
+    original = [
+        'goog.provide(\'dummy.aa\');',
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    expected = [
+        'goog.require(\'dummy.bb\');',
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        'goog.provide(\'dummy.aa\');',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testDeleteRequireAndAddRequireFirstLine(self):
+    """Tests handling of case where goog.require is deleted and added.
+
+       Bug 14832597.
+    """
+    original = [
+        'goog.require(\'dummy.aa\');',
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    expected = [
+        'goog.require(\'dummy.bb\');',
+        '',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        'goog.require(\'dummy.aa\');',
+        'a = dummy.bb.cc;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testDeleteRequireAndAddProvideFirstLine(self):
+    """Tests handling where goog.require is deleted and goog.provide added.
+
+       Bug 14832597.
+    """
+    original = [
+        'goog.require(\'dummy.aa\');',
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    expected = [
+        'goog.provide(\'dummy.bb\');',
+        '',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+    original = [
+        'goog.require(\'dummy.aa\');',
+        'dummy.bb.cc = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testMultipleProvideInsert(self):
+    original = [
+        'goog.provide(\'dummy.bb\');',
+        'goog.provide(\'dummy.dd\');',
+        '',
+        'dummy.aa.ff = 1;',
+        'dummy.bb.ff = 1;',
+        'dummy.cc.ff = 1;',
+        'dummy.dd.ff = 1;',
+        'dummy.ee.ff = 1;',
+        ]
+
+    expected = [
+        'goog.provide(\'dummy.aa\');',
+        'goog.provide(\'dummy.bb\');',
+        'goog.provide(\'dummy.cc\');',
+        'goog.provide(\'dummy.dd\');',
+        'goog.provide(\'dummy.ee\');',
+        '',
+        'dummy.aa.ff = 1;',
+        'dummy.bb.ff = 1;',
+        'dummy.cc.ff = 1;',
+        'dummy.dd.ff = 1;',
+        'dummy.ee.ff = 1;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
+
+  def testMultipleRequireInsert(self):
+    original = [
+        'goog.require(\'dummy.bb\');',
+        'goog.require(\'dummy.dd\');',
+        '',
+        'a = dummy.aa.ff;',
+        'b = dummy.bb.ff;',
+        'c = dummy.cc.ff;',
+        'd = dummy.dd.ff;',
+        'e = dummy.ee.ff;',
+        ]
+
+    expected = [
+        'goog.require(\'dummy.aa\');',
+        'goog.require(\'dummy.bb\');',
+        'goog.require(\'dummy.cc\');',
+        'goog.require(\'dummy.dd\');',
+        'goog.require(\'dummy.ee\');',
+        '',
+        'a = dummy.aa.ff;',
+        'b = dummy.bb.ff;',
+        'c = dummy.cc.ff;',
+        'd = dummy.dd.ff;',
+        'e = dummy.ee.ff;',
+        ]
+
+    self._AssertFixes(original, expected, include_header=False)
 
   def testUnsortedRequires(self):
     """Tests handling of unsorted goog.require statements without header.

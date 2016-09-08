@@ -23,6 +23,7 @@
 import unittest as googletest
 from closure_linter import error_fixer
 from closure_linter import testutil
+from closure_linter import tokenutil
 
 
 class ErrorFixerTest(googletest.TestCase):
@@ -48,6 +49,25 @@ class ErrorFixerTest(googletest.TestCase):
     self.error_fixer._DeleteTokens(start_token, 3)
 
     self.assertEqual(fourth_token, self.error_fixer._file_token)
+
+  def DoTestFixJsDocPipeNull(self, expected, original):
+    _, comments = testutil.ParseFunctionsAndComments(
+        '/** @param {%s} */' % original)
+    jstype = comments[0].GetDocFlags()[0].jstype
+    self.error_fixer.HandleFile('unittest', None)
+    self.error_fixer._FixJsDocPipeNull(jstype)
+    self.assertEquals(expected, repr(jstype))
+    result = tokenutil.TokensToString(jstype.FirstToken()).strip('} */')
+    self.assertEquals(expected, result)
+
+  def testFixJsDocPipeNull(self):
+    self.DoTestFixJsDocPipeNull('?Object', 'Object|null')
+    self.DoTestFixJsDocPipeNull('function(?Object)', 'function(Object|null)')
+    self.DoTestFixJsDocPipeNull('function(?Object=)',
+                                'function(Object|null=)')
+    self.DoTestFixJsDocPipeNull(
+        'function(?(Object)=,null=,?(Object)=):string',
+        'function((Object|null)=,null=,(Object|null)=):string')
 
 _TEST_SCRIPT = """\
 var x = 3;

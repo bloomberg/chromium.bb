@@ -560,11 +560,11 @@ def GetIdentifierStart(token):
 
   while (previous_code_token and (
       previous_code_token.IsType(JavaScriptTokenType.IDENTIFIER) or
-      _IsDot(previous_code_token))):
+      IsDot(previous_code_token))):
     start_token = previous_code_token
     previous_code_token = GetPreviousCodeToken(previous_code_token)
 
-  if _IsDot(start_token):
+  if IsDot(start_token):
     return None
 
   return start_token
@@ -593,7 +593,7 @@ def GetIdentifierForToken(token):
   prev_token = token.previous
   while prev_token:
     if (prev_token.IsType(JavaScriptTokenType.IDENTIFIER) or
-        _IsDot(prev_token)):
+        IsDot(prev_token)):
       return None
 
     if (prev_token.IsType(tokens.TokenType.WHITESPACE) or
@@ -629,19 +629,15 @@ def GetIdentifierForToken(token):
     for t in token.next:
       last_symbol_token = symbol_tokens[-1]
 
-      # An identifier is part of the previous symbol if it has a trailing
+      # A dot is part of the previous symbol.
+      if IsDot(t):
+        symbol_tokens.append(t)
+        continue
+
+      # An identifier is part of the previous symbol if the previous one was a
       # dot.
       if t.type in identifier_types:
-        if last_symbol_token.string.endswith('.'):
-          symbol_tokens.append(t)
-          continue
-        else:
-          break
-
-      # A dot is part of the previous symbol if it does not have a trailing
-      # dot.
-      if _IsDot(t):
-        if not last_symbol_token.string.endswith('.'):
+        if IsDot(last_symbol_token):
           symbol_tokens.append(t)
           continue
         else:
@@ -682,13 +678,21 @@ def GetStringAfterToken(token):
   """
   string_token = SearchUntil(token, JavaScriptTokenType.STRING_TEXT,
                              [JavaScriptTokenType.SINGLE_QUOTE_STRING_END,
-                              JavaScriptTokenType.DOUBLE_QUOTE_STRING_END])
+                              JavaScriptTokenType.DOUBLE_QUOTE_STRING_END,
+                              JavaScriptTokenType.TEMPLATE_STRING_END])
   if string_token:
     return string_token.string
   else:
     return None
 
 
-def _IsDot(token):
+def IsDot(token):
   """Whether the token represents a "dot" operator (foo.bar)."""
-  return token.type is tokens.TokenType.NORMAL and token.string == '.'
+  return token.type is JavaScriptTokenType.OPERATOR and token.string == '.'
+
+
+def IsIdentifierOrDot(token):
+  """Whether the token is either an identifier or a '.'."""
+  return (token.type in [JavaScriptTokenType.IDENTIFIER,
+                         JavaScriptTokenType.SIMPLE_LVALUE] or
+          IsDot(token))

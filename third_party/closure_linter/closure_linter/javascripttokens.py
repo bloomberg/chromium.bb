@@ -34,6 +34,8 @@ class JavaScriptTokenType(tokens.TokenType):
   SINGLE_QUOTE_STRING_END = "string'"
   DOUBLE_QUOTE_STRING_START = '"string'
   DOUBLE_QUOTE_STRING_END = 'string"'
+  TEMPLATE_STRING_START = '`string'
+  TEMPLATE_STRING_END = 'string`'
   STRING_TEXT = 'string'
   START_BLOCK = '{'
   END_BLOCK = '}'
@@ -53,6 +55,9 @@ class JavaScriptTokenType(tokens.TokenType):
   DOC_START_BRACE = 'doc {'
   DOC_END_BRACE = 'doc }'
   DOC_PREFIX = 'comment prefix: * '
+  DOC_TYPE_START_BLOCK = 'Type <'
+  DOC_TYPE_END_BLOCK = 'Type >'
+  DOC_TYPE_MODIFIER = 'modifier'
   SIMPLE_LVALUE = 'lvalue='
   KEYWORD = 'keyword'
   OPERATOR = 'operator'
@@ -60,16 +65,20 @@ class JavaScriptTokenType(tokens.TokenType):
 
   STRING_TYPES = frozenset([
       SINGLE_QUOTE_STRING_START, SINGLE_QUOTE_STRING_END,
-      DOUBLE_QUOTE_STRING_START, DOUBLE_QUOTE_STRING_END, STRING_TEXT])
+      DOUBLE_QUOTE_STRING_START, DOUBLE_QUOTE_STRING_END,
+      TEMPLATE_STRING_START, TEMPLATE_STRING_END, STRING_TEXT])
 
-  COMMENT_TYPES = frozenset([START_SINGLE_LINE_COMMENT, COMMENT,
+  COMMENT_TYPES = frozenset([
+      START_SINGLE_LINE_COMMENT, COMMENT,
       START_BLOCK_COMMENT, START_DOC_COMMENT,
       END_BLOCK_COMMENT, END_DOC_COMMENT,
       DOC_START_BRACE, DOC_END_BRACE,
-      DOC_FLAG, DOC_INLINE_FLAG, DOC_PREFIX])
+      DOC_FLAG, DOC_INLINE_FLAG, DOC_PREFIX,
+      DOC_TYPE_START_BLOCK, DOC_TYPE_END_BLOCK, DOC_TYPE_MODIFIER])
 
   FLAG_DESCRIPTION_TYPES = frozenset([
-      DOC_INLINE_FLAG, COMMENT, DOC_START_BRACE, DOC_END_BRACE])
+      DOC_INLINE_FLAG, COMMENT, DOC_START_BRACE, DOC_END_BRACE,
+      DOC_TYPE_START_BLOCK, DOC_TYPE_END_BLOCK, DOC_TYPE_MODIFIER])
 
   FLAG_ENDING_TYPES = frozenset([DOC_FLAG, END_DOC_COMMENT])
 
@@ -86,7 +95,8 @@ class JavaScriptTokenType(tokens.TokenType):
   # x.y or [1, 2], or (10 + 9) or {a: 10}.
   EXPRESSION_ENDER_TYPES = [tokens.TokenType.NORMAL, IDENTIFIER, NUMBER,
                             SIMPLE_LVALUE, END_BRACKET, END_PAREN, END_BLOCK,
-                            SINGLE_QUOTE_STRING_END, DOUBLE_QUOTE_STRING_END]
+                            SINGLE_QUOTE_STRING_END, DOUBLE_QUOTE_STRING_END,
+                            TEMPLATE_STRING_END]
 
 
 class JavaScriptToken(tokens.Token):

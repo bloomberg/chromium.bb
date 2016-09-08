@@ -255,6 +255,14 @@ def main(argv=None):
   if FLAGS.time:
     start_time = time.time()
 
+  # Emacs sets the environment variable INSIDE_EMACS in the subshell.
+  # Request Unix mode as emacs will expect output to be in Unix format
+  # for integration.
+  # See https://www.gnu.org/software/emacs/manual/html_node/emacs/
+  # Interactive-Shell.html
+  if 'INSIDE_EMACS' in os.environ:
+    FLAGS.unix_mode = True
+
   suffixes = ['.js']
   if FLAGS.additional_extensions:
     suffixes += ['.%s' % ext for ext in FLAGS.additional_extensions]

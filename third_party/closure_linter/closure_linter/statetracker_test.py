@@ -110,6 +110,7 @@ class DocCommentTest(googletest.TestCase):
      */""")
     flag = comment.GetFlag('param')
     self.assertEquals('string', flag.type)
+    self.assertEquals('string', flag.jstype.ToString())
     self.assertEquals('[name]', flag.name)
 
   def _ParseComment(self, script):

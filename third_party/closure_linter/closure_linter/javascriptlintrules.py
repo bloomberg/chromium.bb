@@ -62,22 +62,6 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
     self._HandleError(errors.MISSING_PARAMETER_DOCUMENTATION,
                       'Missing docs for parameter: "%s"' % param_name, token)
 
-  def __ContainsRecordType(self, token):
-    """Check whether the given token contains a record type.
-
-    Args:
-      token: The token being checked
-
-    Returns:
-      True if the token contains a record type, False otherwise.
-    """
-    # If we see more than one left-brace in the string of an annotation token,
-    # then there's a record type in there.
-    return (
-        token and token.type == Type.DOC_FLAG and
-        token.attached_object.type is not None and
-        token.attached_object.type.find('{') != token.string.rfind('{'))
-
   # pylint: disable=too-many-statements
   def CheckToken(self, token, state):
     """Checks a token, given the current parser_state, for warnings and errors.
@@ -86,14 +70,6 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
       token: The current token under consideration
       state: parser_state object that indicates the current state in the page
     """
-
-    # For @param don't ignore record type.
-    if (self.__ContainsRecordType(token) and
-        token.attached_object.flag_type != 'param'):
-      # We should bail out and not emit any warnings for this annotation.
-      # TODO(nicksantos): Support record types for real.
-      state.GetDocComment().Invalidate()
-      return
 
     # Call the base class's CheckToken function.
     super(JavaScriptLintRules, self).CheckToken(token, state)
@@ -110,10 +86,9 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
         identifier = token.string
         if identifier.endswith('_') and not identifier.endswith('__'):
           doc_comment = state.GetDocComment()
-          suppressed = (doc_comment and doc_comment.HasFlag('suppress') and
-                        (doc_comment.GetFlag('suppress').type == 'underscore' or
-                         doc_comment.GetFlag('suppress').type ==
-                         'unusedPrivateMembers'))
+          suppressed = doc_comment and (
+              'underscore' in doc_comment.suppressions or
+              'unusedPrivateMembers' in doc_comment.suppressions)
           if not suppressed:
             # Look for static members defined on a provided namespace.
             if namespaces_info:
@@ -151,14 +126,12 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
         if flag.type is not None and flag.name is not None:
           if error_check.ShouldCheck(Rule.VARIABLE_ARG_MARKER):
             # Check for variable arguments marker in type.
-            if (flag.type.startswith('...') and
-                flag.name != 'var_args'):
+            if flag.jstype.IsVarArgsType() and flag.name != 'var_args':
               self._HandleError(errors.JSDOC_MISSING_VAR_ARGS_NAME,
                                 'Variable length argument %s must be renamed '
                                 'to var_args.' % flag.name,
                                 token)
-            elif (not flag.type.startswith('...') and
-                  flag.name == 'var_args'):
+            elif not flag.jstype.IsVarArgsType() and flag.name == 'var_args':
               self._HandleError(errors.JSDOC_MISSING_VAR_ARGS_TYPE,
                                 'Variable length argument %s type must start '
                                 'with \'...\'.' % flag.name,
@@ -166,13 +139,13 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
 
           if error_check.ShouldCheck(Rule.OPTIONAL_TYPE_MARKER):
             # Check for optional marker in type.
-            if (flag.type.endswith('=') and
+            if (flag.jstype.opt_arg and
                 not flag.name.startswith('opt_')):
               self._HandleError(errors.JSDOC_MISSING_OPTIONAL_PREFIX,
                                 'Optional parameter name %s must be prefixed '
                                 'with opt_.' % flag.name,
                                 token)
-            elif (not flag.type.endswith('=') and
+            elif (not flag.jstype.opt_arg and
                   flag.name.startswith('opt_')):
               self._HandleError(errors.JSDOC_MISSING_OPTIONAL_TYPE,
                                 'Optional parameter %s type must end with =.' %
@@ -183,11 +156,8 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
         # Check for both missing type token and empty type braces '{}'
         # Missing suppress types are reported separately and we allow enums,
         # const, private, public and protected without types.
-        allowed_flags = set(['suppress']).union(
-            state.GetDocFlag().CAN_OMIT_TYPE)
-
-        if (flag.flag_type not in allowed_flags and
-            (not flag.type or flag.type.isspace())):
+        if (flag.flag_type not in state.GetDocFlag().CAN_OMIT_TYPE
+            and (not flag.jstype or flag.jstype.IsEmpty())):
           self._HandleError(errors.MISSING_JSDOC_TAG_TYPE,
                             'Missing type in %s tag' % token.string, token)
 
@@ -319,15 +289,17 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
                 function.doc and
                 function.doc.HasFlag('return') and
                 not state.InInterfaceMethod()):
-            return_flag = function.doc.GetFlag('return')
-            if (return_flag.type is None or (
-                'undefined' not in return_flag.type and
-                'void' not in return_flag.type and
-                '*' not in return_flag.type)):
+            flag = function.doc.GetFlag('return')
+            valid_no_return_names = ['undefined', 'void', '*']
+            invalid_return = flag.jstype is None or not any(
+                sub_type.identifier in valid_no_return_names
+                for sub_type in flag.jstype.IterTypeGroup())
+
+            if invalid_return:
               self._HandleError(
                   errors.UNNECESSARY_RETURN_DOCUMENTATION,
                   'Found @return JsDoc on function that returns nothing',
-                  return_flag.flag_token, position=Position.AtBeginning())
+                  flag.flag_token, position=Position.AtBeginning())
 
         # b/4073735. Method in object literal definition of prototype can
         # safely reference 'this'.
@@ -440,12 +412,15 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
           # If there are no require statements, missing requires should be
           # reported after the last provide.
           if not namespaces_info.GetRequiredNamespaces():
-            missing_requires = namespaces_info.GetMissingRequires()
+            missing_requires, illegal_alias_statements = (
+                namespaces_info.GetMissingRequires())
             if missing_requires:
               self._ReportMissingRequires(
                   missing_requires,
                   tokenutil.GetLastTokenInSameLine(token).next,
                   True)
+            if illegal_alias_statements:
+              self._ReportIllegalAliasStatement(illegal_alias_statements)
 
       elif (token.string == 'goog.require' and
             not state.InFunction() and
@@ -477,12 +452,15 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
 
         # Report missing goog.require statements.
         if namespaces_info.IsLastRequire(token):
-          missing_requires = namespaces_info.GetMissingRequires()
+          missing_requires, illegal_alias_statements = (
+              namespaces_info.GetMissingRequires())
           if missing_requires:
             self._ReportMissingRequires(
                 missing_requires,
                 tokenutil.GetLastTokenInSameLine(token).next,
                 False)
+          if illegal_alias_statements:
+            self._ReportIllegalAliasStatement(illegal_alias_statements)
 
     elif token.type == Type.OPERATOR:
       last_in_line = token.IsLastInLine()
@@ -494,6 +472,7 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
       if (not token.metadata.IsUnaryOperator() and not last_in_line
           and not token.next.IsComment()
           and not token.next.IsOperator(',')
+          and not tokenutil.IsDot(token)
           and token.next.type not in (Type.WHITESPACE, Type.END_PAREN,
                                       Type.END_BRACKET, Type.SEMICOLON,
                                       Type.START_BRACKET)):
@@ -558,11 +537,11 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
           self._unused_local_variables_by_scope[-1][identifier] = token
         elif token.type == Type.IDENTIFIER:
           # This covers most cases where the variable is used as an identifier.
-          self._MarkLocalVariableUsed(token)
+          self._MarkLocalVariableUsed(token.string)
         elif token.type == Type.SIMPLE_LVALUE and '.' in identifier:
           # This covers cases where a value is assigned to a property of the
           # variable.
-          self._MarkLocalVariableUsed(token)
+          self._MarkLocalVariableUsed(token.string)
     elif token.type == Type.START_BLOCK:
       if in_function and state.IsFunctionOpen():
         # Push a new map onto the stack
@@ -576,18 +555,40 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
               errors.UNUSED_LOCAL_VARIABLE,
               'Unused local variable: %s.' % unused_token.string,
               unused_token)
+    elif token.type == Type.DOC_FLAG:
+      # Flags that use aliased symbols should be counted.
+      flag = token.attached_object
+      js_type = flag and flag.jstype
+      if flag and flag.flag_type in state.GetDocFlag().HAS_TYPE and js_type:
+        self._MarkAliasUsed(js_type)
 
-  def _MarkLocalVariableUsed(self, token):
-    """Marks the local variable as used in the relevant scope.
+  def _MarkAliasUsed(self, js_type):
+    """Marks aliases in a type as used.
 
+    Recursively iterates over all subtypes in a jsdoc type annotation and
+    tracks usage of aliased symbols (which may be local variables).
     Marks the local variable as used in the scope nearest to the current
     scope that matches the given token.
 
     Args:
-      token: The token representing the potential usage of a local variable.
+      js_type: The jsdoc type, a typeannotation.TypeAnnotation object.
     """
+    if js_type.alias:
+      self._MarkLocalVariableUsed(js_type.identifier)
+    for sub_type in js_type.IterTypes():
+      self._MarkAliasUsed(sub_type)
 
-    identifier = token.string.split('.')[0]
+  def _MarkLocalVariableUsed(self, identifier):
+    """Marks the local variable as used in the relevant scope.
+
+    Marks the local variable in the scope nearest to the current scope that
+    matches the given identifier as used.
+
+    Args:
+      identifier: The identifier representing the potential usage of a local
+                  variable.
+    """
+    identifier = identifier.split('.', 1)[0]
     # Find the first instance of the identifier in the stack of function scopes
     # and mark it used.
     for unused_local_variables in reversed(
@@ -658,6 +659,15 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
         token, position=Position.AtBeginning(),
         fix_data=(missing_requires.keys(), need_blank_line))
 
+  def _ReportIllegalAliasStatement(self, illegal_alias_statements):
+    """Reports alias statements that would need a goog.require."""
+    for namespace, token in illegal_alias_statements.iteritems():
+      self._HandleError(
+          errors.ALIAS_STMT_NEEDS_GOOG_REQUIRE,
+          'The alias definition would need the namespace \'%s\' which is not '
+          'required through any other symbol.' % namespace,
+          token, position=Position.AtBeginning())
+
   def Finalize(self, state):
     """Perform all checks that need to occur after all lines are processed."""
     # Call the base class's Finalize function.
@@ -690,10 +700,12 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
           self._ReportMissingProvides(
               missing_provides, state.GetFirstToken(), None)
 
-        missing_requires = namespaces_info.GetMissingRequires()
+        missing_requires, illegal_alias = namespaces_info.GetMissingRequires()
         if missing_requires:
           self._ReportMissingRequires(
               missing_requires, state.GetFirstToken(), None)
+        if illegal_alias:
+          self._ReportIllegalAliasStatement(illegal_alias)
 
     self._CheckSortedRequiresProvides(state.GetFirstToken())
 
@@ -736,8 +748,8 @@ class JavaScriptLintRules(ecmalintrules.EcmaScriptLintRules):
       A list of regexps, used as matches (rather than searches).
     """
     return [
-        re.compile(r'goog\.require\(.+\);?\s*$'),
-        re.compile(r'goog\.provide\(.+\);?\s*$'),
-        re.compile(r'goog\.setTestOnly\(.+\);?\s*$'),
+        re.compile(r'((var|let|const) .+\s*=\s*)?goog\.require\(.+\);?\s*$'),
+        re.compile(r'goog\.(forwardDeclare|module|provide|setTestOnly)'
+                   r'\(.+\);?\s*$'),
         re.compile(r'[\s/*]*@visibility\s*{.*}[\s*/]*$'),
         ]

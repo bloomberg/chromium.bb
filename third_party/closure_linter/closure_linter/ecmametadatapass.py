@@ -495,17 +495,15 @@ class EcmaMetaDataPass(object):
       is_implied_block = self._context == EcmaContext.IMPLIED_BLOCK
       is_last_code_in_line = token.IsCode() and (
           not next_code or next_code.line_number != token.line_number)
-      is_continued_identifier = (token.type == TokenType.IDENTIFIER and
-                                 token.string.endswith('.'))
       is_continued_operator = (token.type == TokenType.OPERATOR and
                                not token.metadata.IsUnaryPostOperator())
       is_continued_dot = token.string == '.'
       next_code_is_operator = next_code and next_code.type == TokenType.OPERATOR
-      next_code_is_dot = next_code and next_code.string == '.'
       is_end_of_block = (
           token.type == TokenType.END_BLOCK and
           token.metadata.context.type != EcmaContext.OBJECT_LITERAL)
-      is_multiline_string = token.type == TokenType.STRING_TEXT
+      is_multiline_string = (token.type == TokenType.STRING_TEXT or
+                             token.type == TokenType.TEMPLATE_STRING_START)
       is_continued_var_decl = (token.IsKeyword('var') and
                                next_code and
                                (next_code.type in [TokenType.IDENTIFIER,
@@ -517,10 +515,8 @@ class EcmaMetaDataPass(object):
           not is_multiline_string and
           not is_end_of_block and
           not is_continued_var_decl and
-          not is_continued_identifier and
           not is_continued_operator and
           not is_continued_dot and
-          not next_code_is_dot and
           not next_code_is_operator and
           not is_implied_block and
           not next_code_is_block):

@@ -20,8 +20,6 @@
 
 __author__ = ('nnaze@google.com (Nathan Naze)')
 
-import itertools
-
 from closure_linter import ecmametadatapass
 from closure_linter import errors
 from closure_linter import javascripttokens
@@ -56,6 +54,20 @@ def _GetAliasForIdentifier(identifier, alias_map):
   aliased_symbol = alias_map.get(ns)
   if aliased_symbol:
     return aliased_symbol + identifier[len(ns):]
+
+
+def _SetTypeAlias(js_type, alias_map):
+  """Updates the alias for identifiers in a type.
+
+  Args:
+    js_type: A typeannotation.TypeAnnotation instance.
+    alias_map: A dictionary mapping a symbol to an alias.
+  """
+  aliased_symbol = _GetAliasForIdentifier(js_type.identifier, alias_map)
+  if aliased_symbol:
+    js_type.alias = aliased_symbol
+  for sub_type in js_type.IterTypes():
+    _SetTypeAlias(sub_type, alias_map)
 
 
 class AliasPass(object):
@@ -169,36 +181,45 @@ class AliasPass(object):
 
     assert root_context.type is ecmametadatapass.EcmaContext.ROOT
 
-    # Identify all goog.scope blocks.
-    goog_scope_blocks = itertools.ifilter(
-        scopeutil.IsGoogScopeBlock,
-        self._YieldAllContexts(root_context))
+    # Process aliases in statements in the root scope for goog.module-style
+    # aliases.
+    global_alias_map = {}
+    for context in root_context.children:
+      if context.type == ecmametadatapass.EcmaContext.STATEMENT:
+        for statement_child in context.children:
+          if statement_child.type == ecmametadatapass.EcmaContext.VAR:
+            match = scopeutil.MatchModuleAlias(statement_child)
+            if match:
+              # goog.require aliases cannot use further aliases, the symbol is
+              # the second part of match, directly.
+              symbol = match[1]
+              if scopeutil.IsInClosurizedNamespace(symbol,
+                                                   self._closurized_namespaces):
+                global_alias_map[match[0]] = symbol
 
     # Process each block to find aliases.
-    for scope_block in goog_scope_blocks:
-      self._ProcessGoogScopeBlock(scope_block)
+    for context in root_context.children:
+      self._ProcessBlock(context, global_alias_map)
 
-  def _ProcessGoogScopeBlock(self, scope_block):
+  def _ProcessBlock(self, context, global_alias_map):
     """Scans a goog.scope block to find aliases and mark alias tokens."""
+    alias_map = global_alias_map.copy()
 
-    alias_map = dict()
-
-    # Iterate over every token in the scope_block. Each token points to one
+    # Iterate over every token in the context. Each token points to one
     # context, but multiple tokens may point to the same context. We only want
     # to check each context once, so keep track of those we've seen.
     seen_contexts = set()
-    token = scope_block.start_token
-    while token and self._IsTokenInParentBlock(token, scope_block):
-
-      token_context = token.metadata.context
+    token = context.start_token
+    while token and self._IsTokenInParentBlock(token, context):
+      token_context = token.metadata.context if token.metadata else None
 
       # Check to see if this token is an alias.
-      if token_context not in seen_contexts:
+      if token_context and token_context not in seen_contexts:
         seen_contexts.add(token_context)
 
         # If this is a alias statement in the goog.scope block.
         if (token_context.type == ecmametadatapass.EcmaContext.VAR and
-            token_context.parent.parent is scope_block):
+            scopeutil.IsGoogScopeBlock(token_context.parent.parent)):
           match = scopeutil.MatchAlias(token_context)
 
           # If this is an alias, remember it in the map.
@@ -218,5 +239,10 @@ class AliasPass(object):
           aliased_symbol = _GetAliasForIdentifier(identifier, alias_map)
           if aliased_symbol:
             token.metadata.aliased_symbol = aliased_symbol
+
+      elif token.type == javascripttokens.JavaScriptTokenType.DOC_FLAG:
+        flag = token.attached_object
+        if flag and flag.HasType() and flag.jstype:
+          _SetTypeAlias(flag.jstype, alias_map)
 
       token = token.next  # Get next token

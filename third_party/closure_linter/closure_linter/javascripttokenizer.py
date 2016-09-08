@@ -36,6 +36,7 @@ class JavaScriptModes(object):
   TEXT_MODE = 'text'
   SINGLE_QUOTE_STRING_MODE = 'single_quote_string'
   DOUBLE_QUOTE_STRING_MODE = 'double_quote_string'
+  TEMPLATE_STRING_MODE = 'template_string'
   BLOCK_COMMENT_MODE = 'block_comment'
   DOC_COMMENT_MODE = 'doc_comment'
   DOC_COMMENT_LEX_SPACES_MODE = 'doc_comment_spaces'
@@ -51,7 +52,7 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   """
 
   # Useful patterns for JavaScript parsing.
-  IDENTIFIER_CHAR = r'A-Za-z0-9_$.'
+  IDENTIFIER_CHAR = r'A-Za-z0-9_$'
 
   # Number patterns based on:
   # http://www.mozilla.org/js/language/js20-2000-07/formal/lexer-grammar.html
@@ -75,6 +76,10 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   SINGLE_QUOTE_TEXT = re.compile(r"([^'\\]|\\(.|$))+")
   DOUBLE_QUOTE = re.compile(r'"')
   DOUBLE_QUOTE_TEXT = re.compile(r'([^"\\]|\\(.|$))+')
+  # Template strings are different from normal strings in that they do not
+  # require escaping of end of lines in order to be multi-line.
+  TEMPLATE_QUOTE = re.compile(r'`')
+  TEMPLATE_QUOTE_TEXT = re.compile(r'([^`]|$)+')
 
   START_SINGLE_LINE_COMMENT = re.compile(r'//')
   END_OF_LINE_SINGLE_LINE_COMMENT = re.compile(r'//$')
@@ -92,6 +97,9 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   # like in email addresses in the @author tag.
   DOC_COMMENT_TEXT = re.compile(r'([^*{}\s]@|[^*{}@]|\*(?!/))+')
   DOC_COMMENT_NO_SPACES_TEXT = re.compile(r'([^*{}\s]@|[^*{}@\s]|\*(?!/))+')
+  # Match anything that is allowed in a type definition, except for tokens
+  # needed to parse it (and the lookahead assertion for "*/").
+  DOC_COMMENT_TYPE_TEXT = re.compile(r'([^*|!?=<>(){}:,\s]|\*(?!/))+')
 
   # Match the prefix ' * ' that starts every line of jsdoc. Want to include
   # spaces after the '*', but nothing else that occurs after a '*', and don't
@@ -141,9 +149,25 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   #   delete, in, instanceof, new, typeof - included as operators.
   #   this - included in identifiers.
   #   null, undefined - not included, should go in some "special constant" list.
-  KEYWORD_LIST = ['break', 'case', 'catch', 'continue', 'default', 'do', 'else',
-      'finally', 'for', 'if', 'return', 'switch', 'throw', 'try', 'var',
-      'while', 'with']
+  KEYWORD_LIST = [
+      'break',
+      'case',
+      'catch',
+      'continue',
+      'default',
+      'do',
+      'else',
+      'finally',
+      'for',
+      'if',
+      'return',
+      'switch',
+      'throw',
+      'try',
+      'var',
+      'while',
+      'with',
+  ]
 
   # List of regular expressions to match as operators.  Some notes: for our
   # purposes, the comma behaves similarly enough to a normal operator that we
@@ -151,19 +175,62 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   # characters - this may not match some very esoteric uses of the in operator.
   # Operators that are subsets of larger operators must come later in this list
   # for proper matching, e.g., '>>' must come AFTER '>>>'.
-  OPERATOR_LIST = [',', r'\+\+', '===', '!==', '>>>=', '>>>', '==', '>=', '<=',
-                   '!=', '<<=', '>>=', '<<', '>>', '>', '<', r'\+=', r'\+',
-                   '--', '\^=', '-=', '-', '/=', '/', r'\*=', r'\*', '%=', '%',
-                   '&&', r'\|\|', '&=', '&', r'\|=', r'\|', '=', '!', ':', '\?',
-                   r'\^', r'\bdelete\b', r'\bin\b', r'\binstanceof\b',
-                   r'\bnew\b', r'\btypeof\b', r'\bvoid\b']
+  OPERATOR_LIST = [
+      ',',
+      r'\+\+',
+      '===',
+      '!==',
+      '>>>=',
+      '>>>',
+      '==',
+      '>=',
+      '<=',
+      '!=',
+      '<<=',
+      '>>=',
+      '<<',
+      '>>',
+      '=>',
+      '>',
+      '<',
+      r'\+=',
+      r'\+',
+      '--',
+      r'\^=',
+      '-=',
+      '-',
+      '/=',
+      '/',
+      r'\*=',
+      r'\*',
+      '%=',
+      '%',
+      '&&',
+      r'\|\|',
+      '&=',
+      '&',
+      r'\|=',
+      r'\|',
+      '=',
+      '!',
+      ':',
+      r'\?',
+      r'\^',
+      r'\bdelete\b',
+      r'\bin\b',
+      r'\binstanceof\b',
+      r'\bnew\b',
+      r'\btypeof\b',
+      r'\bvoid\b',
+      r'\.',
+  ]
   OPERATOR = re.compile('|'.join(OPERATOR_LIST))
 
   WHITESPACE = re.compile(r'\s+')
   SEMICOLON = re.compile(r';')
   # Technically JavaScript identifiers can't contain '.', but we treat a set of
-  # nested identifiers as a single identifier.
-  NESTED_IDENTIFIER = r'[a-zA-Z_$][%s.]*' % IDENTIFIER_CHAR
+  # nested identifiers as a single identifier, except for trailing dots.
+  NESTED_IDENTIFIER = r'[a-zA-Z_$]([%s]|\.[a-zA-Z_$])*' % IDENTIFIER_CHAR
   IDENTIFIER = re.compile(NESTED_IDENTIFIER)
 
   SIMPLE_LVALUE = re.compile(r"""
@@ -177,12 +244,34 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
   # beginning of the line, after whitespace, or after a '{'.  The look-behind
   # check is necessary to not match someone@google.com as a flag.
   DOC_FLAG = re.compile(r'(^|(?<=\s))@(?P<name>[a-zA-Z]+)')
-  # To properly parse parameter names, we need to tokenize whitespace into a
-  # token.
-  DOC_FLAG_LEX_SPACES = re.compile(r'(^|(?<=\s))@(?P<name>%s)\b' %
-                                     '|'.join(['param']))
+  # To properly parse parameter names and complex doctypes containing
+  # whitespace, we need to tokenize whitespace into a token after certain
+  # doctags. All statetracker.HAS_TYPE that are not listed here must not contain
+  # any whitespace in their types.
+  DOC_FLAG_LEX_SPACES = re.compile(
+      r'(^|(?<=\s))@(?P<name>%s)\b' %
+      '|'.join([
+          'const',
+          'enum',
+          'export',
+          'extends',
+          'final',
+          'implements',
+          'package',
+          'param',
+          'private',
+          'protected',
+          'public',
+          'return',
+          'type',
+          'typedef'
+      ]))
 
   DOC_INLINE_FLAG = re.compile(r'(?<={)@(?P<name>[a-zA-Z]+)')
+
+  DOC_TYPE_BLOCK_START = re.compile(r'[<(]')
+  DOC_TYPE_BLOCK_END = re.compile(r'[>)]')
+  DOC_TYPE_MODIFIERS = re.compile(r'[!?|,:=]')
 
   # Star followed by non-slash, i.e a star that does not end a comment.
   # This is used for TYPE_GROUP below.
@@ -204,6 +293,14 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
       # Tokenize braces so we can find types.
       Matcher(START_BLOCK, Type.DOC_START_BRACE),
       Matcher(END_BLOCK, Type.DOC_END_BRACE),
+
+      # And some more to parse types.
+      Matcher(DOC_TYPE_BLOCK_START, Type.DOC_TYPE_START_BLOCK),
+      Matcher(DOC_TYPE_BLOCK_END, Type.DOC_TYPE_END_BLOCK),
+
+      Matcher(DOC_TYPE_MODIFIERS, Type.DOC_TYPE_MODIFIER),
+      Matcher(DOC_COMMENT_TYPE_TEXT, Type.COMMENT),
+
       Matcher(DOC_PREFIX, Type.DOC_PREFIX, None, True)]
 
   # When text is not matched, it is given this default type based on mode.
@@ -250,6 +347,8 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
                     JavaScriptModes.SINGLE_QUOTE_STRING_MODE),
             Matcher(cls.DOUBLE_QUOTE, Type.DOUBLE_QUOTE_STRING_START,
                     JavaScriptModes.DOUBLE_QUOTE_STRING_MODE),
+            Matcher(cls.TEMPLATE_QUOTE, Type.TEMPLATE_STRING_START,
+                    JavaScriptModes.TEMPLATE_STRING_MODE),
             Matcher(cls.REGEX, Type.REGEX),
 
             # Next we check for start blocks appearing outside any of the items
@@ -299,6 +398,12 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
             Matcher(cls.DOUBLE_QUOTE, Type.DOUBLE_QUOTE_STRING_END,
                     JavaScriptModes.TEXT_MODE)],
 
+        # Matchers for template strings.
+        JavaScriptModes.TEMPLATE_STRING_MODE: [
+            Matcher(cls.TEMPLATE_QUOTE_TEXT, Type.STRING_TEXT),
+            Matcher(cls.TEMPLATE_QUOTE, Type.TEMPLATE_STRING_END,
+                    JavaScriptModes.TEXT_MODE)],
+
         # Matchers for block comments.
         JavaScriptModes.BLOCK_COMMENT_MODE: [
             # First we check for exiting a block comment.
@@ -340,7 +445,7 @@ class JavaScriptTokenizer(tokenizer.Tokenizer):
             Matcher(cls.PARAMETERS, Type.PARAMETERS,
                     JavaScriptModes.PARAMETER_MODE)]}
 
-  def __init__(self, parse_js_doc = True):
+  def __init__(self, parse_js_doc=True):
     """Create a tokenizer object.
 
     Args:

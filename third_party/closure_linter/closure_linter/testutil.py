@@ -60,11 +60,12 @@ def TokenizeSourceAndRunEcmaPass(source):
   return start_token
 
 
-def ParseFunctionsAndComments(source):
+def ParseFunctionsAndComments(source, error_handler=None):
   """Run the tokenizer and tracker and return comments and functions found.
 
   Args:
     source: A source file as a string or file-like object (iterates lines).
+    error_handler: An error handler.
 
   Returns:
     The functions and comments as a tuple.
@@ -72,6 +73,8 @@ def ParseFunctionsAndComments(source):
   start_token = TokenizeSourceAndRunEcmaPass(source)
 
   tracker = javascriptstatetracker.JavaScriptStateTracker()
+  if error_handler is not None:
+    tracker.DocFlagPass(start_token, error_handler)
 
   functions = []
   comments = []
