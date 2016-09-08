@@ -213,19 +213,26 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   DCHECK(injection_host_);
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
+  bool should_inject_js = injector_->ShouldInjectJs(
+      run_location_, scripts_run_info->executing_scripts[host_id().id()]);
+  bool should_inject_css = injector_->ShouldInjectCss(
+      run_location_, scripts_run_info->injected_stylesheets[host_id().id()]);
 
-  bool should_inject_js = injector_->ShouldInjectJs(run_location_);
-  bool should_inject_css = injector_->ShouldInjectCss(run_location_);
-  DCHECK(should_inject_js || should_inject_css);
+  // This can happen if the extension specified a script to
+  // be run in multiple rules, and the script has already run.
+  // See crbug.com/631247.
+  if (!should_inject_js && !should_inject_css) {
+    return INJECTION_FINISHED;
+  }
 
   if (should_inject_js)
-    InjectJs();
+    InjectJs(&(scripts_run_info->executing_scripts[host_id().id()]),
+             &(scripts_run_info->num_js));
   if (should_inject_css)
-    InjectCss();
+    InjectCss(&(scripts_run_info->injected_stylesheets[host_id().id()]),
+              &(scripts_run_info->num_css));
 
   complete_ = did_inject_js_ || !should_inject_js;
-
-  injector_->GetRunInfo(scripts_run_info, run_location_);
 
   if (complete_) {
     injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
@@ -237,11 +244,13 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   return complete_ ? INJECTION_FINISHED : INJECTION_BLOCKED;
 }
 
-void ScriptInjection::InjectJs() {
+void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
+                               size_t* num_injected_js_scripts) {
   DCHECK(!did_inject_js_);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  std::vector<blink::WebScriptSource> sources =
-      injector_->GetJsSources(run_location_);
+  std::vector<blink::WebScriptSource> sources = injector_->GetJsSources(
+      run_location_, executing_scripts, num_injected_js_scripts);
+  DCHECK(!sources.empty());
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
   int world_id = in_main_world
                      ? DOMActivityLogger::kMainWorldId
@@ -311,9 +320,10 @@ void ScriptInjection::OnJsInjectionCompleted(
   }
 }
 
-void ScriptInjection::InjectCss() {
-  std::vector<blink::WebString> css_sources =
-      injector_->GetCssSources(run_location_);
+void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
+                                size_t* num_injected_stylesheets) {
+  std::vector<blink::WebString> css_sources = injector_->GetCssSources(
+      run_location_, injected_stylesheets, num_injected_stylesheets);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   for (const blink::WebString& css : css_sources)
     web_frame->document().insertStyleSheet(css);

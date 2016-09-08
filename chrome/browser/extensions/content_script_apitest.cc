@@ -334,6 +334,43 @@ class ContentScriptCssInjectionTest : public ExtensionApiTest {
   }
 };
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       ContentScriptDuplicateScriptInjection) {
+  host_resolver()->AddRule("maps.google.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL url(
+      base::StringPrintf("http://maps.google.com:%i/extensions/test_file.html",
+                         embedded_test_server()->port()));
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "content_scripts/duplicate_script_injection")));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Test that a script that matches two separate, yet overlapping match
+  // patterns is only injected once.
+  bool scripts_injected_once = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+      "document.getElementsByClassName('injected-once')"
+      ".length == 1)",
+      &scripts_injected_once));
+  ASSERT_TRUE(scripts_injected_once);
+
+  // Test that a script injected at two different load process times, document
+  // idle and document end, is injected exactly twice.
+  bool scripts_injected_twice = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+      "document.getElementsByClassName('injected-twice')"
+      ".length == 2)",
+      &scripts_injected_twice));
+  ASSERT_TRUE(scripts_injected_twice);
+}
+
 IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
                        ContentScriptInjectsStyles) {
   ASSERT_TRUE(StartEmbeddedTestServer());

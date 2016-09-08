@@ -41,18 +41,24 @@ class UserScriptInjector : public ScriptInjector,
   bool ShouldExecuteInMainWorld() const override;
   bool IsUserGesture() const override;
   bool ExpectsResults() const override;
-  bool ShouldInjectJs(UserScript::RunLocation run_location) const override;
-  bool ShouldInjectCss(UserScript::RunLocation run_location) const override;
+  bool ShouldInjectJs(
+      UserScript::RunLocation run_location,
+      const std::set<std::string>& executing_scripts) const override;
+  bool ShouldInjectCss(
+      UserScript::RunLocation run_location,
+      const std::set<std::string>& injected_stylesheets) const override;
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebLocalFrame* web_frame,
       int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
-      UserScript::RunLocation run_location) const override;
+      UserScript::RunLocation run_location,
+      std::set<std::string>* executing_scripts,
+      size_t* num_injected_js_scripts) const override;
   std::vector<blink::WebString> GetCssSources(
-      UserScript::RunLocation run_location) const override;
-  void GetRunInfo(ScriptsRunInfo* scripts_run_info,
-                  UserScript::RunLocation run_location) const override;
+      UserScript::RunLocation run_location,
+      std::set<std::string>* injected_stylesheets,
+      size_t* num_injected_stylesheets) const override;
   void OnInjectionComplete(std::unique_ptr<base::Value> execution_result,
                            UserScript::RunLocation run_location,
                            content::RenderFrame* render_frame) override;

@@ -80,6 +80,17 @@ blink::WebScriptSource GreasemonkeyApiJsString::GetSource() const {
 base::LazyInstance<GreasemonkeyApiJsString> g_greasemonkey_api =
     LAZY_INSTANCE_INITIALIZER;
 
+bool ShouldInjectScripts(const UserScript::FileList& scripts,
+                         const std::set<std::string>& injected_files) {
+  for (const std::unique_ptr<UserScript::File>& file : scripts) {
+    // Check if the script is already injected.
+    if (injected_files.count(file->url().path()) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 UserScriptInjector::UserScriptInjector(const UserScript* script,
@@ -135,15 +146,19 @@ bool UserScriptInjector::ExpectsResults() const {
 }
 
 bool UserScriptInjector::ShouldInjectJs(
-    UserScript::RunLocation run_location) const {
+    UserScript::RunLocation run_location,
+    const std::set<std::string>& executing_scripts) const {
   return script_ && script_->run_location() == run_location &&
-         !script_->js_scripts().empty();
+         !script_->js_scripts().empty() &&
+         ShouldInjectScripts(script_->js_scripts(), executing_scripts);
 }
 
 bool UserScriptInjector::ShouldInjectCss(
-    UserScript::RunLocation run_location) const {
+    UserScript::RunLocation run_location,
+    const std::set<std::string>& injected_stylesheets) const {
   return script_ && run_location == UserScript::DOCUMENT_START &&
-         !script_->css_scripts().empty();
+         !script_->css_scripts().empty() &&
+         ShouldInjectScripts(script_->css_scripts(), injected_stylesheets);
 }
 
 PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
@@ -194,63 +209,60 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
-    UserScript::RunLocation run_location) const {
+    UserScript::RunLocation run_location,
+    std::set<std::string>* executing_scripts,
+    size_t* num_injected_js_scripts) const {
+  DCHECK(script_);
   std::vector<blink::WebScriptSource> sources;
-  if (!script_)
-    return sources;
 
   DCHECK_EQ(script_->run_location(), run_location);
 
   const UserScript::FileList& js_scripts = script_->js_scripts();
   sources.reserve(js_scripts.size() +
                   (script_->emulate_greasemonkey() ? 1 : 0));
-
   // Emulate Greasemonkey API for scripts that were converted to extension
   // user scripts.
   if (script_->emulate_greasemonkey())
     sources.push_back(g_greasemonkey_api.Get().GetSource());
-
   for (const std::unique_ptr<UserScript::File>& file : js_scripts) {
+    const GURL& script_url = file->url();
+    // Check if the script is already injected.
+    if (executing_scripts->count(script_url.path()) != 0)
+      continue;
+
     sources.push_back(blink::WebScriptSource(
         user_script_set_->GetJsSource(*file, script_->emulate_greasemonkey()),
-        file->url()));
+        script_url));
+
+    (*num_injected_js_scripts) += 1;
+    executing_scripts->insert(script_url.path());
   }
 
   return sources;
 }
 
 std::vector<blink::WebString> UserScriptInjector::GetCssSources(
-    UserScript::RunLocation run_location) const {
+    UserScript::RunLocation run_location,
+    std::set<std::string>* injected_stylesheets,
+    size_t* num_injected_stylesheets) const {
+  DCHECK(script_);
   DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
 
   std::vector<blink::WebString> sources;
-  if (!script_)
-    return sources;
 
   const UserScript::FileList& css_scripts = script_->css_scripts();
   sources.reserve(css_scripts.size());
-  for (const std::unique_ptr<UserScript::File>& file : script_->css_scripts())
+  for (const std::unique_ptr<UserScript::File>& file : script_->css_scripts()) {
+    const std::string& stylesheet_path = file->url().path();
+    // Check if the stylesheet is already injected.
+    if (injected_stylesheets->count(stylesheet_path) != 0)
+      continue;
+
     sources.push_back(user_script_set_->GetCssSource(*file));
-  return sources;
-}
-
-void UserScriptInjector::GetRunInfo(
-    ScriptsRunInfo* scripts_run_info,
-    UserScript::RunLocation run_location) const {
-  if (!script_)
-    return;
-
-  if (ShouldInjectJs(run_location)) {
-    const UserScript::FileList& js_scripts = script_->js_scripts();
-    scripts_run_info->num_js += js_scripts.size();
-    for (const std::unique_ptr<UserScript::File>& iter : js_scripts) {
-      scripts_run_info->executing_scripts[host_id_.id()].insert(
-          iter->url().path());
-    }
+    (*num_injected_stylesheets) += 1;
+    injected_stylesheets->insert(stylesheet_path);
   }
-
-  if (ShouldInjectCss(run_location))
-    scripts_run_info->num_css += script_->css_scripts().size();
+  return sources;
 }
 
 void UserScriptInjector::OnInjectionComplete(

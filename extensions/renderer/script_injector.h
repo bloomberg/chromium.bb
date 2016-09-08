@@ -51,10 +51,14 @@ class ScriptInjector {
 
   // Returns true if the script should inject JS source at the given
   // |run_location|.
-  virtual bool ShouldInjectJs(UserScript::RunLocation run_location) const = 0;
+  virtual bool ShouldInjectJs(
+      UserScript::RunLocation run_location,
+      const std::set<std::string>& executing_scripts) const = 0;
 
   // Returns true if the script should inject CSS at the given |run_location|.
-  virtual bool ShouldInjectCss(UserScript::RunLocation run_location) const = 0;
+  virtual bool ShouldInjectCss(
+      UserScript::RunLocation run_location,
+      const std::set<std::string>& injected_stylesheets) const = 0;
 
   // Returns true if the script should execute on the given |frame|.
   virtual PermissionsData::AccessType CanExecuteOnFrame(
@@ -65,17 +69,16 @@ class ScriptInjector {
   // Returns the javascript sources to inject at the given |run_location|.
   // Only called if ShouldInjectJs() is true.
   virtual std::vector<blink::WebScriptSource> GetJsSources(
-      UserScript::RunLocation run_location) const = 0;
+      UserScript::RunLocation run_location,
+      std::set<std::string>* executing_scripts,
+      size_t* num_injected_js_scripts) const = 0;
 
   // Returns the css to inject at the given |run_location|.
   // Only called if ShouldInjectCss() is true.
   virtual std::vector<blink::WebString> GetCssSources(
-      UserScript::RunLocation run_location) const = 0;
-
-  // Fill scriptrs run info based on information about injection.
-  virtual void GetRunInfo(
-      ScriptsRunInfo* scripts_run_info,
-      UserScript::RunLocation run_location) const = 0;
+      UserScript::RunLocation run_location,
+      std::set<std::string>* injected_stylesheets,
+      size_t* num_injected_stylesheets) const = 0;
 
   // Notifies the script that injection has completed, with a possibly-populated
   // list of results (depending on whether or not ExpectsResults() was true).
