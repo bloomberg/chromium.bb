@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "media/base/media_export.h"
+#include "media/base/video_codecs.h"
 #include "media/formats/mp4/bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
 
@@ -59,6 +60,8 @@ struct MEDIA_EXPORT HEVCDecoderConfigurationRecord : Box {
     std::vector<HVCCNALUnit> units;
   };
   std::vector<HVCCNALArray> arrays;
+
+  VideoCodecProfile GetVideoProfile() const;
 
  private:
   bool ParseInternal(BufferReader* reader,

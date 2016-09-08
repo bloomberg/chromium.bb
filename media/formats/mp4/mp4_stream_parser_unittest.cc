@@ -371,6 +371,10 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-hevc-frag.mp4");
   EXPECT_EQ(expect_success,
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  EXPECT_EQ(kCodecHEVC, video_decoder_config_.codec());
+  EXPECT_EQ(HEVCPROFILE_MAIN, video_decoder_config_.profile());
+#endif
 }
 
 // Sample encryption information is stored as CencSampleAuxiliaryDataFormat

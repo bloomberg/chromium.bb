@@ -124,6 +124,20 @@ bool HEVCDecoderConfigurationRecord::ParseInternal(
   return true;
 }
 
+VideoCodecProfile HEVCDecoderConfigurationRecord::GetVideoProfile() const {
+  // The values of general_profile_idc are taken from the HEVC standard, see
+  // the latest https://www.itu.int/rec/T-REC-H.265/en section A.3
+  switch (general_profile_idc) {
+    case 1:
+      return HEVCPROFILE_MAIN;
+    case 2:
+      return HEVCPROFILE_MAIN10;
+    case 3:
+      return HEVCPROFILE_MAIN_STILL_PICTURE;
+  }
+  return VIDEO_CODEC_PROFILE_UNKNOWN;
+}
+
 static const uint8_t kAnnexBStartCode[] = {0, 0, 0, 1};
 static const int kAnnexBStartCodeSize = 4;
 

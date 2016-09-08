@@ -681,9 +681,10 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       std::unique_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
           new HEVCDecoderConfigurationRecord());
       RCHECK(reader->ReadChild(hevcConfig.get()));
+      video_codec = kCodecHEVC;
+      video_codec_profile = hevcConfig->GetVideoProfile();
       frame_bitstream_converter =
           make_scoped_refptr(new HEVCBitstreamConverter(std::move(hevcConfig)));
-      video_codec = kCodecHEVC;
       break;
     }
 #endif
