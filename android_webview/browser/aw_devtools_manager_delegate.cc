@@ -33,10 +33,6 @@ void AwDevToolsManagerDelegate::DevToolsAgentStateChanged(
     DevToolsAgentHost* agent_host, bool attached) {
 }
 
-std::string AwDevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
-  return "webview";
-}
-
 std::string AwDevToolsManagerDelegate::GetTargetDescription(
     RenderFrameHost* host) {
   content::WebContents* web_contents =
