@@ -34,6 +34,7 @@ public:
     bool isTextureBacked() override;
     virtual void copyToTexture(WebGraphicsContext3DProvider*, GLuint, GLenum, GLenum, bool) { NOTREACHED(); }
     virtual bool hasMailbox() { return false; }
+    virtual void transfer() { }
 
 protected:
     StaticBitmapImage(sk_sp<SkImage>);

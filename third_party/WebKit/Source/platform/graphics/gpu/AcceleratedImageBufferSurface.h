@@ -46,13 +46,13 @@ public:
     ~AcceleratedImageBufferSurface() override { }
 
     SkCanvas* canvas() override { return m_surface ? m_surface->getCanvas() : nullptr; }
-    bool isValid() const override { return m_surface; }
+    bool isValid() const override;
     bool isAccelerated() const override { return true; }
     sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
     GLuint getBackingTextureHandleForOverwrite() override;
 
 private:
-    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
+    unsigned m_contextId;
     sk_sp<SkSurface> m_surface; // Uses m_contextProvider.
 };
 

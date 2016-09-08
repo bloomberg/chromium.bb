@@ -1034,6 +1034,8 @@ component("platform") {
     "graphics/gpu/Extensions3DUtil.h",
     "graphics/gpu/SharedContextRateLimiter.cpp",
     "graphics/gpu/SharedContextRateLimiter.h",
+    "graphics/gpu/SharedGpuContext.cpp",
+    "graphics/gpu/SharedGpuContext.h",
     "graphics/gpu/WebGLImageConversion.cpp",
     "graphics/gpu/WebGLImageConversion.h",
     "graphics/paint/ClipDisplayItem.cpp",

@@ -39,8 +39,8 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
 class SkBitmap;
@@ -58,7 +58,7 @@ class GraphicsContext;
 class Length;
 class Image;
 
-class PLATFORM_EXPORT Image : public RefCounted<Image> {
+class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
     friend class GradientGeneratedImage;

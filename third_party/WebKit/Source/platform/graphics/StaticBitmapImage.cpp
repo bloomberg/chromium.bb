@@ -20,7 +20,7 @@ PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(sk_sp<SkImage> image)
     if (!image)
         return nullptr;
     if (image->isTextureBacked())
-        return AcceleratedStaticBitmapImage::create(std::move(image));
+        return AcceleratedStaticBitmapImage::createFromSharedContextImage(std::move(image));
     return adoptRef(new StaticBitmapImage(std::move(image)));
 }
 
