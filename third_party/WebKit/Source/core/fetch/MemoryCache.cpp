@@ -62,11 +62,19 @@ MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
 
 DEFINE_TRACE(MemoryCacheEntry)
 {
-    visitor->trace(m_resource);
+    visitor->template registerWeakMembers<MemoryCacheEntry, &MemoryCacheEntry::clearResourceWeak>(this);
     visitor->trace(m_previousInLiveResourcesList);
     visitor->trace(m_nextInLiveResourcesList);
     visitor->trace(m_previousInAllResourcesList);
     visitor->trace(m_nextInAllResourcesList);
+}
+
+void MemoryCacheEntry::clearResourceWeak(Visitor* visitor)
+{
+    if (!m_resource || ThreadHeap::isHeapObjectAlive(m_resource))
+        return;
+    memoryCache()->remove(m_resource.get());
+    m_resource.clear();
 }
 
 void MemoryCacheEntry::dispose()
@@ -159,7 +167,7 @@ void MemoryCache::add(Resource* resource)
     ASSERT(resource->url().isValid());
     ResourceMap* resources = ensureResourceMap(resource->cacheIdentifier());
     KURL url = removeFragmentIdentifierIfNeeded(resource->url());
-    RELEASE_ASSERT(!resources->contains(url));
+    CHECK(!contains(resource));
     resources->set(url, MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
@@ -206,8 +214,11 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(const KURL& resourceUR
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
     HeapVector<Member<Resource>> results;
     for (const auto& resourceMapIter : m_resourceMaps) {
-        if (MemoryCacheEntry* entry = resourceMapIter.value->get(url))
-            results.append(entry->resource());
+        if (MemoryCacheEntry* entry = resourceMapIter.value->get(url)) {
+            Resource* resource = entry->resource();
+            DCHECK(resource);
+            results.append(resource);
+        }
     }
     return results;
 }
@@ -358,6 +369,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->resource();
+    DCHECK(resource);
     RESOURCE_LOADING_DVLOG(1) << "Evicting resource " << resource << " for " << resource->url().getString() << " from cache";
     TRACE_EVENT1("blink", "MemoryCache::evict", "resource", resource->url().getString().utf8());
     // The resource may have already been removed by someone other than our caller,
@@ -379,7 +391,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
 
 MemoryCacheEntry* MemoryCache::getEntryForResource(const Resource* resource) const
 {
-    if (resource->url().isNull() || resource->url().isEmpty())
+    if (!resource || resource->url().isNull() || resource->url().isEmpty())
         return nullptr;
     ResourceMap* resources = m_resourceMaps.get(resource->cacheIdentifier());
     if (!resources)
@@ -589,6 +601,7 @@ MemoryCache::Statistics MemoryCache::getStatistics()
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->resource();
+            DCHECK(resource);
             switch (resource->getType()) {
             case Resource::Image:
                 stats.images.addResource(resource);

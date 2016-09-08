@@ -96,7 +96,9 @@ private:
     {
     }
 
-    Member<Resource> m_resource;
+    void clearResourceWeak(Visitor*);
+
+    WeakMember<Resource> m_resource;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
