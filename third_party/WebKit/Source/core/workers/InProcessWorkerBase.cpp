@@ -30,7 +30,7 @@ InProcessWorkerBase::~InProcessWorkerBase()
     DCHECK(isMainThread());
     if (!m_contextProxy)
         return;
-    m_contextProxy->workerObjectDestroyed();
+    m_contextProxy->parentObjectDestroyed();
 }
 
 void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray& ports, ExceptionState& exceptionState)
@@ -69,7 +69,7 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
 void InProcessWorkerBase::terminate()
 {
     if (m_contextProxy)
-        m_contextProxy->terminateWorkerGlobalScope();
+        m_contextProxy->terminateGlobalScope();
 }
 
 void InProcessWorkerBase::stop()

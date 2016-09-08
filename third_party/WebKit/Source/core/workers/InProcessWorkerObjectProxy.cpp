@@ -124,7 +124,7 @@ void InProcessWorkerObjectProxy::workerGlobalScopeStarted(WorkerOrWorkletGlobalS
 
 void InProcessWorkerObjectProxy::workerGlobalScopeClosed()
 {
-    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, crossThreadUnretained(m_messagingProxy)));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::terminateGlobalScope, crossThreadUnretained(m_messagingProxy)));
 }
 
 void InProcessWorkerObjectProxy::workerThreadTerminated()
