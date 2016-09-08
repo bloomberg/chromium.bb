@@ -567,9 +567,13 @@ if (enable_java_templates) {
       build_config = _build_config
       resources_zip = _resources_zip
       type = "android_resources"
+      if (defined(invoker.deps)) {
+        possible_config_deps = invoker.deps
+      }
     }
 
     action("${target_name}__template") {
+      forward_variables_from(invoker, [ "deps" ])
       sources = invoker.resources
       script = "//build/android/gyp/jinja_template.py"
       depfile = "$target_gen_dir/$target_name.d"
