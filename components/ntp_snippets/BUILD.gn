@@ -57,6 +57,8 @@ static_library("ntp_snippets") {
     "request_throttler.h",
     "switches.cc",
     "switches.h",
+    "user_classifier.cc",
+    "user_classifier.h",
   ]
 
   public_deps = [

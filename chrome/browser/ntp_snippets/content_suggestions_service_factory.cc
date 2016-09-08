@@ -211,8 +211,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
           : State::DISABLED;
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
+  PrefService* pref_service = profile->GetPrefs();
   ContentSuggestionsService* service =
-      new ContentSuggestionsService(state, history_service);
+      new ContentSuggestionsService(state, history_service, pref_service);
   if (state == State::DISABLED) {
     // Since we won't initialise the services, they won't get a chance to
     // unschedule their tasks. We do it explicitly here instead.
@@ -221,7 +222,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
   CategoryFactory* category_factory = service->category_factory();
-  PrefService* pref_service = profile->GetPrefs();
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);

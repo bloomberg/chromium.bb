@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -18,8 +19,11 @@ namespace ntp_snippets {
 
 ContentSuggestionsService::ContentSuggestionsService(
     State state,
-    history::HistoryService* history_service)
-    : state_(state), history_service_observer_(this) {
+    history::HistoryService* history_service,
+    PrefService* pref_service)
+    : state_(state),
+      history_service_observer_(this),
+      user_classifier_(pref_service) {
   // Can be null in tests.
   if (history_service)
     history_service_observer_.Add(history_service);

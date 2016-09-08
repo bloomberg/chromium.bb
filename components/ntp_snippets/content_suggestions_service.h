@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,9 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/ntp_snippets/user_classifier.h"
+
+class PrefService;
 
 namespace gfx {
 class Image;
@@ -81,7 +85,8 @@ class ContentSuggestionsService : public KeyedService,
   };
 
   ContentSuggestionsService(State state,
-                            history::HistoryService* history_service);
+                            history::HistoryService* history_service,
+                            PrefService* pref_service);
   ~ContentSuggestionsService() override;
 
   // Inherited from KeyedService.
@@ -172,6 +177,8 @@ class ContentSuggestionsService : public KeyedService,
     ntp_snippets_service_ = ntp_snippets_service;
   }
 
+  UserClassifier* user_classifier() { return &user_classifier_;}
+
  private:
   friend class ContentSuggestionsServiceTest;
 
@@ -258,6 +265,8 @@ class ContentSuggestionsService : public KeyedService,
   // background fetching and debugging calls to it. If the NTPSnippetsService is
   // loaded, it is also present in |providers_|, otherwise this is a nullptr.
   NTPSnippetsService* ntp_snippets_service_;
+
+  UserClassifier user_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsService);
 };

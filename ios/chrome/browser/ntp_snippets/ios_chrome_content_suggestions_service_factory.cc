@@ -121,7 +121,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   std::unique_ptr<ContentSuggestionsService> service =
-      base::MakeUnique<ContentSuggestionsService>(state, history_service);
+      base::MakeUnique<ContentSuggestionsService>(state, history_service,
+                                                  prefs);
   if (state == State::DISABLED)
     return std::move(service);
 

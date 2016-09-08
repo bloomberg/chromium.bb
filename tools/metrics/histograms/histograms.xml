@@ -36788,6 +36788,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.UserClassifier.AverageHoursToOpenNTP" units="hours">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The estimated average number of hours between two successive times
+    when a new tab page is opened. Recorded after each opening of a NTP (and
+    after updating the model used for the estimate).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.UserClassifier.AverageHoursToShowSuggestions"
+    units="hours">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The estimated average number of hours between two successive times
+    when the list of content suggestions on a new tab page is shown (i.e. when
+    the user scrolls below the fold). Recorded after each time the suggestions
+    are shown (and after updating the model used for the estimate).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.UserClassifier.AverageHoursToUseSuggestions"
+    units="hours">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The estimated average number of hours between two successive times
+    when the user opens a content suggestion or clicks on the &quot;More&quot;
+    button. Recorded after each time a suggestion or a More button is clicked
+    (and after updating the model used for the estimate).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.VisibleScreenshots">
   <obsolete>
     Deprecated 2016-02 (and not recorded for some time before that).

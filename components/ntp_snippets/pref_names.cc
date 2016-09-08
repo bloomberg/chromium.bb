@@ -33,5 +33,20 @@ const char kDismissedDownloadSuggestions[] =
 const char kBookmarksFirstM54Start[] =
     "ntp_suggestions.bookmarks.first_M54_start";
 
+const char kUserClassifierAverageNTPOpenedPerHour[] =
+    "ntp_suggestions.user_classifier.average_ntp_opened_per_hour";
+const char kUserClassifierAverageSuggestionsShownPerHour[] =
+    "ntp_suggestions.user_classifier.average_suggestions_shown_per_hour";
+const char kUserClassifierAverageSuggestionsUsedPerHour[] =
+    "ntp_suggestions.user_classifier.average_suggestions_used_per_hour";
+
+const char kUserClassifierLastTimeToOpenNTP[] =
+    "ntp_suggestions.user_classifier.last_time_to_open_ntp";
+const char kUserClassifierLastTimeToShowSuggestions[] =
+    "ntp_suggestions.user_classifier.last_time_to_show_suggestions";
+const char kUserClassifierLastTimeToUseSuggestions[] =
+    "ntp_suggestions.user_classifier.last_time_to_use_suggestions";
+
+
 }  // namespace prefs
 }  // namespace ntp_snippets

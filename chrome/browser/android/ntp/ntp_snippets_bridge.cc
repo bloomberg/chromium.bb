@@ -244,6 +244,7 @@ void NTPSnippetsBridge::OnPageShown(
                        suggestions_per_category_int[i]));
   }
   ntp_snippets::metrics::OnPageShown(suggestions_per_category);
+  content_suggestions_service_->user_classifier()->OnNTPOpened();
 }
 
 void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
@@ -256,6 +257,8 @@ void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
   ntp_snippets::metrics::OnSuggestionShown(
       global_position, CategoryFromIDValue(category), category_position,
       TimeFromJavaTime(publish_timestamp_ms), score);
+  if (global_position == 0)
+    content_suggestions_service_->user_classifier()->OnSuggestionsShown();
 }
 
 void NTPSnippetsBridge::OnSuggestionOpened(JNIEnv* env,
@@ -270,6 +273,7 @@ void NTPSnippetsBridge::OnSuggestionOpened(JNIEnv* env,
       global_position, CategoryFromIDValue(category), category_position,
       TimeFromJavaTime(publish_timestamp_ms), score,
       static_cast<WindowOpenDisposition>(windowOpenDisposition));
+  content_suggestions_service_->user_classifier()->OnSuggestionsUsed();
 }
 
 void NTPSnippetsBridge::OnSuggestionMenuOpened(JNIEnv* env,
@@ -298,6 +302,7 @@ void NTPSnippetsBridge::OnMoreButtonClicked(JNIEnv* env,
                                             jint position) {
   ntp_snippets::metrics::OnMoreButtonClicked(CategoryFromIDValue(category),
                                              position);
+  content_suggestions_service_->user_classifier()->OnSuggestionsUsed();
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
