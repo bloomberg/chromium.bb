@@ -852,6 +852,15 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('console-api', new_logs[0][0]['source'])
     self.assertTrue('RepeatedError' in new_logs[0][0]['message'])
 
+  def testGetLogOnClosedWindow(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self._driver.FindElement('id', 'link').Click()
+    self._driver.CloseWindow()
+    try:
+      self._driver.GetLog('browser')
+    except chromedriver.ChromeDriverException as e:
+      self.fail('exception while calling GetLog on a closed tab: ' + e.message)
+
   def testAutoReporting(self):
     self.assertFalse(self._driver.IsAutoReporting())
     self._driver.SetAutoReporting(True)

@@ -71,6 +71,16 @@ bool WindowHandleToWebViewId(const std::string& window_handle,
   return true;
 }
 
+Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+  std::string frame_id = session->GetCurrentFrameId();
+  std::unique_ptr<base::Value> result;
+  return web_view->EvaluateScript(frame_id, expression, &result);
+}
+
 }  // namespace
 
 InitSessionParams::InitSessionParams(
@@ -745,21 +755,16 @@ Status ExecuteGetLog(Session* session,
     return Status(kUnknownError, "missing or invalid 'type'");
   }
 
-  WebView* web_view = NULL;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-
-  base::ListValue args;
-  std::unique_ptr<base::Value> result;
-  status = web_view->CallFunction(session->GetCurrentFrameId(),
-                                  "function(s) { return 1; }", args, &result);
-  if (status.IsError())
-    return status;
-
-  int response;
-  if (!result->GetAsInteger(&response) || response != 1)
-    return Status(kUnknownError, "unexpected response from browser");
+  // Evaluate a JavaScript in the renderer process for the current tab, to flush
+  // out any pending logging-related events.
+  Status status = EvaluateScriptAndIgnoreResult(session, "1");
+  if (status.IsError()) {
+    // Sometimes a WebDriver client fetches logs to diagnose an error that has
+    // occurred. It's possible that in the case of an error, the renderer is no
+    // be longer available, but we should return the logs anyway. So log (but
+    // don't fail on) any error that we get while evaluating the script.
+    LOG(WARNING) << "Unable to evaluate script: " << status.message();
+  }
 
   std::vector<WebDriverLog*> logs = session->GetAllLogs();
   for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
