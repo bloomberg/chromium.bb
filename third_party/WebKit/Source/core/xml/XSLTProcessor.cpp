@@ -73,10 +73,10 @@ Document* XSLTProcessor::createDocumentFromSource(const String& sourceString,
     if (frame) {
         Document* oldDocument = frame->document();
         // Before parsing, we need to save & detach the old document and get the new document
-        // in place. Document::detachLayoutTree() tears down the FrameView, so remember whether or not
+        // in place. Document::shutdown() tears down the FrameView, so remember whether or not
         // there was one.
         bool hasView = frame->view();
-        oldDocument->detachLayoutTree();
+        oldDocument->shutdown();
         // Re-create the FrameView if needed.
         if (hasView)
             frame->loader().client()->transitionToCommittedForNewPage();

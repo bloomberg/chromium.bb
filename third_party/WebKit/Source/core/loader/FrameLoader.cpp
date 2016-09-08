@@ -356,7 +356,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     // frame on a detached DOM tree, which is bad.
     SubframeLoadingDisabler disabler(m_frame->document());
     m_frame->detachChildren();
-    m_frame->document()->detachLayoutTree();
+    m_frame->document()->shutdown();
     clear();
 
     // detachChildren() potentially detaches the frame from the document. The
@@ -1130,7 +1130,7 @@ bool FrameLoader::prepareForCommit()
     // No more events will be dispatched so detach the Document.
     // TODO(yoav): Should we also be nullifying domWindow's document (or domWindow) since the doc is now detached?
     if (m_frame->document())
-        m_frame->document()->detachLayoutTree();
+        m_frame->document()->shutdown();
     m_documentLoader = m_provisionalDocumentLoader.release();
     takeObjectSnapshot();
 

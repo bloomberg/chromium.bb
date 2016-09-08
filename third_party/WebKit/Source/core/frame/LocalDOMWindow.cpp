@@ -318,7 +318,7 @@ Document* LocalDOMWindow::installNewDocument(const String& mimeType, const Docum
 
     m_document = createDocument(mimeType, init, forceXHTML);
     m_eventQueue = DOMWindowEventQueue::create(m_document.get());
-    m_document->attachLayoutTree();
+    m_document->initialize();
 
     if (!frame())
         return m_document;

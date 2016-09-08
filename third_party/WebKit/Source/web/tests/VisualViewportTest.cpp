@@ -1643,9 +1643,9 @@ TEST_P(ParameterizedVisualViewportTest, TestMainFrameInitializationSizing)
     navigateTo(m_baseURL + "content-width-1000-min-scale.html");
 
     WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
-    // The detachLayoutTree() and dispose() calls are a hack to prevent this test
+    // The shutdown() calls are a hack to prevent this test
     // from violating invariants about frame state during navigation/detach.
-    localFrame->frame()->document()->detachLayoutTree();
+    localFrame->frame()->document()->shutdown();
     localFrame->createFrameView();
 
     FrameView& frameView = *localFrame->frameView();

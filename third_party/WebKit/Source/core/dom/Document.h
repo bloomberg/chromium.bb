@@ -470,8 +470,17 @@ public:
 
     ResourceFetcher* fetcher() { return m_fetcher.get(); }
 
-    void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detachLayoutTree(const AttachContext& = AttachContext()) override;
+    void initialize();
+    virtual void shutdown();
+
+    void attachLayoutTree(const AttachContext& = AttachContext()) override
+    {
+        NOTREACHED();
+    }
+    void detachLayoutTree(const AttachContext& = AttachContext()) override
+    {
+        NOTREACHED();
+    }
 
     // If you have a Document, use layoutView() instead which is faster.
     void layoutObject() const = delete;

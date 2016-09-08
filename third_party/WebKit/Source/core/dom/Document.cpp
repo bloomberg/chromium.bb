@@ -2135,7 +2135,7 @@ StyleResolver& Document::ensureStyleResolver() const
     return m_styleEngine->ensureResolver();
 }
 
-void Document::attachLayoutTree(const AttachContext& context)
+void Document::initialize()
 {
     DCHECK_EQ(m_lifecycle.state(), DocumentLifecycle::Inactive);
     DCHECK(!m_axObjectCache || this != &axObjectCacheOwner());
@@ -2147,7 +2147,7 @@ void Document::attachLayoutTree(const AttachContext& context)
     m_layoutView->setStyle(StyleResolver::styleForDocument(*this));
     m_layoutView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
-    ContainerNode::attachLayoutTree(context);
+    ContainerNode::attachLayoutTree();
 
     // The TextAutosizer can't update layout view info while the Document is detached, so update now in case anything changed.
     if (TextAutosizer* autosizer = textAutosizer())
@@ -2163,9 +2163,9 @@ void Document::attachLayoutTree(const AttachContext& context)
     m_rootScrollerController->didAttachDocument();
 }
 
-void Document::detachLayoutTree(const AttachContext& context)
+void Document::shutdown()
 {
-    TRACE_EVENT0("blink", "Document::detach");
+    TRACE_EVENT0("blink", "Document::shutdown");
     RELEASE_ASSERT(!m_frame || m_frame->tree().childCount() == 0);
     if (!isActive())
         return;
@@ -2232,7 +2232,7 @@ void Document::detachLayoutTree(const AttachContext& context)
         clearAXObjectCache();
 
     m_layoutView = nullptr;
-    ContainerNode::detachLayoutTree(context);
+    ContainerNode::detachLayoutTree();
 
     if (this != &axObjectCacheOwner()) {
         if (AXObjectCache* cache = existingAXObjectCache()) {

@@ -152,7 +152,7 @@ TEST_F(HTMLSelectElementTest, PopupIsVisible)
     EXPECT_FALSE(select->popupIsVisible());
     select->showPopup();
     EXPECT_TRUE(select->popupIsVisible());
-    document().detachLayoutTree();
+    document().shutdown();
     EXPECT_FALSE(select->popupIsVisible());
 }
 

@@ -368,10 +368,10 @@ void LocalFrame::detach(FrameDetachType type)
     // handlers might start a new subresource load in this frame.
     m_loader.stopAllLoaders();
     m_loader.detach();
-    document()->detachLayoutTree();
+    document()->shutdown();
     // This is the earliest that scripting can be disabled:
     // - FrameLoader::detach() can fire XHR abort events
-    // - Document::detachLayoutTree()'s deferred widget updates can run script.
+    // - Document::shutdown()'s deferred widget updates can run script.
     ScriptForbiddenScope forbidScript;
     m_loader.clear();
     if (!client())
