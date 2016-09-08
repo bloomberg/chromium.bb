@@ -340,6 +340,34 @@ TEST_F('CrSettingsAppearancePageTest', 'AppearancePage', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_CHROMEOS)');
+/**
+ * Test fixture for chrome/browser/resources/settings/default_browser_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsDefaultBrowserTest() {}
+
+CrSettingsDefaultBrowserTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/default_browser_page/default_browser_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'default_browser_browsertest.js',
+  ]),
+};
+
+TEST_F('CrSettingsDefaultBrowserTest', 'DefaultBrowserPage', function() {
+  settings_default_browser.registerTests();
+  mocha.run();
+});
+GEN('#endif');
+
 /**
  * Test fixture for chrome/browser/resources/settings/search_page/.
  * @constructor

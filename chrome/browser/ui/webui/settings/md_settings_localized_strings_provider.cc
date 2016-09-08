@@ -464,9 +464,8 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
       {"defaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER},
       {"defaultBrowserDefault", IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT},
       {"defaultBrowserMakeDefault", IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT},
-      {"defaultBrowserUnknown", IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN},
+      {"defaultBrowserError", IDS_SETTINGS_DEFAULT_BROWSER_ERROR},
       {"defaultBrowserSecondary", IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY},
-      {"unableToSetDefaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER_ERROR},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -1151,7 +1150,7 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
     {"searchNoResults", IDS_SETTINGS_SEARCH_NO_RESULTS},
-    // TODO(dpapad); IDS_DOWNLOAD_CLEAR_SEARCH and IDS_MD_HISTORY_CLEAR_SEARCH
+    // TODO(dpapad): IDS_DOWNLOAD_CLEAR_SEARCH and IDS_MD_HISTORY_CLEAR_SEARCH
     // are identical, merge them to one and re-use here.
     {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
   };

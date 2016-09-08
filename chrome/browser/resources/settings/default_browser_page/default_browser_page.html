@@ -1,31 +1,41 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="/default_browser_page/default_browser_browser_proxy.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-default-browser-page">
   <template>
     <style include="settings-shared">
-      .error-icon {
-        color: var(--settings-error-color);
+      .solo-secondary {
+        @apply(--settings-secondary);
+        margin: 0;
       }
     </style>
-    <div class="settings-box first two-line">
-      <template is="dom-if" if="[[showButton_]]">
-        <div class="start" on-tap="onSetDefaultBrowserTap_" actionable>
-          <div>$i18n{defaultBrowser}</div>
+    <template is="dom-if" if="[[maySetDefaultBrowser_]]">
+      <div class="settings-box first two-line" on-tap="onSetDefaultBrowserTap_"
+          actionable>
+        <div>
+          <div id="canBeDefaultBrowser">$i18n{defaultBrowser}</div>
           <div class="secondary">$i18n{defaultBrowserMakeDefault}</div>
         </div>
-        <template is="dom-if" if="[[showError_]]">
-          <iron-icon icon="settings:error" class="error-icon"
-              title="$i18n{unableToSetDefaultBrowser}"></iron-icon>
-        </template>
-      </template>
-      <template is="dom-if" if="[[!showButton_]]">
-        <div class="secondary">[[message_]]</div>
-      </template>
-    </div>
+      </div>
+    </template>
+    <template is="dom-if" if="[[!maySetDefaultBrowser_]]">
+      <div class="settings-box first">
+        <div class="solo-secondary" hidden$="[[!isDefault_]]" id="isDefault">
+          $i18n{defaultBrowserDefault}
+        </div>
+        <div class="solo-secondary" hidden$="[[!isSecondaryInstall_]]"
+          id="isSecondaryInstall">
+          $i18n{defaultBrowserSecondary}
+        </div>
+        <div class="solo-secondary" hidden$="[[!isUnknownError_]]"
+          id="isUnknownError">
+          $i18n{defaultBrowserError}
+        </div>
+      </div>
+    </template>
   </template>
   <script src="default_browser_page.js"></script>
 </dom-module>

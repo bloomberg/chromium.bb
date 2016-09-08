@@ -374,6 +374,12 @@
                  file="site_settings/cookie_tree_node.js"
                  type="chrome_html" />
       <if expr="not chromeos">
+        <structure name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_HTML"
+                   file="default_browser_page/default_browser_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_JS"
+                   file="default_browser_page/default_browser_browser_proxy.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_HTML"
                    file="default_browser_page/default_browser_page.html"
                    type="chrome_html"

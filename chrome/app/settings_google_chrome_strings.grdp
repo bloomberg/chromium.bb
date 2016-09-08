@@ -41,14 +41,11 @@
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT" desc="Default browser checkbox label">
       Make Google Chrome the default browser
     </message>
-    <message name="IDS_SETTINGS_DEFAULT_BROWSER_UNKNOWN" desc="The text displayed when Chrome cannot determine or set the default browser">
+    <message name="IDS_SETTINGS_DEFAULT_BROWSER_ERROR" desc="The text displayed when Chrome cannot determine or set the default browser">
       Google Chrome cannot determine or set the default browser.
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
       This is a secondary installation of Google Chrome, and cannot be made your default browser.
-    </message>
-    <message name="IDS_SETTINGS_DEFAULT_BROWSER_ERROR" desc="The text displayed when Chrome is unable to become the default browser after the user requests that it became the default browser.  This is a general error message.">
-      Google Chrome was not able to become the default browser.
     </message>
   </if>
 

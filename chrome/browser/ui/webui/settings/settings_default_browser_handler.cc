@@ -88,14 +88,16 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
     chrome::ResetDefaultBrowserPrompt(Profile::FromWebUI(web_ui()));
   }
 
-  base::FundamentalValue is_default(state == shell_integration::IS_DEFAULT);
-  base::FundamentalValue can_be_default(
-      state != shell_integration::UNKNOWN_DEFAULT &&
-      !DefaultBrowserIsDisabledByPolicy() &&
+  base::DictionaryValue dict;
+  dict.SetBoolean("isDefault", state == shell_integration::IS_DEFAULT);
+  dict.SetBoolean("canBeDefault",
       shell_integration::CanSetAsDefaultBrowser());
+  dict.SetBoolean("isUnknownError",
+      state == shell_integration::UNKNOWN_DEFAULT);
+  dict.SetBoolean("isDisabledByPolicy", DefaultBrowserIsDisabledByPolicy());
 
-  CallJavascriptFunction("Settings.updateDefaultBrowserState", is_default,
-                         can_be_default);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+      base::StringValue("settings.updateDefaultBrowserState"), dict);
 }
 
 }  // namespace settings
