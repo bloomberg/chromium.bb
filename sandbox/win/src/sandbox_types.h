@@ -104,6 +104,8 @@ enum ResultCode : int {
   SBOX_ERROR_CANNOT_RESOLVE_INTERCEPTION_THUNK = 41,
   // Cannot write interception thunk to child process.
   SBOX_ERROR_CANNOT_WRITE_INTERCEPTION_THUNK = 42,
+  // Cannot find the base address of the new process.
+  SBOX_ERROR_CANNOT_FIND_BASE_ADDRESS = 43,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };

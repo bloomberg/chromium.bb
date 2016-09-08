@@ -84861,6 +84861,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="40" label="SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_THUNK"/>
   <int value="41" label="SBOX_ERROR_CANNOT_RESOLVE_INTERCEPTION_THUNK"/>
   <int value="42" label="SBOX_ERROR_CANNOT_WRITE_INTERCEPTION_THUNK"/>
+  <int value="43" label="SBOX_ERROR_CANNOT_FIND_BASE_ADDRESS"/>
   <int value="1002" label="LAUNCH_RESULT_SUCCESS"/>
   <int value="1003" label="LAUNCH_RESULT_FAILURE"/>
 </enum>
