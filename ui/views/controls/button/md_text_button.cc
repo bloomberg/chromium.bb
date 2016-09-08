@@ -292,18 +292,28 @@ void MdTextButton::UpdateColors() {
   if (!explicitly_set_normal_color())
     LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
+  // CTA buttons keep their enabled text color; disabled state is conveyed by
+  // shading the background instead.
+  if (is_cta_)
+    SetTextColor(STATE_DISABLED, theme->GetSystemColor(fg_color_id));
+
   SkColor text_color = label()->enabled_color();
   SkColor bg_color =
-      bg_color_override_
-          ? *bg_color_override_
-          : is_cta_
-                ? theme->GetSystemColor(
-                      ui::NativeTheme::kColorId_CallToActionColor)
-                : is_default()
-                      ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
-                      : theme->GetSystemColor(
-                            ui::NativeTheme::kColorId_DialogBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
 
+  if (bg_color_override_) {
+    bg_color = *bg_color_override_;
+  } else if (is_cta_) {
+    bg_color = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_CallToActionColor);
+    if (state() == STATE_DISABLED)
+      bg_color = color_utils::BlendTowardOppositeLuma(bg_color, 0x61);
+  } else if (is_default()) {
+    bg_color = color_utils::BlendTowardOppositeLuma(text_color, 0xD8);
+  }
+
+  // TODO(ellyjones): Excise this, in favor of a helper function wrapping
+  // |color_utils::AlphaBlend| and a new NativeTheme color constant.
   bg_color = PlatformStyle::BackgroundColorForMdButton(bg_color, state());
 
   const SkAlpha kStrokeOpacity = 0x1A;
