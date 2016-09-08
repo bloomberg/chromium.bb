@@ -30,7 +30,7 @@ import urllib2
 
 # This can be changed after running /build/package_mac_toolchain.py.
 TOOLCHAIN_REVISION = '5B1008'
-TOOLCHAIN_SUB_REVISION = 2
+TOOLCHAIN_SUB_REVISION = 3
 TOOLCHAIN_VERSION = '%s-%s' % (TOOLCHAIN_REVISION, TOOLCHAIN_SUB_REVISION)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
