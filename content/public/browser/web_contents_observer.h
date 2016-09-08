@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/media_metadata.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
 #include "ipc/ipc_listener.h"
@@ -37,6 +37,7 @@ struct AXLocationChangeNotificationDetails;
 struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
+struct MediaMetadata;
 struct Referrer;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
@@ -469,9 +470,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void MediaStoppedPlaying(const MediaPlayerId& id) {}
 
   // Invoked when media session has changed its state.
-  virtual void MediaSessionStateChanged(bool is_controllable,
-                                        bool is_suspended,
-                                        const MediaMetadata& metadata) {}
+  virtual void MediaSessionStateChanged(
+      bool is_controllable,
+      bool is_suspended,
+      const base::Optional<MediaMetadata>& metadata) {}
 
   // Invoked when the renderer process changes the page scale factor.
   virtual void OnPageScaleFactorChanged(float page_scale_factor) {}

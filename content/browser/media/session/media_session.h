@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
 #include "content/common/content_export.h"
@@ -63,8 +64,8 @@ class MediaSession : public WebContentsObserver,
 
   ~MediaSession() override;
 
-  void SetMetadata(const MediaMetadata& metadata);
-  const MediaMetadata& metadata() const { return metadata_; }
+  void SetMetadata(const base::Optional<MediaMetadata>& metadata);
+  const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -218,7 +219,7 @@ class MediaSession : public WebContentsObserver,
   // StopDucking().
   bool is_ducking_;
 
-  MediaMetadata metadata_;
+  base::Optional<MediaMetadata> metadata_;
   base::CallbackList<void(State)> media_session_state_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);

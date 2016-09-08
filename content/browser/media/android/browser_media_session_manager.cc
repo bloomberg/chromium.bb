@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/browser_media_session_manager.h"
 
+#include "base/optional.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_metadata_sanitizer.h"
@@ -30,10 +31,11 @@ void BrowserMediaSessionManager::OnDeactivate(int session_id, int request_id) {
 
 void BrowserMediaSessionManager::OnSetMetadata(
     int session_id,
-    const MediaMetadata& insecure_metadata) {
+    const base::Optional<MediaMetadata>& insecure_metadata) {
   // When receiving a MediaMetadata, the browser process can't trust that it is
   // coming from a known and secure source. It must be processed accordingly.
-  if (!MediaMetadataSanitizer::CheckSanity(insecure_metadata)) {
+  if (insecure_metadata.has_value() &&
+      !MediaMetadataSanitizer::CheckSanity(insecure_metadata.value())) {
     render_frame_host_->GetProcess()->ShutdownForBadMessage();
     return;
   }

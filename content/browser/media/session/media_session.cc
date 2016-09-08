@@ -60,7 +60,7 @@ MediaSession::~MediaSession() {
   DCHECK(audio_focus_state_ == State::INACTIVE);
 }
 
-void MediaSession::SetMetadata(const MediaMetadata& metadata) {
+void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
   metadata_ = metadata;
   // TODO(zqzhang): On Android, the metadata is sent though JNI everytime the
   // media session play/pause state changes. Need to find a way to seprate the

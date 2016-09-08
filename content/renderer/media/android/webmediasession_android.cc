@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "content/public/common/media_metadata.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "third_party/WebKit/public/platform/WebIconSizesParser.h"
@@ -39,11 +40,12 @@ void WebMediaSessionAndroid::deactivate(
 
 void WebMediaSessionAndroid::setMetadata(
     const blink::WebMediaMetadata* web_metadata) {
-  MediaMetadata metadata;
+  base::Optional<MediaMetadata> metadata;
   if (web_metadata) {
-    metadata.title = web_metadata->title;
-    metadata.artist = web_metadata->artist;
-    metadata.album = web_metadata->album;
+    metadata = MediaMetadata();
+    metadata->title = web_metadata->title;
+    metadata->artist = web_metadata->artist;
+    metadata->album = web_metadata->album;
     for (const auto& web_artwork : web_metadata->artwork) {
       MediaMetadata::Artwork artwork;
       artwork.src = GURL(base::string16(web_artwork.src));
@@ -53,7 +55,7 @@ void WebMediaSessionAndroid::setMetadata(
       artwork.sizes.insert(artwork.sizes.end(),
                            web_sizes.begin(),
                            web_sizes.end());
-      metadata.artwork.push_back(artwork);
+      metadata->artwork.push_back(artwork);
     }
   }
 

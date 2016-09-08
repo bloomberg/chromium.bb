@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "content/public/common/media_metadata.h"
+
 namespace content {
 
 namespace {

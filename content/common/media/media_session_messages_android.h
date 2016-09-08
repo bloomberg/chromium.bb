@@ -5,6 +5,7 @@
 // IPC messages for the Media Session API.
 // Multiply-included message file, hence no include guard.
 
+#include "base/optional.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_metadata.h"
@@ -41,4 +42,4 @@ IPC_MESSAGE_ROUTED2(MediaSessionHostMsg_Deactivate,
 
 IPC_MESSAGE_ROUTED2(MediaSessionHostMsg_SetMetadata,
                     int /* request_id*/,
-                    content::MediaMetadata /* metadata */)
+                    base::Optional<content::MediaMetadata> /* metadata */)

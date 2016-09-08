@@ -5,6 +5,7 @@
 #include "content/renderer/media/android/renderer_media_session_manager.h"
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "content/common/media/media_metadata_sanitizer.h"
 #include "content/common/media/media_session_messages_android.h"
 #include "content/public/common/media_metadata.h"
@@ -64,15 +65,16 @@ void RendererMediaSessionManager::Deactivate(
 }
 
 void RendererMediaSessionManager::SetMetadata(
-    int session_id,
-    const MediaMetadata& metadata) {
+    int session_id, const base::Optional<MediaMetadata>& metadata) {
 
   // TODO(zqzhang): print a console warning when metadata is dirty. See
   // https://crbug.com/625244.
   Send(new MediaSessionHostMsg_SetMetadata(
       routing_id(), session_id,
-      MediaMetadataSanitizer::CheckSanity(metadata) ?
-      metadata : MediaMetadataSanitizer::Sanitize(metadata)));
+      (!metadata.has_value() ||
+       MediaMetadataSanitizer::CheckSanity(metadata.value()))
+          ? metadata
+          : MediaMetadataSanitizer::Sanitize(metadata.value())));
 }
 
 void RendererMediaSessionManager::OnDidActivate(int request_id, bool success) {

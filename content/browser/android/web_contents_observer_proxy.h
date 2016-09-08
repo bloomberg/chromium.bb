@@ -72,9 +72,10 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) override;
-  void MediaSessionStateChanged(bool is_controllable,
-                                bool is_suspended,
-                                const MediaMetadata& metadata) override;
+  void MediaSessionStateChanged(
+      bool is_controllable,
+      bool is_suspended,
+      const base::Optional<MediaMetadata>& metadata) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);
 
   void DidFailLoadInternal(bool is_provisional_load,

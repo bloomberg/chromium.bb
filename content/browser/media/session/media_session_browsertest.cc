@@ -54,7 +54,7 @@ class MockWebContentsObserver : public WebContentsObserver {
 
   MOCK_METHOD3(MediaSessionStateChanged,
                void(bool is_controllable, bool is_suspended,
-                    const content::MediaMetadata& metadata));
+                    const base::Optional<content::MediaMetadata>& metadata));
 };
 
 }  // namespace

@@ -9,12 +9,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/media_metadata_android.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/media_metadata.h"
 #include "jni/WebContentsObserverProxy_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -307,12 +309,14 @@ void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
 void WebContentsObserverProxy::MediaSessionStateChanged(
     bool is_controllable,
     bool is_suspended,
-    const MediaMetadata& metadata) {
+    const base::Optional<MediaMetadata>& metadata) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj(java_observer_);
-  ScopedJavaLocalRef<jobject> j_metadata =
-      MediaMetadataAndroid::CreateJavaObject(env, metadata);
+  ScopedJavaLocalRef<jobject> j_metadata;
+
+  if (metadata.has_value())
+    j_metadata = MediaMetadataAndroid::CreateJavaObject(env, metadata.value());
 
   Java_WebContentsObserverProxy_mediaSessionStateChanged(
       env, obj, is_controllable, is_suspended, j_metadata);

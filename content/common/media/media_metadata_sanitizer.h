@@ -5,9 +5,9 @@
 #ifndef CONTENT_COMMON_MEDIA_MEDIA_METADATA_SANITIZER_H_
 #define CONTENT_COMMON_MEDIA_MEDIA_METADATA_SANITIZER_H_
 
-#include "content/public/common/media_metadata.h"
-
 namespace content {
+
+struct MediaMetadata;
 
 class MediaMetadataSanitizer {
  public:

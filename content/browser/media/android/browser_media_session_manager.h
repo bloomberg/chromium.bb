@@ -6,11 +6,12 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_SESSION_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 
 namespace IPC {
 class Message;
-}
+}  // namespace IPC
 
 namespace content {
 
@@ -24,7 +25,8 @@ class CONTENT_EXPORT BrowserMediaSessionManager {
   // Message handlers.
   virtual void OnActivate(int session_id, int request_id);
   virtual void OnDeactivate(int session_id, int request_id);
-  virtual void OnSetMetadata(int session_id, const MediaMetadata& metadata);
+  virtual void OnSetMetadata(
+      int session_id, const base::Optional<MediaMetadata>& metadata);
 
   int GetRoutingID() const;
 
