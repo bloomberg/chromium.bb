@@ -17,6 +17,7 @@ android_library("precache_java") {
 }
 
 android_library("precache_javatests") {
+  testonly = true
   deps = [
     ":precache_java",
     "//base:base_java_test_support",

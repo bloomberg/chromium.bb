@@ -226,6 +226,7 @@ if (is_android) {
     ]
   }
   android_library("javatests") {
+    testonly = true
     deps = [
       ":java",
       "//base:base_java",

@@ -2327,6 +2327,7 @@ if (is_android) {
 
   # GYP: //base.gyp:base_javatests
   android_library("base_javatests") {
+    testonly = true
     deps = [
       ":base_java",
       ":base_java_test_support",
@@ -2343,6 +2344,7 @@ if (is_android) {
 
   # GYP: //base.gyp:base_java_test_support
   android_library("base_java_test_support") {
+    testonly = true
     deps = [
       ":base_java",
       "//testing/android/reporter:reporter_java",
@@ -2439,6 +2441,7 @@ if (is_android) {
 
   # GYP: //base.gyp:base_java_unittest_support
   android_library("base_java_unittest_support") {
+    testonly = true
     deps = [
       ":base_java",
     ]
