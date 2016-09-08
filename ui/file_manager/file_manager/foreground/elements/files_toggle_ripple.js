@@ -5,10 +5,12 @@
 /**
  * Toggle Ripple.
  *
- * You can change ripple color by the following CSS selector.
+ * You can change ripple color by the following CSS variable.
  *
- * files-toggle-ripple#my-button::shadow .ripple {
- *   background-color: black;
+ * files-toggle-ripple#my-button {
+ *   --files-toggle-ripple: {
+ *     background-color: black;
+ *   }
  * }
  *
  * Ripple size of the activated state is same with the size of this element.

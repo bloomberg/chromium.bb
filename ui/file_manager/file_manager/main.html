@@ -27,6 +27,40 @@
     <link rel="stylesheet" href="foreground/css/common.css">
     <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
 
+    <style is="custom-style">
+      #search-box paper-input-container {
+        --paper-input-container-input: {
+          color: inherit;
+          font: inherit;
+          margin: 0.5em 0 0.25em;
+          padding: 0;
+        };
+        --paper-input-container-underline: {
+          background-color: rgba(255, 255, 0, 0.3);
+        };
+        --paper-input-container-underline-focus: {
+          background-color: white;
+          height: 1px;
+        };
+      }
+
+      .dialog-footer paper-input-container {
+        --paper-input-container-input: {
+          font: inherit;
+        };
+        --paper-input-container-underline: {
+          background-color: rgb(207, 207, 207);
+        };
+        --paper-input-container-underline-focus: {
+          background-color: rgb(33, 150, 243);
+        };
+      }
+
+      paper-progress {
+        --paper-progress-active-color: rgb(26, 194, 34);
+      }
+    </style>
+
     <script src="foreground/js/elements_importer.js"></script>
     <script src="foreground/js/main_scripts.js" defer></script>
   </head>

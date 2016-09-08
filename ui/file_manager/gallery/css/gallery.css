@@ -76,13 +76,8 @@ html[dir='rtl'] .bubble .close-x {
   opacity: 0.7;
 }
 
-paper-ripple,
-paper-button::shadow paper-ripple {
+paper-ripple {
   color: black;
-}
-
-files-toggle-ripple::shadow .ripple.activated {
-  opacity: 0.4;
 }
 
 .gallery,
@@ -556,8 +551,7 @@ html[dir='rtl'] .gallery .toolbar .bubble {
   -webkit-margin-start: 16px;
 }
 
-.edit-mode-toolbar .overwrite-original[disabled]::shadow #checkbox,
-.edit-mode-toolbar .overwrite-original[disabled]::shadow #checkboxLabel {
+.edit-mode-toolbar .overwrite-original[disabled] {
   opacity: 0.2;
 }
 
@@ -913,10 +907,6 @@ button[disabled] {
 
 paper-slider {
   width: 172px;
-}
-
-paper-slider::shadow paper-progress::shadow #progressContainer {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .edit-modal .range.brightness > .icon {

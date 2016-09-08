@@ -32,6 +32,9 @@
 /* Customized scrollbar for the playlist. */
 
 .media-button {
+  --files-toggle-ripple-activated: {
+    opacity: 0.1;
+  };
   background-color: transparent;
   border: 0;
   flex: none;

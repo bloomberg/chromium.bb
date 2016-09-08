@@ -110,8 +110,10 @@ paper-button:focus:not(:active) {
 }
 
 #metadata-button {
-  --files-icon-button-activated-theme: {
-    background: white;
+  --files-toggle-ripple: {
+    background-color: white;
+  };
+  --files-toggle-ripple-activated: {
     opacity: 0.3;
   };
 }

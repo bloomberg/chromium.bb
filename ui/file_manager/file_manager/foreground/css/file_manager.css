@@ -817,24 +817,8 @@ body.check-select #search-box {
   margin-top: -4px;
 }
 
-#search-box paper-input-container /deep/ ::-webkit-input-placeholder {
+#search-box paper-input-container input::-webkit-input-placeholder {
   color: rgba(255, 255, 255, 0.5);
-}
-
-#search-box paper-input-container /deep/ .unfocused-line {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-#search-box paper-input-container /deep/ .focused-line {
-  background-color: white;
-  height: 1px;
-}
-
-#search-box paper-input-container /deep/ .input-content ::content input {
-  color: inherit;
-  font: inherit;
-  margin: 0.5em 0 0.25em;
-  padding: 0;
 }
 
 #search-box.has-cursor,
@@ -998,18 +982,6 @@ html[dir='rtl'] #search-box .clear {
   color: rgb(51, 51, 51);
   padding: 4px 0;
   width: 100%;
-}
-
-.dialog-footer paper-input-container /deep/ .unfocused-line {
-  background-color: rgb(207, 207, 207);
-}
-
-.dialog-footer paper-input-container /deep/ .focused-line {
-  background-color: rgb(33, 150, 243);
-}
-
-.dialog-footer paper-input-container /deep/ .input-content ::content input {
-  font: inherit;
 }
 
 .dialog-footer select {
@@ -1215,10 +1187,6 @@ html[dir='rtl'] .breadcrumbs .separator {
 
 .thumbnail-view .loading-indicator {
   top: 0;
-}
-
-.loading-indicator::shadow #activeProgress {
-  background-color: rgb(26, 194, 34);
 }
 
 .downloads-warning {
