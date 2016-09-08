@@ -80,7 +80,8 @@ class CC_EXPORT AnimationHost {
   void SetMutatorHostClient(MutatorHostClient* client);
 
   void SetNeedsCommit();
-  void SetNeedsRebuildPropertyTrees();
+  void SetNeedsPushProperties();
+  bool needs_push_properties() const { return needs_push_properties_; }
 
   void PushPropertiesTo(AnimationHost* host_impl);
 
@@ -172,11 +173,6 @@ class CC_EXPORT AnimationHost {
   const ElementToAnimationsMap& active_element_animations_for_testing() const;
   const ElementToAnimationsMap& all_element_animations_for_testing() const;
 
-  bool animation_waiting_for_deletion() const {
-    return animation_waiting_for_deletion_;
-  }
-  void OnAnimationWaitingForDeletion();
-
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
 
@@ -202,7 +198,7 @@ class CC_EXPORT AnimationHost {
   const ThreadInstance thread_instance_;
 
   bool supports_scroll_animations_;
-  bool animation_waiting_for_deletion_;
+  bool needs_push_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

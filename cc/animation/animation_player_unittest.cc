@@ -24,10 +24,17 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
 // See element_animations_unittest.cc for active/pending observers tests.
 
 TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
   host_->AddAnimationTimeline(timeline_);
+  EXPECT_TRUE(timeline_->needs_push_properties());
+  EXPECT_FALSE(player_->needs_push_properties());
+
   timeline_->AttachPlayer(player_);
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
+
+  EXPECT_TRUE(timeline_->needs_push_properties());
+  EXPECT_FALSE(player_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -37,33 +44,44 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
 
   EXPECT_FALSE(player_impl_->element_animations());
   EXPECT_FALSE(player_impl_->element_id());
+  EXPECT_FALSE(player_->needs_push_properties());
+  EXPECT_FALSE(timeline_->needs_push_properties());
 
   player_->AttachElement(element_id_);
   EXPECT_EQ(player_, GetPlayerForElementId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
 
   host_->PushPropertiesTo(host_impl_);
 
   EXPECT_EQ(player_impl_, GetImplPlayerForLayerId(element_id_));
   EXPECT_TRUE(player_impl_->element_animations());
   EXPECT_EQ(player_impl_->element_id(), element_id_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   player_->DetachElement();
   EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
 
   host_->PushPropertiesTo(host_impl_);
 
   EXPECT_FALSE(GetImplPlayerForLayerId(element_id_));
   EXPECT_FALSE(player_impl_->element_animations());
   EXPECT_FALSE(player_impl_->element_id());
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
+  EXPECT_TRUE(timeline_->needs_push_properties());
+  EXPECT_FALSE(player_->needs_push_properties());
+
+  host_->PushPropertiesTo(host_impl_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 }
 
 TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
@@ -71,18 +89,21 @@ TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
 
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
+  EXPECT_FALSE(player_->needs_push_properties());
 
   player_->AttachElement(element_id_);
   EXPECT_FALSE(player_->animation_timeline());
   EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
+  EXPECT_FALSE(player_->needs_push_properties());
 
   timeline_->AttachPlayer(player_);
   EXPECT_EQ(timeline_, player_->animation_timeline());
   EXPECT_EQ(player_, GetPlayerForElementId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
+  EXPECT_TRUE(player_->needs_push_properties());
 
   // Removing player from timeline detaches layer.
   timeline_->DetachPlayer(player_);
@@ -90,6 +111,7 @@ TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
   EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
+  EXPECT_TRUE(player_->needs_push_properties());
 }
 
 TEST_F(AnimationPlayerTest, PropertiesMutate) {
@@ -100,6 +122,10 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
   player_->AttachElement(element_id_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
+
+  host_->PushPropertiesTo(host_impl_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -118,8 +144,10 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
                                transform_y);
   AddAnimatedFilterToPlayer(player_.get(), duration, start_brightness,
                             end_brightness);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
 
   host_->PushPropertiesTo(host_impl_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
                                          TargetProperty::OPACITY));
@@ -140,9 +168,11 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
   AnimateLayersTransferEvents(time, 3u);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   time += base::TimeDelta::FromSecondsD(duration);
   AnimateLayersTransferEvents(time, 3u);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -180,8 +210,12 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
 
   host_->AddAnimationTimeline(timeline_);
+
   timeline_->AttachPlayer(player1);
+  EXPECT_TRUE(timeline_->needs_push_properties());
+
   timeline_->AttachPlayer(player2);
+  EXPECT_TRUE(timeline_->needs_push_properties());
 
   player1->set_animation_delegate(&delegate1);
   player2->set_animation_delegate(&delegate2);
@@ -222,11 +256,17 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate2.started());
   EXPECT_FALSE(delegate2.finished());
 
+  EXPECT_FALSE(player1->needs_push_properties());
+  EXPECT_FALSE(player2->needs_push_properties());
+
   time += base::TimeDelta::FromSecondsD(duration);
   AnimateLayersTransferEvents(time, 2u);
 
   EXPECT_TRUE(delegate1.finished());
   EXPECT_TRUE(delegate2.finished());
+
+  EXPECT_FALSE(player1->needs_push_properties());
+  EXPECT_FALSE(player2->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
                                        end_opacity);
@@ -258,11 +298,15 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
   const int opacity_id = AddOpacityTransitionToPlayer(
       player_.get(), duration, start_opacity, end_opacity, false);
 
+  EXPECT_FALSE(player_->needs_push_properties());
+
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
 
+  EXPECT_FALSE(player_->needs_push_properties());
   EXPECT_FALSE(player_->element_animations());
   player_->RemoveAnimation(filter_id);
+  EXPECT_FALSE(player_->needs_push_properties());
 
   player_->AttachElement(element_id_);
 
@@ -271,6 +315,7 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
                    ->GetAnimationById(filter_id));
   EXPECT_TRUE(player_->element_animations()
                   ->GetAnimationById(opacity_id));
+  EXPECT_TRUE(player_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -347,6 +392,7 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   EXPECT_EQ(player_impl_, GetImplPlayerForLayerId(element_id_));
   EXPECT_TRUE(player_impl_->element_animations());
   EXPECT_EQ(player_impl_->element_id(), element_id_);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(false));
 
   const ElementId new_element_id(NextTestLayerId(), 0);
   player_->DetachElement();
@@ -355,6 +401,7 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   EXPECT_EQ(player_, GetPlayerForElementId(new_element_id));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), new_element_id);
+  EXPECT_TRUE(CheckPlayerTimelineNeedsPushProperties(true));
 
   host_->PushPropertiesTo(host_impl_);
 

@@ -33,7 +33,8 @@ ElementAnimations::ElementAnimations()
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
       needs_to_start_animations_(false),
-      scroll_offset_animation_was_interrupted_(false) {}
+      scroll_offset_animation_was_interrupted_(false),
+      needs_push_properties_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -122,9 +123,18 @@ bool ElementAnimations::IsEmpty() const {
   return !players_list_->might_have_observers();
 }
 
+void ElementAnimations::SetNeedsPushProperties() {
+  needs_push_properties_ = true;
+}
+
 void ElementAnimations::PushPropertiesTo(
     scoped_refptr<ElementAnimations> element_animations_impl) {
   DCHECK_NE(this, element_animations_impl);
+
+  if (!needs_push_properties_)
+    return;
+  needs_push_properties_ = false;
+
   if (!has_any_animation() && !element_animations_impl->has_any_animation())
     return;
   MarkAbortedAnimationsForDeletion(element_animations_impl.get());
@@ -157,6 +167,7 @@ void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
     default:
       break;
   }
+  SetNeedsPushProperties();
 }
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
@@ -886,7 +897,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
     }
   }
   if (marked_animations_for_deletions)
-    NotifyClientAnimationWaitingForDeletion();
+    NotifyPlayersAnimationWaitingForDeletion();
 }
 
 void ElementAnimations::MarkAbortedAnimationsForDeletion(
@@ -1065,10 +1076,6 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
     OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
 }
 
-void ElementAnimations::NotifyClientAnimationWaitingForDeletion() {
-  OnAnimationWaitingForDeletion();
-}
-
 void ElementAnimations::NotifyClientAnimationChanged(
     TargetProperty::Type property,
     ElementListType list_type,
@@ -1245,6 +1252,7 @@ void ElementAnimations::PauseAnimation(int animation_id,
                                       animations_[i]->time_offset());
     }
   }
+  SetNeedsPushProperties();
 }
 
 void ElementAnimations::RemoveAnimation(int animation_id) {
@@ -1282,6 +1290,8 @@ void ElementAnimations::RemoveAnimation(int animation_id) {
     UpdateClientAnimationState(TargetProperty::OPACITY);
   if (removed_filter_animation)
     UpdateClientAnimationState(TargetProperty::FILTER);
+
+  SetNeedsPushProperties();
 }
 
 void ElementAnimations::AbortAnimation(int animation_id) {
@@ -1299,6 +1309,8 @@ void ElementAnimations::AbortAnimation(int animation_id) {
       }
     }
   }
+
+  SetNeedsPushProperties();
 }
 
 void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
@@ -1332,6 +1344,8 @@ void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
         break;
     }
   }
+
+  SetNeedsPushProperties();
 }
 
 Animation* ElementAnimations::GetAnimation(
@@ -1386,13 +1400,6 @@ void ElementAnimations::OnScrollOffsetAnimated(
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementScrollOffsetMutated(
       element_id(), list_type, scroll_offset);
-}
-
-void ElementAnimations::OnAnimationWaitingForDeletion() {
-  // TODO(loyso): Invalidate AnimationHost::SetNeedsPushProperties here.
-  // But we always do PushProperties in AnimationHost for now. crbug.com/604280
-  DCHECK(animation_host());
-  animation_host()->OnAnimationWaitingForDeletion();
 }
 
 void ElementAnimations::IsAnimatingChanged(ElementListType list_type,
@@ -1459,6 +1466,13 @@ void ElementAnimations::NotifyPlayersAnimationAborted(
   AnimationPlayer* player;
   while ((player = it.GetNext()) != nullptr)
     player->NotifyAnimationAborted(monotonic_time, target_property, group);
+}
+
+void ElementAnimations::NotifyPlayersAnimationWaitingForDeletion() {
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr)
+    player->NotifyAnimationWaitingForDeletion();
 }
 
 void ElementAnimations::NotifyPlayersAnimationTakeover(

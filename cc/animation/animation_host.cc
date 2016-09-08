@@ -43,7 +43,7 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
     : mutator_host_client_(nullptr),
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
-      animation_waiting_for_deletion_(false) {
+      needs_push_properties_(false) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         base::MakeUnique<ScrollOffsetAnimationsImpl>(this);
@@ -91,6 +91,7 @@ void AnimationHost::AddAnimationTimeline(
   timeline->SetAnimationHost(this);
   id_to_timeline_map_.insert(
       std::make_pair(timeline->id(), std::move(timeline)));
+  SetNeedsPushProperties();
 }
 
 void AnimationHost::RemoveAnimationTimeline(
@@ -98,6 +99,7 @@ void AnimationHost::RemoveAnimationTimeline(
   DCHECK(timeline->id());
   EraseTimeline(timeline);
   id_to_timeline_map_.erase(timeline->id());
+  SetNeedsPushProperties();
 }
 
 void AnimationHost::RegisterElement(ElementId element_id,
@@ -159,23 +161,31 @@ void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {
     return;
 
   mutator_host_client_ = client;
+
+  if (needs_push_properties() && mutator_host_client())
+    SetNeedsPushProperties();
 }
 
 void AnimationHost::SetNeedsCommit() {
   DCHECK(mutator_host_client_);
   mutator_host_client_->SetMutatorsNeedCommit();
-}
-
-void AnimationHost::SetNeedsRebuildPropertyTrees() {
-  DCHECK(mutator_host_client_);
+  // TODO(loyso): Invalidate property trees only if really needed.
   mutator_host_client_->SetMutatorsNeedRebuildPropertyTrees();
 }
 
+void AnimationHost::SetNeedsPushProperties() {
+  needs_push_properties_ = true;
+}
+
 void AnimationHost::PushPropertiesTo(AnimationHost* host_impl) {
-  PushTimelinesToImplThread(host_impl);
-  RemoveTimelinesFromImplThread(host_impl);
-  PushPropertiesToImplThread(host_impl);
-  animation_waiting_for_deletion_ = false;
+  if (needs_push_properties_) {
+    needs_push_properties_ = false;
+    PushTimelinesToImplThread(host_impl);
+    RemoveTimelinesFromImplThread(host_impl);
+    PushPropertiesToImplThread(host_impl);
+    // This is redundant but used in tests.
+    host_impl->needs_push_properties_ = false;
+  }
 }
 
 void AnimationHost::PushTimelinesToImplThread(AnimationHost* host_impl) const {
@@ -212,19 +222,24 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   // to happen before the element animations are synced below.
   for (auto& kv : id_to_timeline_map_) {
     AnimationTimeline* timeline = kv.second.get();
-    AnimationTimeline* timeline_impl =
-        host_impl->GetTimelineById(timeline->id());
-    if (timeline_impl)
-      timeline->PushPropertiesTo(timeline_impl);
+    if (timeline->needs_push_properties()) {
+      AnimationTimeline* timeline_impl =
+          host_impl->GetTimelineById(timeline->id());
+      if (timeline_impl)
+        timeline->PushPropertiesTo(timeline_impl);
+    }
   }
 
   // Sync properties for created ElementAnimations.
   for (auto& kv : element_to_animations_map_) {
     const auto& element_animations = kv.second;
-    auto element_animations_impl =
-        host_impl->GetElementAnimationsForElementId(kv.first);
-    if (element_animations_impl)
-      element_animations->PushPropertiesTo(std::move(element_animations_impl));
+    if (element_animations->needs_push_properties()) {
+      auto element_animations_impl =
+          host_impl->GetElementAnimationsForElementId(kv.first);
+      if (element_animations_impl)
+        element_animations->PushPropertiesTo(
+            std::move(element_animations_impl));
+    }
   }
 
   // Update the impl-only scroll offset animations.
@@ -569,10 +584,6 @@ AnimationHost::active_element_animations_for_testing() const {
 const AnimationHost::ElementToAnimationsMap&
 AnimationHost::all_element_animations_for_testing() const {
   return element_to_animations_map_;
-}
-
-void AnimationHost::OnAnimationWaitingForDeletion() {
-  animation_waiting_for_deletion_ = true;
 }
 
 }  // namespace cc
