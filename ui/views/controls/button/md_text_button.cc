@@ -312,9 +312,11 @@ void MdTextButton::UpdateColors() {
     bg_color = color_utils::BlendTowardOppositeLuma(text_color, 0xD8);
   }
 
-  // TODO(ellyjones): Excise this, in favor of a helper function wrapping
-  // |color_utils::AlphaBlend| and a new NativeTheme color constant.
-  bg_color = PlatformStyle::BackgroundColorForMdButton(bg_color, state());
+  if (state() == STATE_PRESSED) {
+    SkColor shade =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonPressedShade);
+    bg_color = color_utils::GetResultingPaintColor(shade, bg_color);
+  }
 
   const SkAlpha kStrokeOpacity = 0x1A;
   SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))

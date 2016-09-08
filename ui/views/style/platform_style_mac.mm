@@ -96,14 +96,4 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
       theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
 }
 
-// static
-SkColor PlatformStyle::BackgroundColorForMdButton(
-    SkColor color,
-    Button::ButtonState state) {
-  // Per Harmony specs: Pressed state on Mac is + #000 at 0.05 alpha.
-  if (state == Button::STATE_PRESSED)
-    return color_utils::AlphaBlend(SK_ColorBLACK, color, 0x08);
-  return color;
-}
-
 }  // namespace views

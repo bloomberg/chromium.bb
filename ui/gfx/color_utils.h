@@ -94,6 +94,11 @@ GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
 GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
                               SkAlpha alpha);
 
+// Returns the color that results from painting |foreground| on top of
+// |background|.
+GFX_EXPORT SkColor GetResultingPaintColor(SkColor foreground,
+                                          SkColor background);
+
 // Returns true if the luma of |color| is closer to black than white.
 GFX_EXPORT bool IsDark(SkColor color);
 

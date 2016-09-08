@@ -329,6 +329,8 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetSystemColor(kColorId_LinkEnabled);
     case kColorId_TextOnCallToActionColor:
       return GetTextColor(GetLabel(), SELECTED);
+    case kColorId_ButtonPressedShade:
+      return SK_ColorTRANSPARENT;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

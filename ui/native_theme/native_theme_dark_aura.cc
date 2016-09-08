@@ -91,6 +91,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
 
     // Intentional pass-throughs to NativeThemeAura.
     case kColorId_TextOnCallToActionColor:
+    case kColorId_ButtonPressedShade:
     case kColorId_ResultsTableHoveredBackground:
     case kColorId_ResultsTableSelectedBackground:
     case kColorId_ResultsTableNormalUrl:

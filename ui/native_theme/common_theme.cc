@@ -155,6 +155,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
   static const SkColor kCallToActionColor = gfx::kGoogleBlue500;
   static const SkColor kTextOnCallToActionColor = SK_ColorWHITE;
+  static const SkColor kButtonPressedShade = SK_ColorTRANSPARENT;
   // MenuItem:
   static const SkColor kMenuBackgroundColor = SK_ColorWHITE;
   static const SkColor kMenuHighlightBackgroundColor =
@@ -291,6 +292,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kCallToActionColor;
     case NativeTheme::kColorId_TextOnCallToActionColor:
       return kTextOnCallToActionColor;
+    case NativeTheme::kColorId_ButtonPressedShade:
+      return kButtonPressedShade;
 
     // MenuItem
     case NativeTheme::kColorId_MenuBorderColor:

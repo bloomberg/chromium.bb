@@ -88,11 +88,6 @@ class VIEWS_EXPORT PlatformStyle {
   static void ApplyLabelButtonTextStyle(Label* label,
                                         ButtonColorByState* color_by_state);
 
-  // Returns the background color that should be used for an MdTextButton or
-  // other MD controls when in the given state.
-  static SkColor BackgroundColorForMdButton(SkColor color,
-                                            Button::ButtonState state);
-
   // Applies the current system theme to the default border created by |button|.
   static std::unique_ptr<Border> CreateThemedLabelButtonBorder(
       LabelButton* button);

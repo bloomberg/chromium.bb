@@ -89,12 +89,6 @@ SkColor PlatformStyle::TextColorForButton(
   return color_by_state[button.state()];
 }
 
-SkColor PlatformStyle::BackgroundColorForMdButton(
-    SkColor color,
-    Button::ButtonState state) {
-  return color;
-}
-
 #endif  // OS_MACOSX
 
 #if !defined(DESKTOP_LINUX) && !defined(OS_MACOSX)

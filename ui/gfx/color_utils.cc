@@ -284,6 +284,11 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
                         static_cast<int>(std::round(b)));
 }
 
+SkColor GetResultingPaintColor(SkColor foreground, SkColor background) {
+  return AlphaBlend(SkColorSetA(foreground, SK_AlphaOPAQUE), background,
+                    SkColorGetA(foreground));
+}
+
 bool IsDark(SkColor color) {
   return GetLuma(color) < 128;
 }

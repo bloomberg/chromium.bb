@@ -126,7 +126,8 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 }
 
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
-  // Even with --secondary-ui-md, menus use the platform colors and styling.
+  // Even with --secondary-ui-md, menus use the platform colors and styling, and
+  // Mac has a couple of specific color overrides.
   switch (color_id) {
     case kColorId_EnabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
@@ -145,6 +146,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
                                    : kMenuSeparatorColor;
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
+
+    case kColorId_ButtonPressedShade:
+      return SkColorSetA(SK_ColorBLACK, 0x08);
     default:
       break;
   }
