@@ -70,7 +70,7 @@ public class PhysicalWeb {
                     // resubscribed.
                     UrlManager.getInstance().clearNearbyUrls();
                 }
-            });
+            }).run();
         }
     }
 
@@ -84,7 +84,7 @@ public class PhysicalWeb {
                 // This isn't absolutely necessary, but it's nice to clean up all our shared prefs.
                 UrlManager.getInstance().clearAllUrls();
             }
-        });
+        }).run();
     }
 
     /**
