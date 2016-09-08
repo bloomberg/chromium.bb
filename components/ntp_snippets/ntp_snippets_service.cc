@@ -68,7 +68,7 @@ const char kFetchingIntervalFallbackParamName[] =
 const int kWifiFetchingHourMin = 6;
 const int kWifiFetchingHourMax = 22;
 
-const int kDefaultExpiryTimeMins = 24 * 60;
+const int kDefaultExpiryTimeMins = 3 * 24 * 60;
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
                                     const char* param_name,
