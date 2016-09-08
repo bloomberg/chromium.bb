@@ -24,7 +24,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -1569,14 +1571,20 @@ void HistoryBackend::GetFaviconsForURL(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  TRACE_EVENT0("browser", "HistoryBackend::GetFaviconsForURL");
   DCHECK(bitmap_results);
   GetFaviconsFromDB(page_url, icon_types, desired_sizes, bitmap_results);
+
+  if (desired_sizes.size() == 1)
+    bitmap_results->assign(1, favicon_base::ResizeFaviconBitmapResult(
+                                  *bitmap_results, desired_sizes[0]));
 }
 
 void HistoryBackend::GetFaviconForID(
     favicon_base::FaviconID favicon_id,
     int desired_size,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  TRACE_EVENT0("browser", "HistoryBackend::GetFaviconForID");
   std::vector<favicon_base::FaviconID> favicon_ids;
   favicon_ids.push_back(favicon_id);
   std::vector<int> desired_sizes;
@@ -1585,6 +1593,9 @@ void HistoryBackend::GetFaviconForID(
   // Get results from DB.
   GetFaviconBitmapResultsForBestMatch(favicon_ids, desired_sizes,
                                       bitmap_results);
+
+  bitmap_results->assign(1, favicon_base::ResizeFaviconBitmapResult(
+                                *bitmap_results, desired_size));
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetch(

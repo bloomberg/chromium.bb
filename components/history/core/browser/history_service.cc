@@ -65,6 +65,7 @@ static const char* kHistoryThreadName = "Chrome_HistoryThread";
 void RunWithFaviconResults(
     const favicon_base::FaviconResultsCallback& callback,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  TRACE_EVENT0("browser", "RunWithFaviconResults");
   callback.Run(*bitmap_results);
 }
 
@@ -507,6 +508,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
+  TRACE_EVENT0("browser", "HistoryService::GetFavicons");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
@@ -524,6 +526,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
+  TRACE_EVENT0("browser", "HistoryService::GetFaviconsForURL");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
@@ -558,6 +561,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
     int desired_size,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
+  TRACE_EVENT0("browser", "HistoryService::GetFaviconForID");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
@@ -577,6 +581,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
+  TRACE_EVENT0("browser", "HistoryService::UpdateFaviconMappingsAndFetch");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
@@ -595,6 +600,7 @@ void HistoryService::MergeFavicon(
     favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
+  TRACE_EVENT0("browser", "HistoryService::MergeFavicon");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (history_client_ && !history_client_->CanAddURL(page_url))

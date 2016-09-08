@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -36,6 +37,8 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
     const std::vector<favicon_base::FaviconRawBitmapResult>& png_data,
     const std::vector<float>& favicon_scales,
     int favicon_size) {
+  TRACE_EVENT0("browser",
+               "FaviconUtil::SelectFaviconFramesFromPNGsWithoutResizing");
   std::vector<gfx::ImagePNGRep> png_reps;
   if (png_data.empty())
     return png_reps;
@@ -166,6 +169,8 @@ gfx::Image SelectFaviconFramesFromPNGs(
     const std::vector<favicon_base::FaviconRawBitmapResult>& png_data,
     const std::vector<float>& favicon_scales,
     int favicon_size) {
+  TRACE_EVENT0("browser", "FaviconUtil::SelectFaviconFramesFromPNGs");
+
   // Create image reps for as many scales as possible without resizing
   // the bitmap data or decoding it. FaviconHandler stores already resized
   // favicons into history so no additional resizing should be needed in the
@@ -243,6 +248,51 @@ gfx::Image SelectFaviconFramesFromPNGs(
   }
 
   return gfx::Image(png_reps);
+}
+
+favicon_base::FaviconRawBitmapResult ResizeFaviconBitmapResult(
+    const std::vector<favicon_base::FaviconRawBitmapResult>&
+        favicon_bitmap_results,
+    int desired_size_in_pixel) {
+  TRACE_EVENT0("browser", "FaviconUtil::ResizeFaviconBitmapResult");
+
+  if (favicon_bitmap_results.empty() || !favicon_bitmap_results[0].is_valid())
+    return favicon_base::FaviconRawBitmapResult();
+
+  favicon_base::FaviconRawBitmapResult bitmap_result =
+      favicon_bitmap_results[0];
+
+  // If the desired size is 0, SelectFaviconFrames() will return the largest
+  // bitmap without doing any resizing. As |favicon_bitmap_results| has bitmap
+  // data for a single bitmap, return it and avoid an unnecessary decode.
+  if (desired_size_in_pixel == 0)
+    return bitmap_result;
+
+  // If history bitmap is already desired pixel size, return early.
+  if (bitmap_result.pixel_size.width() == desired_size_in_pixel &&
+      bitmap_result.pixel_size.height() == desired_size_in_pixel)
+    return bitmap_result;
+
+  // Convert raw bytes to SkBitmap, resize via SelectFaviconFrames(), then
+  // convert back.
+  std::vector<float> desired_favicon_scales;
+  desired_favicon_scales.push_back(1.0f);
+
+  gfx::Image resized_image = favicon_base::SelectFaviconFramesFromPNGs(
+      favicon_bitmap_results, desired_favicon_scales, desired_size_in_pixel);
+
+  std::vector<unsigned char> resized_bitmap_data;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(resized_image.AsBitmap(), false,
+                                         &resized_bitmap_data)) {
+    return favicon_base::FaviconRawBitmapResult();
+  }
+
+  bitmap_result.bitmap_data = base::RefCountedBytes::TakeVector(
+      &resized_bitmap_data);
+  bitmap_result.pixel_size =
+      gfx::Size(desired_size_in_pixel, desired_size_in_pixel);
+
+  return bitmap_result;
 }
 
 }  // namespace favicon_base

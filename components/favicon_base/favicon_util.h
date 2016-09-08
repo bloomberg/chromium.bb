@@ -36,6 +36,15 @@ gfx::Image SelectFaviconFramesFromPNGs(
     const std::vector<float>& favicon_scales,
     int favicon_size);
 
+// Generates a favicon_bitmap_result sized exactly to [desired_size,
+// desired_size] from the provided result set.  If the exact size is found in
+// the set, it just returns that; otherwise, it will decode the PNG, scale,
+// and encode a new PNG.
+favicon_base::FaviconRawBitmapResult ResizeFaviconBitmapResult(
+    const std::vector<favicon_base::FaviconRawBitmapResult>&
+        favicon_bitmap_results,
+    int desired_size_in_pixel);
+
 }  // namspace favicon_base
 
 #endif  // COMPONENTS_FAVICON_BASE_FAVICON_UTIL_H_
