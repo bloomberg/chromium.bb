@@ -279,6 +279,15 @@ Polymer({
   },
 </if>
 
+  /** @private */
+  onProductLogoTap_: function() {
+    var logo = this.$['product-logo'];
+    logo.classList.remove('spin');
+    // Force a style recalc that cancels the animation specified by "spin".
+    getComputedStyle(logo).getPropertyValue('animation-name');
+    logo.classList.add('spin');
+  },
+
 <if expr="_google_chrome">
   /** @private */
   onReportIssueTap_: function() {

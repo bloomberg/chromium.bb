@@ -35,6 +35,14 @@
         margin-top: auto;
       }
 
+      @-webkit-keyframes spin {
+        to { transform: rotate(-10turn); }
+      }
+
+      #product-logo.spin {
+        -webkit-animation: spin 500ms cubic-bezier(1, 0, 0, 1) forwards;
+      }
+
       img {
         -webkit-margin-end: 10px;
       }
@@ -70,7 +78,7 @@
         <settings-animated-pages id="pages" section="about">
           <neon-animatable route-path="default">
             <div class="settings-box">
-              <img id="product-logo"
+              <img id="product-logo" on-tap="onProductLogoTap_"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
                           chrome://theme/current-channel-logo@2x 2x" alt="">
               <span class="product-title">$i18n{aboutProductTitle}</span>
