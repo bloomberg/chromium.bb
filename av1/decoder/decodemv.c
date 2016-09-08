@@ -19,6 +19,9 @@
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
+#if CONFIG_WARPED_MOTION
+#include "av1/common/warped_motion.h"
+#endif  // CONFIG_WARPED_MOTION
 
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decodemv.h"
@@ -252,18 +255,26 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MB_MODE_INFO *mbmi, aom_reader *r) {
-  if (is_motion_variation_allowed(mbmi)) {
-    int motion_mode;
-    FRAME_COUNTS *counts = xd->counts;
+  MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(mbmi);
+  int motion_mode;
+  FRAME_COUNTS *counts = xd->counts;
 
+  if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  if (last_motion_mode_allowed == OBMC_CAUSAL) {
+    motion_mode = aom_read(r, cm->fc->obmc_prob[mbmi->sb_type], ACCT_STR);
+    if (counts) ++counts->obmc[mbmi->sb_type][motion_mode];
+    return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
+  } else {
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
     motion_mode =
         aom_read_tree(r, av1_motion_mode_tree,
                       cm->fc->motion_mode_prob[mbmi->sb_type], ACCT_STR);
     if (counts) ++counts->motion_mode[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
-  } else {
-    return SIMPLE_TRANSLATION;
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   }
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 }
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
@@ -1423,6 +1434,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
   int16_t mode_ctx = 0;
+#if CONFIG_WARPED_MOTION
+  double pts[144], pts_inref[144];
+#endif  // CONFIG_WARPED_MOTION
 
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
@@ -1591,9 +1605,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif
 
-#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
+#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
   read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
+#endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
   if (bsize < BLOCK_8X8) {
     const int num_4x4_w = 1 << xd->bmode_blocks_wl;
@@ -1777,13 +1791,28 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   mbmi->motion_mode = SIMPLE_TRANSLATION;
+#if CONFIG_WARPED_MOTION
+  if (mbmi->sb_type >= BLOCK_8X8 && !has_second_ref(mbmi))
+    mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+#endif  // CONFIG_WARPED_MOTION
+
 #if CONFIG_SUPERTX
-  if (!supertx_enabled)
+  if (!supertx_enabled) {
 #endif  // CONFIG_SUPERTX
 #if CONFIG_EXT_INTER
     if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
       mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);
+#if CONFIG_WARPED_MOTION
+    if (mbmi->motion_mode == WARPED_CAUSAL) {
+      mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
+      find_projection(mbmi->num_proj_ref[0], pts, pts_inref,
+                      &mbmi->wm_params[0]);
+    }
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_SUPERTX
+  }
+#endif  // CONFIG_SUPERTX
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
@@ -1791,8 +1820,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (cm->reference_mode != SINGLE_REFERENCE &&
       is_inter_compound_mode(mbmi->mode) &&
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-      !(is_motion_variation_allowed(mbmi) &&
-        mbmi->motion_mode != SIMPLE_TRANSLATION) &&
+      mbmi->motion_mode == SIMPLE_TRANSLATION &&
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       is_interinter_wedge_used(bsize)) {
     mbmi->interinter_compound = aom_read_tree(
@@ -1807,9 +1835,25 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP
-  read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP
+#if CONFIG_WARPED_MOTION
+  if (mbmi->motion_mode != WARPED_CAUSAL) {
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP || CONFIG_WARPED_MOTION
+    read_mb_interp_filter(cm, xd, mbmi, r);
+#endif  // CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP || CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
+  } else {
+#if CONFIG_DUAL_FILTER
+    mbmi->interp_filter[0] =
+        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
+    mbmi->interp_filter[1] =
+        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
+#else
+    mbmi->interp_filter =
+        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
+#endif  // CONFIG_DUAL_FILTER
+  }
+#endif  // CONFIG_WARPED_MOTION
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,

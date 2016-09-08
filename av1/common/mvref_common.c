@@ -10,6 +10,9 @@
  */
 
 #include "av1/common/mvref_common.h"
+#if CONFIG_WARPED_MOTION
+#include "av1/common/warped_motion.h"
+#endif  // CONFIG_WARPED_MOTION
 
 #if CONFIG_REF_MV
 
@@ -884,3 +887,214 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     default: assert(0 && "Invalid block index.");
   }
 }
+
+#if CONFIG_WARPED_MOTION
+int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
+                double *pts, double *pts_inref) {
+  MB_MODE_INFO *const mbmi0 = &(xd->mi[0]->mbmi);
+  int ref_frame = mbmi0->ref_frame[0];
+  int up_available = xd->up_available;
+  int left_available = xd->left_available;
+  int i, mi_step, np = 0;
+  int mvasint[100];
+  int mvnumber = 0;
+  int global_offset_c = mi_col * 8;
+  int global_offset_r = mi_row * 8;
+  int samples_per_neighbor = 4;
+
+  // scan the above row
+  if (up_available) {
+    for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
+      int mi_row_offset = -1;
+      int mi_col_offset = i;
+
+      MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+      MB_MODE_INFO *mbmi = &mi->mbmi;
+
+      mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[mbmi->sb_type]);
+
+      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
+        int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
+        int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+        int mv_row = mbmi->mv[0].as_mv.row;
+        int mv_col = mbmi->mv[0].as_mv.col;
+        int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
+        int cc_offset = i * 8 + AOMMAX(bw, 8) / 2 - 1;
+        int j;
+        int pixelperblock = samples_per_neighbor;
+
+        mvasint[mvnumber] = mbmi->mv[0].as_int;
+        mvnumber++;
+
+        for (j = 0; j < pixelperblock; j++) {
+          int r_offset = j / 2;
+          int c_offset = j % 2;
+
+          pts[0] = (double)(cc_offset + c_offset + global_offset_c);
+          pts[1] = (double)(cr_offset + r_offset + global_offset_r);
+
+          if (mbmi->motion_mode == WARPED_CAUSAL) {
+            int ipts[2], ipts_inref[2];
+            ipts[0] = cc_offset + c_offset + global_offset_c;
+            ipts[1] = cr_offset + r_offset + global_offset_r;
+
+            project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0,
+                           0);
+            pts_inref[0] =
+                (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
+            pts_inref[1] =
+                (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
+          } else {
+            pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
+            pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
+          }
+
+          pts += 2;
+          pts_inref += 2;
+        }
+        np += pixelperblock;
+      }
+    }
+  }
+
+  // scan the left column
+  if (left_available) {
+    for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
+      int mi_row_offset = i;
+      int mi_col_offset = -1;
+
+      MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+      MB_MODE_INFO *mbmi = &mi->mbmi;
+
+      mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[mbmi->sb_type]);
+
+      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
+        int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
+        int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+        int mv_row = mbmi->mv[0].as_mv.row;
+        int mv_col = mbmi->mv[0].as_mv.col;
+        int cr_offset = i * 8 + AOMMAX(bh, 8) / 2 - 1;
+        int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
+        int j;
+        int pixelperblock = samples_per_neighbor;
+
+        mvasint[mvnumber] = mbmi->mv[0].as_int;
+        mvnumber++;
+
+        for (j = 0; j < pixelperblock; j++) {
+          int r_offset = j / 2;
+          int c_offset = j % 2;
+
+          pts[0] = (double)(cc_offset + c_offset + global_offset_c);
+          pts[1] = (double)(cr_offset + r_offset + global_offset_r);
+
+          if (mbmi->motion_mode == WARPED_CAUSAL) {
+            int ipts[2], ipts_inref[2];
+            ipts[0] = cc_offset + c_offset + global_offset_c;
+            ipts[1] = cr_offset + r_offset + global_offset_r;
+
+            project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0,
+                           0);
+            pts_inref[0] =
+                (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
+            pts_inref[1] =
+                (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
+          } else {
+            pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
+            pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
+          }
+
+          pts += 2;
+          pts_inref += 2;
+        }
+        np += pixelperblock;
+      }
+    }
+  }
+
+  if (left_available && up_available) {
+    int mi_row_offset = -1;
+    int mi_col_offset = -1;
+
+    MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+    MB_MODE_INFO *mbmi = &mi->mbmi;
+
+    if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
+      int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
+      int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+      int mv_row = mbmi->mv[0].as_mv.row;
+      int mv_col = mbmi->mv[0].as_mv.col;
+      int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
+      int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
+      int j;
+      int pixelperblock = samples_per_neighbor;
+
+      mvasint[mvnumber] = mbmi->mv[0].as_int;
+      mvnumber++;
+
+      for (j = 0; j < pixelperblock; j++) {
+        int r_offset = j / 2;
+        int c_offset = j % 2;
+
+        pts[0] = (double)(cc_offset + c_offset + global_offset_c);
+        pts[1] = (double)(cr_offset + r_offset + global_offset_r);
+
+        if (mbmi->motion_mode == WARPED_CAUSAL) {
+          int ipts[2], ipts_inref[2];
+          ipts[0] = cc_offset + c_offset + global_offset_c;
+          ipts[1] = cr_offset + r_offset + global_offset_r;
+
+          project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0, 0);
+          pts_inref[0] =
+              (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
+          pts_inref[1] =
+              (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
+        } else {
+          pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
+          pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
+        }
+
+        pts += 2;
+        pts_inref += 2;
+      }
+      np += pixelperblock;
+    }
+  }
+
+  for (i = 0; i < (mvnumber - 1); ++i) {
+    if (mvasint[i] != mvasint[i + 1]) break;
+  }
+
+  if (np == 0 || i == (mvnumber - 1)) {
+    return 0;
+  } else {
+    MODE_INFO *mi = xd->mi[0];
+    MB_MODE_INFO *mbmi = &mi->mbmi;
+    int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
+    int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+    int mv_row = mbmi->mv[0].as_mv.row;
+    int mv_col = mbmi->mv[0].as_mv.col;
+    int cr_offset = AOMMAX(bh, 8) / 2 - 1;
+    int cc_offset = AOMMAX(bw, 8) / 2 - 1;
+    int j;
+    int pixelperblock = samples_per_neighbor;
+
+    for (j = 0; j < pixelperblock; j++) {
+      int r_offset = j / 2;
+      int c_offset = j % 2;
+
+      pts[0] = (double)(cc_offset + c_offset + global_offset_c);
+      pts[1] = (double)(cr_offset + r_offset + global_offset_r);
+
+      pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
+      pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
+
+      pts += 2;
+      pts_inref += 2;
+    }
+    np += pixelperblock;
+  }
+
+  return np;
+}
+#endif  // CONFIG_WARPED_MOTION

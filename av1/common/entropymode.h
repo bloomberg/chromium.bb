@@ -115,6 +115,9 @@ typedef struct frame_contexts {
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1];
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  aom_prob obmc_prob[BLOCK_SIZES];
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
@@ -221,6 +224,9 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   unsigned int motion_mode[BLOCK_SIZES][MOTION_MODES];
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  unsigned int obmc[BLOCK_SIZES][2];
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];

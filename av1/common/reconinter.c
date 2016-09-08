@@ -24,9 +24,9 @@
 #if CONFIG_MOTION_VAR
 #include "av1/common/onyxc_int.h"
 #endif  // CONFIG_MOTION_VAR
-#if CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
 
@@ -1377,12 +1377,30 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    mi_x, mi_y);
           }
       } else {
-        build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
-                               0, 0, bw, bh,
+#if CONFIG_WARPED_MOTION
+        if (above_mbmi->motion_mode == WARPED_CAUSAL) {
+          av1_warp_plane(&above_mbmi->wm_params[0],
+#if CONFIG_AOM_HIGHBITDEPTH
+                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
+                         pd->pre[0].stride, pd->dst.buf,
+                         (((mi_col + i) * MI_SIZE) >> pd->subsampling_x),
+                         ((mi_row * MI_SIZE) >> pd->subsampling_y), bw, bh,
+                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
+                         16, 16, 0);
+
+        } else {
+#endif  // CONFIG_WARPED_MOTION
+          build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
+                                 0, 0, bw, bh,
 #if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                               0, 0,
+                                 0, 0,
 #endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                               mi_x, mi_y);
+                                 mi_x, mi_y);
+#if CONFIG_WARPED_MOTION
+        }
+#endif  // CONFIG_WARPED_MOTION
       }
     }
 #if CONFIG_EXT_INTER
@@ -1480,12 +1498,30 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    mi_x, mi_y);
           }
       } else {
-        build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
-                               0, 0, bw, bh,
+#if CONFIG_WARPED_MOTION
+        if (left_mbmi->motion_mode == WARPED_CAUSAL) {
+          av1_warp_plane(&left_mbmi->wm_params[0],
+#if CONFIG_AOM_HIGHBITDEPTH
+                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
+                         pd->pre[0].stride, pd->dst.buf,
+                         ((mi_col * MI_SIZE) >> pd->subsampling_x),
+                         (((mi_row + i) * MI_SIZE) >> pd->subsampling_y), bw,
+                         bh, pd->dst.stride, pd->subsampling_x,
+                         pd->subsampling_y, 16, 16, 0);
+
+        } else {
+#endif  // CONFIG_WARPED_MOTION
+          build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
+                                 0, 0, bw, bh,
 #if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                               0, 0,
+                                 0, 0,
 #endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                               mi_x, mi_y);
+                                 mi_x, mi_y);
+#if CONFIG_WARPED_MOTION
+        }
+#endif  // CONFIG_WARPED_MOTION
       }
     }
 #if CONFIG_EXT_INTER

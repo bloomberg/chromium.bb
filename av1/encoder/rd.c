@@ -443,6 +443,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
         av1_cost_tokens((int *)cpi->motion_mode_cost[i],
                         cm->fc->motion_mode_prob[i], av1_motion_mode_tree);
       }
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+      for (i = BLOCK_8X8; i < BLOCK_SIZES; i++) {
+        cpi->motion_mode_cost1[i][0] = av1_cost_bit(cm->fc->obmc_prob[i], 0);
+        cpi->motion_mode_cost1[i][1] = av1_cost_bit(cm->fc->obmc_prob[i], 1);
+      }
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     }
   }

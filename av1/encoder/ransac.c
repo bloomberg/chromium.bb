@@ -18,7 +18,6 @@
 #include "av1/encoder/ransac.h"
 
 #define MAX_MINPTS 4
-
 #define MAX_DEGENERATE_ITER 10
 #define MINPTS_MULTIPLIER 5
 

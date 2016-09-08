@@ -530,6 +530,7 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES]
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, -WARPED_CAUSAL
 };
+
 static const aom_prob default_motion_mode_prob[BLOCK_SIZES]
                                               [MOTION_MODES - 1] = {
                                                 { 255 }, { 255 }, { 255 },
@@ -556,7 +557,15 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
       { 252, 200 }, { 252, 200 }, { 252, 200 },
 #endif  // CONFIG_EXT_PARTITION
     };
-#endif  // CONFIG_MOTION_VAR || !CONFIG_WARPED_MOTION
+
+// Probability for the case that only 1 additional motion mode is allowed
+static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
+  255, 255, 255, 151, 153, 144, 178, 165, 160, 207, 195, 168, 244,
+#if CONFIG_EXT_PARTITION
+  252, 252, 252,
+#endif  // CONFIG_EXT_PARTITION
+};
+#endif
 
 #if CONFIG_DELTA_Q
 static const aom_prob default_delta_q_probs[DELTA_Q_CONTEXTS] = { 220, 220,
@@ -1688,6 +1697,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  av1_copy(fc->obmc_prob, default_obmc_prob);
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_EXT_INTER
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
@@ -1860,6 +1872,11 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i)
     aom_tree_merge_probs(av1_motion_mode_tree, pre_fc->motion_mode_prob[i],
                          counts->motion_mode[i], fc->motion_mode_prob[i]);
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i)
+    fc->obmc_prob[i] =
+        av1_mode_mv_merge_probs(pre_fc->obmc_prob[i], counts->obmc[i]);
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_SUPERTX

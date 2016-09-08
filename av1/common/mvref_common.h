@@ -488,6 +488,11 @@ void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
                            int16_t *mode_context);
 #endif  // CONFIG_EXT_INTER
 
+#if CONFIG_WARPED_MOTION
+int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
+                double *pts, double *pts_inref);
+#endif  // CONFIG_WARPED_MOTION
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

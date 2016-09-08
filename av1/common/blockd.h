@@ -309,6 +309,10 @@ typedef struct {
   int mi_row;
   int mi_col;
 #endif
+#if CONFIG_WARPED_MOTION
+  int num_proj_ref[2];
+  WarpedMotionParams wm_params[2];
+#endif  // CONFIG_WARPED_MOTION
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {
@@ -894,13 +898,27 @@ static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
   return (bsize >= BLOCK_8X8);
 }
 
-static INLINE int is_motion_variation_allowed(const MB_MODE_INFO *mbmi) {
+static INLINE MOTION_MODE motion_mode_allowed(const MB_MODE_INFO *mbmi) {
 #if CONFIG_EXT_INTER
-  return is_motion_variation_allowed_bsize(mbmi->sb_type) &&
-         mbmi->ref_frame[1] != INTRA_FRAME;
+  if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
+      is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME) {
 #else
-  return is_motion_variation_allowed_bsize(mbmi->sb_type);
+  if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
+      is_inter_mode(mbmi->mode)) {
 #endif  // CONFIG_EXT_INTER
+#if CONFIG_WARPED_MOTION
+    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 3)
+      return WARPED_CAUSAL;
+    else
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR
+      return OBMC_CAUSAL;
+#else
+    return SIMPLE_TRANSLATION;
+#endif  // CONFIG_MOTION_VAR
+  } else {
+    return SIMPLE_TRANSLATION;
+  }
 }
 
 #if CONFIG_MOTION_VAR

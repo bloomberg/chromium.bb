@@ -24,6 +24,9 @@
 #include "av1/common/mv.h"
 
 #define MAX_PARAMDIM 9
+#if CONFIG_WARPED_MOTION
+#define DEFAULT_WMTYPE AFFINE
+#endif  // CONFIG_WARPED_MOTION
 
 typedef void (*ProjectPointsFunc)(int32_t *mat, int *points, int *proj,
                                   const int n, const int stride_points,
@@ -48,6 +51,10 @@ void project_points_homography(int32_t *mat, int *points, int *proj,
                                const int n, const int stride_points,
                                const int stride_proj, const int subsampling_x,
                                const int subsampling_y);
+
+void project_points(WarpedMotionParams *wm_params, int *points, int *proj,
+                    const int n, const int stride_points, const int stride_proj,
+                    const int subsampling_x, const int subsampling_y);
 
 double av1_warp_erroradv(WarpedMotionParams *wm,
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -75,4 +82,6 @@ int find_translation(const int np, double *pts1, double *pts2, double *mat);
 int find_rotzoom(const int np, double *pts1, double *pts2, double *mat);
 int find_affine(const int np, double *pts1, double *pts2, double *mat);
 int find_homography(const int np, double *pts1, double *pts2, double *mat);
+int find_projection(const int np, double *pts1, double *pts2,
+                    WarpedMotionParams *wm_params);
 #endif  // AV1_COMMON_WARPED_MOTION_H_

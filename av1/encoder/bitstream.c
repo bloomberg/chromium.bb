@@ -506,6 +506,27 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+static void write_motion_mode(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
+                              aom_writer *w) {
+  MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(mbmi);
+
+  if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  if (last_motion_mode_allowed == OBMC_CAUSAL) {
+    aom_write(w, mbmi->motion_mode == OBMC_CAUSAL,
+              cm->fc->obmc_prob[mbmi->sb_type]);
+  } else {
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+    av1_write_token(w, av1_motion_mode_tree,
+                    cm->fc->motion_mode_prob[mbmi->sb_type],
+                    &motion_mode_encodings[mbmi->motion_mode]);
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  }
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+}
+#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+
 #if CONFIG_DELTA_Q
 static void write_delta_qindex(const AV1_COMMON *cm, int delta_qindex,
                                aom_writer *w) {
@@ -1383,9 +1404,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     }
 
-#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
+#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
     write_mb_interp_filter(cpi, xd, w);
-#endif  // !CONFIG_EXT_INTERP
+#endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
     if (bsize < BLOCK_8X8) {
       const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
@@ -1573,23 +1594,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_EXT_INTER
       if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
-        if (is_motion_variation_allowed(mbmi)) {
-          // TODO(debargha): Might want to only emit this if SEG_LVL_SKIP
-          // is not active, and assume SIMPLE_TRANSLATION in the decoder if
-          // it is active.
-          assert(mbmi->motion_mode < MOTION_MODES);
-          av1_write_token(w, av1_motion_mode_tree,
-                          cm->fc->motion_mode_prob[bsize],
-                          &motion_mode_encodings[mbmi->motion_mode]);
-        }
+        write_motion_mode(cm, mbmi, w);
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
     if (cpi->common.reference_mode != SINGLE_REFERENCE &&
         is_inter_compound_mode(mbmi->mode) &&
 #if CONFIG_MOTION_VAR
-        !(is_motion_variation_allowed(mbmi) &&
-          mbmi->motion_mode != SIMPLE_TRANSLATION) &&
+        mbmi->motion_mode == SIMPLE_TRANSLATION &&
 #endif  // CONFIG_MOTION_VAR
         is_interinter_wedge_used(bsize)) {
       av1_write_token(w, av1_compound_type_tree,
@@ -1603,9 +1615,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     }
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
-    write_mb_interp_filter(cpi, xd, w);
-#endif  // CONFIG_EXT_INTERP
+#if CONFIG_WARPED_MOTION
+    if (mbmi->motion_mode != WARPED_CAUSAL)
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
+      write_mb_interp_filter(cpi, xd, w);
+#endif  // CONFIG_EXT_INTERP || CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
   write_tx_type(cm, mbmi,

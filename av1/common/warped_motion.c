@@ -210,6 +210,29 @@ void project_points_homography(int32_t *mat, int *points, int *proj,
   }
 }
 
+// 'points' are at original scale, output 'proj's are scaled up by
+// 1 << WARPEDPIXEL_PREC_BITS
+void project_points(WarpedMotionParams *wm_params, int *points, int *proj,
+                    const int n, const int stride_points, const int stride_proj,
+                    const int subsampling_x, const int subsampling_y) {
+  switch (wm_params->wmtype) {
+    case AFFINE:
+      project_points_affine(wm_params->wmmat, points, proj, n, stride_points,
+                            stride_proj, subsampling_x, subsampling_y);
+      break;
+    case ROTZOOM:
+      project_points_rotzoom(wm_params->wmmat, points, proj, n, stride_points,
+                             stride_proj, subsampling_x, subsampling_y);
+      break;
+    case HOMOGRAPHY:
+      project_points_homography(wm_params->wmmat, points, proj, n,
+                                stride_points, stride_proj, subsampling_x,
+                                subsampling_y);
+      break;
+    default: assert(0 && "Invalid warped motion type!"); return;
+  }
+}
+
 static const int16_t
     filter_ntap[WARPEDPIXEL_PREC_SHIFTS][WARPEDPIXEL_FILTER_TAPS] = {
       { 0, 0, 128, 0, 0, 0 },      { 0, -1, 128, 2, -1, 0 },
@@ -342,11 +365,11 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
 
   if (ix < 0 && iy < 0)
     return ref[0];
-  else if (ix < 0 && iy > height - 1)
+  else if (ix < 0 && iy >= height - 1)
     return ref[(height - 1) * stride];
-  else if (ix > width - 1 && iy < 0)
+  else if (ix >= width - 1 && iy < 0)
     return ref[width - 1];
-  else if (ix > width - 1 && iy > height - 1)
+  else if (ix >= width - 1 && iy >= height - 1)
     return ref[(height - 1) * stride + (width - 1)];
   else if (ix < 0) {
     v = ROUND_POWER_OF_TWO_SIGNED(
@@ -359,13 +382,13 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
         ref[ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) + ref[ix + 1] * sx,
         WARPEDPIXEL_PREC_BITS);
     return clip_pixel(v);
-  } else if (ix > width - 1) {
+  } else if (ix >= width - 1) {
     v = ROUND_POWER_OF_TWO_SIGNED(
         ref[iy * stride + width - 1] * (WARPEDPIXEL_PREC_SHIFTS - sy) +
             ref[(iy + 1) * stride + width - 1] * sy,
         WARPEDPIXEL_PREC_BITS);
     return clip_pixel(v);
-  } else if (iy > height - 1) {
+  } else if (iy >= height - 1) {
     v = ROUND_POWER_OF_TWO_SIGNED(
         ref[(height - 1) * stride + ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) +
             ref[(height - 1) * stride + ix + 1] * sx,
@@ -1317,4 +1340,20 @@ int find_homography(const int np, double *pts1, double *pts2, double *mat) {
     for (i = 0; i < 8; i++) mat[i] = f * H[i];
   }
   return 0;
+}
+
+int find_projection(const int np, double *pts1, double *pts2,
+                    WarpedMotionParams *wm_params) {
+  double H[9];
+  int result = 1;
+
+  switch (wm_params->wmtype) {
+    case AFFINE: result = find_affine(np, pts1, pts2, H); break;
+    case ROTZOOM: result = find_rotzoom(np, pts1, pts2, H); break;
+    case HOMOGRAPHY: result = find_homography(np, pts1, pts2, H); break;
+    default: assert(0 && "Invalid warped motion type!"); return 1;
+  }
+  if (result == 0) av1_integerize_model(H, wm_params->wmtype, wm_params);
+
+  return result;
 }

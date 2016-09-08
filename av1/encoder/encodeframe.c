@@ -40,10 +40,12 @@
 #if CONFIG_SUPERTX
 #include "av1/encoder/cost.h"
 #endif
-#if CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+#if CONFIG_GLOBAL_MOTION
 #include "av1/encoder/global_motion.h"
-#endif
+#endif  // CONFIG_GLOBAL_MOTION
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
@@ -1182,7 +1184,10 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_EXT_INTERP
           && av1_is_interp_needed(xd)
 #endif
-              ) {
+#if CONFIG_WARPED_MOTION
+          && mbmi->motion_mode != WARPED_CAUSAL
+#endif  // CONFIG_WARPED_MOTION
+          ) {
 #if CONFIG_DUAL_FILTER
         update_filter_type_count(td->counts, xd, mbmi);
 #else
@@ -1972,16 +1977,24 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #if CONFIG_EXT_INTER
           if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
-            if (is_motion_variation_allowed(mbmi))
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+          {
+            if (motion_mode_allowed(mbmi) == WARPED_CAUSAL)
               counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
+            else if (motion_mode_allowed(mbmi) == OBMC_CAUSAL)
+              counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
+          }
+#else
+        if (motion_mode_allowed(mbmi) > SIMPLE_TRANSLATION)
+          counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
         if (cm->reference_mode != SINGLE_REFERENCE &&
             is_inter_compound_mode(mbmi->mode) &&
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-            !(is_motion_variation_allowed(mbmi) &&
-              mbmi->motion_mode != SIMPLE_TRANSLATION) &&
+            mbmi->motion_mode == SIMPLE_TRANSLATION &&
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
             is_interinter_wedge_used(bsize)) {
           counts->compound_interinter[bsize][mbmi->interinter_compound]++;
@@ -5488,12 +5501,39 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-    if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
-      av1_build_inter_predictors_sby(xd, mi_row, mi_col,
-                                     AOMMAX(bsize, BLOCK_8X8));
+#if CONFIG_WARPED_MOTION
+    if (mbmi->motion_mode == WARPED_CAUSAL) {
+      int i;
+#if CONFIG_AOM_HIGHBITDEPTH
+      int use_hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-    av1_build_inter_predictors_sbuv(xd, mi_row, mi_col,
-                                    AOMMAX(bsize, BLOCK_8X8));
+      for (i = 0; i < 3; ++i) {
+        const struct macroblockd_plane *pd = &xd->plane[i];
+
+        av1_warp_plane(&mbmi->wm_params[0],
+#if CONFIG_AOM_HIGHBITDEPTH
+                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                       pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
+                       pd->pre[0].stride, pd->dst.buf,
+                       ((mi_col * MI_SIZE) >> pd->subsampling_x),
+                       ((mi_row * MI_SIZE) >> pd->subsampling_y),
+                       xd->n8_w * (8 >> pd->subsampling_x),
+                       xd->n8_h * (8 >> pd->subsampling_y), pd->dst.stride,
+                       pd->subsampling_x, pd->subsampling_y, 16, 16, 0);
+      }
+    } else {
+#endif  // CONFIG_WARPED_MOTION
+      if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
+        av1_build_inter_predictors_sby(xd, mi_row, mi_col,
+                                       AOMMAX(bsize, BLOCK_8X8));
+
+      av1_build_inter_predictors_sbuv(xd, mi_row, mi_col,
+                                      AOMMAX(bsize, BLOCK_8X8));
+#if CONFIG_WARPED_MOTION
+    }
+#endif  // CONFIG_WARPED_MOTION
 
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
