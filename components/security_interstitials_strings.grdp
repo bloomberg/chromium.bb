@@ -84,7 +84,7 @@
     You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website uses HSTS. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SSL_NONOVERRIDABLE_REVOKED" desc="A sentence to explain why the user can't proceed, plus a link to a help page about certificate revocation.">
-    You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because this certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>.
+    You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>.
   </message>
   <if expr="_google_chrome">
     <message name="IDS_SSL_NONOVERRIDABLE_MORE" desc="Body text for the explanation shown if user clicks on the Details button.">
