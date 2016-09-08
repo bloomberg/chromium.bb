@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/WebKit/Source/bindings/bindings.gni")
+import("//third_party/WebKit/Source/core/core_idl_files.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
-import("//third_party/WebKit/Source/core/core_idl_files.gni")
 
 visibility = [ "//third_party/WebKit/Source/*" ]
 
@@ -192,24 +192,112 @@ generated_core_testing_dictionary_files = [
   "$blink_core_output_dir/testing/InternalDictionaryDerivedDerived.h",
 ]
 
-bindings_core_generated_interface_files =
-    process_file_template(
-        core_definition_idl_files,
-        [
-          "$bindings_core_v8_output_dir/V8{{source_name_part}}.cpp",
-          "$bindings_core_v8_output_dir/V8{{source_name_part}}.h",
-        ])
+if (is_win && is_official_build) {
+  bindings_core_generated_aggregate_files =
+      [ "$bindings_core_v8_output_dir/V8GeneratedCoreBindings.cpp" ]
+} else {
+  bindings_core_generated_aggregate_files = [
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings00.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings01.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings02.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings03.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings04.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings05.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings06.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings07.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings08.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings09.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings10.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings11.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings12.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings13.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings14.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings15.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings16.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings17.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings18.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings19.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings20.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings21.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings22.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings23.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings24.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings25.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings26.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings27.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings28.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings29.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings30.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings31.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings32.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings33.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings34.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings35.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings36.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings37.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings38.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings39.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings40.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings41.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings42.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings43.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings44.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings45.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings46.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings47.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings48.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings49.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings50.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings51.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings52.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings53.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings54.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings55.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings56.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings57.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings58.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings59.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings60.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings61.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings62.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings63.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings64.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings65.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings66.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings67.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings68.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings69.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings70.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings71.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings72.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings73.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings74.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings75.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings76.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings77.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings78.cpp",
+    "$bindings_core_v8_output_dir/V8GeneratedCoreBindings79.cpp",
+  ]
+}
 
 group("bindings_core_v8_generated") {
   public_deps = [
     ":bindings_core_impl_generated",
-    ":generate_bindings_core_v8_interfaces",
+    ":bindings_core_v8_generated_aggregate",
+    ":bindings_core_v8_generated_individual",
   ]
+}
+
+aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
+  sources = core_definition_idl_files
+  component_dir = "core"
+  is_partial = false
+  outputs = bindings_core_generated_aggregate_files
 }
 
 # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 # Interface IDL files: generate individual bindings (includes testing)
-idl_compiler("generate_bindings_core_v8_interfaces") {
+idl_compiler("bindings_core_v8_generated_individual") {
   sources = core_definition_idl_files + core_testing_definition_idl_files +
             generated_webcore_testing_idl_files
   output_dir = bindings_core_v8_output_dir
@@ -230,11 +318,11 @@ idl_impl("bindings_core_impl_generated") {
 blink_core_sources("bindings_core_impl") {
   sources =
       bindings_core_generated_union_type_files +
-      generated_core_dictionary_files + bindings_core_generated_interface_files
+      generated_core_dictionary_files + bindings_core_generated_aggregate_files
 
   deps = [
     ":bindings_core_impl_generated",
-    ":generate_bindings_core_v8_interfaces",
+    ":bindings_core_v8_generated_aggregate",
   ]
 }
 

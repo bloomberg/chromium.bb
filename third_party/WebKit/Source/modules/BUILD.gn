@@ -45,10 +45,10 @@ target(modules_target_type, "modules") {
 
   sources = rebase_path(modules_files, ".", "//")
   sources += bindings_modules_v8_files
-  sources += rebase_path(bindings_modules_generated_interface_files, ".", "//")
+  sources += rebase_path(bindings_modules_generated_aggregate_files, ".", "//")
   sources += rebase_path(bindings_modules_generated_union_type_files, ".", "//")
   sources +=
-      rebase_path(bindings_modules_generated_partial_interface_files, ".", "//")
+      rebase_path(bindings_modules_generated_partial_aggregate_files, ".", "//")
   sources +=
       rebase_path([ bindings_modules_generated_init_partial_interfaces_file ],
                   ".",
