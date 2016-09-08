@@ -19,7 +19,6 @@
 
 ## How does it work on Android?
 
-  - [c++ browser tests](/testing/android/docs/todo.md)
-  - [c++ unit tests](/testing/android/docs/todo.md)
+  - [gtests](/testing/android/docs/gtest_implementation.md)
   - [instrumentation tests](/testing/android/docs/todo.md)
   - [junit tests](/testing/android/docs/todo.md)
