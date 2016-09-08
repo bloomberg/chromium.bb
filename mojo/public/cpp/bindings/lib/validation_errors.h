@@ -70,6 +70,9 @@ enum ValidationError {
   // Message deserialization failure, for example due to rejection by custom
   // validation logic.
   VALIDATION_ERROR_DESERIALIZATION_FAILED,
+  // The message contains a too deeply nested value, for example a recursively
+  // defined field which runtime value is too large.
+  VALIDATION_ERROR_MAX_RECURSION_DEPTH,
 };
 
 const char* ValidationErrorToString(ValidationError error);

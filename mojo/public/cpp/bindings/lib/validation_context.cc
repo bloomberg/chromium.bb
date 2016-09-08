@@ -13,13 +13,15 @@ ValidationContext::ValidationContext(const void* data,
                                      size_t data_num_bytes,
                                      size_t num_handles,
                                      Message* message,
-                                     const base::StringPiece& description)
+                                     const base::StringPiece& description,
+                                     int stack_depth)
     : message_(message),
       description_(description),
       data_begin_(reinterpret_cast<uintptr_t>(data)),
       data_end_(data_begin_ + data_num_bytes),
       handle_begin_(0),
-      handle_end_(static_cast<uint32_t>(num_handles)) {
+      handle_end_(static_cast<uint32_t>(num_handles)),
+      stack_depth_(stack_depth) {
   if (data_end_ < data_begin_) {
     // The calculation of |data_end_| overflowed.
     // It shouldn't happen but if it does, set the range to empty so

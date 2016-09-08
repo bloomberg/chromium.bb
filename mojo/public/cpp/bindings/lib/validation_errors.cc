@@ -55,6 +55,8 @@ const char* ValidationErrorToString(ValidationError error) {
       return "VALIDATION_ERROR_UNKNOWN_ENUM_VALUE";
     case VALIDATION_ERROR_DESERIALIZATION_FAILED:
       return "VALIDATION_ERROR_DESERIALIZATION_FAILED";
+    case VALIDATION_ERROR_MAX_RECURSION_DEPTH:
+      return "VALIDATION_ERROR_MAX_RECURSION_DEPTH";
   }
 
   return "Unknown error";

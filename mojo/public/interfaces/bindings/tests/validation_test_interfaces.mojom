@@ -90,6 +90,7 @@ interface ConformanceTestInterface {
   Method16(map<EnumA, EnumA>? param0);
   Method17(array<InterfaceA> param0);
   Method18(UnionA? param0);
+  Method19(Recursive recursive);
 };
 
 struct BasicStruct {
@@ -116,4 +117,9 @@ struct StructWithEnum {
   enum EnumWithin {
     A, B, C, D
   };
+};
+
+// This is used to test that deeply recursive structures don't blow the stack.
+struct Recursive {
+  Recursive? recursive;
 };

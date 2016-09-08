@@ -8,9 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+
+static const int kMaxRecursionDepth = 100;
 
 namespace mojo {
 
@@ -33,7 +36,8 @@ class ValidationContext {
                     size_t data_num_bytes,
                     size_t num_handles,
                     Message* message = nullptr,
-                    const base::StringPiece& description = "");
+                    const base::StringPiece& description = "",
+                    int stack_depth = 0);
 
   ~ValidationContext();
 
@@ -81,6 +85,29 @@ class ValidationContext {
     return InternalIsValidRange(begin, end);
   }
 
+  // This object should be created on the stack once every time we recurse down
+  // into a subfield during validation to make sure we don't recurse too deep
+  // and blow the stack.
+  class ScopedDepthTracker {
+   public:
+    // |ctx| must outlive this object.
+    explicit ScopedDepthTracker(ValidationContext* ctx) : ctx_(ctx) {
+      ++ctx_->stack_depth_;
+    }
+
+    ~ScopedDepthTracker() { --ctx_->stack_depth_; }
+
+   private:
+    ValidationContext* ctx_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedDepthTracker);
+  };
+
+  // Returns true if the recursion depth limit has been reached.
+  bool ExceedsMaxDepth() WARN_UNUSED_RESULT {
+    return stack_depth_ > kMaxRecursionDepth;
+  }
+
   Message* message() const { return message_; }
   const base::StringPiece& description() const { return description_; }
 
@@ -99,6 +126,8 @@ class ValidationContext {
   // [handle_begin_, handle_end_) is the valid handle index range.
   uint32_t handle_begin_;
   uint32_t handle_end_;
+
+  int stack_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidationContext);
 };
