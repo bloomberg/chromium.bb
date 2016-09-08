@@ -61,11 +61,10 @@ const int kMaxAgcSegmentDiffMs =
   200;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
 #else
 // Not implemented on Android, ChromeOS etc.
-// Currently fails on Windows bots. http://crbug.com/642294.
 #define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
 #endif
 
@@ -806,18 +805,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
       kReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
 }
 
-// The test is failing on the Win7 bot.
-// http://crbug.com/625808#c23
-#if defined(OS_WIN)
-#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff\
-    DISABLED_TestAutoGainIsOffWithAudioProcessingOff
-#else
-#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff\
-    MANUAL_TestAutoGainIsOffWithAudioProcessingOff
-#endif
 // Since the AGC is off here there should be no gain at all.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
+                       MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
