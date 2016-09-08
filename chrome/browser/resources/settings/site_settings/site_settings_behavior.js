@@ -359,12 +359,14 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * Adds the wildcard prefix to a pattern string.
+   * Adds the wildcard prefix to a pattern string (if missing).
    * @param {string} pattern The pattern to add the wildcard to.
    * @return {string} The resulting pattern.
    * @private
    */
   addPatternWildcard: function(pattern) {
+    if (pattern.indexOf('[*.]') > -1)
+      return pattern;
     if (pattern.startsWith('http://'))
       return pattern.replace('http://', 'http://[*.]');
     else if (pattern.startsWith('https://'))

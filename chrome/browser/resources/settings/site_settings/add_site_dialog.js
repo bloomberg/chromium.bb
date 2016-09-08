@@ -43,8 +43,7 @@ Polymer({
    * @private
    */
   validate_: function() {
-    var pattern = this.addPatternWildcard(this.site_);
-    this.browserProxy.isPatternValid(pattern).then(function(isValid) {
+    this.browserProxy.isPatternValid(this.site_).then(function(isValid) {
       this.$.add.disabled = !isValid;
     }.bind(this));
   },
