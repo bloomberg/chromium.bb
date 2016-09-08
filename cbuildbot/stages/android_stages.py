@@ -132,7 +132,8 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     """Write Android version to metadata and upload partial json file."""
     self._run.attrs.metadata.UpdateKeyDictWithDict(
         'version',
-        {'android': self._run.attrs.android_version})
+        {'android': self._run.attrs.android_version,
+         'android-branch':  constants.ANDROID_BUILD_BRANCH})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
   def _Finish(self):
