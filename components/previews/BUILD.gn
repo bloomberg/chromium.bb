@@ -4,12 +4,15 @@
 
 static_library("previews") {
   sources = [
+    "previews_data_savings.cc",
+    "previews_data_savings.h",
     "previews_experiments.cc",
     "previews_experiments.h",
   ]
 
   deps = [
     "//base",
+    "//components/data_reduction_proxy/core/common",
     "//components/variations",
   ]
 }
@@ -17,12 +20,14 @@ static_library("previews") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "previews_data_savings_unittest.cc",
     "previews_experiments_unittest.cc",
   ]
 
   deps = [
     ":previews",
     "//base",
+    "//components/data_reduction_proxy/core/common",
     "//components/variations",
     "//testing/gtest",
   ]

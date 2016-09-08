@@ -19,7 +19,8 @@ class DataSavingsRecorder {
   // previous handling of URLRequests. Also records daily data savings
   // statistics to prefs and reports data savings UMA. |data_used| and
   // |original_size| are measured in bytes.
-  virtual void UpdateDataSavings(const std::string& data_usage_host,
+  // Returns true if data savings was recorded.
+  virtual bool UpdateDataSavings(const std::string& data_usage_host,
                                  int64_t data_used,
                                  int64_t original_size) = 0;
 };

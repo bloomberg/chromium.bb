@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
-#include "components/data_reduction_proxy/core/common/data_saver_status.h"
+#include "components/data_reduction_proxy/core/common/data_savings_recorder.h"
 #include "components/prefs/pref_member.h"
 #include "url/gurl.h"
 
@@ -71,7 +71,7 @@ enum DataReductionSettingsEnabledAction {
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
 class DataReductionProxySettings : public DataReductionProxyServiceObserver,
-                                   public DataSaverStatus {
+                                   public DataSavingsRecorder {
  public:
   typedef base::Callback<bool(const std::string&, const std::string&)>
       SyntheticFieldTrialRegistrationCallback;
@@ -79,8 +79,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
 
-  // DataSaverStatus implementation:
-  bool IsDataSaverEnabled() const override;
+  // DataSavingsRecorder implementation:
+  bool UpdateDataSavings(const std::string& data_usage_host,
+                         int64_t data_used,
+                         int64_t original_size) override;
 
   // Initializes the Data Reduction Proxy with the name of the preference that
   // controls enabling it, profile prefs and a |DataReductionProxyIOData|. The

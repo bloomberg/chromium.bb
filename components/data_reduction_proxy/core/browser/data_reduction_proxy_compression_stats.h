@@ -43,7 +43,7 @@ class PerSiteDataUsage;
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
 // directly to the PrefService and does not store the prefs in memory. All
 // prefs must be stored and read on the UI thread.
-class DataReductionProxyCompressionStats : public DataSavingsRecorder {
+class DataReductionProxyCompressionStats {
  public:
   typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
@@ -62,10 +62,12 @@ class DataReductionProxyCompressionStats : public DataSavingsRecorder {
                                      const base::TimeDelta& delay);
   ~DataReductionProxyCompressionStats();
 
-  // DataSavingsRecorder implementation:
+  // Records detailed data usage broken down by connection type and domain.
+  // Assumes that the |data_used| has been recoreded by previous calls to
+  // UpdateContentLengths.
   void UpdateDataSavings(const std::string& data_usage_host,
                          int64_t data_used,
-                         int64_t original_size) override;
+                         int64_t original_size);
 
   // Records detailed data usage broken down by connection type and domain. Also
   // records daily data savings statistics to prefs and reports data savings
