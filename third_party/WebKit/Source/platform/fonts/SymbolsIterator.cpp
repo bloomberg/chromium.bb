@@ -41,35 +41,11 @@ FontFallbackPriority SymbolsIterator::fontFallbackPriorityForCharacter(UChar32 c
     if (Character::isEmojiTextDefault(codepoint))
         return FontFallbackPriority::EmojiText;
 
-    UBlockCode block = ublock_getCode(codepoint);
-
-    switch (block) {
-    case UBLOCK_PLAYING_CARDS:
-    case UBLOCK_MISCELLANEOUS_SYMBOLS:
-    case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_ARROWS:
-    case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
-    case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
-    case UBLOCK_ALCHEMICAL_SYMBOLS:
-    case UBLOCK_RUNIC:
-    case UBLOCK_DINGBATS:
-    case UBLOCK_GOTHIC:
-        return FontFallbackPriority::Symbols;
-    case UBLOCK_ARROWS:
-    case UBLOCK_MATHEMATICAL_OPERATORS:
-    case UBLOCK_MISCELLANEOUS_TECHNICAL:
-    case UBLOCK_GEOMETRIC_SHAPES:
-    case UBLOCK_MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A:
-    case UBLOCK_SUPPLEMENTAL_ARROWS_A:
-    case UBLOCK_SUPPLEMENTAL_ARROWS_B:
-    case UBLOCK_MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B:
-    case UBLOCK_SUPPLEMENTAL_MATHEMATICAL_OPERATORS:
-    case UBLOCK_MATHEMATICAL_ALPHANUMERIC_SYMBOLS:
-    case UBLOCK_ARABIC_MATHEMATICAL_ALPHABETIC_SYMBOLS:
-    case UBLOCK_GEOMETRIC_SHAPES_EXTENDED:
-        return FontFallbackPriority::Math;
-    default:
-        return FontFallbackPriority::Text;
-    }
+    // Here we could segment into Symbols and Math categories as well, similar
+    // to what the Windows font fallback does. Map the math Unicode and Symbols
+    // blocks to Text for now since we don't have a good cross-platform way to
+    // select suitable math fonts.
+    return FontFallbackPriority::Text;
 }
 
 bool SymbolsIterator::consume(unsigned *symbolsLimit, FontFallbackPriority* fontFallbackPriority)

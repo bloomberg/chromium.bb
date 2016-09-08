@@ -363,6 +363,12 @@ TEST_F(ScriptRunIteratorTest, Common)
     CHECK_RUNS({ { " ... !?", USCRIPT_COMMON } });
 }
 
+TEST_F(ScriptRunIteratorTest, CombiningCircle)
+{
+    CHECK_RUNS({ { "◌́◌̀◌̈◌̂◌̄◌̊", USCRIPT_COMMON } });
+}
+
+
 TEST_F(ScriptRunIteratorTest, Latin)
 {
     CHECK_RUNS({ { "latin", USCRIPT_LATIN } });

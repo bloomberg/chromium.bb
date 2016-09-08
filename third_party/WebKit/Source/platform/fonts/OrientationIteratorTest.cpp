@@ -83,6 +83,11 @@ TEST_F(OrientationIteratorTest, OneAceOfSpades)
     CHECK_RUNS({ { "🂡", OrientationIterator::OrientationKeep } });
 }
 
+TEST_F(OrientationIteratorTest, CombiningCircle)
+{
+    CHECK_RUNS({ { "◌́◌̀◌̈◌̂◌̄◌̊", OrientationIterator::OrientationKeep } });
+}
+
 TEST_F(OrientationIteratorTest, OneEthiopicSyllable)
 {
     CHECK_RUNS({ { "ጀ", OrientationIterator::OrientationRotateSideways } });

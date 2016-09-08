@@ -127,6 +127,11 @@ TEST_F(RunSegmenterTest, JapaneseHindiEmojiMix)
         { "🌱🌲", USCRIPT_HAN, OrientationIterator::OrientationKeep, FontFallbackPriority::EmojiEmoji } });
 }
 
+TEST_F(RunSegmenterTest, CombiningCirlce)
+{
+    CHECK_RUNS_HORIZONTAL({ { "◌́◌̀◌̈◌̂◌̄◌̊", USCRIPT_COMMON, OrientationIterator::OrientationKeep, FontFallbackPriority::Text } });
+}
+
 TEST_F(RunSegmenterTest, HangulSpace)
 {
     CHECK_RUNS_MIXED({ { "키스의", USCRIPT_HANGUL, OrientationIterator::OrientationKeep, FontFallbackPriority::Text },
@@ -136,7 +141,7 @@ TEST_F(RunSegmenterTest, HangulSpace)
 
 TEST_F(RunSegmenterTest, TechnicalCommonUpright)
 {
-    CHECK_RUNS_MIXED({ { "⌀⌁⌂", USCRIPT_COMMON, OrientationIterator::OrientationKeep, FontFallbackPriority::Math } });
+    CHECK_RUNS_MIXED({ { "⌀⌁⌂", USCRIPT_COMMON, OrientationIterator::OrientationKeep, FontFallbackPriority::Text } });
 }
 
 TEST_F(RunSegmenterTest, PunctuationCommonSideways)

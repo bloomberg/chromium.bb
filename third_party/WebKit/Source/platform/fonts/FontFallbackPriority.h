@@ -15,10 +15,6 @@ enum class FontFallbackPriority {
     // For regular non-symbols text,
     // normal text fallback in FontFallbackIterator
     Text,
-    // For non-emoji symbols
-    Symbols,
-    // For math & technical symbols
-    Math,
     // For emoji in text presentaiton
     EmojiText,
     // For emoji in emoji presentation

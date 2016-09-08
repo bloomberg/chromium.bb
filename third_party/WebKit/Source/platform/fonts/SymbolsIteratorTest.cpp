@@ -96,7 +96,7 @@ TEST_F(SymbolsIteratorTest, LatinColorEmojiTextEmoji)
 
 TEST_F(SymbolsIteratorTest, IgnoreVSInMath)
 {
-    CHECK_RUNS({ { "⊆⊇⊈\xEF\xB8\x8E⊙⊚⊚", FontFallbackPriority::Math } });
+    CHECK_RUNS({ { "⊆⊇⊈\xEF\xB8\x8E⊙⊚⊚", FontFallbackPriority::Text } });
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVS15InText)
@@ -127,6 +127,11 @@ TEST_F(SymbolsIteratorTest, NumbersAndHashNormalAndEmoji)
 TEST_F(SymbolsIteratorTest, SingleFlag)
 {
     CHECK_RUNS({ { "🇺", FontFallbackPriority::Text } });
+}
+
+TEST_F(SymbolsIteratorTest, CombiningCircle)
+{
+    CHECK_RUNS({ { "◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::Text } });
 }
 
 // TODO: Perhaps check for invalid country indicator combinations?
@@ -211,10 +216,7 @@ TEST_F(SymbolsIteratorTest, ExtraZWJPrefix)
 
 TEST_F(SymbolsIteratorTest, Arrows)
 {
-    CHECK_RUNS({ { "x", FontFallbackPriority::Text },
-        { "→←", FontFallbackPriority::Math },
-        { "x", FontFallbackPriority::Text },
-        { "←↑↓→", FontFallbackPriority::Math } });
+    CHECK_RUNS({ { "x→←x←↑↓→", FontFallbackPriority::Text } });
 }
 
 } // namespace blink
