@@ -3259,7 +3259,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
         return consumeAnimationPropertyList(property, m_range, m_context, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
     case CSSPropertyGridColumnGap:
     case CSSPropertyGridRowGap:
-        return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+        return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
     case CSSPropertyShapeMargin:
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
     case CSSPropertyShapeImageThreshold:
@@ -4698,8 +4698,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeBackgroundShorthand(webkitMaskShorthand(), important);
     case CSSPropertyGridGap: {
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled() && shorthandForProperty(CSSPropertyGridGap).length() == 2);
-        CSSValue* rowGap = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
-        CSSValue* columnGap = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+        CSSValue* rowGap = consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
+        CSSValue* columnGap = consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
         if (!rowGap || !m_range.atEnd())
             return false;
         if (!columnGap)

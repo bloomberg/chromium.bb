@@ -400,7 +400,7 @@ LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(const GridSizingData& sizi
     for (const auto& row : sizingData.rowTracks)
         logicalHeight += row.baseSize();
 
-    logicalHeight += guttersSize(ForRows, 0, sizingData.rowTracks.size());
+    logicalHeight += guttersSize(ForRows, 0, sizingData.rowTracks.size(), sizingData.sizingOperation);
 
     return logicalHeight;
 }
@@ -409,7 +409,7 @@ void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection directio
 {
     DCHECK(sizingData.isValidTransition(direction));
     sizingData.setAvailableSpace(availableSpace);
-    sizingData.freeSpace(direction) = availableSpace - guttersSize(direction, 0, direction == ForRows ? gridRowCount() : gridColumnCount());
+    sizingData.freeSpace(direction) = availableSpace - guttersSize(direction, 0, direction == ForRows ? gridRowCount() : gridColumnCount(), sizingData.sizingOperation);
     sizingData.sizingOperation = TrackSizing;
 
     LayoutUnit baseSizes, growthLimits;
@@ -529,18 +529,23 @@ bool LayoutGrid::isEmptyAutoRepeatTrack(GridTrackSizingDirection direction, size
     return direction == ForColumns ? m_autoRepeatEmptyColumns->contains(line) : m_autoRepeatEmptyRows->contains(line);
 }
 
-LayoutUnit LayoutGrid::gridGapForDirection(GridTrackSizingDirection direction) const
+LayoutUnit LayoutGrid::gridGapForDirection(GridTrackSizingDirection direction, SizingOperation sizingOperation) const
 {
-    return valueForLength(direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap(), LayoutUnit());
+    LayoutUnit availableSize;
+    if (sizingOperation == TrackSizing)
+        availableSize = direction == ForColumns ? availableLogicalWidth() : availableLogicalHeightForPercentageComputation();
+
+    // TODO(rego): Maybe we could cache the computed percentage as a performance improvement.
+    return valueForLength(direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap(), availableSize);
 }
 
-LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t startLine, size_t span) const
+LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t startLine, size_t span, SizingOperation sizingOperation) const
 {
     if (span <= 1)
         return LayoutUnit();
 
     bool isRowAxis = direction == ForColumns;
-    LayoutUnit gap = gridGapForDirection(direction);
+    LayoutUnit gap = gridGapForDirection(direction, sizingOperation);
 
     // Fast path, no collapsing tracks.
     if (!hasAutoRepeatEmptyTracks(direction))
@@ -600,7 +605,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     sizingData.sizingOperation = IntrinsicSizeComputation;
     computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth);
 
-    LayoutUnit totalGuttersSize = guttersSize(ForColumns, 0, sizingData.columnTracks.size());
+    LayoutUnit totalGuttersSize = guttersSize(ForColumns, 0, sizingData.columnTracks.size(), sizingData.sizingOperation);
     minLogicalWidth += totalGuttersSize;
     maxLogicalWidth += totalGuttersSize;
 
@@ -617,7 +622,7 @@ void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
     sizingData.sizingOperation = IntrinsicSizeComputation;
     computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight);
 
-    LayoutUnit totalGuttersSize = guttersSize(ForRows, 0, gridRowCount());
+    LayoutUnit totalGuttersSize = guttersSize(ForRows, 0, gridRowCount(), sizingData.sizingOperation);
     m_minContentHeight += totalGuttersSize;
     m_maxContentHeight += totalGuttersSize;
 
@@ -1307,7 +1312,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
         if (sizingData.filteredTracks.isEmpty())
             continue;
 
-        spanningTracksSize += guttersSize(direction, itemSpan.startLine(), itemSpan.integerSpan());
+        spanningTracksSize += guttersSize(direction, itemSpan.startLine(), itemSpan.integerSpan(), sizingData.sizingOperation);
 
         LayoutUnit extraSpace = currentItemSizeForTrackSizeComputationPhase(phase, gridItemWithSpan.gridItem(), direction, sizingData) - spanningTracksSize;
         extraSpace = extraSpace.clampNegativeToZero();
@@ -1496,7 +1501,7 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
 
     // Add gutters as if there where only 1 auto repeat track. Gaps between auto repeat tracks will be added later when
     // computing the repetitions.
-    LayoutUnit gapSize = gridGapForDirection(direction);
+    LayoutUnit gapSize = gridGapForDirection(direction, sizingOperation);
     tracksSize += gapSize * trackSizes.size();
 
     LayoutUnit freeSpace = availableSize - tracksSize;
@@ -1818,7 +1823,7 @@ Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(GridTrackSizingDirecti
         return tracks;
 
     bool hasCollapsedTracks = hasAutoRepeatEmptyTracks(direction);
-    LayoutUnit gap = !hasCollapsedTracks ? gridGapForDirection(direction) : LayoutUnit();
+    LayoutUnit gap = !hasCollapsedTracks ? gridGapForDirection(direction, TrackSizing) : LayoutUnit();
     tracks.reserveCapacity(numPositions - 1);
     for (size_t i = 0; i < numPositions - 2; ++i)
         tracks.append(positions[i + 1] - positions[i] - offsetBetweenTracks - gap);
@@ -1829,7 +1834,7 @@ Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(GridTrackSizingDirecti
 
     size_t remainingEmptyTracks = isRowAxis ? m_autoRepeatEmptyColumns->size() : m_autoRepeatEmptyRows->size();
     size_t lastLine = tracks.size();
-    gap = gridGapForDirection(direction);
+    gap = gridGapForDirection(direction, TrackSizing);
     for (size_t i = 1; i < lastLine; ++i) {
         if (isEmptyAutoRepeatTrack(direction, i - 1)) {
             --remainingEmptyTracks;
@@ -2035,7 +2040,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
         // These vectors store line positions including gaps, but we shouldn't consider them for the edges of the grid.
         if (endLine > 0 && endLine < lastLine) {
-            end -= guttersSize(direction, endLine - 1, 2);
+            end -= guttersSize(direction, endLine - 1, 2, TrackSizing);
             end -= isForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
         }
     }
@@ -2052,7 +2057,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
             offset = translateRTLCoordinate(m_columnPositions[endLine]) - borderLogicalLeft();
 
             if (endLine > 0 && endLine < lastLine) {
-                offset += guttersSize(direction, endLine - 1, 2);
+                offset += guttersSize(direction, endLine - 1, 2, TrackSizing);
                 offset += isForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
             }
         }
@@ -2087,7 +2092,7 @@ LayoutUnit LayoutGrid::assumedRowsSizeForOrthogonalChild(const LayoutBox& child,
             gridAreaSize += valueForLength(maxTrackSize.length(), containingBlockAvailableSize);
     }
 
-    gridAreaSize += guttersSize(ForRows, span.startLine(), span.integerSpan());
+    gridAreaSize += guttersSize(ForRows, span.startLine(), span.integerSpan(), sizingOperation);
 
     return gridAreaIsIndefinite ? std::max(child.maxPreferredLogicalWidth(), gridAreaSize) : gridAreaSize;
 }
@@ -2106,7 +2111,7 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrack
     for (const auto& trackPosition : span)
         gridAreaBreadth += tracks[trackPosition].baseSize();
 
-    gridAreaBreadth += guttersSize(direction, span.startLine(), span.integerSpan());
+    gridAreaBreadth += guttersSize(direction, span.startLine(), span.integerSpan(), sizingData.sizingOperation);
 
     return gridAreaBreadth;
 }
@@ -2147,7 +2152,7 @@ void LayoutGrid::populateGridPositionsForDirection(GridSizingData& sizingData, G
         // If we have collapsed tracks we just ignore gaps here and add them later as we might not
         // compute the gap between two consecutive tracks without examining the surrounding ones.
         bool hasCollapsedTracks = hasAutoRepeatEmptyTracks(direction);
-        LayoutUnit gap = !hasCollapsedTracks ? gridGapForDirection(direction) : LayoutUnit();
+        LayoutUnit gap = !hasCollapsedTracks ? gridGapForDirection(direction, sizingData.sizingOperation) : LayoutUnit();
         size_t nextToLastLine = numberOfLines - 2;
         for (size_t i = 0; i < nextToLastLine; ++i)
             positions[i + 1] = positions[i] + offset.distributionOffset + tracks[i].baseSize() + gap;
@@ -2156,7 +2161,7 @@ void LayoutGrid::populateGridPositionsForDirection(GridSizingData& sizingData, G
         // Adjust collapsed gaps. Collapsed tracks cause the surrounding gutters to collapse (they
         // coincide exactly) except on the edges of the grid where they become 0.
         if (hasCollapsedTracks) {
-            gap = gridGapForDirection(direction);
+            gap = gridGapForDirection(direction, sizingData.sizingOperation);
             size_t remainingEmptyTracks = isRowAxis ? m_autoRepeatEmptyColumns->size() : m_autoRepeatEmptyRows->size();
             LayoutUnit gapAccumulator;
             for (size_t i = 1; i < lastLine; ++i) {
@@ -2478,7 +2483,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child, GridSizi
         // m_rowPositions include distribution offset (because of content alignment) and gutters
         // so we need to subtract them to get the actual end position for a given row
         // (this does not have to be done for the last track as there are no more m_columnPositions after it).
-        LayoutUnit trackGap = gridGapForDirection(ForRows);
+        LayoutUnit trackGap = gridGapForDirection(ForRows, sizingData.sizingOperation);
         if (childEndLine < m_rowPositions.size() - 1) {
             endOfRow -= trackGap;
             endOfRow -= m_offsetBetweenRows;
@@ -2513,7 +2518,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child, GridSizingD
         // m_columnPositions include distribution offset (because of content alignment) and gutters
         // so we need to subtract them to get the actual end position for a given column
         // (this does not have to be done for the last track as there are no more m_columnPositions after it).
-        LayoutUnit trackGap = gridGapForDirection(ForColumns);
+        LayoutUnit trackGap = gridGapForDirection(ForColumns, sizingData.sizingOperation);
         if (childEndLine < m_columnPositions.size() - 1) {
             endOfColumn -= trackGap;
             endOfColumn -= m_offsetBetweenColumns;

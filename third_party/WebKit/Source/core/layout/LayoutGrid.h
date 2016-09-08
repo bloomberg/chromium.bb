@@ -208,8 +208,8 @@ private:
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, GridSizingData&);
 #endif
 
-    LayoutUnit gridGapForDirection(GridTrackSizingDirection) const;
-    LayoutUnit guttersSize(GridTrackSizingDirection, size_t startLine, size_t span) const;
+    LayoutUnit gridGapForDirection(GridTrackSizingDirection, SizingOperation) const;
+    LayoutUnit guttersSize(GridTrackSizingDirection, size_t startLine, size_t span, SizingOperation) const;
 
     size_t gridItemSpan(const LayoutBox&, GridTrackSizingDirection);
     bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&, GridTrackSizingDirection, SizingOperation) const;
