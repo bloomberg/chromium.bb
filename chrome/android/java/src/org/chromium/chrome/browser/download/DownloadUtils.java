@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
+import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -97,5 +99,40 @@ public class DownloadUtils {
         backendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(false);
         RecordUserAction.record(
                 "Android.DownloadManager.CheckForExternallyRemovedItems");
+    }
+
+    /**
+     * Trigger the download of an Offline Page.
+     * @param context Context to pull resources from.
+     */
+    public static void downloadOfflinePage(Context context, Tab tab) {
+        final OfflinePageDownloadBridge bridge = new OfflinePageDownloadBridge(tab.getProfile());
+        bridge.startDownload(tab);
+        bridge.destroy();
+        DownloadUtils.recordDownloadPageMetrics(tab);
+        DownloadUtils.showDownloadStartToast(context);
+    }
+
+    /**
+     * Whether the user should be allowed to download the current page.
+     * @param tab Tab displaying the page that will be downloaded.
+     * @return    Whether the "Download Page" button should be enabled.
+     */
+    public static boolean isAllowedToDownloadPage(Tab tab) {
+        if (tab == null) return false;
+
+        // Don't allow downloading internal pages.
+        if (tab.getUrl().startsWith(UrlConstants.CHROME_SCHEME)) return false;
+        if (tab.getUrl().startsWith(UrlConstants.CHROME_NATIVE_SCHEME)) return false;
+        if (tab.isShowingErrorPage()) return false;
+        if (tab.isShowingInterstitialPage()) return false;
+
+        // Don't allow re-downloading the currently displayed offline page.
+        if (tab.isOfflinePage()) return false;
+
+        // Offline pages isn't supported in Incognito.
+        if (tab.isIncognito()) return false;
+
+        return true;
     }
 }

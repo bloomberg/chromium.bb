@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
@@ -110,10 +111,9 @@ public class AppMenuPropertiesDelegate {
                 MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
                 if (offlineMenuItem != null) {
                     if (ChromeFeatureList.isEnabled("DownloadsUi")) {
-                        boolean isValidTab = !currentTab.isOfflinePage()
-                                && !currentTab.isShowingErrorPage()
-                                && !currentTab.isShowingInterstitialPage();
-                        offlineMenuItem.setEnabled(!isChromeScheme && !isIncognito && isValidTab);
+                        offlineMenuItem.setEnabled(
+                                DownloadUtils.isAllowedToDownloadPage(currentTab));
+
                         Drawable drawable = offlineMenuItem.getIcon();
                         if (drawable != null) {
                             int iconTint = ApiCompatibilityUtils.getColor(

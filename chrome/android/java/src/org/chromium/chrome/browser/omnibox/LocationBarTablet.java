@@ -19,7 +19,7 @@ import android.view.WindowManager;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarTablet;
@@ -568,13 +568,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
     private boolean isSaveOfflineButtonEnabled() {
         if (mToolbarDataProvider == null) return false;
-        Tab tab = mToolbarDataProvider.getTab();
-        if (tab == null) return false;
-        boolean isChromeScheme = tab.getUrl().startsWith(UrlConstants.CHROME_SCHEME)
-                || tab.getUrl().startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
-        boolean isValidTab = !tab.isOfflinePage() && !tab.isShowingErrorPage()
-                             && !tab.isShowingInterstitialPage();
-        return !isChromeScheme && isValidTab;
+        return DownloadUtils.isAllowedToDownloadPage(mToolbarDataProvider.getTab());
     }
 
     private boolean shouldShowPageActionButtons() {

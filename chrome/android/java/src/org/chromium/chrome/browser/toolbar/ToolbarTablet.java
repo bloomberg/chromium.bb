@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.NavigationPopup;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -308,13 +307,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                 mTabSwitcherListener.onClick(mAccessibilitySwitcherButton);
             }
         } else if (mSaveOfflineButton == v) {
-            Tab tab = getToolbarDataProvider().getTab();
-            OfflinePageDownloadBridge bridge = new OfflinePageDownloadBridge(tab.getProfile());
-            bridge.startDownload(tab);
-            bridge.destroy();
+            DownloadUtils.downloadOfflinePage(getContext(), getToolbarDataProvider().getTab());
             RecordUserAction.record("MobileToolbarDownloadPage");
-            DownloadUtils.recordDownloadPageMetrics(tab);
-            DownloadUtils.showDownloadStartToast(getContext());
         }
     }
 

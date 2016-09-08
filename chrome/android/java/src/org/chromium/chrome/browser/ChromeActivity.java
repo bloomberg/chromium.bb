@@ -90,7 +90,6 @@ import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -1563,13 +1562,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             addOrEditBookmark(currentTab);
             RecordUserAction.record("MobileMenuAddToBookmarks");
         } else if (id == R.id.offline_page_id) {
-            final OfflinePageDownloadBridge bridge =
-                    new OfflinePageDownloadBridge(currentTab.getProfile());
-            bridge.startDownload(currentTab);
-            bridge.destroy();
+            DownloadUtils.downloadOfflinePage(this, currentTab);
             RecordUserAction.record("MobileMenuDownloadPage");
-            DownloadUtils.recordDownloadPageMetrics(currentTab);
-            DownloadUtils.showDownloadStartToast(this);
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();
