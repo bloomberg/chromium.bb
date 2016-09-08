@@ -400,13 +400,6 @@ void Bus::RemoveObjectManagerInternalHelper(
   callback.Run();
 }
 
-void Bus::GetManagedObjects() {
-  for (ObjectManagerTable::iterator iter = object_manager_table_.begin();
-       iter != object_manager_table_.end(); ++iter) {
-    iter->second->GetManagedObjects();
-  }
-}
-
 bool Bus::Connect() {
   // dbus_bus_get_private() and dbus_bus_get() are blocking calls.
   AssertOnDBusThread();

@@ -71,8 +71,9 @@
 //     object_manager_->UnregisterInterface(kInterface);
 //   }
 //
-// The D-Bus thread manager takes care of issuing the necessary call to
-// GetManagedObjects() after the implementation classes have been set up.
+// This class calls GetManagedObjects() asynchronously after the remote service
+// becomes available and additionally refreshes managed objects after the
+// service stops or restarts.
 //
 // The object manager interface class has one abstract method that must be
 // implemented by the class to create Properties structures on demand. As well
@@ -238,17 +239,14 @@ public:
  private:
   friend class base::RefCountedThreadSafe<ObjectManager>;
 
-  // Connects the InterfacesAdded and InterfacesRemoved signals and calls
-  // GetManagedObjects. Called from OnSetupMatchRuleAndFilterComplete.
-  void InitializeObjects();
-
   // Called from the constructor to add a match rule for PropertiesChanged
-  // signals on the DBus thread and set up a corresponding filter function.
+  // signals on the D-Bus thread and set up a corresponding filter function.
   bool SetupMatchRuleAndFilter();
 
   // Called on the origin thread once the match rule and filter have been set
-  // up. |success| is false, if an error occurred during set up; it's true
-  // otherwise.
+  // up. Connects the InterfacesAdded and InterfacesRemoved signals and
+  // refreshes objects if the service is available. |success| is false if an
+  // error occurred during setup and true otherwise.
   void OnSetupMatchRuleAndFilterComplete(bool success);
 
   // Called by dbus:: when a message is received. This is used to filter

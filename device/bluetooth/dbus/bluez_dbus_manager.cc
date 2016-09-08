@@ -195,11 +195,6 @@ void BluezDBusManager::InitializeClients() {
   client_bundle_->bluetooth_media_client()->Init(GetSystemBus());
   client_bundle_->bluetooth_media_transport_client()->Init(GetSystemBus());
   client_bundle_->bluetooth_profile_manager_client()->Init(GetSystemBus());
-
-  // This must be called after the list of clients so they've each had a
-  // chance to register with their object g_dbus_thread_managers.
-  if (GetSystemBus())
-    GetSystemBus()->GetManagedObjects();
 }
 
 // static

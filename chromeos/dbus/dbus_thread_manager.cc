@@ -216,11 +216,6 @@ void DBusThreadManager::InitializeClients() {
   GetSystemClockClient()->Init(GetSystemBus());
   GetUpdateEngineClient()->Init(GetSystemBus());
 
-  // This must be called after the list of clients so they've each had a
-  // chance to register with their object g_dbus_thread_managers.
-  if (GetSystemBus())
-    GetSystemBus()->GetManagedObjects();
-
   client_bundle_->SetupDefaultEnvironment();
 }
 

@@ -167,35 +167,6 @@ void ObjectManager::CleanUp() {
   match_rule_.clear();
 }
 
-void ObjectManager::InitializeObjects() {
-  DCHECK(bus_);
-  DCHECK(object_proxy_);
-  DCHECK(setup_success_);
-
-  // |object_proxy_| is no longer valid if the Bus was shut down before this
-  // call. Don't initiate any other action from the origin thread.
-  if (cleanup_called_)
-    return;
-
-  object_proxy_->ConnectToSignal(
-      kObjectManagerInterface,
-      kObjectManagerInterfacesAdded,
-      base::Bind(&ObjectManager::InterfacesAddedReceived,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ObjectManager::InterfacesAddedConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  object_proxy_->ConnectToSignal(
-      kObjectManagerInterface,
-      kObjectManagerInterfacesRemoved,
-      base::Bind(&ObjectManager::InterfacesRemovedReceived,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ObjectManager::InterfacesRemovedConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  GetManagedObjects();
-}
-
 bool ObjectManager::SetupMatchRuleAndFilter() {
   DCHECK(bus_);
   DCHECK(!setup_success_);
@@ -235,10 +206,39 @@ bool ObjectManager::SetupMatchRuleAndFilter() {
 }
 
 void ObjectManager::OnSetupMatchRuleAndFilterComplete(bool success) {
-  LOG_IF(WARNING, !success) << service_name_ << " " << object_path_.value()
-                            << ": Failed to set up match rule.";
-  if (success)
-    InitializeObjects();
+  if (!success) {
+    LOG(WARNING) << service_name_ << " " << object_path_.value()
+                 << ": Failed to set up match rule.";
+    return;
+  }
+
+  DCHECK(bus_);
+  DCHECK(object_proxy_);
+  DCHECK(setup_success_);
+
+  // |object_proxy_| is no longer valid if the Bus was shut down before this
+  // call. Don't initiate any other action from the origin thread.
+  if (cleanup_called_)
+    return;
+
+  object_proxy_->ConnectToSignal(
+      kObjectManagerInterface,
+      kObjectManagerInterfacesAdded,
+      base::Bind(&ObjectManager::InterfacesAddedReceived,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ObjectManager::InterfacesAddedConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  object_proxy_->ConnectToSignal(
+      kObjectManagerInterface,
+      kObjectManagerInterfacesRemoved,
+      base::Bind(&ObjectManager::InterfacesRemovedReceived,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ObjectManager::InterfacesRemovedConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  if (!service_name_owner_.empty())
+    GetManagedObjects();
 }
 
 // static

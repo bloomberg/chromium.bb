@@ -31,7 +31,6 @@ class MockObjectManager : public ObjectManager {
   MOCK_METHOD1(GetObjectProxy, ObjectProxy*(const ObjectPath&));
   MOCK_METHOD2(GetProperties, PropertySet*(const ObjectPath&,
                                            const std::string&));
-  MOCK_METHOD0(GetManagedObjects, void());
 
  protected:
   virtual ~MockObjectManager();
