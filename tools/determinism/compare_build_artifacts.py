@@ -444,6 +444,24 @@ def diff_binary(first_filepath, second_filepath, file_len):
   offset = 0
   with open(first_filepath, 'rb') as lhs:
     with open(second_filepath, 'rb') as rhs:
+      # Skip part of Win32 COFF header if timestamps are different.
+      #
+      # COFF header:
+      #   0 -  1: magic.
+      #   2 -  3: # sections.
+      #   4 -  7: timestamp.
+      #   ....
+      COFF_HEADER_TO_COMPARE_SIZE = 8
+      if (sys.platform == 'win32' and first_filepath.endswith('.obj')
+          and file_len > COFF_HEADER_TO_COMPARE_SIZE):
+        rhs_data = rhs.read(COFF_HEADER_TO_COMPARE_SIZE)
+        lhs_data = lhs.read(COFF_HEADER_TO_COMPARE_SIZE)
+        if lhs_data[0:4] == rhs_data[0:4] and lhs_data[4:8] != rhs_data[4:8]:
+          offset += COFF_HEADER_TO_COMPARE_SIZE
+        else:
+          lhs.seek(0)
+          rhs.seek(0)
+
       while True:
         lhs_data = lhs.read(CHUNK_SIZE)
         rhs_data = rhs.read(CHUNK_SIZE)
@@ -558,7 +576,7 @@ def compare_deps(first_dir, second_dir, targets):
       second_file = os.path.join(second_dir, d)
       result = compare_files(first_file, second_file)
       if result:
-        print('%-*s: %s' % (max_filepath_len, d, result))
+        print('  %-*s: %s' % (max_filepath_len, d, result))
 
 
 def compare_build_artifacts(first_dir, second_dir, target_platform,
