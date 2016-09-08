@@ -32,6 +32,10 @@ id<GREYAction> webViewLongPressElementForContextMenu(
     const std::string& element_id,
     bool triggers_context_menu);
 
+// Taps on element |element_id| in the webview of |state|.
+id<GREYAction> webViewTapElement(WebState* state,
+                                 const std::string& element_id);
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_EARL_GREY_WEB_VIEW_ACTIONS_H_

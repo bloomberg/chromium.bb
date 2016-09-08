@@ -105,6 +105,24 @@ void RemoveVerifierForElementWithId(web::WebState* web_state,
       CallbackPrefixForElementId(element_id));
 }
 
+// Returns a no element found error.
+id<GREYAction> webViewElementNotFound(const std::string& element_id) {
+  NSString* description = [NSString
+      stringWithFormat:@"Couldn't locate a bounding rect for element_id %s; "
+                       @"either it isn't there or it has no area.",
+                       element_id.c_str()];
+  GREYPerformBlock throw_error =
+      ^BOOL(id /* element */, __strong NSError** error) {
+        NSDictionary* user_info = @{NSLocalizedDescriptionKey : description};
+        *error = [NSError errorWithDomain:kGREYInteractionErrorDomain
+                                     code:kGREYInteractionActionFailedErrorCode
+                                 userInfo:user_info];
+        return NO;
+      };
+  return [GREYActionBlock actionWithName:@"Locate element bounds"
+                            performBlock:throw_error];
+}
+
 }  // namespace
 
 namespace web {
@@ -128,7 +146,7 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
     base::ScopedClosureRunner cleanup(
         base::Bind(&RemoveVerifierForElementWithId, state, element_id));
 
-    // Inject the vefifier.
+    // Inject the verifier.
     bool verifier_added =
         AddVerifierToElementWithId(state, element_id, &verified);
     if (!verifier_added) {
@@ -179,37 +197,25 @@ id<GREYAction> webViewLongPressElementForContextMenu(
     const std::string& element_id,
     bool triggers_context_menu) {
   CGRect rect = web::test::GetBoundingRectOfElementWithId(state, element_id);
-  // Check if |rect| is empty; if it is, return an action that just throws an
-  // error.
   if (CGRectIsEmpty(rect)) {
-    NSString* description = [NSString
-        stringWithFormat:@"Couldn't locate a bounding rect for element_id %s; "
-                         @"either it isn't there or it has no area.",
-                         element_id.c_str()];
-    GREYPerformBlock throw_error = ^BOOL(id /* element */,
-                                         __strong NSError** error) {
-      NSDictionary* user_info = @{NSLocalizedDescriptionKey : description};
-      *error = [NSError errorWithDomain:kGREYInteractionErrorDomain
-                                   code:kGREYInteractionActionFailedErrorCode
-                               userInfo:user_info];
-      return NO;
-    };
-    return [GREYActionBlock actionWithName:@"Locate element bounds"
-                              performBlock:throw_error];
+    return webViewElementNotFound(element_id);
   }
-
-  // If there's a usable rect, long-press in the center.
   CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
-
   id<GREYAction> longpress =
       grey_longPressAtPointWithDuration(point, kContextMenuLongPressDuration);
-  id<GREYAction> action = longpress;
-
-  if (!triggers_context_menu) {
-    action = webViewVerifiedActionOnElement(state, longpress, element_id);
+  if (triggers_context_menu) {
+    return longpress;
   }
+  return webViewVerifiedActionOnElement(state, longpress, element_id);
+}
 
-  return action;
+id<GREYAction> webViewTapElement(WebState* state,
+                                 const std::string& element_id) {
+  CGRect rect = web::test::GetBoundingRectOfElementWithId(state, element_id);
+  CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+  return CGRectIsEmpty(rect) ? webViewElementNotFound(element_id)
+                             : webViewVerifiedActionOnElement(
+                                   state, grey_tapAtPoint(point), element_id);
 }
 
 }  // namespace web
