@@ -29,84 +29,102 @@ WATERFALL = {
 
   'testers': {
     'Win7 Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Release (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6779',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6779',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Mac 10.10 Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Debug (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Retina Release (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Retina Debug (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'mac',
     },
     'Linux Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'linux',
     },
     'Linux Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'linux',
@@ -129,64 +147,78 @@ FYI_WATERFALL = {
 
   'testers': {
     'Win7 Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
     },
     'Win8 Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2012ServerR2-SP0'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2012ServerR2-SP0'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Win8 Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2012ServerR2-SP0'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2012ServerR2-SP0'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Release (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6779',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6779',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Debug (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6779',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6779',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:041a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:041a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -194,10 +226,12 @@ FYI_WATERFALL = {
       'os_type': 'win',
     },
     'Win7 Release (NVIDIA GeForce 730)': {
-      'swarming_dimensions': {
-        'gpu': '10de:0f02',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0f02',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -205,10 +239,12 @@ FYI_WATERFALL = {
       'os_type': 'win',
     },
     'Win7 Release (New Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0412',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0412',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -216,10 +252,12 @@ FYI_WATERFALL = {
       'os_type': 'win',
     },
     'Win7 Debug (New Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0412',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0412',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -227,10 +265,12 @@ FYI_WATERFALL = {
       'os_type': 'win',
     },
     'Win7 Release (AMD R7 240)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6613',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6613',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -238,46 +278,56 @@ FYI_WATERFALL = {
       'os_type': 'win',
     },
     'Win7 x64 Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release_x64',
       'swarming': True,
       'os_type': 'win',
     },
     'Win7 x64 Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Debug_x64',
       'swarming': True,
       'os_type': 'win',
     },
     'Mac 10.10 Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Debug (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Release (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:679e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:679e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -285,10 +335,12 @@ FYI_WATERFALL = {
       'os_type': 'mac',
     },
     'Mac 10.10 Debug (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:679e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:679e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -296,70 +348,84 @@ FYI_WATERFALL = {
       'os_type': 'mac',
     },
     'Mac Retina Release': {
-      'swarming_dimensions': {
-        'gpu': '10de:0fe9',
-        'hidpi': '1',
-        'os': 'Mac'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac Retina Debug': {
-      'swarming_dimensions': {
-        'gpu': '10de:0fe9',
-        'hidpi': '1',
-        'os': 'Mac'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Retina Release (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.10 Retina Debug (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'mac',
     },
     'Mac 10.11 Retina Release (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.11'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.11'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off for testing purposes.
       'swarming': False,
       'os_type': 'mac',
     },
     'Linux Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'linux',
     },
     'Linux Release (Intel Graphics Stack)': {
-      'swarming_dimensions': {
-        'gpu': '8086:041a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:041a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -367,10 +433,12 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Linux Release (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6779',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6779',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -378,10 +446,12 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Linux Release (NVIDIA GeForce 730)': {
-      'swarming_dimensions': {
-        'gpu': '10de:0f02',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0f02',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -389,19 +459,23 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Linux Debug (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'linux',
     },
     'Linux Release (New Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0412',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0412',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -409,10 +483,12 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Linux Debug (New Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0412',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0412',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -420,10 +496,12 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Linux Release (AMD R7 240)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6613',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6613',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -431,12 +509,14 @@ FYI_WATERFALL = {
       'os_type': 'linux',
     },
     'Android Release (Nexus 5)': {
-      'swarming_dimensions': {
-        # There are no PCI IDs on Android.
-        # This is a hack to get the script working.
-        'gpu': '0000:0000',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          # There are no PCI IDs on Android.
+          # This is a hack to get the script working.
+          'gpu': '0000:0000',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -444,22 +524,26 @@ FYI_WATERFALL = {
       'os_type': 'android',
     },
     'Android Release (Nexus 5X)': {
-      'swarming_dimensions': {
-        'device_type': 'bullhead',
-        'device_os': 'M',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          'device_type': 'bullhead',
+          'device_os': 'M',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       'swarming': True,
       'os_type': 'android',
     },
     'Android Release (Nexus 6)': {
-      'swarming_dimensions': {
-        # There are no PCI IDs on Android.
-        # This is a hack to get the script working.
-        'gpu': '0000:0000',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          # There are no PCI IDs on Android.
+          # This is a hack to get the script working.
+          'gpu': '0000:0000',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -467,12 +551,14 @@ FYI_WATERFALL = {
       'os_type': 'android',
     },
     'Android Release (Nexus 6P)': {
-      'swarming_dimensions': {
-        # There are no PCI IDs on Android.
-        # This is a hack to get the script working.
-        'gpu': '0000:0000',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          # There are no PCI IDs on Android.
+          # This is a hack to get the script working.
+          'gpu': '0000:0000',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -480,12 +566,14 @@ FYI_WATERFALL = {
       'os_type': 'android',
     },
     'Android Release (Nexus 9)': {
-      'swarming_dimensions': {
-        # There are no PCI IDs on Android.
-        # This is a hack to get the script working.
-        'gpu': '0000:0000',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          # There are no PCI IDs on Android.
+          # This is a hack to get the script working.
+          'gpu': '0000:0000',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -493,12 +581,14 @@ FYI_WATERFALL = {
       'os_type': 'android',
     },
     'Android Release (Pixel C)': {
-      'swarming_dimensions': {
-        # There are no PCI IDs on Android.
-        # This is a hack to get the script working.
-        'gpu': '0000:0000',
-        'os': 'Android'
-      },
+      'swarming_dimensions': [
+        {
+          # There are no PCI IDs on Android.
+          # This is a hack to get the script working.
+          'gpu': '0000:0000',
+          'os': 'Android'
+        },
+      ],
       'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
@@ -512,57 +602,69 @@ FYI_WATERFALL = {
     # a completely different (redundant) bot specification to handle
     # this.
     'Optional Win7 Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Optional Win7 Release (ATI)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6779',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6779',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
     'Optional Mac 10.10 Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Optional Mac Retina Release': {
-      'swarming_dimensions': {
-        'gpu': '10de:0fe9',
-        'hidpi': '1',
-        'os': 'Mac'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Optional Mac 10.10 Retina Release (AMD)': {
-      'swarming_dimensions': {
-        'gpu': '1002:6821',
-        'hidpi': '1',
-        'os': 'Mac-10.10'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac-10.10'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
     },
     'Optional Linux Release (NVIDIA)': {
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'linux',
@@ -796,7 +898,10 @@ NON_SWARMED_GTESTS = {
        '--test-launcher-jobs=1',
        '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:' + \
            'TabCaptureApiPixelTest.EndToEnd*'
-     ]
+     ],
+     'swarming': {
+       'can_use_on_swarming_builders': False,
+     },
   }
 }
 
@@ -1041,9 +1146,9 @@ def substitute_args(tester_config, args):
 
 def matches_swarming_dimensions(tester_config, dimension_sets):
   for dimensions in dimension_sets:
-    if set(dimensions.items()).issubset(
-        tester_config['swarming_dimensions'].items()):
-      return True
+    for cur_dims in tester_config['swarming_dimensions']:
+      if set(dimensions.items()).issubset(cur_dims.items()):
+        return True
   return False
 
 def is_android(tester_config):
@@ -1126,9 +1231,7 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
       result['swarming'] = {}
     result['swarming'].update({
       'can_use_on_swarming_builders': True,
-      'dimension_sets': [
-        tester_config['swarming_dimensions']
-      ]
+      'dimension_sets': tester_config['swarming_dimensions']
     })
     if is_android(tester_config):
       # Override the isolate target to get rid of any "_apk" suffix
@@ -1206,9 +1309,7 @@ def generate_telemetry_test(tester_name, tester_config,
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
-    'dimension_sets': [
-      tester_config['swarming_dimensions']
-    ]
+    'dimension_sets': tester_config['swarming_dimensions']
   }
   if 'swarming' in test_config:
     swarming.update(test_config['swarming'])
