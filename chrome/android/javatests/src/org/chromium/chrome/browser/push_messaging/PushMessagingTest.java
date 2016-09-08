@@ -32,7 +32,6 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -69,6 +68,7 @@ public class PushMessagingTest
             }
         });
         mPushTestPage = getTestServer().getURL(PUSH_TEST_PAGE);
+        loadUrl(mPushTestPage);
     }
 
     @Override
@@ -89,37 +89,98 @@ public class PushMessagingTest
     }
 
     /**
-     * Verifies that PushManager.subscribe() requests permission successfully.
+     * Verifies that PushManager.subscribe() fails if Notifications permission was already denied.
      */
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
-    public void testPushPermissionInfobar() throws InterruptedException, TimeoutException {
+    public void testNotificationsPermissionDenied() throws InterruptedException, TimeoutException {
+        // Deny Notifications permission before trying to subscribe Push.
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.BLOCK);
+        assertEquals("\"denied\"", runScriptBlocking("Notification.permission"));
+
+        // Reload page to ensure the block is persisted.
         loadUrl(mPushTestPage);
-        WebContents webContents = getActivity().getActivityTab().getWebContents();
+
+        // PushManager.subscribePush() should fail immediately without showing an infobar.
+        runScriptAndWaitForTitle("subscribePush()",
+                "subscribe fail: NotAllowedError: Registration failed - permission denied");
         assertEquals(0, getInfoBars().size());
 
-        // Notifications permission should not yet be granted.
-        assertEquals("\"default\"", JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                           webContents, "Notification.permission"));
+        // Notifications permission should still be denied.
+        assertEquals("\"denied\"", runScriptBlocking("Notification.permission"));
+    }
+
+    /**
+     * Verifies that PushManager.subscribe() fails if permission is dismissed or blocked.
+     */
+    @MediumTest
+    @Feature({"Browser", "PushMessaging"})
+    public void testPushPermissionDenied() throws InterruptedException, TimeoutException {
+        // Notifications permission should initially be prompt.
+        assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
 
         // PushManager.subscribePush() should show the notifications infobar.
-        JavaScriptUtils.executeJavaScript(webContents, "subscribePush()");
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !getInfoBars().isEmpty();
-            }
-        });
-        List<InfoBar> infoBars = getInfoBars();
-        assertEquals(1, infoBars.size());
+        assertEquals(0, getInfoBars().size());
+        runScript("subscribePush()");
+        InfoBar infoBar = getInfobarBlocking();
+
+        // Dismissing the infobar should cause subscribe() to fail.
+        assertTrue(InfoBarUtil.clickCloseButton(infoBar));
+        waitForInfobarToClose();
+        waitForTitle(getActivity().getActivityTab(),
+                "subscribe fail: NotAllowedError: Registration failed - permission denied");
+
+        // Notifications permission should still be prompt.
+        assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
+
+        runScriptAndWaitForTitle("sendToTest('reset title')", "reset title");
+
+        // PushManager.subscribePush() should show the notifications infobar again.
+        runScript("subscribePush()");
+        infoBar = getInfobarBlocking();
+
+        // Denying the infobar should cause subscribe() to fail.
+        assertTrue(InfoBarUtil.clickSecondaryButton(infoBar));
+        waitForInfobarToClose();
+        waitForTitle(getActivity().getActivityTab(),
+                "subscribe fail: NotAllowedError: Registration failed - permission denied");
+
+        // This should have caused notifications permission to become denied.
+        assertEquals("\"denied\"", runScriptBlocking("Notification.permission"));
+
+        // Reload page to ensure the block is persisted.
+        loadUrl(mPushTestPage);
+
+        // PushManager.subscribePush() should now fail immediately without showing an infobar.
+        runScriptAndWaitForTitle("subscribePush()",
+                "subscribe fail: NotAllowedError: Registration failed - permission denied");
+        assertEquals(0, getInfoBars().size());
+
+        // Notifications permission should still be denied.
+        assertEquals("\"denied\"", runScriptBlocking("Notification.permission"));
+    }
+
+    /**
+     * Verifies that PushManager.subscribe() requests permission correctly.
+     */
+    @MediumTest
+    @Feature({"Browser", "PushMessaging"})
+    public void testPushPermissionGranted() throws InterruptedException, TimeoutException {
+        // Notifications permission should initially be prompt.
+        assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
+
+        // PushManager.subscribePush() should show the notifications infobar.
+        assertEquals(0, getInfoBars().size());
+        runScript("subscribePush()");
+        InfoBar infoBar = getInfobarBlocking();
 
         // Accepting the infobar should cause subscribe() to succeed.
-        assertTrue(InfoBarUtil.clickPrimaryButton(infoBars.get(0)));
+        assertTrue(InfoBarUtil.clickPrimaryButton(infoBar));
+        waitForInfobarToClose();
         waitForTitle(getActivity().getActivityTab(), "subscribe ok");
 
         // This should have caused notifications permission to become granted.
-        assertEquals("\"granted\"", JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                            webContents, "Notification.permission"));
+        assertEquals("\"granted\"", runScriptBlocking("Notification.permission"));
     }
 
     /**
@@ -128,7 +189,6 @@ public class PushMessagingTest
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
-        loadUrl(mPushTestPage);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
 
@@ -147,8 +207,7 @@ public class PushMessagingTest
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
     public void testDefaultNotification() throws InterruptedException, TimeoutException {
-        // Load the push test page into the first tab.
-        loadUrl(mPushTestPage);
+        // Start off using the tab loaded in setUp().
         assertEquals(1, getActivity().getCurrentTabModel().getCount());
         Tab tab = getActivity().getActivityTab();
         assertEquals(mPushTestPage, tab.getUrl());
@@ -184,6 +243,21 @@ public class PushMessagingTest
         notificationEntry = waitForNotification();
         assertEquals("push notification 1",
                 notificationEntry.notification.extras.getString(Notification.EXTRA_TITLE));
+    }
+
+    /**
+     * Runs {@code script} in the current tab but does not wait for the result.
+     */
+    private void runScript(String script) {
+        JavaScriptUtils.executeJavaScript(getActivity().getActivityTab().getWebContents(), script);
+    }
+
+    /**
+     * Runs {@code script} in the current tab and returns its synchronous result in JSON format.
+     */
+    private String runScriptBlocking(String script) throws InterruptedException, TimeoutException {
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getActivity().getActivityTab().getWebContents(), script);
     }
 
     /**
@@ -233,5 +307,27 @@ public class PushMessagingTest
             // The title is not as expected, this assertion neatly logs what the difference is.
             assertEquals(expectedTitle, tab.getTitle());
         }
+    }
+
+    private InfoBar getInfobarBlocking() throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !getInfoBars().isEmpty();
+            }
+        });
+        List<InfoBar> infoBars = getInfoBars();
+        assertEquals(1, infoBars.size());
+        return infoBars.get(0);
+    }
+
+    private void waitForInfobarToClose() throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getInfoBars().isEmpty();
+            }
+        });
+        assertEquals(0, getInfoBars().size());
     }
 }
