@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -141,6 +142,10 @@ public class SignInPreference extends Preference
                 return true;
             }
         });
+
+        if (account == null && enabled) {
+            RecordUserAction.record("Signin_Impression_FromSettings");
+        }
     }
 
     private void updateSyncStatusIcon() {
