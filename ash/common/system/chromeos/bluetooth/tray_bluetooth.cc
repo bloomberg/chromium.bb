@@ -17,13 +17,13 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -83,10 +83,9 @@ class BluetoothDefaultView : public TrayItemMore {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     const bool enabled = delegate->GetBluetoothEnabled();
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      gfx::VectorIconId icon_id =
-          enabled ? gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH
-                  : gfx::VectorIconId::SYSTEM_MENU_BLUETOOTH_DISABLED;
-      SetImage(gfx::CreateVectorIcon(icon_id, kMenuIconColor));
+      SetImage(gfx::CreateVectorIcon(
+          enabled ? kSystemMenuBluetoothIcon : kSystemMenuBluetoothDisabledIcon,
+          kMenuIconColor));
     }
 
     if (delegate->GetBluetoothAvailable()) {

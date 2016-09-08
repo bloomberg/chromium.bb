@@ -15,6 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 
 namespace ash {
@@ -76,7 +77,7 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   gfx::ImageSkia icon =
-      CreateVectorIcon(GetPaletteIconId(), kIconSize, gfx::kChromeIconGrey);
+      CreateVectorIcon(GetPaletteIcon(), kIconSize, gfx::kChromeIconGrey);
   gfx::ImageSkia check = CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE,
                                           kIconSize, gfx::kGoogleGreen700);
 

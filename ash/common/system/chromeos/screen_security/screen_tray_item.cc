@@ -8,10 +8,10 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -28,8 +28,8 @@ ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item)
     : TrayItemView(screen_tray_item), screen_tray_item_(screen_tray_item) {
   CreateImageView();
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    image_view()->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYSTEM_TRAY_SCREEN_SHARE, kTrayIconColor));
+    image_view()->SetImage(
+        gfx::CreateVectorIcon(kSystemTrayScreenShareIcon, kTrayIconColor));
   } else {
     image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
                                .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
@@ -94,8 +94,8 @@ void ScreenStatusView::CreateItems() {
 
   icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    icon_->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYSTEM_MENU_SCREEN_SHARE, kMenuIconColor));
+    icon_->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuScreenShareIcon, kMenuIconColor));
   } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     icon_->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK)

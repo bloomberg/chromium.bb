@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/sys_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -19,7 +20,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -48,8 +48,8 @@ class CapsLockDefaultView : public ActionableView {
     FixedSizedImageView* image =
         new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      image->SetImage(gfx::CreateVectorIcon(
-          gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK, kMenuIconColor));
+      image->SetImage(
+          gfx::CreateVectorIcon(kSystemMenuCapsLockIcon, kMenuIconColor));
     } else {
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
       image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK)
@@ -198,8 +198,8 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    image->SetImage(CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK,
-                                     kMenuIconSize, kMenuIconColor));
+    image->SetImage(CreateVectorIcon(kSystemMenuCapsLockIcon, kMenuIconSize,
+                                     kMenuIconColor));
   } else {
     image->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());

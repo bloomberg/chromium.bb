@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,7 +27,6 @@
 #include "ui/display/display.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -103,8 +103,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   views::ImageView* icon =
       new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    icon->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYSTEM_MENU_BRIGHTNESS, kMenuIconColor));
+    icon->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuBrightnessIcon, kMenuIconColor));
   } else {
     icon->SetImage(
         rb.GetImageNamed(IDR_AURA_UBER_TRAY_BRIGHTNESS).ToImageSkia());

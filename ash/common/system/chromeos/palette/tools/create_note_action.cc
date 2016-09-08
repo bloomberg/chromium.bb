@@ -7,6 +7,7 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -42,8 +43,8 @@ views::View* CreateNoteAction::CreateView() {
       l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
 }
 
-gfx::VectorIconId CreateNoteAction::GetPaletteIconId() {
-  return gfx::VectorIconId::PALETTE_ACTION_CREATE_NOTE;
+const gfx::VectorIcon& CreateNoteAction::GetPaletteIcon() const {
+  return kPaletteActionCreateNoteIcon;
 }
 
 }  // namespace ash

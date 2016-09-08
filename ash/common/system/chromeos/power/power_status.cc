@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +26,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
 namespace {
@@ -100,21 +100,22 @@ int PowerSourceToMessageID(
   return 0;
 }
 
-gfx::VectorIconId VectorIconIdForIconBadge(PowerStatus::IconBadge icon_badge) {
+const gfx::VectorIcon& VectorIconForIconBadge(
+    PowerStatus::IconBadge icon_badge) {
   switch (icon_badge) {
     case PowerStatus::ICON_BADGE_NONE:
-      return gfx::VectorIconId::VECTOR_ICON_NONE;
+      return gfx::kNoneIcon;
     case PowerStatus::ICON_BADGE_ALERT:
-      return gfx::VectorIconId::SYSTEM_TRAY_BATTERY_ALERT;
+      return kSystemTrayBatteryAlertIcon;
     case PowerStatus::ICON_BADGE_BOLT:
-      return gfx::VectorIconId::SYSTEM_TRAY_BATTERY_BOLT;
+      return kSystemTrayBatteryBoltIcon;
     case PowerStatus::ICON_BADGE_X:
-      return gfx::VectorIconId::SYSTEM_TRAY_BATTERY_X;
+      return kSystemTrayBatteryXIcon;
     case PowerStatus::ICON_BADGE_UNRELIABLE:
-      return gfx::VectorIconId::SYSTEM_TRAY_BATTERY_UNRELIABLE;
+      return kSystemTrayBatteryUnreliableIcon;
   }
   NOTREACHED();
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
+  return gfx::kNoneIcon;
 }
 
 static PowerStatus* g_power_status = NULL;
@@ -408,8 +409,8 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(
       false);
 
   // Paint the battery's base (background) color.
-  PaintVectorIcon(&canvas, gfx::VectorIconId::SYSTEM_TRAY_BATTERY,
-                  kBatteryCanvasSizeMd, kBatteryBaseColor);
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSizeMd,
+                  kBatteryBaseColor);
 
   // Paint the charged portion of the battery. Note that |charge_height| adjusts
   // for the 2dp of padding between the bottom of the battery icon and the
@@ -419,13 +420,13 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(
                       kBatteryCanvasSizeMd, charge_height);
   canvas.Save();
   canvas.ClipRect(clip_rect);
-  PaintVectorIcon(&canvas, gfx::VectorIconId::SYSTEM_TRAY_BATTERY,
-                  kBatteryCanvasSizeMd, charge_color);
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSizeMd,
+                  charge_color);
   canvas.Restore();
 
   // Paint the badge over top of the battery, if applicable.
   if (info.icon_badge != ICON_BADGE_NONE) {
-    PaintVectorIcon(&canvas, VectorIconIdForIconBadge(info.icon_badge),
+    PaintVectorIcon(&canvas, VectorIconForIconBadge(info.icon_badge),
                     kBatteryCanvasSizeMd, badge_color);
   }
 

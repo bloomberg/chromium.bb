@@ -14,6 +14,10 @@
 #include "base/macros.h"
 #include "ui/gfx/vector_icon_types.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace views {
 class View;
 }
@@ -84,7 +88,7 @@ class ASH_EXPORT PaletteTool {
 
   // Returns an icon to use in the tray if this tool is active. Only one tool
   // (per-group) should ever have an active icon at any given time.
-  virtual gfx::VectorIconId GetActiveTrayIcon();
+  virtual const gfx::VectorIcon& GetActiveTrayIcon() const;
 
  protected:
   // Enables/disables the tool.

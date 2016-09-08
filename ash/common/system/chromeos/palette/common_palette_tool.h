@@ -6,12 +6,16 @@
 #define ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_COMMON_PALETTE_TOOL_H_
 
 #include "ash/common/system/chromeos/palette/palette_tool.h"
-#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/vector_icons_public.h"
+
+namespace gfx {
+struct VectorIcon;
+}
 
 namespace ash {
+
+class HoverHighlightView;
 
 // A PaletteTool implementation with a standard view support.
 class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
@@ -30,7 +34,7 @@ class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
 
   // Returns the icon used in the palette tray on the left-most edge of the
   // tool.
-  virtual gfx::VectorIconId GetPaletteIconId() = 0;
+  virtual const gfx::VectorIcon& GetPaletteIcon() const = 0;
 
   // Creates a default view implementation to be returned by CreateView.
   views::View* CreateDefaultView(const base::string16& name);

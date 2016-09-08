@@ -23,7 +23,7 @@ class ASH_EXPORT CaptureScreenAction : public CommonPaletteTool {
   views::View* CreateView() override;
 
   // CommonPaletteTool overrides.
-  gfx::VectorIconId GetPaletteIconId() override;
+  const gfx::VectorIcon& GetPaletteIcon() const override;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureScreenAction);
 };

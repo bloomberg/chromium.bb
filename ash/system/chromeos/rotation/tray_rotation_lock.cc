@@ -11,6 +11,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -18,7 +19,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
 
@@ -81,10 +81,10 @@ void RotationLockDefaultView::UpdateImage() {
   const bool rotation_locked =
       Shell::GetInstance()->screen_orientation_controller()->rotation_locked();
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    const gfx::VectorIconId icon_id =
-        rotation_locked ? gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_LOCKED
-                        : gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_AUTO;
-    SetImage(gfx::CreateVectorIcon(icon_id, kMenuIconSize, kMenuIconColor));
+    SetImage(gfx::CreateVectorIcon(rotation_locked
+                                       ? kSystemMenuRotationLockLockedIcon
+                                       : kSystemMenuRotationLockAutoIcon,
+                                   kMenuIconSize, kMenuIconColor));
   } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     const int resource_id = rotation_locked

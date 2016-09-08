@@ -20,13 +20,13 @@ class MagnifierMode : public CommonPaletteTool {
   // PaletteTool overrides.
   PaletteGroup GetGroup() const override;
   PaletteToolId GetToolId() const override;
-  gfx::VectorIconId GetActiveTrayIcon() override;
+  const gfx::VectorIcon& GetActiveTrayIcon() const override;
   void OnEnable() override;
   void OnDisable() override;
   views::View* CreateView() override;
 
   // CommonPaletteTool overrides.
-  gfx::VectorIconId GetPaletteIconId() override;
+  const gfx::VectorIcon& GetPaletteIcon() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MagnifierMode);
 };

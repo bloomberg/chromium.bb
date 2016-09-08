@@ -75,7 +75,7 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
 
   // Fetch the active tray icon for the given tool. Returns
   // gfx::VectorIconId::VECTOR_ICON_NONE if not available.
-  gfx::VectorIconId GetActiveTrayIcon(PaletteToolId tool_id);
+  const gfx::VectorIcon& GetActiveTrayIcon(PaletteToolId tool_id) const;
 
   // Create views for all of the registered tools.
   std::vector<PaletteToolView> CreateViews();
@@ -91,7 +91,7 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   void HidePalette() override;
   WmWindow* GetWindow() override;
 
-  PaletteTool* FindToolById(PaletteToolId tool_id);
+  PaletteTool* FindToolById(PaletteToolId tool_id) const;
 
   // Unowned pointer to the delegate to provide external functionality.
   Delegate* delegate_;

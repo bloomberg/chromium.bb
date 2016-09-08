@@ -7,6 +7,7 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -25,8 +26,8 @@ PaletteToolId MagnifierMode::GetToolId() const {
   return PaletteToolId::MAGNIFY;
 }
 
-gfx::VectorIconId MagnifierMode::GetActiveTrayIcon() {
-  return gfx::VectorIconId::PALETTE_TRAY_ICON_MAGNIFY;
+const gfx::VectorIcon& MagnifierMode::GetActiveTrayIcon() const {
+  return kPaletteTrayIconMagnifyIcon;
 }
 
 void MagnifierMode::OnEnable() {
@@ -44,8 +45,8 @@ views::View* MagnifierMode::CreateView() {
       l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_MAGNIFIER_MODE));
 }
 
-gfx::VectorIconId MagnifierMode::GetPaletteIconId() {
-  return gfx::VectorIconId::PALETTE_MODE_MAGNIFY;
+const gfx::VectorIcon& MagnifierMode::GetPaletteIcon() const {
+  return kPaletteModeMagnifyIcon;
 }
 
 }  // namespace ash

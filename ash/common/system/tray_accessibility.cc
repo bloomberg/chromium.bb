@@ -17,6 +17,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -24,7 +25,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -78,8 +78,8 @@ class DefaultAccessibilityView : public TrayItemMore {
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      SetImage(gfx::CreateVectorIcon(
-          gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY, kMenuIconColor));
+      SetImage(
+          gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon, kMenuIconColor));
     } else {
       SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
                     .ToImageSkia());

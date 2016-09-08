@@ -21,6 +21,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -29,7 +30,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -63,8 +63,7 @@ base::string16 ElideString(const base::string16& text) {
 // filled in if |is_casting| is true.
 gfx::ImageSkia GetCastIconForSystemMenu(bool is_casting) {
   return gfx::CreateVectorIcon(
-      gfx::VectorIconId::SYSTEM_MENU_CAST,
-      is_casting ? kMenuIconColor : SK_ColorTRANSPARENT);
+      kSystemMenuCastIcon, is_casting ? kMenuIconColor : SK_ColorTRANSPARENT);
 }
 
 }  // namespace
@@ -361,8 +360,8 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
     : TrayItemView(tray_item) {
   CreateImageView();
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    image_view()->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYSTEM_TRAY_CAST, kTrayIconColor));
+    image_view()->SetImage(
+        gfx::CreateVectorIcon(kSystemTrayCastIcon, kTrayIconColor));
   } else {
     image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
                                .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)

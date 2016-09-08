@@ -8,11 +8,11 @@
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -21,28 +21,27 @@ namespace ash {
 
 namespace {
 
-// Maps a non-MD PNG resource id to its corresponding MD vector icon id.
+// Maps a non-MD PNG resource id to its corresponding MD vector icon.
 // TODO(tdanderson): Remove this once material design is enabled by
 // default. See crbug.com/614453.
-gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
-  gfx::VectorIconId vector_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
 #if defined(OS_CHROMEOS)
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ENTERPRISE:
-      return gfx::VectorIconId::SYSTEM_MENU_BUSINESS;
+      return kSystemMenuBusinessIcon;
     case IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT:
-      return gfx::VectorIconId::SYSTEM_MENU_TIMER;
+      return kSystemMenuTimerIcon;
     case IDR_AURA_UBER_TRAY_CHILD_USER:
-      return gfx::VectorIconId::SYSTEM_MENU_CHILD_USER;
+      return kSystemMenuChildUserIcon;
     case IDR_AURA_UBER_TRAY_SUPERVISED_USER:
-      return gfx::VectorIconId::SYSTEM_MENU_SUPERVISED_USER;
+      return kSystemMenuSupervisedUserIcon;
     default:
       NOTREACHED();
       break;
   }
 #endif  // defined(OS_CHROMEOS)
 
-  return vector_id;
+  return gfx::kNoneIcon;
 }
 
 }  // namespace
@@ -78,7 +77,7 @@ views::View* LabelTrayView::CreateChildView(
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia icon =
         MaterialDesignController::IsSystemTrayMenuMaterial()
-            ? gfx::CreateVectorIcon(ResourceIdToVectorIconId(icon_resource_id_),
+            ? gfx::CreateVectorIcon(ResourceIdToVectorIcon(icon_resource_id_),
                                     kMenuIconColor)
             : *rb.GetImageSkiaNamed(icon_resource_id_);
     child->AddIconAndLabel(icon, message, false /* highlight */);

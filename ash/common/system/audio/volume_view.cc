@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -170,8 +170,8 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   more_->EnableCanvasFlippingForRTLUI(true);
 
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    more_->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYSTEM_MENU_ARROW_RIGHT, kMenuIconColor));
+    more_->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
   } else {
     more_->SetImage(ui::ResourceBundle::GetSharedInstance()
                         .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)

@@ -12,13 +12,13 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -90,7 +90,7 @@ class UpdateView : public ActionableView {
         new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       image->SetImage(gfx::CreateVectorIcon(
-          gfx::VectorIconId::SYSTEM_MENU_UPDATE,
+          kSystemMenuUpdateIcon,
           IconColorForUpdateSeverity(info.severity, true)));
     } else {
       image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))

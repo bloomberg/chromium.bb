@@ -8,12 +8,12 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -41,8 +41,8 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
     more_ = new views::ImageView;
     more_->EnableCanvasFlippingForRTLUI(true);
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      more_->SetImage(gfx::CreateVectorIcon(
-          gfx::VectorIconId::SYSTEM_MENU_ARROW_RIGHT, kMenuIconColor));
+      more_->SetImage(
+          gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
     } else {
       more_->SetImage(ui::ResourceBundle::GetSharedInstance()
                           .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)

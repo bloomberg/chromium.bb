@@ -8,6 +8,7 @@
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/system/chromeos/palette/tools/laser_pointer_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -67,12 +68,12 @@ void LaserPointerMode::OnDisable() {
   laser_pointer_view_->Stop();
 }
 
-gfx::VectorIconId LaserPointerMode::GetActiveTrayIcon() {
-  return gfx::VectorIconId::PALETTE_TRAY_ICON_LASER_POINTER;
+const gfx::VectorIcon& LaserPointerMode::GetActiveTrayIcon() const {
+  return kPaletteTrayIconLaserPointerIcon;
 }
 
-gfx::VectorIconId LaserPointerMode::GetPaletteIconId() {
-  return gfx::VectorIconId::PALETTE_MODE_LASER_POINTER;
+const gfx::VectorIcon& LaserPointerMode::GetPaletteIcon() const {
+  return kPaletteModeLaserPointerIcon;
 }
 
 views::View* LaserPointerMode::CreateView() {

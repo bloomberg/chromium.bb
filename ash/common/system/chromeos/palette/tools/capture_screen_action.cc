@@ -7,6 +7,7 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -38,8 +39,8 @@ views::View* CaptureScreenAction::CreateView() {
       l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CAPTURE_SCREEN_ACTION));
 }
 
-gfx::VectorIconId CaptureScreenAction::GetPaletteIconId() {
-  return gfx::VectorIconId::PALETTE_ACTION_CAPTURE_SCREEN;
+const gfx::VectorIcon& CaptureScreenAction::GetPaletteIcon() const {
+  return kPaletteActionCaptureScreenIcon;
 }
 
 }  // namespace ash

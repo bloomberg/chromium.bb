@@ -20,13 +20,13 @@ class ASH_EXPORT CaptureRegionMode : public CommonPaletteTool {
   // PaletteTool:
   PaletteGroup GetGroup() const override;
   PaletteToolId GetToolId() const override;
-  gfx::VectorIconId GetActiveTrayIcon() override;
+  const gfx::VectorIcon& GetActiveTrayIcon() const override;
   void OnEnable() override;
   void OnDisable() override;
   views::View* CreateView() override;
 
   // CommonPaletteTool:
-  gfx::VectorIconId GetPaletteIconId() override;
+  const gfx::VectorIcon& GetPaletteIcon() const override;
 
   void OnScreenshotDone();
 

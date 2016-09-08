@@ -7,11 +7,11 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -22,24 +22,23 @@ namespace ash {
 
 namespace {
 
-// Maps a non-MD PNG resource id to its corresponding MD vector icon id.
+// Maps a non-MD PNG resource id to its corresponding MD vector icon.
 // TODO(tdanderson): Remove this once material design is enabled by
 // default. See crbug.com/614453.
-gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
-  gfx::VectorIconId vector_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK:
-      return gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY;
+      return kSystemMenuAccessibilityIcon;
 #if defined(OS_CHROMEOS)
     case IDR_AURA_UBER_TRAY_SMS:
-      return gfx::VectorIconId::SYSTEM_MENU_SMS;
+      return kSystemMenuSmsIcon;
 #endif
     default:
       NOTREACHED();
       break;
   }
 
-  return vector_id;
+  return gfx::kNoneIcon;
 }
 
 }  // namespace
@@ -65,7 +64,7 @@ void TrayNotificationView::InitView(views::View* contents) {
   icon_ = new views::ImageView;
   if (icon_id_ != 0) {
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      icon_->SetImage(gfx::CreateVectorIcon(ResourceIdToVectorIconId(icon_id_),
+      icon_->SetImage(gfx::CreateVectorIcon(ResourceIdToVectorIcon(icon_id_),
                                             kMenuIconColor));
     } else {
       icon_->SetImage(
