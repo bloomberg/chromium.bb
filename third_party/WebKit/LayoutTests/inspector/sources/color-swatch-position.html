@@ -5,17 +5,16 @@
 
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
 <script>
 function test()
 {
-    Runtime.experiments.enableForTest("sourceColorPicker");
     InspectorTest.showScriptSource("color.css", onSourceFrame);
 
     function onSourceFrame(sourceFrame)
     {
-        var range = new WebInspector.TextRange(0, 0, 6, 0);
         InspectorTest.addResult("Initial swatch positions:");
-        dumpSwatchPositions();
+        InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
 
         InspectorTest.runTestSuite([
             function testEditSpectrum(next)
@@ -24,7 +23,7 @@ function test()
                 swatch.shadowRoot.querySelector(".color-swatch-inner").click();
                 sourceFrame._spectrum._innerSetColor(WebInspector.Color.parse("#008000").hsva(), "", WebInspector.Color.Format.HEX, WebInspector.Spectrum._ChangeSource.Other);
                 sourceFrame._swatchPopoverHelper.hide(true)
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -32,7 +31,7 @@ function test()
             {
                 var start = WebInspector.TextRange.createFromLocation(0, 0);
                 sourceFrame.textEditor.editRange(start, "/* New line */\n");
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -40,7 +39,7 @@ function test()
             {
                 var bodyLine = new WebInspector.TextRange(2, 0, 3, 0);
                 sourceFrame.textEditor.editRange(bodyLine, "");
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -48,7 +47,7 @@ function test()
             {
                 var emptyBodyLine = new WebInspector.TextRange(2, 0, 2, 0);
                 sourceFrame.textEditor.editRange(emptyBodyLine, "color: hsl(300, 100%, 35%);");
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -56,7 +55,7 @@ function test()
             {
                 var endParenthesis = new WebInspector.TextRange(2, 25, 2, 26);
                 sourceFrame.textEditor.editRange(endParenthesis, "]");
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -64,20 +63,10 @@ function test()
             {
                 var lineStart = new WebInspector.TextRange(5, 0, 5, 0);
                 sourceFrame.textEditor.editRange(lineStart, "background color:\n#ff0;\n");
-                dumpSwatchPositions();
+                InspectorTest.dumpSwatchPositions(sourceFrame, WebInspector.CSSSourceFrame.SwatchBookmark);
                 next();
             }
         ]);
-
-        function dumpSwatchPositions()
-        {
-            var markers = sourceFrame.textEditor.bookmarks(range, WebInspector.CSSSourceFrame.SwatchBookmark);
-            for (var i = 0; i < markers.length; i++) {
-                var position = markers[i].position();
-                var color = markers[i]._marker.widgetNode.firstChild.color();
-                InspectorTest.addResult("Line " + position.startLine + ", Column " + position.startColumn + ": " + color.asString(color.format()));
-            }
-        }
     }
 }
 </script>

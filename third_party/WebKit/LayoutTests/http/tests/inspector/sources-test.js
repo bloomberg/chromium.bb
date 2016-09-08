@@ -32,4 +32,15 @@ InspectorTest.testPrettyPrint = function(mimeType, text, mappingQueries, next)
     }
 }
 
+InspectorTest.dumpSwatchPositions = function(sourceFrame, bookmarkType)
+{
+    var textEditor = sourceFrame.textEditor;
+    var markers = textEditor.bookmarks(textEditor.fullRange(), bookmarkType);
+    for (var i = 0; i < markers.length; i++) {
+        var position = markers[i].position();
+        var text = markers[i]._marker.widgetNode.firstChild.textContent;
+        InspectorTest.addResult("Line " + position.startLine + ", Column " + position.startColumn + ": " + text);
+    }
+}
+
 };
