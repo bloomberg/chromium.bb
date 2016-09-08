@@ -91,6 +91,7 @@ using helpers::StringToCharList;
 namespace extensions {
 
 namespace {
+
 static void EventHandledOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -355,10 +356,14 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
   }
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension1_id, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
       &profile_, extension2_id, kEventName + "/2", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
 }
 
 // Test that a request is canceled if this is requested by any extension
@@ -419,10 +424,14 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   EXPECT_EQ(1U, request->url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension1_id, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
       &profile_, extension2_id, kEventName + "/2", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
 }
 
 TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
@@ -483,10 +492,14 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   EXPECT_EQ(1U, request->url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension_id, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
       &profile_, extension_id, kEventName2 + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
 }
 
 namespace {
@@ -643,8 +656,10 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // We inspect the result in the message list of |ipc_sender_| later.
   base::RunLoop().RunUntilIdle();
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension_id, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
 
   // Part 2.
   // Now subscribe to OnBeforeRequest *without* the requestBody requirement.
@@ -657,8 +672,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
 
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
 
   // Subscribe to OnBeforeRequest with requestBody requirement.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
@@ -677,8 +692,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   base::RunLoop().RunUntilIdle();
 
   // Clean-up.
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
 
   IPC::Message* message = NULL;
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
@@ -754,14 +769,22 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
   base::RunLoop().RunUntilIdle();
 
   // Clean-up
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension_id1, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
+      &profile_, extension_id1, kEventName + "/2", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id3(
+      &profile_, extension_id2, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id4(
       &profile_, extension_id2, kEventName + "/2", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id1, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension_id2, kEventName + "/2", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id3,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id4,
+                                                                     false);
 
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
 
@@ -816,8 +839,10 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   // We inspect the result in the message list of |ipc_sender_| later.
   base::RunLoop().RunUntilIdle();
 
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension_id, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
 
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kMethods); ++test, ++i) {
@@ -832,6 +857,112 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   }
 
   EXPECT_EQ(i, ipc_sender_.sent_end());
+}
+
+// Tests that |embedder_process_id| is not relevant for adding and removing
+// listeners with |web_view_instance_id| = 0.
+TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
+  std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  const std::string kEventName(web_request::OnBeforeRequest::kEventName);
+  const std::string kSubEventName = kEventName + "/1";
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+  EXPECT_EQ(
+      0u,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+          &profile_, kEventName));
+
+  // Add two non-webview listeners.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
+      filter, 0, 1 /* embedder_process_id */, 0,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
+      filter, 0, 2 /* embedder_process_id */, 0,
+      ipc_sender_factory.GetWeakPtr());
+  EXPECT_EQ(
+      2u,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+          &profile_, kEventName));
+
+  // Now remove the events without passing an explicit process ID.
+  ExtensionWebRequestEventRouter::EventListener::ID id1(&profile_, ext_id,
+                                                        kSubEventName, 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  EXPECT_EQ(
+      1u,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+          &profile_, kEventName));
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  EXPECT_EQ(
+      0u,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+          &profile_, kEventName));
+}
+
+// The set of blocked requests should not grow unbounded.
+TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
+  std::string extension_id("1");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+
+  // Subscribe to OnBeforeRequest.
+  const std::string kEventName(web_request::OnBeforeRequest::kEventName);
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
+      kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::EventListener::ID id(&profile_, extension_id,
+                                                       kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener* listener =
+      ExtensionWebRequestEventRouter::GetInstance()->FindEventListener(id);
+  ASSERT_NE(nullptr, listener);
+  EXPECT_EQ(0u, listener->blocked_requests.size());
+
+  // Send a request. It should block. Wait for the run loop to become idle.
+  GURL request_url("about:blank");
+  std::unique_ptr<net::URLRequest> request(
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+  // Extension response for OnErrorOccurred: Terminate the message loop.
+  {
+    base::RunLoop run_loop;
+    ipc_sender_.PushTask(
+        base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+                   base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                   run_loop.QuitWhenIdleClosure()));
+    request->Start();
+    run_loop.Run();
+  }
+
+  // Confirm that there is a blocked request.
+  EXPECT_EQ(1u, listener->blocked_requests.size());
+
+  // Send a response through.
+  ExtensionWebRequestEventRouter::EventResponse* response =
+      new ExtensionWebRequestEventRouter::EventResponse(
+          extension_id, base::Time::FromDoubleT(1));
+  response->cancel = true;
+  ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
+      &profile_, extension_id, kEventName, kEventName + "/1",
+      request->identifier(), response);
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  // Now there should be no blocked requests.
+  EXPECT_EQ(0u, listener->blocked_requests.size());
+
+  EXPECT_TRUE(!request->is_pending());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error());
+  EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id, false);
 }
 
 struct HeaderModificationTest_Header {
@@ -1046,13 +1177,19 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
     ++num_headers_observed;
   }
   EXPECT_EQ(1, num_headers_observed);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
       &profile_, extension1_id, kEventName + "/1", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
       &profile_, extension2_id, kEventName + "/2", 0, 0);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      &profile_, extension3_id,
-      std::string(keys::kOnSendHeadersEvent) + "/3", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id3(
+      &profile_, extension3_id, std::string(keys::kOnSendHeadersEvent) + "/3",
+      0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id3,
+                                                                     false);
 };
 
 namespace {

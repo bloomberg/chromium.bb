@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -293,14 +294,6 @@ class ExtensionWebRequestEventRouter
                         int web_view_instance_id,
                         base::WeakPtr<IPC::Sender> ipc_sender);
 
-  // Removes the listener for the given sub-event.
-  void RemoveEventListener(
-      void* browser_context,
-      const std::string& extension_id,
-      const std::string& sub_event_name,
-      int embedder_process_id,
-      int web_view_instance_id);
-
   // Removes the listeners for a given <webview>.
   void RemoveWebViewEventListeners(
       void* browser_context,
@@ -318,12 +311,72 @@ class ExtensionWebRequestEventRouter
   void AddCallbackForPageLoad(const base::Closure& callback);
 
  private:
+  friend class WebRequestAPI;
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
+                           BlockingEventPrecedenceRedirect);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
+                           BlockingEventPrecedenceCancel);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
+                           SimulateChancelWhileBlocked);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, AccessRequestBodyData);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
+                           MinimalAccessRequestBodyData);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, NoAccessRequestBodyData);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, AddAndRemoveListeners);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, BlockedRequestsAreRemoved);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestHeaderModificationTest,
+                           TestModifications);
+
+  struct EventListener {
+    // An EventListener is uniquely defined by five properties.
+    // TODO(rdevlin.cronin): There are two types of EventListeners - those
+    // associated with WebViews and those that are not. The ones associated with
+    // WebViews are always identified by all five properties. The other ones
+    // will always have web_view_instance_id = 0. Unfortunately, the
+    // callbacks/interfaces for these ones don't specify embedder_process_id.
+    // This is why we need the LooselyMatches method, and the need for a
+    // |strict| argument on RemoveEventListener.
+    struct ID {
+      ID(void* browser_context,
+         const std::string& extension_id,
+         const std::string& sub_event_name,
+         int embedder_process_id,
+         int web_view_instance_id);
+
+      // If web_view_instance_id is 0, then ignore embedder_process_id.
+      // TODO(rdevlin.cronin): In a more sane world, LooselyMatches wouldn't be
+      // necessary.
+      bool LooselyMatches(const ID& that) const;
+
+      bool operator==(const ID& that) const;
+      void* browser_context;
+      std::string extension_id;
+      std::string sub_event_name;
+      int embedder_process_id;
+      int web_view_instance_id;
+    };
+
+    EventListener(ID id);
+    ~EventListener();
+
+    const ID id;
+    std::string extension_name;
+    events::HistogramValue histogram_value = events::UNKNOWN;
+    RequestFilter filter;
+    int extra_info_spec = 0;
+    base::WeakPtr<IPC::Sender> ipc_sender;
+    std::unordered_set<uint64_t> blocked_requests;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(EventListener);
+  };
+
   friend struct base::DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
 
-  struct EventListener;
-  using EventListeners = std::vector<const EventListener*>;
-  using ListenerMapForBrowserContext =
-      std::map<std::string, std::set<EventListener>>;
+  using RawListeners = std::vector<EventListener*>;
+  using ListenerIDs = std::vector<EventListener::ID>;
+  using Listeners = std::vector<std::unique_ptr<EventListener>>;
+  using ListenerMapForBrowserContext = std::map<std::string, Listeners>;
   using ListenerMap = std::map<void*, ListenerMapForBrowserContext>;
   using BlockedRequestMap = std::map<uint64_t, BlockedRequest>;
   // Map of request_id -> bit vector of EventTypes already signaled
@@ -337,24 +390,36 @@ class ExtensionWebRequestEventRouter
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
 
+  // Returns the EventListener with the given |id|, or nullptr. Must be called
+  // from the IO thread.
+  EventListener* FindEventListener(const EventListener::ID& id);
+
+  // Returns the EventListener with the given |id| from |listeners|.
+  EventListener* FindEventListenerInContainer(const EventListener::ID& id,
+                                              Listeners& listeners);
+
+  // Removes the listener for the given sub-event. Must be called from the IO
+  // thread.
+  void RemoveEventListener(const EventListener::ID& id, bool strict);
+
   // Ensures that future callbacks for |request| are ignored so that it can be
   // destroyed safely.
   void ClearPendingCallbacks(const net::URLRequest* request);
 
   bool DispatchEvent(void* browser_context,
                      net::URLRequest* request,
-                     const std::vector<const EventListener*>& listeners,
+                     const RawListeners& listener_ids,
                      std::unique_ptr<WebRequestEventDetails> event_details);
 
   void DispatchEventToListeners(
       void* browser_context,
-      std::unique_ptr<std::vector<EventListener>> listeners,
+      std::unique_ptr<ListenerIDs> listener_ids,
       std::unique_ptr<WebRequestEventDetails> event_details);
 
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters. |extra_info_spec| will contain the combined
   // set of extra_info_spec flags that every matching listener asked for.
-  std::vector<const EventListener*> GetMatchingListeners(
+  RawListeners GetMatchingListeners(
       void* browser_context,
       const extensions::InfoMap* extension_info_map,
       const std::string& event_name,
@@ -365,20 +430,19 @@ class ExtensionWebRequestEventRouter
   // browser_context of the event, the next time for the "cross" browser_context
   // (i.e. the incognito browser_context if the event is originally for the
   // normal browser_context, or vice versa).
-  void GetMatchingListenersImpl(
-      void* browser_context,
-      const net::URLRequest* request,
-      const extensions::InfoMap* extension_info_map,
-      bool crosses_incognito,
-      const std::string& event_name,
-      const GURL& url,
-      int render_process_host_id,
-      int routing_id,
-      content::ResourceType resource_type,
-      bool is_async_request,
-      bool is_request_from_extension,
-      int* extra_info_spec,
-      std::vector<const EventListener*>* matching_listeners);
+  void GetMatchingListenersImpl(void* browser_context,
+                                const net::URLRequest* request,
+                                const extensions::InfoMap* extension_info_map,
+                                bool crosses_incognito,
+                                const std::string& event_name,
+                                const GURL& url,
+                                int render_process_host_id,
+                                int routing_id,
+                                content::ResourceType resource_type,
+                                bool is_async_request,
+                                bool is_request_from_extension,
+                                int* extra_info_spec,
+                                RawListeners* matching_listeners);
 
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0, we stop blocking the request and proceed it using the
@@ -456,6 +520,10 @@ class ExtensionWebRequestEventRouter
 
   // Returns true if |request| was already signaled to some event handlers.
   bool WasSignaled(const net::URLRequest& request) const;
+
+  // Get the number of listeners - for testing only.
+  size_t GetListenerCountForTesting(void* browser_context,
+                                    const std::string& event_name);
 
   // A map for each browser_context that maps an event name to a set of
   // extensions that are listening to that event.

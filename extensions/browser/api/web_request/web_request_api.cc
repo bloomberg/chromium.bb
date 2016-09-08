@@ -271,18 +271,6 @@ void SendOnMessageEventOnUI(
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
-void RemoveEventListenerOnIOThread(
-    void* browser_context,
-    const std::string& extension_id,
-    const std::string& sub_event_name,
-    int embedder_process_id,
-    int web_view_instance_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      browser_context, extension_id, sub_event_name,
-      embedder_process_id, web_view_instance_id);
-}
-
 events::HistogramValue GetEventHistogramValue(const std::string& event_name) {
   // Event names will either be webRequest events, or guest view (probably web
   // view) events that map to webRequest events. Check webRequest first.
@@ -367,14 +355,16 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // this code should be decoupled from extensions, we should use the host ID
   // instead, and not have two different code paths. This is a huge undertaking
   // unfortunately, so we'll resort to two code paths for now.
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&RemoveEventListenerOnIOThread,
-                                     details.browser_context,
-                                     details.extension_id,
-                                     details.event_name,
-                                     0 /* embedder_process_id (ignored) */,
-                                     0 /* web_view_instance_id */));
+  //
+  // Note that details.event_name is actually the sub_event_name!
+  ExtensionWebRequestEventRouter::EventListener::ID id(
+      details.browser_context, details.extension_id, details.event_name, 0, 0);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ExtensionWebRequestEventRouter::RemoveEventListener,
+          base::Unretained(ExtensionWebRequestEventRouter::GetInstance()), id,
+          false /* not strict */));
 }
 
 // Represents a single unique listener to an event, along with whatever filter
@@ -383,50 +373,8 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
 // NOTE(benjhayden) New APIs should not use this sub_event_name trick! It does
 // not play well with event pages. See downloads.onDeterminingFilename and
 // ExtensionDownloadsEventRouter for an alternative approach.
-struct ExtensionWebRequestEventRouter::EventListener {
-  std::string extension_id;
-  std::string extension_name;
-  events::HistogramValue histogram_value;
-  std::string sub_event_name;
-  RequestFilter filter;
-  int extra_info_spec;
-  int embedder_process_id;
-  int web_view_instance_id;
-  base::WeakPtr<IPC::Sender> ipc_sender;
-  mutable std::set<uint64_t> blocked_requests;
-
-  // Comparator to work with std::set.
-  bool operator<(const EventListener& that) const {
-    if (extension_id != that.extension_id)
-      return extension_id < that.extension_id;
-
-    if (sub_event_name != that.sub_event_name)
-      return sub_event_name < that.sub_event_name;
-
-    if (web_view_instance_id != that.web_view_instance_id)
-      return web_view_instance_id < that.web_view_instance_id;
-
-    if (web_view_instance_id == 0) {
-      // Do not filter by process ID for non-webviews, because this comparator
-      // is also used to find and remove an event listener when an extension is
-      // unloaded. At this point, the event listener cannot be mapped back to
-      // the original process, so 0 is used instead of the actual process ID.
-      if (embedder_process_id == 0 || that.embedder_process_id == 0)
-        return false;
-    }
-
-    if (embedder_process_id != that.embedder_process_id)
-      return embedder_process_id < that.embedder_process_id;
-
-    return false;
-  }
-
-  EventListener()
-      : histogram_value(events::UNKNOWN),
-        extra_info_spec(0),
-        embedder_process_id(0),
-        web_view_instance_id(0) {}
-};
+ExtensionWebRequestEventRouter::EventListener::EventListener(ID id) : id(id) {}
+ExtensionWebRequestEventRouter::EventListener::~EventListener() {}
 
 // Contains info about requests that are blocked waiting for a response from
 // an extension.
@@ -630,7 +578,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                               ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map,
       web_request::OnBeforeRequest::kEventName, request, &extra_info_spec);
   if (!listeners.empty() &&
@@ -679,7 +627,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
       request, ON_BEFORE_SEND_HEADERS, NULL);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnBeforeSendHeadersEvent,
       request, &extra_info_spec);
   if (!listeners.empty() &&
@@ -726,7 +674,7 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   ClearSignaled(request->identifier(), kOnBeforeRedirect);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnSendHeadersEvent, request,
       &extra_info_spec);
   if (listeners.empty())
@@ -757,7 +705,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
       request, ON_HEADERS_RECEIVED, original_response_headers);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnHeadersReceivedEvent,
       request, &extra_info_spec);
 
@@ -809,7 +757,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
   }
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnAuthRequiredEvent, request,
       &extra_info_spec);
   if (listeners.empty())
@@ -851,7 +799,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   ClearSignaled(request->identifier(), kOnHeadersReceived);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnBeforeRedirectEvent,
       request, &extra_info_spec);
   if (listeners.empty())
@@ -881,7 +829,7 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     return;
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map, keys::kOnResponseStartedEvent,
       request, &extra_info_spec);
   if (listeners.empty())
@@ -930,7 +878,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   ClearPendingCallbacks(request);
 
   int extra_info_spec = 0;
-  EventListeners listeners =
+  RawListeners listeners =
       GetMatchingListeners(browser_context, extension_info_map,
                            keys::kOnCompletedEvent, request, &extra_info_spec);
   if (listeners.empty())
@@ -981,7 +929,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   ClearPendingCallbacks(request);
 
   int extra_info_spec = 0;
-  EventListeners listeners = GetMatchingListeners(
+  RawListeners listeners = GetMatchingListeners(
       browser_context, extension_info_map,
       web_request::OnErrorOccurred::kEventName, request, &extra_info_spec);
   if (listeners.empty())
@@ -1026,17 +974,16 @@ void ExtensionWebRequestEventRouter::ClearPendingCallbacks(
 bool ExtensionWebRequestEventRouter::DispatchEvent(
     void* browser_context,
     net::URLRequest* request,
-    const std::vector<const EventListener*>& listeners,
+    const RawListeners& listeners,
     std::unique_ptr<WebRequestEventDetails> event_details) {
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
 
-  std::unique_ptr<std::vector<EventListener>> listeners_to_dispatch(
-      new std::vector<EventListener>());
+  std::unique_ptr<ListenerIDs> listeners_to_dispatch(new ListenerIDs);
   listeners_to_dispatch->reserve(listeners.size());
-  for (const EventListener* listener : listeners) {
-    listeners_to_dispatch->push_back(*listener);
+  for (EventListener* listener : listeners) {
+    listeners_to_dispatch->push_back(listener->id);
     if (listener->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       listener->blocked_requests.insert(request->identifier());
@@ -1072,35 +1019,32 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 
 void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     void* browser_context,
-    std::unique_ptr<std::vector<EventListener>> listeners,
+    std::unique_ptr<ListenerIDs> listener_ids,
     std::unique_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listeners.get());
-  DCHECK_GT(listeners->size(), 0UL);
+  DCHECK(!listener_ids->empty());
   DCHECK(event_details.get());
 
   std::string event_name =
-      EventRouter::GetBaseEventName((*listeners)[0].sub_event_name);
+      EventRouter::GetBaseEventName((*listener_ids)[0].sub_event_name);
   DCHECK(IsWebRequestEvent(event_name));
 
-  const std::set<EventListener>& event_listeners =
-      listeners_[browser_context][event_name];
+  Listeners& event_listeners = listeners_[browser_context][event_name];
   void* cross_browser_context = GetCrossBrowserContext(browser_context);
-  const std::set<EventListener>* cross_event_listeners =
+  Listeners* cross_event_listeners =
       cross_browser_context ? &listeners_[cross_browser_context][event_name]
                             : nullptr;
 
-  for (const EventListener& target : *listeners) {
-    std::set<EventListener>::const_iterator listener =
-        event_listeners.find(target);
-    // Ignore listener if it was removed between the thread hops.
-    if (listener == event_listeners.end()) {
-      if (!cross_event_listeners)
-        continue;
-      listener = cross_event_listeners->find(target);
-      if (listener == cross_event_listeners->end())
-        continue;
+  for (const EventListener::ID& id : *listener_ids) {
+    // It's possible that the listener is no longer present. Check to make sure
+    // it's still there.
+    const EventListener* listener =
+        FindEventListenerInContainer(id, event_listeners);
+    if (!listener && cross_event_listeners) {
+      listener = FindEventListenerInContainer(id, *cross_event_listeners);
     }
+    if (!listener)
+      continue;
 
     if (!listener->ipc_sender.get())
       continue;
@@ -1111,8 +1055,8 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         event_details->GetFilteredDict(listener->extra_info_spec));
 
     EventRouter::DispatchEventToSender(
-        listener->ipc_sender.get(), browser_context, listener->extension_id,
-        listener->histogram_value, listener->sub_event_name,
+        listener->ipc_sender.get(), browser_context, listener->id.extension_id,
+        listener->histogram_value, listener->id.sub_event_name,
         std::move(args_filtered), EventRouter::USER_GESTURE_UNKNOWN,
         EventFilteringInfo());
   }
@@ -1125,18 +1069,14 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     const std::string& sub_event_name,
     uint64_t request_id,
     EventResponse* response) {
-  // TODO(robwu): Does this also work with webviews? operator< (used by find)
-  // takes the webview ID into account, which is not set on |listener|.
-  EventListener listener;
-  listener.extension_id = extension_id;
-  listener.sub_event_name = sub_event_name;
-
-  // The listener may have been removed (e.g. due to the process going away)
-  // before we got here.
-  std::set<EventListener>::iterator found =
-      listeners_[browser_context][event_name].find(listener);
-  if (found != listeners_[browser_context][event_name].end())
-    found->blocked_requests.erase(request_id);
+  // TODO(robwu): This ignores WebViews.
+  Listeners& listeners = listeners_[browser_context][event_name];
+  EventListener::ID id(browser_context, extension_id, sub_event_name, 0, 0);
+  for (auto it = listeners.begin(); it != listeners.end(); ++it) {
+    if ((*it)->id.LooselyMatches(id)) {
+      (*it)->blocked_requests.erase(request_id);
+    }
+  }
 
   DecrementBlockCount(
       browser_context, extension_id, event_name, request_id, response);
@@ -1157,73 +1097,85 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   if (!IsWebRequestEvent(event_name))
     return false;
 
-  EventListener listener;
-  listener.extension_id = extension_id;
-  listener.extension_name = extension_name;
-  listener.histogram_value = histogram_value;
-  listener.sub_event_name = sub_event_name;
-  listener.filter = filter;
-  listener.extra_info_spec = extra_info_spec;
-  listener.ipc_sender = ipc_sender;
-  listener.embedder_process_id = embedder_process_id;
-  listener.web_view_instance_id = web_view_instance_id;
-  if (listener.web_view_instance_id) {
+  if (event_name != EventRouter::GetBaseEventName(sub_event_name))
+    return false;
+
+  EventListener::ID id(browser_context, extension_id, sub_event_name,
+                       embedder_process_id, web_view_instance_id);
+  if (FindEventListener(id) != nullptr) {
+    // This is likely an abuse of the API by a malicious extension.
+    return false;
+  }
+
+  std::unique_ptr<EventListener> listener(new EventListener(id));
+  listener->extension_name = extension_name;
+  listener->histogram_value = histogram_value;
+  listener->filter = filter;
+  listener->extra_info_spec = extra_info_spec;
+  listener->ipc_sender = ipc_sender;
+  if (web_view_instance_id) {
     content::RecordAction(
         base::UserMetricsAction("WebView.WebRequest.AddListener"));
   }
 
-  if (base::ContainsKey(listeners_[browser_context][event_name], listener)) {
-    // This is likely an abuse of the API by a malicious extension.
-    return false;
-  }
-  listeners_[browser_context][event_name].insert(listener);
+  listeners_[browser_context][event_name].push_back(std::move(listener));
   return true;
 }
 
-void ExtensionWebRequestEventRouter::RemoveEventListener(
+size_t ExtensionWebRequestEventRouter::GetListenerCountForTesting(
     void* browser_context,
-    const std::string& extension_id,
-    const std::string& sub_event_name,
-    int embedder_process_id,
-    int web_view_instance_id) {
-  std::string event_name = EventRouter::GetBaseEventName(sub_event_name);
-  DCHECK(IsWebRequestEvent(event_name));
+    const std::string& event_name) {
+  return listeners_[browser_context][event_name].size();
+}
 
-  EventListener listener;
-  listener.extension_id = extension_id;
-  listener.sub_event_name = sub_event_name;
-  listener.embedder_process_id = embedder_process_id;
-  listener.web_view_instance_id = web_view_instance_id;
+ExtensionWebRequestEventRouter::EventListener*
+ExtensionWebRequestEventRouter::FindEventListener(const EventListener::ID& id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::string event_name = EventRouter::GetBaseEventName(id.sub_event_name);
+  Listeners& listeners = listeners_[id.browser_context][event_name];
+  return FindEventListenerInContainer(id, listeners);
+}
 
-  std::set<EventListener>& event_listeners =
-      listeners_[browser_context][event_name];
-  // It's possible for AddEventListener to fail asynchronously. In that case,
-  // the renderer believes the listener exists, while the browser does not.
-  // Ignore a RemoveEventListener in that case.
-  std::set<EventListener>::const_iterator it = event_listeners.find(listener);
-  if (it == event_listeners.end())
-    return;
+ExtensionWebRequestEventRouter::EventListener*
+ExtensionWebRequestEventRouter::FindEventListenerInContainer(
+    const EventListener::ID& id,
+    Listeners& listeners) {
+  for (auto it = listeners.begin(); it != listeners.end(); ++it) {
+    if ((*it)->id == id) {
+      return it->get();
+    }
+  }
+  return nullptr;
+}
 
-#if defined(OS_WIN)
-  // Debugging https://crbug.com/589735
-  // Please post crash reports at the following lines to the above issue.
-  unsigned event_listener_count = event_listeners.count(listener);
-  CHECK_GE(event_listener_count, 0u);
-  CHECK_GE(event_listener_count, 1u);
-  CHECK_LE(event_listener_count, 2u);
-  CHECK_EQ(event_listener_count, 1u);
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-#endif  // OS_WIN
-  CHECK_EQ(event_listeners.count(listener), 1u) <<
-      "extension=" << extension_id << " event=" << event_name;
+void ExtensionWebRequestEventRouter::RemoveEventListener(
+    const EventListener::ID& id,
+    bool strict) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Unblock any request that this event listener may have been blocking.
-  for (uint64_t id : it->blocked_requests)
-    DecrementBlockCount(browser_context, extension_id, event_name, id, NULL);
+  std::string event_name = EventRouter::GetBaseEventName(id.sub_event_name);
+  Listeners& listeners = listeners_[id.browser_context][event_name];
+  for (auto it = listeners.begin(); it != listeners.end(); ++it) {
+    std::unique_ptr<EventListener>& listener = *it;
 
-  event_listeners.erase(listener);
+    // There are two places that call this method: RemoveWebViewEventListeners
+    // and OnListenerRemoved. The latter can't use operator== because it doesn't
+    // have the embedder_process_id. This shouldn't be a problem, because
+    // OnListenerRemoved is only called for web_view_instance_id == 0.
+    bool matches =
+        strict ? listener->id == id : listener->id.LooselyMatches(id);
+    if (matches) {
+      // Unblock any request that this event listener may have been blocking.
+      for (uint64_t blocked_request_id : listener->blocked_requests)
+        DecrementBlockCount(listener->id.browser_context,
+                            listener->id.extension_id, event_name,
+                            blocked_request_id, nullptr);
 
-  helpers::ClearCacheOnNavigation();
+      listeners.erase(it);
+      helpers::ClearCacheOnNavigation();
+      return;
+    }
+  }
 }
 
 void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
@@ -1239,23 +1191,17 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
   for (const auto& event_iter : map_for_browser_context) {
     // Construct a listeners_to_delete vector so that we don't modify the set of
     // listeners as we iterate through it.
-    std::vector<EventListener> listeners_to_delete;
-    const std::set<EventListener>& listeners = event_iter.second;
+    std::vector<EventListener::ID> listeners_to_delete;
+    const Listeners& listeners = event_iter.second;
     for (const auto& listener : listeners) {
-      if (listener.embedder_process_id == embedder_process_id &&
-          listener.web_view_instance_id == web_view_instance_id) {
-        listeners_to_delete.push_back(listener);
+      if (listener->id.embedder_process_id == embedder_process_id &&
+          listener->id.web_view_instance_id == web_view_instance_id) {
+        listeners_to_delete.push_back(listener->id);
       }
     }
     // Remove the listeners selected for deletion.
-    for (const auto& listener : listeners_to_delete) {
-      RemoveEventListenerOnIOThread(
-          browser_context,
-          listener.extension_id,
-          listener.sub_event_name,
-          listener.embedder_process_id,
-          listener.web_view_instance_id);
-    }
+    for (const auto& listener_id : listeners_to_delete)
+      RemoveEventListener(listener_id, true /* strict */);
   }
 }
 
@@ -1331,7 +1277,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     bool is_async_request,
     bool is_request_from_extension,
     int* extra_info_spec,
-    EventListeners* matching_listeners) {
+    RawListeners* matching_listeners) {
   std::string web_request_event_name(event_name);
   WebViewRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = WebViewRendererState::GetInstance()->GetInfo(
@@ -1341,30 +1287,30 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
         0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
   }
 
-  std::set<EventListener>& listeners =
-      listeners_[browser_context][web_request_event_name];
-  for (const EventListener& listener : listeners) {
-    if (!listener.ipc_sender.get()) {
+  Listeners& listeners = listeners_[browser_context][web_request_event_name];
+  for (std::unique_ptr<EventListener>& listener : listeners) {
+    if (!listener->ipc_sender.get()) {
       // The IPC sender has been deleted. This listener will be removed soon
       // via a call to RemoveEventListener. For now, just skip it.
       continue;
     }
 
     if (is_web_view_guest &&
-        (listener.embedder_process_id != web_view_info.embedder_process_id ||
-         listener.web_view_instance_id != web_view_info.instance_id)) {
+        (listener->id.embedder_process_id !=
+             web_view_info.embedder_process_id ||
+         listener->id.web_view_instance_id != web_view_info.instance_id)) {
       continue;
     }
 
     // Filter requests from other extensions / apps. This does not work for
     // content scripts, or extension pages in non-extension processes.
     if (is_request_from_extension &&
-        listener.embedder_process_id != render_process_host_id) {
+        listener->id.embedder_process_id != render_process_host_id) {
       continue;
     }
 
-    if (!listener.filter.urls.is_empty() &&
-        !listener.filter.urls.MatchesURL(url)) {
+    if (!listener->filter.urls.is_empty() &&
+        !listener->filter.urls.MatchesURL(url)) {
       continue;
     }
 
@@ -1384,14 +1330,14 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
     // Check if the tab id and window id match, if they were set in the
     // listener params.
-    if ((listener.filter.tab_id != -1 &&
-         frame_data.tab_id != listener.filter.tab_id) ||
-        (listener.filter.window_id != -1 &&
-         frame_data.window_id != listener.filter.window_id)) {
+    if ((listener->filter.tab_id != -1 &&
+         frame_data.tab_id != listener->filter.tab_id) ||
+        (listener->filter.window_id != -1 &&
+         frame_data.window_id != listener->filter.window_id)) {
       continue;
     }
 
-    const std::vector<content::ResourceType>& types = listener.filter.types;
+    const std::vector<content::ResourceType>& types = listener->filter.types;
     if (!types.empty() &&
         std::find(types.begin(), types.end(), resource_type) == types.end()) {
       continue;
@@ -1400,21 +1346,21 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     if (!is_web_view_guest) {
       PermissionsData::AccessType access =
           WebRequestPermissions::CanExtensionAccessURL(
-              extension_info_map, listener.extension_id, url, frame_data.tab_id,
-              crosses_incognito,
+              extension_info_map, listener->id.extension_id, url,
+              frame_data.tab_id, crosses_incognito,
               WebRequestPermissions::REQUIRE_HOST_PERMISSION);
       if (access != PermissionsData::ACCESS_ALLOWED) {
         if (access == PermissionsData::ACCESS_WITHHELD &&
             web_request_event_router_delegate_) {
           web_request_event_router_delegate_->NotifyWebRequestWithheld(
-              render_process_id, render_frame_id, listener.extension_id);
+              render_process_id, render_frame_id, listener->id.extension_id);
         }
         continue;
       }
     }
 
     bool blocking_listener =
-        (listener.extra_info_spec &
+        (listener->extra_info_spec &
          (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) != 0;
 
     // We do not want to notify extensions about XHR requests that are
@@ -1431,12 +1377,12 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     if (blocking_listener && synchronous_xhr_from_extension)
       continue;
 
-    matching_listeners->push_back(&listener);
-    *extra_info_spec |= listener.extra_info_spec;
+    matching_listeners->push_back(listener.get());
+    *extra_info_spec |= listener->extra_info_spec;
   }
 }
 
-ExtensionWebRequestEventRouter::EventListeners
+ExtensionWebRequestEventRouter::RawListeners
 ExtensionWebRequestEventRouter::GetMatchingListeners(
     void* browser_context,
     const InfoMap* extension_info_map,
@@ -1466,7 +1412,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     routing_id = info->GetRouteID();
   }
 
-  EventListeners matching_listeners;
+  RawListeners matching_listeners;
   GetMatchingListenersImpl(
       browser_context, request, extension_info_map, false, event_name,
       url, render_process_host_id, routing_id, resource_type,
@@ -1685,15 +1631,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   } else {
     // Update the URLRequest to make sure it's tagged with an extension that's
     // still blocking it.  This may end up being the same extension as before.
-    std::set<EventListener>& listeners =
-        listeners_[browser_context][event_name];
+    Listeners& listeners = listeners_[browser_context][event_name];
 
     for (const auto& listener : listeners) {
-      if (!base::ContainsKey(listener.blocked_requests, request_id))
+      if (!base::ContainsKey(listener->blocked_requests, request_id))
         continue;
-      std::string delegate_info =
-          l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                    base::UTF8ToUTF16(listener.extension_name));
+      std::string delegate_info = l10n_util::GetStringFUTF8(
+          IDS_LOAD_STATE_PARAMETER_EXTENSION,
+          base::UTF8ToUTF16(listener->extension_name));
       blocked_request.request->LogAndReportBlockedBy(delegate_info.c_str());
       break;
     }
@@ -2289,6 +2234,42 @@ ExtensionFunction::ResponseAction
 WebRequestHandlerBehaviorChangedFunction::Run() {
   helpers::ClearCacheOnNavigation();
   return RespondNow(NoArguments());
+}
+
+ExtensionWebRequestEventRouter::EventListener::ID::ID(
+    void* browser_context,
+    const std::string& extension_id,
+    const std::string& sub_event_name,
+    int embedder_process_id,
+    int web_view_instance_id)
+    : browser_context(browser_context),
+      extension_id(extension_id),
+      sub_event_name(sub_event_name),
+      embedder_process_id(embedder_process_id),
+      web_view_instance_id(web_view_instance_id) {}
+
+bool ExtensionWebRequestEventRouter::EventListener::ID::LooselyMatches(
+    const ID& that) const {
+  if (web_view_instance_id == 0 && that.web_view_instance_id == 0) {
+    // Since EventListeners are segmented by browser_context, check that
+    // last, as it is exceedingly unlikely to be different.
+    return extension_id == that.extension_id &&
+           sub_event_name == that.sub_event_name &&
+           browser_context == that.browser_context;
+  }
+
+  return *this == that;
+}
+
+bool ExtensionWebRequestEventRouter::EventListener::ID::operator==(
+    const ID& that) const {
+  // Since EventListeners are segmented by browser_context, check that
+  // last, as it is exceedingly unlikely to be different.
+  return extension_id == that.extension_id &&
+         sub_event_name == that.sub_event_name &&
+         web_view_instance_id == that.web_view_instance_id &&
+         embedder_process_id == that.embedder_process_id &&
+         browser_context == that.browser_context;
 }
 
 }  // namespace extensions
