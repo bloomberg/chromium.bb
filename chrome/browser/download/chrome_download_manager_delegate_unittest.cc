@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -33,6 +34,10 @@
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection_service.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "content/public/browser/plugin_service.h"
 #endif
 
 using ::testing::AtMost;
@@ -405,6 +410,10 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
+#if !defined(OS_ANDROID)
+  content::PluginService::GetInstance()->Init();
+#endif
+
   GURL url("http://example.com/foo");
 
   std::unique_ptr<content::MockDownloadItem> download_item =

@@ -11,11 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -49,10 +51,8 @@ enum FlashUsage {
 
 // Callback set on the PluginList to assert that plugin loading happens on the
 // correct thread.
-void WillLoadPluginsCallback(
-    base::SequencedWorkerPool::SequenceToken token) {
-  CHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
-      token));
+void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
+  DCHECK(sequence_checker->CalledOnValidSequence());
 }
 
 }  // namespace
@@ -79,6 +79,8 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 
 PluginServiceImpl::PluginServiceImpl()
     : filter_(NULL) {
+  plugin_list_sequence_checker_.DetachFromSequence();
+
   // Collect the total number of browser processes (which create
   // PluginServiceImpl objects, to be precise). The number is used to normalize
   // the number of processes which start at least one NPAPI/PPAPI Flash process.
@@ -94,9 +96,13 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  plugin_list_token_ = base::SequencedWorkerPool::GetSequenceToken();
+  plugin_list_task_runner_ =
+      BrowserThread::GetBlockingPool()
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::GetSequenceToken(),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   PluginList::Singleton()->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallback, plugin_list_token_));
+      base::Bind(&WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
   RegisterPepperPlugins();
 }
@@ -305,18 +311,16 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::SingleThreadTaskRunner> target_task_runner(
       base::ThreadTaskRunnerHandle::Get());
 
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      plugin_list_token_, FROM_HERE,
+  plugin_list_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
-                 base::RetainedRef(target_task_runner), callback),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+                 base::RetainedRef(target_task_runner), callback));
 }
 
 void PluginServiceImpl::GetPluginsInternal(
     base::SingleThreadTaskRunner* target_task_runner,
     const PluginService::GetPluginsCallback& callback) {
-  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
-      plugin_list_token_));
+  DCHECK(plugin_list_sequence_checker_.CalledOnValidSequence());
 
   std::vector<WebPluginInfo> plugins;
   PluginList::Singleton()->GetPlugins(&plugins);
