@@ -1187,10 +1187,7 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range, Tex
     if (range.isNull())
         return emptyString();
 
-
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(range.startPosition().document()->lifecycle());
 
     TextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition(), behavior);
 
@@ -1219,12 +1216,6 @@ String plainText(const EphemeralRange& range, TextIteratorBehaviorFlags behavior
 
 String plainText(const EphemeralRangeInFlatTree& range, TextIteratorBehaviorFlags behavior)
 {
-    // TODO(xiaochengh): Move this check and the DisallowTransitionScope to
-    // |createPlainText| after we have ensured that both versions of |plainText|
-    // are called with clean layout.
-    if (range.isNull())
-        return emptyString();
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(range.startPosition().document()->lifecycle());
     return createPlainText<EditingInFlatTreeStrategy>(range, behavior);
 }
 
