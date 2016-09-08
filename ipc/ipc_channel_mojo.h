@@ -68,7 +68,7 @@ class IPC_EXPORT ChannelMojo
 
   // Channel implementation
   bool Connect() override;
-  bool ConnectPaused() override;
+  void Pause() override;
   void Unpause(bool flush) override;
   void Flush() override;
   void Close() override;

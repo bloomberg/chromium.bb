@@ -72,9 +72,14 @@ class ChannelAssociatedGroupController
                    base::Unretained(this)));
   }
 
-  void Start() {
-    DCHECK(!started_);
-    started_ = true;
+  void Pause() {
+    DCHECK(!paused_);
+    paused_ = true;
+  }
+
+  void Unpause() {
+    DCHECK(paused_);
+    paused_ = false;
   }
 
   void FlushOutgoingMessages() {
@@ -473,9 +478,7 @@ class ChannelAssociatedGroupController
   bool SendMessage(mojo::Message* message) {
     if (task_runner_->BelongsToCurrentThread()) {
       DCHECK(thread_checker_.CalledOnValidThread());
-      if (!connector_ || !started_) {
-        // Pipe may not be bound yet or the channel may still be paused, so we
-        // queue the message.
+      if (!connector_ || paused_) {
         outgoing_messages_.emplace_back(std::move(*message));
         return true;
       }
@@ -760,7 +763,7 @@ class ChannelAssociatedGroupController
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   const bool set_interface_id_namespace_bit_;
-  bool started_ = false;
+  bool paused_ = false;
   std::unique_ptr<mojo::Connector> connector_;
   mojo::FilterChain filters_;
   mojo::PipeControlMessageHandler control_message_handler_;
@@ -812,8 +815,12 @@ class MojoBootstrapImpl : public MojoBootstrap {
     delegate_->OnPipesAvailable(std::move(sender), std::move(receiver));
   }
 
-  void Start() override {
-    controller_->Start();
+  void Pause() override {
+    controller_->Pause();
+  }
+
+  void Unpause() override {
+    controller_->Unpause();
   }
 
   void Flush() override {

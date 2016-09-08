@@ -222,21 +222,15 @@ class IPC_EXPORT Channel : public Endpoint {
   // implementation.
   virtual bool Connect() WARN_UNUSED_RESULT = 0;
 
-  // Similar to (and exclusive to) Connect() above, but blocks outgoing messages
-  // until a future call to Unpause().
-  //
-  // Not all implementations support ConnectPaused(). Note that this interface
-  // exists only to facilitate weird behavior where some Channel consumers want
-  // to force some early messages to be transmitted before ones which were sent
-  // earlier. This allows that to be done without the consumer implementing
-  // their own message queueing support which may be incompatible with the
-  // Channel's internal queueing behavior.
-  virtual bool ConnectPaused() WARN_UNUSED_RESULT;
+  // Pause the channel. Subsequent sends will be queued internally until
+  // Unpause() is called and the channel is flushed either by Unpause() or a
+  // subsequent call to Flush().
+  virtual void Pause();
 
-  // Unpause the pipe. This allows subsequent Send() calls to transmit messages
-  // immediately, without queueing. If |flush| is true, any messages queued
-  // while paused will be flushed immediately upon unpausing. Otherwise you must
-  // call Flush() explicitly.
+  // Unpause the channel. This allows subsequent Send() calls to transmit
+  // messages immediately, without queueing. If |flush| is true, any messages
+  // queued while paused will be flushed immediately upon unpausing. Otherwise
+  // you must call Flush() explicitly.
   //
   // Not all implementations support Unpause(). See ConnectPaused() above for
   // details.

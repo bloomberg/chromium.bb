@@ -52,8 +52,11 @@ class IPC_EXPORT MojoBootstrap {
   // Start the handshake over the underlying message pipe.
   virtual void Connect() = 0;
 
+  // Stop transmitting messages and start queueing them instead.
+  virtual void Pause() = 0;
+
   // Stop queuing new messages and start transmitting them instead.
-  virtual void Start() = 0;
+  virtual void Unpause() = 0;
 
   // Flush outgoing messages which were queued before Start().
   virtual void Flush() = 0;

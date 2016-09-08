@@ -80,10 +80,7 @@ Channel::AssociatedInterfaceSupport* Channel::GetAssociatedInterfaceSupport() {
   return nullptr;
 }
 
-bool Channel::ConnectPaused() {
-  NOTREACHED();
-  return false;
-}
+void Channel::Pause() { NOTREACHED(); }
 
 void Channel::Unpause(bool flush) { NOTREACHED(); }
 

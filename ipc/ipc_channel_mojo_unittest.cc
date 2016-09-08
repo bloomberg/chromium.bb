@@ -739,7 +739,7 @@ class ChannelProxyRunner {
         listener, io_thread_.task_runner(), &never_signaled_);
   }
 
-  void RunProxy(bool create_paused) {
+  void RunProxy() {
     std::unique_ptr<IPC::ChannelFactory> factory;
     if (for_server_) {
       factory = IPC::ChannelMojo::CreateServerFactory(
@@ -748,7 +748,7 @@ class ChannelProxyRunner {
       factory = IPC::ChannelMojo::CreateClientFactory(
           std::move(handle_), io_thread_.task_runner());
     }
-    proxy_->Init(std::move(factory), true, create_paused);
+    proxy_->Init(std::move(factory), true);
   }
 
   IPC::ChannelProxy* proxy() { return proxy_.get(); }
@@ -771,8 +771,8 @@ class IPCChannelProxyMojoTest : public IPCChannelMojoTestBase {
     runner_.reset(new ChannelProxyRunner(TakeHandle(), true));
   }
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
-  void RunProxy(bool create_paused = false) {
-    runner_->RunProxy(create_paused);
+  void RunProxy() {
+    runner_->RunProxy();
   }
   void DestroyProxy() {
     runner_.reset();
@@ -878,7 +878,7 @@ class ChannelProxyClient {
 
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
 
-  void RunProxy() { runner_->RunProxy(false); }
+  void RunProxy() { runner_->RunProxy(); }
 
   void DestroyProxy() {
     runner_.reset();
@@ -1252,19 +1252,22 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SyncAssociatedInterface,
   DestroyProxy();
 }
 
-TEST_F(IPCChannelProxyMojoTest, CreatePaused) {
-  // Ensures that creating a paused channel elicits the expected behavior when
-  // sending messages, unpausing, sending more messages, and then manually
-  // flushing. Specifically a sequence like:
+TEST_F(IPCChannelProxyMojoTest, Pause) {
+  // Ensures that pausing a channel elicits the expected behavior when sending
+  // messages, unpausing, sending more messages, and then manually flushing.
+  // Specifically a sequence like:
   //
   //   Connect()
   //   Send(A)
+  //   Pause()
   //   Send(B)
-  //   Unpause(false)
   //   Send(C)
+  //   Unpause(false)
+  //   Send(D)
+  //   Send(E)
   //   Flush()
   //
-  // must result in the other end receiving messages C, A, and then B, in that
+  // must result in the other end receiving messages A, D, E, B, D; in that
   // order.
   //
   // This behavior is required by some consumers of IPC::Channel, and it is not
@@ -1275,17 +1278,22 @@ TEST_F(IPCChannelProxyMojoTest, CreatePaused) {
 
   DummyListener listener;
   CreateProxy(&listener);
-  RunProxy(true /* create_paused */);
+  RunProxy();
+
+  // This message must be sent immediately since the channel is unpaused.
+  SendValue(proxy(), 1);
+
+  proxy()->Pause();
 
   // These messages must be queued internally since the channel is paused.
-  SendValue(proxy(), 1);
   SendValue(proxy(), 2);
+  SendValue(proxy(), 3);
 
   proxy()->Unpause(false /* flush */);
 
   // These messages must be sent immediately since the channel is unpaused.
-  SendValue(proxy(), 3);
   SendValue(proxy(), 4);
+  SendValue(proxy(), 5);
 
   // Now we flush the previously queued messages.
   proxy()->Flush();
@@ -1323,10 +1331,11 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(CreatePausedClient, ChannelProxyClient) {
   std::queue<int32_t> expected_values;
   ExpectValueSequenceListener listener(&expected_values);
   CreateProxy(&listener);
-  expected_values.push(3);
-  expected_values.push(4);
   expected_values.push(1);
+  expected_values.push(4);
+  expected_values.push(5);
   expected_values.push(2);
+  expected_values.push(3);
   RunProxy();
   base::RunLoop().Run();
   EXPECT_TRUE(expected_values.empty());
