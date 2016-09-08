@@ -194,12 +194,12 @@ public:
         {
             if (m_readerContext->drained())
                 return Done;
+            m_readerContext->ensureStartLoader();
             Result r = m_reader->read(data, size, flags, readSize);
             if (!(size == 0 && (r == Ok || r == ShouldWait))) {
                 // We read non-empty data, so we cannot use the blob data
                 // handle which represents the whole data.
                 m_readerContext->clearBlobDataHandleForDrain();
-                m_readerContext->ensureStartLoader();
             }
             return r;
         }

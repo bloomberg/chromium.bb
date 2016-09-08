@@ -112,9 +112,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, CreateLoader)
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
     testing::runPendingTasks();
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -133,27 +132,6 @@ TEST_F(FetchBlobDataConsumerHandleTest, CreateLoader)
     EXPECT_EQ(DocumentContext, resourceLoaderOptions.requestInitiatorContext);
     EXPECT_EQ(RequestAsynchronously, resourceLoaderOptions.synchronousPolicy);
     EXPECT_EQ(NotCORSEnabled, resourceLoaderOptions.corsEnabled);
-}
-
-TEST_F(FetchBlobDataConsumerHandleTest, ZeroByteReadDoesNotCreateLoader)
-{
-    auto factory = new StrictMock<MockLoaderFactory>;
-    Checkpoint checkpoint;
-
-    InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(checkpoint, Call(2));
-
-    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
-    std::unique_ptr<WebDataConsumerHandle> handle
-        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
-    testing::runPendingTasks();
-
-    size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size));
-    checkpoint.Call(1);
-    testing::runPendingTasks();
-    checkpoint.Call(2);
 }
 
 TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenStopped)
@@ -176,9 +154,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenStopped)
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
     testing::runPendingTasks();
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -208,9 +185,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenDestinationDetached)
     std::unique_ptr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     testing::runPendingTasks();
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, reader->read(buffer, sizeof(buffer), kNone, &size));
+    reader->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -247,9 +223,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, ReadTest)
     src->add(Command(Command::Wait));
     src->add(Command(Command::Done));
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -286,9 +261,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, TwoPhaseReadTest)
     src->add(Command(Command::Wait));
     src->add(Command(Command::Done));
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -317,9 +291,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, LoadErrorTest)
     std::unique_ptr<WebDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
@@ -353,9 +326,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, BodyLoadErrorTest)
     src->add(Command(Command::Data, "hello, "));
     src->add(Command(Command::Error));
 
-    char buffer[1];
     size_t size = 0;
-    ASSERT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(buffer, sizeof(buffer), kNone, &size));
+    handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size);
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
