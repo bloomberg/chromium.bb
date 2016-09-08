@@ -65,11 +65,8 @@ function test()
     {
         var locationsCount = 0;
         var targetInfos = WebInspector.cssWorkspaceBinding._modelToTargetInfo.valuesArray();
-        for (var targetInfo of targetInfos) {
-            var headerInfos = targetInfo._headerInfoById.valuesArray();
-            for (var headerInfo of headerInfos)
-                locationsCount += headerInfo._locations.size;
-        }
+        for (var targetInfo of targetInfos)
+            locationsCount += targetInfo._locations.valuesArray().length;
         return locationsCount;
     }
 }

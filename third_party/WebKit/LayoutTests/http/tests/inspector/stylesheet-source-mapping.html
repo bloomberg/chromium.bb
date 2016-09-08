@@ -18,7 +18,7 @@ function test()
     const sourceMapURL = "example.css.map";
     const styleSheetId = "1";
 
-    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype, "_updateLocations", locationsUpdated, true);
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.TargetInfo.prototype, "_updateLocations", locationsUpdated, true);
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()

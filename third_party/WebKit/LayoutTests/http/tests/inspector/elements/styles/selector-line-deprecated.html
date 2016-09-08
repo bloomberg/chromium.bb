@@ -21,11 +21,11 @@ function addStylesheet()
 function test()
 {
     InspectorTest.evaluateInPage("addStylesheet()");
-    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", sourceMappingSniffer, true);
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", sourceMappingSniffer, true);
 
-    function sourceMappingSniffer(header, sourceMapping)
+    function sourceMappingSniffer(header)
     {
-        if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
+        if (header.resourceURL().includes("selector-line-deprecated.css")) {
             InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
         }
     }
