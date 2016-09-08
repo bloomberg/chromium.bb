@@ -366,15 +366,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     }
   }
 
-  // Fire the action to select the tab.
-  [controller_ selectTab:self];
-
-  // Messaging the drag controller with |-endDrag:| would seem like the right
-  // thing to do here. But, when a tab has been detached, the controller's
-  // target is nil until the drag is finalized. Since |-mouseUp:| gets called
-  // via the manual event loop inside -[TabStripDragController
-  // maybeStartDrag:forTab:], the drag controller can end the dragging session
-  // itself directly after calling this.
+  // Except in the rapid tab closure case, mouseDown: triggers a nested run loop
+  // that swallows the mouseUp: event. There's a bug in AppKit that sends
+  // mouseUp: callbacks to inappropriate views, so it's doubly important that
+  // this method doesn't do anything. https://crbug.com/511095.
+  [super mouseUp:theEvent];
 }
 
 - (void)otherMouseUp:(NSEvent*)theEvent {
