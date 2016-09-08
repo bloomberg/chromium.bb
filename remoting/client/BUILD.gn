@@ -147,7 +147,6 @@ source_set("unit_tests") {
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
-    "gl_renderer_unittest.cc",
     "key_event_mapper_unittest.cc",
     "normalizing_input_filter_cros_unittest.cc",
     "normalizing_input_filter_mac_unittest.cc",
@@ -166,11 +165,17 @@ source_set("unit_tests") {
 
   deps = [
     ":client",
-    ":opengl_renderer",
     ":test_support",
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/webrtc",
   ]
+
+  if (!is_win) {
+    # Windows clang builder fails to link the test binary with ANGLE GLESv2.
+    # crbug.com/642027
+    sources += [ "gl_renderer_unittest.cc" ]
+    deps += [ ":opengl_renderer" ]
+  }
 }
