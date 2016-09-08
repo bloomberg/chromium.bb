@@ -154,7 +154,6 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
   // Clip the pixels that will commonly hold a scrollbar, which looks bad in
   // thumbnails.
   int scrollbar_size = gfx::scrollbar_size();
-  gfx::Size copy_size;
   copy_rect.Inset(0, 0, scrollbar_size, scrollbar_size);
 
   if (copy_rect.IsEmpty()) {
