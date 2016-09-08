@@ -50,15 +50,18 @@ import logging
 import os
 import threading
 
-from oauth2client.client import Credentials
-from oauth2client.client import Storage as BaseStorage
+from oauth2client import client
 from oauth2client import util
-from oauth2client.locked_file import LockedFile
-
+from oauth2client.contrib import locked_file
 
 __author__ = 'jbeda@google.com (Joe Beda)'
 
 logger = logging.getLogger(__name__)
+
+logger.warning(
+    'The oauth2client.contrib.multistore_file module has been deprecated and '
+    'will be removed in the next release of oauth2client. Please migrate to '
+    'multiprocess_file_storage.')
 
 # A dict from 'filename'->_MultiStore instances
 _multistores = {}
@@ -71,6 +74,21 @@ class Error(Exception):
 
 class NewerCredentialStoreError(Error):
     """The credential store is a newer version than supported."""
+
+
+def _dict_to_tuple_key(dictionary):
+    """Converts a dictionary to a tuple that can be used as an immutable key.
+
+    The resulting key is always sorted so that logically equivalent
+    dictionaries always produce an identical tuple for a key.
+
+    Args:
+        dictionary: the dictionary to use as the key.
+
+    Returns:
+        A tuple representing the dictionary in it's naturally sorted ordering.
+    """
+    return tuple(sorted(dictionary.items()))
 
 
 @util.positional(4)
@@ -93,7 +111,7 @@ def get_credential_storage(filename, client_id, user_agent, scope,
     key = {'clientId': client_id, 'userAgent': user_agent,
            'scope': util.scopes_to_string(scope)}
     return get_credential_storage_custom_key(
-      filename, key, warn_on_readonly=warn_on_readonly)
+        filename, key, warn_on_readonly=warn_on_readonly)
 
 
 @util.positional(2)
@@ -116,7 +134,7 @@ def get_credential_storage_custom_string_key(filename, key_string,
     # Create a key dictionary that can be used
     key_dict = {'key': key_string}
     return get_credential_storage_custom_key(
-      filename, key_dict, warn_on_readonly=warn_on_readonly)
+        filename, key_dict, warn_on_readonly=warn_on_readonly)
 
 
 @util.positional(2)
@@ -139,7 +157,7 @@ def get_credential_storage_custom_key(filename, key_dict,
         credential.
     """
     multistore = _get_multistore(filename, warn_on_readonly=warn_on_readonly)
-    key = util.dict_to_tuple_key(key_dict)
+    key = _dict_to_tuple_key(key_dict)
     return multistore._get_storage(key)
 
 
@@ -194,7 +212,7 @@ class _MultiStore(object):
 
         This will create the file if necessary.
         """
-        self._file = LockedFile(filename, 'r+', 'r')
+        self._file = locked_file.LockedFile(filename, 'r+', 'r')
         self._thread_lock = threading.Lock()
         self._read_only = False
         self._warn_on_readonly = warn_on_readonly
@@ -210,7 +228,7 @@ class _MultiStore(object):
         # If this is None, then the store hasn't been read yet.
         self._data = None
 
-    class _Storage(BaseStorage):
+    class _Storage(client.Storage):
         """A Storage object that can read/write a single credential."""
 
         def __init__(self, multistore, key):
@@ -283,7 +301,7 @@ class _MultiStore(object):
         self._thread_lock.acquire()
         try:
             self._file.open_and_lock()
-        except IOError as e:
+        except (IOError, OSError) as e:
             if e.errno == errno.ENOSYS:
                 logger.warn('File system does not support locking the '
                             'credentials file.')
@@ -293,6 +311,8 @@ class _MultiStore(object):
             elif e.errno == errno.EDEADLK:
                 logger.warn('Lock contention on multistore file, opening '
                             'in read-only mode.')
+            elif e.errno == errno.EACCES:
+                logger.warn('Cannot access credentials file.')
             else:
                 raise
         if not self._file.is_locked():
@@ -302,6 +322,7 @@ class _MultiStore(object):
                             'Opening in read-only mode. Any refreshed '
                             'credentials will only be '
                             'valid for this run.', self._file.filename())
+
         if os.path.getsize(self._file.filename()) == 0:
             logger.debug('Initializing empty multistore file')
             # The multistore is empty so write out an empty file.
@@ -373,8 +394,8 @@ class _MultiStore(object):
                         'corrupt or an old version. Overwriting.')
         if version > 1:
             raise NewerCredentialStoreError(
-                'Credential file has file_version of %d. '
-                'Only file_version of 1 is supported.' % version)
+                'Credential file has file_version of {0}. '
+                'Only file_version of 1 is supported.'.format(version))
 
         credentials = []
         try:
@@ -402,9 +423,9 @@ class _MultiStore(object):
             OAuth2Credential object.
         """
         raw_key = cred_entry['key']
-        key = util.dict_to_tuple_key(raw_key)
+        key = _dict_to_tuple_key(raw_key)
         credential = None
-        credential = Credentials.new_from_json(
+        credential = client.Credentials.new_from_json(
             json.dumps(cred_entry['credential']))
         return (key, credential)
 

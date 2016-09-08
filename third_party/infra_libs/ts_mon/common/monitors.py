@@ -10,7 +10,10 @@ import json
 import logging
 
 from apiclient import discovery
-from oauth2client import gce
+try:
+  from oauth2client import gce
+except ImportError:
+  from oauth2client.contrib import gce
 from oauth2client.client import GoogleCredentials
 from oauth2client.file import Storage
 import httplib2
