@@ -64,6 +64,7 @@ public:
 
     const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
+    unsigned fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit) const;
     MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset)
     {
         return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
@@ -161,8 +162,6 @@ public:
 
     LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;
 
-    void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
-
     LayoutUnit columnGap() const;
 
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.
@@ -180,8 +179,6 @@ protected:
     LayoutMultiColumnSet(LayoutFlowThread*);
 
 private:
-    unsigned fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit) const;
-
     void insertedIntoTree() final;
     void willBeRemovedFromTree() final;
 

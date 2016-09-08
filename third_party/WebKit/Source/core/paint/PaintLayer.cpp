@@ -53,6 +53,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/layout/FragmentainerIterator.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/HitTestingTransformState.h"
@@ -1538,11 +1539,12 @@ void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLay
     LayoutRect dirtyRectInMulticolContainer(dirtyRect);
     dirtyRectInMulticolContainer.move(enclosingPaginationLayer()->location() - offsetOfPaginationLayerFromRoot);
 
-    // Tell the flow thread to collect the fragments. We pass enough information to create a minimal number of fragments based off the pages/columns
-    // that intersect the actual dirtyRect as well as the pages/columns that intersect our layer's bounding box.
-    enclosingFlowThread->collectLayerFragments(fragments, layerBoundingBoxInFlowThread, dirtyRectInMulticolContainer);
-
-    if (fragments.isEmpty())
+    // Slice the layer into fragments. Each fragment needs to be processed (e.g. painted)
+    // separately. We pass enough information to walk a minimal number of fragments based on the
+    // pages/columns that intersect the actual dirtyRect as well as the pages/columns that
+    // intersect our layer's bounding box.
+    FragmentainerIterator iterator(*enclosingFlowThread, layerBoundingBoxInFlowThread, dirtyRectInMulticolContainer);
+    if (iterator.atEnd())
         return;
 
     // Get the parent clip rects of the pagination layer, since we need to intersect with that when painting column contents.
@@ -1559,8 +1561,10 @@ void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLay
     }
 
     const LayoutSize subPixelAccumulationIfNeeded = offsetFromRoot ? subPixelAccumulation : LayoutSize();
-    for (size_t i = 0; i < fragments.size(); ++i) {
-        PaintLayerFragment& fragment = fragments.at(i);
+    for (; !iterator.atEnd(); iterator.advance()) {
+        PaintLayerFragment fragment;
+        fragment.paginationOffset = toLayoutPoint(iterator.paginationOffset());
+        fragment.paginationClip = iterator.clipRectInFlowThread();
 
         // Set our four rects with all clipping applied that was internal to the flow thread.
         fragment.setRects(layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread);
@@ -1575,6 +1579,12 @@ void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLay
         // Now intersect with our pagination clip. This will typically mean we're just intersecting the dirty rect with the column
         // clip, so the column clip ends up being all we apply.
         fragment.intersect(fragment.paginationClip);
+
+        // TODO(mstensho): Don't add empty fragments. We've always done that in some cases, but
+        // there should be no reason to do so. Either filter them out here, or, even better: pass a
+        // better clip rectangle to the fragmentainer iterator, so that we won't end up with empty
+        // fragments here.
+        fragments.append(fragment);
     }
 }
 

@@ -163,16 +163,6 @@ LayoutUnit LayoutFlowThread::nextLogicalTopForUnbreakableContent(LayoutUnit flow
     return columnSet->nextLogicalTopForUnbreakableContent(flowThreadOffset, contentLogicalHeight);
 }
 
-void LayoutFlowThread::collectLayerFragments(PaintLayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRectInMulticolContainer)
-{
-    ASSERT(!m_columnSetsInvalidated);
-
-    for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        LayoutMultiColumnSet* columnSet = *iter;
-        columnSet->collectLayerFragments(layerFragments, layerBoundingBox, dirtyRectInMulticolContainer);
-    }
-}
-
 LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const
 {
     ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled() || !m_columnSetsInvalidated);

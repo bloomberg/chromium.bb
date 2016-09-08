@@ -419,12 +419,6 @@ LayoutRect LayoutMultiColumnSet::fragmentsBoundingBox(const LayoutRect& bounding
     return result;
 }
 
-void LayoutMultiColumnSet::collectLayerFragments(PaintLayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
-{
-    for (const auto& group : m_fragmentainerGroups)
-        group.collectLayerFragments(fragments, layerBoundingBox, dirtyRect);
-}
-
 void LayoutMultiColumnSet::addOverflowFromChildren()
 {
     LayoutRect overflowRect;

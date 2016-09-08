@@ -23,6 +23,8 @@ blink_core_sources("layout") {
     "DepthOrderedLayoutObjectList.h",
     "FloatingObjects.cpp",
     "FloatingObjects.h",
+    "FragmentainerIterator.cpp",
+    "FragmentainerIterator.h",
     "FragmentationContext.h",
     "GeneratedChildren.h",
     "HitTestCache.cpp",
