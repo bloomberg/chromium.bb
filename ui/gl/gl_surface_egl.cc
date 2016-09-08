@@ -249,7 +249,6 @@ bool ValidateEglConfig(EGLDisplay display,
     return false;
   }
   if (*num_configs == 0) {
-    LOG(ERROR) << "No suitable EGL configs found.";
     return false;
   }
   return true;
@@ -264,11 +263,12 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
 
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
-  EGLint renderable_type = EGL_OPENGL_ES2_BIT;
+  std::vector<EGLint> renderable_types;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUnsafeES3APIs)) {
-    renderable_type = EGL_OPENGL_ES3_BIT;
+    renderable_types.push_back(EGL_OPENGL_ES3_BIT);
   }
+  renderable_types.push_back(EGL_OPENGL_ES2_BIT);
 
   EGLint buffer_size = 32;
   EGLint alpha_size = 8;
@@ -291,99 +291,108 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
                             ? EGL_DONT_CARE
                             : EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
 
-  EGLint config_attribs_8888[] = {
-    EGL_BUFFER_SIZE, buffer_size,
-    EGL_ALPHA_SIZE, alpha_size,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_RENDERABLE_TYPE, renderable_type,
-    EGL_SURFACE_TYPE, surface_type,
-    EGL_NONE
-  };
+  for (auto renderable_type : renderable_types) {
+    EGLint config_attribs_8888[] = {EGL_BUFFER_SIZE,
+                                    buffer_size,
+                                    EGL_ALPHA_SIZE,
+                                    alpha_size,
+                                    EGL_BLUE_SIZE,
+                                    8,
+                                    EGL_GREEN_SIZE,
+                                    8,
+                                    EGL_RED_SIZE,
+                                    8,
+                                    EGL_RENDERABLE_TYPE,
+                                    renderable_type,
+                                    EGL_SURFACE_TYPE,
+                                    surface_type,
+                                    EGL_NONE};
 
-  EGLint* choose_attributes = config_attribs_8888;
-  EGLint config_attribs_565[] = {
-    EGL_BUFFER_SIZE, 16,
-    EGL_BLUE_SIZE, 5,
-    EGL_GREEN_SIZE, 6,
-    EGL_RED_SIZE, 5,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_SURFACE_TYPE, surface_type,
-    EGL_NONE
-  };
-  if (format == GLSurface::SURFACE_RGB565) {
-    choose_attributes = config_attribs_565;
-  }
+    EGLint config_attribs_565[] = {EGL_BUFFER_SIZE,
+                                   16,
+                                   EGL_BLUE_SIZE,
+                                   5,
+                                   EGL_GREEN_SIZE,
+                                   6,
+                                   EGL_RED_SIZE,
+                                   5,
+                                   EGL_RENDERABLE_TYPE,
+                                   renderable_type,
+                                   EGL_SURFACE_TYPE,
+                                   surface_type,
+                                   EGL_NONE};
 
-  EGLint num_configs;
-  EGLint config_size = 1;
-  EGLConfig config = nullptr;
-  EGLConfig* config_data = &config;
-  // Validate if there are any configs for given attribs.
-  if (!ValidateEglConfig(g_display, choose_attributes, &num_configs)) {
-    return config;
-  }
-
-  std::unique_ptr<EGLConfig[]> matching_configs(new EGLConfig[num_configs]);
-  if (format == GLSurface::SURFACE_RGB565) {
-    config_size = num_configs;
-    config_data = matching_configs.get();
-  }
-
-  if (!eglChooseConfig(g_display, choose_attributes, config_data, config_size,
-                       &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed with error "
-               << GetLastEGLErrorString();
-    return config;
-  }
-
-  if (format == GLSurface::SURFACE_RGB565) {
-    // Because of the EGL config sort order, we have to iterate
-    // through all of them (it'll put higher sum(R,G,B) bits
-    // first with the above attribs).
-    bool match_found = false;
-    for (int i = 0; i < num_configs; i++) {
-      EGLint red, green, blue, alpha;
-      // Read the relevant attributes of the EGLConfig.
-      if (eglGetConfigAttrib(g_display, matching_configs[i],
-                             EGL_RED_SIZE, &red) &&
-          eglGetConfigAttrib(g_display, matching_configs[i],
-                             EGL_BLUE_SIZE, &blue) &&
-          eglGetConfigAttrib(g_display, matching_configs[i],
-                             EGL_GREEN_SIZE, &green) &&
-          eglGetConfigAttrib(g_display, matching_configs[i],
-                             EGL_ALPHA_SIZE, &alpha) &&
-          alpha == 0 &&
-          red == 5 &&
-          green == 6 &&
-          blue == 5) {
-        config = matching_configs[i];
-        match_found = true;
-        break;
-      }
+    EGLint* choose_attributes = config_attribs_8888;
+    if (format == GLSurface::SURFACE_RGB565) {
+      choose_attributes = config_attribs_565;
     }
-    if (!match_found) {
-      // To fall back to default 32 bit format, choose with
-      // the right attributes again.
-      if (!ValidateEglConfig(g_display,
-                             config_attribs_8888,
+
+    EGLint num_configs;
+    EGLint config_size = 1;
+    EGLConfig config = nullptr;
+    EGLConfig* config_data = &config;
+    // Validate if there are any configs for given attribs.
+    if (!ValidateEglConfig(g_display, choose_attributes, &num_configs)) {
+      // Try the next renderable_type
+      continue;
+    }
+
+    std::unique_ptr<EGLConfig[]> matching_configs(new EGLConfig[num_configs]);
+    if (format == GLSurface::SURFACE_RGB565) {
+      config_size = num_configs;
+      config_data = matching_configs.get();
+    }
+
+    if (!eglChooseConfig(g_display, choose_attributes, config_data, config_size,
+                         &num_configs)) {
+      LOG(ERROR) << "eglChooseConfig failed with error "
+                 << GetLastEGLErrorString();
+      return config;
+    }
+
+    if (format == GLSurface::SURFACE_RGB565) {
+      // Because of the EGL config sort order, we have to iterate
+      // through all of them (it'll put higher sum(R,G,B) bits
+      // first with the above attribs).
+      bool match_found = false;
+      for (int i = 0; i < num_configs; i++) {
+        EGLint red, green, blue, alpha;
+        // Read the relevant attributes of the EGLConfig.
+        if (eglGetConfigAttrib(g_display, matching_configs[i], EGL_RED_SIZE,
+                               &red) &&
+            eglGetConfigAttrib(g_display, matching_configs[i], EGL_BLUE_SIZE,
+                               &blue) &&
+            eglGetConfigAttrib(g_display, matching_configs[i], EGL_GREEN_SIZE,
+                               &green) &&
+            eglGetConfigAttrib(g_display, matching_configs[i], EGL_ALPHA_SIZE,
+                               &alpha) &&
+            alpha == 0 && red == 5 && green == 6 && blue == 5) {
+          config = matching_configs[i];
+          match_found = true;
+          break;
+        }
+      }
+      if (!match_found) {
+        // To fall back to default 32 bit format, choose with
+        // the right attributes again.
+        if (!ValidateEglConfig(g_display, config_attribs_8888, &num_configs)) {
+          // Try the next renderable_type
+          continue;
+        }
+        if (!eglChooseConfig(g_display, config_attribs_8888, &config, 1,
                              &num_configs)) {
-        return config;
-      }
-      if (!eglChooseConfig(g_display,
-                           config_attribs_8888,
-                           &config,
-                           1,
-                           &num_configs)) {
-        LOG(ERROR) << "eglChooseConfig failed with error "
-                   << GetLastEGLErrorString();
-        return config;
+          LOG(ERROR) << "eglChooseConfig failed with error "
+                     << GetLastEGLErrorString();
+          return config;
+        }
       }
     }
+    config_map[format] = config;
+    return config;
   }
-  config_map[format] = config;
-  return config;
+
+  LOG(ERROR) << "No suitable EGL configs found.";
+  return nullptr;
 }
 
 }  // namespace

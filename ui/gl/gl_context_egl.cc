@@ -40,9 +40,21 @@ bool GLContextEGL::Initialize(
   DCHECK(compatible_surface);
   DCHECK(!context_);
 
+  display_ = compatible_surface->GetDisplay();
+  config_ = compatible_surface->GetConfig();
+
+  EGLint config_renderable_type = 0;
+  if (!eglGetConfigAttrib(display_, config_, EGL_RENDERABLE_TYPE,
+                          &config_renderable_type)) {
+    LOG(ERROR) << "eglGetConfigAttrib failed with error "
+               << GetLastEGLErrorString();
+    return false;
+  }
+
   EGLint context_client_version = 2;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs)) {
+          switches::kEnableUnsafeES3APIs) &&
+      (config_renderable_type & EGL_OPENGL_ES3_BIT) != 0) {
     context_client_version = 3;
   }
 
@@ -56,9 +68,6 @@ bool GLContextEGL::Initialize(
     EGL_LOSE_CONTEXT_ON_RESET_EXT,
     EGL_NONE
   };
-
-  display_ = compatible_surface->GetDisplay();
-  config_ = compatible_surface->GetConfig();
 
   const EGLint* context_attributes = nullptr;
   if (GLSurfaceEGL::IsCreateContextRobustnessSupported()) {
