@@ -40,8 +40,12 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
                          base::CompareCase::INSENSITIVE_ASCII)) {
       return DistillerHeuristicsType::OG_ARTICLE;
     }
+    if (base::StartsWith(group_name, "Disabled",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return DistillerHeuristicsType::NONE;
+    }
   }
-  return DistillerHeuristicsType::NONE;
+  return DistillerHeuristicsType::ADABOOST_MODEL;
 }
 
 bool ShouldShowFeedbackForm() {
