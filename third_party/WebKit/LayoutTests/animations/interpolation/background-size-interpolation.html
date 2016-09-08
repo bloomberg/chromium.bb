@@ -41,7 +41,6 @@ assertInterpolation({
 ]);
 
 // initial
-// TODO(alancutter): Fix transitions: https://crbug.com/513127
 assertNoInterpolation({
   property: 'background-size',
   from: 'initial',
@@ -64,7 +63,6 @@ assertInterpolation({
 ]);
 
 // unset
-// TODO(alancutter): Fix transitions: https://crbug.com/513127
 assertNoInterpolation({
   property: 'background-size',
   from: 'unset',
@@ -74,16 +72,16 @@ assertNoInterpolation({
 // Matched keywords in size value list.
 assertInterpolation({
   property: 'background-size',
-  from: '0px 0px, 0px 0px, contain, cover',
-  to: '40px 40px, 40px 40px, contain, cover',
+  from: '0px auto, 0px 0px, contain, cover',
+  to: '40px auto, 40px 40px, contain, cover',
 }, [
-  {at: -0.25, is: ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0, is:     ' 0px  0px,  0px  0px, contain, cover'},
-  {at: 0.25, is:  '10px 10px, 10px 10px, contain, cover'},
-  {at: 0.5, is:   '20px 20px, 20px 20px, contain, cover'},
-  {at: 0.75, is:  '30px 30px, 30px 30px, contain, cover'},
-  {at: 1, is:     '40px 40px, 40px 40px, contain, cover'},
-  {at: 1.25, is:  '50px 50px, 50px 50px, contain, cover'},
+  {at: -0.25, is: ' 0px auto,  0px  0px, contain, cover'},
+  {at: 0, is:     ' 0px auto,  0px  0px, contain, cover'},
+  {at: 0.25, is:  '10px auto, 10px 10px, contain, cover'},
+  {at: 0.5, is:   '20px auto, 20px 20px, contain, cover'},
+  {at: 0.75, is:  '30px auto, 30px 30px, contain, cover'},
+  {at: 1, is:     '40px auto, 40px 40px, contain, cover'},
+  {at: 1.25, is:  '50px auto, 50px 50px, contain, cover'},
 ]);
 
 // Mismatched keywords in size value list.
@@ -91,6 +89,12 @@ assertNoInterpolation({
   property: 'background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, cover, contain',
+});
+
+assertNoInterpolation({
+  property: 'background-size',
+  from: '0px auto, 0px 0px',
+  to: 'auto 40px, 40px 40px',
 });
 
 // Equal number of size values as background images.
@@ -121,6 +125,20 @@ assertInterpolation({
   {at: 0.75, is:  ' 60px  60px,  60px  60px,  60px  60px,  60px  60px'},
   {at: 1, is:     ' 80px  80px,  80px  80px,  80px  80px,  80px  80px'},
   {at: 1.25, is:  '100px 100px, 100px 100px, 100px 100px, 100px 100px'},
+]);
+
+assertInterpolation({
+  property: 'background-size',
+  from: '0px',
+  to: '80px',
+}, [
+  {at: -0.25, is: '  0px,   0px,   0px,   0px'},
+  {at: 0, is:     '  0px,   0px,   0px,   0px'},
+  {at: 0.25, is:  ' 20px,  20px,  20px,  20px'},
+  {at: 0.5, is:   ' 40px,  40px,  40px,  40px'},
+  {at: 0.75, is:  ' 60px,  60px,  60px,  60px'},
+  {at: 1, is:     ' 80px,  80px,  80px,  80px'},
+  {at: 1.25, is:  '100px, 100px, 100px, 100px'},
 ]);
 
 // Mismatched numbers of size values.

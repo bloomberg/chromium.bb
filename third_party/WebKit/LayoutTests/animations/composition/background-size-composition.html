@@ -82,5 +82,20 @@ assertComposition({
   {at: 1, is: '200px 250px, 200px 250px'},
   {at: 1.25, is: '225px 275px, 225px 275px'},
 ]);
+
+assertComposition({
+  property: 'background-size',
+  underlying: 'auto 100px, contain',
+  addFrom: neutralKeyframe,
+  replaceTo: 'auto 200px, contain',
+}, [
+  {at: -0.25, is: 'auto 75px, contain'},
+  {at: 0, is: 'auto 100px, contain'},
+  {at: 0.25, is: 'auto 125px, contain'},
+  {at: 0.5, is: 'auto 150px, contain'},
+  {at: 0.75, is: 'auto 175px, contain'},
+  {at: 1, is: 'auto 200px, contain'},
+  {at: 1.25, is: 'auto 225px, contain'},
+]);
 </script>
 </body>

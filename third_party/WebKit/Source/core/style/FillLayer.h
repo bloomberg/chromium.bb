@@ -37,7 +37,7 @@
 namespace blink {
 
 struct FillSize {
-    STACK_ALLOCATED();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     FillSize()
         : type(SizeLength)
     {

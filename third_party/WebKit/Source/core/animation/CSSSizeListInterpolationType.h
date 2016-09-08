@@ -5,41 +5,27 @@
 #ifndef CSSSizeListInterpolationType_h
 #define CSSSizeListInterpolationType_h
 
-#include "core/animation/CSSLengthListInterpolationType.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSValuePair.h"
+#include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class CSSSizeListInterpolationType : public CSSLengthListInterpolationType {
+class CSSSizeListInterpolationType : public CSSInterpolationType {
 public:
     CSSSizeListInterpolationType(CSSPropertyID property)
-        : CSSLengthListInterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-private:
-    InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final
-    {
-        CSSValueList* tempList = nullptr;
-        if (!value.isBaseValueList()) {
-            tempList = CSSValueList::createCommaSeparated();
-            tempList->append(value);
-        }
-        const CSSValueList& list = value.isBaseValueList() ? toCSSValueList(value) : *tempList;
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
-        // Only size lists without keywords may interpolate smoothly:
-        // https://drafts.csswg.org/css-backgrounds-3/#the-background-size
-        return ListInterpolationFunctions::createList(list.length() * 2, [&list](size_t index) -> InterpolationValue {
-            const CSSValue& item = list.item(index / 2);
-            if (!item.isValuePair())
-                return nullptr;
-            const CSSValuePair& pair = toCSSValuePair(item);
-            const CSSValue& side = index % 2 == 0 ? pair.first() : pair.second();
-            return LengthInterpolationFunctions::maybeConvertCSSValue(side);
-        });
-    }
+private:
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+
+    PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const final;
 };
 
 } // namespace blink

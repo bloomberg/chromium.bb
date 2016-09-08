@@ -15,11 +15,9 @@ const FillLayer* getFillLayer(CSSPropertyID property, const ComputedStyle& style
     switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundSize:
         return &style.backgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-    case CSSPropertyWebkitMaskSize:
         return &style.maskLayers();
     default:
         NOTREACHED();
@@ -32,11 +30,9 @@ FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style)
     switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundSize:
         return &style.accessBackgroundLayers();
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-    case CSSPropertyWebkitMaskSize:
         return &style.accessMaskLayers();
     default:
         NOTREACHED();
@@ -50,8 +46,6 @@ struct FillLayerMethods {
         isSet = nullptr;
         getLength = nullptr;
         setLength = nullptr;
-        getFillSize = nullptr;
-        setFillSize = nullptr;
         clear = nullptr;
         switch (property) {
         case CSSPropertyBackgroundPositionX:
@@ -68,13 +62,6 @@ struct FillLayerMethods {
             setLength = &FillLayer::setYPosition;
             clear = &FillLayer::clearYPosition;
             break;
-        case CSSPropertyBackgroundSize:
-        case CSSPropertyWebkitMaskSize:
-            isSet = &FillLayer::isSizeSet;
-            getFillSize = &FillLayer::size;
-            setFillSize = &FillLayer::setSize;
-            clear = &FillLayer::clearSize;
-            break;
         default:
             NOTREACHED();
             break;
@@ -84,8 +71,6 @@ struct FillLayerMethods {
     bool (FillLayer::*isSet)() const;
     const Length& (FillLayer::*getLength)() const;
     void (FillLayer::*setLength)(const Length&);
-    FillSize (FillLayer::*getFillSize)() const;
-    void (FillLayer::*setFillSize)(const FillSize&);
     void (FillLayer::*clear)();
 };
 
@@ -103,13 +88,11 @@ ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property)
     case CSSPropertyWebkitMaskPositionY:
         return ValueRangeAll;
 
-    case CSSPropertyBackgroundSize:
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
     case CSSPropertyStrokeDasharray:
-    case CSSPropertyWebkitMaskSize:
         return ValueRangeNonNegative;
 
     default:
@@ -183,22 +166,6 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const Co
         }
         return true;
     }
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskSize: {
-        const FillLayer* fillLayer = getFillLayer(property, style);
-        FillLayerMethods fillLayerMethods(property);
-        while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
-            FillSize fillSize = (fillLayer->*fillLayerMethods.getFillSize)();
-            if (fillSize.type != SizeLength) {
-                result.clear();
-                return false;
-            }
-            result.append(fillSize.size.width());
-            result.append(fillSize.size.height());
-            fillLayer = fillLayer->next();
-        }
-        return true;
-    }
 
     default:
         NOTREACHED();
@@ -266,27 +233,6 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
             if (!fillLayer)
                 fillLayer = prev->ensureNext();
             (fillLayer->*fillLayerMethods.setLength)(lengthList[i]);
-            prev = fillLayer;
-            fillLayer = fillLayer->next();
-        }
-        while (fillLayer) {
-            (fillLayer->*fillLayerMethods.clear)();
-            fillLayer = fillLayer->next();
-        }
-        return;
-    }
-
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskSize: {
-        DCHECK_EQ(lengthList.size() % 2, 0U);
-        FillLayer* fillLayer = accessFillLayer(property, style);
-        FillLayer* prev = nullptr;
-        FillLayerMethods fillLayerMethods(property);
-        for (size_t i = 0; i < lengthList.size() / 2; i++) {
-            if (!fillLayer)
-                fillLayer = prev->ensureNext();
-            FillSize fillSize(SizeLength, LengthSize(lengthList[2 * i], lengthList[2 * i + 1]));
-            (fillLayer->*fillLayerMethods.setFillSize)(fillSize);
             prev = fillLayer;
             fillLayer = fillLayer->next();
         }
