@@ -40,6 +40,7 @@ class ArcIntentHelperBridge
   ArcIntentHelperBridge(
       ArcBridgeService* bridge_service,
       const scoped_refptr<ActivityIconLoader>& icon_loader,
+      std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate,
       const scoped_refptr<LocalActivityResolver>& activity_resolver);
   ~ArcIntentHelperBridge() override;
 
@@ -70,6 +71,7 @@ class ArcIntentHelperBridge
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
+  std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   base::ThreadChecker thread_checker_;

@@ -12,22 +12,12 @@
 namespace arc {
 
 // Delegate to allow setting the wallpaper.
-// TODO(muyuanli): This class will be removed once ArcIntentHelper migrates to
-// WallpaperManager API.
 class SetWallpaperDelegate {
  public:
   virtual ~SetWallpaperDelegate() = default;
 
-  static SetWallpaperDelegate* instance() { return instance_; }
-  static void set_instance(SetWallpaperDelegate* delegate) {
-    instance_ = delegate;
-  }
-
   // Sets an image represented in JPEG format as the wallpaper.
-  virtual void SetWallpaperJpeg(const std::vector<uint8_t>& jpeg_data) = 0;
-
- private:
-  static SetWallpaperDelegate* instance_;
+  virtual void SetWallpaper(std::vector<uint8_t> jpeg_data) = 0;
 };
 
 }  // namespace arc

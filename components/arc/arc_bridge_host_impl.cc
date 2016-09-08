@@ -188,12 +188,6 @@ void ArcBridgeHostImpl::OnVideoInstanceReady(
   OnInstanceReady(ArcBridgeService::Get()->video(), std::move(video_ptr));
 }
 
-void ArcBridgeHostImpl::OnWallpaperInstanceReady(
-    mojom::WallpaperInstancePtr wallpaper_ptr) {
-  OnInstanceReady(ArcBridgeService::Get()->wallpaper(),
-                  std::move(wallpaper_ptr));
-}
-
 void ArcBridgeHostImpl::OnClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Mojo connection lost";

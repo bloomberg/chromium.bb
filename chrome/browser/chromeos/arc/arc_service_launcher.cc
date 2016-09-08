@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/arc_tts_service.h"
-#include "chrome/browser/chromeos/arc/arc_wallpaper_service.h"
+#include "chrome/browser/chromeos/arc/arc_wallpaper_handler.h"
 #include "chrome/browser/chromeos/arc/gpu_arc_video_service_host.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -43,6 +43,7 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(base::MakeUnique<ArcIntentHelperBridge>(
       arc_service_manager_->arc_bridge_service(),
       arc_service_manager_->icon_loader(),
+      base::MakeUnique<ArcWallpaperHandler>(),
       arc_service_manager_->activity_resolver()));
   arc_service_manager_->AddService(base::MakeUnique<ArcPolicyBridge>(
       arc_service_manager_->arc_bridge_service()));
@@ -53,8 +54,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(base::MakeUnique<ArcSettingsService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcTtsService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcWallpaperService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<GpuArcVideoServiceHost>(
       arc_service_manager_->arc_bridge_service()));
