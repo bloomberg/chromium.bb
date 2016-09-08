@@ -53,7 +53,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -230,7 +229,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           FrameRateCounter::Create(task_runner_provider_->HasImplThread())),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
-      texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
       animation_host_(std::move(animation_host)),

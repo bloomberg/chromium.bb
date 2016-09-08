@@ -790,8 +790,6 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<MemoryHistory> memory_history_;
   std::unique_ptr<DebugRectHistory> debug_rect_history_;
 
-  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
-
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_;
