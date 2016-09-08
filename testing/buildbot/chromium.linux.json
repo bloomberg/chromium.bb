@@ -1293,12 +1293,6 @@
       {
         "test": "webapk_shell_apk_junit_tests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "webview_licenses",
-        "script": "webview_licenses.py"
-      }
     ]
   },
   "Android Tests (dbg)": {
@@ -1456,12 +1450,6 @@
       },
       {
         "test": "webapk_client_junit_tests"
-      }
-    ],
-    "scripts": [
-      {
-        "name": "webview_licenses",
-        "script": "webview_licenses.py"
       }
     ]
   },
