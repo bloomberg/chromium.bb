@@ -1224,6 +1224,11 @@ void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport)
 bool WebLocalFrameImpl::setEditableSelectionOffsets(int start, int end)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::setEditableSelectionOffsets");
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return frame()->inputMethodController().setEditableSelectionOffsets(PlainTextRange(start, end));
 }
 

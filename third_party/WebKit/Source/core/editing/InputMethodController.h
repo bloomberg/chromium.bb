@@ -82,18 +82,6 @@ public:
     PlainTextRange createRangeForSelection(int start, int end, size_t textLength) const;
 
 private:
-    class SelectionOffsetsScope {
-        WTF_MAKE_NONCOPYABLE(SelectionOffsetsScope);
-        STACK_ALLOCATED();
-    public:
-        explicit SelectionOffsetsScope(InputMethodController*);
-        ~SelectionOffsetsScope();
-    private:
-        Member<InputMethodController> m_inputMethodController;
-        const PlainTextRange m_offsets;
-    };
-    friend class SelectionOffsetsScope;
-
     Member<LocalFrame> m_frame;
     Member<Range> m_compositionRange;
     bool m_isDirty;

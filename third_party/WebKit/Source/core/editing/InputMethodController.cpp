@@ -118,19 +118,6 @@ void insertTextDuringCompositionWithEvents(LocalFrame& frame, const String& text
 
 } // anonymous namespace
 
-InputMethodController::SelectionOffsetsScope::SelectionOffsetsScope(InputMethodController* inputMethodController)
-    : m_inputMethodController(inputMethodController)
-    , m_offsets(inputMethodController->getSelectionOffsets())
-{
-}
-
-InputMethodController::SelectionOffsetsScope::~SelectionOffsetsScope()
-{
-    m_inputMethodController->setSelectionOffsets(m_offsets);
-}
-
-// ----------------------------
-
 InputMethodController* InputMethodController::create(LocalFrame& frame)
 {
     return new InputMethodController(frame);
@@ -254,8 +241,15 @@ bool InputMethodController::confirmCompositionOrInsertText(const String& text, C
     if (confirmBehavior == DoNotKeepSelection)
         return confirmComposition(composingText(), DoNotKeepSelection);
 
-    SelectionOffsetsScope selectionOffsetsScope(this);
-    return confirmComposition();
+    PlainTextRange oldOffsets = getSelectionOffsets();
+    bool result = confirmComposition();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    setSelectionOffsets(oldOffsets);
+    return result;
 }
 
 void InputMethodController::cancelComposition()
@@ -354,6 +348,10 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             TypingCommand::deleteSelection(*frame().document(), TypingCommand::PreventSpellChecking);
         }
 
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited. see http://crbug.com/590369 for more details.
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         setEditableSelectionOffsets(selectedRange);
         return;
     }
@@ -404,6 +402,10 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     if (baseNode->layoutObject())
         baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // We shouldn't close typing in the middle of setComposition.
     setEditableSelectionOffsets(selectedRange, NotUserTriggered);
@@ -496,9 +498,7 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (!rootEditableElement)
         return false;
 
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    rootEditableElement->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!rootEditableElement->document().needsLayoutTreeUpdate());
 
     const EphemeralRange range = selectionOffsets.createRange(*rootEditableElement);
     if (range.isNull())
