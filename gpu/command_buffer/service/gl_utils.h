@@ -24,10 +24,33 @@
 #define CHECK_GL_ERROR() void(0)
 #endif  // GL_ERROR_DEBUGGING
 
+namespace gl {
+struct GLVersionInfo;
+}
+
 namespace gpu {
+
+struct Capabilities;
+class FeatureInfo;
+
 namespace gles2 {
 
 std::vector<int> GetAllGLErrors();
+
+bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
+                                     GLint rangeMax,
+                                     GLint precision);
+void QueryShaderPrecisionFormat(const gl::GLVersionInfo& gl_version_info,
+                                GLenum shader_type,
+                                GLenum precision_type,
+                                GLint* range,
+                                GLint* precision);
+
+// Using the provided feature info, query the numeric limits of the underlying
+// GL and fill in the members of the Capabilities struct.  Does not perform any
+// extension checks.
+void PopulateNumericCapabilities(Capabilities* caps,
+                                 const FeatureInfo* feature_info);
 
 } // gles2
 } // gpu

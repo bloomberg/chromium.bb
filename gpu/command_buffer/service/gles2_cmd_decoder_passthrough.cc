@@ -4,6 +4,10 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
+#include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gl_utils.h"
+#include "ui/gl/gl_version_info.h"
+
 namespace gpu {
 namespace gles2 {
 
@@ -181,6 +185,63 @@ const FeatureInfo* GLES2DecoderPassthroughImpl::GetFeatureInfo() const {
 gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   DCHECK(initialized());
   Capabilities caps;
+
+  PopulateNumericCapabilities(&caps, feature_info_.get());
+
+  caps.bind_generates_resource_chromium = group_->bind_generates_resource();
+  caps.egl_image_external =
+      feature_info_->feature_flags().oes_egl_image_external;
+  caps.texture_format_astc =
+      feature_info_->feature_flags().ext_texture_format_astc;
+  caps.texture_format_atc =
+      feature_info_->feature_flags().ext_texture_format_atc;
+  caps.texture_format_bgra8888 =
+      feature_info_->feature_flags().ext_texture_format_bgra8888;
+  caps.texture_format_dxt1 =
+      feature_info_->feature_flags().ext_texture_format_dxt1;
+  caps.texture_format_dxt5 =
+      feature_info_->feature_flags().ext_texture_format_dxt5;
+  caps.texture_format_etc1 =
+      feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture;
+  caps.texture_format_etc1_npot = caps.texture_format_etc1;
+  caps.texture_rectangle = feature_info_->feature_flags().arb_texture_rectangle;
+  caps.texture_usage = feature_info_->feature_flags().angle_texture_usage;
+  caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
+  caps.discard_framebuffer =
+      feature_info_->feature_flags().ext_discard_framebuffer;
+  caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
+#if defined(OS_MACOSX)
+  // This is unconditionally true on mac, no need to test for it at runtime.
+  caps.iosurface = true;
+#endif
+  caps.image = true;
+  caps.flips_vertically = surface_->FlipsVertically();
+  caps.blend_equation_advanced =
+      feature_info_->feature_flags().blend_equation_advanced;
+  caps.blend_equation_advanced_coherent =
+      feature_info_->feature_flags().blend_equation_advanced_coherent;
+  caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
+  caps.texture_half_float_linear =
+      feature_info_->feature_flags().enable_texture_half_float_linear;
+  caps.image_ycbcr_422 =
+      feature_info_->feature_flags().chromium_image_ycbcr_422;
+  caps.image_ycbcr_420v =
+      feature_info_->feature_flags().chromium_image_ycbcr_420v;
+  caps.max_copy_texture_chromium_size =
+      feature_info_->workarounds().max_copy_texture_chromium_size;
+  caps.render_buffer_format_bgra8888 =
+      feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
+  caps.occlusion_query_boolean =
+      feature_info_->feature_flags().occlusion_query_boolean;
+
+  // TODO:
+  // caps.timer_queries
+  // caps.post_sub_buffer
+  // caps.commit_overlay_planes
+  // caps.surfaceless
+  // caps.is_offscreen
+  // caps.flips_vertically
+
   return caps;
 }
 

@@ -105,69 +105,6 @@ const GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
                                      0.0f, 0.0f, 1.0f, 0.0f,
                                      0.0f, 0.0f, 0.0f, 1.0f};
 
-bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
-                                            GLint rangeMax,
-                                            GLint precision) {
-  return (rangeMin >= 62) && (rangeMax >= 62) && (precision >= 16);
-}
-
-void GetShaderPrecisionFormatImpl(const gl::GLVersionInfo& gl_version_info,
-                                  GLenum shader_type,
-                                  GLenum precision_type,
-                                  GLint* range,
-                                  GLint* precision) {
-  switch (precision_type) {
-    case GL_LOW_INT:
-    case GL_MEDIUM_INT:
-    case GL_HIGH_INT:
-      // These values are for a 32-bit twos-complement integer format.
-      range[0] = 31;
-      range[1] = 30;
-      *precision = 0;
-      break;
-    case GL_LOW_FLOAT:
-    case GL_MEDIUM_FLOAT:
-    case GL_HIGH_FLOAT:
-      // These values are for an IEEE single-precision floating-point format.
-      range[0] = 127;
-      range[1] = 127;
-      *precision = 23;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  if (gl_version_info.is_es) {
-    // This function is sometimes defined even though it's really just
-    // a stub, so we need to set range and precision as if it weren't
-    // defined before calling it.
-    // On Mac OS with some GPUs, calling this generates a
-    // GL_INVALID_OPERATION error. Avoid calling it on non-GLES2
-    // platforms.
-    glGetShaderPrecisionFormat(shader_type, precision_type,
-                               range, precision);
-
-    // TODO(brianderson): Make the following official workarounds.
-
-    // Some drivers have bugs where they report the ranges as a negative number.
-    // Taking the absolute value here shouldn't hurt because negative numbers
-    // aren't expected anyway.
-    range[0] = abs(range[0]);
-    range[1] = abs(range[1]);
-
-    // If the driver reports a precision for highp float that isn't actually
-    // highp, don't pretend like it's supported because shader compilation will
-    // fail anyway.
-    if (precision_type == GL_HIGH_FLOAT &&
-        !PrecisionMeetsSpecForHighpFloat(range[0], range[1], *precision)) {
-      range[0] = 0;
-      range[1] = 0;
-      *precision = 0;
-    }
-  }
-}
-
 gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   switch (plane_transform) {
     case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
@@ -3513,8 +3450,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       Capabilities::ShaderPrecision* shader_precision) {
     GLint range[2] = {0, 0};
     GLint precision = 0;
-    GetShaderPrecisionFormatImpl(version_info, shader, type, range,
-                                 &precision);
+    QueryShaderPrecisionFormat(version_info, shader, type, range, &precision);
     shader_precision->min_range = range[0];
     shader_precision->max_range = range[1];
     shader_precision->precision = precision;
@@ -3706,8 +3642,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
-  GetShaderPrecisionFormatImpl(gl_version_info(), GL_FRAGMENT_SHADER,
-                               GL_HIGH_FLOAT, range, &precision);
+  QueryShaderPrecisionFormat(gl_version_info(), GL_FRAGMENT_SHADER,
+                             GL_HIGH_FLOAT, range, &precision);
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
@@ -13838,8 +13774,8 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
-  GetShaderPrecisionFormatImpl(gl_version_info(), shader_type, precision_type,
-                               range, &precision);
+  QueryShaderPrecisionFormat(gl_version_info(), shader_type, precision_type,
+                             range, &precision);
 
   result->min_range = range[0];
   result->max_range = range[1];
