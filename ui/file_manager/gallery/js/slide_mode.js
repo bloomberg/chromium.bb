@@ -1700,6 +1700,7 @@ SlideMode.prototype.setOverwriteBubbleCount_ = function(value) {
  * @private
  */
 SlideMode.prototype.print_ = function() {
+  this.stopEditing_();
   cr.dispatchSimpleEvent(this, 'useraction');
   window.print();
 };
