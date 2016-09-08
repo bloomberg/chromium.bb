@@ -302,6 +302,11 @@ GraphicsLayer* RootFrameViewport::layerForVerticalScrollbar() const
     return layoutViewport().layerForVerticalScrollbar();
 }
 
+GraphicsLayer* RootFrameViewport::layerForScrollCorner() const
+{
+    return layoutViewport().layerForScrollCorner();
+}
+
 ScrollResult RootFrameViewport::userScroll(ScrollGranularity granularity, const FloatSize& delta)
 {
     // TODO(bokan/ymalik): Once smooth scrolling is permanently enabled we

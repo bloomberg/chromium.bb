@@ -77,6 +77,7 @@ public:
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
+    GraphicsLayer* layerForScrollCorner() const override;
     ScrollResult userScroll(ScrollGranularity, const FloatSize&) override;
     bool scrollAnimatorEnabled() const override;
     HostWindow* getHostWindow() const override;

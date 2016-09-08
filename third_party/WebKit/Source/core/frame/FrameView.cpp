@@ -2683,14 +2683,19 @@ void FrameView::synchronizedPaint()
     if (GraphicsLayer* rootGraphicsLayer = view.compositor()->rootGraphicsLayer()) {
         synchronizedPaintRecursively(rootGraphicsLayer);
     }
-    if (GraphicsLayer* layerForHorizontalScrollbar = view.compositor()->layerForHorizontalScrollbar()) {
-        synchronizedPaintRecursively(layerForHorizontalScrollbar);
-    }
-    if (GraphicsLayer* layerForVerticalScrollbar = view.compositor()->layerForVerticalScrollbar()) {
-        synchronizedPaintRecursively(layerForVerticalScrollbar);
-    }
-    if (GraphicsLayer* layerForScrollCorner = view.compositor()->layerForScrollCorner()) {
-        synchronizedPaintRecursively(layerForScrollCorner);
+
+    // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
+    // webkit_unit_tests (http://crbug.com/607987).
+    if (m_viewportScrollableArea) {
+        if (GraphicsLayer* layerForHorizontalScrollbar = m_viewportScrollableArea->layerForHorizontalScrollbar()) {
+            synchronizedPaintRecursively(layerForHorizontalScrollbar);
+        }
+        if (GraphicsLayer* layerForVerticalScrollbar = m_viewportScrollableArea->layerForVerticalScrollbar()) {
+            synchronizedPaintRecursively(layerForVerticalScrollbar);
+        }
+        if (GraphicsLayer* layerForScrollCorner = m_viewportScrollableArea->layerForScrollCorner()) {
+            synchronizedPaintRecursively(layerForScrollCorner);
+        }
     }
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
