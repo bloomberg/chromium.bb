@@ -58,7 +58,8 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
 #endif  // defined(OS_CHROMEOS)
       vibration_pattern(other.vibration_pattern),
       renotify(other.renotify),
-      silent(other.silent) {}
+      silent(other.silent),
+      accessible_name(other.accessible_name) {}
 
 RichNotificationData::~RichNotificationData() {}
 

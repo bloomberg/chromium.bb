@@ -61,6 +61,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<int> vibration_pattern;
   bool renotify;
   bool silent;
+  base::string16 accessible_name;
 };
 
 class MESSAGE_CENTER_EXPORT Notification {
@@ -222,6 +223,11 @@ class MESSAGE_CENTER_EXPORT Notification {
 #if defined(OS_CHROMEOS)
   void set_pinned(bool pinned) { optional_fields_.pinned = pinned; }
 #endif  // defined(OS_CHROMEOS)
+
+  // Gets a text for spoken feedback.
+  const base::string16& accessible_name() const {
+    return optional_fields_.accessible_name;
+  }
 
   NotificationDelegate* delegate() const { return delegate_.get(); }
 

@@ -65,6 +65,8 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
   rich_data.pinned = (data.no_clear || data.ongoing_event);
   rich_data.priority = ConvertAndroidPriority(data.priority);
   rich_data.small_image = ConvertAndroidSmallIcon(data.small_icon);
+  if (!data.accessible_name.is_null())
+    rich_data.accessible_name = base::UTF8ToUTF16(data.accessible_name.get());
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);

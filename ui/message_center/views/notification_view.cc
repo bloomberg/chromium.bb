@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -182,20 +181,6 @@ void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateActionButtonViews(notification);
 }
 
-void NotificationView::SetAccessibleName(const Notification& notification) {
-  std::vector<base::string16> accessible_lines;
-  accessible_lines.push_back(notification.title());
-  accessible_lines.push_back(notification.message());
-  accessible_lines.push_back(notification.context_message());
-  std::vector<NotificationItem> items = notification.items();
-  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
-    accessible_lines.push_back(items[i].title + base::ASCIIToUTF16(" ") +
-                               items[i].message);
-  }
-  set_accessible_name(
-      base::JoinString(accessible_lines, base::ASCIIToUTF16("\n")));
-}
-
 NotificationView::NotificationView(MessageCenterController* controller,
                                    const Notification& notification)
     : MessageView(controller, notification),
@@ -224,7 +209,6 @@ NotificationView::NotificationView(MessageCenterController* controller,
   // touch areas (<http://crbug.com/168822> and <http://crbug.com/168856>).
   AddChildView(small_image());
   CreateOrUpdateCloseButtonView(notification);
-  SetAccessibleName(notification);
 
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
@@ -339,7 +323,6 @@ void NotificationView::UpdateWithNotification(
   MessageView::UpdateWithNotification(notification);
 
   CreateOrUpdateViews(notification);
-  SetAccessibleName(notification);
   Layout();
   SchedulePaint();
 }

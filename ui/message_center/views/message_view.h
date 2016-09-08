@@ -62,10 +62,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   void RequestFocusOnCloseButton();
   bool IsPinned();
 
-  void set_accessible_name(const base::string16& accessible_name) {
-    accessible_name_ = accessible_name;
-  }
-
   // Overridden from views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

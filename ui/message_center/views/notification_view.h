@@ -70,7 +70,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   void CreateOrUpdateViews(const Notification& notification);
-  void SetAccessibleName(const Notification& notification);
 
   void CreateOrUpdateTitleView(const Notification& notification);
   void CreateOrUpdateMessageView(const Notification& notification);

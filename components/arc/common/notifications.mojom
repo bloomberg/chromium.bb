@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -82,6 +82,9 @@ struct ArcNotificationData {
   ArcBitmap? snapshot_image;
   [MinVersion=7]
   float snapshot_image_scale;
+  // Accessibility text
+  [MinVersion=8]
+  string? accessible_name;
 };
 
 [MinVersion=2]
