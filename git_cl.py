@@ -1393,9 +1393,10 @@ class Changelist(object):
         author,
         upstream=upstream_branch)
 
-  def UpdateDescription(self, description):
+  def UpdateDescription(self, description, force=False):
     self.description = description
-    return self._codereview_impl.UpdateDescriptionRemote(description)
+    return self._codereview_impl.UpdateDescriptionRemote(
+        description, force=force)
 
   def RunHook(self, committing, may_prompt, verbose, change):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
@@ -1603,7 +1604,7 @@ class _ChangelistCodereviewBase(object):
     # None is valid return value, otherwise presubmit_support.GerritAccessor.
     return None
 
-  def UpdateDescriptionRemote(self, description):
+  def UpdateDescriptionRemote(self, description, force=False):
     """Update the description on codereview site."""
     raise NotImplementedError()
 
@@ -1798,7 +1799,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       return 'reply'
     return 'waiting'
 
-  def UpdateDescriptionRemote(self, description):
+  def UpdateDescriptionRemote(self, description, force=False):
     return self.RpcServer().update_description(
         self.GetIssue(), self.description)
 
@@ -2294,7 +2295,17 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     url = data['revisions'][current_rev]['fetch']['http']['url']
     return gerrit_util.GetChangeDescriptionFromGitiles(url, current_rev)
 
-  def UpdateDescriptionRemote(self, description):
+  def UpdateDescriptionRemote(self, description, force=False):
+    if gerrit_util.HasPendingChangeEdit(self._GetGerritHost(), self.GetIssue()):
+      if not force:
+        ask_for_data(
+            'The description cannot be modified while the issue has a pending '
+            'unpublished edit.  Either publish the edit in the Gerrit web UI '
+            'or delete it.\n\n'
+            'Press Enter to delete the unpublished edit, Ctrl+C to abort.')
+
+      gerrit_util.DeletePendingChangeEdit(self._GetGerritHost(),
+                                          self.GetIssue())
     gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
                                  description)
 
@@ -3607,6 +3618,9 @@ def CMDdescription(parser, args):
   parser.add_option('-n', '--new-description',
                     help='New description to set for this issue (- for stdin, '
                          '+ to load from local commit HEAD)')
+  parser.add_option('-f', '--force', action='store_true',
+                    help='Delete any unpublished Gerrit edits for this issue '
+                         'without prompting')
 
   _add_codereview_select_options(parser)
   auth.add_auth_options(parser)
@@ -3655,7 +3669,7 @@ def CMDdescription(parser, args):
     description.prompt()
 
   if cl.GetDescription() != description.description:
-    cl.UpdateDescription(description.description)
+    cl.UpdateDescription(description.description, force=options.force)
   return 0
 
 

@@ -545,6 +545,30 @@ def SubmitChange(host, change, wait_for_merge=True):
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
 
+def HasPendingChangeEdit(host, change):
+  conn = CreateHttpConn(host, 'changes/%s/edit' % change)
+  try:
+    ReadHttpResponse(conn, ignore_404=False)
+  except GerritError as e:
+    # On success, gerrit returns status 204; anything else is an error.
+    if e.http_status != 204:
+      raise
+    return False
+  else:
+    return True
+
+
+def DeletePendingChangeEdit(host, change):
+  conn = CreateHttpConn(host, 'changes/%s/edit' % change, reqtype='DELETE')
+  try:
+    ReadHttpResponse(conn, ignore_404=False)
+  except GerritError as e:
+    # On success, gerrit returns status 204; if the edit was already deleted it
+    # returns 404.  Anything else is an error.
+    if e.http_status not in (204, 404):
+      raise
+
+
 def SetCommitMessage(host, change, description):
   """Updates a commit message."""
   # First, edit the commit message in a draft.

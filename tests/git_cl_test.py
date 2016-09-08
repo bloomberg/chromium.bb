@@ -38,7 +38,7 @@ class ChangelistMock(object):
     return 1
   def GetDescription(self):
     return ChangelistMock.desc
-  def UpdateDescription(self, desc):
+  def UpdateDescription(self, desc, force=False):
     ChangelistMock.desc = desc
 
 
@@ -1664,7 +1664,7 @@ class TestGitCl(TestCase):
       # Simulate user changing something.
       return 'Some.\n\nBUG=123\n\nChange-Id: xxx'
 
-    def UpdateDescriptionRemote(_, desc):
+    def UpdateDescriptionRemote(_, desc, force=False):
       self.assertEquals(desc, 'Some.\n\nBUG=123\n\nChange-Id: xxx')
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
