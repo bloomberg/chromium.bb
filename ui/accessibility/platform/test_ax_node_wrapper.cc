@@ -31,7 +31,10 @@ class TestAXTreeDelegate : public AXTreeDelegate {
     }
   }
   void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override {}
+  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {}
+  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {}
   void OnNodeCreated(AXTree* tree, AXNode* node) override {}
+  void OnNodeReparented(AXTree* tree, AXNode* node) override {}
   void OnNodeChanged(AXTree* tree, AXNode* node) override {}
   void OnAtomicUpdateFinished(AXTree* tree,
                               bool root_changed,

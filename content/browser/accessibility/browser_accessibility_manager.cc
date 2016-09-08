@@ -976,12 +976,39 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
     obj->OnSubtreeWillBeDeleted();
 }
 
+void BrowserAccessibilityManager::OnNodeWillBeReparented(ui::AXTree* tree,
+                                                         ui::AXNode* node) {
+  // BrowserAccessibility should probably ask the tree source for the AXNode via
+  // an id rather than weakly holding a pointer to a AXNode that might have been
+  // destroyed under the hood and re-created later on. Treat this as a delete to
+  // make things work.
+  OnNodeWillBeDeleted(tree, node);
+}
+
+void BrowserAccessibilityManager::OnSubtreeWillBeReparented(ui::AXTree* tree,
+                                                            ui::AXNode* node) {
+  // BrowserAccessibility should probably ask the tree source for the AXNode via
+  // an id rather than weakly holding a pointer to a AXNode that might have been
+  // destroyed under the hood and re-created later on. Treat this as a delete to
+  // make things work.
+  OnSubtreeWillBeDeleted(tree, node);
+}
+
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
   BrowserAccessibility* wrapper = factory_->Create();
   wrapper->Init(this, node);
   id_wrapper_map_[node->id()] = wrapper;
   wrapper->OnDataChanged();
+}
+
+void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
+                                                   ui::AXNode* node) {
+  // BrowserAccessibility should probably ask the tree source for the AXNode via
+  // an id rather than weakly holding a pointer to a AXNode that might have been
+  // destroyed under the hood and re-created later on. Treat this as a create to
+  // make things work.
+  OnNodeCreated(tree, node);
 }
 
 void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,

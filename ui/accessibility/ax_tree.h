@@ -28,7 +28,10 @@ struct AXTreeUpdateState;
 // don't walk the parents and children at this time:
 //   OnNodeWillBeDeleted
 //   OnSubtreeWillBeDeleted
+//   OnNodeWillBeReparented
+//   OnSubtreeWillBeReparented
 //   OnNodeCreated
+//   OnNodeReparented
 //   OnNodeChanged
 //
 // In addition, one additional notification is fired at the end of an
@@ -59,9 +62,21 @@ class AX_EXPORT AXTreeDelegate {
   // invalid state!
   virtual void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) = 0;
 
+  // Called just before a node is deleted for reparenting. See
+  // |OnNodeWillBeDeleted| for additional information.
+  virtual void OnNodeWillBeReparented(AXTree* tree, AXNode* node) = 0;
+
+  // Called just before a subtree is deleted for reparenting. See
+  // |OnSubtreeWillBeDeleted| for additional information.
+  virtual void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) = 0;
+
   // Called immediately after a new node is created. The tree may be in
   // the middle of an update, don't walk the parents and children now.
   virtual void OnNodeCreated(AXTree* tree, AXNode* node) = 0;
+
+  // Called immediately after a node is reparented. The tree may be in the
+  // middle of an update, don't walk the parents and children now.
+  virtual void OnNodeReparented(AXTree* tree, AXNode* node) = 0;
 
   // Called when a node changes its data or children. The tree may be in
   // the middle of an update, don't walk the parents and children now.
@@ -131,7 +146,10 @@ class AX_EXPORT AXTree {
   int size() { return static_cast<int>(id_map_.size()); }
 
  private:
-  AXNode* CreateNode(AXNode* parent, int32_t id, int32_t index_in_parent);
+  AXNode* CreateNode(AXNode* parent,
+                     int32_t id,
+                     int32_t index_in_parent,
+                     AXTreeUpdateState* update_state);
 
   // This is called from within Unserialize(), it returns true on success.
   bool UpdateNode(const AXNodeData& src,

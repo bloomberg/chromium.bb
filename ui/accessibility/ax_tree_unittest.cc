@@ -40,9 +40,15 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     subtree_deleted_ids_.push_back(node->id());
   }
 
+  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {}
+
+  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {}
+
   void OnNodeCreated(AXTree* tree, AXNode* node) override {
     created_ids_.push_back(node->id());
   }
+
+  void OnNodeReparented(AXTree* tree, AXNode* node) override {}
 
   void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
@@ -430,6 +436,47 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
             subtree_reparented.end());
   ASSERT_EQ(std::find(node_reparented.begin(), node_reparented.end(), 3),
             node_reparented.end());
+}
+
+TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+
+  AXTree tree(initial_state);
+  AXTreeUpdate update;
+  update.node_id_to_clear = 1;
+  update.root_id = 2;
+  update.nodes.resize(2);
+  update.nodes[0].id = 2;
+  update.nodes[0].child_ids.push_back(4);
+  update.nodes[1].id = 4;
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  ASSERT_EQ(1U, fake_delegate.deleted_ids().size());
+  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
+
+  ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
+  EXPECT_EQ(1, fake_delegate.subtree_deleted_ids()[0]);
+
+  ASSERT_EQ(1U, fake_delegate.created_ids().size());
+  EXPECT_EQ(4, fake_delegate.created_ids()[0]);
+
+  ASSERT_EQ(0U, fake_delegate.subtree_creation_finished_ids().size());
+
+  ASSERT_EQ(1U, fake_delegate.node_creation_finished_ids().size());
+  EXPECT_EQ(4, fake_delegate.node_creation_finished_ids()[0]);
+
+  ASSERT_EQ(true, fake_delegate.root_changed());
+
+  tree.SetDelegate(NULL);
 }
 
 }  // namespace ui

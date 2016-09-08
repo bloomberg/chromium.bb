@@ -1170,8 +1170,27 @@ void AutomationInternalCustomBindings::OnSubtreeWillBeDeleted(
   // be needed for something.
 }
 
+void AutomationInternalCustomBindings::OnNodeWillBeReparented(
+    ui::AXTree* tree,
+    ui::AXNode* node) {
+  // Don't do anything here since the node will soon go away and be re-created.
+}
+
+void AutomationInternalCustomBindings::OnSubtreeWillBeReparented(
+    ui::AXTree* tree,
+    ui::AXNode* node) {
+  // Don't do anything here since the node will soon go away and be re-created.
+}
+
 void AutomationInternalCustomBindings::OnNodeCreated(ui::AXTree* tree,
                                                      ui::AXNode* node) {
+  // Not needed, this is called in the middle of an update so it's not
+  // safe to trigger JS from here. Wait for the notification in
+  // OnAtomicUpdateFinished instead.
+}
+
+void AutomationInternalCustomBindings::OnNodeReparented(ui::AXTree* tree,
+                                                        ui::AXNode* node) {
   // Not needed, this is called in the middle of an update so it's not
   // safe to trigger JS from here. Wait for the notification in
   // OnAtomicUpdateFinished instead.
