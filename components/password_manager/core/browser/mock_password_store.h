@@ -43,8 +43,10 @@ class MockPasswordStore : public PasswordStore {
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD2(RemoveLoginsSyncedBetweenImpl,
                PasswordStoreChangeList(base::Time, base::Time));
-  MOCK_METHOD2(RemoveStatisticsCreatedBetweenImpl,
-               bool(base::Time, base::Time));
+  MOCK_METHOD3(RemoveStatisticsByOriginAndTimeImpl,
+               bool(const base::Callback<bool(const GURL&)>&,
+                    base::Time,
+                    base::Time));
   MOCK_METHOD1(
       DisableAutoSignInForOriginsImpl,
       PasswordStoreChangeList(const base::Callback<bool(const GURL&)>&));

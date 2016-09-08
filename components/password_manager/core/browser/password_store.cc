@@ -152,13 +152,14 @@ void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                           this, delete_begin, delete_end));
 }
 
-void PasswordStore::RemoveStatisticsCreatedBetween(
+void PasswordStore::RemoveStatisticsByOriginAndTime(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
   ScheduleTask(
-      base::Bind(&PasswordStore::RemoveStatisticsCreatedBetweenInternal, this,
-                 delete_begin, delete_end, completion));
+      base::Bind(&PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
+                 origin_filter, delete_begin, delete_end, completion));
 }
 
 void PasswordStore::DisableAutoSignInForOrigins(
@@ -424,11 +425,12 @@ void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
   NotifyLoginsChanged(changes);
 }
 
-void PasswordStore::RemoveStatisticsCreatedBetweenInternal(
+void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
-  RemoveStatisticsCreatedBetweenImpl(delete_begin, delete_end);
+  RemoveStatisticsByOriginAndTimeImpl(origin_filter, delete_begin, delete_end);
   if (!completion.is_null())
     main_thread_runner_->PostTask(FROM_HERE, completion);
 }

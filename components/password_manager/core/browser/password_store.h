@@ -142,13 +142,16 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveLoginsSyncedBetween(base::Time delete_begin,
                                  base::Time delete_end);
 
-  // Removes all the stats created in the given date range. If |completion| is
-  // not null, it will be posted to the |main_thread_runner_| after deletions
-  // have been completed.
+  // Removes all the stats created in the given date range.
+  // If |origin_filter| is not null, only statistics for matching origins are
+  // removed. If |completion| is not null, it will be posted to the
+  // |main_thread_runner_| after deletions have been completed.
   // Should be called on the UI thread.
-  void RemoveStatisticsCreatedBetween(base::Time delete_begin,
-                                      base::Time delete_end,
-                                      const base::Closure& completion);
+  void RemoveStatisticsByOriginAndTime(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion);
 
   // Sets the 'skip_zero_click' flag for all logins in the database that match
   // |origin_filter| to 'true'. |completion| will be posted to
@@ -282,8 +285,10 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time delete_end) = 0;
 
   // Synchronous implementation to remove the statistics.
-  virtual bool RemoveStatisticsCreatedBetweenImpl(base::Time delete_begin,
-                                                  base::Time delete_end) = 0;
+  virtual bool RemoveStatisticsByOriginAndTimeImpl(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end) = 0;
 
   // Synchronous implementation to disable auto sign-in.
   virtual PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
@@ -386,9 +391,11 @@ class PasswordStore : protected PasswordStoreSync,
                                           const base::Closure& completion);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
-  void RemoveStatisticsCreatedBetweenInternal(base::Time delete_begin,
-                                              base::Time delete_end,
-                                              const base::Closure& completion);
+  void RemoveStatisticsByOriginAndTimeInternal(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion);
   void DisableAutoSignInForOriginsInternal(
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);

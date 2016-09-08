@@ -88,8 +88,10 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
       base::Time delete_end) override;
   password_manager::PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) override;
-  bool RemoveStatisticsCreatedBetweenImpl(base::Time delete_begin,
-                                          base::Time delete_end) override;
+  bool RemoveStatisticsByOriginAndTimeImpl(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
   bool FillAutofillableLogins(

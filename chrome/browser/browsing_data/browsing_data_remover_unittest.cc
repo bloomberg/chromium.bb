@@ -355,6 +355,11 @@ class ProbablySameFilterMatcher
 
   virtual bool MatchAndExplain(const base::Callback<bool(const GURL&)>& filter,
                                MatchResultListener* listener) const {
+    if (filter.is_null() && to_match_.is_null())
+      return true;
+    if (filter.is_null() != to_match_.is_null())
+      return false;
+
     const GURL urls_to_test_[] =
         {kOrigin1, kOrigin2, kOrigin3, GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
@@ -2496,11 +2501,28 @@ TEST_F(BrowsingDataRemoverTest, RemoveDownloadsByOrigin) {
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordStatistics) {
   RemovePasswordsTester tester(GetProfile());
+  base::Callback<bool(const GURL&)> empty_filter;
 
-  EXPECT_CALL(*tester.store(), RemoveStatisticsCreatedBetweenImpl(
+  EXPECT_CALL(*tester.store(), RemoveStatisticsByOriginAndTimeImpl(
+                                   ProbablySameFilter(empty_filter),
                                    base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(browsing_data::ALL_TIME,
                                 BrowsingDataRemover::REMOVE_HISTORY, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, RemovePasswordStatisticsByOrigin) {
+  RemovePasswordsTester tester(GetProfile());
+
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+  base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
+
+  EXPECT_CALL(*tester.store(),
+              RemoveStatisticsByOriginAndTimeImpl(
+                  ProbablySameFilter(filter), base::Time(), base::Time::Max()));
+  BlockUntilOriginDataRemoved(browsing_data::ALL_TIME,
+                              BrowsingDataRemover::REMOVE_HISTORY, builder);
 }
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordsByTimeOnly) {

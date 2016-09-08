@@ -1243,12 +1243,13 @@ PasswordStoreChangeList PasswordStoreMac::DisableAutoSignInForOriginsImpl(
   return changes;
 }
 
-bool PasswordStoreMac::RemoveStatisticsCreatedBetweenImpl(
+bool PasswordStoreMac::RemoveStatisticsByOriginAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   return login_metadata_db_ &&
-         login_metadata_db_->stats_table().RemoveStatsBetween(delete_begin,
-                                                              delete_end);
+         login_metadata_db_->stats_table().RemoveStatsByOriginAndTime(
+             origin_filter, delete_begin, delete_end);
 }
 
 std::vector<std::unique_ptr<PasswordForm>> PasswordStoreMac::FillMatchingLogins(

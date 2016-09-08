@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -71,9 +72,13 @@ class StatisticsTable {
   // Returns the statistics for |domain| if it exists.
   std::vector<std::unique_ptr<InteractionsStats>> GetRows(const GURL& domain);
 
-  // Removes the statistics between the dates. Returns true if the SQL completed
-  // successfully.
-  bool RemoveStatsBetween(base::Time delete_begin, base::Time delete_end);
+  // Removes the statistics between the dates. If |origin_filter| is not null,
+  // only statistics for matching origins are removed. Returns true if the SQL
+  // completed successfully.
+  bool RemoveStatsByOriginAndTime(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end);
 
  private:
   sql::Connection* db_;

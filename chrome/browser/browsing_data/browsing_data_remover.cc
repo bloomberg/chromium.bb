@@ -912,8 +912,8 @@ void BrowsingDataRemover::RemoveImpl(
 
     if (password_store) {
       waiting_for_clear_passwords_stats_ = true;
-      password_store->RemoveStatisticsCreatedBetween(
-          delete_begin_, delete_end_,
+      password_store->RemoveStatisticsByOriginAndTime(
+          nullable_filter, delete_begin_, delete_end_,
           base::Bind(&BrowsingDataRemover::OnClearedPasswordsStats,
                      weak_ptr_factory_.GetWeakPtr()));
     }

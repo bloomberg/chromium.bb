@@ -125,7 +125,8 @@ PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForOriginsImpl(
   return PasswordStoreChangeList();
 }
 
-bool TestPasswordStore::RemoveStatisticsCreatedBetweenImpl(
+bool TestPasswordStore::RemoveStatisticsByOriginAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   return false;

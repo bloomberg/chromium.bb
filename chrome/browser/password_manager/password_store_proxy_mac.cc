@@ -195,11 +195,12 @@ PasswordStoreProxyMac::DisableAutoSignInForOriginsImpl(
   return GetBackend()->DisableAutoSignInForOriginsImpl(origin_filter);
 }
 
-bool PasswordStoreProxyMac::RemoveStatisticsCreatedBetweenImpl(
+bool PasswordStoreProxyMac::RemoveStatisticsByOriginAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  return GetBackend()->RemoveStatisticsCreatedBetweenImpl(delete_begin,
-                                                          delete_end);
+  return GetBackend()->RemoveStatisticsByOriginAndTimeImpl(
+      origin_filter, delete_begin, delete_end);
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>

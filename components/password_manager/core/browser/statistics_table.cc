@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 
 #include "base/memory/ptr_util.h"
 #include "sql/connection.h"
@@ -126,15 +127,54 @@ std::vector<std::unique_ptr<InteractionsStats>> StatisticsTable::GetRows(
   return result;
 }
 
-bool StatisticsTable::RemoveStatsBetween(base::Time delete_begin,
-                                         base::Time delete_end) {
-  sql::Statement s(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM stats WHERE update_time >= ? AND update_time < ?"));
-  s.BindInt64(0, delete_begin.ToInternalValue());
-  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64_t>::max()
-                                      : delete_end.ToInternalValue());
-  return s.Run();
+bool StatisticsTable::RemoveStatsByOriginAndTime(
+    const base::Callback<bool(const GURL&)>& origin_filter,
+    base::Time delete_begin,
+    base::Time delete_end) {
+  if (delete_end.is_null())
+    delete_end = base::Time::Max();
+
+  // All origins.
+  if (origin_filter.is_null()) {
+    sql::Statement delete_statement(db_->GetCachedStatement(
+        SQL_FROM_HERE,
+        "DELETE FROM stats WHERE update_time >= ? AND update_time < ?"));
+    delete_statement.BindInt64(0, delete_begin.ToInternalValue());
+    delete_statement.BindInt64(1, delete_end.ToInternalValue());
+
+    return delete_statement.Run();
+  }
+
+  // Origin filtering.
+  sql::Statement select_statement(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "SELECT origin_domain FROM stats "
+                              "WHERE update_time >= ? AND update_time < ?"));
+  select_statement.BindInt64(0, delete_begin.ToInternalValue());
+  select_statement.BindInt64(1, delete_end.ToInternalValue());
+
+  std::set<std::string> origins;
+  while (select_statement.Step()) {
+    if (!origin_filter.Run(GURL(select_statement.ColumnString(0))))
+      continue;
+
+    origins.insert(select_statement.ColumnString(0));
+  }
+
+  bool success = true;
+
+  for (const std::string& origin : origins) {
+    sql::Statement origin_delete_statement(db_->GetCachedStatement(
+        SQL_FROM_HERE,
+        "DELETE FROM stats "
+        "WHERE origin_domain = ? AND update_time >= ? AND update_time < ?"));
+    origin_delete_statement.BindString(0, origin);
+    origin_delete_statement.BindInt64(1, delete_begin.ToInternalValue());
+    origin_delete_statement.BindInt64(2, delete_end.ToInternalValue());
+    success = success && origin_delete_statement.Run();
+  }
+
+  return success;
 }
 
 }  // namespace password_manager

@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/statistics_table.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "sql/connection.h"
@@ -15,6 +17,8 @@ namespace {
 
 const char kTestDomain[] = "http://google.com";
 const char kTestDomain2[] = "http://example.com";
+const char kTestDomain3[] = "https://example.org";
+const char kTestDomain4[] = "http://localhost";
 const char kUsername1[] = "user1";
 const char kUsername2[] = "user2";
 
@@ -98,30 +102,64 @@ TEST_F(StatisticsTableTest, DifferentUsernames) {
   EXPECT_THAT(db()->GetRows(test_data().origin_domain), IsEmpty());
 }
 
-TEST_F(StatisticsTableTest, RemoveBetween) {
+TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
   InteractionsStats stats1 = test_data();
   stats1.update_time = base::Time::FromTimeT(1);
   InteractionsStats stats2 = test_data();
   stats2.update_time = base::Time::FromTimeT(2);
   stats2.origin_domain = GURL(kTestDomain2);
+  InteractionsStats stats3 = test_data();
+  stats3.update_time = base::Time::FromTimeT(2);
+  stats3.origin_domain = GURL(kTestDomain3);
+  InteractionsStats stats4 = test_data();
+  stats4.update_time = base::Time::FromTimeT(2);
+  stats4.origin_domain = GURL(kTestDomain4);
 
   EXPECT_TRUE(db()->AddRow(stats1));
   EXPECT_TRUE(db()->AddRow(stats2));
+  EXPECT_TRUE(db()->AddRow(stats3));
+  EXPECT_TRUE(db()->AddRow(stats4));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain),
               ElementsAre(Pointee(stats1)));
   EXPECT_THAT(db()->GetRows(stats2.origin_domain),
               ElementsAre(Pointee(stats2)));
+  EXPECT_THAT(db()->GetRows(stats3.origin_domain),
+              ElementsAre(Pointee(stats3)));
+  EXPECT_THAT(db()->GetRows(stats4.origin_domain),
+              ElementsAre(Pointee(stats4)));
 
-  // Remove the first one only.
-  EXPECT_TRUE(db()->RemoveStatsBetween(base::Time(), base::Time::FromTimeT(2)));
+  // Remove the entry with the timestamp 1 with no origin filter.
+  EXPECT_TRUE(
+      db()->RemoveStatsByOriginAndTime(base::Callback<bool(const GURL&)>(),
+                                       base::Time(), base::Time::FromTimeT(2)));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats2.origin_domain),
               ElementsAre(Pointee(stats2)));
+  EXPECT_THAT(db()->GetRows(stats3.origin_domain),
+              ElementsAre(Pointee(stats3)));
+  EXPECT_THAT(db()->GetRows(stats4.origin_domain),
+              ElementsAre(Pointee(stats4)));
 
-  // Remove the second one only.
-  EXPECT_TRUE(db()->RemoveStatsBetween(base::Time::FromTimeT(2), base::Time()));
+  // Remove the entries with the timestamp 2 that are NOT matching
+  // |kTestDomain3|.
+  EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
+      base::Bind(&GURL::operator!=, base::Unretained(&stats3.origin_domain)),
+      base::Time::FromTimeT(2), base::Time()));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats2.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats3.origin_domain),
+              ElementsAre(Pointee(stats3)));
+  EXPECT_THAT(db()->GetRows(stats4.origin_domain), IsEmpty());
+
+  // Remove the entries with the timestamp 2 with no origin filter.
+  // This should delete the remaining entry.
+  EXPECT_TRUE(
+      db()->RemoveStatsByOriginAndTime(base::Callback<bool(const GURL&)>(),
+                                       base::Time::FromTimeT(2), base::Time()));
+  EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats2.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats3.origin_domain), IsEmpty());
+  EXPECT_THAT(db()->GetRows(stats4.origin_domain), IsEmpty());
 }
 
 TEST_F(StatisticsTableTest, BadURL) {

@@ -164,11 +164,13 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
   return changes;
 }
 
-bool PasswordStoreDefault::RemoveStatisticsCreatedBetweenImpl(
+bool PasswordStoreDefault::RemoveStatisticsByOriginAndTimeImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   return login_db_ &&
-         login_db_->stats_table().RemoveStatsBetween(delete_begin, delete_end);
+         login_db_->stats_table().RemoveStatsByOriginAndTime(
+             origin_filter, delete_begin, delete_end);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>
