@@ -49,11 +49,9 @@
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
-#include "chrome/browser/safe_browsing/local_database_manager.h"
-#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -66,9 +64,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -76,9 +72,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -97,7 +91,6 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -115,13 +108,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -140,9 +130,11 @@ using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
-using safe_browsing::LocalSafeBrowsingDatabaseManager;
-using safe_browsing::SafeBrowsingService;
-using safe_browsing::SBThreatType;
+using prerender::test_utils::RequestCounter;
+using prerender::test_utils::CreateCountingInterceptorOnIO;
+using prerender::test_utils::CreateMockInterceptorOnIO;
+using prerender::test_utils::TestPrerender;
+using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 // Prerender tests work as follows:
@@ -473,338 +465,6 @@ class NewTabNavigationOrSwapObserver {
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
 };
 
-// PrerenderContents that stops the UI message loop on DidStopLoading().
-class TestPrerenderContents : public PrerenderContents {
- public:
-  TestPrerenderContents(PrerenderManager* prerender_manager,
-                        Profile* profile,
-                        const GURL& url,
-                        const content::Referrer& referrer,
-                        Origin origin,
-                        FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, profile, url, referrer, origin),
-        expected_final_status_(expected_final_status),
-        new_render_view_host_(nullptr),
-        was_hidden_(false),
-        was_shown_(false),
-        should_be_shown_(expected_final_status == FINAL_STATUS_USED),
-        skip_final_checks_(false) {}
-
-  ~TestPrerenderContents() override {
-    if (skip_final_checks_)
-      return;
-
-    EXPECT_EQ(expected_final_status_, final_status())
-        << " when testing URL " << prerender_url().path()
-        << " (Expected: " << NameFromFinalStatus(expected_final_status_)
-        << ", Actual: " << NameFromFinalStatus(final_status()) << ")";
-
-    // Prerendering RenderViewHosts should be hidden before the first
-    // navigation, so this should be happen for every PrerenderContents for
-    // which a RenderViewHost is created, regardless of whether or not it's
-    // used.
-    if (new_render_view_host_)
-      EXPECT_TRUE(was_hidden_);
-
-    // A used PrerenderContents will only be destroyed when we swap out
-    // WebContents, at the end of a navigation caused by a call to
-    // NavigateToURLImpl().
-    if (final_status() == FINAL_STATUS_USED)
-      EXPECT_TRUE(new_render_view_host_);
-
-    EXPECT_EQ(should_be_shown_, was_shown_);
-  }
-
-  void RenderProcessGone(base::TerminationStatus status) override {
-    // On quit, it's possible to end up here when render processes are closed
-    // before the PrerenderManager is destroyed.  As a result, it's possible to
-    // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
-    // on quit.
-    //
-    // It's also possible for this to be called after we've been notified of
-    // app termination, but before we've been deleted, which is why the second
-    // check is needed.
-    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING &&
-        final_status() != expected_final_status_) {
-      expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
-    }
-
-    PrerenderContents::RenderProcessGone(status);
-  }
-
-  bool CheckURL(const GURL& url) override {
-    // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
-    // the PrerenderRendererCrash test.
-    if (url.spec() != content::kChromeUICrashURL)
-      return PrerenderContents::CheckURL(url);
-    return true;
-  }
-
-  // For tests that open the prerender in a new background tab, the RenderView
-  // will not have been made visible when the PrerenderContents is destroyed
-  // even though it is used.
-  void set_should_be_shown(bool value) { should_be_shown_ = value; }
-
-  // For tests which do not know whether the prerender will be used.
-  void set_skip_final_checks(bool value) { skip_final_checks_ = value; }
-
-  FinalStatus expected_final_status() const { return expected_final_status_; }
-
- private:
-  void OnRenderViewHostCreated(RenderViewHost* new_render_view_host) override {
-    // Used to make sure the RenderViewHost is hidden and, if used,
-    // subsequently shown.
-    notification_registrar().Add(
-        this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(new_render_view_host->GetWidget()));
-
-    new_render_view_host_ = new_render_view_host;
-
-    PrerenderContents::OnRenderViewHostCreated(new_render_view_host);
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type ==
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-      EXPECT_EQ(new_render_view_host_->GetWidget(),
-                content::Source<RenderWidgetHost>(source).ptr());
-      bool is_visible = *content::Details<bool>(details).ptr();
-
-      if (!is_visible) {
-        was_hidden_ = true;
-      } else if (is_visible && was_hidden_) {
-        // Once hidden, a prerendered RenderViewHost should only be shown after
-        // being removed from the PrerenderContents for display.
-        EXPECT_FALSE(GetRenderViewHost());
-        was_shown_ = true;
-      }
-      return;
-    }
-    PrerenderContents::Observe(type, source, details);
-  }
-
-  FinalStatus expected_final_status_;
-
-  // The RenderViewHost created for the prerender, if any.
-  RenderViewHost* new_render_view_host_;
-  // Set to true when the prerendering RenderWidget is hidden.
-  bool was_hidden_;
-  // Set to true when the prerendering RenderWidget is shown, after having been
-  // hidden.
-  bool was_shown_;
-  // Expected final value of was_shown_.  Defaults to true for
-  // FINAL_STATUS_USED, and false otherwise.
-  bool should_be_shown_;
-  // If true, |expected_final_status_| and other shutdown checks are skipped.
-  bool skip_final_checks_;
-};
-
-// A handle to a TestPrerenderContents whose lifetime is under the caller's
-// control. A PrerenderContents may be destroyed at any point. This allows
-// tracking the final status, etc.
-class TestPrerender : public PrerenderContents::Observer,
-                      public base::SupportsWeakPtr<TestPrerender> {
- public:
-  TestPrerender()
-      : contents_(nullptr), number_of_loads_(0), expected_number_of_loads_(0) {}
-  ~TestPrerender() override {
-    if (contents_)
-      contents_->RemoveObserver(this);
-  }
-
-  TestPrerenderContents* contents() const { return contents_; }
-  int number_of_loads() const { return number_of_loads_; }
-
-  void WaitForCreate() { create_loop_.Run(); }
-  void WaitForStart() { start_loop_.Run(); }
-  void WaitForStop() { stop_loop_.Run(); }
-
-  // Waits for |number_of_loads()| to be at least |expected_number_of_loads| OR
-  // for the prerender to stop running (just to avoid a timeout if the prerender
-  // dies). Note: this does not assert equality on the number of loads; the
-  // caller must do it instead.
-  void WaitForLoads(int expected_number_of_loads) {
-    DCHECK(!load_waiter_);
-    DCHECK(!expected_number_of_loads_);
-    if (number_of_loads_ < expected_number_of_loads) {
-      load_waiter_.reset(new base::RunLoop);
-      expected_number_of_loads_ = expected_number_of_loads;
-      load_waiter_->Run();
-      load_waiter_.reset();
-      expected_number_of_loads_ = 0;
-    }
-    EXPECT_LE(expected_number_of_loads, number_of_loads_);
-  }
-
-  void OnPrerenderCreated(TestPrerenderContents* contents) {
-    DCHECK(!contents_);
-    contents_ = contents;
-    contents_->AddObserver(this);
-    create_loop_.Quit();
-  }
-
-  // PrerenderContents::Observer implementation:
-  void OnPrerenderStart(PrerenderContents* contents) override {
-    start_loop_.Quit();
-  }
-
-  void OnPrerenderStopLoading(PrerenderContents* contents) override {
-    number_of_loads_++;
-    if (load_waiter_ && number_of_loads_ >= expected_number_of_loads_)
-      load_waiter_->Quit();
-  }
-
-  void OnPrerenderStop(PrerenderContents* contents) override {
-    DCHECK(contents_);
-    contents_ = nullptr;
-    stop_loop_.Quit();
-    // If there is a WaitForLoads call and it has yet to see the expected number
-    // of loads, stop the loop so the test fails instead of timing out.
-    if (load_waiter_)
-      load_waiter_->Quit();
-  }
-
- private:
-  TestPrerenderContents* contents_;
-  int number_of_loads_;
-
-  int expected_number_of_loads_;
-  std::unique_ptr<base::RunLoop> load_waiter_;
-
-  base::RunLoop create_loop_;
-  base::RunLoop start_loop_;
-  base::RunLoop stop_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPrerender);
-};
-
-// PrerenderManager that uses TestPrerenderContents.
-class TestPrerenderContentsFactory : public PrerenderContents::Factory {
- public:
-  TestPrerenderContentsFactory() {}
-
-  ~TestPrerenderContentsFactory() override {
-    EXPECT_TRUE(expected_contents_queue_.empty());
-  }
-
-  std::unique_ptr<TestPrerender> ExpectPrerenderContents(
-      FinalStatus final_status) {
-    std::unique_ptr<TestPrerender> handle(new TestPrerender());
-    expected_contents_queue_.push_back(
-        ExpectedContents(final_status, handle->AsWeakPtr()));
-    return handle;
-  }
-
-  PrerenderContents* CreatePrerenderContents(
-      PrerenderManager* prerender_manager,
-      Profile* profile,
-      const GURL& url,
-      const content::Referrer& referrer,
-      Origin origin) override {
-    ExpectedContents expected;
-    if (!expected_contents_queue_.empty()) {
-      expected = expected_contents_queue_.front();
-      expected_contents_queue_.pop_front();
-    }
-    VLOG(1) << "Creating prerender contents for " << url.path() <<
-               " with expected final status " << expected.final_status;
-    VLOG(1) << expected_contents_queue_.size() << " left in the queue.";
-    TestPrerenderContents* contents =
-        new TestPrerenderContents(prerender_manager,
-                                  profile, url, referrer, origin,
-                                  expected.final_status);
-    if (expected.handle)
-      expected.handle->OnPrerenderCreated(contents);
-    return contents;
-  }
-
- private:
-  struct ExpectedContents {
-    ExpectedContents() : final_status(FINAL_STATUS_MAX) { }
-    ExpectedContents(FinalStatus final_status,
-                     const base::WeakPtr<TestPrerender>& handle)
-        : final_status(final_status),
-          handle(handle) {
-    }
-
-    FinalStatus final_status;
-    base::WeakPtr<TestPrerender> handle;
-  };
-
-  std::deque<ExpectedContents> expected_contents_queue_;
-};
-
-// A SafeBrowsingDatabaseManager implementation that returns a fixed result for
-// a given URL.
-class FakeSafeBrowsingDatabaseManager
-    : public safe_browsing::TestSafeBrowsingDatabaseManager {
- public:
-  FakeSafeBrowsingDatabaseManager() {}
-
-  // Called on the IO thread to check if the given url is safe or not.  If we
-  // can synchronously determine that the url is safe, CheckUrl returns true.
-  // Otherwise it returns false, and "client" is called asynchronously with the
-  // result when it is ready.
-  // Returns true, indicating a SAFE result, unless the URL is the fixed URL
-  // specified by the user, and the user-specified result is not SAFE
-  // (in which that result will be communicated back via a call into the
-  // client, and false will be returned).
-  // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
-  bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
-    if (bad_urls_.find(gurl.spec()) == bad_urls_.end() ||
-        bad_urls_[gurl.spec()] == safe_browsing::SB_THREAT_TYPE_SAFE) {
-      return true;
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
-                   this, gurl, client));
-    return false;
-  }
-
-  void SetThreatTypeForUrl(const GURL& url, SBThreatType threat_type) {
-    bad_urls_[url.spec()] = threat_type;
-  }
-
-  // These are called when checking URLs, so we implement them.
-  bool IsSupported() const override { return true; }
-  bool ChecksAreAlwaysAsync() const override { return false; }
-  bool CanCheckResourceType(
-      content::ResourceType /* resource_type */) const override {
-    return true;
-  }
-
-  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
-                         Client* client) override {
-    return true;
-  }
-
- private:
-  ~FakeSafeBrowsingDatabaseManager() override {}
-
-  void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    std::vector<SBThreatType> expected_threats;
-    expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-    expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
-    // TODO(nparker): Replace SafeBrowsingCheck w/ a call to
-    // client->OnCheckBrowseUrlResult()
-    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
-        std::vector<GURL>(1, gurl),
-        std::vector<safe_browsing::SBFullHash>(),
-        client,
-        safe_browsing::MALWARE,
-        expected_threats);
-    sb_check.url_results[0] = bad_urls_[gurl.spec()];
-    sb_check.OnSafeBrowsingResult();
-  }
-
-  std::unordered_map<std::string, SBThreatType> bad_urls_;
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
-};
-
 class FakeDevToolsClient : public content::DevToolsAgentHostClient {
  public:
   FakeDevToolsClient() {}
@@ -885,121 +545,6 @@ void CreateHangingFirstRequestInterceptorOnIO(
       url, std::move(never_respond_handler));
 }
 
-// Wrapper over URLRequestMockHTTPJob that exposes extra callbacks.
-class MockHTTPJob : public net::URLRequestMockHTTPJob {
- public:
-  MockHTTPJob(net::URLRequest* request,
-              net::NetworkDelegate* delegate,
-              const base::FilePath& file)
-      : net::URLRequestMockHTTPJob(
-            request,
-            delegate,
-            file,
-            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
-
-  void set_start_callback(const base::Closure& start_callback) {
-    start_callback_ = start_callback;
-  }
-
-  void Start() override {
-    if (!start_callback_.is_null())
-      start_callback_.Run();
-    net::URLRequestMockHTTPJob::Start();
-  }
-
- private:
-  ~MockHTTPJob() override {}
-
-  base::Closure start_callback_;
-};
-
-// Dummy counter class to live on the UI thread for counting requests.
-class RequestCounter : public base::SupportsWeakPtr<RequestCounter> {
- public:
-  RequestCounter() : count_(0), expected_count_(-1) {}
-  int count() const { return count_; }
-
-  void RequestStarted() {
-    count_++;
-    if (loop_ && count_ == expected_count_)
-      loop_->Quit();
-  }
-
-  void WaitForCount(int expected_count) {
-    ASSERT_TRUE(!loop_);
-    ASSERT_EQ(-1, expected_count_);
-    if (count_ < expected_count) {
-      expected_count_ = expected_count;
-      loop_.reset(new base::RunLoop);
-      loop_->Run();
-      expected_count_ = -1;
-      loop_.reset();
-    }
-
-    EXPECT_EQ(expected_count, count_);
-  }
-
- private:
-  int count_;
-  int expected_count_;
-  std::unique_ptr<base::RunLoop> loop_;
-};
-
-// Protocol handler which counts the number of requests that start.
-class CountingInterceptor : public net::URLRequestInterceptor {
- public:
-  CountingInterceptor(const base::FilePath& file,
-                      const base::WeakPtr<RequestCounter>& counter)
-      : file_(file),
-        counter_(counter),
-        weak_factory_(this) {
-  }
-  ~CountingInterceptor() override {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    MockHTTPJob* job = new MockHTTPJob(request, network_delegate, file_);
-    job->set_start_callback(base::Bind(&CountingInterceptor::RequestStarted,
-                                       weak_factory_.GetWeakPtr()));
-    return job;
-  }
-
-  void RequestStarted() {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&RequestCounter::RequestStarted, counter_));
-  }
-
- private:
-  base::FilePath file_;
-  base::WeakPtr<RequestCounter> counter_;
-  mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
-};
-
-// Makes |url| respond to requests with the contents of |file|, counting the
-// number that start in |counter|.
-void CreateCountingInterceptorOnIO(
-    const GURL& url,
-    const base::FilePath& file,
-    const base::WeakPtr<RequestCounter>& counter) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::unique_ptr<net::URLRequestInterceptor> request_interceptor(
-      new CountingInterceptor(file, counter));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::move(request_interceptor));
-}
-
-// Makes |url| respond to requests with the contents of |file|.
-void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url,
-      net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-          file, BrowserThread::GetBlockingPool()));
-}
-
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
 class TestContentBrowserClient : public ChromeContentBrowserClient {
  public:
@@ -1038,39 +583,6 @@ class SwapProcessesContentBrowserClient : public ChromeContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(SwapProcessesContentBrowserClient);
 };
 
-// An ExternalProtocolHandler that blocks everything and asserts it never is
-// called.
-class NeverRunsExternalProtocolHandlerDelegate
-    : public ExternalProtocolHandler::Delegate {
- public:
-  // ExternalProtocolHandler::Delegate implementation.
-  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol) override {
-    NOTREACHED();
-    // This will crash, but it shouldn't get this far with BlockState::BLOCK
-    // anyway.
-    return nullptr;
-  }
-  ExternalProtocolHandler::BlockState GetBlockState(
-      const std::string& scheme) override {
-    // Block everything and fail the test.
-    ADD_FAILURE();
-    return ExternalProtocolHandler::BLOCK;
-  }
-  void BlockRequest() override {}
-  void RunExternalProtocolDialog(const GURL& url,
-                                 int render_process_host_id,
-                                 int routing_id,
-                                 ui::PageTransition page_transition,
-                                 bool has_user_gesture) override {
-    NOTREACHED();
-  }
-  void LaunchUrlWithoutSecurityCheck(const GURL& url) override { NOTREACHED(); }
-  void FinishedProcessingCheck() override { NOTREACHED(); }
-};
-
 base::FilePath GetTestPath(const std::string& file_name) {
   return ui_test_utils::GetTestFilePath(
       base::FilePath(FILE_PATH_LITERAL("prerender")),
@@ -1079,106 +591,19 @@ base::FilePath GetTestPath(const std::string& file_name) {
 
 }  // namespace
 
-class PrerenderBrowserTest : virtual public InProcessBrowserTest {
+class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
  public:
   PrerenderBrowserTest()
-      : autostart_test_server_(true),
-        prerender_contents_factory_(nullptr),
-        safe_browsing_factory_(
-            new safe_browsing::TestSafeBrowsingServiceFactory()),
-        call_javascript_(true),
+      : call_javascript_(true),
         check_load_events_(true),
-        loader_path_("/prerender/prerender_loader.html"),
-        explicitly_set_browser_(nullptr) {}
+        loader_path_("/prerender/prerender_loader.html") {}
 
   ~PrerenderBrowserTest() override {}
 
-  content::SessionStorageNamespace* GetSessionStorageNamespace() const {
-    WebContents* web_contents = GetActiveWebContents();
-    if (!web_contents)
-      return nullptr;
-    return web_contents->GetController().GetDefaultSessionStorageNamespace();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    safe_browsing_factory_->SetTestDatabaseManager(
-        new FakeSafeBrowsingDatabaseManager());
-    SafeBrowsingService::RegisterFactory(safe_browsing_factory_);
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    SafeBrowsingService::RegisterFactory(nullptr);
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
-    command_line->AppendSwitch(switches::kEnablePepperTesting);
-    command_line->AppendSwitchASCII(
-        switches::kOverridePluginPowerSaverForTesting, "ignore-list");
-
-    ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
-  }
-
-  void SetUpOnMainThread() override {
-    current_browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kPromptForDownload, false);
-    IncreasePrerenderMemory();
-    if (autostart_test_server_)
-      ASSERT_TRUE(embedded_test_server()->Start());
-    ChromeResourceDispatcherHostDelegate::
-        SetExternalProtocolHandlerDelegateForTesting(
-            &external_protocol_handler_delegate_);
-
-    PrerenderManager* prerender_manager = GetPrerenderManager();
-    ASSERT_TRUE(prerender_manager);
-    prerender_manager->mutable_config().rate_limit_enabled = false;
-    ASSERT_FALSE(prerender_contents_factory_);
-    prerender_contents_factory_ = new TestPrerenderContentsFactory;
-    prerender_manager->SetPrerenderContentsFactoryForTest(
-        prerender_contents_factory_);
-    ASSERT_TRUE(safe_browsing_factory_->test_safe_browsing_service());
-  }
-
-  // Convenience function to get the currently active WebContents in
-  // current_browser().
-  WebContents* GetActiveWebContents() const {
-    return current_browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  // Overload for a single expected final status
-  std::unique_ptr<TestPrerender> PrerenderTestURL(
-      const std::string& html_file,
-      FinalStatus expected_final_status,
-      int expected_number_of_loads) {
-    GURL url = embedded_test_server()->GetURL(html_file);
-    return PrerenderTestURL(url,
-                            expected_final_status,
-                            expected_number_of_loads);
-  }
-
-  ScopedVector<TestPrerender> PrerenderTestURL(
-      const std::string& html_file,
-      const std::vector<FinalStatus>& expected_final_status_queue,
-      int expected_number_of_loads) {
-    GURL url = embedded_test_server()->GetURL(html_file);
-    return PrerenderTestURLImpl(url,
-                                expected_final_status_queue,
-                                expected_number_of_loads);
-  }
-
-  std::unique_ptr<TestPrerender> PrerenderTestURL(
-      const GURL& url,
-      FinalStatus expected_final_status,
-      int expected_number_of_loads) {
-    std::vector<FinalStatus> expected_final_status_queue(
-        1, expected_final_status);
-    std::vector<TestPrerender*> prerenders;
-    PrerenderTestURLImpl(url,
-                         expected_final_status_queue,
-                         expected_number_of_loads).release(&prerenders);
-    CHECK_EQ(1u, prerenders.size());
-    return std::unique_ptr<TestPrerender>(prerenders[0]);
   }
 
   void NavigateToDestURL() const {
@@ -1308,15 +733,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     EXPECT_TRUE(js_result);
   }
 
-  bool UrlIsInPrerenderManager(const std::string& html_file) const {
-    return UrlIsInPrerenderManager(embedded_test_server()->GetURL(html_file));
-  }
-
-  bool UrlIsInPrerenderManager(const GURL& url) const {
-    return GetPrerenderManager()->FindPrerenderData(
-               url, GetSessionStorageNamespace()) != nullptr;
-  }
-
   void UseHttpsSrcServer() {
     if (https_src_server_)
       return;
@@ -1332,12 +748,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void DisableLoadEventCheck() {
     check_load_events_ = false;
-  }
-
-  PrerenderManager* GetPrerenderManager() const {
-    PrerenderManager* prerender_manager =
-        PrerenderManagerFactory::GetForProfile(current_browser()->profile());
-    return prerender_manager;
   }
 
   const PrerenderLinkManager* GetPrerenderLinkManager() const {
@@ -1430,18 +840,13 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return history_list->GetSize();
   }
 
-  FakeSafeBrowsingDatabaseManager* GetFakeSafeBrowsingDatabaseManager() {
-    return static_cast<FakeSafeBrowsingDatabaseManager*>(
-        safe_browsing_factory_->test_safe_browsing_service()
+  test_utils::FakeSafeBrowsingDatabaseManager*
+  GetFakeSafeBrowsingDatabaseManager() {
+    return static_cast<test_utils::FakeSafeBrowsingDatabaseManager*>(
+        safe_browsing_factory()
+            ->test_safe_browsing_service()
             ->database_manager()
             .get());
-  }
-
-  TestPrerenderContents* GetPrerenderContentsFor(const GURL& url) const {
-    PrerenderManager::PrerenderData* prerender_data =
-        GetPrerenderManager()->FindPrerenderData(url, nullptr);
-    return static_cast<TestPrerenderContents*>(
-        prerender_data ? prerender_data->contents() : nullptr);
   }
 
   void SetLoaderHostOverride(const std::string& host) {
@@ -1466,24 +871,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return GURL(url_str);
   }
 
-  void set_browser(Browser* browser) {
-    explicitly_set_browser_ = browser;
-  }
-
-  Browser* current_browser() const {
-    return explicitly_set_browser_ ? explicitly_set_browser_ : browser();
-  }
-
   const GURL& dest_url() const {
     return dest_url_;
-  }
-
-  void IncreasePrerenderMemory() {
-    // Increase the memory allowed in a prerendered page above normal settings.
-    // Debug build bots occasionally run against the default limit, and tests
-    // were failing because the prerender was canceled due to memory exhaustion.
-    // http://crbug.com/93076
-    GetPrerenderManager()->mutable_config().max_bytes = 2000 * 1024 * 1024;
   }
 
   bool DidPrerenderPass(WebContents* web_contents) const {
@@ -1508,7 +897,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   std::unique_ptr<TestPrerender> ExpectPrerender(
       FinalStatus expected_final_status) {
-    return prerender_contents_factory_->ExpectPrerenderContents(
+    return prerender_contents_factory()->ExpectPrerenderContents(
         expected_final_status);
   }
 
@@ -1534,9 +923,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
- protected:
-  bool autostart_test_server_;
-
  private:
   // TODO(davidben): Remove this altogether so the tests don't globally assume
   // only one prerender.
@@ -1547,7 +933,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   ScopedVector<TestPrerender> PrerenderTestURLImpl(
       const GURL& prerender_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
-      int expected_number_of_loads) {
+      int expected_number_of_loads) override {
     dest_url_ = prerender_url;
 
     base::StringPairs replacement_text;
@@ -1568,14 +954,13 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       loader_replacements.SetHostStr(loader_host_override_);
     loader_url = loader_url.ReplaceComponents(loader_replacements);
 
-    VLOG(1) << "Running test with queue length " <<
-               expected_final_status_queue.size();
     CHECK(!expected_final_status_queue.empty());
     ScopedVector<TestPrerender> prerenders;
     for (size_t i = 0; i < expected_final_status_queue.size(); i++) {
       prerenders.push_back(
-          prerender_contents_factory_->ExpectPrerenderContents(
-              expected_final_status_queue[i]).release());
+          prerender_contents_factory()
+              ->ExpectPrerenderContents(expected_final_status_queue[i])
+              .release());
     }
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
@@ -1670,9 +1055,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     }
   }
 
-  TestPrerenderContentsFactory* prerender_contents_factory_;
-  safe_browsing::TestSafeBrowsingServiceFactory* safe_browsing_factory_;
-  NeverRunsExternalProtocolHandlerDelegate external_protocol_handler_delegate_;
   GURL dest_url_;
   std::unique_ptr<net::EmbeddedTestServer> https_src_server_;
   bool call_javascript_;
@@ -1680,7 +1062,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   std::string loader_host_override_;
   std::string loader_path_;
   std::string loader_query_;
-  Browser* explicitly_set_browser_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -3321,7 +2702,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
   PrerenderBrowserTestWithExtensions() {
     // The individual tests start the test server through ExtensionApiTest, so
     // the port number can be passed through to the extension.
-    autostart_test_server_ = false;
+    set_autostart_test_server(false);
   }
 
   void SetUp() override { PrerenderBrowserTest::SetUp(); }

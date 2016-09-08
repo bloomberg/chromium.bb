@@ -60,6 +60,10 @@ class PrerenderAdapterTest;
 
 namespace prerender {
 
+namespace test_utils {
+class PrerenderInProcessBrowserTest;
+}
+
 class PrerenderHandle;
 class PrerenderHistory;
 class PrerenderLocalPredictor;
@@ -407,7 +411,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual bool IsLowEndDevice() const;
 
  private:
-  friend class PrerenderBrowserTest;
+  friend class test_utils::PrerenderInProcessBrowserTest;
   friend class PrerenderContents;
   friend class PrerenderHandle;
   friend class UnitTestPrerenderManager;

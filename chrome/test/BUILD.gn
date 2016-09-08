@@ -1616,6 +1616,7 @@ test("browser_tests") {
       "../browser/prefs/synced_pref_change_registrar_browsertest.cc",
       "../browser/prefs/tracked/pref_hash_browsertest.cc",
       "../browser/prerender/prerender_browsertest.cc",
+      "../browser/prerender/prerender_test_utils.cc",
       "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
       "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
       "../browser/printing/print_preview_dialog_controller_browsertest.cc",
