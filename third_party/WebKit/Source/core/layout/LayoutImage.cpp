@@ -35,6 +35,7 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/ImagePainter.h"
 #include "core/svg/graphics/SVGImage.h"
 

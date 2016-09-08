@@ -7,6 +7,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintLayer.h"

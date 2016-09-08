@@ -36,6 +36,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"

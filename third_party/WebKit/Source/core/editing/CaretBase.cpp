@@ -33,6 +33,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutBlockItem.h"
 #include "core/layout/api/LayoutItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"

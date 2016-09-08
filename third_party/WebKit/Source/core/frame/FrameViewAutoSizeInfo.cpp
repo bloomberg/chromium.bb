@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "wtf/AutoReset.h"
 
 namespace blink {

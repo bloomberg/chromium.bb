@@ -33,6 +33,8 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"

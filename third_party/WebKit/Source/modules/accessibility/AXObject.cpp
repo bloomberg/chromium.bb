@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXObject.h"
 
 #include "SkMatrix44.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/FrameView.h"
@@ -37,6 +38,7 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"

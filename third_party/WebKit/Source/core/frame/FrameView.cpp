@@ -448,6 +448,11 @@ LayoutView* FrameView::layoutView() const
     return frame().contentLayoutObject();
 }
 
+LayoutViewItem FrameView::layoutViewItem() const
+{
+    return LayoutViewItem(frame().contentLayoutObject());
+}
+
 ScrollingCoordinator* FrameView::scrollingCoordinator() const
 {
     Page* p = page();
@@ -458,6 +463,11 @@ CompositorAnimationTimeline* FrameView::compositorAnimationTimeline() const
 {
     ScrollingCoordinator* c = scrollingCoordinator();
     return c ? c->compositorAnimationTimeline() : nullptr;
+}
+
+LayoutBox* FrameView::layoutBox() const
+{
+    return layoutView();
 }
 
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)

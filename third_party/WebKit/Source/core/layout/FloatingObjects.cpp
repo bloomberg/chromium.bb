@@ -26,6 +26,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"

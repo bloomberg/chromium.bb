@@ -30,8 +30,8 @@
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/ScrollAnchor.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
@@ -66,6 +66,7 @@ class Element;
 class FloatSize;
 class HTMLFrameOwnerElement;
 class JSONArray;
+class LayoutViewItem;
 class LayoutPart;
 class LocalFrame;
 class KURL;
@@ -113,10 +114,7 @@ public:
     // TODO(pilgrim) replace all instances of layoutView() with layoutViewItem()
     // https://crbug.com/499321
     LayoutView* layoutView() const;
-    LayoutViewItem layoutViewItem() const
-    {
-        return LayoutViewItem(this->layoutView());
-    }
+    LayoutViewItem layoutViewItem() const;
 
     void setCanHaveScrollbars(bool);
 
@@ -395,7 +393,7 @@ public:
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
     Widget* getWidget() override;
     CompositorAnimationTimeline* compositorAnimationTimeline() const override;
-    LayoutBox* layoutBox() const override { return layoutView(); }
+    LayoutBox* layoutBox() const override;
 
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,

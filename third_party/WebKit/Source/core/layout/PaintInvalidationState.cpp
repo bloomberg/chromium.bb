@@ -11,6 +11,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/PaintInvalidator.h"

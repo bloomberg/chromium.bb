@@ -40,6 +40,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutEmbeddedItem.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"

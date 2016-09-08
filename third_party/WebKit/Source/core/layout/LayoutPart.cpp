@@ -32,6 +32,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 

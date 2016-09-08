@@ -31,6 +31,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"

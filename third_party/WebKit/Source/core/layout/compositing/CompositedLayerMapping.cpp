@@ -46,6 +46,7 @@
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

@@ -5,6 +5,7 @@
 #include "core/input/EventHandlingUtil.h"
 
 #include "core/frame/FrameView.h"
+#include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {
 namespace EventHandlingUtil {

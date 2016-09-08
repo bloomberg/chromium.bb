@@ -26,7 +26,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"

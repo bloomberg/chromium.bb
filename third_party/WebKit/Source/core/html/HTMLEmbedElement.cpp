@@ -33,6 +33,7 @@
 #include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutEmbeddedItem.h"
 #include "core/loader/FrameLoaderClient.h"
 
 namespace blink {

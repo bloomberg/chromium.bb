@@ -34,6 +34,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
 #include "wtf/AutoReset.h"

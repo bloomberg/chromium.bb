@@ -7,7 +7,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 
 namespace blink {
 

@@ -54,6 +54,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoadRequest.h"

@@ -9,6 +9,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"

@@ -30,7 +30,6 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/FrameTypes.h"
-#include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
@@ -47,6 +46,7 @@ class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
 class LayoutPart;
+class LayoutPartItem;
 class KURL;
 class Page;
 class SecurityContext;
@@ -120,10 +120,7 @@ public:
     // TODO(pilgrim) replace all instances of ownerLayoutObject() with ownerLayoutItem()
     // https://crbug.com/499321
     LayoutPart* ownerLayoutObject() const; // LayoutObject for the element that contains this frame.
-    LayoutPartItem ownerLayoutItem() const
-    {
-        return LayoutPartItem(this->ownerLayoutObject());
-    }
+    LayoutPartItem ownerLayoutItem() const;
 
     Settings* settings() const; // can be null
 

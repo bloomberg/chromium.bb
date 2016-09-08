@@ -6,6 +6,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutBox.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/paint/PaintLayerScrollableArea.h"

@@ -44,6 +44,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/DOMTimer.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"

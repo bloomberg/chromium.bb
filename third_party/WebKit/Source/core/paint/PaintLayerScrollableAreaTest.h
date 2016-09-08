@@ -5,7 +5,6 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "testing/gtest/include/gtest/gtest.h"

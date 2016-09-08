@@ -67,6 +67,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"

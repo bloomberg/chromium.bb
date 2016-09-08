@@ -12,6 +12,7 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/paint/PaintLayer.h"

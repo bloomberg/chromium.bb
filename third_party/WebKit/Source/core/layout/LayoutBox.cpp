@@ -48,6 +48,8 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"

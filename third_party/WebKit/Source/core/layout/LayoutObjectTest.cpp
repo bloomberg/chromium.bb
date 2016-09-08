@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

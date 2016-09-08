@@ -58,6 +58,8 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"

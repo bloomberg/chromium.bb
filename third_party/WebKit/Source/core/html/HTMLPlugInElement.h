@@ -26,7 +26,6 @@
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/api/LayoutEmbeddedItem.h"
 
 #include <v8.h>
 
@@ -34,6 +33,7 @@ namespace blink {
 
 class HTMLImageLoader;
 class LayoutPart;
+class LayoutEmbeddedItem;
 class Widget;
 
 enum PreferPlugInsForImagesOption {

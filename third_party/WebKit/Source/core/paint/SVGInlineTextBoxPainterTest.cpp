@@ -9,6 +9,7 @@
 #include "core/editing/DOMSelection.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"

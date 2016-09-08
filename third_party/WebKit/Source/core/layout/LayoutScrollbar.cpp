@@ -31,7 +31,9 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "platform/graphics/GraphicsContext.h"
 

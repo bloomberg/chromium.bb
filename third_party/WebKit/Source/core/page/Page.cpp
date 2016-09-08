@@ -23,6 +23,7 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/DragCaretController.h"
 #include "core/editing/markers/DocumentMarkerController.h"

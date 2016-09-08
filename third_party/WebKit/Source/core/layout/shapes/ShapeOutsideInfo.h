@@ -30,7 +30,6 @@
 #ifndef ShapeOutsideInfo_h
 #define ShapeOutsideInfo_h
 
-#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/shapes/Shape.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShapeValue.h"
@@ -42,6 +41,7 @@
 namespace blink {
 
 class LayoutBox;
+class LineLayoutBlockFlow;
 class FloatingObject;
 
 class ShapeOutsideDeltas final {

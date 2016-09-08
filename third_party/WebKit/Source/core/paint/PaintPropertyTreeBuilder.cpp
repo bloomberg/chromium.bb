@@ -9,6 +9,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"

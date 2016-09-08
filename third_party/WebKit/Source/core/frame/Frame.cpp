@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NavigationScheduler.h"
@@ -283,6 +284,11 @@ LayoutPart* Frame::ownerLayoutObject() const
     if (!object->isLayoutPart())
         return nullptr;
     return toLayoutPart(object);
+}
+
+LayoutPartItem Frame::ownerLayoutItem() const
+{
+    return LayoutPartItem(ownerLayoutObject());
 }
 
 Settings* Frame::settings() const

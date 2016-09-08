@@ -43,6 +43,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
