@@ -407,13 +407,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                                        const std::string& password,
                                        bool password_autofilled,
                                        bool checkSuggestedValue) {
-    EXPECT_EQ(username,
-              static_cast<std::string>(username_element.value().utf8()));
+    EXPECT_EQ(username, username_element.value().utf8());
     EXPECT_EQ(username_autofilled, username_element.isAutofilled());
-    EXPECT_EQ(password,
-              static_cast<std::string>(
-                  checkSuggestedValue ? password_element.suggestedValue().utf8()
-                                      : password_element.value().utf8()))
+    EXPECT_EQ(password, checkSuggestedValue
+                            ? password_element.suggestedValue().utf8()
+                            : password_element.value().utf8())
         << "checkSuggestedValue == " << checkSuggestedValue;
     EXPECT_EQ(password_autofilled, password_element.isAutofilled());
   }
@@ -1017,6 +1015,30 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestion) {
   CheckUsernameSelection(username_length, username_length);
 }
 
+// Tests that |FillSuggestion| properly fills the password if username is
+// read-only.
+TEST_F(PasswordAutofillAgentTest, FillSuggestionIfUsernameReadOnly) {
+  // Simulate the browser sending the login info.
+  SetElementReadOnly(username_element_, true);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should have been autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // Username field is not autocompletable, it should not be affected.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      password_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
+  CheckTextFieldsDOMState(std::string(), false, kAlicePassword, true);
+
+  // Try Filling with a suggestion with password different from the one that was
+  // initially sent to the renderer.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      password_element_, ASCIIToUTF16(kBobUsername),
+      ASCIIToUTF16(kCarolPassword)));
+  CheckTextFieldsDOMState(std::string(), false, kCarolPassword, true);
+}
+
 // Tests that |PreviewSuggestion| properly previews the username and password.
 TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
   // Simulate the browser sending the login info, but set |wait_for_username|
@@ -1041,13 +1063,9 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
   // with suggested values.
   EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
       username_element_, kAliceUsername, kAlicePassword));
-  EXPECT_EQ(
-      kAliceUsername,
-      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kAliceUsername, username_element_.suggestedValue().utf8());
   EXPECT_TRUE(username_element_.isAutofilled());
-  EXPECT_EQ(
-      kAlicePassword,
-      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kAlicePassword, password_element_.suggestedValue().utf8());
   EXPECT_TRUE(password_element_.isAutofilled());
   int username_length = strlen(kAliceUsername);
   CheckUsernameSelection(0, username_length);
@@ -1056,16 +1074,42 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
   // sent to the renderer.
   EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
       username_element_, kBobUsername, kCarolPassword));
-  EXPECT_EQ(
-      kBobUsername,
-      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kBobUsername, username_element_.suggestedValue().utf8());
   EXPECT_TRUE(username_element_.isAutofilled());
-  EXPECT_EQ(
-      kCarolPassword,
-      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kCarolPassword, password_element_.suggestedValue().utf8());
   EXPECT_TRUE(password_element_.isAutofilled());
   username_length = strlen(kBobUsername);
   CheckUsernameSelection(0, username_length);
+}
+
+// Tests that |PreviewSuggestion| properly previews the password if username is
+// read-only.
+TEST_F(PasswordAutofillAgentTest, PreviewSuggestionIfUsernameReadOnly) {
+  // Simulate the browser sending the login info.
+  SetElementReadOnly(username_element_, true);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should have been autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // Username field is not autocompletable, it should not be affected.
+  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
+      password_element_, kAliceUsername, kAlicePassword));
+  EXPECT_EQ(std::string(), username_element_.suggestedValue().utf8());
+  EXPECT_FALSE(username_element_.isAutofilled());
+
+  // Password field must be autofilled.
+  EXPECT_EQ(kAlicePassword, password_element_.suggestedValue().utf8());
+  EXPECT_TRUE(password_element_.isAutofilled());
+
+  // Try previewing with a password different from the one that was initially
+  // sent to the renderer.
+  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
+      password_element_, kBobUsername, kCarolPassword));
+  EXPECT_EQ(std::string(), username_element_.suggestedValue().utf8());
+  EXPECT_FALSE(username_element_.isAutofilled());
+  EXPECT_EQ(kCarolPassword, password_element_.suggestedValue().utf8());
+  EXPECT_TRUE(password_element_.isAutofilled());
 }
 
 // Tests that |PreviewSuggestion| properly sets the username selection range.
@@ -1083,13 +1127,9 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
 
   EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
       username_element_, kAliceUsername, kAlicePassword));
-  EXPECT_EQ(
-      kAliceUsername,
-      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kAliceUsername, username_element_.suggestedValue().utf8());
   EXPECT_TRUE(username_element_.isAutofilled());
-  EXPECT_EQ(
-      kAlicePassword,
-      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_EQ(kAlicePassword, password_element_.suggestedValue().utf8());
   EXPECT_TRUE(password_element_.isAutofilled());
   int username_length = strlen(kAliceUsername);
   CheckUsernameSelection(3, username_length);

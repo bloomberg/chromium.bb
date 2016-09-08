@@ -715,8 +715,6 @@ bool PasswordAutofillAgent::FillSuggestion(
 
   if (!FindPasswordInfoForElement(*element, &username_element,
                                   &password_element, &password_info) ||
-      (!username_element.isNull() &&
-       !IsElementAutocompletable(username_element)) ||
       !IsElementAutocompletable(password_element)) {
     return false;
   }
@@ -725,7 +723,8 @@ bool PasswordAutofillAgent::FillSuggestion(
   if (element->isPasswordField()) {
     password_info->password_field_suggestion_was_accepted = true;
     password_info->password_field = password_element;
-  } else if (!username_element.isNull()) {
+  } else if (!username_element.isNull() &&
+             IsElementAutocompletable(username_element)) {
     username_element.setValue(blink::WebString(username), true);
     username_element.setAutofilled(true);
     UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
@@ -761,13 +760,12 @@ bool PasswordAutofillAgent::PreviewSuggestion(
 
   if (!FindPasswordInfoForElement(*element, &username_element,
                                   &password_element, &password_info) ||
-      (!username_element.isNull() &&
-       !IsElementAutocompletable(username_element)) ||
       !IsElementAutocompletable(password_element)) {
     return false;
   }
 
-  if (!element->isPasswordField() && !username_element.isNull()) {
+  if (!element->isPasswordField() && !username_element.isNull() &&
+      IsElementAutocompletable(username_element)) {
     if (username_query_prefix_.empty())
       username_query_prefix_ = username_element.value();
 
