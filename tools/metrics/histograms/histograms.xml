@@ -64303,6 +64303,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in finalizing incremental marking.</summary>
 </histogram>
 
+<histogram name="V8.GCIncrementalMarkingReason" units="GarbageCollectionReason">
+  <owner>ulan@chromium.org</owner>
+  <summary>Reason an incremental marking was started in V8.</summary>
+</histogram>
+
 <histogram name="V8.GCIncrementalMarkingStart" units="ms">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
@@ -64315,10 +64320,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in LowMemoryNotifications.</summary>
 </histogram>
 
+<histogram name="V8.GCMarkCompactReason" units="GarbageCollectionReason">
+  <owner>ulan@chromium.org</owner>
+  <summary>Reason a mark-compact garbage collection was started in V8.</summary>
+</histogram>
+
 <histogram name="V8.GCScavenger" units="ms">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <summary>Time spent in scavenging phase of GC.</summary>
+</histogram>
+
+<histogram name="V8.GCScavengeReason" units="GarbageCollectionReason">
+  <owner>ulan@chromium.org</owner>
+  <summary>Reason a scavenge garbage collection was started in V8.</summary>
 </histogram>
 
 <histogram name="V8.Initializer.LoadV8Snapshot.Result"
@@ -81512,6 +81527,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="GammaTable"/>
   <int value="9" label="GammaParametric"/>
   <int value="10" label="GammaNamed"/>
+</enum>
+
+<enum name="GarbageCollectionReason" type="int">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kAllocationFailure"/>
+  <int value="2" label="kAllocationLimit"/>
+  <int value="3" label="kContextDisposal"/>
+  <int value="4" label="kCountersExtension"/>
+  <int value="5" label="kDebugger"/>
+  <int value="6" label="kDeserializer"/>
+  <int value="7" label="kExternalMemoryPressure"/>
+  <int value="8" label="kFinalizeMarkingViaStackGuard"/>
+  <int value="9" label="kFinalizeMarkingViaTask"/>
+  <int value="10" label="kFullHashtable"/>
+  <int value="11" label="kHeapProfiler"/>
+  <int value="12" label="kIdleTask"/>
+  <int value="13" label="kLastResort"/>
+  <int value="14" label="kLowMemoryNotification"/>
+  <int value="15" label="kMakeHeapIterable"/>
+  <int value="16" label="kMemoryPressure"/>
+  <int value="17" label="kMemoryReducer"/>
+  <int value="18" label="kRuntime"/>
+  <int value="19" label="kSamplingProfiler"/>
+  <int value="20" label="kSnapshotCreator"/>
+  <int value="21" label="kTesting"/>
 </enum>
 
 <enum name="GATTCharacteristicHash" type="int">
