@@ -45,7 +45,8 @@ void RequireCallback(cc::SurfaceManager* manager,
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     cc::SurfaceManager* surface_manager,
     cc::SurfaceId surface_id,
-    const gfx::Size surface_size) {
+    const gfx::Size surface_size,
+    bool surface_opaque) {
   // manager must outlive compositors using it.
   scoped_refptr<cc::SurfaceLayer> layer = cc::SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, base::Unretained(surface_manager)),
@@ -53,7 +54,7 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
   layer->SetSurfaceId(surface_id, 1.f, surface_size);
   layer->SetBounds(surface_size);
   layer->SetIsDrawable(true);
-  layer->SetContentsOpaque(true);
+  layer->SetContentsOpaque(surface_opaque);
 
   return layer;
 }
@@ -122,7 +123,9 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
           frame.metadata.bottom_controls_height ||
       current_frame_->bottom_controls_shown_ratio !=
           frame.metadata.bottom_controls_shown_ratio ||
-      current_frame_->viewport_selection != frame.metadata.selection) {
+      current_frame_->viewport_selection != frame.metadata.selection ||
+      current_frame_->has_transparent_background !=
+          root_pass->has_transparent_background) {
     DestroyDelegatedContent();
     DCHECK(!content_layer_);
     DCHECK(!current_frame_);
@@ -139,11 +142,14 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         frame.metadata.bottom_controls_height;
     current_frame_->bottom_controls_shown_ratio =
         frame.metadata.bottom_controls_shown_ratio;
+    current_frame_->has_transparent_background =
+        root_pass->has_transparent_background;
 
     current_frame_->viewport_selection = frame.metadata.selection;
     content_layer_ =
         CreateSurfaceLayer(surface_manager_, current_frame_->surface_id,
-                           current_frame_->surface_size);
+                           current_frame_->surface_size,
+                           !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
     UpdateBackgroundLayer();
   }
@@ -165,7 +171,8 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
 
   scoped_refptr<cc::Layer> readback_layer =
       CreateSurfaceLayer(surface_manager_, current_frame_->surface_id,
-                         current_frame_->surface_size);
+                         current_frame_->surface_size,
+                         !current_frame_->has_transparent_background);
   readback_layer->SetHideLayerAndSubtree(true);
   compositor->AttachLayerForReadback(readback_layer);
   std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
@@ -204,12 +211,6 @@ void DelegatedFrameHostAndroid::OutputSurfaceChanged() {
 
 void DelegatedFrameHostAndroid::UpdateBackgroundColor(SkColor color) {
   background_layer_->SetBackgroundColor(color);
-}
-
-void DelegatedFrameHostAndroid::SetContentsOpaque(bool opaque) {
-  if (!content_layer_)
-    return;
-  content_layer_->SetContentsOpaque(opaque);
 }
 
 void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(

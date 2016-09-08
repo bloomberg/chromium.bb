@@ -241,8 +241,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void SynchronousFrameMetadata(cc::CompositorFrameMetadata frame_metadata);
 
-  void SetOverlayVideoMode(bool enabled);
-
   static void OnContextLost();
 
  private:
@@ -253,8 +251,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendReclaimCompositorResources(uint32_t output_surface_id,
                                       bool is_swap_ack);
 
-  void OnFrameMetadataUpdated(
-      const cc::CompositorFrameMetadata& frame_metadata);
+  void OnFrameMetadataUpdated(const cc::CompositorFrameMetadata& frame_metadata,
+                              bool is_transparent);
 
   void ShowInternal();
   void HideInternal();

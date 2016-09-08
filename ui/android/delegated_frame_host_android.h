@@ -62,8 +62,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void UpdateBackgroundColor(SkColor color);
 
-  void SetContentsOpaque(bool opaque);
-
   void UpdateContainerSizeinDIP(const gfx::Size& size_in_dip);
 
  private:
@@ -92,6 +90,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     float bottom_controls_height;
     float bottom_controls_shown_ratio;
     cc::Selection<gfx::SelectionBound> viewport_selection;
+    bool has_transparent_background;
   };
   std::unique_ptr<FrameData> current_frame_;
 

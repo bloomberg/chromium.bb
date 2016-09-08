@@ -509,6 +509,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->GetLayerTree()->SetViewportSize(size_);
   host_->GetLayerTree()->set_has_transparent_background(
       has_transparent_background_);
+  host_->GetLayerTree()->set_background_color(SK_ColorBLACK);
   host_->GetLayerTree()->SetDeviceScaleFactor(device_scale_factor_);
 
   if (needs_animate_)

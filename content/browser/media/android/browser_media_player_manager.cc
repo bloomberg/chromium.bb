@@ -281,11 +281,6 @@ void BrowserMediaPlayerManager::DidExitFullscreen(bool release_media_player) {
 #else
   if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
     delegate->ExitFullscreenModeForTab(web_contents_);
-  if (RenderWidgetHostViewAndroid* view_android =
-      static_cast<RenderWidgetHostViewAndroid*>(
-          web_contents_->GetRenderWidgetHostView())) {
-    view_android->SetOverlayVideoMode(false);
-  }
 
   Send(
       new MediaPlayerMsg_DidExitFullscreen(RoutingID(), fullscreen_player_id_));
@@ -331,14 +326,6 @@ void BrowserMediaPlayerManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
     video_view_->OnVideoSizeChanged(player->GetVideoWidth(),
                                     player->GetVideoHeight());
   }
-
-#if !defined(USE_AURA)
-  if (RenderWidgetHostViewAndroid* view_android =
-      static_cast<RenderWidgetHostViewAndroid*>(
-          web_contents_->GetRenderWidgetHostView())) {
-    view_android->SetOverlayVideoMode(true);
-  }
-#endif
 }
 
 void BrowserMediaPlayerManager::OnMediaMetadataChanged(

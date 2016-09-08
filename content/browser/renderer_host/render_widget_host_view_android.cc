@@ -942,6 +942,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   cc::RenderPass* root_pass =
       frame.delegated_frame_data->render_pass_list.back().get();
   current_surface_size_ = root_pass->output_rect.size();
+  bool is_transparent = root_pass->has_transparent_background;
 
   cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
@@ -971,7 +972,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
-  OnFrameMetadataUpdated(std::move(metadata));
+  OnFrameMetadataUpdated(std::move(metadata), is_transparent);
 }
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
@@ -1028,7 +1029,7 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
 
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
-  OnFrameMetadataUpdated(frame_metadata.Clone());
+  OnFrameMetadataUpdated(frame_metadata.Clone(), false);
 
   // DevTools ScreenCast support for Android WebView.
   WebContents* web_contents = content_view_core_->GetWebContents();
@@ -1043,11 +1044,6 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
             static_cast<RenderFrameDevToolsAgentHost*>(dtah.get()),
             base::Passed(&frame_metadata)));
   }
-}
-
-void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
-  if (delegated_frame_host_)
-    delegated_frame_host_->SetContentsOpaque(!enabled);
 }
 
 bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
@@ -1154,7 +1150,8 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
 }
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const cc::CompositorFrameMetadata& frame_metadata,
+    bool is_transparent) {
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
   gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
@@ -1181,7 +1178,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     selection_controller_->OnViewportChanged(viewport_rect);
   }
 
-  UpdateBackgroundColor(frame_metadata.root_background_color);
+  UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
+                                       : frame_metadata.root_background_color);
 
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
