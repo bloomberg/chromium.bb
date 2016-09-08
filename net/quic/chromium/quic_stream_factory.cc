@@ -488,6 +488,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
+  dns_resolution_end_time_ = base::TimeTicks::Now();
   if (rv != OK)
     return rv;
 
