@@ -41,14 +41,11 @@ VideoCaptureDeviceFactoryAndroid::CreateDevice(
   std::unique_ptr<VideoCaptureDeviceAndroid> video_capture_device(
       new VideoCaptureDeviceAndroid(device_descriptor));
 
-  if (video_capture_device->Init()) {
-    if (test_mode_)
-      video_capture_device->ConfigureForTesting();
+  if (video_capture_device->Init())
     return std::move(video_capture_device);
-  }
 
   DLOG(ERROR) << "Error creating Video Capture Device.";
-  return nullptr;
+  return std::unique_ptr<VideoCaptureDevice>();
 }
 
 void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
@@ -108,7 +105,8 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     base::android::ScopedJavaLocalRef<jobject> format(
         env, env->GetObjectArrayElement(collected_formats.obj(), i));
 
-    VideoPixelFormat pixel_format = media::PIXEL_FORMAT_UNKNOWN;
+    VideoPixelFormat pixel_format =
+        media::PIXEL_FORMAT_UNKNOWN;
     switch (media::Java_VideoCaptureFactory_getCaptureFormatPixelFormat(
         env, format)) {
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_YV12:
@@ -118,8 +116,7 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
         pixel_format = media::PIXEL_FORMAT_NV21;
         break;
       default:
-        // VideoCaptureCamera2 doesn't know the provided format until capture.
-        break;
+        continue;
     }
     VideoCaptureFormat capture_format(
         gfx::Size(
@@ -132,15 +129,6 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     DVLOG(1) << device.display_name << " "
              << VideoCaptureFormat::ToString(capture_format);
   }
-}
-
-bool VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
-    const std::string& device_id) {
-  int id;
-  if (!base::StringToInt(device_id, &id))
-    return true;
-  return (Java_VideoCaptureFactory_isLegacyOrDeprecatedDevice(
-      AttachCurrentThread(), base::android::GetApplicationContext(), id));
 }
 
 // static

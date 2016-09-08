@@ -101,8 +101,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
                     jlong callback_id,
                     const base::android::JavaParamRef<jbyteArray>& data);
 
-  void ConfigureForTesting();
-
  private:
   enum InternalState {
     kIdle,        // The device is opened but not in use.

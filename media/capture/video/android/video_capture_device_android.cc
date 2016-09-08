@@ -428,10 +428,6 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
   photo_callbacks_.erase(reference_it);
 }
 
-void VideoCaptureDeviceAndroid::ConfigureForTesting() {
-  Java_VideoCapture_setTestMode(AttachCurrentThread(), j_capture_);
-}
-
 VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   JNIEnv* env = AttachCurrentThread();
   const int current_capture_colorspace =

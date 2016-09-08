@@ -34,8 +34,6 @@ public abstract class VideoCapture {
     // Native callback context variable.
     protected final long mNativeVideoCaptureDeviceAndroid;
 
-    protected boolean mUseBackgroundThreadForTesting = false;
-
     VideoCapture(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         mContext = context;
         mId = id;
@@ -109,11 +107,6 @@ public abstract class VideoCapture {
             default:
                 return AndroidImageFormat.UNKNOWN;
         }
-    }
-
-    @CalledByNative
-    public final void setTestMode() {
-        mUseBackgroundThreadForTesting = true;
     }
 
     protected final int getCameraRotation() {
