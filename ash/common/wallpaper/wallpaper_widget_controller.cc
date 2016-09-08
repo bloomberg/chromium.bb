@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
 
 #include "ash/ash_export.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/root_window_controller.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
@@ -21,7 +20,7 @@ namespace {
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
                                        public views::WidgetObserver {
  public:
-  ShowWallpaperAnimationObserver(RootWindowController* root_window_controller,
+  ShowWallpaperAnimationObserver(WmRootWindowController* root_window_controller,
                                  views::Widget* wallpaper_widget,
                                  bool is_initial_animation)
       : root_window_controller_(root_window_controller),
@@ -40,9 +39,8 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsScheduled() override {
-    if (is_initial_animation_) {
-      root_window_controller_->HandleInitialWallpaperAnimationStarted();
-    }
+    if (is_initial_animation_)
+      root_window_controller_->OnInitialWallpaperAnimationStarted();
   }
 
   void OnImplicitAnimationsCompleted() override {
@@ -53,7 +51,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from views::WidgetObserver.
   void OnWidgetDestroying(views::Widget* widget) override { delete this; }
 
-  RootWindowController* root_window_controller_;
+  WmRootWindowController* root_window_controller_;
   views::Widget* wallpaper_widget_;
 
   // Is this object observing the initial brightness/grayscale animation?
@@ -89,12 +87,11 @@ void WallpaperWidgetController::SetBounds(const gfx::Rect& bounds) {
     widget_->SetBounds(bounds);
 }
 
-bool WallpaperWidgetController::Reparent(aura::Window* root_window,
-                                         int container) {
+bool WallpaperWidgetController::Reparent(WmWindow* root_window, int container) {
   if (widget_) {
     widget_parent_->RemoveObserver(this);
-    views::Widget::ReparentNativeView(widget_->GetNativeView(),
-                                      root_window->GetChildById(container));
+    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_);
+    root_window->GetChildByShellWindowId(container)->AddChild(window);
     widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
     widget_parent_->AddObserver(this);
     return true;
@@ -117,10 +114,10 @@ void WallpaperWidgetController::OnWindowBoundsChanged(
 }
 
 void WallpaperWidgetController::StartAnimating(
-    RootWindowController* root_window_controller) {
+    WmRootWindowController* root_window_controller) {
   if (widget_) {
     ui::ScopedLayerAnimationSettings settings(
-        widget_->GetNativeView()->layer()->GetAnimator());
+        widget_->GetLayer()->GetAnimator());
     settings.AddObserver(new ShowWallpaperAnimationObserver(
         root_window_controller, widget_,
         WmShell::Get()->wallpaper_delegate()->ShouldShowInitialAnimation()));
@@ -139,10 +136,8 @@ AnimatingWallpaperWidgetController::AnimatingWallpaperWidgetController(
 AnimatingWallpaperWidgetController::~AnimatingWallpaperWidgetController() {}
 
 void AnimatingWallpaperWidgetController::StopAnimating() {
-  if (controller_) {
-    ui::Layer* layer = controller_->widget()->GetNativeView()->layer();
-    layer->GetAnimator()->StopAnimating();
-  }
+  if (controller_)
+    controller_->widget()->GetLayer()->GetAnimator()->StopAnimating();
 }
 
 WallpaperWidgetController* AnimatingWallpaperWidgetController::GetController(

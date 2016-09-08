@@ -744,6 +744,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
       return debug::DebugAcceleratorsEnabled();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
@@ -856,6 +857,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
       debug::PerformDebugActionIfEnabled(action);
       break;
     case EXIT:

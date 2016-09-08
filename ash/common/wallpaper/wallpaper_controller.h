@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
-#define ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#ifndef ASH_COMMON_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#define ASH_COMMON_WALLPAPER_WALLPAPER_CONTROLLER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm_display_observer.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
-class SequencedWorkerPool;
+class TaskRunner;
 }
 
 namespace wallpaper {
@@ -33,7 +34,8 @@ class ASH_EXPORT WallpaperController : public WmDisplayObserver,
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
-  explicit WallpaperController(base::SequencedWorkerPool* blocking_pool);
+  explicit WallpaperController(
+      const scoped_refptr<base::TaskRunner>& task_runner);
   ~WallpaperController() override;
 
   // Add/Remove observers.
@@ -124,11 +126,11 @@ class ASH_EXPORT WallpaperController : public WmDisplayObserver,
 
   int wallpaper_reload_delay_;
 
-  base::SequencedWorkerPool* blocking_pool_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#endif  // ASH_COMMON_WALLPAPER_WALLPAPER_CONTROLLER_H_

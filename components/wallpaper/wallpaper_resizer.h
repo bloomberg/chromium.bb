@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/wallpaper/wallpaper_layout.h"
@@ -19,7 +20,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
-class SequencedWorkerPool;
+class TaskRunner;
 }
 
 namespace wallpaper {
@@ -37,16 +38,15 @@ class WALLPAPER_EXPORT WallpaperResizer {
   WallpaperResizer(const gfx::ImageSkia& image,
                    const gfx::Size& target_size,
                    WallpaperLayout layout,
-                   base::SequencedWorkerPool* worker_pool_ptr);
+                   const scoped_refptr<base::TaskRunner>& task_runner);
 
   ~WallpaperResizer();
 
   const gfx::ImageSkia& image() const { return image_; }
   uint32_t original_image_id() const { return original_image_id_; }
   WallpaperLayout layout() const { return layout_; }
-  base::SequencedWorkerPool* worker_pool() const { return worker_pool_; }
 
-  // Called on the UI thread to run Resize() on the worker pool and post an
+  // Called on the UI thread to run Resize() on the task runner and post an
   // OnResizeFinished() task back to the UI thread on completion.
   void StartResize();
 
@@ -73,7 +73,7 @@ class WALLPAPER_EXPORT WallpaperResizer {
 
   WallpaperLayout layout_;
 
-  base::SequencedWorkerPool* worker_pool_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   base::WeakPtrFactory<WallpaperResizer> weak_ptr_factory_;
 

@@ -12,6 +12,7 @@
 #include "ash/mus/window_manager_application.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "services/ui/public/cpp/window_tree_client.h"
@@ -28,6 +29,10 @@ WmTestHelper::~WmTestHelper() {
   // Needs to be destroyed before material design.
   window_manager_app_.reset();
 
+  base::RunLoop().RunUntilIdle();
+  blocking_pool_owner_.reset();
+  base::RunLoop().RunUntilIdle();
+
   ash::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
 }
@@ -39,6 +44,12 @@ void WmTestHelper::Init() {
   window_manager_app_ = base::MakeUnique<WindowManagerApplication>();
 
   message_loop_.reset(new base::MessageLoopForUI());
+
+  const size_t kMaxNumberThreads = 3u;  // Matches that of content.
+  const char kThreadNamePrefix[] = "MashBlockingForTesting";
+  blocking_pool_owner_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
+      kMaxNumberThreads, kThreadNamePrefix);
+
   window_manager_app_->window_manager_.reset(new WindowManager(nullptr));
   screen_ = new WmTestScreen;
   window_manager_app_->window_manager_->screen_.reset(screen_);
@@ -57,7 +68,8 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager_.get(), display);
 
   window_manager_app_->InitWindowManager(
-      window_tree_client_setup_.OwnWindowTreeClient());
+      window_tree_client_setup_.OwnWindowTreeClient(),
+      blocking_pool_owner_->pool());
   ui::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
 

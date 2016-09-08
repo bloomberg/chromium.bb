@@ -208,6 +208,7 @@ source_set("unittests") {
     "//ash/public/interfaces",
     "//base",
     "//base/test:test_config",
+    "//base/test:test_support",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp:service_test_support",
     "//services/ui/common:mus_common",

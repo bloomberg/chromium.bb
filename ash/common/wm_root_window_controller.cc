@@ -5,6 +5,8 @@
 #include "ash/common/wm_root_window_controller.h"
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
@@ -31,11 +33,43 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
 WmRootWindowController::WmRootWindowController(WmWindow* root)
     : root_(root), root_window_layout_manager_(nullptr) {}
 
-WmRootWindowController::~WmRootWindowController() {}
+WmRootWindowController::~WmRootWindowController() {
+  if (animating_wallpaper_widget_controller_.get())
+    animating_wallpaper_widget_controller_->StopAnimating();
+}
+
+void WmRootWindowController::SetWallpaperWidgetController(
+    WallpaperWidgetController* controller) {
+  wallpaper_widget_controller_.reset(controller);
+}
+
+void WmRootWindowController::SetAnimatingWallpaperWidgetController(
+    AnimatingWallpaperWidgetController* controller) {
+  if (animating_wallpaper_widget_controller_.get())
+    animating_wallpaper_widget_controller_->StopAnimating();
+  animating_wallpaper_widget_controller_.reset(controller);
+}
 
 wm::WorkspaceWindowState WmRootWindowController::GetWorkspaceWindowState() {
   return workspace_controller_ ? workspace_controller()->GetWindowState()
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
+}
+
+void WmRootWindowController::OnInitialWallpaperAnimationStarted() {}
+
+void WmRootWindowController::OnWallpaperAnimationFinished(
+    views::Widget* widget) {
+  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
+  // Only removes old component when wallpaper animation finished. If we
+  // remove the old one before the new wallpaper is done fading in there will
+  // be a white flash during the animation.
+  if (animating_wallpaper_widget_controller()) {
+    WallpaperWidgetController* controller =
+        animating_wallpaper_widget_controller()->GetController(true);
+    DCHECK_EQ(controller->widget(), widget);
+    // Release the old controller and close its wallpaper widget.
+    SetWallpaperWidgetController(controller);
+  }
 }
 
 void WmRootWindowController::CreateContainers() {

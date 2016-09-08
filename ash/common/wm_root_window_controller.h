@@ -17,6 +17,8 @@ class Point;
 namespace ash {
 
 class AlwaysOnTopController;
+class AnimatingWallpaperWidgetController;
+class WallpaperWidgetController;
 class WmShelf;
 class WmShell;
 class WmWindow;
@@ -35,6 +37,17 @@ class ASH_EXPORT WmRootWindowController {
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
   }
+
+  WallpaperWidgetController* wallpaper_widget_controller() {
+    return wallpaper_widget_controller_.get();
+  }
+  void SetWallpaperWidgetController(WallpaperWidgetController* controller);
+
+  AnimatingWallpaperWidgetController* animating_wallpaper_widget_controller() {
+    return animating_wallpaper_widget_controller_.get();
+  }
+  void SetAnimatingWallpaperWidgetController(
+      AnimatingWallpaperWidgetController* controller);
 
   WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
@@ -71,6 +84,11 @@ class ASH_EXPORT WmRootWindowController {
   // coordinates. This may return a point outside the root window's bounds.
   virtual gfx::Point GetLastMouseLocationInRoot() = 0;
 
+  // Called when the wallpaper animation has started or finished.
+  // TODO: port remaining classic ash wallpaper functionality here.
+  virtual void OnInitialWallpaperAnimationStarted();
+  virtual void OnWallpaperAnimationFinished(views::Widget* widget);
+
  protected:
   // Creates the containers (WmWindows) used by the shell.
   void CreateContainers();
@@ -85,6 +103,9 @@ class ASH_EXPORT WmRootWindowController {
 
   wm::RootWindowLayoutManager* root_window_layout_manager_;
 
+  std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
+  std::unique_ptr<AnimatingWallpaperWidgetController>
+      animating_wallpaper_widget_controller_;
   std::unique_ptr<WorkspaceController> workspace_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowController);

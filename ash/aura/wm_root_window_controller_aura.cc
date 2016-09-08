@@ -107,4 +107,15 @@ gfx::Point WmRootWindowControllerAura::GetLastMouseLocationInRoot() {
       ->GetLastMouseLocationInRoot();
 }
 
+void WmRootWindowControllerAura::OnInitialWallpaperAnimationStarted() {
+  root_window_controller_->OnInitialWallpaperAnimationStarted();
+  WmRootWindowController::OnInitialWallpaperAnimationStarted();
+}
+
+void WmRootWindowControllerAura::OnWallpaperAnimationFinished(
+    views::Widget* widget) {
+  root_window_controller_->OnWallpaperAnimationFinished(widget);
+  WmRootWindowController::OnWallpaperAnimationFinished(widget);
+}
+
 }  // namespace ash

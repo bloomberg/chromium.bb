@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wallpaper/wallpaper_view.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
-#include "ash/wallpaper/wallpaper_view.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_runner.h"
 #include "components/wallpaper/wallpaper_resizer.h"
-#include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -31,11 +29,11 @@ const int kWallpaperReloadDelayMs = 100;
 }  // namespace
 
 WallpaperController::WallpaperController(
-    base::SequencedWorkerPool* blocking_pool)
+    const scoped_refptr<base::TaskRunner>& task_runner)
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
-      blocking_pool_(blocking_pool) {
+      task_runner_(task_runner) {
   WmShell::Get()->AddDisplayObserver(this);
   WmShell::Get()->AddShellObserver(this);
 }
@@ -78,7 +76,7 @@ bool WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
   }
 
   current_wallpaper_.reset(new wallpaper::WallpaperResizer(
-      image, GetMaxDisplaySizeInNative(), layout, blocking_pool_));
+      image, GetMaxDisplaySizeInNative(), layout, task_runner_));
   current_wallpaper_->StartResize();
 
   FOR_EACH_OBSERVER(WallpaperControllerObserver, observers_,
@@ -195,8 +193,7 @@ void WallpaperController::InstallDesktopController(WmWindow* root_window) {
       return;
   }
 
-  aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
-  RootWindowController* controller = GetRootWindowController(aura_root_window);
+  WmRootWindowController* controller = root_window->GetRootWindowController();
   controller->SetAnimatingWallpaperWidgetController(
       new AnimatingWallpaperWidgetController(component));
   component->StartAnimating(controller);
@@ -210,14 +207,16 @@ void WallpaperController::InstallDesktopControllerForAllWindows() {
 
 bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
-  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+  for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows()) {
+    WmRootWindowController* root_window_controller =
+        root_window->GetRootWindowController();
     // In the steady state (no animation playing) the wallpaper widget
     // controller exists in the RootWindowController.
     WallpaperWidgetController* wallpaper_widget_controller =
         root_window_controller->wallpaper_widget_controller();
     if (wallpaper_widget_controller) {
       moved |= wallpaper_widget_controller->Reparent(
-          root_window_controller->GetRootWindow(), container);
+          root_window_controller->GetWindow(), container);
     }
     // During wallpaper show animations the controller lives in
     // AnimatingWallpaperWidgetController owned by RootWindowController.
@@ -231,7 +230,7 @@ bool WallpaperController::ReparentWallpaper(int container) {
             : nullptr;
     if (animating_controller) {
       moved |= animating_controller->Reparent(
-          root_window_controller->GetRootWindow(), container);
+          root_window_controller->GetWindow(), container);
     }
   }
   return moved;

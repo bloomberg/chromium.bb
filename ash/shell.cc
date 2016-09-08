@@ -58,8 +58,6 @@
 #include "ash/shell_init_params.h"
 #include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/event_client_impl.h"
@@ -194,7 +192,7 @@ bool Shell::initially_hide_cursor_ = false;
 // static
 Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
   CHECK(!instance_);
-  instance_ = new Shell(init_params.delegate, init_params.blocking_pool);
+  instance_ = new Shell(init_params.delegate);
   instance_->Init(init_params);
   return instance_;
 }
@@ -488,7 +486,7 @@ void Shell::DoInitialWorkspaceAnimation() {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
+Shell::Shell(ShellDelegate* delegate)
     : wm_shell_(new WmShellAura(base::WrapUnique(delegate))),
       link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
@@ -497,8 +495,7 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
 #endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false),
-      blocking_pool_(blocking_pool) {
+      is_touch_hud_projection_enabled_(false) {
   DCHECK(aura::Env::GetInstanceDontCreate());
   gpu_support_.reset(wm_shell_->delegate()->CreateGPUSupport());
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
@@ -627,7 +624,6 @@ Shell::~Shell() {
 #if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset();
 #endif
-  wallpaper_controller_.reset();
   screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
@@ -680,7 +676,7 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
-  wm_shell_->Initialize();
+  wm_shell_->Initialize(init_params.blocking_pool);
 
   in_mus_ = init_params.in_mus;
 
@@ -750,8 +746,8 @@ void Shell::Init(const ShellInitParams& init_params) {
         wm_shell_->delegate()->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
-  display_color_manager_.reset(
-      new DisplayColorManager(display_configurator_.get(), blocking_pool_));
+  display_color_manager_.reset(new DisplayColorManager(
+      display_configurator_.get(), init_params.blocking_pool));
 #endif  // defined(OS_CHROMEOS)
 
   if (!display_initialized)
@@ -887,9 +883,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddPreTargetHandler(modality_filter_.get());
 
   event_client_.reset(new EventClientImpl);
-
-  // This controller needs to be set before SetupManagedWindowMode.
-  wallpaper_controller_.reset(new WallpaperController(blocking_pool_));
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());

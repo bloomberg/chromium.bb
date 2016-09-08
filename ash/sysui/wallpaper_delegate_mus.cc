@@ -4,8 +4,8 @@
 
 #include "ash/sysui/wallpaper_delegate_mus.h"
 
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm_shell.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -84,7 +84,7 @@ void WallpaperDelegateMus::SetWallpaper(const SkBitmap& wallpaper,
   if (wallpaper.isNull())
     return;
   gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(wallpaper);
-  Shell::GetInstance()->wallpaper_controller()->SetWallpaperImage(
+  WmShell::Get()->wallpaper_controller()->SetWallpaperImage(
       image, WallpaperLayoutFromMojo(layout));
 }
 

@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/wallpaper",
-  "+content/public/browser",
-  "+content/public/test",
-]

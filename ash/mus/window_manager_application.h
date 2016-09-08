@@ -12,6 +12,7 @@
 
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -19,6 +20,10 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
+
+namespace base {
+class SequencedWorkerPool;
+}
 
 namespace chromeos {
 namespace system {
@@ -66,7 +71,8 @@ class WindowManagerApplication
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
   void InitWindowManager(
-      std::unique_ptr<ui::WindowTreeClient> window_tree_client);
+      std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+      const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
@@ -92,6 +98,9 @@ class WindowManagerApplication
   std::unique_ptr<ui::GpuService> gpu_service_;
   std::unique_ptr<views::SurfaceContextFactory> compositor_context_factory_;
   std::unique_ptr<WindowManager> window_manager_;
+
+  // A blocking pool used by the WindowManager's shell; not used in tests.
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   mojo::BindingSet<ash::mojom::ShelfController> shelf_controller_bindings_;
 

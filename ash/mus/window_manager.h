@@ -11,12 +11,17 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+
+namespace base {
+class SequencedWorkerPool;
+}
 
 namespace display {
 class Display;
@@ -53,7 +58,8 @@ class WindowManager : public ui::WindowManagerDelegate,
   explicit WindowManager(shell::Connector* connector);
   ~WindowManager() override;
 
-  void Init(std::unique_ptr<ui::WindowTreeClient> window_tree_client);
+  void Init(std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+            const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
   WmShellMus* shell() { return shell_.get(); }
 

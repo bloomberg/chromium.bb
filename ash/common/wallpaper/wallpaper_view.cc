@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/common/wallpaper/wallpaper_view.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -122,8 +121,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   // to fill the wallpaper. Ideally the image should be larger than the largest
   // display supported, if not we will scale and center it if the layout is
   // wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
-  WallpaperController* controller =
-      Shell::GetInstance()->wallpaper_controller();
+  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   wallpaper::WallpaperLayout layout = controller->GetWallpaperLayout();
 
@@ -189,9 +187,7 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
 }
 
 views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
-  aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
-  WallpaperController* controller =
-      Shell::GetInstance()->wallpaper_controller();
+  WallpaperController* controller = WmShell::Get()->wallpaper_controller();
   WallpaperDelegate* wallpaper_delegate = WmShell::Get()->wallpaper_delegate();
 
   views::Widget* wallpaper_widget = new views::Widget;
@@ -200,7 +196,8 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   params.name = "WallpaperView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = aura_root_window->GetChildById(container_id);
+  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      wallpaper_widget, container_id, &params);
   wallpaper_widget->Init(params);
   wallpaper_widget->SetContentsView(new LayerControlView(new WallpaperView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
@@ -208,8 +205,8 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
       WmLookup::Get()->GetWindowForWidget(wallpaper_widget);
   wallpaper_window->SetVisibilityAnimationType(animation_type);
 
-  RootWindowController* root_window_controller =
-      GetRootWindowController(aura_root_window);
+  WmRootWindowController* root_window_controller =
+      root_window->GetRootWindowController();
 
   // Enable wallpaper transition for the following cases:
   // 1. Initial(OOBE) wallpaper animation.
@@ -230,7 +227,8 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
     wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   }
 
-  wallpaper_widget->SetBounds(params.parent->bounds());
+  WmWindow* container = root_window->GetChildByShellWindowId(container_id);
+  wallpaper_widget->SetBounds(container->GetBounds());
   return wallpaper_widget;
 }
 

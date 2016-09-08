@@ -13,6 +13,7 @@
 
 namespace base {
 class MessageLoop;
+class SequencedWorkerPoolOwner;
 }
 
 namespace gfx {
@@ -48,6 +49,7 @@ class WmTestHelper {
   ui::TestWindowTreeClientSetup window_tree_client_setup_;
   std::unique_ptr<WindowManagerApplication> window_manager_app_;
   WmTestScreen* screen_ = nullptr;  // Owned by |window_manager_app_|.
+  std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(WmTestHelper);
 };

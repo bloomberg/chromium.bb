@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_
-#define ASH_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_
+#ifndef ASH_COMMON_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_
+#define ASH_COMMON_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_
 
 #include <memory>
 
@@ -12,12 +12,10 @@
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
-class RootWindowController;
+
+class WmRootWindowController;
+class WmWindow;
 
 // This class implements a widget-based wallpaper.
 // WallpaperWidgetController is owned by RootWindowController.
@@ -38,12 +36,12 @@ class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
   // Move the wallpaper for |root_window| to the specified |container|.
   // The lock screen moves the wallpaper container to hides the user's windows.
   // Returns true if there was something to reparent.
-  bool Reparent(aura::Window* root_window, int container);
+  bool Reparent(WmWindow* root_window, int container);
 
   // Starts wallpaper fade in animation. |root_window_controller| is
   // the root window where the animation will happen. (This is
   // necessary this as |layer_| doesn't have access to the root window).
-  void StartAnimating(RootWindowController* root_window_controller);
+  void StartAnimating(WmRootWindowController* root_window_controller);
 
   views::Widget* widget() { return widget_; }
 
@@ -100,4 +98,4 @@ class ASH_EXPORT AnimatingWallpaperWidgetController {
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_
+#endif  // ASH_COMMON_WALLPAPER_WALLPAPER_WIDGET_CONTROLLER_H_

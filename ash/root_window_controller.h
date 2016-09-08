@@ -51,7 +51,6 @@ class ScopedCaptureClient;
 namespace ash {
 class AshWindowTreeHost;
 class AlwaysOnTopController;
-class AnimatingWallpaperWidgetController;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
@@ -63,7 +62,6 @@ class SystemTray;
 class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
-class WallpaperWidgetController;
 class WmRootWindowControllerAura;
 class WmShelfAura;
 class WmWindow;
@@ -132,16 +130,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     touch_hud_projection_ = hud;
   }
 
-  WallpaperWidgetController* wallpaper_widget_controller() {
-    return wallpaper_widget_controller_.get();
-  }
-  void SetWallpaperWidgetController(WallpaperWidgetController* controller);
-  AnimatingWallpaperWidgetController* animating_wallpaper_widget_controller() {
-    return animating_wallpaper_widget_controller_.get();
-  }
-  void SetAnimatingWallpaperWidgetController(
-      AnimatingWallpaperWidgetController* controller);
-
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -189,7 +177,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Called when the brightness/grayscale animation from white to the login
   // wallpaper image has started.  Starts |boot_splash_screen_|'s hiding
   // animation (if the screen is non-NULL).
-  void HandleInitialWallpaperAnimationStarted();
+  void OnInitialWallpaperAnimationStarted();
 
   // Called when the wallpaper animation is finished. Updates
   // |system_wallpaper_| to be black and drops |boot_splash_screen_| and moves
@@ -304,9 +292,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Handles double clicks on the panel window header.
   std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
-  std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
-  std::unique_ptr<AnimatingWallpaperWidgetController>
-      animating_wallpaper_widget_controller_;
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 
   // Manages the context menu.

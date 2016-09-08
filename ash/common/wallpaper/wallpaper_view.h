@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_VIEW_H_
-#define ASH_WALLPAPER_WALLPAPER_VIEW_H_
+#ifndef ASH_COMMON_WALLPAPER_WALLPAPER_VIEW_H_
+#define ASH_COMMON_WALLPAPER_WALLPAPER_VIEW_H_
 
 #include <memory>
 
@@ -40,4 +40,4 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id);
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_VIEW_H_
+#endif  // ASH_COMMON_WALLPAPER_WALLPAPER_VIEW_H_

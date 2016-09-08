@@ -13,13 +13,15 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -346,7 +348,9 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
-  views::Widget* widget = Shell::GetPrimaryRootWindowController()
+  views::Widget* widget = WmShell::Get()
+                              ->GetPrimaryRootWindow()
+                              ->GetRootWindowController()
                               ->wallpaper_widget_controller()
                               ->widget();
   std::unique_ptr<views::MenuRunner> menu_runner(

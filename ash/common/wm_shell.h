@@ -18,6 +18,10 @@
 #include "base/observer_list.h"
 #include "ui/base/ui_base_types.h"
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace display {
 class Display;
 class ManagedDisplayInfo;
@@ -57,6 +61,7 @@ class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToastManager;
+class WallpaperController;
 class WallpaperDelegate;
 class WindowCycleController;
 class WindowCycleEventFilter;
@@ -87,7 +92,7 @@ class ASH_EXPORT WmShell {
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
-  void Initialize();
+  void Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool);
   virtual void Shutdown();
 
   ShellDelegate* delegate() { return delegate_.get(); }
@@ -144,6 +149,10 @@ class ASH_EXPORT WmShell {
   }
 
   ToastManager* toast_manager() { return toast_manager_.get(); }
+
+  WallpaperController* wallpaper_controller() {
+    return wallpaper_controller_.get();
+  }
 
   WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
 
@@ -352,6 +361,10 @@ class ASH_EXPORT WmShell {
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;
 
+  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
+    return blocking_pool_;
+  }
+
 #if defined(OS_CHROMEOS)
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
@@ -420,6 +433,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
@@ -431,6 +445,8 @@ class ASH_EXPORT WmShell {
   WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   bool simulate_modal_window_open_for_testing_ = false;
+
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;

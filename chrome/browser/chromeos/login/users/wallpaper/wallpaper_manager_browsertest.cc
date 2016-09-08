@@ -6,14 +6,13 @@
 
 #include <stddef.h>
 
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -72,7 +71,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   ~WallpaperManagerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    controller_ = ash::Shell::GetInstance()->wallpaper_controller();
+    controller_ = ash::WmShell::Get()->wallpaper_controller();
     controller_->set_wallpaper_reload_delay_for_test(0);
     local_state_ = g_browser_process->local_state();
     UpdateDisplay("800x600");

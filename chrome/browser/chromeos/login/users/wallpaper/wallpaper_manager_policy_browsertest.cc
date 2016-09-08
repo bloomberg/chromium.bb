@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wallpaper/wallpaper_controller_observer.h"
+#include "ash/common/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -115,7 +115,7 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
 // Obtain wallpaper image and return its average ARGB color.
 SkColor GetAverageWallpaperColor() {
   const gfx::ImageSkia image =
-      ash::Shell::GetInstance()->wallpaper_controller()->GetWallpaper();
+      ash::WmShell::Get()->wallpaper_controller()->GetWallpaper();
 
   const gfx::ImageSkiaRep& representation = image.GetRepresentation(1.);
   if (representation.is_null()) {
@@ -199,7 +199,7 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    ash::Shell::GetInstance()->wallpaper_controller()->AddObserver(this);
+    ash::WmShell::Get()->wallpaper_controller()->AddObserver(this);
 
     // Set up policy signing.
     user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
@@ -207,7 +207,7 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
   }
 
   void TearDownOnMainThread() override {
-    ash::Shell::GetInstance()->wallpaper_controller()->RemoveObserver(this);
+    ash::WmShell::Get()->wallpaper_controller()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 

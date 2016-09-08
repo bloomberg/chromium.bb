@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm_shell.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -228,7 +228,7 @@ class CustomizationWallpaperDownloaderBrowserTest
   ~CustomizationWallpaperDownloaderBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    controller_ = ash::Shell::GetInstance()->wallpaper_controller();
+    controller_ = ash::WmShell::Get()->wallpaper_controller();
     local_state_ = g_browser_process->local_state();
   }
 

@@ -20,7 +20,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -38,7 +37,6 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -56,8 +54,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
@@ -227,48 +223,6 @@ void HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
 }
 
-gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
-  // TODO(oshima): Consider adding a command line option to control
-  // wallpaper images for testing.
-  // The size is randomly picked.
-  gfx::Size image_size(1366, 768);
-  gfx::Canvas canvas(image_size, 1.0f, true);
-  canvas.DrawColor(fill);
-  SkPaint paint;
-  paint.setColor(rect);
-  paint.setStrokeWidth(10);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-  canvas.DrawRoundRect(gfx::Rect(image_size), 100, paint);
-  return gfx::ImageSkia(canvas.ExtractImageRep());
-}
-
-void HandleToggleWallpaperMode() {
-  static int index = 0;
-  WallpaperController* wallpaper_controller =
-      Shell::GetInstance()->wallpaper_controller();
-  switch (++index % 4) {
-    case 0:
-      ash::WmShell::Get()->wallpaper_delegate()->InitializeWallpaper();
-      break;
-    case 1:
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE),
-          wallpaper::WALLPAPER_LAYOUT_STRETCH);
-      break;
-    case 2:
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN),
-          wallpaper::WALLPAPER_LAYOUT_CENTER);
-      break;
-    case 3:
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED),
-          wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED);
-      break;
-  }
-}
-
 bool CanHandleUnpin() {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   return window_state && window_state->IsPinned();
@@ -325,7 +279,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
-    case DEBUG_TOGGLE_WALLPAPER_MODE:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case ROTATE_SCREEN:
@@ -368,7 +321,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
   switch (action) {
-    case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -427,9 +379,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {
-    case DEBUG_TOGGLE_WALLPAPER_MODE:
-      HandleToggleWallpaperMode();
-      break;
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
       break;

@@ -83,6 +83,16 @@ WindowManagerApplication::~WindowManagerApplication() {
   // Destroy the WindowManager while still valid. This way we ensure
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
+
+  if (blocking_pool_) {
+    // Like BrowserThreadImpl, the goal is to make it impossible for ash to
+    // 'infinite loop' during shutdown, but to reasonably expect that all
+    // BLOCKING_SHUTDOWN tasks queued during shutdown get run. There's nothing
+    // particularly scientific about the number chosen.
+    const int kMaxNewShutdownBlockingTasks = 1000;
+    blocking_pool_->Shutdown(kMaxNewShutdownBlockingTasks);
+  }
+
   gpu_service_.reset();
 #if defined(OS_CHROMEOS)
   statistics_provider_.reset();
@@ -96,7 +106,8 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 }
 
 void WindowManagerApplication::InitWindowManager(
-    std::unique_ptr<ui::WindowTreeClient> window_tree_client) {
+    std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
   InitializeComponents();
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
@@ -107,7 +118,7 @@ void WindowManagerApplication::InitWindowManager(
   statistics_provider_->SetMachineStatistic("initial_locale", "en-US");
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 #endif
-  window_manager_->Init(std::move(window_tree_client));
+  window_manager_->Init(std::move(window_tree_client), blocking_pool);
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
@@ -131,7 +142,11 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
   native_widget_factory_mus_.reset(
       new NativeWidgetFactoryMus(window_manager_.get()));
 
-  InitWindowManager(std::move(window_tree_client));
+  const size_t kMaxNumberThreads = 3u;  // Matches that of content.
+  const char kThreadNamePrefix[] = "MashBlocking";
+  blocking_pool_ = new base::SequencedWorkerPool(
+      kMaxNumberThreads, kThreadNamePrefix, base::TaskPriority::USER_VISIBLE);
+  InitWindowManager(std::move(window_tree_client), blocking_pool_);
 }
 
 bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,

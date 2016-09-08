@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -474,11 +474,9 @@ void LoginDisplayHostImpl::Finalize() {
   // When adding another user into the session, we defer the wallpaper's
   // animation in order to prevent the flashing of the previous user's windows.
   // See crbug.com/541864.
-  if (ash::Shell::HasInstance() &&
+  if (ash::WmShell::HasInstance() &&
       finalize_animation_type_ != ANIMATION_ADD_USER) {
-    ash::Shell::GetInstance()
-        ->wallpaper_controller()
-        ->MoveToUnlockedContainer();
+    ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
   }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
@@ -603,7 +601,7 @@ void LoginDisplayHostImpl::StartUserAdding(
         ash::kShellWindowId_LockScreenContainersContainer);
     lock_container->layer()->SetOpacity(1.0);
 
-    ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
+    ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
   } else {
     NOTIMPLEMENTED();
   }
@@ -846,9 +844,7 @@ void LoginDisplayHostImpl::Observe(
     if (!chrome::IsRunningInMash()) {
       // For new user, move wallpaper to lock container so that windows created
       // during the user image picker step are below it.
-      ash::Shell::GetInstance()
-          ->wallpaper_controller()
-          ->MoveToLockedContainer();
+      ash::WmShell::Get()->wallpaper_controller()->MoveToLockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1011,9 +1007,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   if (ash::Shell::HasInstance() &&
       finalize_animation_type_ == ANIMATION_ADD_USER) {
     if (!chrome::IsRunningInMash()) {
-      ash::Shell::GetInstance()
-          ->wallpaper_controller()
-          ->MoveToUnlockedContainer();
+      ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
     } else {
       NOTIMPLEMENTED();
     }

@@ -11,9 +11,9 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -220,9 +220,9 @@ void SetWallpaper(const gfx::ImageSkia& image,
     return;
   }
   // Avoid loading unnecessary wallpapers in tests without a shell instance.
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->wallpaper_controller()->SetWallpaperImage(
-        image, layout);
+  if (ash::WmShell::HasInstance()) {
+    ash::WmShell::Get()->wallpaper_controller()->SetWallpaperImage(image,
+                                                                   layout);
   }
 }
 
@@ -423,7 +423,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
   // Some browser tests do not have a shell instance. As no wallpaper is needed
   // in these tests anyway, avoid loading one, preventing crashes and speeding
   // up the tests.
-  if (!ash::Shell::HasInstance())
+  if (!ash::WmShell::HasInstance())
     return;
 
   WallpaperInfo info;
@@ -465,7 +465,7 @@ void WallpaperManager::InitializeWallpaper() {
   // Zero delays is also set in autotests.
   if (WizardController::IsZeroDelayEnabled()) {
     // Ensure tests have some sort of wallpaper.
-    ash::Shell::GetInstance()->wallpaper_controller()->CreateEmptyWallpaper();
+    ash::WmShell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
     return;
   }
 
@@ -1142,7 +1142,7 @@ void WallpaperManager::SetDefaultWallpaperPath(
   default_large_wallpaper_file_ = default_large_wallpaper_file;
 
   ash::WallpaperController* controller =
-      ash::Shell::GetInstance()->wallpaper_controller();
+      ash::WmShell::Get()->wallpaper_controller();
 
   // |need_update_screen| is true if the previous default wallpaper is visible
   // now, so we need to update wallpaper on the screen.

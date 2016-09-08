@@ -25,6 +25,7 @@
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -60,7 +61,9 @@ WmShell* WmShell::Get() {
   return instance_;
 }
 
-void WmShell::Initialize() {
+void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
+  blocking_pool_ = pool;
+
   // Some delegates access WmShell during their construction. Create them here
   // instead of the WmShell constructor.
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
@@ -76,11 +79,15 @@ void WmShell::Initialize() {
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
+
+  wallpaper_controller_.reset(new WallpaperController(blocking_pool_));
 }
 
 void WmShell::Shutdown() {
-  // Accesses WmShell in its destructor.
+  // These members access WmShell in their destructors.
+  wallpaper_controller_.reset();
   accessibility_delegate_.reset();
+
   // ShelfWindowWatcher has window observers and a pointer to the shelf model.
   shelf_window_watcher_.reset();
   // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC

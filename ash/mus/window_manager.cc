@@ -74,7 +74,8 @@ WindowManager::~WindowManager() {
 }
 
 void WindowManager::Init(
-    std::unique_ptr<ui::WindowTreeClient> window_tree_client) {
+    std::unique_ptr<ui::WindowTreeClient> window_tree_client,
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
 
@@ -101,7 +102,7 @@ void WindowManager::Init(
       base::MakeUnique<AppListPresenterStub>(), connector_));
   shell_.reset(new WmShellMus(std::move(shell_delegate), this,
                               pointer_watcher_event_router_.get()));
-  shell_->Initialize();
+  shell_->Initialize(blocking_pool);
   lookup_.reset(new WmLookupMus);
 }
 

@@ -36,10 +36,6 @@ class FocusClient;
 }
 }
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace chromeos {
 class AudioA11yController;
 }
@@ -128,7 +124,6 @@ class ScreenLayoutObserver;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
-class WallpaperController;
 class WebNotificationTray;
 class WindowPositioner;
 class WindowTreeHostManager;
@@ -274,9 +269,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return tooltip_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
-  WallpaperController* wallpaper_controller() {
-    return wallpaper_controller_.get();
-  }
   LinkHandlerModelFactory* link_handler_model_factory() {
     return link_handler_model_factory_;
   }
@@ -336,8 +328,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   aura::client::ActivationClient* activation_client() {
     return activation_client_;
   }
-
-  base::SequencedWorkerPool* blocking_pool() { return blocking_pool_; }
 
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
@@ -453,7 +443,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   // Takes ownership of |delegate|.
-  Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool);
+  explicit Shell(ShellDelegate* delegate);
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
@@ -500,7 +490,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
-  std::unique_ptr<WallpaperController> wallpaper_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
@@ -592,8 +581,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<GPUSupport> gpu_support_;
 
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
-
-  base::SequencedWorkerPool* blocking_pool_;
 
   bool in_mus_ = false;
 

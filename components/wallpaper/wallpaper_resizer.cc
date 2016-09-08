@@ -7,14 +7,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_runner.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
-
-using base::SequencedWorkerPool;
 
 namespace wallpaper {
 namespace {
@@ -30,8 +27,8 @@ void Resize(SkBitmap orig_bitmap,
             const gfx::Size& target_size,
             WallpaperLayout layout,
             SkBitmap* resized_bitmap_out,
-            SequencedWorkerPool* worker_pool) {
-  DCHECK(worker_pool->RunsTasksOnCurrentThread());
+            base::TaskRunner* task_runner) {
+  DCHECK(task_runner->RunsTasksOnCurrentThread());
   SkBitmap new_bitmap = orig_bitmap;
 
   const int orig_width = orig_bitmap.width();
@@ -104,15 +101,16 @@ uint32_t WallpaperResizer::GetImageId(const gfx::ImageSkia& image) {
   return image_rep.is_null() ? 0 : image_rep.sk_bitmap().getGenerationID();
 }
 
-WallpaperResizer::WallpaperResizer(const gfx::ImageSkia& image,
-                                   const gfx::Size& target_size,
-                                   WallpaperLayout layout,
-                                   base::SequencedWorkerPool* worker_pool_ptr)
+WallpaperResizer::WallpaperResizer(
+    const gfx::ImageSkia& image,
+    const gfx::Size& target_size,
+    WallpaperLayout layout,
+    const scoped_refptr<base::TaskRunner>& task_runner)
     : image_(image),
       original_image_id_(GetImageId(image_)),
       target_size_(target_size),
       layout_(layout),
-      worker_pool_(worker_pool_ptr),
+      task_runner_(task_runner),
       weak_ptr_factory_(this) {
   image_.MakeThreadSafe();
 }
@@ -122,11 +120,10 @@ WallpaperResizer::~WallpaperResizer() {
 
 void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
-  scoped_refptr<SequencedWorkerPool> worker_pool_refptr(worker_pool_);
-  if (!worker_pool_->PostTaskAndReply(
+  if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&Resize, *image_.bitmap(), target_size_, layout_,
-                     resized_bitmap, base::RetainedRef(worker_pool_refptr)),
+                     resized_bitmap, base::RetainedRef(task_runner_)),
           base::Bind(&WallpaperResizer::OnResizeFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(resized_bitmap)))) {

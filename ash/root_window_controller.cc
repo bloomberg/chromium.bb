@@ -26,6 +26,7 @@
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -47,7 +48,6 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
@@ -334,18 +334,6 @@ WorkspaceController* RootWindowController::workspace_controller() {
   return wm_root_window_controller_->workspace_controller();
 }
 
-void RootWindowController::SetWallpaperWidgetController(
-    WallpaperWidgetController* controller) {
-  wallpaper_widget_controller_.reset(controller);
-}
-
-void RootWindowController::SetAnimatingWallpaperWidgetController(
-    AnimatingWallpaperWidgetController* controller) {
-  if (animating_wallpaper_widget_controller_.get())
-    animating_wallpaper_widget_controller_->StopAnimating();
-  animating_wallpaper_widget_controller_.reset(controller);
-}
-
 void RootWindowController::Shutdown() {
   WmShell::Get()->RemoveShellObserver(this);
 
@@ -355,10 +343,6 @@ void RootWindowController::Shutdown() {
   }
 #endif
 
-  if (animating_wallpaper_widget_controller_.get())
-    animating_wallpaper_widget_controller_->StopAnimating();
-  wallpaper_widget_controller_.reset();
-  animating_wallpaper_widget_controller_.reset();
   aura::Window* root_window = GetRootWindow();
   WmWindow* root_shutting_down = WmWindowAura::Get(root_window);
   WmShell* shell = WmShell::Get();
@@ -503,7 +487,7 @@ void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
     status_area_widget->UpdateAfterLoginStatusChange(status);
 }
 
-void RootWindowController::HandleInitialWallpaperAnimationStarted() {
+void RootWindowController::OnInitialWallpaperAnimationStarted() {
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshAnimateFromBootSplashScreen) &&
@@ -522,18 +506,6 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 #if defined(OS_CHROMEOS)
   boot_splash_screen_.reset();
 #endif
-
-  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
-  // Only removes old component when wallpaper animation finished. If we
-  // remove the old one before the new wallpaper is done fading in there will
-  // be a white flash during the animation.
-  if (animating_wallpaper_widget_controller()) {
-    WallpaperWidgetController* controller =
-        animating_wallpaper_widget_controller()->GetController(true);
-    DCHECK_EQ(controller->widget(), widget);
-    // Release the old controller and close its wallpaper widget.
-    SetWallpaperWidgetController(controller);
-  }
 }
 
 void RootWindowController::CloseChildWindows() {
@@ -561,10 +533,6 @@ void RootWindowController::CloseChildWindows() {
     docked_layout_manager_ = NULL;
   }
   wm_shelf_aura_->ShutdownShelfWidget();
-
-  // Close wallpaper widget first as it depends on tooltip.
-  wallpaper_widget_controller_.reset();
-  animating_wallpaper_widget_controller_.reset();
 
   wm_root_window_controller_->DeleteWorkspaceController();
 
@@ -647,14 +615,16 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
 
   // Wallpaper controller may not be set yet if user clicked on status are
   // before initial animation completion. See crbug.com/222218
-  if (!wallpaper_widget_controller_.get())
+  WallpaperWidgetController* wallpaper_widget_controller =
+      wm_root_window_controller_->wallpaper_widget_controller();
+  if (!wallpaper_widget_controller)
     return;
 
   menu_runner_.reset(new views::MenuRunner(
       menu_model_adapter_->CreateMenu(),
       views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
   ignore_result(
-      menu_runner_->RunMenuAt(wallpaper_widget_controller_->widget(), nullptr,
+      menu_runner_->RunMenuAt(wallpaper_widget_controller->widget(), nullptr,
                               gfx::Rect(location_in_screen, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT, source_type));
 }
