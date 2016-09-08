@@ -7,15 +7,14 @@
 # Download page:
 # https://pypi.python.org/pypi/Jinja2
 PACKAGE='Jinja2'
-VERSION='2.7.1'
+VERSION='2.8'
+SRC_URL='https://pypi.python.org/packages/f2/2f/0b98b06a345a761bec91a079ccae392d282690c2d8272e708f4d10829e22/Jinja2-2.8.tar.gz'
 PACKAGE_DIR='jinja2'
 
 CHROMIUM_FILES="README.chromium OWNERS get_jinja2.sh"
 EXTRA_FILES='LICENSE AUTHORS'
 REMOVE_FILES='testsuite'
 
-SRC_URL='https://pypi.python.org/packages/source/'
-SRC_URL+="${PACKAGE:0:1}/$PACKAGE/$PACKAGE-$VERSION.tar.gz"
 FILENAME="$(basename $SRC_URL)"
 MD5_FILENAME="$FILENAME.md5"
 SHA512_FILENAME="$FILENAME.sha512"
@@ -29,7 +28,7 @@ OLD_DIR="$THIRD_PARTY/$PACKAGE_DIR.old"
 
 function check_hashes {
   # Hashes generated via:
-  # FILENAME=Jinja2-2.7.1.tar.gz
+  # FILENAME=Jinja2-2.8.tar.gz
   # md5sum "$FILENAME" > "$FILENAME.md5"
   # sha512sum "$FILENAME" > "$FILENAME.sha512"
   # unset FILENAME
