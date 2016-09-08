@@ -35,10 +35,11 @@ void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace)
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gammaNamedHistogram, new EnumerationHistogram("Blink.ColorSpace.Destination", GammaEnd));
 
     if (colorSpace) {
-        // TODO (msarett): Add a check for gammaIsLinear() when that API lands in Skia.
         Gamma gamma;
         if (colorSpace->gammaCloseToSRGB()) {
             gamma = GammaSRGB;
+        } else if (colorSpace->gammaIsLinear()) {
+            gamma = GammaLinear;
         } else {
             gamma = GammaNonStandard;
         }
