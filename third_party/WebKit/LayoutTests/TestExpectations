@@ -804,9 +804,6 @@ crbug.com/630671 imported/wpt/pointerevents/pointerevent_capture_suppressing_mou
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]
 crbug.com/630671 imported/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html [ Skip ]
 
-crbug.com/644122 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
-crbug.com/644122 paint/invalidation/document-flipped-blocks-writing-mode-scroll.html [ NeedsRebaseline ]
-
 # The commented lines here for Mac is due to the fact that there is a more
 # generic skip rule in the next block of rules. However, when they get fixed
 # these should be uncommented as there is no touch support on Mac.

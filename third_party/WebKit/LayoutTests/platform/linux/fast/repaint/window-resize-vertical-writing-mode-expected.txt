@@ -15,6 +15,11 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 923, 219],
           "reason": "forced by layout"
@@ -26,13 +31,13 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 600, 500],
-          "reason": "full"
+          "rect": [339, 0, 600, 500],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
-          "rect": [339, 235, 600, 265],
-          "reason": "incremental"
+          "rect": [0, 0, 600, 500],
+          "reason": "full"
         },
         {
           "object": "LayoutView #document",
@@ -53,11 +58,6 @@
           "object": "LayoutText #text",
           "rect": [507, 7, 423, 471],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [939, 0, 339, 235],
-          "reason": "incremental"
         }
       ]
     }
@@ -65,7 +65,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow HTML",
@@ -154,8 +154,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
+          "rect": [200, 0, 939, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
           "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
@@ -191,6 +201,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "bounds change"
+    },
     {
       "object": "LayoutBlockFlow BODY",
       "reason": "bounds change"
@@ -282,6 +296,11 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [-539, 0, 939, 235],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [-531, 8, 923, 219],
           "reason": "forced by layout"
@@ -293,13 +312,8 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [400, 0, 539, 235],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 235, 400, 365],
-          "reason": "incremental"
+          "rect": [0, 0, 400, 600],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutView #document",
@@ -327,7 +341,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow HTML",
