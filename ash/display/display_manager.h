@@ -28,10 +28,6 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
-namespace aura {
-class Window;
-}
-
 namespace chromeos {
 class DisplayNotificationsTest;
 }
