@@ -320,6 +320,8 @@ source_set("browser") {
     "physical_web/create_physical_web_data_source.h",
     "physical_web/create_physical_web_data_source.mm",
     "physical_web/physical_web_constants.h",
+    "physical_web/start_physical_web_discovery.h",
+    "physical_web/start_physical_web_discovery.mm",
     "pref_names.cc",
     "pref_names.h",
     "prefs/browser_prefs.h",
