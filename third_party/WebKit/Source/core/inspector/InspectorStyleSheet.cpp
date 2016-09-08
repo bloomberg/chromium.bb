@@ -1020,14 +1020,7 @@ String InspectorStyleSheet::finalURL()
 bool InspectorStyleSheet::setText(const String& text, ExceptionState&)
 {
     innerSetText(text, true);
-
-    if (listener())
-        listener()->willReparseStyleSheet();
-
     m_pageStyleSheet->setText(text);
-
-    if (listener())
-        listener()->didReparseStyleSheet();
     onStyleSheetTextChanged();
     return true;
 }

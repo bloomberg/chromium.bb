@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>span { color: red }</style>
+<script>
+function test() {
+
+var nodeId;
+var sheetId;
+
+InspectorTest.selectNodeAndWaitForStyles("styled-span", nodeSelected);
+
+function nodeSelected(node) {
+    nodeId = node.id;
+    InspectorTest.cssModel.matchedStylesPromise(nodeId).then(matchedStylesBefore);
+}
+
+function matchedStylesBefore(matchedResult) {
+    sheetId = matchedResult.nodeStyles()[1].styleSheetId;
+    InspectorTest.addResult("\n== Matched rules before @import added ==\n");
+    InspectorTest.dumpSelectedElementStyles(true);
+    InspectorTest.CSSAgent.setStyleSheetText(sheetId, "@import 'data:text/css,span{color:green}';").then(sheetTextSet);
+}
+
+function sheetTextSet() {
+    InspectorTest.selectNodeAndWaitForStyles("styled-span", matchedStylesAfter);
+}
+
+function matchedStylesAfter() {
+    InspectorTest.addResult("\n== Matched rules after @import added ==\n");
+    InspectorTest.dumpSelectedElementStyles(true);
+    InspectorTest.completeTest();
+}
+
+}
+</script>
+<body onload="runTest()">
+<span id="styled-span"></span>

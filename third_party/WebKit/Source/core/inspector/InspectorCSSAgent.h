@@ -200,8 +200,6 @@ private:
 
     // InspectorStyleSheet::Listener implementation
     void styleSheetChanged(InspectorStyleSheetBase*) override;
-    void willReparseStyleSheet() override;
-    void didReparseStyleSheet() override;
 
     void resetPseudoStates();
 
@@ -223,7 +221,6 @@ private:
 
     Member<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
-    bool m_isSettingStyleSheetText;
     int m_resourceContentLoaderClientId;
 
     friend class InspectorResourceContentLoaderCallback;

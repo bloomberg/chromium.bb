@@ -615,7 +615,6 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrame
     , m_networkAgent(networkAgent)
     , m_resourceContentLoader(resourceContentLoader)
     , m_resourceContainer(resourceContainer)
-    , m_isSettingStyleSheetText(false)
     , m_resourceContentLoaderClientId(resourceContentLoader->createClientId())
 {
 }
@@ -715,9 +714,6 @@ void InspectorCSSAgent::fontsUpdated()
 
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
-    if (m_isSettingStyleSheetText)
-        return;
-
     m_invalidatedDocuments.add(document);
 }
 
@@ -1789,18 +1785,6 @@ void InspectorCSSAgent::styleSheetChanged(InspectorStyleSheetBase* styleSheet)
         return;
     flushPendingProtocolNotifications();
     frontend()->styleSheetChanged(styleSheet->id());
-}
-
-void InspectorCSSAgent::willReparseStyleSheet()
-{
-    ASSERT(!m_isSettingStyleSheetText);
-    m_isSettingStyleSheetText = true;
-}
-
-void InspectorCSSAgent::didReparseStyleSheet()
-{
-    ASSERT(m_isSettingStyleSheetText);
-    m_isSettingStyleSheetText = false;
 }
 
 void InspectorCSSAgent::resetPseudoStates()

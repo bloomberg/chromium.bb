@@ -84,8 +84,6 @@ public:
         Listener() { }
         virtual ~Listener() { }
         virtual void styleSheetChanged(InspectorStyleSheetBase*) = 0;
-        virtual void willReparseStyleSheet() = 0;
-        virtual void didReparseStyleSheet() = 0;
     };
     virtual ~InspectorStyleSheetBase() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
