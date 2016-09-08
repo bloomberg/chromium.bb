@@ -156,6 +156,7 @@ mojom("arc_bindings") {
     "common/tts.mojom",
     "common/video.mojom",
     "common/video_accelerator.mojom",
+    "common/wallpaper.mojom",
   ]
 
   deps = [
