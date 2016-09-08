@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(ayatane): Unify bin/run_sysmon.sh with this once this is stable.
+
 cd "$(dirname "$(readlink -f -- "$0")")"
 if [ requirements.txt -nt venv/timestamp ]; then
   echo Creating or updating virtualenv in venv/
