@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_direction.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -115,6 +116,25 @@ struct NGBoxStrut {
     return result;
   }
 };
+
+// This struct is used for the margin collapsing calculation.
+struct NGMarginStrut {
+  LayoutUnit margin_block_start;
+  LayoutUnit margin_block_end;
+
+  LayoutUnit negative_margin_block_start;
+  LayoutUnit negative_margin_block_end;
+
+  void AppendMarginBlockStart(const LayoutUnit& value);
+  void AppendMarginBlockEnd(const LayoutUnit& value);
+
+  String ToString() const;
+};
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGMarginStrut& value) {
+  return stream << value.ToString();
+}
 
 }  // namespace blink
 

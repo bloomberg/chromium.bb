@@ -61,4 +61,29 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
   }
 }
 
+void NGMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
+  if (value < 0) {
+    negative_margin_block_start =
+        -std::max(value.abs(), negative_margin_block_start.abs());
+  } else {
+    margin_block_start = std::max(value, margin_block_start);
+  }
+}
+
+void NGMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
+  if (value < 0) {
+    negative_margin_block_end =
+        -std::max(value.abs(), negative_margin_block_end.abs());
+  } else {
+    margin_block_end = std::max(value, margin_block_end);
+  }
+}
+
+String NGMarginStrut::ToString() const {
+  return String::format(
+      "Start: (%d %d) End: (%d %d)", negative_margin_block_start.toInt(),
+      margin_block_start.toInt(), negative_margin_block_end.toInt(),
+      margin_block_end.toInt());
+}
+
 }  // namespace blink

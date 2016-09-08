@@ -41,6 +41,11 @@ LayoutUnit NGFragmentBase::BlockOffset() const {
              : physical_fragment_->LeftOffset();
 }
 
+NGMarginStrut NGFragmentBase::MarginStrut() const {
+  // TODO(layout-ng): Change MarginStrut to support writing direction.
+  return physical_fragment_->MarginStrut();
+}
+
 DEFINE_TRACE(NGFragmentBase) {
   visitor->trace(physical_fragment_);
 }

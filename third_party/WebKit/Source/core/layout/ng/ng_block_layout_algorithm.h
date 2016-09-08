@@ -46,6 +46,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   }
 
  private:
+  // Computes collapsed margins for 2 adjoining blocks and updates the resultant
+  // fragment's MarginStrut if needed.
+  // See https://www.w3.org/TR/CSS2/box.html#collapsing-margins
+  //
+  // @param child_margins Margins information for the current child.
+  // @param children_margin_strut MarginStrut for children of the current child.
+  // @return Margin block start based on collapsed margins result.
+  LayoutUnit CollapseMargins(const NGBoxStrut& child_margins,
+                             const NGMarginStrut& children_margin_strut);
+
   RefPtr<const ComputedStyle> style_;
   Member<NGBox> first_child_;
 
@@ -56,6 +66,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGBox> current_child_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
+  // MarginStrut for the previous child.
+  NGMarginStrut prev_child_margin_strut_;
 };
 
 }  // namespace blink

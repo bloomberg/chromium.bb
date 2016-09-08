@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -58,21 +59,26 @@ class CORE_EXPORT NGPhysicalFragmentBase
     has_been_placed_ = true;
   }
 
+  NGMarginStrut MarginStrut() const { return margin_strut_; }
+
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
   DECLARE_TRACE();
 
  protected:
   NGPhysicalFragmentBase(NGPhysicalSize size,
                          NGPhysicalSize overflow,
-                         NGFragmentType type)
+                         NGFragmentType type,
+                         NGMarginStrut margin_strut)
       : size_(size),
         overflow_(overflow),
+        margin_strut_(margin_strut),
         type_(type),
         has_been_placed_(false) {}
 
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
+  NGMarginStrut margin_strut_;
 
   unsigned type_ : 1;
   unsigned has_been_placed_ : 1;

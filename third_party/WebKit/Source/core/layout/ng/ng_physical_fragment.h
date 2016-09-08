@@ -18,8 +18,9 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
   // This modifies the passed-in children vector.
   NGPhysicalFragment(NGPhysicalSize size,
                      NGPhysicalSize overflow,
-                     HeapVector<Member<const NGPhysicalFragmentBase>>& children)
-      : NGPhysicalFragmentBase(size, overflow, FragmentBox) {
+                     HeapVector<Member<const NGPhysicalFragmentBase>>& children,
+                     NGMarginStrut margin_strut)
+      : NGPhysicalFragmentBase(size, overflow, FragmentBox, margin_strut) {
     children_.swap(children);
   }
 

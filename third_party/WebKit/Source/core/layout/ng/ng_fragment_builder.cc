@@ -10,7 +10,9 @@ NGFragmentBuilder::NGFragmentBuilder(
     NGPhysicalFragmentBase::NGFragmentType type)
     : type_(type),
       writing_mode_(HorizontalTopBottom),
-      direction_(LeftToRight) {}
+      direction_(LeftToRight),
+      is_margin_strut_block_start_updated_(false),
+      is_margin_strut_block_end_updated_(false) {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {
@@ -52,6 +54,24 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragment* child,
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockStart(
+    const NGMarginStrut& from) {
+  DCHECK(!is_margin_strut_block_start_updated_);
+  margin_strut_.margin_block_start = from.margin_block_start;
+  margin_strut_.negative_margin_block_start = from.negative_margin_block_start;
+  is_margin_strut_block_start_updated_ = true;
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockEnd(
+    const NGMarginStrut& from) {
+  DCHECK(!is_margin_strut_block_end_updated_);
+  margin_strut_.margin_block_end = from.margin_block_end;
+  margin_strut_.negative_margin_block_end = from.negative_margin_block_end;
+  is_margin_strut_block_end_updated_ = true;
+  return *this;
+}
+
 NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   // TODO(layout-ng): Support text fragments
   DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox);
@@ -67,9 +87,9 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
         writing_mode_, direction_, physical_size, child->Size()));
     children.append(child);
   }
-
-  return new NGPhysicalFragment(
-      physical_size, overflow_.ConvertToPhysical(writing_mode_), children);
+  return new NGPhysicalFragment(physical_size,
+                                overflow_.ConvertToPhysical(writing_mode_),
+                                children, margin_strut_);
 }
 
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -34,6 +35,8 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   // Returns the offset relative to the parent fragement's content-box.
   LayoutUnit InlineOffset() const;
   LayoutUnit BlockOffset() const;
+
+  NGMarginStrut MarginStrut() const;
 
   NGPhysicalFragmentBase* PhysicalFragment() const {
     return physical_fragment_;
