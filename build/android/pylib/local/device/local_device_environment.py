@@ -80,7 +80,7 @@ class LocalDeviceEnvironment(environment.Environment):
                        else None)
     self._device_serial = args.test_device
     self._devices_lock = threading.Lock()
-    self._devices = []
+    self._devices = None
     self._concurrent_adb = args.enable_concurrent_adb
     self._enable_device_cache = args.enable_device_cache
     self._logcat_monitors = []
@@ -93,6 +93,9 @@ class LocalDeviceEnvironment(environment.Environment):
 
   #override
   def SetUp(self):
+    pass
+
+  def _InitDevices(self):
     device_arg = 'default'
     if self._target_devices_file:
       device_arg = device_list.GetPersistentDeviceList(
@@ -149,6 +152,10 @@ class LocalDeviceEnvironment(environment.Environment):
 
   @property
   def devices(self):
+    # Initialize lazily so that host-only tests do not fail when no devices are
+    # attached.
+    if self._devices is None:
+      self._InitDevices()
     if not self._devices:
       raise device_errors.NoDevicesError()
     return self._devices
@@ -171,6 +178,8 @@ class LocalDeviceEnvironment(environment.Environment):
 
   #override
   def TearDown(self):
+    if self._devices is None:
+      return
     @handle_shard_failures_with(on_failure=self.BlacklistDevice)
     def tear_down_device(d):
       # Write the cache even when not using it so that it will be ready the

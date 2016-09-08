@@ -22,6 +22,7 @@ from devil.android.tools import device_recovery
 from devil.android.tools import device_status
 from devil.utils import cmd_helper
 from devil.utils import parallelizer
+from devil.utils import reraiser_thread
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.constants import host_paths
@@ -299,7 +300,7 @@ class HostTestShard(TestShard):
   def RunTestsOnShard(self):
     results = base_test_result.TestRunResults()
     for test in self._tests:
-      tries_left = self._retries
+      tries_left = self._retries + 1
       result_type = None
       while (result_type != base_test_result.ResultType.PASS
              and tries_left > 0):
@@ -334,9 +335,6 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     self._timeout = None if test_instance.no_timeout else self._DEFAULT_TIMEOUT
 
   def SetUp(self):
-    self._devices = self._GetAllDevices(self._env.devices,
-                                        self._test_instance.known_devices_file)
-
     if os.path.exists(constants.PERF_OUTPUT_DIR):
       shutil.rmtree(constants.PERF_OUTPUT_DIR)
     os.makedirs(constants.PERF_OUTPUT_DIR)
@@ -412,27 +410,40 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     if not self._test_buckets and not self._no_device_tests:
       raise local_device_test_run.NoTestsError()
 
-    def run_perf_tests(shard_id):
-      if shard_id is None:
-        s = HostTestShard(self._env, self._test_instance, self._no_device_tests,
-                          retries=3, timeout=self._timeout)
-      else:
-        if device_status.IsBlacklisted(
-             str(self._devices[shard_id]), self._env.blacklist):
-          logging.warning('Device %s is not active. Will not create shard %s.',
-                          str(self._devices[shard_id]), shard_id)
-          return None
-        s = DeviceTestShard(self._env, self._test_instance,
-                            self._devices[shard_id], shard_id,
-                            self._test_buckets[shard_id],
-                            retries=self._env.max_tries, timeout=self._timeout)
+    def run_no_devices_tests():
+      if not self._no_device_tests:
+        return []
+      s = HostTestShard(self._env, self._test_instance, self._no_device_tests,
+                        retries=3, timeout=self._timeout)
+      return [s.RunTestsOnShard()]
+
+    def device_shard_helper(shard_id):
+      if device_status.IsBlacklisted(
+           str(self._devices[shard_id]), self._env.blacklist):
+        logging.warning('Device %s is not active. Will not create shard %s.',
+                        str(self._devices[shard_id]), shard_id)
+        return None
+      s = DeviceTestShard(self._env, self._test_instance,
+                          self._devices[shard_id], shard_id,
+                          self._test_buckets[shard_id],
+                          retries=self._env.max_tries, timeout=self._timeout)
       return s.RunTestsOnShard()
 
-    device_indices = range(min(len(self._devices), len(self._test_buckets)))
-    if self._no_device_tests:
-      device_indices.append(None)
-    shards = parallelizer.Parallelizer(device_indices).pMap(run_perf_tests)
-    return [x for x in shards.pGet(self._timeout) if x is not None]
+    def run_devices_tests():
+      if not self._test_buckets:
+        return []
+      if self._devices is None:
+        self._devices = self._GetAllDevices(
+            self._env.devices, self._test_instance.known_devices_file)
+
+      device_indices = range(min(len(self._devices), len(self._test_buckets)))
+      shards = parallelizer.Parallelizer(device_indices).pMap(
+          device_shard_helper)
+      return [x for x in shards.pGet(self._timeout) if x is not None]
+
+    host_test_results, device_test_results = reraiser_thread.RunAsync(
+        [run_no_devices_tests, run_devices_tests])
+    return host_test_results + device_test_results
 
   # override
   def TestPackage(self):
