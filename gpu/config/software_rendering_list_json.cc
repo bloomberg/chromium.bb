@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.10",
+  "version": "11.11",
   "entries": [
     {
       "id": 1,
@@ -1245,6 +1245,42 @@ LONG_STRING_CONST(
                     "0x1932", "0x193a", "0x193b", "0x193d"],
       "features": [
         "accelerated_vpx_decode"
+      ]
+    },
+    {
+      "id": 122,
+      "description": "GPU rasterization should only be enabled on Pascal and Maxwell GPUs for now.",
+      "cr_bugs": [643850],
+      "os": {
+        "type": "win"
+      },
+      "features": [
+        "gpu_rasterization"
+      ],
+      "exceptions": [
+        {
+          "vendor_id": "0x10de",
+          "device_id": ["0x1340", "0x1341", "0x1344", "0x1346", "0x1347",
+                        "0x1348", "0x1349", "0x134d", "0x134e", "0x134f",
+                        "0x137a", "0x137d", "0x1380", "0x1381", "0x1382",
+                        "0x1389", "0x1390", "0x1391", "0x1392", "0x1393",
+                        "0x1398", "0x139a", "0x139b", "0x139c", "0x139d",
+                        "0x13b0", "0x13b1", "0x13b2", "0x13b9", "0x13ba",
+                        "0x13bb", "0x13bc", "0x13bd", "0x13c0", "0x13c1",
+                        "0x13c2", "0x13c3", "0x13d7", "0x13d8", "0x13d9",
+                        "0x13da", "0x13f0", "0x13f1", "0x13f2", "0x13f3",
+                        "0x13f8", "0x13f9", "0x13fa", "0x1401", "0x1402",
+                        "0x1406", "0x1407", "0x1427", "0x1430", "0x1431",
+                        "0x1617", "0x1618", "0x1619", "0x161a", "0x1667",
+                        "0x17c2", "0x17c8", "0x17f0", "0x17fd", "0x15f0",
+                        "0x15f1", "0x15f8", "0x15f9", "0x1725", "0x172e",
+                        "0x172f", "0x1b00", "0x1b01", "0x1b70", "0x1b78",
+                        "0x1b80", "0x1b81", "0x1b82", "0x1b83", "0x1bb0",
+                        "0x1bb1", "0x1bb4", "0x1c00", "0x1c01", "0x1c02",
+                        "0x1c03", "0x1c30", "0x1c70", "0x1c80", "0x1c81",
+                        "0x1c82", "0x1ca7", "0x1ca8", "0x1caa", "0x1d01"]
+
+        }
       ]
     }
   ]
