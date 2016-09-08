@@ -46,7 +46,6 @@
       "src@HEAD",
       "--revision",
       "src/v8@20123",
-      "--force",
       "--output_manifest"
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Linux_64___ignition",

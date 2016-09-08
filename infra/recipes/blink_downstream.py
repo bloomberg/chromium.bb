@@ -141,7 +141,7 @@ def RunSteps(api):
   with api.step.context(context):
     # TODO(phajdan.jr): remove redundant **context below once we fix things
     # to behave the same without it.
-    step_result = api.bot_update.ensure_checkout(force=True, **context)
+    step_result = api.bot_update.ensure_checkout(**context)
 
     api.chromium.ensure_goma()
 
@@ -165,7 +165,7 @@ def RunSteps(api):
       # Update without changing got_revision. The first sync is the revision
       # that is tested. The second is just for comparison. Setting got_revision
       # again confuses the waterfall's console view.
-      api.bot_update.ensure_checkout(force=True, update_presentation=False)
+      api.bot_update.ensure_checkout(update_presentation=False)
 
       api.chromium_tests.run_mb_and_compile(
           ['blink_tests'], [],
