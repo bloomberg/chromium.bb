@@ -12,7 +12,7 @@ description("Verifies that for .mediaElement getters, a wrapper that corresponds
 var source;
 function testMediaWrapper(kind) {
     var element = document.createElement(kind);
-    var context = new OfflineAudioContext(1, 1000, 44100);
+    var context = new AudioContext();
 
     source = context.createMediaElementSource(element);
     element = context = null;

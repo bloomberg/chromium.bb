@@ -26,7 +26,7 @@ const unsigned MaxHardwareContexts = 6;
 static unsigned s_hardwareContextCount = 0;
 static unsigned s_contextId = 0;
 
-BaseAudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
+AudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 

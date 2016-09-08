@@ -46,7 +46,7 @@ enum ChannelInterpretation {
     [RaisesException, MeasureAs=AudioNodeDisconnectFromAudioNode] void disconnect(AudioNode destination, unsigned long output, unsigned long input);
     [RaisesException, MeasureAs=AudioNodeDisconnectFromAudioParam] void disconnect(AudioParam destination);
     [RaisesException, MeasureAs=AudioNodeDisconnectFromAudioParam] void disconnect(AudioParam destination, unsigned long output);
-    readonly attribute AudioContext  context;
+    readonly attribute BaseAudioContext context;
     readonly attribute unsigned long numberOfInputs;
     readonly attribute unsigned long numberOfOutputs;
     [RaisesException=Setter] attribute unsigned long         channelCount;

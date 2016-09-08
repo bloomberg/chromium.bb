@@ -27,7 +27,7 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     NoInterfaceObject,
-] interface OfflineAudioContext : AudioContext {
+] interface OfflineAudioContext : BaseAudioContext {
     // Offline rendering
     attribute EventHandler oncomplete;
     readonly attribute unsigned long length;

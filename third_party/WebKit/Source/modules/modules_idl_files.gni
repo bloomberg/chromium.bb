@@ -264,6 +264,7 @@ modules_idl_files =
                     "webaudio/AudioParam.idl",
                     "webaudio/AudioProcessingEvent.idl",
                     "webaudio/AudioSourceNode.idl",
+                    "webaudio/BaseAudioContext.idl",
                     "webaudio/BiquadFilterNode.idl",
                     "webaudio/ChannelMergerNode.idl",
                     "webaudio/ChannelSplitterNode.idl",

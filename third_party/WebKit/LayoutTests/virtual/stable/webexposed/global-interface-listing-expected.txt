@@ -123,40 +123,9 @@ interface AudioBufferSourceNode : AudioSourceNode
     setter loopEnd
     setter loopStart
     setter onended
-interface AudioContext : EventTarget
+interface AudioContext : BaseAudioContext
     attribute @@toStringTag
-    getter currentTime
-    getter destination
-    getter listener
-    getter onstatechange
-    getter sampleRate
-    getter state
-    method close
     method constructor
-    method createAnalyser
-    method createBiquadFilter
-    method createBuffer
-    method createBufferSource
-    method createChannelMerger
-    method createChannelSplitter
-    method createConvolver
-    method createDelay
-    method createDynamicsCompressor
-    method createGain
-    method createIIRFilter
-    method createMediaElementSource
-    method createMediaStreamDestination
-    method createMediaStreamSource
-    method createOscillator
-    method createPanner
-    method createPeriodicWave
-    method createScriptProcessor
-    method createStereoPanner
-    method createWaveShaper
-    method decodeAudioData
-    method resume
-    method suspend
-    setter onstatechange
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter maxChannelCount
@@ -3563,7 +3532,7 @@ interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer
     method constructor
-interface OfflineAudioContext : AudioContext
+interface OfflineAudioContext : BaseAudioContext
     attribute @@toStringTag
     getter length
     getter oncomplete
@@ -6225,40 +6194,9 @@ interface XSLTProcessor
     method setParameter
     method transformToDocument
     method transformToFragment
-interface webkitAudioContext : EventTarget
+interface webkitAudioContext : BaseAudioContext
     attribute @@toStringTag
-    getter currentTime
-    getter destination
-    getter listener
-    getter onstatechange
-    getter sampleRate
-    getter state
-    method close
     method constructor
-    method createAnalyser
-    method createBiquadFilter
-    method createBuffer
-    method createBufferSource
-    method createChannelMerger
-    method createChannelSplitter
-    method createConvolver
-    method createDelay
-    method createDynamicsCompressor
-    method createGain
-    method createIIRFilter
-    method createMediaElementSource
-    method createMediaStreamDestination
-    method createMediaStreamSource
-    method createOscillator
-    method createPanner
-    method createPeriodicWave
-    method createScriptProcessor
-    method createStereoPanner
-    method createWaveShaper
-    method decodeAudioData
-    method resume
-    method suspend
-    setter onstatechange
 interface webkitIDBCursor
     attribute @@toStringTag
     getter direction
@@ -6390,7 +6328,7 @@ interface webkitMediaStream : EventTarget
     setter onaddtrack
     setter oninactive
     setter onremovetrack
-interface webkitOfflineAudioContext : AudioContext
+interface webkitOfflineAudioContext : BaseAudioContext
     attribute @@toStringTag
     getter length
     getter oncomplete

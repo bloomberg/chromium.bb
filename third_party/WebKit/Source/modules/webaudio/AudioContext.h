@@ -19,8 +19,9 @@ class ScriptState;
 // This is an BaseAudioContext which actually plays sound, unlike an
 // OfflineAudioContext which renders sound into a buffer.
 class AudioContext : public BaseAudioContext {
+    DEFINE_WRAPPERTYPEINFO();
 public:
-    static BaseAudioContext* create(Document&, ExceptionState&);
+    static AudioContext* create(Document&, ExceptionState&);
 
     ~AudioContext() override;
     DECLARE_VIRTUAL_TRACE();

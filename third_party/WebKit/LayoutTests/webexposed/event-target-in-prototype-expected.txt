@@ -12,7 +12,6 @@ PASS Performance.prototype.__proto__ is EventTarget.prototype
 PASS SharedWorker.prototype.__proto__ is EventTarget.prototype
 PASS WebSocket.prototype.__proto__ is EventTarget.prototype
 PASS Worker.prototype.__proto__ is EventTarget.prototype
-PASS AudioContext.prototype.__proto__ is EventTarget.prototype
 PASS Window.prototype.__proto__.__proto__ is EventTarget.prototype
 PASS successfullyParsed is true
 

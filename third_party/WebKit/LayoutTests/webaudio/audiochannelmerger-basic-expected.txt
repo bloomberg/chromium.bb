@@ -4,9 +4,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS context.createChannelMerger() did not throw an exception.
-PASS context.createChannelMerger(0) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (0) is outside the range [1, 32]..
+PASS context.createChannelMerger(0) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'BaseAudioContext': The number of inputs provided (0) is outside the range [1, 32]..
 PASS context.createChannelMerger(32) did not throw an exception.
-PASS context.createChannelMerger(33) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (33) is outside the range [1, 32]..
+PASS context.createChannelMerger(33) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'BaseAudioContext': The number of inputs provided (33) is outside the range [1, 32]..
 PASS merger.channelCount is equal to 1.
 PASS merger.channelCount = 3 threw InvalidStateError: Failed to set the 'channelCount' property on 'AudioNode': ChannelMerger: channelCount cannot be changed from 1.
 PASS merger.channelCountMode is equal to "explicit".

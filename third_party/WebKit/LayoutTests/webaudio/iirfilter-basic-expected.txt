@@ -10,20 +10,20 @@ PASS channelCountMode is equal to "max".
 PASS channelInterpretation is equal to "speakers".
 PASS All basic IIRFilter parameters are correct.
 
-PASS createIIRFilter() threw TypeError: Failed to execute 'createIIRFilter' on 'AudioContext': 2 arguments required, but only 0 present..
-PASS createIIRFilter(new Float32Array(1)) threw TypeError: Failed to execute 'createIIRFilter' on 'AudioContext': 2 arguments required, but only 1 present..
-PASS createIIRFilter(null, null) threw TypeError: Failed to execute 'createIIRFilter' on 'AudioContext': The 1st argument is neither an array, nor does it have indexed properties..
-PASS createIIRFilter([], []) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'AudioContext': The number of feedback coefficients provided (0) is outside the range [1, 20]..
-PASS createIIRFilter([1], []) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'AudioContext': The number of feedback coefficients provided (0) is outside the range [1, 20]..
-PASS createIIRFilter([], [1]) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'AudioContext': The number of feedforward coefficients provided (0) is outside the range [1, 20]..
+PASS createIIRFilter() threw TypeError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': 2 arguments required, but only 0 present..
+PASS createIIRFilter(new Float32Array(1)) threw TypeError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': 2 arguments required, but only 1 present..
+PASS createIIRFilter(null, null) threw TypeError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The 1st argument is neither an array, nor does it have indexed properties..
+PASS createIIRFilter([], []) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The number of feedback coefficients provided (0) is outside the range [1, 20]..
+PASS createIIRFilter([1], []) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The number of feedback coefficients provided (0) is outside the range [1, 20]..
+PASS createIIRFilter([], [1]) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The number of feedforward coefficients provided (0) is outside the range [1, 20]..
 PASS createIIRFilter(new Float32Array(20), new Float32Array(20)) did not throw an exception.
-PASS createIIRFilter(new Float32Array(21), [1]) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'AudioContext': The number of feedforward coefficients provided (21) is outside the range [1, 20]..
-PASS createIIRFilter([1], new Float32Array(21)) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'AudioContext': The number of feedback coefficients provided (21) is outside the range [1, 20]..
-PASS createIIRFilter([1], new Float32Array(2)) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'AudioContext': First feedback coefficient cannot be zero..
-PASS createIIRFilter(new Float32Array(10), [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'AudioContext': At least one feedforward coefficient must be non-zero..
-PASS createIIRFilter([1], [1, NaN, Infinity]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'AudioContext': The feedback coefficient 1 is infinite..
-PASS createIIRFilter([1, NaN, Infinity], [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'AudioContext': The feedforward coefficient 1 is infinite..
-PASS createIIRFilter([1, 'abc', []], [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'AudioContext': The feedforward coefficient 1 is not a number..
+PASS createIIRFilter(new Float32Array(21), [1]) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The number of feedforward coefficients provided (21) is outside the range [1, 20]..
+PASS createIIRFilter([1], new Float32Array(21)) threw NotSupportedError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The number of feedback coefficients provided (21) is outside the range [1, 20]..
+PASS createIIRFilter([1], new Float32Array(2)) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': First feedback coefficient cannot be zero..
+PASS createIIRFilter(new Float32Array(10), [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': At least one feedforward coefficient must be non-zero..
+PASS createIIRFilter([1], [1, NaN, Infinity]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The feedback coefficient 1 is infinite..
+PASS createIIRFilter([1, NaN, Infinity], [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The feedforward coefficient 1 is infinite..
+PASS createIIRFilter([1, 'abc', []], [1]) threw InvalidStateError: Failed to execute 'createIIRFilter' on 'BaseAudioContext': The feedforward coefficient 1 is not a number..
 PASS All exceptions for createIIRFilter were correctly thrown.
 
 PASS getFrequencyResponse(null, new Float32Array(1), new Float32Array(1)) threw TypeError: Failed to execute 'getFrequencyResponse' on 'IIRFilterNode': parameter 1 is not of type 'Float32Array'..
