@@ -15,7 +15,6 @@ import hashlib
 import httplib
 import itertools
 import os
-import poster
 import socket
 import sys
 import textwrap
@@ -25,6 +24,28 @@ import urllib2
 import urlparse
 
 from chromite.cbuildbot import constants
+
+# The isolateserver includes a bunch of third_party python packages that clash
+# with chromite's bundled third_party python packages (like oauth2client).
+# Since upload_symbols is not imported in to other parts of chromite, and there
+# are no deps in third_party we care about, purge the chromite copy.  This way
+# we can use isolateserver for deduping.
+# TODO: If we ever sort out third_party/ handling and make it per-script opt-in,
+# we can purge this logic.
+third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
+while True:
+  try:
+    sys.path.remove(third_party)
+  except ValueError:
+    break
+sys.path.insert(0, os.path.join(third_party, 'swarming.client'))
+sys.path.insert(0, os.path.join(third_party, 'upload_symbols'))
+del third_party
+
+# Has to be after sys.path manipulation above.
+# And our sys.path muckery confuses pylint.
+import poster  # pylint: disable=import-error
+
 from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -40,7 +61,8 @@ from chromite.scripts import cros_generate_breakpad_symbols
 # We don't want to import the general keyring module as that will implicitly
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
-import isolateserver
+# And our sys.path muckery confuses pylint.
+import isolateserver  # pylint: disable=import-error
 
 
 # We need this to run once per process. Do it at module import time as that
@@ -191,7 +213,7 @@ class DedupeItem(isolateserver.BufferItem):
   ALGO = hashlib.sha1
 
   def __init__(self, symbol):
-    super(DedupeItem, self).__init__(str(symbol.header), self.ALGO)
+    isolateserver.BufferItem.__init__(self, str(symbol.header), self.ALGO)
     self.symbol = symbol
 
 

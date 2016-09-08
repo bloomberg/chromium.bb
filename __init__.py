@@ -27,7 +27,6 @@ _paths = [
     'dpkt',
     os.path.join('gdata', 'src'),
     'pyelftools',
-    'swarming.client',
 ]
 
 for _path in _paths:

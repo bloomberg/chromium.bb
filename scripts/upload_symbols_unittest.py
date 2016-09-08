@@ -25,6 +25,24 @@ import urllib2
 # on the fly :(.
 os.environ.pop('http_proxy', None)
 
+from chromite.cbuildbot import constants
+
+# The isolateserver includes a bunch of third_party python packages that clash
+# with chromite's bundled third_party python packages (like oauth2client).
+# Since upload_symbols is not imported in to other parts of chromite, and there
+# are no deps in third_party we care about, purge the chromite copy.  This way
+# we can use isolateserver for deduping.
+# TODO: If we ever sort out third_party/ handling and make it per-script opt-in,
+# we can purge this logic.
+third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
+while True:
+  try:
+    sys.path.remove(third_party)
+  except ValueError:
+    break
+sys.path.insert(0, os.path.join(third_party, 'swarming.client'))
+del third_party
+
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -33,7 +51,9 @@ from chromite.lib import remote_access
 from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
 
-import isolateserver
+# And our sys.path muckery confuses pylint.
+import isolateserver  # pylint: disable=import-error
+
 
 class SymbolsTestBase(cros_test_lib.MockTempDirTestCase):
   """Base class for most symbols tests."""
