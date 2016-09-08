@@ -72,12 +72,7 @@ sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const
     case kSRGBCanvasColorSpace:
         return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
     case kLinearRGBCanvasColorSpace:
-        {
-            // Creating a temp srgb colorspace just to get the matrix.
-            // There should be a better way
-            sk_sp<SkColorSpace> tmp = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
-            return SkColorSpace::NewRGB(SkColorSpace::kLinear_GammaNamed, tmp->xyz());
-        }
+        return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named)->makeLinearGamma();
     case kLegacyCanvasColorSpace:
         if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
             // Legacy colorspace ensures color matching with CSS is preserved.
