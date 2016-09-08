@@ -100,7 +100,7 @@ Status AutomationExtension::GetWindowInfo(int* x,
 Status AutomationExtension::UpdateWindow(
     const base::DictionaryValue& update_info) {
   base::ListValue args;
-  args.Append(update_info.DeepCopy());
+  args.Append(update_info.CreateDeepCopy());
   std::unique_ptr<base::Value> result;
   return web_view_->CallAsyncFunction(std::string(),
                                       "updateWindow",

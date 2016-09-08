@@ -92,7 +92,8 @@ void AttachProperties(const Properties& properties,
 
   base::ListValue* const properties_value = new base::ListValue;
   for (const auto& property : properties) {
-    base::DictionaryValue* const property_value = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> property_value(
+        new base::DictionaryValue);
     std::string visibility_as_string;
     switch (property.visibility()) {
       case Property::VISIBILITY_PRIVATE:
@@ -105,7 +106,7 @@ void AttachProperties(const Properties& properties,
     property_value->SetString("visibility", visibility_as_string);
     property_value->SetString("key", property.key());
     property_value->SetString("value", property.value());
-    properties_value->Append(property_value);
+    properties_value->Append(std::move(property_value));
   }
   request_body->Set("properties", properties_value);
 }

@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -117,18 +120,19 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
                                           const string& constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("rid", render_process_id);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
   dict->SetString("rtcConfiguration", rtc_configuration);
   dict->SetString("constraints", constraints);
   dict->SetString("url", url);
-  peer_connection_data_.Append(dict);
-  CreateOrReleasePowerSaveBlocker();
 
   if (observers_.might_have_observers())
     SendUpdate("addPeerConnection", dict->CreateDeepCopy());
+
+  peer_connection_data_.Append(std::move(dict));
+  CreateOrReleasePowerSaveBlocker();
 
   if (render_process_id_set_.insert(render_process_id).second) {
     RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
@@ -184,26 +188,27 @@ void WebRTCInternals::OnUpdatePeerConnection(
     if (!log)
       return;
 
-    base::DictionaryValue* log_entry = new base::DictionaryValue();
-    if (!log_entry)
-      return;
+    std::unique_ptr<base::DictionaryValue> log_entry(
+        new base::DictionaryValue());
 
     double epoch_time = base::Time::Now().ToJsTime();
     string time = base::DoubleToString(epoch_time);
     log_entry->SetString("time", time);
     log_entry->SetString("type", type);
     log_entry->SetString("value", value);
-    log->Append(log_entry);
 
     if (observers_.might_have_observers()) {
       std::unique_ptr<base::DictionaryValue> update(
           new base::DictionaryValue());
       update->SetInteger("pid", static_cast<int>(pid));
       update->SetInteger("lid", lid);
-      update->MergeDictionary(log_entry);
+      update->MergeDictionary(log_entry.get());
 
       SendUpdate("updatePeerConnection", std::move(update));
     }
+
+    log->Append(std::move(log_entry));
+
     return;
   }
 }
@@ -231,7 +236,7 @@ void WebRTCInternals::OnGetUserMedia(int rid,
                                      const std::string& video_constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("rid", rid);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetString("origin", origin);
@@ -240,10 +245,10 @@ void WebRTCInternals::OnGetUserMedia(int rid,
   if (video)
     dict->SetString("video", video_constraints);
 
-  get_user_media_requests_.Append(dict);
-
   if (observers_.might_have_observers())
     SendUpdate("addGetUserMedia", dict->CreateDeepCopy());
+
+  get_user_media_requests_.Append(std::move(dict));
 
   if (render_process_id_set_.insert(rid).second) {
     RenderProcessHost* host = RenderProcessHost::FromID(rid);

@@ -1,10 +1,14 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "content/renderer/media/peer_connection_tracker.h"
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -271,7 +275,8 @@ static base::DictionaryValue* GetDictValueStats(const StatsReport& report) {
 
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
-static base::DictionaryValue* GetDictValue(const StatsReport& report) {
+static std::unique_ptr<base::DictionaryValue> GetDictValue(
+    const StatsReport& report) {
   std::unique_ptr<base::DictionaryValue> stats, result;
 
   stats.reset(GetDictValueStats(report));
@@ -286,7 +291,7 @@ static base::DictionaryValue* GetDictValue(const StatsReport& report) {
   result->SetString("id", report.id()->ToString());
   result->SetString("type", report.TypeToString());
 
-  return result.release();
+  return result;
 }
 
 class InternalStatsObserver : public webrtc::StatsObserver {
@@ -298,9 +303,9 @@ class InternalStatsObserver : public webrtc::StatsObserver {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
 
     for (const auto* r : reports) {
-      base::DictionaryValue* report = GetDictValue(*r);
+      std::unique_ptr<base::DictionaryValue> report = GetDictValue(*r);
       if (report)
-        list->Append(report);
+        list->Append(std::move(report));
     }
 
     if (!list->empty()) {

@@ -84,8 +84,9 @@ struct Cookie {
   bool session;
 };
 
-base::DictionaryValue* CreateDictionaryFrom(const Cookie& cookie) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
+    const Cookie& cookie) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", cookie.name);
   dict->SetString("value", cookie.value);
   if (!cookie.domain.empty())
@@ -346,7 +347,7 @@ Status ExecuteSwitchToFrame(Session* session,
   const base::DictionaryValue* id_dict;
   if (id->GetAsDictionary(&id_dict)) {
     script = "function(elem) { return elem; }";
-    args.Append(id_dict->DeepCopy());
+    args.Append(id_dict->CreateDeepCopy());
   } else {
     script =
         "function(xpath) {"
@@ -387,7 +388,7 @@ Status ExecuteSwitchToFrame(Session* session,
       "  frame.setAttribute('cd_frame_id_', id);"
       "}";
   base::ListValue new_args;
-  new_args.Append(element->DeepCopy());
+  new_args.Append(element->CreateDeepCopy());
   new_args.AppendString(chrome_driver_id);
   result.reset(NULL);
   status = web_view->CallFunction(
@@ -902,7 +903,7 @@ Status ExecuteAddCookie(Session* session,
   if (!params.GetDictionary("cookie", &cookie))
     return Status(kUnknownError, "missing 'cookie'");
   base::ListValue args;
-  args.Append(cookie->DeepCopy());
+  args.Append(cookie->CreateDeepCopy());
   std::unique_ptr<base::Value> result;
   return web_view->CallFunction(
       session->GetCurrentFrameId(), kAddCookieScript, args, &result);

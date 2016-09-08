@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
@@ -315,12 +318,12 @@ TEST(PerformanceLogger, RecordTraceEvents) {
   logger.OnConnected(&client);
   base::DictionaryValue params;
   base::ListValue* trace_events = new base::ListValue();
-  base::DictionaryValue* event1 = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> event1(new base::DictionaryValue());
   event1->SetString("cat", "foo");
-  trace_events->Append(event1);
-  base::DictionaryValue* event2 = new base::DictionaryValue();
+  trace_events->Append(event1->CreateDeepCopy());
+  std::unique_ptr<base::DictionaryValue> event2(new base::DictionaryValue());
   event2->SetString("cat", "bar");
-  trace_events->Append(event2);
+  trace_events->Append(event2->CreateDeepCopy());
   params.Set("value", trace_events);
   ASSERT_EQ(kOk, client.TriggerEvent("Tracing.dataCollected", params).code());
 

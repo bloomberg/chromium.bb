@@ -356,7 +356,7 @@ void ChromotingInstance::OnVideoFrameDirtyRegion(
     rect_value->AppendInteger(rect.top());
     rect_value->AppendInteger(rect.width());
     rect_value->AppendInteger(rect.height());
-    rects_value->Append(rect_value.release());
+    rects_value->Append(std::move(rect_value));
   }
 
   std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());

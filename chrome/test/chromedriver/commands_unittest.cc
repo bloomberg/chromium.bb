@@ -363,9 +363,9 @@ class FindElementWebView : public StubWebView {
           base::DictionaryValue element2;
           element2.SetString("ELEMENT", "2");
           base::ListValue list;
-          list.Append(element1.DeepCopy());
-          list.Append(element2.DeepCopy());
-          result_.reset(list.DeepCopy());
+          list.Append(element1.CreateDeepCopy());
+          list.Append(element2.CreateDeepCopy());
+          result_ = list.CreateDeepCopy();
         }
         break;
       }
@@ -460,7 +460,7 @@ TEST(CommandsTest, SuccessfulFindElement) {
   base::DictionaryValue param;
   param.SetString("id", "a");
   base::ListValue expected_args;
-  expected_args.Append(param.DeepCopy());
+  expected_args.Append(param.CreateDeepCopy());
   web_view.Verify("frame_id1", &expected_args, result.get());
 }
 
@@ -491,7 +491,7 @@ TEST(CommandsTest, SuccessfulFindElements) {
   base::DictionaryValue param;
   param.SetString("name", "b");
   base::ListValue expected_args;
-  expected_args.Append(param.DeepCopy());
+  expected_args.Append(param.CreateDeepCopy());
   web_view.Verify("frame_id2", &expected_args, result.get());
 }
 
@@ -529,8 +529,8 @@ TEST(CommandsTest, SuccessfulFindChildElement) {
   base::DictionaryValue root_element_param;
   root_element_param.SetString("ELEMENT", element_id);
   base::ListValue expected_args;
-  expected_args.Append(locator_param.DeepCopy());
-  expected_args.Append(root_element_param.DeepCopy());
+  expected_args.Append(locator_param.CreateDeepCopy());
+  expected_args.Append(root_element_param.CreateDeepCopy());
   web_view.Verify("frame_id3", &expected_args, result.get());
 }
 
@@ -567,8 +567,8 @@ TEST(CommandsTest, SuccessfulFindChildElements) {
   base::DictionaryValue root_element_param;
   root_element_param.SetString("ELEMENT", element_id);
   base::ListValue expected_args;
-  expected_args.Append(locator_param.DeepCopy());
-  expected_args.Append(root_element_param.DeepCopy());
+  expected_args.Append(locator_param.CreateDeepCopy());
+  expected_args.Append(root_element_param.CreateDeepCopy());
   web_view.Verify("frame_id4", &expected_args, result.get());
 }
 

@@ -105,7 +105,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   // Literal |false|.
   input = "false,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeLiteral());
+  value = parser->ConsumeLiteral();
   EXPECT_EQ('e', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -117,7 +117,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   // Literal |null|.
   input = "null,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeLiteral());
+  value = parser->ConsumeLiteral();
   EXPECT_EQ('l', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -143,7 +143,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Negative integer.
   input = "-1234,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeNumber());
+  value = parser->ConsumeNumber();
   EXPECT_EQ('4', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -155,7 +155,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Double.
   input = "12.34,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeNumber());
+  value = parser->ConsumeNumber();
   EXPECT_EQ('4', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -168,7 +168,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Scientific.
   input = "42e3,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeNumber());
+  value = parser->ConsumeNumber();
   EXPECT_EQ('3', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -180,7 +180,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Negative scientific.
   input = "314159e-5,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeNumber());
+  value = parser->ConsumeNumber();
   EXPECT_EQ('5', *parser->pos_);
 
   TestLastThree(parser.get());
@@ -192,7 +192,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Positive scientific.
   input = "0.42e+3,|";
   parser.reset(NewTestParser(input));
-  value.reset(parser->ConsumeNumber());
+  value = parser->ConsumeNumber();
   EXPECT_EQ('3', *parser->pos_);
 
   TestLastThree(parser.get());

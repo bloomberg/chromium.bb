@@ -72,8 +72,8 @@ bool ParseFromValue(base::Value* value, WebRect* rect) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebRect& rect) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> CreateValueFrom(const WebRect& rect) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("left", rect.X());
   dict->SetInteger("top", rect.Y());
   dict->SetInteger("width", rect.Width());
@@ -207,14 +207,15 @@ Status GetElementBorder(
 
 }  // namespace
 
-base::DictionaryValue* CreateElement(const std::string& element_id) {
-  base::DictionaryValue* element = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> CreateElement(
+    const std::string& element_id) {
+  std::unique_ptr<base::DictionaryValue> element(new base::DictionaryValue());
   element->SetString(kElementKey, element_id);
   return element;
 }
 
-base::Value* CreateValueFrom(const WebPoint& point) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> CreateValueFrom(const WebPoint& point) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("x", point.x);
   dict->SetInteger("y", point.y);
   return dict;

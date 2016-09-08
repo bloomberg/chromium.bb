@@ -57,10 +57,10 @@ void GcdRestClient::PatchState(
   std::unique_ptr<base::DictionaryValue> patch_dict(new base::DictionaryValue);
   patch_dict->SetDouble("requestTimeMs", now);
   std::unique_ptr<base::ListValue> patch_list(new base::ListValue);
-  base::DictionaryValue* patch_item = new base::DictionaryValue;
-  patch_list->Append(patch_item);
+  std::unique_ptr<base::DictionaryValue> patch_item(new base::DictionaryValue);
   patch_item->Set("patch", std::move(patch_details));
   patch_item->SetDouble("timeMs", now);
+  patch_list->Append(std::move(patch_item));
   patch_dict->Set("patches", std::move(patch_list));
 
   // Stringify the message.

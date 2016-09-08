@@ -166,8 +166,7 @@ ListValue* GetRegistrationListValue(
        it != registrations.end();
        ++it) {
     const ServiceWorkerRegistrationInfo& registration = *it;
-    std::unique_ptr<class base::DictionaryValue> registration_info(
-        new DictionaryValue());
+    std::unique_ptr<DictionaryValue> registration_info(new DictionaryValue());
     registration_info->SetString("scope", registration.pattern.spec());
     registration_info->SetString(
         "registration_id", base::Int64ToString(registration.registration_id));
@@ -198,9 +197,9 @@ ListValue* GetVersionListValue(
            versions.begin();
        it != versions.end();
        ++it) {
-    DictionaryValue* info = new DictionaryValue();
-    UpdateVersionInfo(*it, info);
-    result->Append(info);
+    std::unique_ptr<DictionaryValue> info(new DictionaryValue());
+    UpdateVersionInfo(*it, info.get());
+    result->Append(std::move(info));
   }
   return result;
 }

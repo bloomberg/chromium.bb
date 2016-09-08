@@ -250,13 +250,16 @@ void AddWifiData(const WifiData& wifi_data,
 
   base::ListValue* wifi_access_point_list = new base::ListValue();
   for (auto* ap_data : access_points_by_signal_strength) {
-    base::DictionaryValue* wifi_dict = new base::DictionaryValue();
-    AddString("macAddress", base::UTF16ToUTF8(ap_data->mac_address), wifi_dict);
-    AddInteger("signalStrength", ap_data->radio_signal_strength, wifi_dict);
-    AddInteger("age", age_milliseconds, wifi_dict);
-    AddInteger("channel", ap_data->channel, wifi_dict);
-    AddInteger("signalToNoiseRatio", ap_data->signal_to_noise, wifi_dict);
-    wifi_access_point_list->Append(wifi_dict);
+    std::unique_ptr<base::DictionaryValue> wifi_dict(
+        new base::DictionaryValue());
+    AddString("macAddress", base::UTF16ToUTF8(ap_data->mac_address),
+              wifi_dict.get());
+    AddInteger("signalStrength", ap_data->radio_signal_strength,
+               wifi_dict.get());
+    AddInteger("age", age_milliseconds, wifi_dict.get());
+    AddInteger("channel", ap_data->channel, wifi_dict.get());
+    AddInteger("signalToNoiseRatio", ap_data->signal_to_noise, wifi_dict.get());
+    wifi_access_point_list->Append(std::move(wifi_dict));
   }
   request->Set("wifiAccessPoints", wifi_access_point_list);
 }

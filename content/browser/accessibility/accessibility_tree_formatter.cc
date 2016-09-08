@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -61,9 +63,10 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
 
   for (size_t i = 0; i < ChildCount(node); ++i) {
     BrowserAccessibility* child_node = GetChild(node, i);
-    base::DictionaryValue* child_dict = new base::DictionaryValue;
-    children->Append(child_dict);
-    RecursiveBuildAccessibilityTree(*child_node, child_dict);
+    std::unique_ptr<base::DictionaryValue> child_dict(
+        new base::DictionaryValue);
+    RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
+    children->Append(std::move(child_dict));
   }
 }
 

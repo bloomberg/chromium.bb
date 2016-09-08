@@ -473,7 +473,7 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
       session, web_view, element_id, &offset, &location);
   if (status.IsError())
     return status;
-  value->reset(CreateValueFrom(location));
+  *value = CreateValueFrom(location);
   return Status(kOk);
 }
 
