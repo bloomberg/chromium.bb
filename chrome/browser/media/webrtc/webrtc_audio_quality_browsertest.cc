@@ -119,11 +119,13 @@ const int kMaxAgcSegmentDiffMs =
 // 1. Control panel > Sound > Manage audio devices.
 // 2. In the recording tab, right-click in an empty space in the pane with the
 //    devices. Tick 'show disabled devices'.
-// 3. You should see a 'stero mix' device - this is what your speakers output.
+// 3. You should see a 'stereo mix' device - this is what your speakers output.
+//    If you don't have one, your driver doesn't support stereo mix devices.
+//    Some drivers use different names for the mix device though (like "Wave").
 //    Right click > Properties.
-// 4. In the Listen tab for the mix device, check the 'listen to this device'
-//    checkbox. Ensure the mix device is the default recording device.
-// 5. Launch chrome and try playing a video with sound. You should see
+// 4. Ensure "listen to this device" is unchecked, otherwise you get echo.
+// 5. Ensure the mix device is the default recording device.
+// 6. Launch chrome and try playing a video with sound. You should see
 //    in the volume meter for the mix device. Configure the mix device to have
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
 //    and set that level to 50 / 100. Otherwise you will get distortion in
