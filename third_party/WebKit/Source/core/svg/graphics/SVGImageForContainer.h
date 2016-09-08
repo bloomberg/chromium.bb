@@ -35,6 +35,25 @@
 
 namespace blink {
 
+// SVGImageForContainer contains a reference to an SVGImage and includes context
+// about how the image is being used (size, fragment identifier).
+//
+// The concrete size of an SVG image is calculated based on the image itself and
+// the dimensions where the image is used (see: SVGImage::concreteObjectSize).
+// This concrete size cannot be stored on the SVGImage itself because only a
+// single SVGImage is created per SVG image resource, but this SVGImage can be
+// referenced multiple times by containers of different sizes. Similarly, each
+// use of an image can have a different fragment identifier as part of its URL
+// (e.g., foo.svg#abc) which can influence rendering.
+//
+// For example, the following would create three SVGImageForContainers
+// referencing a single SVGImage for 'foo.svg':
+// <img src='foo.svg#a' width='20'>
+// <img src='foo.svg#a' width='10'>
+// <img src='foo.svg#b' width='10'>
+//
+// SVGImageForContainer stores this per-use information and delegates to the
+// SVGImage for how to draw the image.
 class SVGImageForContainer final : public Image {
     USING_FAST_MALLOC(SVGImageForContainer);
 public:
