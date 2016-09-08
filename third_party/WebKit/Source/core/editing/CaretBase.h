@@ -50,7 +50,7 @@ public:
     explicit CaretBase(CaretVisibility = CaretVisibility::Hidden);
     virtual ~CaretBase();
 
-    void invalidateCaretRect(Node*, bool caretRectChanged = false);
+    void invalidateCaretRect(Node*);
     void clearCaretRect();
     // Creating VisiblePosition causes synchronous layout so we should use the
     // PositionWithAffinity version if possible.

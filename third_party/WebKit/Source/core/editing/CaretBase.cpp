@@ -181,11 +181,8 @@ bool CaretBase::shouldRepaintCaret(const LayoutViewItem view) const
     return false;
 }
 
-void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
+void CaretBase::invalidateCaretRect(Node* node)
 {
-    if (caretRectChanged)
-        return;
-
     if (LayoutViewItem view = node->document().layoutViewItem()) {
         node->document().updateStyleAndLayoutTree();
         if (hasEditableStyle(*node) || shouldRepaintCaret(view))
