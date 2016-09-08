@@ -288,4 +288,21 @@ TEST_F(FrameSwapMessageQueueTest, TestDeletesQueuedVisualStateMessage) {
   ASSERT_TRUE(message_deleted);
 }
 
+TEST_F(FrameSwapMessageQueueTest, TestDrainsMessageOnActivationThanDidNotSwap) {
+  const int frame = 6;
+  std::unique_ptr<IPC::Message> msg = CloneMessage(first_message_);
+  IPC::Message* msgSent = msg.get();
+  QueueVisualStateMessage(frame, std::move(msg));
+  queue_->DidActivate(frame);
+  EXPECT_TRUE(!queue_->Empty());
+
+  std::vector<std::unique_ptr<IPC::Message>> messages;
+  queue_->DidNotSwap(frame, cc::SwapPromise::SWAP_FAILS, &messages);
+  CHECK_EQ(1UL, messages.size());
+  EXPECT_EQ(messages[0].get(), msgSent);
+  msgSent = nullptr;
+
+  queue_ = nullptr;
+}
+
 }  // namespace content

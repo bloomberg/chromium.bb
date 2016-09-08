@@ -176,6 +176,7 @@ void FrameSwapMessageQueue::DidNotSwap(
   switch (reason) {
     case cc::SwapPromise::SWAP_FAILS:
     case cc::SwapPromise::COMMIT_NO_UPDATE:
+      DrainMessages(messages);
       swap_queue_->DrainMessages(source_frame_number, messages);
       visual_state_queue_->DrainMessages(source_frame_number, messages);
       break;
