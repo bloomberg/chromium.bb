@@ -379,8 +379,10 @@ IsNull(const Functor&) {
 template <typename Functor, typename... BoundArgs>
 struct BindState final : BindStateBase {
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
-  explicit BindState(ForwardFunctor&& functor, ForwardBoundArgs&&... bound_args)
-      : BindStateBase(&Destroy),
+  explicit BindState(BindStateBase::InvokeFuncStorage invoke_func,
+                     ForwardFunctor&& functor,
+                     ForwardBoundArgs&&... bound_args)
+      : BindStateBase(invoke_func, &Destroy),
         functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
     DCHECK(!IsNull(functor_));
