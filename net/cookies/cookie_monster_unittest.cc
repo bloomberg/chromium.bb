@@ -3070,16 +3070,25 @@ TEST_F(CookieMonsterStrictSecureTest, SetSecureCookies) {
   EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C;"));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and
-  // a secure cookie with the same name already exists, no matter what the path
-  // is, do not update the cookie.
+  // a secure cookie with the same name already exists, do not update the cookie
+  // if the new cookie's path matches the existing cookie's path.
+  //
+  // With an existing cookie whose path is '/', a cookie with the same name
+  // cannot be set on the same domain, regardless of path:
   EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/my/path"));
 
-  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure; path=/my/path"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/"));
-  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/my/path"));
+  // But if the existing cookie has a path somewhere under the root, cookies
+  // with the same name may be set for paths which don't overlap the existing
+  // cookie.
+  EXPECT_TRUE(
+      SetCookie(cm.get(), https_url, "WITH_PATH=B; Secure; path=/my/path"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/your/path"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path/sub"));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and
   // a secure cookie with the same name already exists, if the domain strings
