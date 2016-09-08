@@ -1,6 +1,11 @@
 <!DOCTYPE>
 <canvas id="canvas2D" width="50" height="50" background-color="red"></canvas>
 <script>
+// Note: If someone see this test flaky in the future, please mark the test as
+// flaky; the code itself is not the cause of such flakiness.
+// TODO(xlai): Guarantee all OffscreenCanvas commit tests non-flaky under all cases.
+// See crbug.com/645173.
+
 // Currently, we push a Green color frame from OffscreenCanvas; so we test
 // whether the associated canvas has green pixel. In the future, when we
 // change solidColorFrame to textureFrame, the expected png needs to changed too.

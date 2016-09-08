@@ -22,7 +22,6 @@ interface OffscreenCanvasSurface {
 
 // This interface is called from either worker or main thread in renderer, but
 // not both for the same OffscreenCanvas instance.
-// TODO(xlai): Make commit() work for worker. See crbug.com/563858.
 interface OffscreenCanvasFrameReceiver {
 
   SubmitCompositorFrame(cc.mojom.SurfaceId surface_id, cc.mojom.CompositorFrame compositor_frame);

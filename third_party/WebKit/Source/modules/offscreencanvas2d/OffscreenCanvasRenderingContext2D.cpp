@@ -44,12 +44,13 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D)
     BaseRenderingContext2D::trace(visitor);
 }
 
-void OffscreenCanvasRenderingContext2D::commit(ExecutionContext* executionContext)
+void OffscreenCanvasRenderingContext2D::commit(ExceptionState& exceptionState)
 {
-    if (executionContext->isWorkerGlobalScope()) {
-        // TODO(xlai): implement commit() on worker thread; currently, do
-        // nothing for worker thread. See crbug.com/563858.
-        return;
+    if (getOffscreenCanvas()->getAssociatedCanvasId() < 0) {
+        // If an OffscreenCanvas has no associated canvas Id, it indicates that
+        // it is not an OffscreenCanvas created by transfering control from html
+        // canvas.
+        exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a context whose OffscreenCanvas is not associated with a canvas element.");
     }
     getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame();
 }

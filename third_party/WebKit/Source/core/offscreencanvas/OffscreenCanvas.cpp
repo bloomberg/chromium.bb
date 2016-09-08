@@ -145,8 +145,12 @@ bool OffscreenCanvas::isPaintable() const
 
 OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher()
 {
-    if (!m_frameDispatcher)
+    if (!m_frameDispatcher) {
+        // The frame dispatcher connects the current thread of OffscreenCanvas
+        // (either main or worker) to the browser process and remains unchanged
+        // throughout the lifetime of this OffscreenCanvas.
         m_frameDispatcher = wrapUnique(new OffscreenCanvasFrameDispatcherImpl(m_clientId, m_localId, m_nonce, width(), height()));
+    }
     return m_frameDispatcher.get();
 }
 

@@ -1,0 +1,34 @@
+<!DOCTYPE>
+<canvas id="canvas2D" width="50" height="50" background-color="red"></canvas>
+<script id="myWorker" type="text/worker">
+self.onmessage = function(e) {
+    var transferredOffscreenCanvas = e.data.data;
+    var offscreen2d = transferredOffscreenCanvas.getContext("2d");
+    offscreen2d.commit();
+    self.postMessage("");
+};
+</script>
+<script>
+// Note: If someone see this test flaky in the future, please mark the test as
+// flaky; the code itself is not the cause of such flakiness.
+// TODO(xlai): Guarantee all OffscreenCanvas commit tests non-flaky under all cases.
+// See crbug.com/645173.
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
+}
+
+function makeWorker(script) {
+   var blob = new Blob([script]);
+   return new Worker(URL.createObjectURL(blob));
+}
+
+var canvas2D = document.getElementById("canvas2D");
+var offscreenCanvas = canvas2D.transferControlToOffscreen();
+var worker = makeWorker(document.getElementById("myWorker").textContent);
+worker.onmessage = function (e) {
+    if (window.testRunner) testRunner.notifyDone();
+};
+worker.postMessage({data: offscreenCanvas}, [offscreenCanvas]);
+
+</script>

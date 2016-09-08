@@ -33,7 +33,7 @@ public:
         }
     };
 
-    void commit(ExecutionContext*);
+    void commit(ExceptionState&);
 
     // CanvasRenderingContext implementation
     ~OffscreenCanvasRenderingContext2D() override;
