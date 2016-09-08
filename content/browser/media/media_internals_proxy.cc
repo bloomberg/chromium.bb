@@ -20,17 +20,18 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui.h"
+#include "net/log/net_log_event_type.h"
 
 namespace content {
 
 static const int kMediaInternalsProxyEventDelayMilliseconds = 100;
 
-static const net::NetLog::EventType kNetEventTypeFilter[] = {
-  net::NetLog::TYPE_DISK_CACHE_ENTRY_IMPL,
-  net::NetLog::TYPE_SPARSE_READ,
-  net::NetLog::TYPE_SPARSE_WRITE,
-  net::NetLog::TYPE_URL_REQUEST_START_JOB,
-  net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
+static const net::NetLogEventType kNetEventTypeFilter[] = {
+    net::NetLogEventType::DISK_CACHE_ENTRY_IMPL,
+    net::NetLogEventType::SPARSE_READ,
+    net::NetLogEventType::SPARSE_WRITE,
+    net::NetLogEventType::URL_REQUEST_START_JOB,
+    net::NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
 };
 
 MediaInternalsProxy::MediaInternalsProxy() {
@@ -109,14 +110,14 @@ MediaInternalsProxy::~MediaInternalsProxy() {}
 base::Value* MediaInternalsProxy::GetConstants() {
   base::DictionaryValue* event_phases = new base::DictionaryValue();
   event_phases->SetInteger(
-      net::NetLog::EventPhaseToString(net::NetLog::PHASE_NONE),
-      net::NetLog::PHASE_NONE);
+      net::NetLog::EventPhaseToString(net::NetLogEventPhase::NONE),
+      static_cast<int>(net::NetLogEventPhase::NONE));
   event_phases->SetInteger(
-      net::NetLog::EventPhaseToString(net::NetLog::PHASE_BEGIN),
-      net::NetLog::PHASE_BEGIN);
+      net::NetLog::EventPhaseToString(net::NetLogEventPhase::BEGIN),
+      static_cast<int>(net::NetLogEventPhase::BEGIN));
   event_phases->SetInteger(
-      net::NetLog::EventPhaseToString(net::NetLog::PHASE_END),
-      net::NetLog::PHASE_END);
+      net::NetLog::EventPhaseToString(net::NetLogEventPhase::END),
+      static_cast<int>(net::NetLogEventPhase::END));
 
   base::DictionaryValue* constants = new base::DictionaryValue();
   constants->Set("eventTypes", net::NetLog::GetEventTypesAsValue());

@@ -18,6 +18,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 
 class ResourceDispatcherHost;
 
@@ -143,11 +144,11 @@ class SafeBrowsingResourceThrottle
   void ResumeRequest();
 
   // For marking network events.  |name| and |value| can be null.
-  void BeginNetLogEvent(net::NetLog::EventType type,
+  void BeginNetLogEvent(net::NetLogEventType type,
                         const GURL& url,
                         const char* name,
                         const char* value);
-  void EndNetLogEvent(net::NetLog::EventType type,
+  void EndNetLogEvent(net::NetLogEventType type,
                       const char* name,
                       const char* value);
 

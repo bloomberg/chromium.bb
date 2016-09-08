@@ -30,6 +30,7 @@
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -3261,28 +3262,29 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
 
   EXPECT_LT(0u, entries.size());
   int pos = 0;
-  pos = ExpectLogContainsSomewhere(entries, 0,
-                                   NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
-                                   NetLog::PHASE_BEGIN);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST,
+      NetLogEventPhase::BEGIN);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos + 1, NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST,
+      NetLogEventPhase::END);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos + 1, NetLogEventType::HTTP_TRANSACTION_READ_HEADERS,
+      NetLogEventPhase::BEGIN);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos + 1, NetLogEventType::HTTP_TRANSACTION_READ_HEADERS,
+      NetLogEventPhase::END);
   pos = ExpectLogContainsSomewhere(entries, pos + 1,
-                                   NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
-                                   NetLog::PHASE_END);
+                                   NetLogEventType::HTTP_TRANSACTION_READ_BODY,
+                                   NetLogEventPhase::BEGIN);
   pos = ExpectLogContainsSomewhere(entries, pos + 1,
-                                   NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
-                                   NetLog::PHASE_BEGIN);
-  pos = ExpectLogContainsSomewhere(entries, pos + 1,
-                                   NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
-                                   NetLog::PHASE_END);
-  pos = ExpectLogContainsSomewhere(entries, pos + 1,
-                                   NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
-                                   NetLog::PHASE_BEGIN);
-  pos = ExpectLogContainsSomewhere(entries, pos + 1,
-                                   NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
-                                   NetLog::PHASE_END);
+                                   NetLogEventType::HTTP_TRANSACTION_READ_BODY,
+                                   NetLogEventPhase::END);
 
   // Check that we logged all the headers correctly
-  pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS, NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(entries, 0,
+                                   NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
+                                   NetLogEventPhase::NONE);
 
   base::ListValue* header_list;
   ASSERT_TRUE(entries[pos].params.get());

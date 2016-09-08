@@ -21,6 +21,8 @@
 #include "net/base/network_activity_monitor.h"
 #include "net/http/http_log_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
@@ -225,7 +227,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       pkp_bypassed_(false),
       num_total_streams_(0),
       task_runner_(task_runner),
-      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
+      net_log_(BoundNetLog::Make(net_log, NetLogSourceType::QUIC_SESSION)),
       dns_resolution_end_time_(dns_resolution_end_time),
       logger_(new QuicConnectionLogger(this,
                                        connection_description,
@@ -251,7 +253,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           crypto_config));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
-  net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
+  net_log_.BeginEvent(NetLogEventType::QUIC_SESSION,
                       base::Bind(NetLogQuicClientSessionCallback, &server_id,
                                  cert_verify_flags, require_confirmation_));
   IPEndPoint address;
@@ -279,7 +281,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
     CloseAllObservers(ERR_UNEXPECTED);
 
     connection()->set_debug_visitor(nullptr);
-    net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
+    net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
 
     while (!stream_requests_.empty()) {
       StreamRequest* request = stream_requests_.front();
@@ -1038,7 +1040,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
   }
   CloseAllStreams(net_error);
   CloseAllObservers(net_error);
-  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CLOSE_ON_ERROR,
                     NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
@@ -1221,7 +1223,7 @@ void QuicChromiumClientSession::HandlePromised(QuicStreamId id,
                                                QuicStreamId promised_id,
                                                const SpdyHeaderBlock& headers) {
   QuicClientSessionBase::HandlePromised(id, promised_id, headers);
-  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUSH_PROMISE_RECEIVED,
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUSH_PROMISE_RECEIVED,
                     base::Bind(&NetLogQuicPushPromiseReceivedCallback, &headers,
                                id, promised_id));
 }

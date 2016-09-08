@@ -18,6 +18,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -1252,28 +1253,31 @@ TEST_F(SpdyProxyClientSocketTest, NetLog) {
   net_log_.GetEntriesForSource(sock_source, &entry_list);
 
   ASSERT_EQ(entry_list.size(), 10u);
-  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 0, NetLog::TYPE_SOCKET_ALIVE));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entry_list, 0, NetLogEventType::SOCKET_ALIVE));
   EXPECT_TRUE(LogContainsEvent(entry_list, 1,
-                               NetLog::TYPE_HTTP2_PROXY_CLIENT_SESSION,
-                               NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 2,
-                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
-  EXPECT_TRUE(LogContainsEvent(entry_list, 3,
-                  NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
-                  NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(entry_list, 4,
-                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
-  EXPECT_TRUE(LogContainsBeginEvent(entry_list, 5,
-                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
-  EXPECT_TRUE(LogContainsEvent(entry_list, 6,
-                  NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
-                  NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(entry_list, 7,
-                  NetLog::TYPE_HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
+                               NetLogEventType::HTTP2_PROXY_CLIENT_SESSION,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entry_list, 2, NetLogEventType::HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
+  EXPECT_TRUE(LogContainsEvent(
+      entry_list, 3, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entry_list, 4, NetLogEventType::HTTP_TRANSACTION_TUNNEL_SEND_REQUEST));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entry_list, 5, NetLogEventType::HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
+  EXPECT_TRUE(LogContainsEvent(
+      entry_list, 6,
+      NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entry_list, 7, NetLogEventType::HTTP_TRANSACTION_TUNNEL_READ_HEADERS));
   EXPECT_TRUE(LogContainsEvent(entry_list, 8,
-                  NetLog::TYPE_SOCKET_BYTES_RECEIVED,
-                  NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(entry_list, 9, NetLog::TYPE_SOCKET_ALIVE));
+                               NetLogEventType::SOCKET_BYTES_RECEIVED,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entry_list, 9, NetLogEventType::SOCKET_ALIVE));
 
   // Let the RST_STREAM write while |rst| is in-scope.
   base::RunLoop().RunUntilIdle();

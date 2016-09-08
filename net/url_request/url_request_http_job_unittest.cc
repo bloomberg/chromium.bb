@@ -20,6 +20,7 @@
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -489,7 +490,7 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
       net_log_.GetEntries(&entries);
       int redirects = 0;
       for (const auto& entry : entries) {
-        if (entry.type == net::NetLog::TYPE_URL_REQUEST_REDIRECT_JOB) {
+        if (entry.type == net::NetLogEventType::URL_REQUEST_REDIRECT_JOB) {
           redirects++;
           std::string value;
           EXPECT_TRUE(entry.GetStringValue("reason", &value));

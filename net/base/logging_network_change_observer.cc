@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -83,7 +84,7 @@ LoggingNetworkChangeObserver::~LoggingNetworkChangeObserver() {
 void LoggingNetworkChangeObserver::OnIPAddressChanged() {
   VLOG(1) << "Observed a change to the network IP addresses";
 
-  net_log_->AddGlobalEntry(NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
+  net_log_->AddGlobalEntry(NetLogEventType::NETWORK_IP_ADDRESSES_CHANGED);
 }
 
 void LoggingNetworkChangeObserver::OnConnectionTypeChanged(
@@ -95,7 +96,7 @@ void LoggingNetworkChangeObserver::OnConnectionTypeChanged(
           << type_as_string;
 
   net_log_->AddGlobalEntry(
-      NetLog::TYPE_NETWORK_CONNECTIVITY_CHANGED,
+      NetLogEventType::NETWORK_CONNECTIVITY_CHANGED,
       NetLog::StringCallback("new_connection_type", &type_as_string));
 }
 
@@ -107,7 +108,7 @@ void LoggingNetworkChangeObserver::OnNetworkChanged(
   VLOG(1) << "Observed a network change to state " << type_as_string;
 
   net_log_->AddGlobalEntry(
-      NetLog::TYPE_NETWORK_CHANGED,
+      NetLogEventType::NETWORK_CHANGED,
       NetLog::StringCallback("new_connection_type", &type_as_string));
 }
 
@@ -115,7 +116,7 @@ void LoggingNetworkChangeObserver::OnNetworkConnected(
     NetworkChangeNotifier::NetworkHandle network) {
   VLOG(1) << "Observed network " << network << " connect";
 
-  net_log_->AddGlobalEntry(NetLog::TYPE_SPECIFIC_NETWORK_CONNECTED,
+  net_log_->AddGlobalEntry(NetLogEventType::SPECIFIC_NETWORK_CONNECTED,
                            base::Bind(&NetworkSpecificNetLogCallback, network));
 }
 
@@ -123,7 +124,7 @@ void LoggingNetworkChangeObserver::OnNetworkDisconnected(
     NetworkChangeNotifier::NetworkHandle network) {
   VLOG(1) << "Observed network " << network << " disconnect";
 
-  net_log_->AddGlobalEntry(NetLog::TYPE_SPECIFIC_NETWORK_DISCONNECTED,
+  net_log_->AddGlobalEntry(NetLogEventType::SPECIFIC_NETWORK_DISCONNECTED,
                            base::Bind(&NetworkSpecificNetLogCallback, network));
 }
 
@@ -131,7 +132,7 @@ void LoggingNetworkChangeObserver::OnNetworkSoonToDisconnect(
     NetworkChangeNotifier::NetworkHandle network) {
   VLOG(1) << "Observed network " << network << " soon to disconnect";
 
-  net_log_->AddGlobalEntry(NetLog::TYPE_SPECIFIC_NETWORK_SOON_TO_DISCONNECT,
+  net_log_->AddGlobalEntry(NetLogEventType::SPECIFIC_NETWORK_SOON_TO_DISCONNECT,
                            base::Bind(&NetworkSpecificNetLogCallback, network));
 }
 
@@ -139,7 +140,7 @@ void LoggingNetworkChangeObserver::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle network) {
   VLOG(1) << "Observed network " << network << " made the default network";
 
-  net_log_->AddGlobalEntry(NetLog::TYPE_SPECIFIC_NETWORK_MADE_DEFAULT,
+  net_log_->AddGlobalEntry(NetLogEventType::SPECIFIC_NETWORK_MADE_DEFAULT,
                            base::Bind(&NetworkSpecificNetLogCallback, network));
 }
 

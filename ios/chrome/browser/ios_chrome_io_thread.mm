@@ -60,6 +60,7 @@
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/log/net_log_event_type.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service.h"
@@ -160,7 +161,8 @@ class IOSChromeIOThread::LoggingNetworkChangeObserver
   void OnIPAddressChanged() override {
     VLOG(1) << "Observed a change to the network IP addresses";
 
-    net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
+    net_log_->AddGlobalEntry(
+        net::NetLogEventType::NETWORK_IP_ADDRESSES_CHANGED);
   }
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
@@ -173,7 +175,7 @@ class IOSChromeIOThread::LoggingNetworkChangeObserver
             << type_as_string;
 
     net_log_->AddGlobalEntry(
-        net::NetLog::TYPE_NETWORK_CONNECTIVITY_CHANGED,
+        net::NetLogEventType::NETWORK_CONNECTIVITY_CHANGED,
         net::NetLog::StringCallback("new_connection_type", &type_as_string));
   }
 
@@ -186,7 +188,7 @@ class IOSChromeIOThread::LoggingNetworkChangeObserver
     VLOG(1) << "Observed a network change to state " << type_as_string;
 
     net_log_->AddGlobalEntry(
-        net::NetLog::TYPE_NETWORK_CHANGED,
+        net::NetLogEventType::NETWORK_CHANGED,
         net::NetLog::StringCallback("new_connection_type", &type_as_string));
   }
 

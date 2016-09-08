@@ -35,6 +35,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_impl.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_source_type.h"
 #include "net/tools/gdig/file_net_log.h"
 
 #if defined(OS_MACOSX)
@@ -470,7 +471,7 @@ void GDig::ReplayNextEntry() {
     ++replay_log_index_;
     int ret = resolver_->Resolve(
         info, DEFAULT_PRIORITY, addrlist, callback, &request_,
-        BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
+        BoundNetLog::Make(log_.get(), net::NetLogSourceType::NONE));
     if (ret != ERR_IO_PENDING)
       callback.Run(ret);
   }

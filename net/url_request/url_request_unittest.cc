@@ -78,6 +78,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -4810,26 +4811,26 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
       return entries.size();
     }
     std::string delegate_info;
-    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_BEGIN, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::BEGIN, entries[log_position].phase);
     EXPECT_TRUE(entries[log_position].GetStringValue("delegate_info",
                                                      &delegate_info));
     EXPECT_EQ(kFirstDelegateInfo, delegate_info);
 
     ++log_position;
-    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
 
     ++log_position;
-    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_BEGIN, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::BEGIN, entries[log_position].phase);
     EXPECT_TRUE(entries[log_position].GetStringValue("delegate_info",
                                                      &delegate_info));
     EXPECT_EQ(kSecondDelegateInfo, delegate_info);
 
     ++log_position;
-    EXPECT_EQ(NetLog::TYPE_DELEGATE_INFO, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
 
     return log_position + 1;
   }
@@ -5087,16 +5088,13 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
   size_t log_position = ExpectLogContainsSomewhereAfter(
-      entries,
-      0,
-      NetLog::TYPE_DELEGATE_INFO,
-      NetLog::PHASE_BEGIN);
+      entries, 0, NetLogEventType::DELEGATE_INFO, NetLogEventPhase::BEGIN);
 
   log_position = AsyncDelegateLogger::CheckDelegateInfo(entries, log_position);
 
   // Nothing else should add any delegate info to the request.
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
 }
 
 // Tests handling of delegate info from a network delegate.
@@ -5133,21 +5131,20 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
   net_log_.GetEntries(&entries);
   for (size_t i = 0; i < 3; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
-        entries,
-        log_position + 1,
-        NetLog::TYPE_URL_REQUEST_DELEGATE,
-        NetLog::PHASE_BEGIN);
+        entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+        NetLogEventPhase::BEGIN);
 
     log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                           log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+              entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
   }
 
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
 }
 
 // Tests handling of delegate info from a network delegate in the case of an
@@ -5187,44 +5184,40 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
   // OnBeforeStartTransaction, and OnHeadersReceived.
   for (size_t i = 0; i < 3; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
-        entries,
-        log_position + 1,
-        NetLog::TYPE_URL_REQUEST_DELEGATE,
-        NetLog::PHASE_BEGIN);
+        entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+        NetLogEventPhase::BEGIN);
 
     log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                           log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+              entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
   }
 
   // The URLRequest::Delegate then gets informed about the redirect.
   log_position = ExpectLogContainsSomewhereAfter(
-      entries,
-      log_position + 1,
-      NetLog::TYPE_URL_REQUEST_DELEGATE,
-      NetLog::PHASE_BEGIN);
+      entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+      NetLogEventPhase::BEGIN);
 
   // The NetworkDelegate logged information in the same three events as before.
   for (size_t i = 0; i < 3; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
-        entries,
-        log_position + 1,
-        NetLog::TYPE_URL_REQUEST_DELEGATE,
-        NetLog::PHASE_BEGIN);
+        entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+        NetLogEventPhase::BEGIN);
 
     log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                           log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+              entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
   }
 
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
 }
 
 // Tests handling of delegate info from a network delegate in the case of HTTP
@@ -5266,21 +5259,20 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
   // OnBeforeURLRequest and OnBeforeStartTransaction.
   for (size_t i = 0; i < 6; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
-        entries,
-        log_position + 1,
-        NetLog::TYPE_URL_REQUEST_DELEGATE,
-        NetLog::PHASE_BEGIN);
+        entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+        NetLogEventPhase::BEGIN);
 
     log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                           log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+              entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
   }
 
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
 }
 
 // TODO(svaldez): Update tests to use EmbeddedTestServer.
@@ -5324,23 +5316,21 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
 
   // The delegate info should only have been logged on header complete.  Other
   // times it should silently be ignored.
-  log_position =
-      ExpectLogContainsSomewhereAfter(entries,
-                                      log_position + 1,
-                                      NetLog::TYPE_URL_REQUEST_DELEGATE,
-                                      NetLog::PHASE_BEGIN);
+  log_position = ExpectLogContainsSomewhereAfter(
+      entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE,
+      NetLogEventPhase::BEGIN);
 
   log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                         log_position + 1);
 
   ASSERT_LT(log_position, entries.size());
-  EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-  EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+  EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE, entries[log_position].type);
+  EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
 
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
   EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+      entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE));
 }
 #endif  // !defined(OS_IOS)
 
@@ -5376,23 +5366,22 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
   size_t log_position = 0;
   for (int i = 0; i < 2; ++i) {
     log_position = ExpectLogContainsSomewhereAfter(
-            entries,
-            log_position,
-            NetLog::TYPE_URL_REQUEST_DELEGATE,
-            NetLog::PHASE_BEGIN);
+        entries, log_position, NetLogEventType::URL_REQUEST_DELEGATE,
+        NetLogEventPhase::BEGIN);
 
     log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                           log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+    EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+              entries[log_position].type);
+    EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
   }
 
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                             NetLogEventType::DELEGATE_INFO));
   EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
-  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-      entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+      entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE));
 }
 
 // Tests handling of delegate info from a URLRequest::Delegate in the case of
@@ -5435,23 +5424,22 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
     size_t log_position = 0;
     for (int i = 0; i < 2; ++i) {
       log_position = ExpectLogContainsSomewhereAfter(
-              entries,
-              log_position,
-              NetLog::TYPE_URL_REQUEST_DELEGATE,
-              NetLog::PHASE_BEGIN);
+          entries, log_position, NetLogEventType::URL_REQUEST_DELEGATE,
+          NetLogEventPhase::BEGIN);
 
       log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
                                                             log_position + 1);
 
       ASSERT_LT(log_position, entries.size());
-      EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
-      EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
+      EXPECT_EQ(NetLogEventType::URL_REQUEST_DELEGATE,
+                entries[log_position].type);
+      EXPECT_EQ(NetLogEventPhase::END, entries[log_position].phase);
     }
 
+    EXPECT_FALSE(LogContainsEntryWithTypeAfter(entries, log_position + 1,
+                                               NetLogEventType::DELEGATE_INFO));
     EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-        entries, log_position + 1, NetLog::TYPE_DELEGATE_INFO));
-    EXPECT_FALSE(LogContainsEntryWithTypeAfter(
-        entries, log_position + 1, NetLog::TYPE_URL_REQUEST_DELEGATE));
+        entries, log_position + 1, NetLogEventType::URL_REQUEST_DELEGATE));
   }
 }
 

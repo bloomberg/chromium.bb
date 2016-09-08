@@ -32,6 +32,8 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1535,7 +1537,8 @@ TEST_F(HostResolverImplTest, IsIPv6Reachable) {
 
   // Verify that two consecutive calls return the same value.
   TestNetLog net_log;
-  BoundNetLog bound_net_log = BoundNetLog::Make(&net_log, NetLog::SOURCE_NONE);
+  BoundNetLog bound_net_log =
+      BoundNetLog::Make(&net_log, NetLogSourceType::NONE);
   bool result1 = IsIPv6Reachable(bound_net_log);
   bool result2 = IsIPv6Reachable(bound_net_log);
   EXPECT_EQ(result1, result2);
@@ -1545,7 +1548,8 @@ TEST_F(HostResolverImplTest, IsIPv6Reachable) {
   net_log.GetEntries(&event_list);
   TestNetLogEntry::List probe_event_list;
   for (const auto& event : event_list) {
-    if (event.type == NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK) {
+    if (event.type ==
+        NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK) {
       probe_event_list.push_back(event);
     }
   }

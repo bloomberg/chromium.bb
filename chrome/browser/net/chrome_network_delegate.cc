@@ -59,6 +59,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/url_request/url_request.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -249,7 +250,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
           request->url(), &error)) {
     // URL access blocked by policy.
     request->net_log().AddEvent(
-        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
+        net::NetLogEventType::CHROME_POLICY_ABORTED_REQUEST,
         net::NetLog::StringCallback("url",
                                     &request->url().possibly_invalid_spec()));
     return error;

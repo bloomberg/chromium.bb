@@ -14,6 +14,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -186,15 +187,14 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+      LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
   EXPECT_FALSE(user_sock_->IsConnected());
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 
   scoped_refptr<IOBuffer> buffer(new IOBuffer(payload_write.size()));
   memcpy(buffer->data(), payload_write.data(), payload_write.size());
@@ -257,16 +257,16 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
 
     TestNetLogEntry::List entries;
     log.GetEntries(&entries);
-    EXPECT_TRUE(LogContainsBeginEvent(
-        entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+    EXPECT_TRUE(
+        LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
 
     rv = callback_.WaitForResult();
     EXPECT_EQ(tests[i].fail_code, rv);
     EXPECT_FALSE(user_sock_->IsConnected());
     EXPECT_TRUE(tcp_sock_->IsConnected());
     log.GetEntries(&entries);
-    EXPECT_TRUE(LogContainsEndEvent(
-        entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+    EXPECT_TRUE(
+        LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
   }
 }
 
@@ -293,15 +293,14 @@ TEST_F(SOCKSClientSocketTest, PartialServerReads) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 }
 
 // Tests scenario when the client sends the handshake request in
@@ -331,15 +330,14 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(user_sock_->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 }
 
 // Tests the case when the server sends a smaller sized handshake data
@@ -363,15 +361,14 @@ TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_CLOSED));
   EXPECT_FALSE(user_sock_->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 }
 
 // Tries to connect to an unknown hostname. Should fail rather than
@@ -393,15 +390,14 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKS_CONNECT));
 
   rv = callback_.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(user_sock_->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, -1, NetLog::TYPE_SOCKS_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 }
 
 // Calls Disconnect() while a host resolve is in progress. The outstanding host

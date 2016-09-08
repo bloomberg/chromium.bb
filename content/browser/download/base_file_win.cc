@@ -20,6 +20,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/safe_util_win.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/log/net_log_event_type.h"
 
 namespace content {
 namespace {
@@ -359,7 +360,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
-  bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
+  bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
   DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
   std::string braces_guid = "{" + client_guid + "}";
   GUID guid = GUID_NULL;
@@ -392,7 +393,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
     }
     LogInterruptReason("ScanAndSaveDownloadedFile", hr, result);
   }
-  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
+  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
   return result;
 }
 

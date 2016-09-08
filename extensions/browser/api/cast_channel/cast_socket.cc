@@ -38,6 +38,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_source_type.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -132,7 +133,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
   DCHECK(net_log_);
   DCHECK(channel_auth_ == CHANNEL_AUTH_TYPE_SSL ||
          channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED);
-  net_log_source_.type = net::NetLog::SOURCE_SOCKET;
+  net_log_source_.type = net::NetLogSourceType::SOCKET;
   net_log_source_.id = net_log_->NextID();
 }
 

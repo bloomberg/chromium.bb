@@ -32,6 +32,7 @@
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 
@@ -443,9 +444,8 @@ void MergeCancelOfResponses(
        i != deltas.end(); ++i) {
     if ((*i)->cancel) {
       *canceled = true;
-      net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_ABORTED_REQUEST,
-          CreateNetLogExtensionIdCallback(i->get()));
+      net_log->AddEvent(net::NetLogEventType::CHROME_EXTENSION_ABORTED_REQUEST,
+                        CreateNetLogExtensionIdCallback(i->get()));
       break;
     }
   }
@@ -483,7 +483,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
       winning_extension_id = (*delta)->extension_id;
       redirected = true;
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
+          net::NetLogEventType::CHROME_EXTENSION_REDIRECTED_REQUEST,
           CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert(
@@ -493,7 +493,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
               (*delta)->new_url,
               *new_url));
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
@@ -818,16 +818,15 @@ void MergeOnBeforeSendHeadersResponses(
           removed_headers.insert(*key);
         }
       }
-      net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS,
-          base::Bind(&NetLogModificationCallback, delta->get()));
+      net_log->AddEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
+                        base::Bind(&NetLogModificationCallback, delta->get()));
     } else {
       conflicting_extensions->insert(
           extensions::Warning::CreateRequestHeaderConflictWarning(
               (*delta)->extension_id, winning_extension_id,
               conflicting_header));
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
@@ -1151,16 +1150,15 @@ void MergeOnHeadersReceivedResponses(
           (*override_response_headers)->AddHeader(i->first + ": " + i->second);
         }
       }
-      net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS,
-          CreateNetLogExtensionIdCallback(delta->get()));
+      net_log->AddEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
+                        CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert(
           extensions::Warning::CreateResponseHeaderConflictWarning(
               (*delta)->extension_id, winning_extension_id,
               conflicting_header));
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
@@ -1209,11 +1207,11 @@ bool MergeOnAuthRequiredResponses(
           extensions::Warning::CreateCredentialsConflictWarning(
               (*delta)->extension_id, winning_extension_id));
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       net_log->AddEvent(
-          net::NetLog::TYPE_CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
+          net::NetLogEventType::CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
           CreateNetLogExtensionIdCallback(delta->get()));
       *auth_credentials = *(*delta)->auth_credentials;
       credentials_set = true;

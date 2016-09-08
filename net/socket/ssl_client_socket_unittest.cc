@@ -39,6 +39,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -1041,13 +1042,13 @@ TEST_F(SSLClientSocketTest, Connect) {
 
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLogEventType::SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 
   sock->Disconnect();
   EXPECT_FALSE(sock->IsConnected());
@@ -1070,7 +1071,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   // the user may take indefinitely long to respond.
   TestNetLogEntry::List entries;
   log_.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 }
 
 TEST_F(SSLClientSocketTest, ConnectMismatched) {
@@ -1090,7 +1091,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   // the user may take indefinitely long to respond.
   TestNetLogEntry::List entries;
   log_.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 }
 
 #if defined(OS_WIN)
@@ -1127,7 +1128,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
 
   TestNetLogEntry::List entries;
   log_.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
   EXPECT_FALSE(sock_->IsConnected());
 }
 
@@ -1882,7 +1883,8 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   size_t last_index = ExpectLogContainsSomewhereAfter(
-      entries, 5, NetLog::TYPE_SSL_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
+      entries, 5, NetLogEventType::SSL_SOCKET_BYTES_SENT,
+      NetLogEventPhase::NONE);
 
   scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
   for (;;) {
@@ -1892,11 +1894,9 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
       break;
 
     log.GetEntries(&entries);
-    last_index =
-        ExpectLogContainsSomewhereAfter(entries,
-                                        last_index + 1,
-                                        NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED,
-                                        NetLog::PHASE_NONE);
+    last_index = ExpectLogContainsSomewhereAfter(
+        entries, last_index + 1, NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
+        NetLogEventPhase::NONE);
   }
 }
 
@@ -2170,7 +2170,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
 
   TestNetLogEntry::List entries;
   log_.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 
   SSLInfo ssl_info;
   sock_->GetSSLInfo(&ssl_info);

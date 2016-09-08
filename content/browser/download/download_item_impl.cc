@@ -54,6 +54,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "net/log/net_log_event_type.h"
 
 namespace content {
 
@@ -199,11 +200,11 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 
   // Link the event sources.
   bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_URL_REQUEST,
+      net::NetLogEventType::DOWNLOAD_URL_REQUEST,
       info.request_bound_net_log.source().ToEventParametersCallback());
 
   info.request_bound_net_log.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_STARTED,
+      net::NetLogEventType::DOWNLOAD_STARTED,
       bound_net_log_.source().ToEventParametersCallback());
 }
 
@@ -282,7 +283,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
   bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
+      net::NetLogEventType::DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
       base::Bind(&ItemCheckedNetLogCallback, GetDangerType()));
 
   UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
@@ -1038,7 +1039,7 @@ void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
   UpdateProgress(bytes_so_far, bytes_per_sec);
   if (bound_net_log_.IsCapturing()) {
     bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
+        net::NetLogEventType::DOWNLOAD_ITEM_UPDATED,
         net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
   }
 
@@ -1116,11 +1117,11 @@ void DownloadItemImpl::Init(bool active,
   net::NetLog::ParametersCallback active_data =
       base::Bind(&ItemActivatedNetLogCallback, this, download_type, &file_name);
   if (active) {
-    bound_net_log_.BeginEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, active_data);
+    bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
+                              active_data);
   } else {
-    bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, active_data);
+    bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
+                            active_data);
   }
 
   DVLOG(20) << __func__ << "() " << DebugString(true);
@@ -1755,34 +1756,31 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
           << "Current output path must match target path.";
 
       bound_net_log_.AddEvent(
-          net::NetLog::TYPE_DOWNLOAD_ITEM_COMPLETING,
+          net::NetLogEventType::DOWNLOAD_ITEM_COMPLETING,
           base::Bind(&ItemCompletingNetLogCallback, received_bytes_, &hash_));
       break;
 
     case COMPLETE_INTERNAL:
       bound_net_log_.AddEvent(
-          net::NetLog::TYPE_DOWNLOAD_ITEM_FINISHED,
+          net::NetLogEventType::DOWNLOAD_ITEM_FINISHED,
           base::Bind(&ItemFinishedNetLogCallback, auto_opened_));
       break;
 
     case INTERRUPTED_INTERNAL:
-      bound_net_log_.AddEvent(
-          net::NetLog::TYPE_DOWNLOAD_ITEM_INTERRUPTED,
-          base::Bind(
-              &ItemInterruptedNetLogCallback, last_reason_, received_bytes_));
+      bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_INTERRUPTED,
+                              base::Bind(&ItemInterruptedNetLogCallback,
+                                         last_reason_, received_bytes_));
       break;
 
     case RESUMING_INTERNAL:
-      bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_RESUMED,
-                              base::Bind(&ItemResumingNetLogCallback,
-                                         false,
-                                         last_reason_,
-                                         received_bytes_));
+      bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_RESUMED,
+                              base::Bind(&ItemResumingNetLogCallback, false,
+                                         last_reason_, received_bytes_));
       break;
 
     case CANCELLED_INTERNAL:
       bound_net_log_.AddEvent(
-          net::NetLog::TYPE_DOWNLOAD_ITEM_CANCELED,
+          net::NetLogEventType::DOWNLOAD_ITEM_CANCELED,
           base::Bind(&ItemCanceledNetLogCallback, received_bytes_));
       break;
 
@@ -1803,22 +1801,21 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
 
   // Termination
   if (is_done && !was_done)
-    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE);
+    bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE);
 
   // Resumption
   if (was_done && !is_done) {
     std::string file_name(target_path_.BaseName().AsUTF8Unsafe());
-    bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE,
-                              base::Bind(&ItemActivatedNetLogCallback,
-                                         this, SRC_ACTIVE_DOWNLOAD,
-                                         &file_name));
+    bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
+                              base::Bind(&ItemActivatedNetLogCallback, this,
+                                         SRC_ACTIVE_DOWNLOAD, &file_name));
   }
 }
 
 void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
   if (danger_type != danger_type_) {
     bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
+        net::NetLogEventType::DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
         base::Bind(&ItemCheckedNetLogCallback, danger_type));
   }
   // Only record the Malicious UMA stat if it's going from {not malicious} ->
@@ -1843,7 +1840,7 @@ void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
   DCHECK(!new_path.empty());
 
   bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_ITEM_RENAMED,
+      net::NetLogEventType::DOWNLOAD_ITEM_RENAMED,
       base::Bind(&ItemRenamedNetLogCallback, &current_path_, &new_path));
 
   current_path_ = new_path;

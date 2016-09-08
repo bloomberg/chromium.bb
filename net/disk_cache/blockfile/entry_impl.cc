@@ -19,6 +19,8 @@
 #include "net/disk_cache/blockfile/sparse_control.h"
 #include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/net_log_parameters.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 
 // Provide a BackendImpl object to macros from histogram_macros.h.
 #define CACHE_UMA_BACKEND_IMPL_OBJ backend_
@@ -38,11 +40,15 @@ class SyncCallback: public disk_cache::FileIOCallback {
  public:
   // |end_event_type| is the event type to log on completion.  Logs nothing on
   // discard, or when the NetLog is not set to log all events.
-  SyncCallback(disk_cache::EntryImpl* entry, net::IOBuffer* buffer,
+  SyncCallback(disk_cache::EntryImpl* entry,
+               net::IOBuffer* buffer,
                const net::CompletionCallback& callback,
-               net::NetLog::EventType end_event_type)
-      : entry_(entry), callback_(callback), buf_(buffer),
-        start_(TimeTicks::Now()), end_event_type_(end_event_type) {
+               net::NetLogEventType end_event_type)
+      : entry_(entry),
+        callback_(callback),
+        buf_(buffer),
+        start_(TimeTicks::Now()),
+        end_event_type_(end_event_type) {
     entry->AddRef();
     entry->IncrementIoCount();
   }
@@ -56,7 +62,7 @@ class SyncCallback: public disk_cache::FileIOCallback {
   net::CompletionCallback callback_;
   scoped_refptr<net::IOBuffer> buf_;
   TimeTicks start_;
-  const net::NetLog::EventType end_event_type_;
+  const net::NetLogEventType end_event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncCallback);
 };
@@ -319,16 +325,15 @@ int EntryImpl::ReadDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
                             const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
-        net::NetLog::TYPE_ENTRY_READ_DATA,
+        net::NetLogEventType::ENTRY_READ_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
   }
 
   int result = InternalReadData(index, offset, buf, buf_len, callback);
 
   if (result != net::ERR_IO_PENDING && net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLog::TYPE_ENTRY_READ_DATA,
-        CreateNetLogReadWriteCompleteCallback(result));
+    net_log_.EndEvent(net::NetLogEventType::ENTRY_READ_DATA,
+                      CreateNetLogReadWriteCompleteCallback(result));
   }
   return result;
 }
@@ -338,7 +343,7 @@ int EntryImpl::WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
                              bool truncate) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
-        net::NetLog::TYPE_ENTRY_WRITE_DATA,
+        net::NetLogEventType::ENTRY_WRITE_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
   }
 
@@ -346,9 +351,8 @@ int EntryImpl::WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
                                  truncate);
 
   if (result != net::ERR_IO_PENDING && net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLog::TYPE_ENTRY_WRITE_DATA,
-        CreateNetLogReadWriteCompleteCallback(result));
+    net_log_.EndEvent(net::NetLogEventType::ENTRY_WRITE_DATA,
+                      CreateNetLogReadWriteCompleteCallback(result));
   }
   return result;
 }
@@ -466,7 +470,7 @@ bool EntryImpl::IsSameEntry(const std::string& key, uint32_t hash) {
 }
 
 void EntryImpl::InternalDoom() {
-  net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
+  net_log_.AddEvent(net::NetLogEventType::ENTRY_DOOM);
   DCHECK(node_.HasData());
   if (!node_.Data()->dirty) {
     node_.Data()->dirty = backend_->GetCurrentEntryId();
@@ -731,11 +735,10 @@ void EntryImpl::ReportIOTime(Operation op, const base::TimeTicks& start) {
 
 void EntryImpl::BeginLogging(net::NetLog* net_log, bool created) {
   DCHECK(!net_log_.net_log());
-  net_log_ = net::BoundNetLog::Make(
-      net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY);
-  net_log_.BeginEvent(
-      net::NetLog::TYPE_DISK_CACHE_ENTRY_IMPL,
-      CreateNetLogEntryCreationCallback(this, created));
+  net_log_ =
+      net::BoundNetLog::Make(net_log, net::NetLogSourceType::DISK_CACHE_ENTRY);
+  net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_ENTRY_IMPL,
+                      CreateNetLogEntryCreationCallback(this, created));
 }
 
 const net::BoundNetLog& EntryImpl::net_log() const {
@@ -951,7 +954,7 @@ EntryImpl::~EntryImpl() {
 #if defined(NET_BUILD_STRESS_CACHE)
     SanityCheck();
 #endif
-    net_log_.AddEvent(net::NetLog::TYPE_ENTRY_CLOSE);
+    net_log_.AddEvent(net::NetLogEventType::ENTRY_CLOSE);
     bool ret = true;
     for (int index = 0; index < kNumStreams; index++) {
       if (user_buffers_[index].get()) {
@@ -978,7 +981,7 @@ EntryImpl::~EntryImpl() {
   }
 
   Trace("~EntryImpl out 0x%p", reinterpret_cast<void*>(this));
-  net_log_.EndEvent(net::NetLog::TYPE_DISK_CACHE_ENTRY_IMPL);
+  net_log_.EndEvent(net::NetLogEventType::DISK_CACHE_ENTRY_IMPL);
   backend_->OnEntryDestroyEnd();
 }
 
@@ -1046,7 +1049,7 @@ int EntryImpl::InternalReadData(int index, int offset,
   SyncCallback* io_callback = NULL;
   if (!callback.is_null()) {
     io_callback = new SyncCallback(this, buf, callback,
-                                   net::NetLog::TYPE_ENTRY_READ_DATA);
+                                   net::NetLogEventType::ENTRY_READ_DATA);
   }
 
   TimeTicks start_async = TimeTicks::Now();
@@ -1150,7 +1153,7 @@ int EntryImpl::InternalWriteData(int index, int offset,
   SyncCallback* io_callback = NULL;
   if (!callback.is_null()) {
     io_callback = new SyncCallback(this, buf, callback,
-                                   net::NetLog::TYPE_ENTRY_WRITE_DATA);
+                                   net::NetLogEventType::ENTRY_WRITE_DATA);
   }
 
   TimeTicks start_async = TimeTicks::Now();

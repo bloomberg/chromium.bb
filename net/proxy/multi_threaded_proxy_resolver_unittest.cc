@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -63,7 +64,7 @@ class MockProxyResolver : public ProxyResolver {
     EXPECT_TRUE(request == NULL);
 
     // Write something into |net_log| (doesn't really have any meaning.)
-    net_log.BeginEvent(NetLog::TYPE_PAC_JAVASCRIPT_ALERT);
+    net_log.BeginEvent(NetLogEventType::PAC_JAVASCRIPT_ALERT);
 
     results->UseNamedProxy(query_url.host());
 
@@ -264,7 +265,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   log0.GetEntries(&entries0);
 
   ASSERT_EQ(2u, entries0.size());
-  EXPECT_EQ(NetLog::TYPE_SUBMITTED_TO_RESOLVER_THREAD, entries0[0].type);
+  EXPECT_EQ(NetLogEventType::SUBMITTED_TO_RESOLVER_THREAD, entries0[0].type);
 
   // Start 3 more requests (request1 to request3).
 
@@ -354,8 +355,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   log0.GetEntries(&entries0);
 
   ASSERT_EQ(2u, entries0.size());
-  EXPECT_EQ(NetLog::TYPE_SUBMITTED_TO_RESOLVER_THREAD,
-            entries0[0].type);
+  EXPECT_EQ(NetLogEventType::SUBMITTED_TO_RESOLVER_THREAD, entries0[0].type);
 
   // Check that request 1 completed as expected.
   EXPECT_EQ(1, callback1.WaitForResult());
@@ -366,11 +366,9 @@ TEST_F(MultiThreadedProxyResolverTest,
 
   ASSERT_EQ(4u, entries1.size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries1, 0,
-      NetLog::TYPE_WAITING_FOR_PROXY_RESOLVER_THREAD));
+      entries1, 0, NetLogEventType::WAITING_FOR_PROXY_RESOLVER_THREAD));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries1, 1,
-      NetLog::TYPE_WAITING_FOR_PROXY_RESOLVER_THREAD));
+      entries1, 1, NetLogEventType::WAITING_FOR_PROXY_RESOLVER_THREAD));
 
   // Check that request 2 completed as expected.
   EXPECT_EQ(2, callback2.WaitForResult());
@@ -381,11 +379,9 @@ TEST_F(MultiThreadedProxyResolverTest,
 
   ASSERT_EQ(4u, entries2.size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries2, 0,
-      NetLog::TYPE_WAITING_FOR_PROXY_RESOLVER_THREAD));
+      entries2, 0, NetLogEventType::WAITING_FOR_PROXY_RESOLVER_THREAD));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries2, 1,
-      NetLog::TYPE_WAITING_FOR_PROXY_RESOLVER_THREAD));
+      entries2, 1, NetLogEventType::WAITING_FOR_PROXY_RESOLVER_THREAD));
 }
 
 // Cancel a request which is in progress, and then cancel a request which

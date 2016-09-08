@@ -32,6 +32,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log_source_type.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -754,7 +755,7 @@ void DataReductionProxyConfig::SecureProxyCheck(
     const GURL& secure_proxy_check_url,
     FetcherResponseCallback fetcher_callback) {
   bound_net_log_ = net::BoundNetLog::Make(
-      net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
+      net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   if (event_creator_) {
     event_creator_->BeginSecureProxyCheck(
         bound_net_log_, config_values_->secure_proxy_check_url());

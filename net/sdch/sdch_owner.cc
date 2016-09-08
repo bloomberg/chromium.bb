@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
+#include "net/log/net_log_event_type.h"
 
 namespace net {
 
@@ -419,7 +420,7 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
       max_total_dictionary_size_) {
     RecordDictionaryFate(DICTIONARY_FATE_FETCH_IGNORED_NO_SPACE);
     SdchManager::SdchErrorRecovery(SDCH_DICTIONARY_NO_ROOM);
-    net_log.AddEvent(NetLog::TYPE_SDCH_DICTIONARY_ERROR,
+    net_log.AddEvent(NetLogEventType::SDCH_DICTIONARY_ERROR,
                      base::Bind(&NetLogSdchDictionaryFetchProblemCallback,
                                 SDCH_DICTIONARY_NO_ROOM, dictionary_url, true));
     return;
@@ -434,7 +435,7 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   if (rv != SDCH_OK) {
     RecordDictionaryFate(DICTIONARY_FATE_FETCH_MANAGER_REFUSED);
     SdchManager::SdchErrorRecovery(rv);
-    net_log.AddEvent(NetLog::TYPE_SDCH_DICTIONARY_ERROR,
+    net_log.AddEvent(NetLogEventType::SDCH_DICTIONARY_ERROR,
                      base::Bind(&NetLogSdchDictionaryFetchProblemCallback, rv,
                                 dictionary_url, true));
     return;

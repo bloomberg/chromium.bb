@@ -43,6 +43,7 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -592,16 +593,16 @@ class FakeWebSocketHandshakeStreamCreateHelper
 };
 
 // Returns true if |entry| is not one of the log types paid attention to in this
-// test. Note that TYPE_HTTP_CACHE_WRITE_INFO and TYPE_HTTP_CACHE_*_DATA are
+// test. Note that HTTP_CACHE_WRITE_INFO and HTTP_CACHE_*_DATA are
 // ignored.
 bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
   switch (entry.type) {
-    case NetLog::TYPE_HTTP_CACHE_GET_BACKEND:
-    case NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY:
-    case NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY:
-    case NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY:
-    case NetLog::TYPE_HTTP_CACHE_DOOM_ENTRY:
-    case NetLog::TYPE_HTTP_CACHE_READ_INFO:
+    case NetLogEventType::HTTP_CACHE_GET_BACKEND:
+    case NetLogEventType::HTTP_CACHE_OPEN_ENTRY:
+    case NetLogEventType::HTTP_CACHE_CREATE_ENTRY:
+    case NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY:
+    case NetLogEventType::HTTP_CACHE_DOOM_ENTRY:
+    case NetLogEventType::HTTP_CACHE_READ_INFO:
       return false;
     default:
       return true;
@@ -617,7 +618,7 @@ void FilterLogEntries(TestNetLogEntry::List* entries) {
 }
 
 bool LogContainsEventType(const BoundTestNetLog& log,
-                          NetLog::EventType expected) {
+                          NetLogEventType expected) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   for (size_t i = 0; i < entries.size(); i++) {
@@ -685,18 +686,18 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
   FilterLogEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
+      LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
+                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
   EXPECT_TRUE(
-      LogContainsEndEvent(entries, 1, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 2, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 4, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 5, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
+      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
+                                    NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
+                                  NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -851,22 +852,22 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
   FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
+      LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
+                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
   EXPECT_TRUE(
-      LogContainsEndEvent(entries, 1, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 2, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 4, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 5, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 6, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 7, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
+      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
+                                    NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
+                                  NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 6,
+                                    NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 7,
+                                  NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
 
   TestLoadTimingNetworkRequest(load_timing_info);
 
@@ -884,22 +885,22 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
   FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
+      LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
+                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
   EXPECT_TRUE(
-      LogContainsEndEvent(entries, 1, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
+      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
+                                    NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
+                                  NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 2, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
+      LogContainsBeginEvent(entries, 6, NetLogEventType::HTTP_CACHE_READ_INFO));
   EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 4, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 5, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 6, NetLog::TYPE_HTTP_CACHE_READ_INFO));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 7, NetLog::TYPE_HTTP_CACHE_READ_INFO));
+      LogContainsEndEvent(entries, 7, NetLogEventType::HTTP_CACHE_READ_INFO));
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -1112,22 +1113,22 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
   FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
+      LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
+                                    NetLogEventType::HTTP_CACHE_DOOM_ENTRY));
   EXPECT_TRUE(
-      LogContainsEndEvent(entries, 1, NetLog::TYPE_HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 2, NetLog::TYPE_HTTP_CACHE_DOOM_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLog::TYPE_HTTP_CACHE_DOOM_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 4, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 5, NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 6, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 7, NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY));
+      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_DOOM_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
+                                    NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
+                                  NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 6,
+                                    NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 7,
+                                  NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -3797,7 +3798,7 @@ TEST(HttpCache, SimpleGET_DoesntLogHeaders) {
                             log.bound());
 
   EXPECT_FALSE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+      log, NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS));
 }
 
 TEST(HttpCache, RangeGET_LogsHeaders) {
@@ -3808,7 +3809,7 @@ TEST(HttpCache, RangeGET_LogsHeaders) {
                             log.bound());
 
   EXPECT_TRUE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+      log, NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS));
 }
 
 TEST(HttpCache, ExternalValidation_LogsHeaders) {
@@ -3820,7 +3821,7 @@ TEST(HttpCache, ExternalValidation_LogsHeaders) {
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
 
   EXPECT_TRUE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+      log, NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS));
 }
 
 TEST(HttpCache, SpecialHeaders_LogsHeaders) {
@@ -3832,7 +3833,7 @@ TEST(HttpCache, SpecialHeaders_LogsHeaders) {
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
 
   EXPECT_TRUE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+      log, NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS));
 }
 
 // Tests that receiving 206 for a regular request is handled correctly.
@@ -3948,7 +3949,7 @@ TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
                             log.bound());
 
   EXPECT_TRUE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST));
+      log, NetLogEventType::HTTP_CACHE_RESTART_PARTIAL_REQUEST));
 }
 
 // Tests that a failure to conditionalize a regular request (no range) with a
@@ -5498,7 +5499,7 @@ TEST(HttpCache, RangeGET_FastFlakyServer) {
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   EXPECT_TRUE(LogContainsEventType(
-      log, NetLog::TYPE_HTTP_CACHE_RE_SEND_PARTIAL_REQUEST));
+      log, NetLogEventType::HTTP_CACHE_RE_SEND_PARTIAL_REQUEST));
 }
 
 // Tests that when the server gives us less data than expected, we don't keep

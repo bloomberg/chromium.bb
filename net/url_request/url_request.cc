@@ -30,6 +30,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -191,7 +193,7 @@ URLRequest::~URLRequest() {
   // are "cancelled" on destruction.
   if (status_.status() == URLRequestStatus::FAILED)
     net_error = status_.error();
-  net_log_.EndEventWithNetErrorCode(NetLog::TYPE_REQUEST_ALIVE, net_error);
+  net_log_.EndEventWithNetErrorCode(NetLogEventType::REQUEST_ALIVE, net_error);
 }
 
 void URLRequest::set_upload(std::unique_ptr<UploadDataStream> upload) {
@@ -332,9 +334,8 @@ void URLRequest::LogBlockedBy(const char* blocked_by) {
   blocked_by_ = blocked_by;
   use_blocked_by_as_load_param_ = false;
 
-  net_log_.BeginEvent(
-      NetLog::TYPE_DELEGATE_INFO,
-      NetLog::StringCallback("delegate_info", &blocked_by_));
+  net_log_.BeginEvent(NetLogEventType::DELEGATE_INFO,
+                      NetLog::StringCallback("delegate_info", &blocked_by_));
 }
 
 void URLRequest::LogAndReportBlockedBy(const char* source) {
@@ -346,7 +347,7 @@ void URLRequest::LogUnblocked() {
   if (blocked_by_.empty())
     return;
 
-  net_log_.EndEvent(NetLog::TYPE_DELEGATE_INFO);
+  net_log_.EndEvent(NetLogEventType::DELEGATE_INFO);
   blocked_by_.clear();
 }
 
@@ -560,7 +561,7 @@ URLRequest::URLRequest(const GURL& url,
       network_delegate_(network_delegate ? network_delegate
                                          : context->network_delegate()),
       net_log_(
-          BoundNetLog::Make(context->net_log(), NetLog::SOURCE_URL_REQUEST)),
+          BoundNetLog::Make(context->net_log(), NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
       method_("GET"),
       referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
@@ -585,7 +586,7 @@ URLRequest::URLRequest(const GURL& url,
       << "The current base::MessageLoop must exist";
 
   context->url_requests()->insert(this);
-  net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
+  net_log_.BeginEvent(NetLogEventType::REQUEST_ALIVE);
 }
 
 void URLRequest::BeforeRequestComplete(int error) {
@@ -599,7 +600,7 @@ void URLRequest::BeforeRequestComplete(int error) {
 
   if (error != OK) {
     std::string source("delegate");
-    net_log_.AddEvent(NetLog::TYPE_CANCELLED,
+    net_log_.AddEvent(NetLogEventType::CANCELLED,
                       NetLog::StringCallback("source", &source));
     StartJob(new URLRequestErrorJob(this, network_delegate_, error));
   } else if (!delegate_redirect_url_.is_empty()) {
@@ -626,9 +627,9 @@ void URLRequest::StartJob(URLRequestJob* job) {
   DCHECK(!job_.get());
 
   net_log_.BeginEvent(
-      NetLog::TYPE_URL_REQUEST_START_JOB,
-      base::Bind(&NetLogURLRequestStartCallback,
-                 &url(), &method_, load_flags_, priority_,
+      NetLogEventType::URL_REQUEST_START_JOB,
+      base::Bind(&NetLogURLRequestStartCallback, &url(), &method_, load_flags_,
+                 priority_,
                  upload_data_stream_ ? upload_data_stream_->identifier() : -1));
 
   job_.reset(job);
@@ -654,7 +655,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
       // when starting the error job.
       referrer_.clear();
       std::string source("delegate");
-      net_log_.AddEvent(NetLog::TYPE_CANCELLED,
+      net_log_.AddEvent(NetLogEventType::CANCELLED,
                         NetLog::StringCallback("source", &source));
       RestartWithJob(new URLRequestErrorJob(
           this, network_delegate_, ERR_BLOCKED_BY_CLIENT));
@@ -719,7 +720,7 @@ int URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
     // If the request hasn't already been completed, log a cancellation event.
     if (!has_notified_completion_) {
       // Don't log an error code on ERR_ABORTED, since that's redundant.
-      net_log_.AddEventWithNetErrorCode(NetLog::TYPE_CANCELLED,
+      net_log_.AddEventWithNetErrorCode(NetLogEventType::CANCELLED,
                                         error == ERR_ABORTED ? OK : error);
     }
   }
@@ -827,7 +828,7 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
   int net_error = OK;
   if (!status_.is_success())
     net_error = status_.error();
-  net_log_.EndEventWithNetErrorCode(NetLog::TYPE_URL_REQUEST_START_JOB,
+  net_log_.EndEventWithNetErrorCode(NetLogEventType::URL_REQUEST_START_JOB,
                                     net_error);
 
   URLRequestJob* job =
@@ -904,7 +905,7 @@ void URLRequest::PrepareToRestart() {
 
   // Close the current URL_REQUEST_START_JOB, since we will be starting a new
   // one.
-  net_log_.EndEvent(NetLog::TYPE_URL_REQUEST_START_JOB);
+  net_log_.EndEvent(NetLogEventType::URL_REQUEST_START_JOB);
 
   OrphanJob();
 
@@ -938,7 +939,7 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
   OnCallToDelegateComplete();
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
-        NetLog::TYPE_URL_REQUEST_REDIRECTED,
+        NetLogEventType::URL_REQUEST_REDIRECTED,
         NetLog::StringCallback("location",
                                &redirect_info.new_url.possibly_invalid_spec()));
   }
@@ -1046,7 +1047,7 @@ void URLRequest::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (job_.get()) {
     net_log_.AddEvent(
-        NetLog::TYPE_URL_REQUEST_SET_PRIORITY,
+        NetLogEventType::URL_REQUEST_SET_PRIORITY,
         NetLog::StringCallback("priority", RequestPriorityToString(priority_)));
     job_->SetPriority(priority_);
   }
@@ -1214,7 +1215,7 @@ void URLRequest::OnCallToDelegate() {
   DCHECK(!calling_delegate_);
   DCHECK(blocked_by_.empty());
   calling_delegate_ = true;
-  net_log_.BeginEvent(NetLog::TYPE_URL_REQUEST_DELEGATE);
+  net_log_.BeginEvent(NetLogEventType::URL_REQUEST_DELEGATE);
 }
 
 void URLRequest::OnCallToDelegateComplete() {
@@ -1223,7 +1224,7 @@ void URLRequest::OnCallToDelegateComplete() {
   if (!calling_delegate_)
     return;
   calling_delegate_ = false;
-  net_log_.EndEvent(NetLog::TYPE_URL_REQUEST_DELEGATE);
+  net_log_.EndEvent(NetLogEventType::URL_REQUEST_DELEGATE);
 }
 
 void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {

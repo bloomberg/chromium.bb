@@ -24,6 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
@@ -510,13 +511,13 @@ class MockHostResolver : public HostResolver {
 void CheckCapturedNetLogEntries(const std::string& expected_string,
                                 const TestNetLogEntry::List& entries) {
   ASSERT_EQ(2u, entries.size());
-  EXPECT_EQ(NetLog::TYPE_PAC_JAVASCRIPT_ALERT, entries[0].type);
+  EXPECT_EQ(NetLogEventType::PAC_JAVASCRIPT_ALERT, entries[0].type);
   std::string message;
   ASSERT_TRUE(entries[0].GetStringValue("message", &message));
   EXPECT_EQ(expected_string, message);
   ASSERT_FALSE(entries[0].params->HasKey("line_number"));
   message.clear();
-  EXPECT_EQ(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, entries[1].type);
+  EXPECT_EQ(NetLogEventType::PAC_JAVASCRIPT_ERROR, entries[1].type);
   ASSERT_TRUE(entries[1].GetStringValue("message", &message));
   EXPECT_EQ(expected_string, message);
   int line_number = 0;

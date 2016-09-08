@@ -18,6 +18,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -209,14 +210,14 @@ TEST(ProxyScriptDeciderTest, CustomPacSucceeds) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SCRIPT_DECIDER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 1, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 3, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 2, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entries, 3, NetLogEventType::PROXY_SCRIPT_DECIDER));
 
   EXPECT_TRUE(decider.effective_config().has_pac_url());
   EXPECT_EQ(config.pac_url(), decider.effective_config().pac_url());
@@ -246,14 +247,14 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SCRIPT_DECIDER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 1, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 3, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 2, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entries, 3, NetLogEventType::PROXY_SCRIPT_DECIDER));
 
   EXPECT_FALSE(decider.effective_config().has_pac_url());
 }
@@ -506,34 +507,34 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomSuccess2) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(10u, entries.size());
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SCRIPT_DECIDER));
   // This is the DHCP phase, which fails fetching rather than parsing, so
   // there is no pair of SET_PAC_SCRIPT events.
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 1, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 2, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEvent(
       entries, 3,
-      NetLog::TYPE_PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
-      NetLog::PHASE_NONE));
+      NetLogEventType::PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
+      NetLogEventPhase::NONE));
   // This is the DNS phase, which attempts a fetch but fails.
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 4, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 4, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 5, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 5, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEvent(
       entries, 6,
-      NetLog::TYPE_PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
-      NetLog::PHASE_NONE));
+      NetLogEventType::PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE,
+      NetLogEventPhase::NONE));
   // Finally, the custom PAC URL phase.
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 7, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 7, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 8, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 9, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 8, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entries, 9, NetLogEventType::PROXY_SCRIPT_DECIDER));
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (downloading).
@@ -606,18 +607,18 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithPositiveDelay) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SCRIPT_DECIDER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 1, NetLogEventType::PROXY_SCRIPT_DECIDER_WAIT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 2,
+                                  NetLogEventType::PROXY_SCRIPT_DECIDER_WAIT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_PROXY_SCRIPT_DECIDER_WAIT));
+      entries, 3, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_PROXY_SCRIPT_DECIDER_WAIT));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 3, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 4, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 5, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 4, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entries, 5, NetLogEventType::PROXY_SCRIPT_DECIDER));
 }
 
 // This is a copy-paste of CustomPacFails1, with the exception that we give it
@@ -646,14 +647,14 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithNegativeDelay) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
+  EXPECT_TRUE(
+      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SCRIPT_DECIDER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+      entries, 1, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 3, NetLog::TYPE_PROXY_SCRIPT_DECIDER));
+      entries, 2, NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(
+      LogContainsEndEvent(entries, 3, NetLogEventType::PROXY_SCRIPT_DECIDER));
 }
 
 class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {

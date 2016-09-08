@@ -29,6 +29,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_service.h"
@@ -246,9 +247,9 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
   {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-    dict->SetInteger("PHASE_BEGIN", NetLog::PHASE_BEGIN);
-    dict->SetInteger("PHASE_END", NetLog::PHASE_END);
-    dict->SetInteger("PHASE_NONE", NetLog::PHASE_NONE);
+    dict->SetInteger("PHASE_BEGIN", static_cast<int>(NetLogEventPhase::BEGIN));
+    dict->SetInteger("PHASE_END", static_cast<int>(NetLogEventPhase::END));
+    dict->SetInteger("PHASE_NONE", static_cast<int>(NetLogEventPhase::NONE));
 
     constants_dict->Set("logEventPhase", std::move(dict));
   }
@@ -536,8 +537,8 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     // Note that passing the hardcoded NetLogCaptureMode::Default() below is
     // fine, since GetRequestStateAsValue() ignores the capture mode.
     NetLog::EntryData entry_data(
-        NetLog::TYPE_REQUEST_ALIVE, request->net_log().source(),
-        NetLog::PHASE_BEGIN, request->creation_time(), &callback);
+        NetLogEventType::REQUEST_ALIVE, request->net_log().source(),
+        NetLogEventPhase::BEGIN, request->creation_time(), &callback);
     NetLog::Entry entry(&entry_data, NetLogCaptureMode::Default());
     observer->OnAddEntry(entry);
   }

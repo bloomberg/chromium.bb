@@ -21,6 +21,7 @@
 #include "net/ftp/ftp_request_info.h"
 #include "net/ftp/ftp_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
 #include "url/url_constants.h"
@@ -462,7 +463,7 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
   memcpy(write_command_buf_->data(), command.data(), command.length());
   memcpy(write_command_buf_->data() + command.length(), kCRLF, 2);
 
-  net_log_.AddEvent(NetLog::TYPE_FTP_COMMAND_SENT,
+  net_log_.AddEvent(NetLogEventType::FTP_COMMAND_SENT,
                     NetLog::StringCallback("command", &command_for_log));
 
   next_state_ = STATE_CTRL_WRITE;
@@ -654,7 +655,7 @@ int FtpNetworkTransaction::DoCtrlConnect() {
   ctrl_socket_ = socket_factory_->CreateTransportClientSocket(
       addresses_, NULL, net_log_.net_log(), net_log_.source());
   net_log_.AddEvent(
-      NetLog::TYPE_FTP_CONTROL_CONNECTION,
+      NetLogEventType::FTP_CONTROL_CONNECTION,
       ctrl_socket_->NetLog().source().ToEventParametersCallback());
   return ctrl_socket_->Connect(io_callback_);
 }
@@ -1231,7 +1232,7 @@ int FtpNetworkTransaction::DoDataConnect() {
   data_socket_ = socket_factory_->CreateTransportClientSocket(
       data_address, NULL, net_log_.net_log(), net_log_.source());
   net_log_.AddEvent(
-      NetLog::TYPE_FTP_DATA_CONNECTION,
+      NetLogEventType::FTP_DATA_CONNECTION,
       data_socket_->NetLog().source().ToEventParametersCallback());
   return data_socket_->Connect(io_callback_);
 }

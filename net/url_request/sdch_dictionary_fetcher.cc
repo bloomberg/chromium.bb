@@ -18,6 +18,7 @@
 #include "net/base/sdch_net_log_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -36,7 +37,7 @@ int GetReadResult(int bytes_read, const URLRequest* request) {
   if (request->status().is_success() && bytes_read < 0) {
     rv = ERR_FAILED;
     request->net_log().AddEventWithNetErrorCode(
-        NetLog::TYPE_SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, rv);
+        NetLogEventType::SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, rv);
   }
 
   if (rv == OK)
@@ -290,7 +291,7 @@ int SdchDictionaryFetcher::DoSendRequest(int rv) {
   current_callback_ = info.callback;
 
   current_request_->Start();
-  current_request_->net_log().AddEvent(NetLog::TYPE_SDCH_DICTIONARY_FETCH);
+  current_request_->net_log().AddEvent(NetLogEventType::SDCH_DICTIONARY_FETCH);
 
   return ERR_IO_PENDING;
 }

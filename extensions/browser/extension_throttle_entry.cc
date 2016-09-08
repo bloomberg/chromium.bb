@@ -14,6 +14,8 @@
 #include "extensions/browser/extension_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -78,7 +80,7 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
       url_id_(url_id),
       net_log_(net::BoundNetLog::Make(
           manager->net_log(),
-          net::NetLog::SOURCE_EXPONENTIAL_BACKOFF_THROTTLING)),
+          net::NetLogSourceType::EXPONENTIAL_BACKOFF_THROTTLING)),
       ignore_user_gesture_load_flag_for_tests_(
           ignore_user_gesture_load_flag_for_tests) {
   DCHECK(manager_);
@@ -151,7 +153,7 @@ bool ExtensionThrottleEntry::ShouldRejectRequest(
   if (!is_backoff_disabled_ && (ignore_user_gesture_load_flag_for_tests_ ||
                                 !ExplicitUserRequest(request.load_flags())) &&
       GetBackoffEntry()->ShouldRejectRequest()) {
-    net_log_.AddEvent(net::NetLog::TYPE_THROTTLING_REJECTED_REQUEST,
+    net_log_.AddEvent(net::NetLogEventType::THROTTLING_REJECTED_REQUEST,
                       base::Bind(&NetLogRejectedRequestCallback, &url_id_,
                                  GetBackoffEntry()->failure_count(),
                                  GetBackoffEntry()->GetTimeUntilRelease()));

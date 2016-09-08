@@ -42,6 +42,8 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -291,11 +293,10 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
                                  std::move(temp_file_handle), constants.get(),
                                  nullptr);
   g_browser_process->net_log()->AddGlobalEntry(
-      net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
+      net::NetLogEventType::NETWORK_IP_ADDRESSES_CHANGED);
   net::BoundNetLog bound_net_log = net::BoundNetLog::Make(
-      g_browser_process->net_log(),
-      net::NetLog::SOURCE_URL_REQUEST);
-  bound_net_log.BeginEvent(net::NetLog::TYPE_REQUEST_ALIVE);
+      g_browser_process->net_log(), net::NetLogSourceType::URL_REQUEST);
+  bound_net_log.BeginEvent(net::NetLogEventType::REQUEST_ALIVE);
   net_log_logger->StopObserving(nullptr);
   net_log_logger.reset();
 

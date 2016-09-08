@@ -20,6 +20,7 @@
 #include "net/base/test_data_stream.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -1535,9 +1536,10 @@ TEST_F(SpdySessionTest, Initialize) {
   log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
-  // Check that we logged TYPE_HTTP2_SESSION_INITIALIZED correctly.
+  // Check that we logged HTTP2_SESSION_INITIALIZED correctly.
   int pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_HTTP2_SESSION_INITIALIZED, NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::HTTP2_SESSION_INITIALIZED,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
   TestNetLogEntry entry = entries[pos];
@@ -1575,8 +1577,9 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
-  int pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_HTTP2_SESSION_GOAWAY, NetLog::PHASE_NONE);
+  int pos = ExpectLogContainsSomewhere(entries, 0,
+                                       NetLogEventType::HTTP2_SESSION_GOAWAY,
+                                       NetLogEventPhase::NONE);
   TestNetLogEntry entry = entries[pos];
   int last_accepted_stream_id;
   ASSERT_TRUE(entry.GetIntegerValue("last_accepted_stream_id",
@@ -1596,8 +1599,8 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_EQ("foo", debug_data);
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
-  pos = ExpectLogContainsSomewhere(entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE,
-                                   NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
   entry = entries[pos];
   int error_code = 0;
   ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
@@ -1631,7 +1634,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
   int pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
 
   if (pos < static_cast<int>(entries.size())) {
     TestNetLogEntry entry = entries[pos];

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 
 namespace net {
@@ -44,14 +45,14 @@ class BindingsImpl : public ProxyResolverV8Tracing::Bindings {
   void Alert(const base::string16& message) override {
     // Send to the NetLog.
     LogEventToCurrentRequestAndGlobally(
-        NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
+        NetLogEventType::PAC_JAVASCRIPT_ALERT,
         NetLog::StringCallback("message", &message));
   }
 
   void OnError(int line_number, const base::string16& message) override {
     // Send the error to the NetLog.
     LogEventToCurrentRequestAndGlobally(
-        NetLog::TYPE_PAC_JAVASCRIPT_ERROR,
+        NetLogEventType::PAC_JAVASCRIPT_ERROR,
         base::Bind(&NetLogErrorCallback, line_number, &message));
     if (error_observer_)
       error_observer_->OnPACScriptError(line_number, message);
@@ -63,7 +64,7 @@ class BindingsImpl : public ProxyResolverV8Tracing::Bindings {
 
  private:
   void LogEventToCurrentRequestAndGlobally(
-      NetLog::EventType type,
+      NetLogEventType type,
       const NetLog::ParametersCallback& parameters_callback) {
     bound_net_log_.AddEvent(type, parameters_callback);
 

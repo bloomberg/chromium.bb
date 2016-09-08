@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/quic/chromium/quic_chromium_alarm_factory.h"
@@ -705,16 +706,16 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   net_log().GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, /*min_offset=*/0,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
   pos = ExpectLogContainsSomewhere(
       entries, /*min_offset=*/pos,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
   ExpectLogContainsSomewhere(
       entries, /*min_offset=*/pos,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
 }
 
 // Tests that when request headers are not delayed, only data buffers are

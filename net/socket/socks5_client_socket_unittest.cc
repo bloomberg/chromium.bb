@@ -16,6 +16,7 @@
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -157,7 +158,7 @@ TEST_F(SOCKS5ClientSocketTest, CompleteHandshake) {
   TestNetLogEntry::List net_log_entries;
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
-                                    NetLog::TYPE_SOCKS5_CONNECT));
+                                    NetLogEventType::SOCKS5_CONNECT));
 
   rv = callback_.WaitForResult();
 
@@ -166,7 +167,7 @@ TEST_F(SOCKS5ClientSocketTest, CompleteHandshake) {
 
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
-                                  NetLog::TYPE_SOCKS5_CONNECT));
+                                  NetLogEventType::SOCKS5_CONNECT));
 
   scoped_refptr<IOBuffer> buffer(new IOBuffer(payload_write.size()));
   memcpy(buffer->data(), payload_write.data(), payload_write.size());
@@ -281,7 +282,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     TestNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
-                NetLog::TYPE_SOCKS5_CONNECT));
+                                      NetLogEventType::SOCKS5_CONNECT));
 
     rv = callback_.WaitForResult();
     EXPECT_THAT(rv, IsOk());
@@ -289,7 +290,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
 
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
-                NetLog::TYPE_SOCKS5_CONNECT));
+                                    NetLogEventType::SOCKS5_CONNECT));
   }
 
   // Test for partial greet response read
@@ -312,13 +313,13 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     TestNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
-                                      NetLog::TYPE_SOCKS5_CONNECT));
+                                      NetLogEventType::SOCKS5_CONNECT));
     rv = callback_.WaitForResult();
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(user_sock_->IsConnected());
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
-                                    NetLog::TYPE_SOCKS5_CONNECT));
+                                    NetLogEventType::SOCKS5_CONNECT));
   }
 
   // Test for partial handshake request write.
@@ -341,13 +342,13 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     TestNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
-                                      NetLog::TYPE_SOCKS5_CONNECT));
+                                      NetLogEventType::SOCKS5_CONNECT));
     rv = callback_.WaitForResult();
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(user_sock_->IsConnected());
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
-                                    NetLog::TYPE_SOCKS5_CONNECT));
+                                    NetLogEventType::SOCKS5_CONNECT));
   }
 
   // Test for partial handshake response read
@@ -372,13 +373,13 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     TestNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
-                                      NetLog::TYPE_SOCKS5_CONNECT));
+                                      NetLogEventType::SOCKS5_CONNECT));
     rv = callback_.WaitForResult();
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(user_sock_->IsConnected());
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsEndEvent(net_log_entries, -1,
-                                    NetLog::TYPE_SOCKS5_CONNECT));
+                                    NetLogEventType::SOCKS5_CONNECT));
   }
 }
 

@@ -23,6 +23,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/proxy/proxy_server.h"
@@ -34,7 +36,7 @@ class DataReductionProxyEventStoreTest : public testing::Test {
  public:
   DataReductionProxyEventStoreTest() : net_log_(new net::TestNetLog()) {
     bound_net_log_ = net::BoundNetLog::Make(
-        net_log_.get(), net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
+        net_log_.get(), net::NetLogSourceType::DATA_REDUCTION_PROXY);
   }
 
   void SetUp() override {
@@ -92,8 +94,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyEnabledEvent) {
   event_creator()->AddProxyEnabledEvent(net_log(), false, proxies_for_http);
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
-            entry.type);
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_ENABLED, entry.type);
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddProxyDisabledEvent) {
@@ -101,8 +102,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyDisabledEvent) {
   event_creator()->AddProxyDisabledEvent(net_log());
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
-            entry.type);
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_ENABLED, entry.type);
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
@@ -113,7 +113,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
       base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
   EXPECT_NE(nullptr, last_bypass_event());
 }
@@ -127,7 +127,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassTypeEvent) {
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
   EXPECT_NE(nullptr, last_bypass_event());
 }
@@ -138,7 +138,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyFallbackEvent) {
                                          net::ERR_PROXY_CONNECTION_FAILED);
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_FALLBACK, entry.type);
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_FALLBACK, entry.type);
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestBeginSecureProxyCheck) {
@@ -149,7 +149,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestBeginSecureProxyCheck) {
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_PENDING,
             secure_proxy_check_state());
@@ -163,7 +163,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheck) {
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
-  EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
+  EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_SUCCESS,
             secure_proxy_check_state());
@@ -202,7 +202,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
     EXPECT_EQ(expected_event_count, net_log()->GetSize()) << test.test_case;
     EXPECT_EQ(expected_event_count++, event_count()) << test.test_case;
     net::TestNetLogEntry entry = GetLatestEntry();
-    EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST, entry.type)
+    EXPECT_EQ(net::NetLogEventType::DATA_REDUCTION_PROXY_CANARY_REQUEST,
+              entry.type)
         << test.test_case;
     EXPECT_EQ(test.secure_proxy_check_succeeded
                   ? DataReductionProxyEventStorageDelegate::CHECK_SUCCESS

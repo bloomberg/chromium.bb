@@ -32,6 +32,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log_source_type.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -389,7 +390,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
   DCHECK(success);
   send_address_ = net::IPEndPoint(address, kDialRequestPort);
   send_buffer_ = new StringIOBuffer(BuildRequest());
-  net_log_source_.type = net::NetLog::SOURCE_UDP_SOCKET;
+  net_log_source_.type = net::NetLogSourceType::UDP_SOCKET;
   net_log_source_.id = net_log_->NextID();
 }
 

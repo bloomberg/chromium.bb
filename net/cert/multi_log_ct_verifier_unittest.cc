@@ -22,6 +22,7 @@
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/test/cert_test_util.h"
@@ -124,7 +125,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     ct::CTVerifyResult result;
     TestNetLog net_log;
     BoundNetLog bound_net_log =
-        BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
+        BoundNetLog::Make(&net_log, NetLogSourceType::CONNECT_JOB);
 
     return verifier_->Verify(chain.get(),
                              std::string(),
@@ -137,7 +138,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     ct::CTVerifyResult result;
     TestNetLog net_log;
     BoundNetLog bound_net_log =
-      BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
+        BoundNetLog::Make(&net_log, NetLogSourceType::CONNECT_JOB);
     return (VerifySinglePrecertificateChain(chain, bound_net_log, &result) &&
             ct::CheckForSingleVerifiedSCTInResult(result, kLogDescription) &&
             ct::CheckForSCTOrigin(

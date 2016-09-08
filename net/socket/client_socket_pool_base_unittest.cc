@@ -32,6 +32,8 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -125,7 +127,7 @@ class MockClientSocket : public StreamSocket {
   explicit MockClientSocket(net::NetLog* net_log)
       : connected_(false),
         has_unread_data_(false),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        net_log_(BoundNetLog::Make(net_log, NetLogSourceType::SOCKET)),
         was_used_to_convey_data_(false) {}
 
   // Sets whether the socket has unread data. If true, the next call to Read()
@@ -284,7 +286,7 @@ class TestConnectJob : public ConnectJob {
                    request.priority(),
                    request.respect_limits(),
                    delegate,
-                   BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
+                   BoundNetLog::Make(net_log, NetLogSourceType::CONNECT_JOB)),
         job_type_(job_type),
         client_socket_factory_(client_socket_factory),
         load_state_(LOAD_STATE_IDLE),
@@ -780,20 +782,20 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_TimedOut) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::SOCKET_POOL_CONNECT_JOB));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB));
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT));
+      entries, 1, NetLogEventType::SOCKET_POOL_CONNECT_JOB_CONNECT));
+  EXPECT_TRUE(LogContainsEvent(entries, 2,
+                               NetLogEventType::CONNECT_JOB_SET_SOCKET,
+                               NetLogEventPhase::NONE));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 2, NetLog::TYPE_CONNECT_JOB_SET_SOCKET,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(
-      entries, 3, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_TIMED_OUT,
-      NetLog::PHASE_NONE));
+      entries, 3, NetLogEventType::SOCKET_POOL_CONNECT_JOB_TIMED_OUT,
+      NetLogEventPhase::NONE));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 4, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 5, NetLog::TYPE_SOCKET_POOL_CONNECT_JOB));
+      entries, 4, NetLogEventType::SOCKET_POOL_CONNECT_JOB_CONNECT));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
+                                  NetLogEventType::SOCKET_POOL_CONNECT_JOB));
 }
 
 TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
@@ -818,16 +820,14 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKET_POOL));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKET_POOL));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(
-      entries, 2, NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 3, NetLog::TYPE_SOCKET_POOL));
+      entries, 1, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(entries, 2,
+                               NetLogEventType::SOCKET_POOL_BOUND_TO_SOCKET,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 3, NetLogEventType::SOCKET_POOL));
 }
 
 TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
@@ -856,13 +856,11 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKET_POOL));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKET_POOL));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_SOCKET_POOL));
+      entries, 1, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 2, NetLogEventType::SOCKET_POOL));
 }
 
 TEST_F(ClientSocketPoolBaseTest, TotalLimit) {
@@ -1607,16 +1605,14 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKET_POOL));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKET_POOL));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(
-      entries, 2, NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 3, NetLog::TYPE_SOCKET_POOL));
+      entries, 1, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(entries, 2,
+                               NetLogEventType::SOCKET_POOL_BOUND_TO_SOCKET,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 3, NetLogEventType::SOCKET_POOL));
 }
 
 TEST_F(ClientSocketPoolBaseTest,
@@ -1645,13 +1641,11 @@ TEST_F(ClientSocketPoolBaseTest,
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
-  EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 0, NetLog::TYPE_SOCKET_POOL));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::SOCKET_POOL));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-      NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLog::TYPE_SOCKET_POOL));
+      entries, 1, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+      NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 2, NetLogEventType::SOCKET_POOL));
 }
 
 // Check that an async ConnectJob failure does not result in creation of a new
@@ -2104,7 +2098,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEntryWithType(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
+      entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }
 
 #if defined(OS_IOS)
@@ -2182,7 +2176,7 @@ TEST_F(ClientSocketPoolBaseTest, MAYBE_CleanupTimedOutIdleSocketsNoReuse) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_FALSE(LogContainsEntryWithType(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
+      entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }
 
 // Make sure that we process all pending requests even when we're stalling

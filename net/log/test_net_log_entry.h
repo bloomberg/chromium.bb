@@ -11,6 +11,7 @@
 
 #include "base/time/time.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,10 +28,10 @@ struct TestNetLogEntry {
   // Ordered set of logged entries.
   typedef std::vector<TestNetLogEntry> List;
 
-  TestNetLogEntry(NetLog::EventType type,
+  TestNetLogEntry(NetLogEventType type,
                   const base::TimeTicks& time,
                   NetLog::Source source,
-                  NetLog::EventPhase phase,
+                  NetLogEventPhase phase,
                   std::unique_ptr<base::DictionaryValue> params);
   // Copy constructor needed to store in a std::vector because of the
   // scoped_ptr.
@@ -58,10 +59,10 @@ struct TestNetLogEntry {
   // parameters.
   std::string GetParamsJson() const;
 
-  NetLog::EventType type;
+  NetLogEventType type;
   base::TimeTicks time;
   NetLog::Source source;
-  NetLog::EventPhase phase;
+  NetLogEventPhase phase;
   std::unique_ptr<base::DictionaryValue> params;
 };
 

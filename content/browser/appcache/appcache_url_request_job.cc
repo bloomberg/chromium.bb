@@ -26,6 +26,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -121,7 +122,7 @@ void AppCacheURLRequestJob::BeginDelivery() {
       AppCacheHistograms::AddErrorJobStartDelaySample(
           base::TimeTicks::Now() - start_time_tick_);
       request()->net_log().AddEvent(
-          net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE);
+          net::NetLogEventType::APPCACHE_DELIVERING_ERROR_RESPONSE);
       NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                              net::ERR_FAILED));
       break;
@@ -134,9 +135,9 @@ void AppCacheURLRequestJob::BeginDelivery() {
       AppCacheHistograms::AddAppCacheJobStartDelaySample(
           base::TimeTicks::Now() - start_time_tick_);
       request()->net_log().AddEvent(
-          is_fallback_ ?
-              net::NetLog::TYPE_APPCACHE_DELIVERING_FALLBACK_RESPONSE :
-              net::NetLog::TYPE_APPCACHE_DELIVERING_CACHED_RESPONSE);
+          is_fallback_
+              ? net::NetLogEventType::APPCACHE_DELIVERING_FALLBACK_RESPONSE
+              : net::NetLogEventType::APPCACHE_DELIVERING_CACHED_RESPONSE);
       storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
       break;
 
@@ -155,7 +156,7 @@ void AppCacheURLRequestJob::BeginExecutableHandlerDelivery() {
   }
 
   request()->net_log().AddEvent(
-      net::NetLog::TYPE_APPCACHE_DELIVERING_EXECUTABLE_RESPONSE);
+      net::NetLogEventType::APPCACHE_DELIVERING_EXECUTABLE_RESPONSE);
 
   // We defer job delivery until the executable handler is spun up and
   // provides a response. The sequence goes like this...

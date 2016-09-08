@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 
 class GURL;
 
@@ -108,13 +109,13 @@ class DataReductionProxyEventCreator {
   // Prepare and post a generic Data Reduction Proxy event with no additional
   // parameters.
   void PostEvent(net::NetLog* net_log,
-                 net::NetLog::EventType type,
+                 net::NetLogEventType type,
                  const net::NetLog::ParametersCallback& callback);
 
   // Prepare and post enabling/disabling proxy events for the event store on the
   // a net::NetLog.
   void PostEnabledEvent(net::NetLog* net_log,
-                        net::NetLog::EventType type,
+                        net::NetLogEventType type,
                         bool enable,
                         const net::NetLog::ParametersCallback& callback);
 
@@ -122,8 +123,8 @@ class DataReductionProxyEventCreator {
   // on a BoundNetLog.
   void PostBoundNetLogBypassEvent(
       const net::BoundNetLog& net_log,
-      net::NetLog::EventType type,
-      net::NetLog::EventPhase phase,
+      net::NetLogEventType type,
+      net::NetLogEventPhase phase,
       int64_t expiration_ticks,
       const net::NetLog::ParametersCallback& callback);
 
@@ -131,8 +132,8 @@ class DataReductionProxyEventCreator {
   // BoundNetLog.
   void PostBoundNetLogSecureProxyCheckEvent(
       const net::BoundNetLog& net_log,
-      net::NetLog::EventType type,
-      net::NetLog::EventPhase phase,
+      net::NetLogEventType type,
+      net::NetLogEventPhase phase,
       DataReductionProxyEventStorageDelegate::SecureProxyCheckState state,
       const net::NetLog::ParametersCallback& callback);
 
@@ -140,8 +141,8 @@ class DataReductionProxyEventCreator {
   // BoundNetLog.
   void PostBoundNetLogConfigRequestEvent(
       const net::BoundNetLog& net_log,
-      net::NetLog::EventType type,
-      net::NetLog::EventPhase phase,
+      net::NetLogEventType type,
+      net::NetLogEventPhase phase,
       const net::NetLog::ParametersCallback& callback);
 
   // Must outlive |this|. Used for posting calls to the UI thread.

@@ -19,6 +19,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_source_type.h"
 #include "net/proxy/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -54,22 +55,22 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     net::HttpNetworkSession* http_network_session,
     net::NetLog* net_log,
     GCMStatsRecorder* recorder)
-  : mcs_endpoints_(mcs_endpoints),
-    next_endpoint_(0),
-    last_successful_endpoint_(0),
-    backoff_policy_(backoff_policy),
-    gcm_network_session_(gcm_network_session),
-    http_network_session_(http_network_session),
-    bound_net_log_(
-        net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
-    pac_request_(NULL),
-    connecting_(false),
-    waiting_for_backoff_(false),
-    waiting_for_network_online_(false),
-    logging_in_(false),
-    recorder_(recorder),
-    listener_(NULL),
-    weak_ptr_factory_(this) {
+    : mcs_endpoints_(mcs_endpoints),
+      next_endpoint_(0),
+      last_successful_endpoint_(0),
+      backoff_policy_(backoff_policy),
+      gcm_network_session_(gcm_network_session),
+      http_network_session_(http_network_session),
+      bound_net_log_(
+          net::BoundNetLog::Make(net_log, net::NetLogSourceType::SOCKET)),
+      pac_request_(NULL),
+      connecting_(false),
+      waiting_for_backoff_(false),
+      waiting_for_network_online_(false),
+      logging_in_(false),
+      recorder_(recorder),
+      listener_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
   DCHECK(!http_network_session_ ||
          (gcm_network_session_ != http_network_session_));

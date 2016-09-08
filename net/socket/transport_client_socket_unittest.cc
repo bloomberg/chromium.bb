@@ -15,6 +15,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -242,9 +243,9 @@ TEST_P(TransportClientSocketTest, Connect) {
   TestNetLogEntry::List net_log_entries;
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(
-      LogContainsBeginEvent(net_log_entries, 0, NetLog::TYPE_SOCKET_ALIVE));
+      LogContainsBeginEvent(net_log_entries, 0, NetLogEventType::SOCKET_ALIVE));
   EXPECT_TRUE(
-      LogContainsBeginEvent(net_log_entries, 1, NetLog::TYPE_TCP_CONNECT));
+      LogContainsBeginEvent(net_log_entries, 1, NetLogEventType::TCP_CONNECT));
   // Now wait for the client socket to accept the connection.
   if (rv != OK) {
     ASSERT_EQ(rv, ERR_IO_PENDING);
@@ -255,7 +256,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   EXPECT_TRUE(sock_->IsConnected());
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(
-      LogContainsEndEvent(net_log_entries, -1, NetLog::TYPE_TCP_CONNECT));
+      LogContainsEndEvent(net_log_entries, -1, NetLogEventType::TCP_CONNECT));
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());

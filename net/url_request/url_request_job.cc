@@ -27,6 +27,7 @@
 #include "net/base/network_delegate.h"
 #include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/net_log_event_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request_context.h"
 
@@ -501,7 +502,7 @@ void URLRequestJob::NotifyHeadersComplete() {
       base::StringToInt64(content_length, &expected_content_size_);
   } else {
     request_->net_log().AddEvent(
-        NetLog::TYPE_URL_REQUEST_FILTERS_SET,
+        NetLogEventType::URL_REQUEST_FILTERS_SET,
         base::Bind(&FiltersSetCallback, base::Unretained(filter_.get())));
   }
 
@@ -611,7 +612,7 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
   // successful.
   if (request_->status().is_success()) {
     if (status.status() == URLRequestStatus::FAILED)
-      request_->net_log().AddEventWithNetErrorCode(NetLog::TYPE_FAILED,
+      request_->net_log().AddEventWithNetErrorCode(NetLogEventType::FAILED,
                                                    status.error());
     request_->set_status(status);
   }
@@ -790,8 +791,8 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
       if (error == OK && filtered_data_len > 0 &&
           request()->net_log().IsCapturing()) {
         request()->net_log().AddByteTransferEvent(
-            NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ, filtered_data_len,
-            filtered_read_buffer_->data());
+            NetLogEventType::URL_REQUEST_JOB_FILTERED_BYTES_READ,
+            filtered_data_len, filtered_read_buffer_->data());
       }
     } else {
       // we are done, or there is no data left.
@@ -876,7 +877,7 @@ void URLRequestJob::GatherRawReadStats(Error error, int bytes_read) {
   // instead.
   if (!filter_.get() && bytes_read > 0 && request()->net_log().IsCapturing()) {
     request()->net_log().AddByteTransferEvent(
-        NetLog::TYPE_URL_REQUEST_JOB_BYTES_READ, bytes_read,
+        NetLogEventType::URL_REQUEST_JOB_BYTES_READ, bytes_read,
         raw_read_buffer_->data());
   }
 

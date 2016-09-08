@@ -21,6 +21,7 @@
 #include "net/dns/mojo_host_resolver_impl.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
+#include "net/log/net_log_event_type.h"
 #include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
@@ -60,17 +61,17 @@ class ClientMixin : public ClientInterface {
   void Alert(const mojo::String& message) override {
     base::string16 message_str = message.To<base::string16>();
     auto callback = NetLog::StringCallback("message", &message_str);
-    bound_net_log_.AddEvent(NetLog::TYPE_PAC_JAVASCRIPT_ALERT, callback);
+    bound_net_log_.AddEvent(NetLogEventType::PAC_JAVASCRIPT_ALERT, callback);
     if (net_log_)
-      net_log_->AddGlobalEntry(NetLog::TYPE_PAC_JAVASCRIPT_ALERT, callback);
+      net_log_->AddGlobalEntry(NetLogEventType::PAC_JAVASCRIPT_ALERT, callback);
   }
 
   void OnError(int32_t line_number, const mojo::String& message) override {
     base::string16 message_str = message.To<base::string16>();
     auto callback = base::Bind(&NetLogErrorCallback, line_number, &message_str);
-    bound_net_log_.AddEvent(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, callback);
+    bound_net_log_.AddEvent(NetLogEventType::PAC_JAVASCRIPT_ERROR, callback);
     if (net_log_)
-      net_log_->AddGlobalEntry(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, callback);
+      net_log_->AddGlobalEntry(NetLogEventType::PAC_JAVASCRIPT_ERROR, callback);
     if (error_observer_)
       error_observer_->OnPACScriptError(line_number, message_str);
   }

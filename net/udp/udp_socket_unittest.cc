@@ -20,6 +20,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -231,33 +232,40 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   server_log.GetEntries(&server_entries);
   EXPECT_EQ(5u, server_entries.size());
   EXPECT_TRUE(
-      LogContainsBeginEvent(server_entries, 0, NetLog::TYPE_SOCKET_ALIVE));
-  EXPECT_TRUE(LogContainsEvent(
-      server_entries, 1, NetLog::TYPE_UDP_BYTES_RECEIVED, NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(server_entries, 2, NetLog::TYPE_UDP_BYTES_SENT,
-                               NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(
-      server_entries, 3, NetLog::TYPE_UDP_BYTES_RECEIVED, NetLog::PHASE_NONE));
+      LogContainsBeginEvent(server_entries, 0, NetLogEventType::SOCKET_ALIVE));
+  EXPECT_TRUE(LogContainsEvent(server_entries, 1,
+                               NetLogEventType::UDP_BYTES_RECEIVED,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(server_entries, 2,
+                               NetLogEventType::UDP_BYTES_SENT,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(server_entries, 3,
+                               NetLogEventType::UDP_BYTES_RECEIVED,
+                               NetLogEventPhase::NONE));
   EXPECT_TRUE(
-      LogContainsEndEvent(server_entries, 4, NetLog::TYPE_SOCKET_ALIVE));
+      LogContainsEndEvent(server_entries, 4, NetLogEventType::SOCKET_ALIVE));
 
   // Check the client's log.
   TestNetLogEntry::List client_entries;
   client_log.GetEntries(&client_entries);
   EXPECT_EQ(7u, client_entries.size());
   EXPECT_TRUE(
-      LogContainsBeginEvent(client_entries, 0, NetLog::TYPE_SOCKET_ALIVE));
+      LogContainsBeginEvent(client_entries, 0, NetLogEventType::SOCKET_ALIVE));
   EXPECT_TRUE(
-      LogContainsBeginEvent(client_entries, 1, NetLog::TYPE_UDP_CONNECT));
-  EXPECT_TRUE(LogContainsEndEvent(client_entries, 2, NetLog::TYPE_UDP_CONNECT));
-  EXPECT_TRUE(LogContainsEvent(client_entries, 3, NetLog::TYPE_UDP_BYTES_SENT,
-                               NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(
-      client_entries, 4, NetLog::TYPE_UDP_BYTES_RECEIVED, NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(client_entries, 5, NetLog::TYPE_UDP_BYTES_SENT,
-                               NetLog::PHASE_NONE));
+      LogContainsBeginEvent(client_entries, 1, NetLogEventType::UDP_CONNECT));
   EXPECT_TRUE(
-      LogContainsEndEvent(client_entries, 6, NetLog::TYPE_SOCKET_ALIVE));
+      LogContainsEndEvent(client_entries, 2, NetLogEventType::UDP_CONNECT));
+  EXPECT_TRUE(LogContainsEvent(client_entries, 3,
+                               NetLogEventType::UDP_BYTES_SENT,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(client_entries, 4,
+                               NetLogEventType::UDP_BYTES_RECEIVED,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(client_entries, 5,
+                               NetLogEventType::UDP_BYTES_SENT,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(
+      LogContainsEndEvent(client_entries, 6, NetLogEventType::SOCKET_ALIVE));
 }
 
 TEST_F(UDPSocketTest, Connect) {

@@ -26,6 +26,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/net_log_source_type.h"
 #include "net/socket/socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -861,7 +862,7 @@ void MockClientSocket::RunCallback(const CompletionCallback& callback,
 MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
                                          net::NetLog* net_log,
                                          SocketDataProvider* data)
-    : MockClientSocket(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
+    : MockClientSocket(BoundNetLog::Make(net_log, NetLogSourceType::NONE)),
       addresses_(addresses),
       data_(data),
       read_offset_(0),
@@ -1258,7 +1259,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       pending_read_buf_(NULL),
       pending_read_buf_len_(0),
-      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
+      net_log_(BoundNetLog::Make(net_log, NetLogSourceType::NONE)),
       weak_factory_(this) {
   DCHECK(data_);
   data_->Initialize(this);

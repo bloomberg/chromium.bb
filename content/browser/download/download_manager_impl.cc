@@ -47,6 +47,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/log/net_log_source_type.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
@@ -192,7 +193,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base::ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
+      net::BoundNetLog::Make(net_log_, net::NetLogSourceType::DOWNLOAD);
   DownloadItemImpl* download =
       item_factory_->CreateActiveItem(this, id, info, bound_net_log);
   downloads_[id] = download;
@@ -444,7 +445,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
   DCHECK(!base::ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
+      net::BoundNetLog::Make(net_log_, net::NetLogSourceType::DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle),
       bound_net_log);
@@ -693,7 +694,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
       start_time, end_time, etag, last_modified, received_bytes, total_bytes,
       hash, state, danger_type, interrupt_reason, opened,
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD));
+      net::BoundNetLog::Make(net_log_, net::NetLogSourceType::DOWNLOAD));
   downloads_[id] = item;
   downloads_by_guid_[guid] = item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));

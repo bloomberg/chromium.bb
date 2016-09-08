@@ -31,6 +31,8 @@
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/bidirectional_stream_impl.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/quic/chromium/bidirectional_stream_quic_impl.h"
 #include "net/quic/chromium/crypto/channel_id_chromium.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
@@ -120,15 +122,16 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
 class ScopedConnectionMigrationEventLog {
  public:
   ScopedConnectionMigrationEventLog(NetLog* net_log, std::string trigger)
-      : net_log_(BoundNetLog::Make(net_log,
-                                   NetLog::SOURCE_QUIC_CONNECTION_MIGRATION)) {
+      : net_log_(
+            BoundNetLog::Make(net_log,
+                              NetLogSourceType::QUIC_CONNECTION_MIGRATION)) {
     net_log_.BeginEvent(
-        NetLog::TYPE_QUIC_CONNECTION_MIGRATION_TRIGGERED,
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
         base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, trigger));
   }
 
   ~ScopedConnectionMigrationEventLog() {
-    net_log_.EndEvent(NetLog::TYPE_QUIC_CONNECTION_MIGRATION_TRIGGERED);
+    net_log_.EndEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
   }
 
   const BoundNetLog& net_log() { return net_log_; }
@@ -148,7 +151,7 @@ void HistogramAndLogMigrationFailure(const BoundNetLog& net_log,
                                      std::string reason) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
                             MIGRATION_STATUS_MAX);
-  net_log.AddEvent(NetLog::TYPE_QUIC_CONNECTION_MIGRATION_FAILURE,
+  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE,
                    base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
                               connection_id, reason));
 }
@@ -1658,7 +1661,7 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
   }
   HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
   bound_net_log.AddEvent(
-      NetLog::TYPE_QUIC_CONNECTION_MIGRATION_SUCCESS,
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS,
       base::Bind(&NetLogQuicConnectionMigrationSuccessCallback,
                  session->connection_id()));
 }

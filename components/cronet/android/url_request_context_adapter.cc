@@ -316,8 +316,9 @@ void URLRequestContextAdapter::StopNetLogHelper() {
 }
 
 void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
-  VLOG(2) << "Net log entry: type=" << entry.type()
-          << ", source=" << entry.source().type << ", phase=" << entry.phase();
+  VLOG(2) << "Net log entry: type=" << static_cast<int>(entry.type())
+          << ", source=" << static_cast<int>(entry.source().type)
+          << ", phase=" << static_cast<int>(entry.phase());
 }
 
 }  // namespace cronet

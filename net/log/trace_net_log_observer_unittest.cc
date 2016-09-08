@@ -19,6 +19,8 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,7 +152,7 @@ class TraceNetLogObserverTest : public testing::Test {
 
 TEST_F(TraceNetLogObserverTest, TracingNotEnabled) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
 
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
@@ -166,10 +168,10 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
   EnableTraceLog();
   BoundNetLog bound_net_log =
-      BoundNetLog::Make(net_log(), net::NetLog::SOURCE_NONE);
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED);
-  bound_net_log.BeginEvent(NetLog::TYPE_URL_REQUEST_START_JOB);
-  bound_net_log.EndEvent(NetLog::TYPE_REQUEST_ALIVE);
+      BoundNetLog::Make(net_log(), net::NetLogSourceType::NONE);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED);
+  bound_net_log.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB);
+  bound_net_log.EndEvent(NetLogEventType::REQUEST_ALIVE);
 
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
@@ -190,7 +192,7 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[0].source.id), actual_item1.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item1.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_CANCELLED),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::CANCELLED),
             actual_item1.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[0].source.type),
             actual_item1.source_type);
@@ -199,7 +201,7 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[1].source.id), actual_item2.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN),
             actual_item2.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_URL_REQUEST_START_JOB),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::URL_REQUEST_START_JOB),
             actual_item2.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[1].source.type),
             actual_item2.source_type);
@@ -208,7 +210,7 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[2].source.id), actual_item3.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_END),
             actual_item3.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_REQUEST_ALIVE),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::REQUEST_ALIVE),
             actual_item3.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[2].source.type),
             actual_item3.source_type);
@@ -217,11 +219,11 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
 TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
   EnableTraceLog();
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED);
   TraceLog::GetInstance()->SetDisabled();
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
   EnableTraceLog();
-  net_log()->AddGlobalEntry(NetLog::TYPE_URL_REQUEST_START_JOB);
+  net_log()->AddGlobalEntry(NetLogEventType::URL_REQUEST_START_JOB);
 
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
@@ -241,7 +243,7 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[0].source.id), actual_item1.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item1.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_CANCELLED),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::CANCELLED),
             actual_item1.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[0].source.type),
             actual_item1.source_type);
@@ -250,7 +252,7 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[2].source.id), actual_item2.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item2.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_URL_REQUEST_START_JOB),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::URL_REQUEST_START_JOB),
             actual_item2.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[2].source.type),
             actual_item2.source_type);
@@ -259,10 +261,10 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
 TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
   EnableTraceLog();
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED);
   trace_net_log_observer()->StopWatchForTraceStart();
   set_trace_net_log_observer(NULL);
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
 
   EndTraceAndFlush();
 
@@ -279,7 +281,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[0].source.id), actual_item1.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item1.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_CANCELLED),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::CANCELLED),
             actual_item1.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[0].source.type),
             actual_item1.source_type);
@@ -287,11 +289,11 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
 
 TEST_F(TraceNetLogObserverTest, DestroyObserverWhileNotTracing) {
   trace_net_log_observer()->WatchForTraceStart(net_log());
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED);
   trace_net_log_observer()->StopWatchForTraceStart();
   set_trace_net_log_observer(NULL);
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
-  net_log()->AddGlobalEntry(NetLog::TYPE_URL_REQUEST_START_JOB);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::URL_REQUEST_START_JOB);
 
   EndTraceAndFlush();
 
@@ -306,10 +308,10 @@ TEST_F(TraceNetLogObserverTest, CreateObserverAfterTracingStarts) {
   EnableTraceLog();
   set_trace_net_log_observer(new TraceNetLogObserver());
   trace_net_log_observer()->WatchForTraceStart(net_log());
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED);
   trace_net_log_observer()->StopWatchForTraceStart();
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
-  net_log()->AddGlobalEntry(NetLog::TYPE_URL_REQUEST_START_JOB);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::URL_REQUEST_START_JOB);
 
   EndTraceAndFlush();
 
@@ -326,8 +328,8 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   std::string param = "bar";
   net_log_callback = NetLog::StringCallback("foo", &param);
 
-  net_log()->AddGlobalEntry(NetLog::TYPE_CANCELLED, net_log_callback);
-  net_log()->AddGlobalEntry(NetLog::TYPE_REQUEST_ALIVE);
+  net_log()->AddGlobalEntry(NetLogEventType::CANCELLED, net_log_callback);
+  net_log()->AddGlobalEntry(NetLogEventType::REQUEST_ALIVE);
 
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
@@ -347,7 +349,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[0].source.id), actual_item1.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item1.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_CANCELLED),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::CANCELLED),
             actual_item1.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[0].source.type),
             actual_item1.source_type);
@@ -356,7 +358,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   EXPECT_EQ(base::StringPrintf("0x%d", entries[1].source.id), actual_item2.id);
   EXPECT_EQ(std::string(1, TRACE_EVENT_PHASE_NESTABLE_ASYNC_INSTANT),
             actual_item2.phase);
-  EXPECT_EQ(NetLog::EventTypeToString(NetLog::TYPE_REQUEST_ALIVE),
+  EXPECT_EQ(NetLog::EventTypeToString(NetLogEventType::REQUEST_ALIVE),
             actual_item2.name);
   EXPECT_EQ(NetLog::SourceTypeToString(entries[1].source.type),
             actual_item2.source_type);

@@ -28,6 +28,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -744,15 +745,15 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
   int pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
-      NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::QUIC_SESSION_PACKET_RECEIVED,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
   // ... and also a TYPE_QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED.
   pos = ExpectLogContainsSomewhere(
       entries, 0,
-      NetLog::TYPE_QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
   std::string packet_number;
@@ -761,14 +762,14 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   // ... and also a TYPE_QUIC_SESSION_PACKET_AUTHENTICATED.
   pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_AUTHENTICATED,
-      NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::QUIC_SESSION_PACKET_AUTHENTICATED,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
   // ... and also a QUIC_SESSION_STREAM_FRAME_RECEIVED.
   pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
-      NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::QUIC_SESSION_STREAM_FRAME_RECEIVED,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
   int log_stream_id;
@@ -2554,8 +2555,8 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 
   // Check that we logged a QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM
   int pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-      NetLog::PHASE_NONE);
+      entries, 0, NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+      NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 }
 

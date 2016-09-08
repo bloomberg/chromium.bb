@@ -17,6 +17,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
@@ -86,7 +87,7 @@ void CheckCapturedNetLogEntries(const TestNetLogEntry::List& entries) {
   // ProxyService records its own NetLog entries, so skip forward until the
   // expected event type.
   while (i < entries.size() &&
-         entries[i].type != NetLog::TYPE_PAC_JAVASCRIPT_ALERT) {
+         entries[i].type != NetLogEventType::PAC_JAVASCRIPT_ALERT) {
     i++;
   }
   ASSERT_LT(i, entries.size());
@@ -96,7 +97,7 @@ void CheckCapturedNetLogEntries(const TestNetLogEntry::List& entries) {
   ASSERT_FALSE(entries[i].params->HasKey("line_number"));
 
   while (i < entries.size() &&
-         entries[i].type != NetLog::TYPE_PAC_JAVASCRIPT_ERROR) {
+         entries[i].type != NetLogEventType::PAC_JAVASCRIPT_ERROR) {
     i++;
   }
   message.clear();
@@ -115,7 +116,7 @@ class LoggingMockHostResolver : public MockHostResolver {
               const CompletionCallback& callback,
               std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
-    net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB);
+    net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB);
     return MockHostResolver::Resolve(info, priority, addresses, callback,
                                      out_req, net_log);
   }
@@ -203,7 +204,7 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   EXPECT_EQ(1, std::count_if(entries.begin(), entries.end(),
                              [](const TestNetLogEntry& entry) {
                                return entry.type ==
-                                      NetLog::TYPE_HOST_RESOLVER_IMPL_JOB;
+                                      NetLogEventType::HOST_RESOLVER_IMPL_JOB;
                              }));
 }
 

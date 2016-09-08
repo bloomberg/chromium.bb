@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log_event_type.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_http_utils.h"
 #include "net/quic/core/quic_utils.h"
@@ -115,11 +116,11 @@ void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
     if (stream) {
       next_state_ = STATE_OPEN;
       stream_net_log_.AddEvent(
-          NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+          NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
           base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
                      &request_info_->url));
       session_->net_log().AddEvent(
-          NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+          NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
           base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
                      &request_info_->url));
       DoCallback(OK);
@@ -142,7 +143,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                     : ERR_QUIC_HANDSHAKE_FAILED;
 
   stream_net_log.AddEvent(
-      NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
+      NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
       session_->net_log().source().ToEventParametersCallback());
 
   stream_net_log_ = stream_net_log;
@@ -160,11 +161,11 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   if (promised) {
     found_promise_ = true;
     stream_net_log_.AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
+        NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
         base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
                    &request_info_->url));
     session_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
+        NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
         base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
                    &request_info_->url));
     return OK;
@@ -224,11 +225,11 @@ int QuicHttpStream::HandlePromise() {
       next_state_ = STATE_OPEN;
       if (!CancelPromiseIfHasBody()) {
         stream_net_log_.AddEvent(
-            NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+            NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
             base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
                        &request_info_->url));
         session_->net_log().AddEvent(
-            NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+            NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
             base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
                        &request_info_->url));
         // Avoid the call to |DoLoop()| below, which would reset
@@ -690,7 +691,7 @@ int QuicHttpStream::DoSendHeaders() {
 
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
-      NetLog::TYPE_HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
+      NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
       base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
                  priority_));
   bool has_upload_data = request_body_stream_ != nullptr;

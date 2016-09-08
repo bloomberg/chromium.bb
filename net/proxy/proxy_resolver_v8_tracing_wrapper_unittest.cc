@@ -23,6 +23,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -189,10 +190,12 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(2u, entries.size());
-    EXPECT_TRUE(LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-                                 NetLog::PHASE_NONE));
-    EXPECT_TRUE(LogContainsEvent(entries, 1, NetLog::TYPE_PAC_JAVASCRIPT_ERROR,
-                                 NetLog::PHASE_NONE));
+    EXPECT_TRUE(LogContainsEvent(entries, 0,
+                                 NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                                 NetLogEventPhase::NONE));
+    EXPECT_TRUE(LogContainsEvent(entries, 1,
+                                 NetLogEventType::PAC_JAVASCRIPT_ERROR,
+                                 NetLogEventPhase::NONE));
 
     EXPECT_EQ("{\"message\":\"Prepare to DIE!\"}", entries[0].GetParamsJson());
     EXPECT_EQ(
@@ -242,8 +245,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(50u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
-      ASSERT_TRUE(LogContainsEvent(
-          entries, i, NetLog::TYPE_PAC_JAVASCRIPT_ALERT, NetLog::PHASE_NONE));
+      ASSERT_TRUE(LogContainsEvent(entries, i,
+                                   NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                                   NetLogEventPhase::NONE));
     }
   }
 }
@@ -287,8 +291,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1000u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
-      ASSERT_TRUE(LogContainsEvent(
-          entries, i, NetLog::TYPE_PAC_JAVASCRIPT_ALERT, NetLog::PHASE_NONE));
+      ASSERT_TRUE(LogContainsEvent(entries, i,
+                                   NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                                   NetLogEventPhase::NONE));
     }
   }
 }
@@ -360,8 +365,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
-    EXPECT_TRUE(LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-                                 NetLog::PHASE_NONE));
+    EXPECT_TRUE(LogContainsEvent(entries, 0,
+                                 NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                                 NetLogEventPhase::NONE));
     EXPECT_EQ("{\"message\":\"iteration: 7\"}", entries[0].GetParamsJson());
   }
 }
@@ -463,8 +469,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
-    EXPECT_TRUE(LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-                                 NetLog::PHASE_NONE));
+    EXPECT_TRUE(LogContainsEvent(entries, 0,
+                                 NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                                 NetLogEventPhase::NONE));
     EXPECT_EQ("{\"message\":\"iteration: 4\"}", entries[0].GetParamsJson());
   }
 }
@@ -637,10 +644,12 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   log.GetEntries(&entries);
 
   ASSERT_EQ(2u, entries.size());
-  EXPECT_TRUE(LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-                               NetLog::PHASE_NONE));
-  EXPECT_TRUE(LogContainsEvent(entries, 1, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-                               NetLog::PHASE_NONE));
+  EXPECT_TRUE(LogContainsEvent(entries, 0,
+                               NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                               NetLogEventPhase::NONE));
+  EXPECT_TRUE(LogContainsEvent(entries, 1,
+                               NetLogEventType::PAC_JAVASCRIPT_ALERT,
+                               NetLogEventPhase::NONE));
 
   EXPECT_EQ("{\"message\":\"Watsup\"}", entries[0].GetParamsJson());
   EXPECT_EQ("{\"message\":\"Watsup2\"}", entries[1].GetParamsJson());

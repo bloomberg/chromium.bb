@@ -18,6 +18,7 @@
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
 #include "net/http/proxy_client_socket.h"
+#include "net/log/net_log_source_type.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context.h"
@@ -30,24 +31,23 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const net::SSLConfig& ssl_config,
     const net::HostPortPair& dest_host_port_pair)
-        : proxy_resolve_callback_(
-              base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
-                         base::Unretained(this))),
-          connect_callback_(
-              base::Bind(&ProxyResolvingClientSocket::ProcessConnectDone,
-                         base::Unretained(this))),
-          ssl_config_(ssl_config),
-          pac_request_(NULL),
-          dest_host_port_pair_(dest_host_port_pair),
-          // Assume that we intend to do TLS on this socket; all
-          // current use cases do.
-          proxy_url_("https://" + dest_host_port_pair_.ToString()),
-          tried_direct_connect_fallback_(false),
-          bound_net_log_(
-              net::BoundNetLog::Make(
-                  request_context_getter->GetURLRequestContext()->net_log(),
-                  net::NetLog::SOURCE_SOCKET)),
-          weak_factory_(this) {
+    : proxy_resolve_callback_(
+          base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
+                     base::Unretained(this))),
+      connect_callback_(
+          base::Bind(&ProxyResolvingClientSocket::ProcessConnectDone,
+                     base::Unretained(this))),
+      ssl_config_(ssl_config),
+      pac_request_(NULL),
+      dest_host_port_pair_(dest_host_port_pair),
+      // Assume that we intend to do TLS on this socket; all
+      // current use cases do.
+      proxy_url_("https://" + dest_host_port_pair_.ToString()),
+      tried_direct_connect_fallback_(false),
+      bound_net_log_(net::BoundNetLog::Make(
+          request_context_getter->GetURLRequestContext()->net_log(),
+          net::NetLogSourceType::SOCKET)),
+      weak_factory_(this) {
   DCHECK(request_context_getter.get());
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();

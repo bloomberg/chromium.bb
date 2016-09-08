@@ -20,6 +20,8 @@
 #include "base/values.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -95,9 +97,9 @@ class BoundedFileNetLogObserverTest : public testing::Test {
     std::string message = "";
     NetLog::ParametersCallback callback =
         NetLog::StringCallback("message", &message);
-    NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
-    NetLog::EntryData base_entry_data(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, source,
-                                      NetLog::PHASE_BEGIN,
+    NetLog::Source source(NetLogSourceType::HTTP2_SESSION, kDummyId);
+    NetLog::EntryData base_entry_data(NetLogEventType::PAC_JAVASCRIPT_ERROR,
+                                      source, NetLogEventPhase::BEGIN,
                                       base::TimeTicks::Now(), &callback);
     NetLog::Entry base_entry(&base_entry_data,
                              NetLogCaptureMode::IncludeSocketBytes());
@@ -120,16 +122,16 @@ class BoundedFileNetLogObserverTest : public testing::Test {
     EXPECT_GE(entry_size, base_entry_size);
 
     for (int i = 0; i < num_entries_to_add; i++) {
-      source = NetLog::Source(NetLog::SOURCE_HTTP2_SESSION, i);
+      source = NetLog::Source(NetLogSourceType::HTTP2_SESSION, i);
       std::string id = std::to_string(i);
 
       // String size accounts for the number of digits in id so that all events
       // are the same size.
       message = std::string(entry_size - base_entry_size - id.size() + 1, 'x');
       callback = NetLog::StringCallback("message", &message);
-      NetLog::EntryData entry_data(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, source,
-                                   NetLog::PHASE_BEGIN, base::TimeTicks::Now(),
-                                   &callback);
+      NetLog::EntryData entry_data(NetLogEventType::PAC_JAVASCRIPT_ERROR,
+                                   source, NetLogEventPhase::BEGIN,
+                                   base::TimeTicks::Now(), &callback);
       NetLog::Entry entry(&entry_data, NetLogCaptureMode::IncludeSocketBytes());
       logger_->OnAddEntry(entry);
     }

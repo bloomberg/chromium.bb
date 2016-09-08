@@ -22,6 +22,8 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/io_buffer.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 
 namespace content {
 
@@ -42,8 +44,9 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : bound_net_log_(net::BoundNetLog::Make(download_item_net_log.net_log(),
-                                            net::NetLog::SOURCE_DOWNLOAD_FILE)),
+    : bound_net_log_(
+          net::BoundNetLog::Make(download_item_net_log.net_log(),
+                                 net::NetLogSourceType::DOWNLOAD_FILE)),
       file_(bound_net_log_),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
@@ -52,16 +55,16 @@ DownloadFileImpl::DownloadFileImpl(
       observer_(observer),
       weak_factory_(this) {
   download_item_net_log.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_FILE_CREATED,
+      net::NetLogEventType::DOWNLOAD_FILE_CREATED,
       bound_net_log_.source().ToEventParametersCallback());
   bound_net_log_.BeginEvent(
-      net::NetLog::TYPE_DOWNLOAD_FILE_ACTIVE,
+      net::NetLogEventType::DOWNLOAD_FILE_ACTIVE,
       download_item_net_log.source().ToEventParametersCallback());
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ACTIVE);
+  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ACTIVE);
 }
 
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
@@ -332,10 +335,9 @@ void DownloadFileImpl::StreamActive() {
                    base::Passed(&hash_state)));
   }
   if (bound_net_log_.IsCapturing()) {
-    bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_STREAM_DRAINED,
-        base::Bind(&FileStreamDrainedNetLogCallback, total_incoming_data_size,
-                   num_buffers));
+    bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_STREAM_DRAINED,
+                            base::Bind(&FileStreamDrainedNetLogCallback,
+                                       total_incoming_data_size, num_buffers));
   }
 }
 

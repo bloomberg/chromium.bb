@@ -20,6 +20,7 @@
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_operation.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 
 namespace base {
 class TaskRunner;
@@ -226,7 +227,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
       const base::TimeTicks& start_time,
       std::unique_ptr<SimpleEntryCreationResults> in_results,
       Entry** out_entry,
-      net::NetLog::EventType end_event_type);
+      net::NetLogEventType end_event_type);
 
   // Called after we've closed and written the EOF record to our entry. Until
   // this point it hasn't been safe to OpenEntry() the same entry, but from this

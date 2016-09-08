@@ -20,6 +20,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
@@ -727,16 +728,16 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   net_log_.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, /*min_offset=*/0,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
   pos = ExpectLogContainsSomewhere(
       entries, /*min_offset=*/pos,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
   ExpectLogContainsSomewhere(
       entries, /*min_offset=*/pos,
-      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
-      NetLog::PHASE_NONE);
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
 }
 
 // Regression test for http://crbug.com/288128

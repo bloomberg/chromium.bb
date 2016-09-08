@@ -15,6 +15,8 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/memory/mem_backend_impl.h"
 #include "net/disk_cache/net_log_parameters.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
 
 using base::Time;
 
@@ -129,7 +131,7 @@ void MemEntryImpl::Doom() {
   if (!doomed_) {
     doomed_ = true;
     backend_->OnEntryDoomed(this);
-    net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
+    net_log_.AddEvent(net::NetLogEventType::ENTRY_DOOM);
   }
   if (!ref_count_)
     delete this;
@@ -167,16 +169,15 @@ int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
                            const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
-        net::NetLog::TYPE_ENTRY_READ_DATA,
+        net::NetLogEventType::ENTRY_READ_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
   }
 
   int result = InternalReadData(index, offset, buf, buf_len);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLog::TYPE_ENTRY_READ_DATA,
-        CreateNetLogReadWriteCompleteCallback(result));
+    net_log_.EndEvent(net::NetLogEventType::ENTRY_READ_DATA,
+                      CreateNetLogReadWriteCompleteCallback(result));
   }
   return result;
 }
@@ -185,16 +186,15 @@ int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
                             const CompletionCallback& callback, bool truncate) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
-        net::NetLog::TYPE_ENTRY_WRITE_DATA,
+        net::NetLogEventType::ENTRY_WRITE_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
   }
 
   int result = InternalWriteData(index, offset, buf, buf_len, truncate);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLog::TYPE_ENTRY_WRITE_DATA,
-        CreateNetLogReadWriteCompleteCallback(result));
+    net_log_.EndEvent(net::NetLogEventType::ENTRY_WRITE_DATA,
+                      CreateNetLogReadWriteCompleteCallback(result));
   }
   return result;
 }
@@ -204,13 +204,12 @@ int MemEntryImpl::ReadSparseData(int64_t offset,
                                  int buf_len,
                                  const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLog::TYPE_SPARSE_READ,
-        CreateNetLogSparseOperationCallback(offset, buf_len));
+    net_log_.BeginEvent(net::NetLogEventType::SPARSE_READ,
+                        CreateNetLogSparseOperationCallback(offset, buf_len));
   }
   int result = InternalReadSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
-    net_log_.EndEvent(net::NetLog::TYPE_SPARSE_READ);
+    net_log_.EndEvent(net::NetLogEventType::SPARSE_READ);
   return result;
 }
 
@@ -219,13 +218,12 @@ int MemEntryImpl::WriteSparseData(int64_t offset,
                                   int buf_len,
                                   const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLog::TYPE_SPARSE_WRITE,
-        CreateNetLogSparseOperationCallback(offset, buf_len));
+    net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE,
+                        CreateNetLogSparseOperationCallback(offset, buf_len));
   }
   int result = InternalWriteSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
-    net_log_.EndEvent(net::NetLog::TYPE_SPARSE_WRITE);
+    net_log_.EndEvent(net::NetLogEventType::SPARSE_WRITE);
   return result;
 }
 
@@ -234,14 +232,13 @@ int MemEntryImpl::GetAvailableRange(int64_t offset,
                                     int64_t* start,
                                     const CompletionCallback& callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLog::TYPE_SPARSE_GET_RANGE,
-        CreateNetLogSparseOperationCallback(offset, len));
+    net_log_.BeginEvent(net::NetLogEventType::SPARSE_GET_RANGE,
+                        CreateNetLogSparseOperationCallback(offset, len));
   }
   int result = InternalGetAvailableRange(offset, len, start);
   if (net_log_.IsCapturing()) {
     net_log_.EndEvent(
-        net::NetLog::TYPE_SPARSE_GET_RANGE,
+        net::NetLogEventType::SPARSE_GET_RANGE,
         CreateNetLogGetAvailableRangeResultCallback(*start, result));
   }
   return result;
@@ -273,9 +270,9 @@ MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
       backend_(backend),
       doomed_(false) {
   backend_->OnEntryInserted(this);
-  net_log_ =
-      net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_MEMORY_CACHE_ENTRY);
-  net_log_.BeginEvent(net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL,
+  net_log_ = net::BoundNetLog::Make(net_log,
+                                    net::NetLogSourceType::MEMORY_CACHE_ENTRY);
+  net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_MEM_ENTRY_IMPL,
                       base::Bind(&NetLogEntryCreationCallback, this));
 }
 
@@ -297,7 +294,7 @@ MemEntryImpl::~MemEntryImpl() {
   } else {
     parent_->children_->erase(child_id_);
   }
-  net_log_.EndEvent(net::NetLog::TYPE_DISK_CACHE_MEM_ENTRY_IMPL);
+  net_log_.EndEvent(net::NetLogEventType::DISK_CACHE_MEM_ENTRY_IMPL);
 }
 
 int MemEntryImpl::InternalReadData(int index, int offset, IOBuffer* buf,
@@ -392,7 +389,7 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
       break;
     if (net_log_.IsCapturing()) {
       net_log_.BeginEvent(
-          net::NetLog::TYPE_SPARSE_READ_CHILD_DATA,
+          net::NetLogEventType::SPARSE_READ_CHILD_DATA,
           CreateNetLogSparseReadWriteCallback(child->net_log_.source(),
                                               io_buf->BytesRemaining()));
     }
@@ -400,7 +397,7 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
                               io_buf->BytesRemaining(), CompletionCallback());
     if (net_log_.IsCapturing()) {
       net_log_.EndEventWithNetErrorCode(
-          net::NetLog::TYPE_SPARSE_READ_CHILD_DATA, ret);
+          net::NetLogEventType::SPARSE_READ_CHILD_DATA, ret);
     }
 
     // If we encounter an error in one entry, return immediately.
@@ -448,7 +445,7 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     int data_size = child->GetDataSize(kSparseData);
 
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA,
+      net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
                           CreateNetLogSparseReadWriteCallback(
                               child->net_log_.source(), write_len));
     }
@@ -461,7 +458,7 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
                                write_len, CompletionCallback(), true);
     if (net_log_.IsCapturing()) {
       net_log_.EndEventWithNetErrorCode(
-          net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA, ret);
+          net::NetLogEventType::SPARSE_WRITE_CHILD_DATA, ret);
     }
     if (ret < 0)
       return ret;

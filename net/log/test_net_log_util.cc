@@ -30,8 +30,8 @@ size_t GetIndex(const TestNetLogEntry::List& entries, int offset) {
 ::testing::AssertionResult LogContainsEvent(
     const TestNetLogEntry::List& entries,
     int offset,
-    NetLog::EventType expected_event,
-    NetLog::EventPhase expected_phase) {
+    NetLogEventType expected_event,
+    NetLogEventPhase expected_phase) {
   size_t index = GetIndex(entries, offset);
   if (index >= entries.size())
     return ::testing::AssertionFailure() << index << " is out of bounds.";
@@ -44,8 +44,8 @@ size_t GetIndex(const TestNetLogEntry::List& entries, int offset) {
   }
   if (expected_phase != entry.phase) {
     return ::testing::AssertionFailure()
-           << "Actual phase: " << entry.phase
-           << ". Expected phase: " << expected_phase << ".";
+           << "Actual phase: " << static_cast<int>(entry.phase)
+           << ". Expected phase: " << static_cast<int>(expected_phase) << ".";
   }
   return ::testing::AssertionSuccess();
 }
@@ -53,21 +53,23 @@ size_t GetIndex(const TestNetLogEntry::List& entries, int offset) {
 ::testing::AssertionResult LogContainsBeginEvent(
     const TestNetLogEntry::List& entries,
     int offset,
-    NetLog::EventType expected_event) {
-  return LogContainsEvent(entries, offset, expected_event, NetLog::PHASE_BEGIN);
+    NetLogEventType expected_event) {
+  return LogContainsEvent(entries, offset, expected_event,
+                          NetLogEventPhase::BEGIN);
 }
 
 ::testing::AssertionResult LogContainsEndEvent(
     const TestNetLogEntry::List& entries,
     int offset,
-    NetLog::EventType expected_event) {
-  return LogContainsEvent(entries, offset, expected_event, NetLog::PHASE_END);
+    NetLogEventType expected_event) {
+  return LogContainsEvent(entries, offset, expected_event,
+                          NetLogEventPhase::END);
 }
 
 ::testing::AssertionResult LogContainsEntryWithType(
     const TestNetLogEntry::List& entries,
     int offset,
-    NetLog::EventType type) {
+    NetLogEventType type) {
   size_t index = GetIndex(entries, offset);
   if (index >= entries.size())
     return ::testing::AssertionFailure() << index << " is out of bounds.";
@@ -80,7 +82,7 @@ size_t GetIndex(const TestNetLogEntry::List& entries, int offset) {
 ::testing::AssertionResult LogContainsEntryWithTypeAfter(
     const TestNetLogEntry::List& entries,
     int start_offset,
-    NetLog::EventType type) {
+    NetLogEventType type) {
   for (size_t i = GetIndex(entries, start_offset); i < entries.size(); ++i) {
     const TestNetLogEntry& entry = entries[i];
     if (entry.type == type)
@@ -91,8 +93,8 @@ size_t GetIndex(const TestNetLogEntry::List& entries, int offset) {
 
 size_t ExpectLogContainsSomewhere(const TestNetLogEntry::List& entries,
                                   size_t min_offset,
-                                  NetLog::EventType expected_event,
-                                  NetLog::EventPhase expected_phase) {
+                                  NetLogEventType expected_event,
+                                  NetLogEventPhase expected_phase) {
   size_t min_index = GetIndex(entries, min_offset);
   size_t i = 0;
   for (; i < entries.size(); ++i) {
@@ -107,8 +109,8 @@ size_t ExpectLogContainsSomewhere(const TestNetLogEntry::List& entries,
 
 size_t ExpectLogContainsSomewhereAfter(const TestNetLogEntry::List& entries,
                                        size_t start_offset,
-                                       NetLog::EventType expected_event,
-                                       NetLog::EventPhase expected_phase) {
+                                       NetLogEventType expected_event,
+                                       NetLogEventPhase expected_phase) {
   size_t i = GetIndex(entries, start_offset);
   for (; i < entries.size(); ++i) {
     const TestNetLogEntry& entry = entries[i];

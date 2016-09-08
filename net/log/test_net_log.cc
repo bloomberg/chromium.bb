@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "net/log/net_log_source_type.h"
 
 namespace net {
 
@@ -103,8 +104,7 @@ NetLog::ThreadSafeObserver* TestNetLog::GetObserver() const {
 }
 
 BoundTestNetLog::BoundTestNetLog()
-    : net_log_(BoundNetLog::Make(&test_net_log_, NetLog::SOURCE_NONE)) {
-}
+    : net_log_(BoundNetLog::Make(&test_net_log_, NetLogSourceType::NONE)) {}
 
 BoundTestNetLog::~BoundTestNetLog() {
 }
