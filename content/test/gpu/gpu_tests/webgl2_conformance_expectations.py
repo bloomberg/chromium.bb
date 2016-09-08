@@ -429,6 +429,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
+
+    self.Skip('conformance2/misc/getextension-while-pbo-bound-stability.html',
+              ['linux'], bug=644572)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
                ['linux'], bug=627525)
@@ -475,10 +478,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'opengl'], bug=483282)
-
-    # Linux NVIDIA only.
-    self.Fail('conformance2/misc/getextension-while-pbo-bound-stability.html',
-        ['linux', 'nvidia'], bug=641643)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
