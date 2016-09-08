@@ -42,6 +42,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
 
@@ -230,22 +231,22 @@ public class ShareHelper {
      *             with a space.
      * @param url URL of the page to be shared.
      * @param offlineUri URI to the offline MHTML file to be shared.
-     * @param screenshot Screenshot of the page to be shared.
+     * @param screenshotUri Uri of the screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (on
      *                 older Android versions).
      */
     public static void share(boolean shareDirectly, boolean saveLastUsed, Activity activity,
-            String title, String text, String url, @Nullable Uri offlineUri, Bitmap screenshot,
+            String title, String text, String url, @Nullable Uri offlineUri, Uri screenshotUri,
             @Nullable TargetChosenCallback callback) {
         if (shareDirectly) {
-            shareWithLastUsed(activity, title, text, url, offlineUri, screenshot);
+            shareWithLastUsed(activity, title, text, url, offlineUri, screenshotUri);
         } else if (TargetChosenReceiver.isSupported()) {
-            makeIntentAndShare(saveLastUsed, activity, title, text, url, offlineUri, screenshot,
+            makeIntentAndShare(saveLastUsed, activity, title, text, url, offlineUri, screenshotUri,
                     null, callback);
         } else {
             showShareDialog(
-                    saveLastUsed, activity, title, text, url, offlineUri, screenshot, callback);
+                    saveLastUsed, activity, title, text, url, offlineUri, screenshotUri, callback);
         }
     }
 
@@ -309,6 +310,66 @@ public class ShareHelper {
     }
 
     /**
+     * Writes the screenshot file and notifies the file provider that the file is ready to be
+     * accessed by the client.
+     *
+     * The bitmap is compressed to JPEG before being written to the file.
+     *
+     * @param blockingUri The unique id given by the
+     *                    {@link ChromeFileProvider#generateUriAndBlockAccess()} for the screenshot.
+     * @param screenshot The screenshot bitmap to be written to file.
+     * @param activity Activity that is used to access package manager.
+     */
+    public static void onScreenshotReady(
+            final Uri blockingUri, final Bitmap screenshot, final Activity activity) {
+        if (screenshot == null) {
+            ChromeFileProvider.notifyFileReady(blockingUri, null);
+            return;
+        }
+
+        new AsyncTask<Void, Void, File>() {
+            @Override
+            protected File doInBackground(Void... params) {
+                FileOutputStream fOut = null;
+                try {
+                    File path = new File(UiUtils.getDirectoryForImageCapture(activity) + "/"
+                            + SHARE_IMAGES_DIRECTORY_NAME);
+                    if (path.exists() || path.mkdir()) {
+                        String fileName = String.valueOf(System.currentTimeMillis());
+                        File saveFile = File.createTempFile(fileName, JPEG_EXTENSION, path);
+                        fOut = new FileOutputStream(saveFile);
+                        screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+                        fOut.flush();
+                        fOut.close();
+                        return saveFile;
+                    }
+                } catch (IOException ie) {
+                    if (fOut != null) {
+                        try {
+                            fOut.close();
+                        } catch (IOException e) {
+                            // Ignore exception.
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(File saveFile) {
+                Uri fileUri = null;
+                if (ApplicationStatus.getStateForApplication()
+                        != ApplicationState.HAS_DESTROYED_ACTIVITIES
+                        && saveFile != null) {
+                    fileUri = UiUtils.getUriForImageCaptureFile(activity, saveFile);
+                }
+                ChromeFileProvider.notifyFileReady(blockingUri, fileUri);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
      * Creates and shows a share intent picker dialog.
      *
      * @param saveLastUsed Whether to save the chosen activity for future direct sharing.
@@ -317,15 +378,15 @@ public class ShareHelper {
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
      * @param url URL of the page to be shared.
-     * @oaram Uri URI of the offline page to be shared.
-     * @param screenshot Screenshot of the page to be shared.
+     * @oaram offlineUri URI of the offline page to be shared.
+     * @param screenshotUri Uri of the screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (on
      *                 older Android versions).
      */
     private static void showShareDialog(final boolean saveLastUsed, final Activity activity,
             final String title, final String text, final String url, final Uri offlineUri,
-            final Bitmap screenshot, @Nullable final TargetChosenCallback callback) {
+            final Uri screenshotUri, @Nullable final TargetChosenCallback callback) {
         Intent intent = getShareIntent(activity, title, text, url, null, null);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
@@ -350,8 +411,8 @@ public class ShareHelper {
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
                 if (callback != null) callback.onTargetChosen(component);
                 if (saveLastUsed) setLastShareComponentName(component);
-                makeIntentAndShare(
-                        false, activity, title, text, url, offlineUri, screenshot, component, null);
+                makeIntentAndShare(false, activity, title, text, url, offlineUri, screenshotUri,
+                        component, null);
                 dialog.dismiss();
             }
         });
@@ -365,15 +426,15 @@ public class ShareHelper {
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
      * @param url URL of the page to be shared.
-     * @oaram Uri URI of the offline page to be shared.
-     * @param screenshot Screenshot of the page to be shared.
+     * @oaram offlineUri URI of the offline page to be shared.
+     * @param screenshotUri Uri of the screenshot of the page to be shared.
      */
     private static void shareWithLastUsed(Activity activity, String title, String text, String url,
-            Uri offlineUri, Bitmap screenshot) {
+            Uri offlineUri, Uri screenshotUri) {
         ComponentName component = getLastShareComponentName();
         if (component == null) return;
         makeIntentAndShare(
-                false, activity, title, text, url, offlineUri, screenshot, component, null);
+                false, activity, title, text, url, offlineUri, screenshotUri, component, null);
     }
 
     private static void shareIntent(boolean saveLastUsed, Activity activity, Intent sharingIntent,
@@ -390,58 +451,11 @@ public class ShareHelper {
 
     private static void makeIntentAndShare(final boolean saveLastUsed, final Activity activity,
             final String title, final String text, final String url, final Uri offlineUri,
-            final Bitmap screenshot, final ComponentName component,
+            final Uri screenshotUri, final ComponentName component,
             @Nullable final TargetChosenCallback callback) {
-        if (screenshot == null) {
-            Intent intent = getDirectShareIntentForComponent(
-                    activity, title, text, url, offlineUri, null, component);
-            shareIntent(saveLastUsed, activity, intent, callback);
-        } else {
-            new AsyncTask<Void, Void, File>() {
-                @Override
-                protected File doInBackground(Void... params) {
-                    FileOutputStream fOut = null;
-                    try {
-                        File path = new File(UiUtils.getDirectoryForImageCapture(activity),
-                                SHARE_IMAGES_DIRECTORY_NAME);
-                        if (path.exists() || path.mkdir()) {
-                            File saveFile = File.createTempFile(
-                                    String.valueOf(System.currentTimeMillis()),
-                                    JPEG_EXTENSION, path);
-                            fOut = new FileOutputStream(saveFile);
-                            screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-                            fOut.flush();
-                            fOut.close();
-
-                            return saveFile;
-                        }
-                    } catch (IOException ie) {
-                        if (fOut != null) {
-                            try {
-                                fOut.close();
-                            } catch (IOException e) {
-                                // Ignore exception.
-                            }
-                        }
-                    }
-
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(File saveFile) {
-                    if (ApplicationStatus.getStateForApplication()
-                            != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
-                        Uri screenshotUri = saveFile == null
-                                ? null : UiUtils.getUriForImageCaptureFile(activity, saveFile);
-                        shareIntent(saveLastUsed, activity,
-                                getDirectShareIntentForComponent(activity, title, text, url,
-                                            offlineUri, screenshotUri, component),
-                                callback);
-                    }
-                }
-            }.execute();
-        }
+        Intent intent = getDirectShareIntentForComponent(
+                activity, title, text, url, offlineUri, screenshotUri, component);
+        shareIntent(saveLastUsed, activity, intent, callback);
     }
 
     /**
@@ -515,6 +529,20 @@ public class ShareHelper {
         }
     }
 
+    /*
+     * Stores the component selected for sharing last time share was called.
+     *
+     * This method is public since it is used in tests to avoid creating share dialog.
+     */
+    @VisibleForTesting
+    public static void setLastShareComponentName(ComponentName component) {
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(PACKAGE_NAME_KEY, component.getPackageName());
+        editor.putString(CLASS_NAME_KEY, component.getClassName());
+        editor.apply();
+    }
+
     @VisibleForTesting
     public static Intent getShareIntent(Activity activity, String title, String text, String url,
             Uri offlineUri, Uri screenshotUri) {
@@ -577,13 +605,5 @@ public class ShareHelper {
         String className = preferences.getString(CLASS_NAME_KEY, null);
         if (packageName == null || className == null) return null;
         return new ComponentName(packageName, className);
-    }
-
-    private static void setLastShareComponentName(ComponentName component) {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(PACKAGE_NAME_KEY, component.getPackageName());
-        editor.putString(CLASS_NAME_KEY, component.getClassName());
-        editor.apply();
     }
 }

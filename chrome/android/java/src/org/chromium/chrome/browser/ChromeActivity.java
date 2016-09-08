@@ -118,6 +118,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
@@ -238,6 +239,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // Chrome delegate that includes functionalities needed by Blimp client.
     private ChromeBlimpClientContextDelegate mBlimpClientContextDelegate;
+
+    // Skips capturing screenshot for testing purpose.
+    private boolean mScreenshotCaptureSkippedForTesting;
 
     /**
      * @param The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
@@ -992,6 +996,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @VisibleForTesting
+    public void setScreenshotCaptureSkippedForTesting(boolean value) {
+        mScreenshotCaptureSkippedForTesting = value;
+    }
+
     /**
      * Triggered when the share menu item is selected.
      * This creates and shows a share intent picker dialog or starts a share intent directly.
@@ -999,6 +1008,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
+    @VisibleForTesting
     public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
@@ -1021,34 +1031,43 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private void triggerShare(
             final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
         final Activity mainActivity = this;
+        WebContents webContents = currentTab.getWebContents();
+
+        boolean isOfflinePage = currentTab.isOfflinePage();
+        RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOfflinePage);
+        boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
+
+        // Share an empty blockingUri in place of screenshot file. The file ready notification is
+        // sent by onScreenshotReady call below when the file is written.
+        final Uri blockingUri = (isIncognito || webContents == null)
+                ? null
+                : ChromeFileProvider.generateUriAndBlockAccess(mainActivity);
+        if (canShareOfflinePage) {
+            OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
+                    currentTab.getUrl(), blockingUri, null, currentTab, isOfflinePage);
+        } else {
+            ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(), null,
+                    currentTab.getUrl(), null, blockingUri, null);
+            if (shareDirectly) {
+                RecordUserAction.record("MobileMenuDirectShare");
+            } else {
+                RecordUserAction.record("MobileMenuShare");
+            }
+        }
+
+        if (blockingUri == null) return;
+
+        // Start screenshot capture and notify the provider when it is ready.
         ContentBitmapCallback callback = new ContentBitmapCallback() {
             @Override
             public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                boolean isOfflinePage = currentTab.isOfflinePage();
-                RecordHistogram.recordBooleanHistogram(
-                        "OfflinePages.SharedPageWasOffline", isOfflinePage);
-                boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
-
-                if (canShareOfflinePage) {
-                    // Share the offline page instead of the URL.
-                    OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
-                            currentTab.getUrl(), bitmap, null, currentTab, isOfflinePage);
-                } else {
-                    ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
-                            null, currentTab.getUrl(), null, bitmap, null);
-                    if (shareDirectly) {
-                        RecordUserAction.record("MobileMenuDirectShare");
-                    } else {
-                        RecordUserAction.record("MobileMenuShare");
-                    }
-                }
+                ShareHelper.onScreenshotReady(blockingUri, bitmap, mainActivity);
             }
         };
-        if (isIncognito || currentTab.getWebContents() == null) {
-            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+        if (!mScreenshotCaptureSkippedForTesting) {
+            webContents.getContentBitmapAsync(Bitmap.Config.ARGB_8888, 1.f, EMPTY_RECT, callback);
         } else {
-            currentTab.getWebContents().getContentBitmapAsync(
-                    Bitmap.Config.ARGB_8888, 1.f, EMPTY_RECT, callback);
+            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
         }
     }
 

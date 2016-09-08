@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
@@ -279,7 +278,7 @@ public class OfflinePageUtils {
      *             with a space.
      * @param onlineUrl Online URL associated with the offline page that is used to access the
      *                  offline page file path.
-     * @param bitmap Screenshot of the page to be shared.
+     * @param screenshotUri Screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (see
      *                 TargetChosenReceiver#isSupported()).
@@ -287,7 +286,7 @@ public class OfflinePageUtils {
      */
     public static void shareOfflinePage(final boolean shareDirectly, final boolean saveLastUsed,
             final Activity mainActivity, final String text, final String onlineUrl,
-            final Bitmap bitmap, final ShareHelper.TargetChosenCallback callback,
+            final Uri screenshotUri, final ShareHelper.TargetChosenCallback callback,
             final Tab currentTab, boolean isOfflinePage) {
         final String offlineUrl = currentTab.getUrl();
         final String title = currentTab.getTitle();
@@ -300,7 +299,7 @@ public class OfflinePageUtils {
         }
 
         Callback<OfflinePageItem> prepareForSharing = onGotOfflinePageItemToShare(shareDirectly,
-                saveLastUsed, mainActivity, title, text, onlineUrl, bitmap, callback);
+                saveLastUsed, mainActivity, title, text, onlineUrl, screenshotUri, callback);
 
         if (isOfflinePage) {
             // If we're currently on offline page get the saved file directly.
@@ -324,20 +323,20 @@ public class OfflinePageUtils {
      * @param title Title of the page.
      * @param onlineUrl Online URL associated with the offline page that is used to access the
      *                  offline page file path.
-     * @param bitmap Screenshot of the page to be shared.
+     * @param screenshotUri Screenshot of the page to be shared.
      * @param mContext The application context.
      * @return a callback of OfflinePageItem
      */
     private static Callback<OfflinePageItem> onGotOfflinePageItemToShare(
             final boolean shareDirectly, final boolean saveLastUsed, final Activity mainActivity,
-            final String title, final String text, final String onlineUrl, final Bitmap bitmap,
+            final String title, final String text, final String onlineUrl, final Uri screenshotUri,
             final ShareHelper.TargetChosenCallback callback) {
         return new Callback<OfflinePageItem>() {
             @Override
             public void onResult(OfflinePageItem item) {
                 String offlineFilePath = (item == null) ? null : item.getFilePath();
                 prepareFileAndShare(shareDirectly, saveLastUsed, mainActivity, title, text,
-                        onlineUrl, bitmap, callback, offlineFilePath);
+                        onlineUrl, screenshotUri, callback, offlineFilePath);
             }
         };
     }
@@ -410,7 +409,7 @@ public class OfflinePageUtils {
      *             with a space.
      * @param onlineUrl Online URL associated with the offline page that is used to access the
      *                  offline page file path.
-     * @param bitmap Screenshot of the page to be shared.
+     * @param screenshotUri Screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (on
      *                 older Android versions).
@@ -418,7 +417,7 @@ public class OfflinePageUtils {
      */
     private static void prepareFileAndShare(final boolean shareDirectly, final boolean saveLastUsed,
             final Activity activity, final String title, final String text, final String onlineUrl,
-            final Bitmap bitmap, final ShareHelper.TargetChosenCallback callback,
+            final Uri screenshotUri, final ShareHelper.TargetChosenCallback callback,
             final String filePath) {
         new AsyncTask<Void, Void, File>() {
             @Override
@@ -463,7 +462,7 @@ public class OfflinePageUtils {
                     offlineUri = Uri.fromFile(offlinePageShareable);
                 }
                 ShareHelper.share(shareDirectly, saveLastUsed, activity, title, text, onlineUrl,
-                        offlineUri, bitmap, callback);
+                        offlineUri, screenshotUri, callback);
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }

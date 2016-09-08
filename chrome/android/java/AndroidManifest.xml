@@ -602,7 +602,7 @@ by a child template that "extends" this file.
         </provider>
 
         <!-- Provider for FileProvider. -->
-        <provider android:name="org.chromium.chrome.browser.util.CompatibilityFileProvider"
+        <provider android:name="org.chromium.chrome.browser.util.ChromeFileProvider"
             android:authorities="{{ manifest_package }}.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
