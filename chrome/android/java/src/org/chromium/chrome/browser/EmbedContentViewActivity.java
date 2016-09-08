@@ -8,11 +8,9 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -91,7 +89,6 @@ public class EmbedContentViewActivity extends FullScreenActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean retVal = super.onCreateOptionsMenu(menu);
         if (!FirstRunStatus.getFirstRunFlowComplete(this)) return retVal;
-        menu.add(Menu.NONE, R.id.menu_id_open_in_chrome, Menu.NONE, R.string.menu_open_in_chrome);
         return true;
     }
 
@@ -101,13 +98,6 @@ public class EmbedContentViewActivity extends FullScreenActivity {
         if (itemId == android.R.id.home) {
             // Handles up navigation
             finish();
-            return true;
-        } else if (itemId == R.id.menu_id_open_in_chrome && getActivityTab() != null) {
-            Intent chromeIntent = new Intent(
-                    Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
-            chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                    chromeIntent, getApplicationContext());
             return true;
         }
         return super.onOptionsItemSelected(item);
