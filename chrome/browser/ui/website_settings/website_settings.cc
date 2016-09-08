@@ -322,6 +322,12 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
         num_values);
+
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+      rappor::SampleDomainAndRegistryFromGURL(
+          g_browser_process->rappor_service(),
+          "ContentSettings.Plugins.AddedAllowException", site_url_);
+    }
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,

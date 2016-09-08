@@ -500,6 +500,10 @@ ContentSettingPluginBubbleModel::~ContentSettingPluginBubbleModel() {
     content_settings::RecordPluginsAction(
         content_settings::
             PLUGINS_ACTION_CLICKED_ALWAYS_ALLOW_PLUGINS_ON_ORIGIN);
+    rappor::SampleDomainAndRegistryFromGURL(
+        rappor_service(), "ContentSettings.Plugins.AddedAllowException",
+        web_contents()->GetLastCommittedURL());
+
     RunPluginsOnPage();
   }
 }

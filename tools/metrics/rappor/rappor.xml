@@ -830,6 +830,15 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.Plugins.AddedAllowException"
+    type="ETLD_PLUS_ONE">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that the user added to the ALLOW site exceptions for
+    the Plugins Content Setting.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="CustomTabs.ServiceClient.PackageName"
     type="UMA_RAPPOR_TYPE">
   <owner>yusufo@chromium.org</owner>
