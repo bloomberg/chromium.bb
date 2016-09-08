@@ -54,7 +54,8 @@ enum {
 // Helper structure that allows the Broker to associate a job notification
 // with a job object and with a policy.
 struct JobTracker {
-  JobTracker(base::win::ScopedHandle job, sandbox::PolicyBase* policy)
+  JobTracker(base::win::ScopedHandle job,
+             scoped_refptr<sandbox::PolicyBase> policy)
       : job(std::move(job)), policy(policy) {}
   ~JobTracker() {
     FreeResources();
@@ -65,7 +66,7 @@ struct JobTracker {
   void FreeResources();
 
   base::win::ScopedHandle job;
-  sandbox::PolicyBase* policy;
+  scoped_refptr<sandbox::PolicyBase> policy;
 };
 
 void JobTracker::FreeResources() {
@@ -79,8 +80,7 @@ void JobTracker::FreeResources() {
 
     // In OnJobEmpty() we don't actually use the job handle directly.
     policy->OnJobEmpty(stale_job_handle);
-    policy->Release();
-    policy = NULL;
+    policy = nullptr;
   }
 }
 
@@ -142,10 +142,13 @@ BrokerServicesBase::~BrokerServicesBase() {
   ::DeleteCriticalSection(&lock_);
 }
 
-TargetPolicy* BrokerServicesBase::CreatePolicy() {
+scoped_refptr<TargetPolicy> BrokerServicesBase::CreatePolicy() {
   // If you change the type of the object being created here you must also
   // change the downcast to it in SpawnTarget().
-  return new PolicyBase;
+  scoped_refptr<TargetPolicy> policy(new PolicyBase);
+  // PolicyBase starts with refcount 1.
+  policy->Release();
+  return policy;
 }
 
 // The worker thread stays in a loop waiting for asynchronous notifications
@@ -268,7 +271,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
 // process inside the sandbox.
 ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                                            const wchar_t* command_line,
-                                           TargetPolicy* policy,
+                                           scoped_refptr<TargetPolicy> policy,
                                            ResultCode* last_warning,
                                            DWORD* last_error,
                                            PROCESS_INFORMATION* target_info) {
@@ -289,7 +292,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   AutoLock lock(&lock_);
 
   // This downcast is safe as long as we control CreatePolicy()
-  PolicyBase* policy_base = static_cast<PolicyBase*>(policy);
+  scoped_refptr<PolicyBase> policy_base(static_cast<PolicyBase*>(policy.get()));
 
   // Construct the tokens and the job object that we are going to associate
   // with the soon to be created target process.
@@ -441,7 +444,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // We are going to keep a pointer to the policy because we'll call it when
   // the job object generates notifications using the completion port.
-  policy_base->AddRef();
   if (job.IsValid()) {
     std::unique_ptr<JobTracker> tracker(
         new JobTracker(std::move(job), policy_base));

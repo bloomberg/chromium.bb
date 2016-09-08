@@ -500,7 +500,7 @@ bool MainUIWindow::SpawnTarget() {
 
   arguments[size_call - 1] = L'\0';
 
-  sandbox::TargetPolicy* policy = broker_->CreatePolicy();
+  scoped_refptr<sandbox::TargetPolicy> policy = broker_->CreatePolicy();
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
   policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                         sandbox::USER_LOCKDOWN);
@@ -519,7 +519,6 @@ bool MainUIWindow::SpawnTarget() {
       broker_->SpawnTarget(spawn_target_.c_str(), arguments, policy,
                            &warning_result, &last_error, &target_);
 
-  policy->Release();
   policy = NULL;
 
   bool return_value = false;
