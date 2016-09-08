@@ -998,6 +998,7 @@ test("cc_perftests") {
     "ipc/cc_serialization_perftest.cc",
     "layers/layer_perftest.cc",
     "layers/picture_layer_impl_perftest.cc",
+    "output/bsp_tree_perftest.cc",
     "quads/draw_quad_perftest.cc",
     "raster/raster_buffer_provider_perftest.cc",
     "raster/task_graph_runner_perftest.cc",

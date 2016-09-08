@@ -16,9 +16,6 @@
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer.h"
-#include "cc/output/bsp_tree.h"
-#include "cc/quads/draw_polygon.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_tree_json_parser.h"
@@ -125,69 +122,6 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
   }
 };
 
-class BspTreePerfTest : public CalcDrawPropsTest {
- public:
-  BspTreePerfTest() : num_duplicates_(1) {}
-  void RunSortLayers() { RunTest(CompositorMode::SINGLE_THREADED); }
-
-  void SetNumberOfDuplicates(int num_duplicates) {
-    num_duplicates_ = num_duplicates;
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    LayerTreeImpl* active_tree = host_impl->active_tree();
-    // First build the tree and then we'll start running tests on layersorter
-    // itself
-    bool can_render_to_separate_surface = true;
-    int max_texture_size = 8096;
-    DoCalcDrawPropertiesImpl(can_render_to_separate_surface,
-                             max_texture_size,
-                             active_tree,
-                             host_impl);
-
-    LayerImplList base_list;
-    BuildLayerImplList(active_tree->root_layer_for_testing(), &base_list);
-
-    int polygon_counter = 0;
-    std::vector<std::unique_ptr<DrawPolygon>> polygon_list;
-    for (LayerImplList::iterator it = base_list.begin(); it != base_list.end();
-         ++it) {
-      DrawPolygon* draw_polygon = new DrawPolygon(
-          NULL, gfx::RectF(gfx::SizeF((*it)->bounds())),
-          (*it)->draw_properties().target_space_transform, polygon_counter++);
-      polygon_list.push_back(std::unique_ptr<DrawPolygon>(draw_polygon));
-    }
-
-    timer_.Reset();
-    do {
-      std::deque<std::unique_ptr<DrawPolygon>> test_list;
-      for (int i = 0; i < num_duplicates_; i++) {
-        for (size_t i = 0; i < polygon_list.size(); i++) {
-          test_list.push_back(polygon_list[i]->CreateCopy());
-        }
-      }
-      BspTree bsp_tree(&test_list);
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    EndTest();
-  }
-
-  void BuildLayerImplList(LayerImpl* layer, LayerImplList* list) {
-    for (auto* layer_impl : *layer->layer_tree_impl()) {
-      if (layer_impl->Is3dSorted() && !layer_impl->bounds().IsEmpty()) {
-        list->push_back(layer_impl);
-      }
-    }
-  }
-
- private:
-  LayerImplList base_list_;
-  int num_duplicates_;
-};
-
 TEST_F(CalcDrawPropsTest, TenTen) {
   SetTestName("10_10");
   ReadTestFile("10_10_layer_tree");
@@ -210,46 +144,6 @@ TEST_F(CalcDrawPropsTest, TouchRegionHeavy) {
   SetTestName("touch_region_heavy");
   ReadTestFile("touch_region_heavy");
   RunCalcDrawProps();
-}
-
-TEST_F(BspTreePerfTest, LayerSorterCubes) {
-  SetTestName("layer_sort_cubes");
-  ReadTestFile("layer_sort_cubes");
-  RunSortLayers();
-}
-
-TEST_F(BspTreePerfTest, LayerSorterRubik) {
-  SetTestName("layer_sort_rubik");
-  ReadTestFile("layer_sort_rubik");
-  RunSortLayers();
-}
-
-TEST_F(BspTreePerfTest, BspTreeCubes) {
-  SetTestName("bsp_tree_cubes");
-  SetNumberOfDuplicates(1);
-  ReadTestFile("layer_sort_cubes");
-  RunSortLayers();
-}
-
-TEST_F(BspTreePerfTest, BspTreeRubik) {
-  SetTestName("bsp_tree_rubik");
-  SetNumberOfDuplicates(1);
-  ReadTestFile("layer_sort_rubik");
-  RunSortLayers();
-}
-
-TEST_F(BspTreePerfTest, BspTreeCubes_2) {
-  SetTestName("bsp_tree_cubes_2");
-  SetNumberOfDuplicates(2);
-  ReadTestFile("layer_sort_cubes");
-  RunSortLayers();
-}
-
-TEST_F(BspTreePerfTest, BspTreeCubes_4) {
-  SetTestName("bsp_tree_cubes_4");
-  SetNumberOfDuplicates(4);
-  ReadTestFile("layer_sort_cubes");
-  RunSortLayers();
 }
 
 }  // namespace
