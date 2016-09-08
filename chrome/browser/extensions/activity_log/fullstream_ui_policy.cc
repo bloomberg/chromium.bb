@@ -57,9 +57,6 @@ FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
 FullStreamUIPolicy::~FullStreamUIPolicy() {}
 
 bool FullStreamUIPolicy::InitDatabase(sql::Connection* db) {
-  if (!Util::DropObsoleteTables(db))
-    return false;
-
   // Create the unified activity log entry table.
   return ActivityDatabase::InitializeTable(db,
                                            kTableName,
@@ -83,8 +80,7 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
 
-  Action::ActionVector::size_type i;
-  for (i = 0; i != queued_actions_.size(); ++i) {
+  for (size_t i = 0; i != queued_actions_.size(); ++i) {
     const Action& action = *queued_actions_[i];
     statement.Reset(true);
     statement.BindString(0, action.extension_id());

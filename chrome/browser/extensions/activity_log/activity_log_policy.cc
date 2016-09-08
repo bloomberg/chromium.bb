@@ -11,7 +11,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -23,14 +22,6 @@
 using content::BrowserThread;
 
 namespace constants = activity_log_constants;
-
-namespace {
-// Obsolete database tables: these should be dropped from the database if
-// found.
-const char* const kObsoleteTables[] = {"activitylog_apis",
-                                       "activitylog_blocked",
-                                       "activitylog_urls"};
-}  // namespace
 
 namespace extensions {
 
@@ -162,21 +153,6 @@ void ActivityLogPolicy::Util::ComputeDatabaseTimeBounds(const base::Time& now,
       *early_bound = early_time.ToInternalValue();
       *late_bound = late_time.ToInternalValue();
   }
-}
-
-// static
-bool ActivityLogPolicy::Util::DropObsoleteTables(sql::Connection* db) {
-  for (size_t i = 0; i < arraysize(kObsoleteTables); i++) {
-    const char* table_name = kObsoleteTables[i];
-    if (db->DoesTableExist(table_name)) {
-      std::string drop_statement =
-          base::StringPrintf("DROP TABLE %s", table_name);
-      if (!db->Execute(drop_statement.c_str())) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 }  // namespace extensions

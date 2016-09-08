@@ -179,9 +179,6 @@ CountingPolicy::CountingPolicy(Profile* profile)
 CountingPolicy::~CountingPolicy() {}
 
 bool CountingPolicy::InitDatabase(sql::Connection* db) {
-  if (!Util::DropObsoleteTables(db))
-    return false;
-
   if (!string_table_.Initialize(db))
     return false;
   if (!url_table_.Initialize(db))
