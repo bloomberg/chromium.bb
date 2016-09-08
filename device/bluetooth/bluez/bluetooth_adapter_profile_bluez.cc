@@ -112,7 +112,7 @@ void BluetoothAdapterProfileBlueZ::Released() {
 
 void BluetoothAdapterProfileBlueZ::NewConnection(
     const dbus::ObjectPath& device_path,
-    std::unique_ptr<dbus::FileDescriptor> fd,
+    base::ScopedFD fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   dbus::ObjectPath delegate_path = device_path;

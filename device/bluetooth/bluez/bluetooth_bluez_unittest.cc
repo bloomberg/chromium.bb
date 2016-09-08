@@ -74,7 +74,7 @@ class FakeBluetoothProfileServiceProviderDelegate
 
   void NewConnection(
       const dbus::ObjectPath&,
-      std::unique_ptr<dbus::FileDescriptor>,
+      base::ScopedFD,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options&,
       const ConfirmationCallback&) override {}
 

@@ -40,7 +40,7 @@ void FakeBluetoothProfileServiceProvider::Released() {
 
 void FakeBluetoothProfileServiceProvider::NewConnection(
     const dbus::ObjectPath& device_path,
-    std::unique_ptr<dbus::FileDescriptor> fd,
+    base::ScopedFD fd,
     const Delegate::Options& options,
     const Delegate::ConfirmationCallback& callback) {
   VLOG(1) << object_path_.value() << ": NewConnection for "

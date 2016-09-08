@@ -26,7 +26,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
-#include "dbus/file_descriptor.h"
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
@@ -512,7 +511,7 @@ void FakeBluetoothDeviceClient::ConnectProfile(
   base::WorkerPool::GetTaskRunner(false)
       ->PostTask(FROM_HERE, base::Bind(&SimulatedProfileSocket, fds[0]));
 
-  std::unique_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor(fds[1]));
+  base::ScopedFD fd(fds[1]);
 
   // Post the new connection to the service provider.
   BluetoothProfileServiceProvider::Delegate::Options options;

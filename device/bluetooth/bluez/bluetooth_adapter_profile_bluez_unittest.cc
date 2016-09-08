@@ -97,13 +97,12 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
 
     void NewConnection(
         const dbus::ObjectPath& device_path,
-        std::unique_ptr<dbus::FileDescriptor> fd,
+        base::ScopedFD fd,
         const bluez::BluetoothProfileServiceProvider::Delegate::Options&
             options,
         const ConfirmationCallback& callback) override {
       ++connections_;
-      fd->CheckValidity();
-      close(fd->TakeValue());
+      fd.reset();
       callback.Run(SUCCESS);
       if (device_path_.value() != "")
         ASSERT_EQ(device_path_, device_path);

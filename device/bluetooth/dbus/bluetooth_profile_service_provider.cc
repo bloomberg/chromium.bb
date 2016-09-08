@@ -103,10 +103,9 @@ class BluetoothProfileServiceProviderImpl
 
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath device_path;
-    std::unique_ptr<dbus::FileDescriptor> fd(new dbus::FileDescriptor());
+    base::ScopedFD fd;
     dbus::MessageReader array_reader(NULL);
-    if (!reader.PopObjectPath(&device_path) ||
-        !reader.PopFileDescriptor(fd.get()) ||
+    if (!reader.PopObjectPath(&device_path) || !reader.PopFileDescriptor(&fd) ||
         !reader.PopArray(&array_reader)) {
       LOG(WARNING) << "NewConnection called with incorrect paramters: "
                    << method_call->ToString();

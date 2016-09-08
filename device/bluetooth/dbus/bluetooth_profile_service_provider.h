@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "dbus/bus.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -75,15 +75,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileServiceProvider {
     // A file descriptor for the connection socket is provided in |fd|, and
     // details about the specific implementation of the profile in |options|.
     //
-    // IMPORTANT: Ownership of the file descriptor object |fd| is passed to
-    // the delegate by this call. The delegate is responsible for checking the
-    // validity of |fd| on a thread where I/O is permitted before taking the
-    // value. If the value is not taken, the file descriptor is closed.
-    //
     // Ownership of |options| is NOT passed so information out of it must be
     // copied if required.
     virtual void NewConnection(const dbus::ObjectPath& device_path,
-                               std::unique_ptr<dbus::FileDescriptor> fd,
+                               base::ScopedFD fd,
                                const Options& options,
                                const ConfirmationCallback& callback) = 0;
 

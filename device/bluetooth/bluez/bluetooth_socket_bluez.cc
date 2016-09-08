@@ -25,7 +25,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/bus.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -353,7 +352,7 @@ void BluetoothSocketBlueZ::Released() {
 
 void BluetoothSocketBlueZ::NewConnection(
     const dbus::ObjectPath& device_path,
-    std::unique_ptr<dbus::FileDescriptor> fd,
+    base::ScopedFD fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -448,16 +447,14 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
 
 void BluetoothSocketBlueZ::DoNewConnection(
     const dbus::ObjectPath& device_path,
-    std::unique_ptr<dbus::FileDescriptor> fd,
+    base::ScopedFD fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
   base::ThreadRestrictions::AssertIOAllowed();
-  fd->CheckValidity();
 
-  VLOG(1) << uuid_.canonical_value() << ": Validity check complete.";
-  if (!fd->is_valid()) {
-    LOG(WARNING) << uuid_.canonical_value() << " :" << fd->value()
+  if (!fd.is_valid()) {
+    LOG(WARNING) << uuid_.canonical_value() << " :" << fd.get()
                  << ": Invalid file descriptor received from Bluetooth Daemon.";
     ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
     return;
@@ -474,17 +471,13 @@ void BluetoothSocketBlueZ::DoNewConnection(
   // Note: We don't have a meaningful |IPEndPoint|, but that is ok since the
   // TCPSocket implementation does not actually require one.
   int net_result =
-      tcp_socket()->AdoptConnectedSocket(fd->value(), net::IPEndPoint());
+      tcp_socket()->AdoptConnectedSocket(fd.release(), net::IPEndPoint());
   if (net_result != net::OK) {
     LOG(WARNING) << uuid_.canonical_value() << ": Error adopting socket: "
                  << std::string(net::ErrorToString(net_result));
     ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
     return;
   }
-
-  VLOG(2) << uuid_.canonical_value()
-          << ": Taking descriptor, confirming success.";
-  fd->TakeValue();
   ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
 }
 

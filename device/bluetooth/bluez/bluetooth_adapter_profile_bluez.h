@@ -80,7 +80,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
   void Released() override;
   void NewConnection(
       const dbus::ObjectPath& device_path,
-      std::unique_ptr<dbus::FileDescriptor> fd,
+      base::ScopedFD fd,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) override;
   void RequestDisconnection(const dbus::ObjectPath& device_path,

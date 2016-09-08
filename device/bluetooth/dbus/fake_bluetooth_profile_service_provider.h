@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
@@ -34,7 +33,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothProfileServiceProvider
   // construction.
   void Released();
   void NewConnection(const dbus::ObjectPath& device_path,
-                     std::unique_ptr<dbus::FileDescriptor> fd,
+                     base::ScopedFD fd,
                      const Delegate::Options& options,
                      const Delegate::ConfirmationCallback& callback);
   void RequestDisconnection(const dbus::ObjectPath& device_path,
