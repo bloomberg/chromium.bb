@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequence_checker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 
@@ -101,6 +102,9 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   // Unique sequence token so that writing crash dump won't be blocked
   // by other tasks.
   base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+
+  // Used to verify that calls to WriteDumpFile() are sequenced.
+  base::SequenceChecker write_dump_file_sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
