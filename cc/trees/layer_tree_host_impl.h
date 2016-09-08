@@ -28,7 +28,6 @@
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_cache_controller.h"
-#include "cc/output/delegating_renderer.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/quads/render_pass.h"
@@ -398,6 +397,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   int RequestedMSAASampleCount() const;
 
+  // TODO(danakj): Rename this, there is no renderer.
   virtual bool InitializeRenderer(OutputSurface* output_surface);
   TileManager* tile_manager() { return &tile_manager_; }
 
@@ -415,7 +415,6 @@ class CC_EXPORT LayerTreeHostImpl
     return settings_.create_low_res_tiling && !use_gpu_rasterization_;
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
-  DelegatingRenderer* renderer() { return renderer_.get(); }
   ImageDecodeController* image_decode_controller() {
     return image_decode_controller_.get();
   }
@@ -547,9 +546,8 @@ class CC_EXPORT LayerTreeHostImpl
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
   CompositorFrameMetadata MakeCompositorFrameMetadata() const;
-  // Viewport rectangle and clip in nonflipped window space.  These rects
-  // should only be used by Renderer subclasses to populate glViewport/glClip
-  // and their software-mode equivalents.
+  // Viewport rectangle and clip in device space.  These rects are used to
+  // prioritize raster and determine what is submitted in a CompositorFrame.
   gfx::Rect DeviceViewport() const;
 
   // When a SwapPromiseMonitor is created on the impl thread, it calls
@@ -642,7 +640,6 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
 
-  void CreateAndSetRenderer();
   void CleanUpTileManagerAndUIResources();
   void CreateTileManagerResources();
   void ReleaseTreeResources();
@@ -743,7 +740,6 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<ResourcePool> resource_pool_;
-  std::unique_ptr<DelegatingRenderer> renderer_;
   std::unique_ptr<ImageDecodeController> image_decode_controller_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;

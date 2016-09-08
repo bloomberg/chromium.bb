@@ -676,11 +676,6 @@ void PictureLayerImpl::RecreateResources() {
     raster_source_->set_image_decode_controller(
         layer_tree_impl()->image_decode_controller());
   }
-
-  // To avoid an edge case after lost context where the tree is up to date but
-  // the tilings have not been managed, request an update draw properties
-  // to force tilings to get managed.
-  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 Region PictureLayerImpl::GetInvalidationRegionForDebugging() {

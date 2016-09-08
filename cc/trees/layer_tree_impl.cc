@@ -928,10 +928,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   // early outs before this.
   needs_update_draw_properties_ = false;
 
-  // For max_texture_size.  When the renderer is re-created in
-  // CreateAndSetRenderer, the needs update draw properties flag is set
-  // again.
-  if (!layer_tree_host_impl_->renderer())
+  // For max_texture_size. When a new output surface is received the needs
+  // update draw properties flag is set again.
+  if (!layer_tree_host_impl_->output_surface())
     return false;
 
   // Clear this after the renderer early out, as it should still be

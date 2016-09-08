@@ -50,9 +50,9 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/delegating_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
@@ -277,7 +277,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // It is released before shutdown.
   DCHECK(!output_surface_);
 
-  DCHECK(!renderer_);
   DCHECK(!resource_provider_);
   DCHECK(!resource_pool_);
   DCHECK(!tile_task_manager_);
@@ -394,14 +393,11 @@ bool LayerTreeHostImpl::CanDraw() const {
   // client_->OnCanDrawStateChanged in the proper places and update the
   // NotifyIfCanDrawChanged test.
 
-  if (!renderer_) {
-    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no renderer",
+  if (!output_surface_) {
+    TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no output surface",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
-
-  // Must have an OutputSurface if |renderer_| is not NULL.
-  DCHECK(output_surface_);
 
   // TODO(boliu): Make draws without layers work and move this below
   // |resourceless_software_draw_| check. Tracked in crbug.com/264967.
@@ -1383,6 +1379,8 @@ void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
 }
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
+  DCHECK(task_runner_provider_->IsImplThread());
+
   SetManagedMemoryPolicy(policy);
 
   // This is short term solution to synchronously drop tile resources when
@@ -1415,22 +1413,13 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
     return;
 
   ManagedMemoryPolicy old_policy = ActualManagedMemoryPolicy();
-
   cached_managed_memory_policy_ = policy;
   ManagedMemoryPolicy actual_policy = ActualManagedMemoryPolicy();
 
   if (old_policy == actual_policy)
     return;
 
-  if (!task_runner_provider_->HasImplThread()) {
-    // In single-thread mode, this can be called on the main thread by
-    // GLRenderer::OnMemoryAllocationChanged.
-    DebugScopedSetImplThread impl_thread(task_runner_provider_);
-    UpdateTileManagerMemoryPolicy(actual_policy);
-  } else {
-    DCHECK(task_runner_provider_->IsImplThread());
-    UpdateTileManagerMemoryPolicy(actual_policy);
-  }
+  UpdateTileManagerMemoryPolicy(actual_policy);
 
   // If there is already enough memory to draw everything imaginable and the
   // new memory limit does not change this, then do not re-commit. Don't bother
@@ -1698,7 +1687,23 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     }
   }
 
-  renderer_->DrawFrame(std::move(metadata), std::move(frame->render_passes));
+  // Collect all resource ids in the render passes into a single array.
+  ResourceProvider::ResourceIdArray resources;
+  for (const auto& render_pass : frame->render_passes) {
+    for (auto* quad : render_pass->quad_list) {
+      for (ResourceId resource_id : quad->resources)
+        resources.push_back(resource_id);
+    }
+  }
+
+  auto data = base::MakeUnique<DelegatedFrameData>();
+  resource_provider_->PrepareSendToParent(resources, &data->resource_list);
+  data->render_pass_list = std::move(frame->render_passes);
+
+  CompositorFrame compositor_frame;
+  compositor_frame.metadata = std::move(metadata);
+  compositor_frame.delegated_frame_data = std::move(data);
+  output_surface_->SwapBuffers(std::move(compositor_frame));
 
   // The next frame should start by assuming nothing has changed, and changes
   // are noted as they occur.
@@ -2125,24 +2130,6 @@ void LayerTreeHostImpl::RecreateTreeResources() {
     recycle_tree_->RecreateResources();
 }
 
-void LayerTreeHostImpl::CreateAndSetRenderer() {
-  DCHECK(!renderer_);
-  DCHECK(output_surface_);
-  DCHECK(resource_provider_);
-
-  DCHECK(output_surface_->capabilities().delegated_rendering);
-  renderer_ = base::MakeUnique<DelegatingRenderer>(output_surface_,
-                                                   resource_provider_.get());
-  SetFullViewportDamage();
-
-  // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be
-  // initialized to get max texture size.  Also, after releasing resources,
-  // trees need another update to generate new ones.
-  active_tree_->set_needs_update_draw_properties();
-  if (pending_tree_)
-    pending_tree_->set_needs_update_draw_properties();
-}
-
 void LayerTreeHostImpl::CreateTileManagerResources() {
   CreateResourceAndRasterBufferProvider(&raster_buffer_provider_,
                                         &resource_pool_);
@@ -2287,8 +2274,7 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
   // before we destroy the old resource provider.
   ReleaseTreeResources();
 
-  // Note: order is important here.
-  renderer_ = nullptr;
+  // Note: ui resource cleanup uses the |resource_provider_|.
   CleanUpTileManagerAndUIResources();
   resource_provider_ = nullptr;
 
@@ -2313,6 +2299,7 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
+  DCHECK(output_surface->capabilities().delegated_rendering);
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
 
   ReleaseOutputSurface();
@@ -2345,7 +2332,13 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   // already.
   UpdateGpuRasterizationStatus();
 
-  CreateAndSetRenderer();
+  // See note in LayerTreeImpl::UpdateDrawProperties, new OutputSurface means a
+  // new max texture size which affects draw properties. Also, if the draw
+  // properties were up to date, layers still lost resources and we need to
+  // UpdateDrawProperties() after calling RecreateTreeResources().
+  active_tree_->set_needs_update_draw_properties();
+  if (pending_tree_)
+    pending_tree_->set_needs_update_draw_properties();
 
   CreateTileManagerResources();
   RecreateTreeResources();
@@ -2361,6 +2354,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   DCHECK_EQ(1, output_surface_->capabilities().max_frames_pending);
   client_->OnCanDrawStateChanged(CanDraw());
 
+  SetFullViewportDamage();
   // There will not be anything to draw here, so set high res
   // to avoid checkerboards, typically when we are recovering
   // from lost context.
