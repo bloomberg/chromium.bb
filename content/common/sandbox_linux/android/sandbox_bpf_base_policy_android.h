@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_ANDROID_SANDBOX_BPF_BASE_POLICY_ANDROID_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_ANDROID_SANDBOX_BPF_BASE_POLICY_ANDROID_H_
 
+#include <sys/types.h>
+
 #include "base/macros.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
@@ -23,6 +25,8 @@ class SandboxBPFBasePolicyAndroid : public SandboxBPFBasePolicy {
       int system_call_number) const override;
 
  private:
+  const pid_t pid_;
+
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicyAndroid);
 };
 

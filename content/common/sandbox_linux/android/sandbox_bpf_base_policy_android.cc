@@ -50,7 +50,8 @@ BoolExpr RestrictSocketArguments(const Arg<int>& domain,
 }  // namespace
 
 SandboxBPFBasePolicyAndroid::SandboxBPFBasePolicyAndroid()
-    : SandboxBPFBasePolicy() {}
+    : SandboxBPFBasePolicy(),
+      pid_(getpid()) {}
 
 SandboxBPFBasePolicyAndroid::~SandboxBPFBasePolicyAndroid() {}
 
@@ -120,6 +121,13 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_ptrace:
       override_and_allow = true;
       break;
+  }
+
+  // https://crbug.com/644759
+  if (sysno == __NR_rt_tgsigqueueinfo) {
+    const Arg<pid_t> tgid(0);
+    return If(tgid == pid_, Allow())
+           .Else(Error(EPERM));
   }
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
