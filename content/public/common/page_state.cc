@@ -105,6 +105,21 @@ PageState PageState::CreateForTesting(
   return ToPageState(state);
 }
 
+// static
+PageState PageState::CreateForTestingWithSequenceNumbers(
+    const GURL& url,
+    int64_t item_sequence_number,
+    int64_t document_sequence_number) {
+  ExplodedPageState page_state;
+  page_state.top.url_string = ToNullableString16(url.spec());
+  page_state.top.item_sequence_number = item_sequence_number;
+  page_state.top.document_sequence_number = document_sequence_number;
+
+  std::string encoded_page_state;
+  EncodePageState(page_state, &encoded_page_state);
+  return CreateFromEncodedData(encoded_page_state);
+}
+
 PageState::PageState() {
 }
 

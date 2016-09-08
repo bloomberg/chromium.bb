@@ -132,6 +132,12 @@ class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
   DISALLOW_COPY_AND_ASSIGN(MockScreenshotManager);
 };
 
+int64_t GenerateSequenceNumber() {
+  // Based on how Blink generates sequence numbers.
+  static int64_t next_number = base::Time::Now().ToDoubleT() * 1000000;
+  return ++next_number;
+}
+
 }  // namespace
 
 namespace content {
@@ -2458,7 +2464,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   const GURL subframe_url("http://foo1/subframe");
 
   // Compute the sequence number assigned by Blink.
-  int64_t item_sequence_number1 = base::Time::Now().ToDoubleT() * 1000000;
+  int64_t item_sequence_number1 = GenerateSequenceNumber();
+  int64_t document_sequence_number1 = GenerateSequenceNumber();
 
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
@@ -2471,8 +2478,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     params.should_update_history = false;
     params.gesture = NavigationGestureUser;
     params.method = "GET";
-    params.page_state = PageState::CreateFromURL(subframe_url);
+    params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+        subframe_url, item_sequence_number1, document_sequence_number1);
     params.item_sequence_number = item_sequence_number1;
+    params.document_sequence_number = document_sequence_number1;
 
     // Navigating should do nothing.
     subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
@@ -2489,7 +2498,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // First manual subframe navigation.
   const GURL url2("http://foo2");
-  int64_t item_sequence_number2 = base::Time::Now().ToDoubleT() * 1000000;
+  int64_t item_sequence_number2 = GenerateSequenceNumber();
+  int64_t document_sequence_number2 = GenerateSequenceNumber();
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 2;
   params.nav_entry_id = 0;
@@ -2500,8 +2510,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url2);
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      url2, item_sequence_number2, document_sequence_number2);
   params.item_sequence_number = item_sequence_number2;
+  params.document_sequence_number = document_sequence_number2;
 
   // This should generate a new entry.
   subframe->SendRendererInitiatedNavigationRequest(url2, false);
@@ -2525,14 +2537,18 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Second manual subframe navigation should also make a new entry.
   const GURL url3("http://foo3");
+  int64_t item_sequence_number3 = GenerateSequenceNumber();
+  int64_t document_sequence_number3 = GenerateSequenceNumber();
   params.page_id = 3;
   params.nav_entry_id = 0;
   params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-  params.page_state = PageState::CreateFromURL(url3);
-  params.item_sequence_number = base::Time::Now().ToDoubleT() * 1000000;
+  params.item_sequence_number = item_sequence_number3;
+  params.document_sequence_number = document_sequence_number3;
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+    url3, item_sequence_number3, document_sequence_number3);
   subframe->SendRendererInitiatedNavigationRequest(url3, false);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
@@ -2560,8 +2576,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.did_create_new_entry = false;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.page_state = PageState::CreateFromURL(url2);
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+    url2, item_sequence_number2, document_sequence_number2);
   params.item_sequence_number = item_sequence_number2;
+  params.document_sequence_number = document_sequence_number2;
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2580,8 +2598,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.did_create_new_entry = false;
   params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.page_state = PageState::CreateFromURL(subframe_url);
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+    subframe_url, item_sequence_number1, document_sequence_number1);
   params.item_sequence_number = item_sequence_number1;
+  params.document_sequence_number = document_sequence_number1;
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
