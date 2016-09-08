@@ -59,7 +59,7 @@ bool BlinkGCMemoryDumpProvider::OnMemoryDump(const base::trace_event::MemoryDump
     // In the case of a detailed dump perform a mark-only GC pass to collect
     // more detailed stats.
     if (levelOfDetail == MemoryDumpLevelOfDetail::DETAILED)
-        ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
+        ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
     dumpMemoryTotals(memoryDump);
 
     if (m_isHeapProfilingEnabled) {

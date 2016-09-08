@@ -213,7 +213,7 @@ TEST(ScrollAnimatorTest, MainThreadStates)
     reset(*scrollAnimator);
 
     // Forced GC in order to finalize objects depending on the mock object.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 }
 
 TEST(ScrollAnimatorTest, MainThreadEnabled)
@@ -553,7 +553,7 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
     reset(*scrollAnimator);
 
     // Forced GC in order to finalize objects depending on the mock object.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 }
 
 // This test verifies that impl only animation updates get cleared once they
@@ -588,7 +588,7 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
 
     // Forced GC in order to finalize objects depending on the mock object.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 }
 
 TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
@@ -638,7 +638,7 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
     reset(*animator);
 
     // Forced GC in order to finalize objects depending on the mock object.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 }
 
 } // namespace blink

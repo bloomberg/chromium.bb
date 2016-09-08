@@ -77,7 +77,7 @@ public:
     {
         m_dummyPageHolder = nullptr;
         // We need this to collect garbage-collected mocks.
-        ThreadHeap::collectAllGarbage();
+        ThreadState::current()-> collectAllGarbage();
     }
 
     Document& document() { return m_dummyPageHolder->document(); }
@@ -217,7 +217,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenDestinationDetached)
     handle = nullptr;
     reader = nullptr;
     checkpoint.Call(3);
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     checkpoint.Call(4);
 }
 

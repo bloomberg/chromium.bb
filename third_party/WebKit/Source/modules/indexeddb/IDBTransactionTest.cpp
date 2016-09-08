@@ -75,13 +75,13 @@ TEST(IDBTransactionTest, EnsureLifetime)
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
     Persistent<IDBRequest> request = IDBRequest::create(scope.getScriptState(), IDBAny::createUndefined(), transaction.get());
     deactivateNewTransactions(scope.isolate());
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
@@ -90,7 +90,7 @@ TEST(IDBTransactionTest, EnsureLifetime)
     transaction->onAbort(DOMException::create(AbortError, "Aborted"));
     transaction.clear();
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(0u, set.size());
 }
 
@@ -111,17 +111,17 @@ TEST(IDBTransactionTest, TransactionFinish)
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
     deactivateNewTransactions(scope.isolate());
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
     transaction.clear();
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
     // Stop the context, so events don't get queued (which would keep the transaction alive).
@@ -132,7 +132,7 @@ TEST(IDBTransactionTest, TransactionFinish)
     db->onAbort(transactionId, DOMException::create(AbortError, "Aborted"));
 
     // onAbort() should have cleared the transaction's reference to the database.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_EQ(0u, set.size());
 }
 

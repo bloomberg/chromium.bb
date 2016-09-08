@@ -21,7 +21,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     MHTMLParser mhtmlParser(SharedBuffer::create(data, size));
     HeapVector<Member<ArchiveResource>> mhtmlArchives = mhtmlParser.parseArchive();
     mhtmlArchives.clear();
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 
     return 0;
 }

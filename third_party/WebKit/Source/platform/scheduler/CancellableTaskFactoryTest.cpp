@@ -216,7 +216,7 @@ TEST(CancellableTaskFactoryTest, GarbageCollectedWeak)
     GCObject* object = new GCObject();
     std::unique_ptr<WebTaskRunner::Task> task = wrapUnique(object->m_factory->cancelAndCreate());
     object = nullptr;
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     task->run();
     // The owning object will have been GCed and the task will have
     // lost its weak reference. Verify that it wasn't invoked.

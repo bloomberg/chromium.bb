@@ -55,7 +55,7 @@ protected:
     void TearDown() override
     {
         document.release();
-        ThreadHeap::collectAllGarbage();
+        ThreadState::current()-> collectAllGarbage();
     }
 
     std::unique_ptr<DummyPageHolder> pageHolder;

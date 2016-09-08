@@ -26,7 +26,7 @@ class BytesConsumerForDataConsumerHandleTest : public ::testing::Test {
 protected:
     ~BytesConsumerForDataConsumerHandleTest()
     {
-        ThreadHeap::collectAllGarbage();
+        ThreadState::current()-> collectAllGarbage();
     }
 };
 
