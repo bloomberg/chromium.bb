@@ -23,9 +23,9 @@ import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
@@ -2875,6 +2875,21 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             }
             mFullscreenManager.showControlsTransient();
             updateFullscreenEnabledState();
+        }
+
+        // For blimp mode, offset the blimp view by the height of top controls. This will ensure
+        // that the view doesn't get clipped at the bottom of the page and also the touch offsets
+        // would work correctly.
+        if (getBlimpContents() != null && mFullscreenManager != null) {
+            ViewGroup blimpView = getBlimpContents().getView();
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) blimpView.getLayoutParams();
+            if (lp == null) {
+                lp = new FrameLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            }
+
+            lp.topMargin = mFullscreenManager.getTopControlsHeight();
+            blimpView.setLayoutParams(lp);
         }
     }
 

@@ -355,9 +355,7 @@ public class ChromeFullscreenManager
         return getControlOffset() > -mControlContainerHeight;
     }
 
-    /**
-     * @return The height of the top controls in pixels.
-     */
+    @Override
     public int getTopControlsHeight() {
         return mControlContainerHeight;
     }
