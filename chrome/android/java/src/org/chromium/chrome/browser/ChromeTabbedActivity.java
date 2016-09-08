@@ -1215,7 +1215,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // - we decided to close the tab, but it was opened by an external app, so we will go
         //   exit Chrome on top of closing the tab
         final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
-
         if (minimizeApp) {
             if (shouldCloseTab) {
                 recordBackPressedUma("Minimized and closed tab", BACK_PRESSED_MINIMIZED_TAB_CLOSED);
@@ -1293,12 +1292,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
-            return getTabCreator(isIncognito).launchUrl(
-                    url,
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
+            loadUrlParams.setVerbatimHeaders(headers);
+            return getTabCreator(isIncognito).createNewTab(
+                    loadUrlParams,
                     fromLauncherShortcut ? TabLaunchType.FROM_EXTERNAL_APP
                             : TabLaunchType.FROM_LINK,
-                    intent,
-                    mIntentHandlingTimeMs);
+                    null,
+                    intent);
         } else {
             return getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
                     externalAppId, forceNewTab, intent, mIntentHandlingTimeMs);

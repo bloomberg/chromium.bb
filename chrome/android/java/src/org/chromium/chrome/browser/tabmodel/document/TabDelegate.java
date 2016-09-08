@@ -81,7 +81,8 @@ public class TabDelegate extends TabCreator {
      */
     public void createTabInOtherWindow(LoadUrlParams loadUrlParams, Activity activity,
             int parentId) {
-        Intent intent = createNewTabIntent(new AsyncTabCreationParams(loadUrlParams), parentId);
+        Intent intent = createNewTabIntent(
+                new AsyncTabCreationParams(loadUrlParams), parentId, false);
 
         Class<? extends Activity> targetActivity =
                 MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(activity);
@@ -117,11 +118,13 @@ public class TabDelegate extends TabCreator {
         assert !(type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                 && asyncParams.getWebContents() != null);
 
-        Intent intent = createNewTabIntent(asyncParams, parentId);
+        Intent intent = createNewTabIntent(
+                asyncParams, parentId, type == TabLaunchType.FROM_CHROME_UI);
         IntentHandler.startActivityForTrustedIntent(intent, ContextUtils.getApplicationContext());
     }
 
-    private Intent createNewTabIntent(AsyncTabCreationParams asyncParams, int parentId) {
+    private Intent createNewTabIntent(
+            AsyncTabCreationParams asyncParams, int parentId, boolean isChromeUI) {
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
         AsyncTabParamsManager.add(assignedTabId, asyncParams);
 
@@ -147,6 +150,12 @@ public class TabDelegate extends TabCreator {
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
+
+        if (isChromeUI) {
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                    ContextUtils.getApplicationContext().getPackageName());
+            intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        }
 
         Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
         if (parentActivity != null && parentActivity.getIntent() != null) {

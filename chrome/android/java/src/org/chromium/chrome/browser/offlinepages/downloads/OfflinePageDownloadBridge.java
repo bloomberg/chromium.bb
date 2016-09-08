@@ -181,7 +181,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
                 ? new AsyncTabCreationParams(params)
                 : new AsyncTabCreationParams(params, componentName);
         final TabDelegate tabDelegate = new TabDelegate(false);
-        tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID);
+        tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
     }
 
     /**

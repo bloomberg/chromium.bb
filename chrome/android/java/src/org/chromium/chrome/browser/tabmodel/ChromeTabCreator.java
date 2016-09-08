@@ -80,7 +80,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent the source of the url if it isn't null.
      * @return The new tab.
      */
-    private Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type,
+    public Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type,
             Tab parent, Intent intent) {
         // If parent is in the same tab model, place the new tab next to it.
         int position = TabModel.INVALID_TAB_INDEX;
