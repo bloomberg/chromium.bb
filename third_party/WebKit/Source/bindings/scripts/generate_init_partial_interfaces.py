@@ -10,10 +10,11 @@ from optparse import OptionParser
 import os
 import posixpath
 import sys
-from utilities import write_file
-
-from aggregate_generated_bindings import extract_meta_data
+from utilities import get_file_contents
+from utilities import idl_filename_to_interface_name
 from utilities import read_idl_files_list_from_file
+from utilities import should_generate_impl_file_from_idl
+from utilities import write_file
 
 
 _COPYRIGHT = """// Copyright 2014 The Chromium Authors. All rights reserved.
@@ -53,6 +54,33 @@ def parse_options():
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     return options
+
+
+def extract_meta_data(file_paths):
+    """Extracts interface name from each IDL file."""
+    meta_data_list = []
+
+    for file_path in file_paths:
+        if not file_path.endswith('.idl'):
+            print 'WARNING: non-IDL file passed: "%s"' % file_path
+            continue
+        if not os.path.exists(file_path):
+            print 'WARNING: file not found: "%s"' % file_path
+            continue
+
+        idl_file_contents = get_file_contents(file_path)
+        if not should_generate_impl_file_from_idl(idl_file_contents):
+            continue
+
+        # Extract interface name from file name
+        interface_name = idl_filename_to_interface_name(file_path)
+
+        meta_data = {
+            'name': interface_name,
+        }
+        meta_data_list.append(meta_data)
+
+    return meta_data_list
 
 
 def main():

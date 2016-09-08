@@ -4,99 +4,10 @@
 
 import("//build/config/chrome_build.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
+import("//third_party/WebKit/Source/core/core_idl_files.gni")
+import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 
 bindings_modules_v8_output_dir = "$bindings_output_dir/modules/v8"
-
-if (is_win && is_official_build) {
-  bindings_modules_generated_aggregate_files =
-      [ "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings.cpp" ]
-} else {
-  bindings_modules_generated_aggregate_files = [
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings00.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings01.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings02.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings03.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings04.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings05.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings06.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings07.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings08.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings09.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings10.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings11.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings12.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings13.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings14.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings15.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings16.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings17.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings18.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings19.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings20.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings21.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings22.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings23.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings24.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings25.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings26.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings27.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings28.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings29.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings30.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings31.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings32.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings33.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings34.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings35.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings36.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings37.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings38.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings39.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings40.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings41.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings42.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings43.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings44.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings45.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings46.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings47.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings48.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings49.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings50.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings51.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings52.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings53.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings54.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings55.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings56.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings57.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings58.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings59.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings60.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings61.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings62.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings63.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings64.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings65.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings66.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings67.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings68.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings69.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings70.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings71.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings72.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings73.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings74.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings75.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings76.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings77.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings78.cpp",
-    "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings79.cpp",
-  ]
-}
-
-bindings_modules_generated_partial_aggregate_files =
-    [ "$bindings_modules_v8_output_dir/V8GeneratedModulesBindingsPartial.cpp" ]
 
 bindings_modules_generated_init_partial_interfaces_file =
     "$bindings_modules_v8_output_dir/initPartialInterfacesInModules.cpp"
@@ -152,3 +63,19 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/UnsignedLongOrUnsignedLongSequence.cpp",
   "$bindings_modules_v8_output_dir/UnsignedLongOrUnsignedLongSequence.h",
 ]
+
+bindings_modules_generated_interface_files =
+    process_file_template(
+        modules_definition_idl_files,
+        [
+          "$bindings_modules_v8_output_dir/V8{{source_name_part}}.cpp",
+          "$bindings_modules_v8_output_dir/V8{{source_name_part}}.h",
+        ])
+
+bindings_modules_generated_partial_interface_files =
+    process_file_template(
+        core_idl_with_modules_dependency_files,
+        [
+          "$bindings_modules_v8_output_dir/V8{{source_name_part}}Partial.cpp",
+          "$bindings_modules_v8_output_dir/V8{{source_name_part}}Partial.h",
+        ])
