@@ -1,37 +1,40 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-<script src="../../../resources/js-test.js"></script>
-</head>
-<body>
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script>
-description("Test deleteData() + replaceData() overflow handling.");
+test(() => {
+    const textNode = new Text('chopped off and then some');
+    const range = new Range();
+    range.setStart(textNode, textNode.length);
+    textNode.deleteData(11, 0xfffffff7);
+    assert_equals(textNode.data, 'chopped off');
+    assert_equals(range.endOffset, 11);
+}, 'Range#deleteData() with huge end offset');
 
-var textNode;
-var range;
+test(() => {
+    const textNode = new Text('hello world');
+    const range = new Range();
+    range.setStart(textNode, textNode.length);
+    textNode.replaceData(6, 0xfffffffe, 'bob');
+    assert_equals(textNode.data, 'hello bob');
+    assert_equals(range.endOffset, 6);
+}, 'Range#replaceData() with huge end offset');
 
-shouldBeNonNull("textNode = new Text('chopped off and then some'); textNode");
-document.body.appendChild(textNode);
-document.getSelection().extend(textNode, textNode.length);
-range = document.getSelection().getRangeAt(0);
+test(() => {
+    const textNode = new Text('hello world');
+    const range = new Range();
+    range.setStart(textNode, textNode.length);
+    textNode.replaceData(6, -1, 'bob');
+    assert_equals(textNode.data, 'hello bob');
+    assert_equals(range.endOffset, 6);
+}, 'Range#replaceData() with negative end offset(-1)');
 
-shouldBeEqualToString("textNode.deleteData(11, 0xfffffff7); textNode.data", "chopped off");
-shouldBe("range.endOffset", "11");
-document.body.removeChild(textNode);
-
-shouldBeNonNull("textNode = new Text('hello world'); textNode");
-document.body.appendChild(textNode);
-document.getSelection().extend(textNode, textNode.length);
-range = document.getSelection().getRangeAt(0);
-
-shouldBeEqualToString("textNode.replaceData(6, 0xfffffffe, 'bob'); textNode.data", "hello bob");
-shouldBe("range.endOffset", "6");
-document.body.removeChild(textNode);
-
-shouldBeNonNull("textNode = new Text('hello world'); textNode");
-shouldBeEqualToString("textNode.replaceData(6, -1, 'bob'); textNode.data", "hello bob");
-shouldBeNonNull("textNode = new Text('hello world'); textNode");
-shouldBeEqualToString("textNode.replaceData(6, -2, 'bob'); textNode.data", "hello bob");
+test(() => {
+    const textNode = new Text('hello world');
+    const range = new Range();
+    range.setStart(textNode, textNode.length);
+    textNode.replaceData(6, -2, 'bob');
+    assert_equals(textNode.data, 'hello bob');
+    assert_equals(range.endOffset, 6);
+}, 'Range#replaceData() with negative end offset(-2)');
 </script>
-</body>
-</html>
