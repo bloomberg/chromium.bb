@@ -36,8 +36,9 @@
 namespace content {
 
 // Service Worker database keys. If a registration ID is stored, the stored
-// sender ID must be the one used to subscribe. Unfortunately, this isn't always
-// true of subscriptions previously stored in the database.
+// sender ID must be the one used to register. Unfortunately, this isn't always
+// true of pre-InstanceID registrations previously stored in the database, but
+// fortunately it's less important for their sender ID to be accurate.
 const char kPushSenderIdServiceWorkerKey[] = "push_sender_id";
 const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
 
@@ -136,6 +137,7 @@ class PushMessagingMessageFilter::Core {
   void GetEncryptionInfoOnUI(
       const GURL& origin,
       int64_t service_worker_registration_id,
+      const std::string& sender_id,
       const PushMessagingService::EncryptionInfoCallback& io_thread_callback);
 
   // Called (directly) from both the UI and IO threads.
@@ -304,7 +306,8 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Core::GetEncryptionInfoOnUI,
                    base::Unretained(ui_core_.get()), data.requesting_origin,
-                   data.service_worker_registration_id, callback));
+                   data.service_worker_registration_id,
+                   data.options.sender_info, callback));
     return;
   }
   // TODO(johnme): The spec allows the register algorithm to reject with an
@@ -365,6 +368,8 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
   PushMessagingService* push_service = service();
   if (!push_service) {
     if (!is_incognito()) {
+      // This might happen if InstanceIDProfileService::IsInstanceIDEnabled
+      // returns false because the Instance ID kill switch was enabled.
       // TODO(johnme): Might be better not to expose the API in this case.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -753,6 +758,11 @@ void PushMessagingMessageFilter::DidGetSubscription(
         break;
       }
 
+      ServiceWorkerRegistration* registration =
+          service_worker_context_->GetLiveRegistration(
+              service_worker_registration_id);
+      const GURL origin = registration->pattern().GetOrigin();
+
       const bool uses_standard_protocol =
           IsApplicationServerKey(push_subscription_id_and_sender_info[1]);
       const GURL endpoint = CreateEndpoint(
@@ -763,16 +773,12 @@ void PushMessagingMessageFilter::DidGetSubscription(
                      weak_factory_io_to_io_.GetWeakPtr(), request_id, endpoint,
                      push_subscription_id_and_sender_info[1]);
 
-      ServiceWorkerRegistration* registration =
-          service_worker_context_->GetLiveRegistration(
-              service_worker_registration_id);
-      const GURL origin = registration->pattern().GetOrigin();
-
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&Core::GetEncryptionInfoOnUI,
                      base::Unretained(ui_core_.get()), origin,
-                     service_worker_registration_id, callback));
+                     service_worker_registration_id,
+                     push_subscription_id_and_sender_info[1], callback));
 
       return;
     }
@@ -900,12 +906,13 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
 void PushMessagingMessageFilter::Core::GetEncryptionInfoOnUI(
     const GURL& origin,
     int64_t service_worker_registration_id,
+    const std::string& sender_id,
     const PushMessagingService::EncryptionInfoCallback& io_thread_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (push_service) {
     push_service->GetEncryptionInfo(
-        origin, service_worker_registration_id,
+        origin, service_worker_registration_id, sender_id,
         base::Bind(&ForwardEncryptionInfoToIOThreadProxy, io_thread_callback));
     return;
   }

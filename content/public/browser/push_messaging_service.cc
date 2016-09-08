@@ -59,6 +59,22 @@ void ClearPushSubscriptionIDOnIO(
       base::Bind(&CallClosureFromIO, callback));
 }
 
+void StorePushSubscriptionOnIOForTesting(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    int64_t service_worker_registration_id,
+    const GURL& origin,
+    const std::string& subscription_id,
+    const std::string& sender_id,
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context->StoreRegistrationUserData(
+      service_worker_registration_id, origin,
+      {{kPushRegistrationIdServiceWorkerKey, subscription_id},
+       {kPushSenderIdServiceWorkerKey, sender_id}},
+      base::Bind(&CallClosureFromIO, callback));
+}
+
 scoped_refptr<ServiceWorkerContextWrapper> GetServiceWorkerContext(
     BrowserContext* browser_context, const GURL& origin) {
   StoragePartition* partition =
@@ -100,6 +116,23 @@ void PushMessagingService::ClearPushSubscriptionID(
                  GetServiceWorkerContext(browser_context, origin),
                  service_worker_registration_id,
                  callback));
+}
+
+// static
+void PushMessagingService::StorePushSubscriptionForTesting(
+    BrowserContext* browser_context,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const std::string& subscription_id,
+    const std::string& sender_id,
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&StorePushSubscriptionOnIOForTesting,
+                 GetServiceWorkerContext(browser_context, origin),
+                 service_worker_registration_id, origin, subscription_id,
+                 sender_id, callback));
 }
 
 }  // namespace content

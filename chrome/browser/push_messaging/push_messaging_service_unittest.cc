@@ -31,6 +31,11 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "components/gcm_driver/instance_id/instance_id_android.h"
+#include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
+#endif  // OS_ANDROID
+
 namespace {
 
 const char kTestOrigin[] = "https://example.com";
@@ -101,16 +106,19 @@ class PushMessagingServiceTest : public ::testing::Test {
   void DidRegister(std::string* subscription_id_out,
                    std::vector<uint8_t>* p256dh_out,
                    std::vector<uint8_t>* auth_out,
+                   base::Closure done_callback,
                    const std::string& registration_id,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    content::PushRegistrationStatus status) {
-    ASSERT_EQ(content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
+    EXPECT_EQ(content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
               status);
 
     *subscription_id_out = registration_id;
     *p256dh_out = p256dh;
     *auth_out = auth;
+
+    done_callback.Run();
   }
 
   // Callback to use when observing messages dispatched by the push service.
@@ -134,6 +142,12 @@ class PushMessagingServiceTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   PushMessagingTestingProfile profile_;
+
+#if defined(OS_ANDROID)
+  instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
+      block_async_;
+  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
+#endif  // OS_ANDROID
 };
 
 TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
@@ -149,6 +163,8 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   std::string subscription_id;
   std::vector<uint8_t> p256dh, auth;
 
+  base::RunLoop run_loop;
+
   // (2) Subscribe for Push Messaging, and verify that we've got the required
   // information in order to be able to create encrypted messages.
   content::PushSubscriptionOptions options;
@@ -157,11 +173,11 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   push_service->SubscribeFromWorker(
       origin, kTestServiceWorkerId, options,
       base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),
-                 &subscription_id, &p256dh, &auth));
+                 &subscription_id, &p256dh, &auth, run_loop.QuitClosure()));
 
   EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
 
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 
   ASSERT_GT(subscription_id.size(), 0u);
   ASSERT_GT(p256dh.size(), 0u);

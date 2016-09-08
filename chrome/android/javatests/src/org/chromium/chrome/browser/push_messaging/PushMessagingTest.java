@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -25,8 +26,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
-import org.chromium.components.gcm_driver.FakeGoogleCloudMessagingSubscriber;
 import org.chromium.components.gcm_driver.GCMDriver;
+import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -63,6 +64,7 @@ public class PushMessagingTest
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                FakeInstanceIDWithSubtype.clearDataAndSetEnabled(true);
                 PushMessagingServiceObserver.setListenerForTesting(listener);
             }
         });
@@ -75,6 +77,7 @@ public class PushMessagingTest
             @Override
             public void run() {
                 PushMessagingServiceObserver.setListenerForTesting(null);
+                FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
             }
         });
         super.tearDown();
@@ -91,9 +94,6 @@ public class PushMessagingTest
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     public void testPushPermissionInfobar() throws InterruptedException, TimeoutException {
-        FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
-        GCMDriver.overrideSubscriberForTesting(subscriber);
-
         loadUrl(mPushTestPage);
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         assertEquals(0, getInfoBars().size());
@@ -128,15 +128,13 @@ public class PushMessagingTest
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
-        FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
-        GCMDriver.overrideSubscriberForTesting(subscriber);
-
         loadUrl(mPushTestPage);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
 
-        sendPushAndWaitForCallback(
-                subscriber.getLastSubscribeSubtype(), subscriber.getLastSubscribeSource());
+        Pair<String, String> appIdAndSenderId =
+                FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
+        sendPushAndWaitForCallback(appIdAndSenderId);
         NotificationEntry notificationEntry = waitForNotification();
         assertEquals("push notification 1",
                 notificationEntry.notification.extras.getString(Notification.EXTRA_TITLE));
@@ -149,9 +147,6 @@ public class PushMessagingTest
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
     public void testDefaultNotification() throws InterruptedException, TimeoutException {
-        FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
-        GCMDriver.overrideSubscriberForTesting(subscriber);
-
         // Load the push test page into the first tab.
         loadUrl(mPushTestPage);
         assertEquals(1, getActivity().getCurrentTabModel().getCount());
@@ -162,8 +157,8 @@ public class PushMessagingTest
         // Set up the push subscription and capture its details.
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
-        String appId = subscriber.getLastSubscribeSubtype();
-        String senderId = subscriber.getLastSubscribeSource();
+        Pair<String, String> appIdAndSenderId =
+                FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
 
         // Make the tab invisible by opening another one with a different origin.
         loadUrlInNewTab(ABOUT_BLANK);
@@ -174,17 +169,17 @@ public class PushMessagingTest
         // The first time a push event is fired and no notification is shown from the service
         // worker, grace permits it so no default notification is shown.
         runScriptAndWaitForTitle("setNotifyOnPush(false)", "setNotifyOnPush false ok", tab);
-        sendPushAndWaitForCallback(appId, senderId);
+        sendPushAndWaitForCallback(appIdAndSenderId);
 
         // After grace runs out a default notification will be shown.
-        sendPushAndWaitForCallback(appId, senderId);
+        sendPushAndWaitForCallback(appIdAndSenderId);
         NotificationEntry notificationEntry = waitForNotification();
         MoreAsserts.assertContainsRegex("user_visible_auto_notification", notificationEntry.tag);
 
         // When another push does show a notification, the default notification is automatically
         // dismissed (an additional mutation) so there is only one left in the end.
         runScriptAndWaitForTitle("setNotifyOnPush(true)", "setNotifyOnPush true ok", tab);
-        sendPushAndWaitForCallback(appId, senderId);
+        sendPushAndWaitForCallback(appIdAndSenderId);
         waitForNotificationManagerMutation();
         notificationEntry = waitForNotification();
         assertEquals("push notification 1",
@@ -210,8 +205,10 @@ public class PushMessagingTest
         waitForTitle(tab, expectedTitle);
     }
 
-    private void sendPushAndWaitForCallback(final String appId, final String senderId)
+    private void sendPushAndWaitForCallback(Pair<String, String> appIdAndSenderId)
             throws InterruptedException, TimeoutException {
+        final String appId = appIdAndSenderId.first;
+        final String senderId = appIdAndSenderId.second;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

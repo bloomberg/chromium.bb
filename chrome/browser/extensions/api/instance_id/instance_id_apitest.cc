@@ -23,18 +23,6 @@ using extensions::ResultCatcher;
 
 namespace extensions {
 
-namespace {
-
-std::unique_ptr<KeyedService> BuildFakeGCMProfileService(
-    content::BrowserContext* context) {
-  std::unique_ptr<gcm::FakeGCMProfileService> service(
-      new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context)));
-  service->SetDriverForTesting(new instance_id::FakeGCMDriverForInstanceID());
-  return std::move(service);
-}
-
-}  // namespace
-
 class InstanceIDApiTest : public ExtensionApiTest {
  public:
   InstanceIDApiTest();
@@ -51,7 +39,7 @@ InstanceIDApiTest::InstanceIDApiTest() {
 
 void InstanceIDApiTest::SetUpOnMainThread() {
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), &BuildFakeGCMProfileService);
+      browser()->profile(), &gcm::FakeGCMProfileService::Build);
 
   ExtensionApiTest::SetUpOnMainThread();
 }

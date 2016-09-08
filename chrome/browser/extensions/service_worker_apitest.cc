@@ -19,6 +19,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -196,7 +197,7 @@ class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
 class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
  public:
   ServiceWorkerPushMessagingTest()
-      : gcm_service_(nullptr), push_service_(nullptr) {}
+      : gcm_driver_(nullptr), push_service_(nullptr) {}
   ~ServiceWorkerPushMessagingTest() override {}
 
   void GrantNotificationPermissionForTest(const GURL& url) {
@@ -225,20 +226,25 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
     ServiceWorkerTest::SetUpCommandLine(command_line);
   }
   void SetUpOnMainThread() override {
-    gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
-        gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), &gcm::FakeGCMProfileService::Build));
-    gcm_service_->set_collect(true);
+    gcm::FakeGCMProfileService* gcm_service =
+        static_cast<gcm::FakeGCMProfileService*>(
+            gcm::GCMProfileServiceFactory::GetInstance()
+                ->SetTestingFactoryAndUse(profile(),
+                                          &gcm::FakeGCMProfileService::Build));
+    gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
+        gcm_service->driver());
     push_service_ = PushMessagingServiceFactory::GetForProfile(profile());
 
     ServiceWorkerTest::SetUpOnMainThread();
   }
 
-  gcm::FakeGCMProfileService* gcm_service() const { return gcm_service_; }
+  instance_id::FakeGCMDriverForInstanceID* gcm_driver() const {
+    return gcm_driver_;
+  }
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
  private:
-  gcm::FakeGCMProfileService* gcm_service_;
+  instance_id::FakeGCMDriverForInstanceID* gcm_driver_;
   PushMessagingServiceImpl* push_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPushMessagingTest);
@@ -766,8 +772,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
 
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL, extension_url);
-  ASSERT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+  ASSERT_EQ(app_identifier.app_id(), gcm_driver()->last_gettoken_app_id());
+  EXPECT_EQ("1234567890", gcm_driver()->last_gettoken_authorized_entity());
 
   base::RunLoop run_loop;
   // Send a push message via gcm and expect the ServiceWorker to receive it.

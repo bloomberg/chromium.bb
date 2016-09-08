@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "components/gcm_driver/gcm_driver.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace gcm {
 
 class FakeGCMDriver : public GCMDriver {

@@ -13,12 +13,18 @@
 #include "base/macros.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace instance_id {
 
 class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
                                    public gcm::InstanceIDHandler {
  public:
   FakeGCMDriverForInstanceID();
+  explicit FakeGCMDriverForInstanceID(
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   ~FakeGCMDriverForInstanceID() override;
 
   // FakeGCMDriver overrides:
@@ -42,9 +48,19 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
       const std::string& app_id,
       const GetInstanceIDDataCallback& callback) override;
 
+  const std::string& last_gettoken_app_id() const {
+    return last_gettoken_app_id_;
+  }
+
+  const std::string& last_gettoken_authorized_entity() const {
+    return last_gettoken_authorized_entity_;
+  }
+
  private:
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
   std::map<std::string, std::string> tokens_;
+  std::string last_gettoken_app_id_;
+  std::string last_gettoken_authorized_entity_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriverForInstanceID);
 };

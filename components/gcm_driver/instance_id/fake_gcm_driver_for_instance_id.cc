@@ -17,6 +17,10 @@ namespace instance_id {
 FakeGCMDriverForInstanceID::FakeGCMDriverForInstanceID()
     : gcm::FakeGCMDriver(base::ThreadTaskRunnerHandle::Get()) {}
 
+FakeGCMDriverForInstanceID::FakeGCMDriverForInstanceID(
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
+    : FakeGCMDriver(blocking_task_runner) {}
+
 FakeGCMDriverForInstanceID::~FakeGCMDriverForInstanceID() {
 }
 
@@ -66,6 +70,9 @@ void FakeGCMDriverForInstanceID::GetToken(
     token = base::Uint64ToString(base::RandUint64());
     tokens_[key] = token;
   }
+
+  last_gettoken_app_id_ = app_id;
+  last_gettoken_authorized_entity_ = authorized_entity;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, token, gcm::GCMClient::SUCCESS));

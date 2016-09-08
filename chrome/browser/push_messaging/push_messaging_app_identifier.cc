@@ -19,11 +19,13 @@
 #include "components/prefs/scoped_user_pref_update.h"
 
 const char kPushMessagingAppIdentifierPrefix[] = "wp:";
+const char kInstanceIDGuidSuffix[] = "-V2";
 
 namespace {
 
 // sizeof is strlen + 1 since it's null-terminated.
 const size_t kPrefixLength = sizeof(kPushMessagingAppIdentifierPrefix) - 1;
+const size_t kGuidSuffixLength = sizeof(kInstanceIDGuidSuffix) - 1;
 
 const char kSeparator = '#';    // Ok as only the origin of the url is used.
 const size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
@@ -63,12 +65,21 @@ void PushMessagingAppIdentifier::RegisterProfilePrefs(
 }
 
 // static
+bool PushMessagingAppIdentifier::UseInstanceID(const std::string& app_id) {
+  return base::EndsWith(app_id, kInstanceIDGuidSuffix,
+                        base::CompareCase::SENSITIVE);
+}
+
+// static
 PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
     const GURL& origin,
     int64_t service_worker_registration_id) {
   // Use uppercase GUID for consistency with GUIDs Push has already sent to GCM.
   // Also allows detecting case mangling; see code commented "crbug.com/461867".
   std::string guid = base::ToUpperASCII(base::GenerateGUID());
+  // All new push subscriptions are Instance ID tokens.
+  guid.replace(guid.size() - kGuidSuffixLength, kGuidSuffixLength,
+               kInstanceIDGuidSuffix);
   CHECK(!guid.empty());
   std::string app_id =
       kPushMessagingAppIdentifierPrefix + origin.spec() + kSeparator + guid;
@@ -196,6 +207,7 @@ void PushMessagingAppIdentifier::DeleteFromPrefs(Profile* profile) const {
 }
 
 void PushMessagingAppIdentifier::DCheckValid() const {
+#if DCHECK_IS_ON()
   DCHECK_GE(service_worker_registration_id_, 0);
 
   DCHECK(origin_.is_valid());
@@ -204,16 +216,29 @@ void PushMessagingAppIdentifier::DCheckValid() const {
   // "wp:"
   DCHECK_EQ(kPushMessagingAppIdentifierPrefix,
             app_id_.substr(0, kPrefixLength));
+
   // Optional (origin.spec() + '#')
   if (app_id_.size() != kPrefixLength + kGuidLength) {
     const size_t suffix_length = 1 /* kSeparator */ + kGuidLength;
-    DCHECK(app_id_.size() > kPrefixLength + suffix_length);
+    DCHECK_GT(app_id_.size(), kPrefixLength + suffix_length);
     DCHECK_EQ(origin_, GURL(app_id_.substr(
                            kPrefixLength,
                            app_id_.size() - kPrefixLength - suffix_length)));
     DCHECK_EQ(std::string(1, kSeparator),
               app_id_.substr(app_id_.size() - suffix_length, 1));
   }
-  // GUID
-  DCHECK(base::IsValidGUID(app_id_.substr(app_id_.size() - kGuidLength)));
+
+  // GUID. In order to distinguish them, an app_id created for an InstanceID
+  // based subscription has the last few characters of the GUID overwritten with
+  // kInstanceIDGuidSuffix (which contains non-hex characters invalid in GUIDs).
+  std::string guid = app_id_.substr(app_id_.size() - kGuidLength);
+  if (UseInstanceID(app_id_)) {
+    DCHECK(!base::IsValidGUID(guid));
+
+    // Replace suffix with valid hex so we can validate the rest of the string.
+    guid = guid.replace(guid.size() - kGuidSuffixLength, kGuidSuffixLength,
+                        kGuidSuffixLength, 'C');
+  }
+  DCHECK(base::IsValidGUID(guid));
+#endif  // DCHECK_IS_ON()
 }

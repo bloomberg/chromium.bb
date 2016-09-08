@@ -3443,6 +3443,8 @@ test("unit_tests") {
     sources -= [ "../browser/policy/policy_path_parser_unittest.cc" ]
     deps += [
       ":unit_tests_java",
+      "//components/gcm_driver/instance_id/android:instance_id_driver_java",
+      "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/offline_pages:test_support",
       "//v8:v8_external_startup_data_assets",
     ]

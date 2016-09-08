@@ -67,9 +67,12 @@ class CONTENT_EXPORT PushMessagingService {
                                    const RegisterCallback& callback) = 0;
 
   // Retrieves the encryption information associated with the subscription
-  // associated to |origin| and |service_worker_registration_id|.
+  // associated to |origin| and |service_worker_registration_id|. |sender_id| is
+  // also required since an InstanceID might have multiple tokens associated
+  // with different senders, though in practice Push doesn't yet use that.
   virtual void GetEncryptionInfo(const GURL& origin,
                                  int64_t service_worker_registration_id,
+                                 const std::string& sender_id,
                                  const EncryptionInfoCallback& callback) = 0;
 
   // Unsubscribe the given |sender_id| from the push messaging service. The
@@ -104,6 +107,16 @@ class CONTENT_EXPORT PushMessagingService {
                                       const GURL& origin,
                                       int64_t service_worker_registration_id,
                                       const base::Closure& callback);
+
+  // Stores a push subscription in the service worker for the given |origin|.
+  // Must only be used by tests.
+  static void StorePushSubscriptionForTesting(
+      BrowserContext* browser_context,
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const std::string& subscription_id,
+      const std::string& sender_id,
+      const base::Closure& callback);
 };
 
 }  // namespace content

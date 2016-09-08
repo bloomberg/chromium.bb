@@ -16,15 +16,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
-#include "components/gcm_driver/fake_gcm_driver.h"
-#include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "content/public/browser/browser_context.h"
 
 namespace gcm {
 
 namespace {
 
-class CustomFakeGCMDriver : public FakeGCMDriver {
+class CustomFakeGCMDriver : public instance_id::FakeGCMDriverForInstanceID {
  public:
   explicit CustomFakeGCMDriver(FakeGCMProfileService* service);
   ~CustomFakeGCMDriver() override;
@@ -42,7 +41,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
                          const IncomingMessage& message);
 
  protected:
-  // FakeGCMDriver overrides:
+  // FakeGCMDriverForInstanceID overrides:
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override;
   void UnregisterImpl(const std::string& app_id) override;
@@ -59,9 +58,9 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
 };
 
 CustomFakeGCMDriver::CustomFakeGCMDriver(FakeGCMProfileService* service)
-    : FakeGCMDriver(base::ThreadTaskRunnerHandle::Get()),
-      service_(service) {
-}
+    : instance_id::FakeGCMDriverForInstanceID(
+          base::ThreadTaskRunnerHandle::Get()),
+      service_(service) {}
 
 CustomFakeGCMDriver::~CustomFakeGCMDriver() {
 }

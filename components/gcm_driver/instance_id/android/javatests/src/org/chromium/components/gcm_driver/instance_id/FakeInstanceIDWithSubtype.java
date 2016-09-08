@@ -7,6 +7,7 @@ package org.chromium.components.gcm_driver.instance_id;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Pair;
 
 import com.google.android.gms.iid.InstanceID;
 
@@ -27,6 +28,8 @@ import java.util.Random;
 public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
     private String mId = null;
     private long mCreationTime = 0;
+
+    /** Map from (subtype + ',' + authorizedEntity + ',' + scope) to token. */
     private Map<String, String> mTokens = new HashMap<>();
 
     /**
@@ -50,6 +53,30 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
             }
             return wasEnabled;
         }
+    }
+
+    /**
+     * If exactly one instance of InstanceID exists, and it has exactly one token, this returns
+     * the subtype of the InstanceID and the authorizedEntity of the token. Otherwise it throws.
+     * If a test fails with no InstanceID or no tokens, it probably means subscribing failed, or
+     * that the test subscribed in the wrong way (e.g. a GCM registration rather than an InstanceID
+     * token). If a test fails with too many InstanceIDs/tokens, the test subscribed too many times.
+     */
+    public static Pair<String, String> getSubtypeAndAuthorizedEntityOfOnlyToken() {
+        if (InstanceIDWithSubtype.sSubtypeInstances.size() != 1) {
+            throw new IllegalStateException("Expected exactly one InstanceID, but there are "
+                    + InstanceIDWithSubtype.sSubtypeInstances.size());
+        }
+        FakeInstanceIDWithSubtype iid =
+                (FakeInstanceIDWithSubtype) InstanceIDWithSubtype.sSubtypeInstances.values()
+                        .iterator()
+                        .next();
+        if (iid.mTokens.size() != 1) {
+            throw new IllegalStateException(
+                    "Expected exactly one token, but there are " + iid.mTokens.size());
+        }
+        String authorizedEntity = iid.mTokens.keySet().iterator().next().split(",", 3)[1];
+        return Pair.create(iid.getSubtype(), authorizedEntity);
     }
 
     private FakeInstanceIDWithSubtype(Context context, String subtype) {
