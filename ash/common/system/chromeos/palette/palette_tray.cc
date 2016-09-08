@@ -220,6 +220,13 @@ bool PaletteTray::ShowPalette() {
   return true;
 }
 
+bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
+  if (icon_ && icon_->GetBoundsInScreen().Contains(point))
+    return true;
+
+  return bubble_ && bubble_->bubble_view()->GetBoundsInScreen().Contains(point);
+}
+
 void PaletteTray::AddToolsToView(views::View* host) {
   std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
   for (const PaletteToolView& view : views)

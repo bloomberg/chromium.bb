@@ -7,6 +7,10 @@
 
 #include "ash/ash_export.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ash {
 
 // Returns true if the palette feature is enabled. The palette itself may have
@@ -18,6 +22,10 @@ ASH_EXPORT bool ArePaletteExperimentalFeaturesEnabled();
 
 // Returns true if the palette should be shown on every display.
 ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
+
+// Returns true if either the palette icon or the palette widget contain the
+// given point (in screen space).
+ASH_EXPORT bool PaletteContainsPointInScreen(const gfx::Point& point);
 
 }  // namespace ash
 

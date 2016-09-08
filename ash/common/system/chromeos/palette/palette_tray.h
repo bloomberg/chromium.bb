@@ -17,6 +17,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace views {
 class ImageView;
 class Widget;
@@ -64,6 +68,10 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Opens up the palette if it is not already open. Returns true if the palette
   // was opened.
   bool ShowPalette();
+
+  // Returns true if the palette tray contains the given point. This is useful
+  // for determining if an event should be propagated through to the palette.
+  bool ContainsPointInScreen(const gfx::Point& point);
 
  private:
   // views::TrayBubbleView::Delegate:

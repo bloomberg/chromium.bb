@@ -14,6 +14,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/palette/palette_utils.h"
+#endif
+
 namespace ash {
 namespace {
 
@@ -52,6 +56,16 @@ aura::Window* GetCurrentRootWindow() {
       return root_window;
   }
   return nullptr;
+}
+
+// Returns true if the event should be processed normally, ie, the stylus is
+// over the palette icon or widget.
+bool ShouldSkipEventFiltering(const gfx::Point& point) {
+#if defined(OS_CHROMEOS)
+  return PaletteContainsPointInScreen(point);
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -178,8 +192,16 @@ void PartialMagnificationController::OnLocatedEvent(
   if (pointer_details.pointer_type != ui::EventPointerType::POINTER_TYPE_PEN)
     return;
 
-  if (event->type() == ui::ET_MOUSE_PRESSED)
+  // Compute the event location in screen space.
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::Window* event_root = target->GetRootWindow();
+  gfx::Point screen_point = event->root_location();
+  wm::ConvertPointToScreen(event_root, &screen_point);
+
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !ShouldSkipEventFiltering(screen_point)) {
     SetActive(true);
+  }
 
   if (event->type() == ui::ET_MOUSE_RELEASED)
     SetActive(false);
@@ -198,17 +220,14 @@ void PartialMagnificationController::OnLocatedEvent(
     return;
   }
 
-  gfx::Point point = event->root_location();
-
   // Remap point from where it was captured to the display it is actually on.
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  aura::Window* event_root = target->GetRootWindow();
+  gfx::Point point = event->root_location();
   aura::Window::ConvertPointToTarget(
       event_root, host_widget_->GetNativeView()->GetRootWindow(), &point);
-
   host_widget_->SetBounds(GetBounds(point));
 
-  event->StopPropagation();
+  if (!ShouldSkipEventFiltering(screen_point))
+    event->StopPropagation();
 }
 
 void PartialMagnificationController::CreateMagnifierWindow(
