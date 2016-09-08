@@ -36,6 +36,7 @@ const UAVersions& GetUAVersionsForCurrentOS() {
   // Safari version can't be, so a lookup table is used instead (for both, since
   // the reported versions should stay in sync).
   static const OSVersionMap version_map[] = {
+      {10, 0, {"602.1", "602.1.50"}},
       {9, 0, {"601.1.46", "601.1"}},
       {8, 0, {"600.1.4", "600.1.4"}},
       {7, 1, {"9537.53", "537.51.2"}},
