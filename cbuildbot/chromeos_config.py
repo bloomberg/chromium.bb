@@ -722,8 +722,13 @@ builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
 _all_release_builder_boards = builder_to_boards_dict[
     config_lib.CONFIG_TEMPLATE_RELEASE]
 
-@factory.CachedFunctionCall
-def GetConfig():
+
+def SiteParameters():
+  """Create the site parameters for this site.
+
+  Returns:
+    dict containing SiteParameters for ChromeOS.
+  """
   # Chrome OS site parameters.
   site_params = config_lib.DefaultSiteParameters()
 
@@ -846,6 +851,18 @@ def GetConfig():
       REPO_URL='%s/external/repo' % site_params['EXTERNAL_GOB_URL']
   )
 
+  return site_params
+
+
+def DefaultSettings(site_params):
+  """Create the default build config values for this site.
+
+  Args:
+    site_params: A populated config_lib.SiteParameters instance.
+
+  Returns:
+    dict: of default config_lib.BuildConfig values to use for this site.
+  """
   # Site specific adjustments for default BuildConfig values.
   defaults = config_lib.DefaultSettings()
 
@@ -854,10 +871,16 @@ def GetConfig():
   #  https://chrome-internal.googlesource.com/chromeos/manifest-internal
   defaults['manifest_repo_url'] = site_params['MANIFEST_URL']
 
-  # Site configuration.
-  site_config = config_lib.SiteConfig(defaults=defaults,
-                                      site_params=site_params)
+  return defaults
 
+
+def _GetConfig(site_config):
+  """Method with un-refactored build configs/templates.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs..
+  """
   default_hw_tests_override = config_lib.BuildConfig(
       hw_tests_override=HWTestList.DefaultList(
           num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
@@ -977,7 +1000,7 @@ def GetConfig():
   internal = config_lib.BuildConfig(
       internal=True,
       overlays=constants.BOTH_OVERLAYS,
-      manifest_repo_url=site_params['MANIFEST_INT_URL'],
+      manifest_repo_url=site_config.params['MANIFEST_INT_URL'],
   )
 
   brillo = config_lib.BuildConfig(
@@ -1309,33 +1332,38 @@ def GetConfig():
         manifest=defaults['manifest'],
         useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
     )
-    _CreateConfigsForBoards(full_prebuilts, _all_full_boards,
-                            config_lib.CONFIG_TYPE_FULL,
-                            internal=defaults['internal'],
-                            manifest_repo_url=site_params['MANIFEST_URL'],
-                            overlays=defaults['overlays'],
-                            **external_overrides)
-    _CreateConfigsForBoards(chromium_info, _all_full_boards,
-                            'tot-chromium-pfq-informational',
-                            important=False,
-                            internal=defaults['internal'],
-                            manifest_repo_url=site_params['MANIFEST_URL'],
-                            overlays=constants.PUBLIC_OVERLAYS,
-                            **external_overrides)
-    _CreateConfigsForBoards(chromium_info_gn, _all_full_boards,
-                            'tot-chromium-pfq-informational-gn',
-                            important=False,
-                            internal=defaults['internal'],
-                            manifest_repo_url=site_params['MANIFEST_URL'],
-                            overlays=constants.PUBLIC_OVERLAYS,
-                            **external_overrides)
+    _CreateConfigsForBoards(
+        full_prebuilts, _all_full_boards,
+        config_lib.CONFIG_TYPE_FULL,
+        internal=defaults['internal'],
+        manifest_repo_url=site_config.params['MANIFEST_URL'],
+        overlays=defaults['overlays'],
+        **external_overrides)
+    _CreateConfigsForBoards(
+        chromium_info, _all_full_boards,
+        'tot-chromium-pfq-informational',
+        important=False,
+        internal=defaults['internal'],
+        manifest_repo_url=site_config.params['MANIFEST_URL'],
+        overlays=constants.PUBLIC_OVERLAYS,
+        **external_overrides)
+    _CreateConfigsForBoards(
+        chromium_info_gn, _all_full_boards,
+        'tot-chromium-pfq-informational-gn',
+        important=False,
+        internal=defaults['internal'],
+        manifest_repo_url=site_config.params['MANIFEST_URL'],
+        overlays=constants.PUBLIC_OVERLAYS,
+        **external_overrides)
     # Create important configs, then non-important configs.
-    _CreateConfigsForBoards(internal_chromium_pfq,
-                            _chromium_pfq_important_boards,
-                            'chromium-pfq', **external_overrides)
-    _CreateConfigsForBoards(internal_chromium_pfq, _all_full_boards,
-                            'chromium-pfq', important=False,
-                            **external_overrides)
+    _CreateConfigsForBoards(
+        internal_chromium_pfq,
+        _chromium_pfq_important_boards,
+        'chromium-pfq', **external_overrides)
+    _CreateConfigsForBoards(
+        internal_chromium_pfq, _all_full_boards,
+        'chromium-pfq', important=False,
+        **external_overrides)
 
   _AddFullConfigs()
 
@@ -3118,5 +3146,23 @@ def GetConfig():
 
   for build in site_config.itervalues():
     _InsertHwTestsOverrideDefaults(build)
+
+
+@factory.CachedFunctionCall
+def GetConfig():
+  """Create the Site configuration for all ChromeOS builds.
+
+  Returns:
+    A config_lib.SiteConfig.
+  """
+  site_params = SiteParameters()
+  defaults = DefaultSettings(site_params)
+
+  # site_config with no templates or build configurations.
+  site_config = config_lib.SiteConfig(defaults=defaults,
+                                      site_params=site_params)
+
+  # Fill in templates and build configurations.
+  _GetConfig(site_config)
 
   return site_config
