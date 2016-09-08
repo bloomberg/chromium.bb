@@ -105,7 +105,7 @@ class SecurityStateModel {
     std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
     bool scheme_is_cryptographic;
     net::CertStatus cert_status;
-    int cert_id;
+    scoped_refptr<net::X509Certificate> certificate;
     // The security strength, in bits, of the SSL cipher suite. In late
     // 2015, 128 is considered the minimum.
     //
@@ -144,7 +144,7 @@ class SecurityStateModel {
     bool connection_info_initialized;
     // The following fields contain information about the connection
     // used to load the page or request.
-    int cert_id;
+    scoped_refptr<net::X509Certificate> certificate;
     net::CertStatus cert_status;
     int connection_status;
     int security_bits;

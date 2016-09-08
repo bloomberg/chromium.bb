@@ -9,6 +9,7 @@
 
 #include "ios/web/public/security_style.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 
 namespace web {
 
@@ -27,19 +28,22 @@ struct SSLStatus {
   };
 
   SSLStatus();
+  SSLStatus(const SSLStatus& other);
   ~SSLStatus();
 
   bool Equals(const SSLStatus& status) const {
     return security_style == status.security_style &&
-           cert_id == status.cert_id &&
+           !!certificate == !!status.certificate &&
+           (certificate ? certificate->Equals(status.certificate.get())
+                        : true) &&
            cert_status == status.cert_status &&
            security_bits == status.security_bits &&
            content_status == status.content_status;
-           // |cert_status_host| is not used for comparison intentionally.
+    // |cert_status_host| is not used for comparison intentionally.
   }
 
   web::SecurityStyle security_style;
-  int cert_id;
+  scoped_refptr<net::X509Certificate> certificate;
   net::CertStatus cert_status;
   int security_bits;
   int connection_status;

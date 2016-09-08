@@ -143,11 +143,9 @@ void WillProcessResponseOnUIThread(
 NavigationResourceThrottle::NavigationResourceThrottle(
     net::URLRequest* request,
     ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
-    CertStore* cert_store,
     RequestContextType request_context_type)
     : request_(request),
       resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
-      cert_store_(cert_store),
       request_context_type_(request_context_type),
       weak_ptr_factory_(this) {}
 
@@ -261,8 +259,7 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
   SSLStatus ssl_status;
   if (request_->ssl_info().cert.get()) {
     ResourceLoader::GetSSLStatusForRequest(
-        request_->url(), request_->ssl_info(), info->GetChildID(),
-        cert_store_, &ssl_status);
+        request_->url(), request_->ssl_info(), info->GetChildID(), &ssl_status);
   }
 
   BrowserThread::PostTask(

@@ -41,10 +41,10 @@ class CONTENT_EXPORT SSLPolicy {
   void DidRunContentWithCertErrors(NavigationEntryImpl* entry,
                                    const GURL& security_origin);
 
-  // We have started a resource request for |url| with the given |cert_id| and
-  // |cert_status|.
+  // We have started a resource request for |url| and if it has a certificate
+  // and |cert_status|.
   void OnRequestStarted(const GURL& url,
-                        int cert_id,
+                        bool has_certificate,
                         net::CertStatus cert_status);
 
   // Update the SSL information in |entry| to match the current state.

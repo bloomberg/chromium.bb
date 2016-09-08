@@ -2562,7 +2562,6 @@ split_static_library("browser") {
       "banners/app_banner_manager_desktop.h",
       "bookmarks/bookmark_html_writer.cc",
       "bookmarks/bookmark_html_writer.h",
-      "certificate_viewer.cc",
       "certificate_viewer.h",
       "chooser_controller/chooser_controller.cc",
       "chooser_controller/chooser_controller.h",

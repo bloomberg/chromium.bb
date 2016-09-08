@@ -131,7 +131,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
 
-  void ShowCertificateViewer(int certificate_id);
+  void ShowCertificateViewer(scoped_refptr<net::X509Certificate> certificate);
 
   // BeforeUnload interception ////////////////////////////////////////////////
 

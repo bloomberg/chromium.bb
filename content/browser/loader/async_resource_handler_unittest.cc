@@ -193,7 +193,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
     std::unique_ptr<AsyncResourceHandler> handler =
         base::MakeUnique<AsyncResourceHandler>(request.get(), &rdh_);
     loader_ = base::MakeUnique<ResourceLoader>(
-        std::move(request), std::move(handler), nullptr, this);
+        std::move(request), std::move(handler), this);
   }
 
   void StartRequestAndWaitWithResponseDataSize(size_t response_data_size) {

@@ -28,11 +28,10 @@ class NavigationManager;
 
 // Initializes CRWSSLStatusUpdater. |navManager| can not be null, will be stored
 // as a weak pointer and must outlive updater. |dataSource| can not be nil, will
-// be stored as a weak reference and must outlive updater. |certGroupID| will be
-// used for accessing web::CertStore.
+// be stored as a weak reference and must outlive updater.
 - (instancetype)initWithDataSource:(id<CRWSSLStatusUpdaterDataSource>)dataSource
                  navigationManager:(web::NavigationManager*)navigationManager
-                       certGroupID:(int)certGroupID NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

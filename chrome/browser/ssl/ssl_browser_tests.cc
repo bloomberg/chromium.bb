@@ -60,7 +60,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -257,26 +256,6 @@ class SSLInterstitialTimerObserver {
 
   DISALLOW_COPY_AND_ASSIGN(SSLInterstitialTimerObserver);
 };
-
-// Checks that two SSLStatuses will result in the same security UI: that
-// is, the cert ids can differ as long as they refer to the same cert,
-// and otherwise SSLStatus::Equals() must be true.
-void CheckSSLStatusesEquals(const content::SSLStatus& one,
-                            const content::SSLStatus& two) {
-  content::CertStore* cert_store = content::CertStore::GetInstance();
-  scoped_refptr<net::X509Certificate> cert1;
-  scoped_refptr<net::X509Certificate> cert2;
-  cert_store->RetrieveCert(one.cert_id, &cert1);
-  cert_store->RetrieveCert(two.cert_id, &cert2);
-  EXPECT_TRUE(cert1 && cert2);
-  EXPECT_TRUE(cert1->Equals(cert2.get()));
-
-  SSLStatus one_without_cert_id = one;
-  one_without_cert_id.cert_id = 0;
-  SSLStatus two_without_cert_id = two;
-  two_without_cert_id.cert_id = 0;
-  EXPECT_TRUE(one_without_cert_id.Equals(two_without_cert_id));
-}
 
 class HungJob : public net::URLRequestJob {
  public:
@@ -2702,8 +2681,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(entry);
 
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
-  ASSERT_NO_FATAL_FAILURE(CheckSSLStatusesEquals(after_interstitial_ssl_status,
-                                                 interstitial_ssl_status));
+  ASSERT_NO_FATAL_FAILURE(
+      after_interstitial_ssl_status.Equals(interstitial_ssl_status));
 }
 
 // As above, but for a bad clock interstitial. Tests that a clock
@@ -2753,8 +2732,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
-  ASSERT_NO_FATAL_FAILURE(CheckSSLStatusesEquals(
-      after_interstitial_ssl_status, clock_interstitial_ssl_status));
+  ASSERT_NO_FATAL_FAILURE(
+      after_interstitial_ssl_status.Equals(clock_interstitial_ssl_status));
 }
 
 class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {

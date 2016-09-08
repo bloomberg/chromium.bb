@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/browser_constants.h"
-#include "ios/web/public/cert_store.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -195,8 +194,7 @@ void IOSSSLBlockingPage::OverrideItem(web::NavigationItem* item) {
   // On iOS cert may be null when it is not provided by API callback or can not
   // be parsed.
   if (ssl_info_.cert) {
-    item->GetSSL().cert_id = web::CertStore::GetInstance()->StoreCert(
-        ssl_info_.cert.get(), web_state()->GetCertGroupId());
+    item->GetSSL().certificate = ssl_info_.cert;
   }
 }
 

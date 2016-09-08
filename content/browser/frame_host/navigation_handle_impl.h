@@ -220,11 +220,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool same_page,
       RenderFrameHostImpl* render_frame_host);
 
-  // This is only used for the non-PlzNavigate case, as it's the one that has
-  // cross-site requests being transferred to new processes. When that occurs,
-  // the SSL certificate ID has to be updated.
-  void UpdateSSLCertId(int new_cert_id);
-
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
   // here.

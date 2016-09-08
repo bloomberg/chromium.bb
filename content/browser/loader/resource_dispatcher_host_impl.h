@@ -58,7 +58,6 @@ class ShareableFileReference;
 namespace content {
 class AppCacheService;
 class AsyncRevalidationManager;
-class CertStore;
 class LoaderDelegate;
 class NavigationURLLoaderImplCore;
 class RenderFrameHostImpl;
@@ -612,16 +611,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                int child_id,
                                bool is_sync_load);
 
-  // The certificate on a ResourceResponse is associated with a
-  // particular renderer process. As a transfer to a new process
-  // completes, the stored certificate has to be updated to reflect the
-  // new renderer process.
-  void UpdateResponseCertificateForTransfer(ResourceResponse* response,
-                                            net::URLRequest* request,
-                                            ResourceRequestInfoImpl* info);
-
-  CertStore* GetCertStore();
-
   // Consults the RendererSecurity policy to determine whether the
   // ResourceDispatcherHostImpl should service this request.  A request might
   // be disallowed if the renderer is not authorized to retrieve the request
@@ -730,10 +719,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   DelegateMap delegate_map_;
 
   std::unique_ptr<ResourceScheduler> scheduler_;
-
-  // Allows tests to use a mock CertStore. If set, the CertStore must
-  // outlive this ResourceDispatcherHostImpl.
-  CertStore* cert_store_for_testing_;
 
   // Used to invoke an interceptor for the HTTP header.
   HeaderInterceptorMap http_header_interceptor_map_;

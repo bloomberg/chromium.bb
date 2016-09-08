@@ -56,7 +56,6 @@ class TestWebState : public WebState {
   CRWWebViewProxyType GetWebViewProxy() const override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
-  int GetCertGroupId() const override;
   void AddObserver(WebStateObserver* observer) override {}
   void RemoveObserver(WebStateObserver* observer) override {}
   void AddPolicyDecider(WebStatePolicyDecider* decider) override {}

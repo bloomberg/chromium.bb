@@ -39,7 +39,6 @@
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -525,33 +524,6 @@ class RenderWidgetHostVisibilityObserver : public NotificationObserver {
   Source<RenderWidgetHost> source_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityObserver);
-};
-
-// A mock CertStore that always assigns the render process host id as
-// the certificate id. Certificates are never removed.
-class MockCertStore : public CertStore {
- public:
-  MockCertStore() {}
-  ~MockCertStore() override {}
-
-  int StoreCert(net::X509Certificate* cert,
-                int render_process_host_id) override {
-    certs_[render_process_host_id] = cert;
-    return render_process_host_id;
-  }
-
-  bool RetrieveCert(int cert_id,
-                    scoped_refptr<net::X509Certificate>* cert) override {
-    if (certs_.find(cert_id) == certs_.end())
-      return false;
-    *cert = certs_[cert_id];
-    return true;
-  }
-
- private:
-  std::map<int, scoped_refptr<net::X509Certificate>> certs_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCertStore);
 };
 
 class TestInterstitialDelegate : public InterstitialPageDelegate {
@@ -6784,59 +6756,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {
 
     EXPECT_EQ(root_value, child_value);
   }
-}
-
-// Tests that the certificate store is updated during a cross-site
-// redirect navigation. (See https://crbug.com/561754.) Ignores
-// certificate errors so that it can use the cross-site redirector to
-// redirect from HTTPS to HTTPS.
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
-                       CrossSiteRedirectCertificateStore) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(https_server.Start());
-  SetupCrossSiteRedirector(&https_server);
-
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  ASSERT_TRUE(rdh);
-  MockCertStore mock_cert_store;
-  rdh->cert_store_for_testing_ = &mock_cert_store;
-
-  // First, navigate to an |https_server| URL to ensure that the site
-  // instance is assigned a site. This will force a renderer transfer to
-  // happen on the following navigation that redirects to a different
-  // site.
-  GURL url(https_server.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  int original_process_id =
-      shell()->web_contents()->GetRenderProcessHost()->GetID();
-
-  url = https_server.GetURL("/cross-site/a.test/title1.html");
-  // NavigateToURL() returns false because the committed URL doesn't
-  // match |url| (because it redirected).
-  EXPECT_FALSE(NavigateToURL(shell(), url));
-  EXPECT_TRUE(IsLastCommittedEntryOfPageType(shell()->web_contents(),
-                                             PAGE_TYPE_NORMAL));
-  int new_process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
-
-  // Test that the mock certificate store saw the certificate associated with
-  // the new renderer process.
-  EXPECT_NE(original_process_id, new_process_id);
-  scoped_refptr<net::X509Certificate> original_cert;
-  scoped_refptr<net::X509Certificate> transfer_cert;
-  ASSERT_TRUE(
-      mock_cert_store.RetrieveCert(original_process_id, &original_cert));
-  ASSERT_TRUE(mock_cert_store.RetrieveCert(new_process_id, &transfer_cert));
-  EXPECT_TRUE(https_server.GetCertificate()->Equals(original_cert.get()));
-  EXPECT_TRUE(https_server.GetCertificate()->Equals(transfer_cert.get()));
-  // Test that the final cert id stored in the navigation entry is the
-  // cert id corresponding to the second renderer process.
-  EXPECT_EQ(new_process_id, shell()
-                                ->web_contents()
-                                ->GetController()
-                                .GetVisibleEntry()
-                                ->GetSSL()
-                                .cert_id);
 }
 
 // Tests that the swapped out state on RenderViewHost is properly reset when

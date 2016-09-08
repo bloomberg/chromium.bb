@@ -14,8 +14,11 @@
 #include "url/gurl.h"
 
 namespace content {
-class CertStore;
 class WebContents;
+}
+
+namespace net {
+class X509Certificate;
 }
 
 class ChromeSSLHostStateDelegate;
@@ -115,8 +118,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
       TabSpecificContentSettings* tab_specific_content_settings,
       content::WebContents* web_contents,
       const GURL& url,
-      const security_state::SecurityStateModel::SecurityInfo& security_info,
-      content::CertStore* cert_store);
+      const security_state::SecurityStateModel::SecurityInfo& security_info);
   ~WebsiteSettings() override;
 
   void RecordWebsiteSettingsAction(WebsiteSettingsAction action);
@@ -191,9 +193,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Status of the website's identity verification check.
   SiteIdentityStatus site_identity_status_;
 
-  // For secure connection |cert_id_| is set to the ID of the server
-  // certificate. For non secure connections |cert_id_| is 0.
-  int cert_id_;
+  // For secure connection |certificate_| is set to the server certificate.
+  scoped_refptr<net::X509Certificate> certificate_;
 
   // Status of the connection to the website.
   SiteConnectionStatus site_connection_status_;
@@ -225,9 +226,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // |organization_name| is an empty string. This string will be displayed in
   // the UI.
   base::string16 organization_name_;
-
-  // The |CertStore| provides all X509Certificates.
-  content::CertStore* cert_store_;
 
   // The |HostContentSettingsMap| is the service that provides and manages
   // content settings (aka. site permissions).

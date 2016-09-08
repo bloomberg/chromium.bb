@@ -27,7 +27,7 @@ class SecurityHandler : public WebContentsObserver {
 
   Response Enable();
   Response Disable();
-  Response ShowCertificateViewer(int certificate_id);
+  Response ShowCertificateViewer();
 
  private:
   void AttachToRenderFrameHost();

@@ -30,6 +30,10 @@ namespace content {
 class WebContents;
 }
 
+namespace net {
+class X509Certificate;
+}
+
 namespace test {
 class WebsiteSettingsPopupViewTestApi;
 }
@@ -162,9 +166,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   // of the site settings view.
   views::View* permissions_content_;
 
-  // The ID of the certificate provided by the site. If the site does not
-  // provide a certificate then |cert_id_| is 0.
-  int cert_id_;
+  // The certificate provided by the site, if one exists.
+  scoped_refptr<net::X509Certificate> certificate_;
 
   // The link to open the site settings page that provides full control over
   // the origin's permissions.

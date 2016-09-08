@@ -23,7 +23,6 @@
 #import "ios/web/history_state_util.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/cert_store.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_util.h"
@@ -269,8 +268,7 @@ struct TrackerCounts {
   if (!sslInfo_.is_valid())
     return;
 
-  status_.cert_id = web::CertStore::GetInstance()->StoreCert(
-      sslInfo_.cert.get(), tracker_->identifier());
+  status_.certificate = sslInfo_.cert;
 
   status_.cert_status = sslInfo_.cert_status;
   if (status_.cert_status & net::CERT_STATUS_COMMON_NAME_INVALID) {
@@ -413,8 +411,6 @@ void RequestTrackerImpl::Close() {
   delegate_ = nil;
   // The user_info is no longer needed.
   user_info_.reset();
-  // Get rid of the stored certificates
-  web::CertStore::GetInstance()->RemoveCertsForGroup(identifier_);
 }
 
 // static

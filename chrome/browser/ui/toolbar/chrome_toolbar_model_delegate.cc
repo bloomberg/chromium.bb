@@ -14,7 +14,6 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -82,13 +81,10 @@ ChromeToolbarModelDelegate::GetSecurityLevel() const {
 
 scoped_refptr<net::X509Certificate> ChromeToolbarModelDelegate::GetCertificate()
     const {
-  scoped_refptr<net::X509Certificate> cert;
   content::NavigationEntry* entry = GetNavigationEntry();
-  if (entry) {
-    content::CertStore::GetInstance()->RetrieveCert(entry->GetSSL().cert_id,
-                                                    &cert);
-  }
-  return cert;
+  if (!entry)
+    return scoped_refptr<net::X509Certificate>();
+  return entry->GetSSL().certificate;
 }
 
 content::NavigationController*

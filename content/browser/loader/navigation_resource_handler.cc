@@ -28,12 +28,10 @@ namespace content {
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
     NavigationURLLoaderImplCore* core,
-    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
-    CertStore* cert_store)
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
     : ResourceHandler(request),
       core_(core),
-      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
-      cert_store_(cert_store) {
+      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate) {
   core_->set_resource_handler(this);
   writer_.set_immediate_mode(true);
 }
@@ -118,7 +116,7 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   if (request()->ssl_info().cert.get()) {
     ResourceLoader::GetSSLStatusForRequest(
         request()->url(), request()->ssl_info(), info->GetChildID(),
-        cert_store_, &ssl_status);
+        &ssl_status);
   }
 
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),

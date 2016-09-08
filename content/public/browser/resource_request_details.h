@@ -23,7 +23,7 @@ namespace content {
 // resource request notification. It copies many of the publicly accessible
 // member variables of net::URLRequest, but exists on the UI thread.
 struct ResourceRequestDetails {
-  ResourceRequestDetails(const net::URLRequest* request, int cert_id);
+  ResourceRequestDetails(const net::URLRequest* request, bool has_certificate);
 
   virtual ~ResourceRequestDetails();
 
@@ -34,7 +34,7 @@ struct ResourceRequestDetails {
   bool has_upload;
   int load_flags;
   net::URLRequestStatus status;
-  int ssl_cert_id;
+  bool has_certificate;
   net::CertStatus ssl_cert_status;
   ResourceType resource_type;
   net::HostPortPair socket_address;
@@ -46,7 +46,7 @@ struct ResourceRequestDetails {
 // Details about a redirection of a resource request.
 struct ResourceRedirectDetails : public ResourceRequestDetails {
   ResourceRedirectDetails(const net::URLRequest* request,
-                          int cert_id,
+                          bool has_certificate,
                           const GURL& new_url);
   ~ResourceRedirectDetails() override;
 

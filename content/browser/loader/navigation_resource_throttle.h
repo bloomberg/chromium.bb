@@ -16,7 +16,6 @@ class URLRequest;
 }
 
 namespace content {
-class CertStore;
 class ResourceDispatcherHostDelegate;
 
 // This ResourceThrottle is used to convey throttling information to the UI
@@ -27,7 +26,6 @@ class NavigationResourceThrottle : public ResourceThrottle {
   NavigationResourceThrottle(
       net::URLRequest* request,
       ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
-      CertStore* cert_store,
       RequestContextType request_context_type);
   ~NavigationResourceThrottle() override;
 
@@ -43,7 +41,6 @@ class NavigationResourceThrottle : public ResourceThrottle {
 
   net::URLRequest* request_;
   ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate_;
-  CertStore* cert_store_;
   RequestContextType request_context_type_;
   base::WeakPtrFactory<NavigationResourceThrottle> weak_ptr_factory_;
 

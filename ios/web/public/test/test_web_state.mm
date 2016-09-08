@@ -98,10 +98,6 @@ WebInterstitial* TestWebState::GetWebInterstitial() const {
   return nullptr;
 }
 
-int TestWebState::GetCertGroupId() const {
-  return 0;
-}
-
 void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
 }

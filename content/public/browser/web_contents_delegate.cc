@@ -14,6 +14,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/url_constants.h"
+#include "net/cert/x509_certificate.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -256,7 +257,7 @@ SecurityStyle WebContentsDelegate::GetSecurityStyle(
 
 void WebContentsDelegate::ShowCertificateViewerInDevTools(
     WebContents* web_contents,
-    int cert_id) {
+    scoped_refptr<net::X509Certificate> certificate) {
 }
 
 void WebContentsDelegate::RequestAppBannerFromDevTools(

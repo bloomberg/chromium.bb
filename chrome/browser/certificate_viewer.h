@@ -14,13 +14,6 @@ class WebContents;
 namespace net {
 class X509Certificate;
 }
-
-// Opens a certificate viewer under |parent| to display the certificate from
-// the |CertStore| with id |cert_id|.
-void ShowCertificateViewerByID(content::WebContents* web_contents,
-                               gfx::NativeWindow parent,
-                               int cert_id);
-
 // Opens a certificate viewer under |parent| to display |cert|.
 void ShowCertificateViewer(content::WebContents* web_contents,
                            gfx::NativeWindow parent,

@@ -61,6 +61,10 @@ class Rect;
 class Size;
 }
 
+namespace net {
+class X509Certificate;
+}
+
 namespace url {
 class Origin;
 }
@@ -518,7 +522,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Displays platform-specific (OS) dialog with the certificate details.
   virtual void ShowCertificateViewerInDevTools(
       WebContents* web_contents,
-      int cert_id);
+      scoped_refptr<net::X509Certificate> certificate);
 
   // Called when the active render widget is forwarding a RemoteChannel
   // compositor proto.  This is used in Blimp mode.

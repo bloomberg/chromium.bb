@@ -139,7 +139,7 @@ TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
   // Default (unknown)
   EXPECT_EQ(SECURITY_STYLE_UNKNOWN, entry1_->GetSSL().security_style);
   EXPECT_EQ(SECURITY_STYLE_UNKNOWN, entry2_->GetSSL().security_style);
-  EXPECT_EQ(0, entry1_->GetSSL().cert_id);
+  EXPECT_FALSE(!!entry1_->GetSSL().certificate);
   EXPECT_EQ(0U, entry1_->GetSSL().cert_status);
   EXPECT_EQ(-1, entry1_->GetSSL().security_bits);
   int content_status = entry1_->GetSSL().content_status;

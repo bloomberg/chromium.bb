@@ -26,7 +26,6 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -193,13 +192,8 @@ void SSLBlockingPage::PopulateInterstitialStrings(
 }
 
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
-  const int process_id = web_contents()->GetRenderProcessHost()->GetID();
-  const int cert_id = content::CertStore::GetInstance()->StoreCert(
-      ssl_info_.cert.get(), process_id);
-  DCHECK(cert_id);
-
   entry->GetSSL() = content::SSLStatus(
-      content::SECURITY_STYLE_AUTHENTICATION_BROKEN, cert_id, ssl_info_);
+      content::SECURITY_STYLE_AUTHENTICATION_BROKEN, ssl_info_.cert, ssl_info_);
 }
 
 void SSLBlockingPage::SetSSLCertReporterForTesting(

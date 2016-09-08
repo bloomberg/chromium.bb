@@ -33,7 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/user_metrics.h"
@@ -424,11 +423,11 @@ bool IsInternalURL(const GURL& url) {
 
 // Handler for the link button to show certificate information.
 - (void)showCertificateInfo:(id)sender {
-  DCHECK(certificateId_);
+  DCHECK(certificate_.get());
   DCHECK(presenter_);
   presenter_->RecordWebsiteSettingsAction(
       WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-  ShowCertificateViewerByID(webContents_, [self parentWindow], certificateId_);
+  ShowCertificateViewer(webContents_, [self parentWindow], certificate_.get());
 }
 
 // Handler for the link button to revoke user certificate decisions.
@@ -495,7 +494,7 @@ bool IsInternalURL(const GURL& url) {
   yPos = [self setYPositionOfView:securitySummaryField_
                                to:yPos + kSpacingBeforeSecuritySummary];
 
-  if (isDevToolsDisabled_ && certificateId_ == 0) {
+  if (isDevToolsDisabled_ && !certificate_) {
     // -removeFromSuperview is idempotent.
     [securityDetailsButton_ removeFromSuperview];
   } else {
@@ -683,9 +682,9 @@ bool IsInternalURL(const GURL& url) {
   [securitySummaryField_ setStringValue:base::SysUTF16ToNSString(
                                             identityInfo.GetSecuritySummary())];
 
-  certificateId_ = identityInfo.cert_id;
+  certificate_ = identityInfo.certificate;
 
-  if (certificateId_ &&  identityInfo.show_ssl_decision_revoke_button) {
+  if (certificate_ &&  identityInfo.show_ssl_decision_revoke_button) {
     NSString* text = l10n_util::GetNSString(
         IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
     resetDecisionsButton_ =
@@ -1182,7 +1181,7 @@ void WebsiteSettingsUIBridge::Show(
     WebsiteSettings* presenter = new WebsiteSettings(
         bridge, profile,
         TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-        virtual_url, security_info, content::CertStore::GetInstance());
+        virtual_url, security_info);
     [bubble_controller setPresenter:presenter];
   }
 

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "net/test/test_certificate_data.h"
 #include "testing/gtest_mac.h"
 
 @interface WebsiteSettingsBubbleController (ExposedForTesting)
@@ -260,7 +261,8 @@ TEST_F(WebsiteSettingsBubbleControllerTest, ResetDecisionsButton) {
   EXPECT_EQ([controller_ resetDecisionsButton], nil);
 
   // Set identity info, specifying that the button should be shown.
-  info.cert_id = 1;
+  info.certificate = net::X509Certificate::CreateFromBytes(
+      reinterpret_cast<const char*>(google_der), sizeof(google_der));
   info.show_ssl_decision_revoke_button = true;
   bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
   EXPECT_NE([controller_ resetDecisionsButton], nil);

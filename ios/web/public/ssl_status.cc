@@ -8,12 +8,13 @@ namespace web {
 
 SSLStatus::SSLStatus()
     : security_style(SECURITY_STYLE_UNKNOWN),
-      cert_id(0),
       cert_status(0),
       security_bits(-1),
       connection_status(0),
       content_status(NORMAL_CONTENT) {
 }
+
+SSLStatus::SSLStatus(const SSLStatus& other) = default;
 
 SSLStatus::~SSLStatus() {}
 

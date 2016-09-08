@@ -8,4 +8,3 @@
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RequestDataResourceDispatcherHostBrowserTest.*
 -ServiceWorker*
--SitePerProcessIgnoreCertErrorsBrowserTest.CrossSiteRedirectCertificateStore

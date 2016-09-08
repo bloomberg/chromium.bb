@@ -9,7 +9,6 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
@@ -69,8 +68,6 @@ NSString* const kHostName = @"www.example.com";
 const char kHttpsUrl[] = "https://www.example.com";
 // Test http url for cert verification.
 const char kHttpUrl[] = "http://www.example.com";
-// Test cert group ID.
-const int kCertGroupID = 1;
 }  // namespace
 
 // Test fixture to test CRWSSLStatusUpdater class.
@@ -87,8 +84,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
 
     ssl_status_updater_.reset([[CRWSSLStatusUpdater alloc]
         initWithDataSource:data_source_
-         navigationManager:nav_manager_.get()
-               certGroupID:kCertGroupID]);
+         navigationManager:nav_manager_.get()]);
     [ssl_status_updater_ setDelegate:delegate_];
 
     // Create test cert chain.
@@ -147,7 +143,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpItem) {
                                    hasOnlySecureContent:NO];
 
   // No certificate for http.
-  EXPECT_FALSE(item->GetSSL().cert_id);
+  EXPECT_FALSE(!!item->GetSSL().certificate);
   // Make sure that security style and content status did change.
   EXPECT_EQ(web::SECURITY_STYLE_UNAUTHENTICATED, item->GetSSL().security_style);
   EXPECT_EQ(web::SSLStatus::DISPLAYED_INSECURE_CONTENT,
@@ -166,7 +162,7 @@ TEST_F(CRWSSLStatusUpdaterTest, NoChangesToHttpItem) {
                                                   trust:trust_
                                    hasOnlySecureContent:YES];
   // No certificate for http.
-  EXPECT_FALSE(item->GetSSL().cert_id);
+  EXPECT_FALSE(!!item->GetSSL().certificate);
   // Make sure that security style did not change.
   EXPECT_EQ(web::SECURITY_STYLE_UNAUTHENTICATED, item->GetSSL().security_style);
 }
@@ -188,7 +184,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCert) {
                                  trust:base::ScopedCFTypeRef<SecTrustRef>()
                   hasOnlySecureContent:YES];
   // No certificate.
-  EXPECT_FALSE(item->GetSSL().cert_id);
+  EXPECT_FALSE(!!item->GetSSL().certificate);
   // Make sure that security style did change.
   EXPECT_EQ(web::SECURITY_STYLE_UNKNOWN, item->GetSSL().security_style);
   EXPECT_EQ(web::SSLStatus::NORMAL_CONTENT, item->GetSSL().content_status);
@@ -201,8 +197,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCertReverification) {
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
   // Set SSL status manually in the way so cert re-verification is not run.
   item->GetSSL().cert_status_host = base::SysNSStringToUTF8(kHostName);
-  item->GetSSL().cert_id = web::CertStore::GetInstance()->StoreCert(
-      web::CreateCertFromTrust(trust_).get(), kCertGroupID);
+  item->GetSSL().certificate = web::CreateCertFromTrust(trust_);
 
   // Make sure that item change callback was called.
   [[delegate_ expect] SSLStatusUpdater:ssl_status_updater_
@@ -355,7 +350,7 @@ TEST_F(CRWSSLStatusUpdaterTest, CertChanged) {
   EXPECT_FALSE(item->GetSSL().cert_status);
 
   // Change the cert.
-  item->GetSSL().cert_id = -1;
+  item->GetSSL().certificate = nullptr;
 
   // Reply with calculated cert verification status.
   [data_source_

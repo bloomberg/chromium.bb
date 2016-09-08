@@ -11,7 +11,6 @@ namespace content {
 
 SSLStatus::SSLStatus()
     : security_style(SECURITY_STYLE_UNKNOWN),
-      cert_id(0),
       cert_status(0),
       security_bits(-1),
       key_exchange_info(0),
@@ -20,10 +19,10 @@ SSLStatus::SSLStatus()
       pkp_bypassed(false) {}
 
 SSLStatus::SSLStatus(SecurityStyle security_style,
-                     int cert_id,
+                     scoped_refptr<net::X509Certificate> certificate,
                      const net::SSLInfo& ssl_info)
     : security_style(security_style),
-      cert_id(cert_id),
+      certificate(certificate),
       cert_status(ssl_info.cert_status),
       security_bits(ssl_info.security_bits),
       key_exchange_info(ssl_info.key_exchange_info),

@@ -439,11 +439,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
 }
 
-void NavigationHandleImpl::UpdateSSLCertId(int new_cert_id) {
-  DCHECK(ssl_status_.cert_id) << "Must have set an SSL certificate already.";
-  ssl_status_.cert_id = new_cert_id;
-}
-
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CheckWillStartRequest() {
   DCHECK(state_ == WILL_SEND_REQUEST || state_ == DEFERRING_START);

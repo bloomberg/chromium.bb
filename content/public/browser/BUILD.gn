@@ -74,7 +74,6 @@ source_set("browser_sources") {
     "browser_url_handler.h",
     "cache_storage_context.h",
     "cache_storage_usage_info.h",
-    "cert_store.h",
     "certificate_request_result_type.h",
     "child_process_data.h",
     "child_process_security_policy.h",

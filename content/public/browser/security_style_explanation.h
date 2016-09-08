@@ -20,16 +20,17 @@ struct SecurityStyleExplanation {
   CONTENT_EXPORT SecurityStyleExplanation(){};
   CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
                                           const std::string& description)
-      : summary(summary), description(description), cert_id(0) {}
+      : summary(summary), description(description), has_certificate(false) {}
   CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
                                           const std::string& description,
-                                          int cert_id)
-      : summary(summary), description(description), cert_id(cert_id) {}
+                                          bool has_certificate)
+      : summary(summary), description(description),
+        has_certificate(has_certificate) {}
   CONTENT_EXPORT ~SecurityStyleExplanation() {}
 
   std::string summary;
   std::string description;
-  int cert_id;
+  bool has_certificate;
 };
 
 }  // namespace content

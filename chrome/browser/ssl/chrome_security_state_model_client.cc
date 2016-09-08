@@ -19,7 +19,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
@@ -92,8 +91,8 @@ void AddConnectionExplanation(
 
   // Avoid showing TLS details when we couldn't even establish a TLS connection
   // (e.g. for net errors) or if there was no real connection (some tests). We
-  // check the |cert_id| to see if there was a connection.
-  if (security_info.cert_id == 0 || security_info.connection_status == 0) {
+  // check the |certificate| to see if there was a connection.
+  if (!security_info.certificate || security_info.connection_status == 0) {
     return;
   }
 
@@ -215,14 +214,14 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_MAJOR_SHA1),
             l10n_util::GetStringUTF8(IDS_MAJOR_SHA1_DESCRIPTION),
-            security_info.cert_id));
+            !!security_info.certificate));
   } else if (security_info.sha1_deprecation_status ==
              SecurityStateModel::DEPRECATED_SHA1_MINOR) {
     security_style_explanations->unauthenticated_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_MINOR_SHA1),
             l10n_util::GetStringUTF8(IDS_MINOR_SHA1_DESCRIPTION),
-            security_info.cert_id));
+            !!security_info.certificate));
   }
 
   // Record the presence of mixed content (HTTP subresources on an HTTPS
@@ -269,7 +268,7 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
         l10n_util::GetStringFUTF8(
             IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
-        security_info.cert_id);
+        !!security_info.certificate);
 
     if (is_cert_status_minor_error) {
       security_style_explanations->unauthenticated_explanations.push_back(
@@ -288,7 +287,7 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
               l10n_util::GetStringUTF8(
                   IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
-              security_info.cert_id));
+              !!security_info.certificate));
     }
   }
 
@@ -314,10 +313,10 @@ bool ChromeSecurityStateModelClient::RetrieveCert(
     scoped_refptr<net::X509Certificate>* cert) {
   content::NavigationEntry* entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (!entry)
+  if (!entry || !entry->GetSSL().certificate)
     return false;
-  return content::CertStore::GetInstance()->RetrieveCert(
-      entry->GetSSL().cert_id, cert);
+  *cert = entry->GetSSL().certificate;
+  return true;
 }
 
 bool ChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
@@ -357,7 +356,7 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
   const content::SSLStatus& ssl = entry->GetSSL();
   state->initial_security_level =
       GetSecurityLevelForSecurityStyle(ssl.security_style);
-  state->cert_id = ssl.cert_id;
+  state->certificate = ssl.certificate;
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;
   state->security_bits = ssl.security_bits;

@@ -11,6 +11,7 @@
 #include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
 class SSLInfo;
@@ -42,14 +43,17 @@ struct CONTENT_EXPORT SSLStatus {
 
   SSLStatus();
   SSLStatus(SecurityStyle security_style,
-            int cert_id,
+            scoped_refptr<net::X509Certificate> certificate,
             const net::SSLInfo& ssl_info);
   SSLStatus(const SSLStatus& other);
   ~SSLStatus();
 
   bool Equals(const SSLStatus& status) const {
     return security_style == status.security_style &&
-           cert_id == status.cert_id && cert_status == status.cert_status &&
+           !!certificate == !!status.certificate &&
+           (certificate ? certificate->Equals(status.certificate.get()) :
+               true) &&
+           cert_status == status.cert_status &&
            security_bits == status.security_bits &&
            key_exchange_info == status.key_exchange_info &&
            connection_status == status.connection_status &&
@@ -59,8 +63,7 @@ struct CONTENT_EXPORT SSLStatus {
   }
 
   content::SecurityStyle security_style;
-  // A cert_id value of 0 indicates that it is unset or invalid.
-  int cert_id;
+  scoped_refptr<net::X509Certificate> certificate;
   net::CertStatus cert_status;
   int security_bits;
   int key_exchange_info;

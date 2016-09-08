@@ -28,6 +28,10 @@ namespace gfx {
 class Image;
 }
 
+namespace net {
+class X509Certificate;
+}
+
 // The class |WebsiteSettingsUI| specifies the platform independent
 // interface of the website settings UI. The website settings UI displays
 // information and controls for site specific data (local stored objects like
@@ -104,8 +108,8 @@ class WebsiteSettingsUI {
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
-    // The ID is the server certificate of a secure connection or 0.
-    int cert_id;
+    // The server certificate if a secure connection.
+    scoped_refptr<net::X509Certificate> certificate;
     // Status of the site's connection.
     WebsiteSettings::SiteConnectionStatus connection_status;
     // Textual description of the site's connection status that is displayed to

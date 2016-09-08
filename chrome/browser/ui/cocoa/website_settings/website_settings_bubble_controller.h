@@ -19,6 +19,10 @@ namespace content {
 class WebContents;
 }
 
+namespace net {
+class X509Certificate;
+}
+
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the favicon or security lock icon.
 //
@@ -50,9 +54,9 @@ class WebContents;
   // Whether DevTools is disabled for the relevant profile.
   BOOL isDevToolsDisabled_;
 
-  // The ID of the server certificate from the identity info. This should
-  // always be non-zero on a cryptographic connection, and 0 otherwise.
-  int certificateId_;
+  // The server certificate from the identity info. This should always be
+  // non-null on a cryptographic connection, and null otherwise.
+  scoped_refptr<net::X509Certificate> certificate_;
 
   // The link button for revoking certificate decisions.
   NSButton* resetDecisionsButton_;

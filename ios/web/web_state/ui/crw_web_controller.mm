@@ -52,7 +52,6 @@
 #import "ios/web/net/crw_ssl_status_updater.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/cert_store.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/navigation_item.h"
@@ -492,8 +491,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readonly) CRWSessionController* sessionController;
 // Activity indicator group ID for this web controller.
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
-// Identifier used for storing and retrieving certificates.
-@property(nonatomic, readonly) int certGroupID;
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
 // changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
@@ -1154,10 +1151,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                        self.webStateImpl->GetRequestGroupID()];
 }
 
-- (int)certGroupID {
-  return self.webState->GetCertGroupId();
-}
-
 - (NSDictionary*)WKWebViewObservers {
   return @{
     @"certificateChain" : @"webViewSecurityFeaturesDidChange",
@@ -1250,8 +1243,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // Stop doing stuff, especially network stuff. Close the request tracker.
 - (void)terminateNetworkActivity {
-  web::CertStore::GetInstance()->RemoveCertsForGroup(self.certGroupID);
-
   DCHECK(!_isHalted);
   _isHalted = YES;
 
@@ -4460,8 +4451,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_SSLStatusUpdater) {
     _SSLStatusUpdater.reset([[CRWSSLStatusUpdater alloc]
         initWithDataSource:self
-         navigationManager:navManager
-               certGroupID:self.certGroupID]);
+         navigationManager:navManager]);
     [_SSLStatusUpdater setDelegate:self];
   }
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
@@ -4505,8 +4495,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self handleLoadError:error inMainFrame:YES];
     return;
   }
-
-  web::CertStore::GetInstance()->StoreCert(info.cert.get(), self.certGroupID);
 
   // Retrieve verification results from _certVerificationErrors cache to avoid
   // unnecessary recalculations. Verification results are cached for the leaf

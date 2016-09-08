@@ -60,7 +60,6 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/message_port_provider.h"
@@ -769,18 +768,13 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return ScopedJavaLocalRef<jbyteArray>();
-  // Get the certificate
-  int cert_id = entry->GetSSL().cert_id;
-  scoped_refptr<net::X509Certificate> cert;
-  bool ok = content::CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
-  if (!ok)
+  if (!entry || !entry->GetSSL().certificate)
     return ScopedJavaLocalRef<jbyteArray>();
 
   // Convert the certificate and return it
   std::string der_string;
-  net::X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_string);
+  net::X509Certificate::GetDEREncoded(
+      entry->GetSSL().certificate->os_cert_handle(), &der_string);
   return base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(der_string.data()),
       der_string.length());

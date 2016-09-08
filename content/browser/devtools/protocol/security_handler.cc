@@ -7,9 +7,12 @@
 #include <string>
 
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/ssl_status.h"
 
 namespace content {
 namespace devtools {
@@ -44,11 +47,11 @@ void AddExplanations(
     std::vector<scoped_refptr<SecurityStateExplanation>>* explanations) {
   for (const auto& it : explanations_to_add) {
     scoped_refptr<SecurityStateExplanation> explanation =
-        SecurityStateExplanation::Create()->set_security_state(security_style)
-                                          ->set_summary(it.summary)
-                                          ->set_description(it.description);
-    if (it.cert_id > 0)
-      explanation->set_certificate_id(it.cert_id);
+        SecurityStateExplanation::Create()
+            ->set_security_state(security_style)
+            ->set_summary(it.summary)
+            ->set_description(it.description)
+            ->set_has_certificate(it.has_certificate);
     explanations->push_back(explanation);
   }
 }
@@ -147,12 +150,14 @@ Response SecurityHandler::Disable() {
   return Response::OK();
 }
 
-Response SecurityHandler::ShowCertificateViewer(int certificate_id) {
+Response SecurityHandler::ShowCertificateViewer() {
   if (!host_)
     return Response::InternalError("Could not connect to view");
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
+  scoped_refptr<net::X509Certificate> certificate = web_contents->
+      GetController().GetLastCommittedEntry()->GetSSL().certificate;
   web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
-      web_contents, certificate_id);
+      web_contents, certificate);
   return Response::OK();
 }
 

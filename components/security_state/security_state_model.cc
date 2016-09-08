@@ -195,7 +195,7 @@ void SecurityInfoForRequest(
     }
     return;
   }
-  security_info->cert_id = visible_security_state.cert_id;
+  security_info->certificate = visible_security_state.certificate;
   security_info->sha1_deprecation_status =
       GetSHA1DeprecationStatus(cert, visible_security_state);
   security_info->mixed_content_status =
@@ -242,7 +242,6 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       content_with_cert_errors_status(SecurityStateModel::CONTENT_STATUS_NONE),
       scheme_is_cryptographic(false),
       cert_status(0),
-      cert_id(0),
       security_bits(-1),
       connection_status(0),
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
@@ -288,7 +287,6 @@ SecurityStateModel::VisibleSecurityState::VisibleSecurityState()
     : initial_security_level(SecurityStateModel::NONE),
       fails_malware_check(false),
       connection_info_initialized(false),
-      cert_id(0),
       cert_status(0),
       connection_status(0),
       security_bits(-1),
@@ -305,7 +303,8 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
   return (url == other.url &&
           initial_security_level == other.initial_security_level &&
           fails_malware_check == other.fails_malware_check &&
-          cert_id == other.cert_id && cert_status == other.cert_status &&
+          !!certificate == !!other.certificate &&
+          (certificate ? certificate->Equals(other.certificate.get()) : true) &&
           connection_status == other.connection_status &&
           security_bits == other.security_bits &&
           sct_verify_statuses == other.sct_verify_statuses &&

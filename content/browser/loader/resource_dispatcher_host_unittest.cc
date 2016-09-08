@@ -23,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -847,32 +846,6 @@ enum class TestConfig {
   kOptimizeIPCForSmallResourceEnabled,
 };
 
-// A mock CertStore that doesn't do anything, unless a default cert id
-// is specified with set_default_cert_id(). If a default cert id is
-// provided, then StoreCert() always returns that cert id.
-class MockCertStore : public content::CertStore {
- public:
-  MockCertStore() : default_cert_id_(0) {}
-
-  ~MockCertStore() override {}
-
-  int StoreCert(net::X509Certificate* cert, int process_id) override {
-    return default_cert_id_;
-  }
-
-  bool RetrieveCert(int process_id,
-                    scoped_refptr<net::X509Certificate>* cert) override {
-    return false;
-  }
-
-  void set_default_cert_id(int default_cert_id) {
-    default_cert_id_ = default_cert_id;
-  }
-
- private:
-  int default_cert_id_;
-};
-
 void CheckRequestCompleteErrorCode(const IPC::Message& message,
                                    int expected_error_code) {
   // Verify the expected error code was received.
@@ -910,7 +883,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     job_factory_.reset(new TestURLRequestJobFactory(this));
     request_context->set_job_factory(job_factory_.get());
     request_context->set_network_delegate(&network_delegate_);
-    host_.cert_store_for_testing_ = &mock_cert_store_;
   }
 
   // IPC::Sender implementation
@@ -1200,7 +1172,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   std::set<int> child_ids_;
   std::unique_ptr<base::RunLoop> wait_for_request_complete_loop_;
   RenderViewHostTestEnabler render_view_host_test_enabler_;
-  MockCertStore mock_cert_store_;
   bool auto_advance_;
 };
 

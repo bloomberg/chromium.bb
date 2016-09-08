@@ -163,9 +163,9 @@ void SSLPolicy::DidRunContentWithCertErrors(NavigationEntryImpl* entry,
 }
 
 void SSLPolicy::OnRequestStarted(const GURL& url,
-                                 int cert_id,
+                                 bool has_certificate,
                                  net::CertStatus cert_status) {
-  if (cert_id && url.SchemeIsCryptographic() &&
+  if (has_certificate && url.SchemeIsCryptographic() &&
       !net::IsCertStatusError(cert_status)) {
     // If the scheme is https: or wss: *and* the security info for the
     // cert has been set (i.e. the cert id is not 0) and the cert did
@@ -259,7 +259,8 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
     return;
 
   entry->GetSSL().security_style = GetSecurityStyleForResource(
-      entry->GetURL(), !!entry->GetSSL().cert_id, entry->GetSSL().cert_status);
+      entry->GetURL(), !!entry->GetSSL().certificate,
+      entry->GetSSL().cert_status);
 }
 
 }  // namespace content

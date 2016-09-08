@@ -16,7 +16,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -59,8 +58,7 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
   presenter_.reset(new WebsiteSettings(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-      nav_entry->GetURL(), security_model_client->GetSecurityInfo(),
-      content::CertStore::GetInstance()));
+      nav_entry->GetURL(), security_model_client->GetSecurityInfo()));
 }
 
 WebsiteSettingsPopupAndroid::~WebsiteSettingsPopupAndroid() {}

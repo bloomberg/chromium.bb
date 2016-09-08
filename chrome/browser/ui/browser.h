@@ -478,7 +478,7 @@ class Browser : public TabStripModelObserver,
       content::SecurityStyleExplanations* security_style_explanations) override;
   void ShowCertificateViewerInDevTools(
       content::WebContents* web_contents,
-      int cert_id) override;
+      scoped_refptr<net::X509Certificate> certificate) override;
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;

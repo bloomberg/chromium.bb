@@ -37,7 +37,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -295,12 +294,6 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
       child_id, path);
 }
 
-int GetCertID(CertStore* cert_store, net::URLRequest* request, int child_id) {
-  if (request->ssl_info().cert.get())
-    return cert_store->StoreCert(request->ssl_info().cert.get(), child_id);
-  return 0;
-}
-
 bool IsValidatedSCT(
     const net::SignedCertificateTimestampAndStatus& sct_status) {
   return sct_status.status == net::ct::SCT_STATUS_OK;
@@ -420,31 +413,6 @@ void NotifyForEachFrameFromUI(
                                      base::Passed(std::move(routing_ids))));
 }
 
-void UpdateSSLStatus(int render_process_id,
-                     int render_frame_host_id,
-                     const GURL& url,
-                     CertStore* cert_store) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (!render_frame_host)
-    return;
-
-  NavigationHandleImpl* navigation_handle =
-      render_frame_host->navigation_handle();
-  if (!navigation_handle || navigation_handle->GetURL() != url)
-    return;
-
-  scoped_refptr<net::X509Certificate> cert;
-  if (!cert_store->RetrieveCert(
-          navigation_handle->ssl_status().cert_id, &cert)) {
-    NOTREACHED() << "Must have set an SSL certificate already.";
-    return;
-  }
-
-  int new_cert_id = cert_store->StoreCert(cert.get(), render_process_id);
-  navigation_handle->UpdateSSLCertId(new_cert_id);
-}
-
 }  // namespace
 
 ResourceDispatcherHostImpl::HeaderInterceptorInfo::HeaderInterceptorInfo() {}
@@ -473,7 +441,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       delegate_(nullptr),
       loader_delegate_(nullptr),
       allow_cross_origin_auth_prompt_(false),
-      cert_store_for_testing_(nullptr),
       create_download_handler_intercept_(download_handler_intercept) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_resource_dispatcher_host);
@@ -815,7 +782,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
   // Notify the observers on the UI thread.
   std::unique_ptr<ResourceRedirectDetails> detail(new ResourceRedirectDetails(
       loader->request(),
-      GetCertID(GetCertStore(), loader->request(), info->GetChildID()),
+      !!request->ssl_info().cert,
       new_url));
   loader_delegate_->DidGetRedirectForResourceRequest(
       render_process_id, render_frame_host, std::move(detail));
@@ -851,7 +818,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 
   // Notify the observers on the UI thread.
   std::unique_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
-      request, GetCertID(GetCertStore(), request, info->GetChildID())));
+      request, !!request->ssl_info().cert));
   loader_delegate_->DidGetResourceResponseStart(
       render_process_id, render_frame_host, std::move(detail));
 }
@@ -1156,14 +1123,6 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   info->UpdateForTransfer(child_id, route_id, request_data.render_frame_id,
                           request_data.origin_pid, request_id,
                           filter_->GetWeakPtr());
-
-  // If a certificate is stored with the ResourceResponse, it has to be
-  // updated to be associated with the new process.
-  if (loader->transferring_response()) {
-    UpdateResponseCertificateForTransfer(loader->transferring_response(),
-                                         loader->request(),
-                                         info);
-  }
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
@@ -1667,7 +1626,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // thread is handled by the NavigationURLloader.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
     throttles.push_back(new NavigationResourceThrottle(
-        request, delegate_, GetCertStore(), fetch_request_context_type));
+        request, delegate_, fetch_request_context_type));
   }
 
   if (delegate_) {
@@ -2229,8 +2188,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Attach AppCacheInterceptor.
 
   std::unique_ptr<ResourceHandler> handler(
-      new NavigationResourceHandler(new_request.get(), loader, delegate(),
-                                    GetCertStore()));
+      new NavigationResourceHandler(new_request.get(), loader, delegate()));
 
   // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
   // dependency on child_id/route_id. Those are used by the ResourceScheduler;
@@ -2329,7 +2287,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   }
 
   std::unique_ptr<ResourceLoader> loader(new ResourceLoader(
-      std::move(request), std::move(handler), GetCertStore(), this));
+      std::move(request), std::move(handler), this));
 
   GlobalFrameRoutingId id(info->GetChildID(), info->GetRenderFrameID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
@@ -2632,30 +2590,6 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
     load_flags |= net::LOAD_IGNORE_LIMITS;
 
   return load_flags;
-}
-
-void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
-    ResourceResponse* response,
-    net::URLRequest* request,
-    ResourceRequestInfoImpl* info) {
-  const net::SSLInfo& ssl_info = request->ssl_info();
-  if (info->GetResourceType() != RESOURCE_TYPE_MAIN_FRAME || !ssl_info.cert)
-    return;
-  int render_process_id, render_frame_id;
-  if (info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(UpdateSSLStatus,
-                                       render_process_id,
-                                       render_frame_id,
-                                       request->url(),
-                                       GetCertStore()));
-  }
-}
-
-CertStore* ResourceDispatcherHostImpl::GetCertStore() {
-  return cert_store_for_testing_ ? cert_store_for_testing_
-                                 : CertStore::GetInstance();
 }
 
 bool ResourceDispatcherHostImpl::ShouldServiceRequest(

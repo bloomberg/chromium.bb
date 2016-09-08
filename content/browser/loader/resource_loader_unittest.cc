@@ -22,7 +22,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_paths.h"
@@ -611,7 +610,7 @@ class ResourceLoaderTest : public testing::Test,
     loader_.reset(new ResourceLoader(
         std::move(request),
         WrapResourceHandler(std::move(resource_handler), raw_ptr_to_request_),
-        CertStore::GetInstance(), this));
+        this));
   }
 
   void SetUp() override {

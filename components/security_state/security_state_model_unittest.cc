@@ -65,7 +65,6 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
     state->connection_info_initialized = true;
     state->url = GURL(kUrl);
     state->initial_security_level = initial_security_level_;
-    state->cert_id = 1;
     state->cert_status = cert_status_;
     state->connection_status = connection_status_;
     state->security_bits = 256;

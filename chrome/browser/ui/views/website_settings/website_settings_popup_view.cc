@@ -36,7 +36,6 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -440,7 +439,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       site_data_content_(nullptr),
       cookie_dialog_link_(nullptr),
       permissions_content_(nullptr),
-      cert_id_(0),
       site_settings_link_(nullptr),
       weak_factory_(this) {
   set_parent_window(parent_window);
@@ -484,7 +482,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 
   presenter_.reset(new WebsiteSettings(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, security_info, content::CertStore::GetInstance()));
+      web_contents, url, security_info));
 }
 
 void WebsiteSettingsPopupView::RenderFrameDeleted(
@@ -714,15 +712,14 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   base::string16 security_summary_text = identity_info.GetSecuritySummary();
   header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
 
-  if (identity_info.cert_id) {
-    cert_id_ = identity_info.cert_id;
+  if (identity_info.certificate) {
+    certificate_ = identity_info.certificate;
 
     if (identity_info.show_ssl_decision_revoke_button)
       header_->AddResetDecisionsButton();
   }
 
-  bool include_details_link =
-      !is_devtools_disabled_ || identity_info.cert_id != 0;
+  bool include_details_link = !is_devtools_disabled_ || certificate_;
 
   header_->SetSecuritySummary(security_summary_text, include_details_link);
 
@@ -825,12 +822,12 @@ void WebsiteSettingsPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
       WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
 
   if (is_devtools_disabled_) {
-    DCHECK_NE(cert_id_, 0);
+    DCHECK(certificate_);
     gfx::NativeWindow parent =
         anchor_widget() ? anchor_widget()->GetNativeWindow() : nullptr;
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-    ShowCertificateViewerByID(web_contents(), parent, cert_id_);
+    ShowCertificateViewer(web_contents(), parent, certificate_.get());
   } else {
     DevToolsWindow::OpenDevToolsWindow(
         web_contents(), DevToolsToggleAction::ShowSecurityPanel());

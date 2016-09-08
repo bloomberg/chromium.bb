@@ -167,7 +167,7 @@ void SSLManager::DidStartResourceResponse(
   // Notify our policy that we started a resource request.  Ideally, the
   // policy should have the ability to cancel the request, but we can't do
   // that yet.
-  policy()->OnRequestStarted(details.url, details.ssl_cert_id,
+  policy()->OnRequestStarted(details.url, details.has_certificate,
                              details.ssl_cert_status);
 }
 

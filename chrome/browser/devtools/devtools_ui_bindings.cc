@@ -41,7 +41,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/zoom/page_zoom.h"
-#include "content/public/browser/cert_store.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -717,17 +716,11 @@ void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
     return;
   }
 
-  // TODO(jam): temporarily add the certificate to the cert store to get an ID
-  // so that we don't have to change the WCD method signature
-  // (will be done in followups).
   if (!agent_host_ || !agent_host_->GetWebContents())
     return;
   content::WebContents* inspected_wc = agent_host_->GetWebContents();
-  content::RenderProcessHost* rph = inspected_wc->GetRenderProcessHost();
-  int cert_id = content::CertStore::GetInstance()->StoreCert(
-      cert.get(), rph->GetID());
   web_contents_->GetDelegate()->ShowCertificateViewerInDevTools(
-      inspected_wc, cert_id);
+      inspected_wc, cert.get());
 }
 
 void DevToolsUIBindings::ZoomIn() {

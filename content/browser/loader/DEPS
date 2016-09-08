@@ -130,7 +130,6 @@ specific_include_rules = {
   ],
   "resource_dispatcher_host_impl\.(cc|h)": [
     "-content",
-    "+content/browser/cert_store_impl.h",
     "+content/browser/loader/async_resource_handler.h",
     "+content/browser/loader/async_revalidation_manager.h",
     "+content/browser/loader/global_routing_id.h",
@@ -220,7 +219,6 @@ specific_include_rules = {
     "+content/browser/ssl/ssl_client_auth_handler.h",
     "+content/browser/ssl/ssl_error_handler.h",
     "+content/common/content_export.h",
-    "+content/public/browser/cert_store.h",
     "+content/public/browser/resource_controller.h",
     "+content/public/browser/resource_dispatcher_host_login_delegate.h",
     "+content/public/common/resource_response.h",
