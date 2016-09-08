@@ -27,8 +27,8 @@
   <interface name="zwp_input_method_context_v1" version="1">
     <description summary="input method context">
       Corresponds to a text input on the input method side. An input method context
-      is created on text input activation on the input method side. It allows to
-      receive information about the text input from the application via events.
+      is created on text input activation on the input method side. It allows
+      receiving information about the text input from the application via events.
       Input method contexts do not keep state after deactivation and should be
       destroyed after deactivation is handled.
 
@@ -122,10 +122,10 @@
     <request name="cursor_position">
       <description summary="set cursor to a new position">
 	Sets the cursor and anchor to a new position. Index is the new cursor
-	position in bytes (when >= 0 relative to the end of inserted text,
-	otherwise relative to the beginning of the inserted text). Anchor is
-	the new anchor position in bytes (when >= 0 relative to the end of the
-	inserted text, otherwise relative to the beginning of the inserted
+	position in bytes (when >= 0 this is relative to the end of the inserted text,
+	otherwise it is relative to the beginning of the inserted text). Anchor is
+	the new anchor position in bytes (when >= 0 this is relative to the end of the
+	inserted text, otherwise it is relative to the beginning of the inserted
 	text). When there should be no selected text, anchor should be the same
 	as index.
 
@@ -145,7 +145,7 @@
 	Notify when a key event was sent. Key events should not be used for
 	normal text input operations, which should be done with commit_string,
 	delete_surrounding_text, etc. The key event follows the wl_keyboard key
-	event convention. Sym is an XKB keysym, state a wl_keyboard key_state.
+	event convention. Sym is an XKB keysym, state is a wl_keyboard key_state.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="time" type="uint"/>
@@ -212,7 +212,7 @@
 	position in bytes within the surrounding text relative to the beginning
 	of the text. Anchor is the position in bytes of the selection anchor
 	within the surrounding text relative to the beginning of the text. If
-	there is no selected text anchor is the same as cursor.
+	there is no selected text then anchor is the same as cursor.
       </description>
       <arg name="text" type="string"/>
       <arg name="cursor" type="uint"/>
