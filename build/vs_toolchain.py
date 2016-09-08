@@ -305,12 +305,8 @@ def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
   if GetVisualStudioVersion() == '2015':
-    if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_PRERELEASE', '0'))):
-      # Update 3 final with patches.
-      return ['d5dc33b15d1b2c086f2f6632e2fd15882f80dbd3']
-    else:
-      # Update 2.
-      return ['95ddda401ec5678f15eeed01d2bee08fcbc5ee97']
+    # Update 3 final with patches with 10.0.10586.0 SDK.
+    return ['d5dc33b15d1b2c086f2f6632e2fd15882f80dbd3']
   else:
     return ['03a4e939cd325d6bc5216af41b92d02dda1366a6']
 
