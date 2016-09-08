@@ -39,9 +39,18 @@ void BudgetServiceImpl::GetCost(blink::mojom::BudgetOperationType type,
 
 void BudgetServiceImpl::GetBudget(const url::Origin& origin,
                                   const GetBudgetCallback& callback) {
-  // TODO(harkness) Call the BudgetManager once it supports detailed GetBudget
-  // calls.
-  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, 0);
+  // The RenderProcessHost should still be alive as long as any connections are
+  // alive, and if the BudgetService mojo connection is down, the
+  // BudgetServiceImpl should have been destroyed.
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  DCHECK(host);
+
+  // Query the BudgetManager for the budget.
+  content::BrowserContext* context = host->GetBrowserContext();
+  // TODO(harkness): Convert BudgetManager to use url::Origin.
+  const GURL gurl(origin.Serialize());
+  BudgetManagerFactory::GetForProfile(context)->GetBudget(gurl, callback);
 }
 
 void BudgetServiceImpl::Reserve(const url::Origin& origin,

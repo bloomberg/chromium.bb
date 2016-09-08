@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace base {
-class Clock;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -39,21 +35,14 @@ class BudgetManager : public KeyedService {
   // Query for the base cost for any background processing.
   static double GetCost(blink::mojom::BudgetOperationType type);
 
-  using GetBudgetCallback = base::Callback<void(double budget)>;
+  using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
   using ReserveCallback = base::Callback<void(bool success)>;
   using ConsumeCallback = base::Callback<void(bool success)>;
 
   // Get the budget associated with the origin. This is passed to the
-  // callback. Budget will be a value between 0.0 and
-  // SiteEngagementScore::kMaxPoints.
+  // callback. Budget will be a sequence of points describing the time and
+  // the budget at that time.
   void GetBudget(const GURL& origin, const GetBudgetCallback& callback);
-
-  // Store the budget associated with the origin. Budget should be a value
-  // between 0.0 and SiteEngagementScore::kMaxPoints. closure will be called
-  // when the store completes.
-  void StoreBudget(const GURL& origin,
-                   double budget,
-                   const base::Closure& closure);
 
   // Spend enough budget to cover the cost of the desired action and create
   // a reservation for that action. If this returns true to the callback, then
@@ -77,12 +66,6 @@ class BudgetManager : public KeyedService {
                   blink::mojom::BudgetOperationType type,
                   const ReserveCallback& callback,
                   bool success);
-
-  // Used to allow tests to fast forward/reverse time.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
-
-  // The clock used to vend times.
-  std::unique_ptr<base::Clock> clock_;
 
   Profile* profile_;
   BudgetDatabase db_;

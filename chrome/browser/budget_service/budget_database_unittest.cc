@@ -4,7 +4,10 @@
 
 #include "chrome/browser/budget_service/budget_database.h"
 
+#include <vector>
+
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/budget_service/budget.pb.h"
@@ -14,11 +17,12 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-const double kDefaultExpirationInHours = 72;
+const double kDefaultExpirationInHours = 240;
 const double kDefaultEngagement = 30.0;
 
 const char kTestOrigin[] = "https://example.com";
@@ -50,11 +54,10 @@ class BudgetDatabaseTest : public ::testing::Test {
 
   void GetBudgetDetailsComplete(
       base::Closure run_loop_closure,
-      bool success,
-      const BudgetDatabase::BudgetPrediction& prediction) {
-    success_ = success;
-    // Convert BudgetPrediction to a vector for random access to check values.
-    prediction_.assign(prediction.begin(), prediction.end());
+      blink::mojom::BudgetServiceErrorType error,
+      mojo::Array<blink::mojom::BudgetStatePtr> predictions) {
+    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE);
+    prediction_.Swap(&predictions);
     run_loop_closure.Run();
   }
 
@@ -83,15 +86,25 @@ class BudgetDatabaseTest : public ::testing::Test {
   }
 
  protected:
+  base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   bool success_;
-  std::vector<BudgetDatabase::BudgetStatus> prediction_;
+  mojo::Array<blink::mojom::BudgetStatePtr> prediction_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<budget_service::Budget> budget_;
   TestingProfile profile_;
   BudgetDatabase db_;
+  base::HistogramTester histogram_tester_;
 };
+
+TEST_F(BudgetDatabaseTest, GetBudgetNoBudgetOrSES) {
+  const GURL origin(kTestOrigin);
+  GetBudgetDetails();
+  ASSERT_TRUE(success_);
+  ASSERT_EQ(2U, prediction_.size());
+  EXPECT_EQ(0, prediction_[0]->budget_at);
+}
 
 TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   const GURL origin(kTestOrigin);
@@ -106,33 +119,36 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   GetBudgetDetails();
   ASSERT_TRUE(success_);
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_EQ(kDefaultEngagement, prediction_[0].budget_at);
-  ASSERT_EQ(0, prediction_[1].budget_at);
-  ASSERT_EQ(expiration_time, prediction_[1].time);
+  ASSERT_EQ(kDefaultEngagement, prediction_[0]->budget_at);
+  ASSERT_EQ(0, prediction_[1]->budget_at);
+  ASSERT_EQ(expiration_time.ToDoubleT(), prediction_[1]->time);
 
   // Advance time 1 day and add more engagement budget.
   clock->Advance(base::TimeDelta::FromDays(1));
   GetBudgetDetails();
 
-  // The budget should now have 1 full share plus 1/3 share.
+  // The budget should now have 1 full share plus 1 daily budget.
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 4 / 3, prediction_[0].budget_at);
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 1 / 3, prediction_[1].budget_at);
-  ASSERT_EQ(expiration_time, prediction_[1].time);
-  ASSERT_EQ(0, prediction_[2].budget_at);
-  ASSERT_EQ(expiration_time + base::TimeDelta::FromDays(1),
-            prediction_[2].time);
+  double daily_budget = kDefaultEngagement * 24 / kDefaultExpirationInHours;
+  ASSERT_DOUBLE_EQ(kDefaultEngagement + daily_budget,
+                   prediction_[0]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget, prediction_[1]->budget_at);
+  ASSERT_EQ(expiration_time.ToDoubleT(), prediction_[1]->time);
+  ASSERT_EQ(0, prediction_[2]->budget_at);
+  ASSERT_EQ((expiration_time + base::TimeDelta::FromDays(1)).ToDoubleT(),
+            prediction_[2]->time);
 
   // Advance time by 59 minutes and check that no engagement budget is added
   // since budget should only be added for > 1 hour increments.
   clock->Advance(base::TimeDelta::FromMinutes(59));
+  GetBudgetDetails();
 
   // The budget should be the same as before the attempted add.
-  GetBudgetDetails();
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 4 / 3, prediction_[0].budget_at);
+  ASSERT_DOUBLE_EQ(kDefaultEngagement + daily_budget,
+                   prediction_[0]->budget_at);
 }
 
 TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
@@ -156,29 +172,143 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
   // There should still be three chunks of budget of size kDefaultEngagement-1,
   // kDefaultEngagement, and kDefaultEngagement.
   ASSERT_EQ(4U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 5 / 3 - 1, prediction_[0].budget_at);
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 2 / 3, prediction_[1].budget_at);
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 1 / 3, prediction_[2].budget_at);
-  ASSERT_DOUBLE_EQ(0, prediction_[3].budget_at);
+  double daily_budget = kDefaultEngagement * 24 / kDefaultExpirationInHours;
+  ASSERT_DOUBLE_EQ(kDefaultEngagement + 2 * daily_budget - 1,
+                   prediction_[0]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget * 2, prediction_[1]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget, prediction_[2]->budget_at);
+  ASSERT_DOUBLE_EQ(0, prediction_[3]->budget_at);
 
   // Now spend enough that it will use up the rest of the first chunk and all of
   // the second chunk, but not all of the third chunk.
-  ASSERT_TRUE(SpendBudget(origin, kDefaultEngagement * 4 / 3));
+  ASSERT_TRUE(SpendBudget(origin, kDefaultEngagement + daily_budget));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 1 / 3 - 1,
-                   prediction_.begin()->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
 
   // Validate that the code returns false if SpendBudget tries to spend more
   // budget than the origin has.
   EXPECT_FALSE(SpendBudget(origin, kDefaultEngagement));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement * 1 / 3 - 1,
-                   prediction_.begin()->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
 
   // Advance time until the last remaining chunk should be expired, then query
   // for the full engagement worth of budget.
-  clock->Advance(base::TimeDelta::FromDays(6));
+  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours + 1));
   EXPECT_TRUE(SpendBudget(origin, kDefaultEngagement));
+}
+
+// There are times when a device's clock could move backwards in time, either
+// due to hardware issues or user actions. Test here to make sure that even if
+// time goes backwards and then forwards again, the origin isn't granted extra
+// budget.
+TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
+  const GURL origin(kTestOrigin);
+  base::SimpleTestClock* clock = SetClockForTesting();
+
+  // Set the default site engagement.
+  SetSiteEngagementScore(origin, kDefaultEngagement);
+
+  // Initialize the budget with two chunks.
+  GetBudgetDetails();
+  clock->Advance(base::TimeDelta::FromDays(1));
+  GetBudgetDetails();
+
+  // Save off the budget total.
+  ASSERT_EQ(3U, prediction_.size());
+  double budget = prediction_[0]->budget_at;
+
+  // Move the clock backwards in time to before the budget awards.
+  clock->SetNow(clock->Now() - base::TimeDelta::FromDays(5));
+
+  // Make sure the budget is the same.
+  GetBudgetDetails();
+  ASSERT_EQ(3U, prediction_.size());
+  ASSERT_EQ(budget, prediction_[0]->budget_at);
+
+  // Now move the clock back to the original time and check that no extra budget
+  // is awarded.
+  clock->SetNow(clock->Now() + base::TimeDelta::FromDays(5));
+  GetBudgetDetails();
+  ASSERT_EQ(3U, prediction_.size());
+  ASSERT_EQ(budget, prediction_[0]->budget_at);
+}
+
+TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
+  const GURL origin(kTestOrigin);
+  base::SimpleTestClock* clock = SetClockForTesting();
+
+  // Set the default site engagement.
+  SetSiteEngagementScore(origin, kDefaultEngagement);
+
+  // Initialize the budget with some interesting chunks: 30 budget, 3 budget,
+  // 0 budget, and then after the first two expire, another 30 budget.
+  GetBudgetDetails();
+  clock->Advance(base::TimeDelta::FromDays(2));
+  GetBudgetDetails();
+  clock->Advance(base::TimeDelta::FromMinutes(59));
+  GetBudgetDetails();
+  clock->Advance(base::TimeDelta::FromDays(11));
+  GetBudgetDetails();
+
+  // The BackgroundBudget UMA is recorded when budget is added to the origin.
+  // This can happen a maximum of once per hour so there should be two entries.
+  std::vector<base::Bucket> buckets =
+      GetHistogramTester()->GetAllSamples("PushMessaging.BackgroundBudget");
+  ASSERT_EQ(2U, buckets.size());
+  // First bucket is for 30 budget, which should have 2 entries.
+  EXPECT_EQ(30, buckets[0].min);
+  EXPECT_EQ(2, buckets[0].count);
+  // Second bucket is for 36 budget, which should have 1 entry.
+  EXPECT_EQ(36, buckets[1].min);
+  EXPECT_EQ(1, buckets[1].count);
+}
+
+TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
+  const GURL origin(kTestOrigin);
+  base::SimpleTestClock* clock = SetClockForTesting();
+
+  // Set the engagement to twice the cost of an action.
+  double cost = 2;
+  double engagement = cost * 2;
+  SetSiteEngagementScore(origin, engagement);
+
+  // Get the budget, which will award a chunk of budget equal to engagement.
+  GetBudgetDetails();
+
+  // Now spend the budget to trigger the UMA recording the SES score. The first
+  // call shouldn't write any UMA. The second should write a lowSES entry, and
+  // the third should write a noSES entry.
+  ASSERT_TRUE(SpendBudget(origin, cost));
+  ASSERT_TRUE(SpendBudget(origin, cost));
+  ASSERT_FALSE(SpendBudget(origin, cost));
+
+  // Advance the clock by 12 days (to guarantee a full new engagement grant)
+  // then change the SES score to get a different UMA entry, then spend the
+  // budget again.
+  clock->Advance(base::TimeDelta::FromDays(12));
+  GetBudgetDetails();
+  SetSiteEngagementScore(origin, engagement * 2);
+  ASSERT_TRUE(SpendBudget(origin, cost));
+  ASSERT_TRUE(SpendBudget(origin, cost));
+  ASSERT_FALSE(SpendBudget(origin, cost));
+
+  // Now check the UMA. Both UMA should have 2 buckets with 1 entry each.
+  std::vector<base::Bucket> no_budget_buckets =
+      GetHistogramTester()->GetAllSamples("PushMessaging.SESForNoBudgetOrigin");
+  ASSERT_EQ(2U, no_budget_buckets.size());
+  EXPECT_EQ(engagement, no_budget_buckets[0].min);
+  EXPECT_EQ(1, no_budget_buckets[0].count);
+  EXPECT_EQ(engagement * 2, no_budget_buckets[1].min);
+  EXPECT_EQ(1, no_budget_buckets[1].count);
+
+  std::vector<base::Bucket> low_budget_buckets =
+      GetHistogramTester()->GetAllSamples(
+          "PushMessaging.SESForLowBudgetOrigin");
+  ASSERT_EQ(2U, low_budget_buckets.size());
+  EXPECT_EQ(engagement, low_budget_buckets[0].min);
+  EXPECT_EQ(1, low_budget_buckets[0].count);
+  EXPECT_EQ(engagement * 2, low_budget_buckets[1].min);
+  EXPECT_EQ(1, low_budget_buckets[1].count);
 }

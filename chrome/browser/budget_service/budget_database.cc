@@ -4,7 +4,7 @@
 
 #include "chrome/browser/budget_service/budget_database.h"
 
-#include "base/containers/adapters.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/budget_service/budget.pb.h"
@@ -25,8 +25,8 @@ namespace {
 const char kDatabaseUMAName[] = "BudgetManager";
 
 // The default amount of time during which a budget will be valid.
-// This is 3 days = 72 hours.
-constexpr double kBudgetDurationInHours = 72;
+// This is 10 days = 240 hours.
+constexpr double kBudgetDurationInHours = 240;
 
 }  // namespace
 
@@ -55,9 +55,8 @@ BudgetDatabase::BudgetDatabase(
 
 BudgetDatabase::~BudgetDatabase() {}
 
-void BudgetDatabase::GetBudgetDetails(
-    const GURL& origin,
-    const GetBudgetDetailsCallback& callback) {
+void BudgetDatabase::GetBudgetDetails(const GURL& origin,
+                                      const GetBudgetCallback& callback) {
   DCHECK_EQ(origin.GetOrigin(), origin);
 
   SyncCache(origin,
@@ -83,6 +82,18 @@ void BudgetDatabase::OnDatabaseInit(bool success) {
 
 bool BudgetDatabase::IsCached(const GURL& origin) const {
   return budget_map_.find(origin.spec()) != budget_map_.end();
+}
+
+double BudgetDatabase::GetBudget(const GURL& origin) const {
+  double total = 0;
+  auto iter = budget_map_.find(origin.spec());
+  if (iter == budget_map_.end())
+    return total;
+
+  const BudgetInfo& info = iter->second;
+  for (const BudgetChunk& chunk : info.chunks)
+    total += chunk.amount;
+  return total;
 }
 
 void BudgetDatabase::AddToCache(
@@ -117,36 +128,46 @@ void BudgetDatabase::AddToCache(
   callback.Run(success);
 }
 
-void BudgetDatabase::GetBudgetAfterSync(
-    const GURL& origin,
-    const GetBudgetDetailsCallback& callback,
-    bool success) {
+void BudgetDatabase::GetBudgetAfterSync(const GURL& origin,
+                                        const GetBudgetCallback& callback,
+                                        bool success) {
+  mojo::Array<blink::mojom::BudgetStatePtr> predictions;
+
   // If the database wasn't able to read the information, return the
-  // failure and an empty BudgetPrediction.
+  // failure and an empty predictions array.
   if (!success) {
-    callback.Run(success, BudgetPrediction());
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 std::move(predictions));
     return;
   }
 
   // Now, build up the BudgetExpection. This is different from the format
   // in which the cache stores the data. The cache stores chunks of budget and
-  // when that budget expires. The BudgetPrediction describes a set of times
+  // when that budget expires. The mojo array describes a set of times
   // and the budget at those times.
-  BudgetPrediction prediction;
-  double total = 0;
-
-  // Starting with the chunks that expire the farthest in the future, build up
-  // the budget predictions for those future times.
-  const BudgetChunks& chunks = budget_map_[origin.spec()].chunks;
-  for (const auto& chunk : base::Reversed(chunks)) {
-    prediction.emplace_front(total, chunk.expiration);
-    total += chunk.amount;
-  }
+  double total = GetBudget(origin);
 
   // Always add one entry at the front of the list for the total budget now.
-  prediction.emplace_front(total, clock_->Now());
+  blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
+  prediction->budget_at = total;
+  prediction->time = clock_->Now().ToDoubleT();
+  predictions.push_back(std::move(prediction));
 
-  callback.Run(true /* success */, prediction);
+  // Starting with the soonest expiring chunks, add entries for the
+  // expiration times going forward.
+  const BudgetChunks& chunks = budget_map_[origin.spec()].chunks;
+  for (const auto& chunk : chunks) {
+    blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
+    total -= chunk.amount;
+    prediction->budget_at = total;
+    prediction->time = chunk.expiration.ToDoubleT();
+    predictions.push_back(std::move(prediction));
+  }
+
+  DCHECK_EQ(0, total);
+
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE,
+               std::move(predictions));
 }
 
 void BudgetDatabase::SpendBudgetAfterSync(const GURL& origin,
@@ -158,6 +179,10 @@ void BudgetDatabase::SpendBudgetAfterSync(const GURL& origin,
     return;
   }
 
+  // Get the current SES score, to generate UMA.
+  SiteEngagementService* service = SiteEngagementService::Get(profile_);
+  double score = service->GetScore(origin);
+
   // Walk the list of budget chunks to see if the origin has enough budget.
   double total = 0;
   BudgetInfo& info = budget_map_[origin.spec()];
@@ -165,8 +190,11 @@ void BudgetDatabase::SpendBudgetAfterSync(const GURL& origin,
     total += chunk.amount;
 
   if (total < amount) {
+    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", score);
     callback.Run(false /* success */);
     return;
+  } else if (total < amount * 2) {
+    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", score);
   }
 
   // Walk the chunks and remove enough budget to cover the needed amount.
@@ -252,11 +280,11 @@ void BudgetDatabase::SyncLoadedCache(const GURL& origin,
     return;
   }
 
-  // Get the SES score and add engagement budget for the site.
-  AddEngagementBudget(origin);
-
   // Now, cleanup any expired budget chunks for the origin.
   bool needs_write = CleanupExpiredBudget(origin);
+
+  // Get the SES score and add engagement budget for the site.
+  AddEngagementBudget(origin);
 
   if (needs_write)
     WriteCachedValuesToDatabase(origin, callback);
@@ -294,6 +322,11 @@ void BudgetDatabase::AddEngagementBudget(const GURL& origin) {
   base::Time expiration =
       clock_->Now() + base::TimeDelta::FromHours(kBudgetDurationInHours);
   budget_map_[origin.spec()].chunks.emplace_back(ratio * score, expiration);
+
+  // Any time we award engagement budget, which is done at most once an hour
+  // whenever any budget action is taken, record the budget.
+  double budget = GetBudget(origin);
+  UMA_HISTOGRAM_COUNTS_100("PushMessaging.BackgroundBudget", budget);
 }
 
 // Cleans up budget in the cache. Relies on the caller eventually writing the

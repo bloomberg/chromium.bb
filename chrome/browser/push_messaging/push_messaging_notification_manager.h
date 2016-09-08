@@ -73,10 +73,10 @@ class PushMessagingNotificationManager {
                     content::WebContents* active_web_contents,
                     const GURL& origin);
 
-  void CheckForMissedNotification(const GURL& origin,
-                                  int64_t service_worker_registration_id,
-                                  const base::Closure& message_handled_closure,
-                                  const double budget);
+  void ProcessSilentPush(const GURL& origin,
+                         int64_t service_worker_registration_id,
+                         const base::Closure& message_handled_closure,
+                         bool silent_push_allowed);
 
   static void DidWriteNotificationDataIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
@@ -92,13 +92,6 @@ class PushMessagingNotificationManager {
       const base::Closure& message_handled_closure,
       bool success,
       int64_t persistent_notification_id);
-
-  void DidGetBudget(const GURL& origin,
-                    int64_t service_worker_registration_id,
-                    const base::Closure& message_handled_closure,
-                    bool notification_needed,
-                    bool notification_shown,
-                    double budget);
 
   // Weak. This manager is owned by a keyed service on this profile.
   Profile* profile_;

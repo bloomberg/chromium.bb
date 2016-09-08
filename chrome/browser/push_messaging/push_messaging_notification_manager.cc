@@ -187,44 +187,15 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     }
   }
 
-  // Get the budget for the origin.
-  BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
-  manager->GetBudget(
-      origin,
-      base::Bind(&PushMessagingNotificationManager::DidGetBudget,
-                 weak_factory_.GetWeakPtr(), origin,
-                 service_worker_registration_id, message_handled_closure,
-                 notification_needed, notification_shown));
-}
-
-void PushMessagingNotificationManager::DidGetBudget(
-    const GURL& origin,
-    int64_t service_worker_registration_id,
-    const base::Closure& message_handled_closure,
-    bool notification_needed,
-    bool notification_shown,
-    const double budget) {
-  // Record the budget available any time the budget is queried.
-  UMA_HISTOGRAM_COUNTS_100("PushMessaging.BackgroundBudget", budget);
-
-  // Get the site engagement score. Only used for UMA recording.
-  SiteEngagementService* ses_service = SiteEngagementService::Get(profile_);
-  double ses_score = ses_service->GetScore(origin);
-
-  // Generate histograms for the GetBudget calls which would return "no budget"
-  // or "low budget" if an API was available to app developers.
-  double cost =
-      BudgetManager::GetCost(blink::mojom::BudgetOperationType::SILENT_PUSH);
-  if (budget < cost)
-    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", ses_score);
-  else if (budget < 2.0 * cost)
-    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", ses_score);
-
   if (notification_needed && !notification_shown) {
-    // If the worker needed to show a notification and didn't, check the budget
-    // and take appropriate action.
-    CheckForMissedNotification(origin, service_worker_registration_id,
-                               message_handled_closure, budget);
+    // If the worker needed to show a notification and didn't, see if a silent
+    // push was allowed.
+    BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
+    manager->Consume(
+        origin, blink::mojom::BudgetOperationType::SILENT_PUSH,
+        base::Bind(&PushMessagingNotificationManager::ProcessSilentPush,
+                   weak_factory_.GetWeakPtr(), origin,
+                   service_worker_registration_id, message_handled_closure));
     return;
   }
 
@@ -275,25 +246,18 @@ bool PushMessagingNotificationManager::IsTabVisible(
   return visible_url.GetOrigin() == origin;
 }
 
-void PushMessagingNotificationManager::CheckForMissedNotification(
+void PushMessagingNotificationManager::ProcessSilentPush(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
-    const double budget) {
+    bool silent_push_allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If the service needed to show a notification but did not, update the
-  // budget.
-  double cost =
-      BudgetManager::GetCost(blink::mojom::BudgetOperationType::SILENT_PUSH);
-  if (budget >= cost) {
+  // If the origin was allowed to issue a silent push, just return.
+  if (silent_push_allowed) {
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
-
-    BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
-    // Update the stored budget.
-    manager->StoreBudget(origin, budget - cost, message_handled_closure);
-
+    message_handled_closure.Run();
     return;
   }
 

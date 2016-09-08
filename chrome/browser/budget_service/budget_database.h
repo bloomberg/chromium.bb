@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
+#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 
 namespace base {
 class Clock;
@@ -31,28 +32,11 @@ class Profile;
 // assigned to an origin. The class uses an underlying LevelDB.
 class BudgetDatabase {
  public:
-  // Data structure to hold information about the cumulative amount of budget
-  // at a particular point in time in the future. The budget described by a
-  // BudgetStatus represents the budget from zero or more BudgetChunk objects.
-  struct BudgetStatus {
-    BudgetStatus(double budget_at, base::Time time)
-        : budget_at(budget_at), time(time) {}
-    BudgetStatus(const BudgetStatus& other)
-        : budget_at(other.budget_at), time(other.time) {}
-
-    double budget_at;
-    base::Time time;
-  };
-
-  // Data structure for returing the budget decay prediction to the caller.
-  using BudgetPrediction = std::list<BudgetStatus>;
-
   // Callback for setting a budget value.
   using StoreBudgetCallback = base::Callback<void(bool success)>;
 
   // Callback for getting a list of all budget chunks.
-  using GetBudgetDetailsCallback =
-      base::Callback<void(bool success, const BudgetPrediction& prediction)>;
+  using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
 
   // The database_dir specifies the location of the budget information on
   // disk. The task_runner is used by the ProtoDatabase to handle all blocking
@@ -64,8 +48,7 @@ class BudgetDatabase {
 
   // Get the full budget expectation for the origin. This will return a
   // sequence of time points and the expected budget at those times.
-  void GetBudgetDetails(const GURL& origin,
-                        const GetBudgetDetailsCallback& callback);
+  void GetBudgetDetails(const GURL& origin, const GetBudgetCallback& callback);
 
   // Spend a particular amount of budget for an origin. The callback takes
   // a boolean which indicates whether the origin had enough budget to spend.
@@ -117,13 +100,15 @@ class BudgetDatabase {
 
   bool IsCached(const GURL& origin) const;
 
+  double GetBudget(const GURL& origin) const;
+
   void AddToCache(const GURL& origin,
                   const AddToCacheCallback& callback,
                   bool success,
                   std::unique_ptr<budget_service::Budget> budget);
 
   void GetBudgetAfterSync(const GURL& origin,
-                          const GetBudgetDetailsCallback& callback,
+                          const GetBudgetCallback& callback,
                           bool success);
 
   void SpendBudgetAfterSync(const GURL& origin,

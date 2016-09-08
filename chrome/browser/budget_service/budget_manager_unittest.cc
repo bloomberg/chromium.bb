@@ -7,7 +7,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_clock.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -22,18 +21,12 @@
 namespace {
 
 const char kTestOrigin[] = "https://example.com";
-const double kTestBudget = 10.0;
 const double kTestSES = 48.0;
-const double kLowSES = 1.0;
-const double kMaxSES = 100.0;
-// Mirrors definition in BudgetManager, this is 10 days of seconds.
-const double kSecondsToAccumulate = 864000.0;
 
 }  // namespace
 
 class BudgetManagerTest : public testing::Test {
  public:
-  BudgetManagerTest() : budget_(0.0) {}
   ~BudgetManagerTest() override {}
 
   BudgetManager* GetManager() {
@@ -46,35 +39,6 @@ class BudgetManagerTest : public testing::Test {
   }
 
   Profile* profile() { return &profile_; }
-
-  base::SimpleTestClock* SetClockForTesting() {
-    base::SimpleTestClock* clock = new base::SimpleTestClock();
-    BudgetManagerFactory::GetForProfile(&profile_)->SetClockForTesting(
-        base::WrapUnique(clock));
-    return clock;
-  }
-
-  double GetBudget() {
-    const GURL origin(kTestOrigin);
-    base::RunLoop run_loop;
-    GetManager()->GetBudget(
-        origin, base::Bind(&BudgetManagerTest::GotBudget,
-                           base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    return budget_;
-  }
-
-  void GotBudget(base::Closure run_loop_closure, double budget) {
-    budget_ = budget;
-    run_loop_closure.Run();
-  }
-
-  void StoreBudget(double budget) {
-    const GURL origin(kTestOrigin);
-    base::RunLoop run_loop;
-    GetManager()->StoreBudget(origin, budget, run_loop.QuitClosure());
-    run_loop.Run();
-  }
 
   void StatusCallback(base::Closure run_loop_closure, bool success) {
     success_ = success;
@@ -92,8 +56,18 @@ class BudgetManagerTest : public testing::Test {
     return success_;
   }
 
+  bool ConsumeBudget(blink::mojom::BudgetOperationType type) {
+    const GURL origin(kTestOrigin);
+    base::RunLoop run_loop;
+    GetManager()->Consume(
+        origin, type,
+        base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+    return success_;
+  }
+
   // Members for callbacks to set.
-  double budget_;
   bool success_;
 
  private:
@@ -101,171 +75,27 @@ class BudgetManagerTest : public testing::Test {
   TestingProfile profile_;
 };
 
-TEST_F(BudgetManagerTest, GetBudgetNoBudgetOrSES) {
-  EXPECT_DOUBLE_EQ(GetBudget(), 0.0);
-}
-
-TEST_F(BudgetManagerTest, GetBudgetNoBudgetSESExists) {
-  // Set a starting SES for the url but no stored budget info.
-  const GURL origin(kTestOrigin);
-  SetSiteEngagementScore(origin, kTestSES);
-
-  EXPECT_DOUBLE_EQ(GetBudget(), kTestSES);
-}
-
-TEST_F(BudgetManagerTest, GetBudgetNoElapsedTime) {
-  StoreBudget(kTestBudget);
-  EXPECT_DOUBLE_EQ(GetBudget(), kTestBudget);
-}
-
-TEST_F(BudgetManagerTest, GetBudgetElapsedTime) {
-  // Manually construct a BudgetManager with a clock that the test
-  // can control so that we can fast forward in time.
-  base::SimpleTestClock* clock = SetClockForTesting();
-  base::Time starting_time = clock->Now();
-
-  // Set initial SES and budget values.
-  const GURL origin(kTestOrigin);
-  SetSiteEngagementScore(origin, kTestSES);
-  StoreBudget(kTestBudget);
-
-  double budget = GetBudget();
-  EXPECT_DOUBLE_EQ(budget, kTestBudget);
-
-  // Query for the budget after 1 second has passed.
-  clock->SetNow(starting_time + base::TimeDelta::FromSeconds(1));
-  budget = GetBudget();
-  EXPECT_LT(budget, kTestBudget + kTestSES * 1.0 / kSecondsToAccumulate);
-  EXPECT_GT(budget, kTestBudget);
-
-  // Query for the budget after 1 hour has passed.
-  clock->SetNow(starting_time + base::TimeDelta::FromHours(1));
-  budget = GetBudget();
-  EXPECT_LT(budget, kTestBudget + kTestSES * 3600.0 / kSecondsToAccumulate);
-  EXPECT_GT(budget, kTestBudget);
-
-  // Query for the budget after 5 days have passed. The budget should be
-  // increasing, but not up the SES score.
-  clock->SetNow(starting_time + base::TimeDelta::FromDays(5));
-  budget = GetBudget();
-  EXPECT_GT(budget, kTestBudget);
-  EXPECT_LT(budget, kTestSES);
-  double moderate_ses_budget = budget;
-
-  // Query for the budget after 10 days have passed. By this point, the budget
-  // should converge to the SES score.
-  clock->SetNow(starting_time + base::TimeDelta::FromDays(10));
-  budget = GetBudget();
-  EXPECT_DOUBLE_EQ(budget, kTestSES);
-
-  // Now, change the SES score to the maximum amount and reinitialize budget.
-  SetSiteEngagementScore(origin, kMaxSES);
-  StoreBudget(kTestBudget);
-  starting_time = clock->Now();
-
-  // Query for the budget after 1 second has passed.
-  clock->SetNow(starting_time + base::TimeDelta::FromSeconds(1));
-  budget = GetBudget();
-  EXPECT_LT(budget, kTestBudget + kMaxSES * 1.0 / kSecondsToAccumulate);
-
-  // Query for the budget after 5 days have passed. Again, the budget should be
-  // approaching the SES, but not have reached it.
-  clock->SetNow(starting_time + base::TimeDelta::FromDays(5));
-  budget = GetBudget();
-  EXPECT_GT(budget, kTestBudget);
-  EXPECT_LT(budget, kMaxSES);
-
-  // The budget after 5 days with max SES should be greater than the budget
-  // after 5 days with moderate SES.
-  EXPECT_GT(budget, moderate_ses_budget);
-
-  // Now, change the SES score to a low amount and reinitialize budget.
-  SetSiteEngagementScore(origin, kLowSES);
-  StoreBudget(kTestBudget);
-  starting_time = clock->Now();
-
-  // Query for the budget after 5 days have passed. Again, the budget should be
-  // approaching the SES, this time decreasing, but not have reached it.
-  clock->SetNow(starting_time + base::TimeDelta::FromDays(5));
-  budget = GetBudget();
-  EXPECT_LT(budget, kTestBudget);
-  EXPECT_GT(budget, kLowSES);
-}
-
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
-  // Manually construct a BudgetManager with a clock that the test
-  // can control so that we can fast forward in time.
-  base::SimpleTestClock* clock = SetClockForTesting();
-
-  // Set initial SES and budget values.
+  // Set initial SES. The first time we try to spend budget, the
+  // engagement award will be granted which is 48.0.
   const GURL origin(kTestOrigin);
   SetSiteEngagementScore(origin, kTestSES);
-  StoreBudget(kTestBudget);
-  double budget = 0.0;
+  const blink::mojom::BudgetOperationType type =
+      blink::mojom::BudgetOperationType::SILENT_PUSH;
 
-  // Measure over 200 hours. In each hour a message is received, and for 1 in
-  // 10, budget is consumed.
-  for (int i = 0; i < 200; i++) {
-    // Query for the budget after 1 hour has passed.
-    clock->Advance(base::TimeDelta::FromHours(1));
-    budget = GetBudget();
+  // Spend for 24 silent push messages. This should consume all the original
+  // budget grant.
+  for (int i = 0; i < 24; i++)
+    ASSERT_TRUE(ReserveBudget(type));
 
-    if (i % 10 == 0) {
-      double cost = BudgetManager::GetCost(
-          blink::mojom::BudgetOperationType::SILENT_PUSH);
-      StoreBudget(budget - cost);
-    }
-  }
+  // Try to send one final silent push. The origin should be out of budget.
+  ASSERT_FALSE(ReserveBudget(type));
 
-  // With a SES of 48.0, the origin will get a budget of 2.4 per day, but the
-  // old budget will also decay. At the end, we expect the budget to be lower
-  // than the starting budget.
-  EXPECT_GT(budget, 0.0);
-  EXPECT_LT(budget, kTestBudget);
-}
+  // Try to consume for the 24 messages reserved.
+  for (int i = 0; i < 24; i++)
+    ASSERT_TRUE(ConsumeBudget(type));
 
-TEST_F(BudgetManagerTest, GetBudgetInvalidBudget) {
-  const GURL origin(kTestOrigin);
-
-  // Set a starting SES for the url.
-  SetSiteEngagementScore(origin, kTestSES);
-
-  // Set a badly formatted budget in the user preferences.
-  DictionaryPrefUpdate update(profile()->GetPrefs(),
-                              prefs::kBackgroundBudgetMap);
-  base::DictionaryValue* update_map = update.Get();
-  update_map->SetStringWithoutPathExpansion(origin.spec(), "20#2.0");
-
-  // Get the budget, expect that it will return SES.
-  EXPECT_DOUBLE_EQ(GetBudget(), kTestSES);
-}
-
-TEST_F(BudgetManagerTest, GetBudgetNegativeTime) {
-  // Manually construct a BudgetManager with a clock that the test
-  // can control so that we can fast forward in time.
-  base::SimpleTestClock* clock = SetClockForTesting();
-  base::Time starting_time = clock->Now();
-
-  // Set initial SES and budget values.
-  const GURL origin(kTestOrigin);
-  SetSiteEngagementScore(origin, kTestSES);
-  StoreBudget(kTestBudget);
-
-  // Move time forward an hour and get the budget.
-  clock->SetNow(starting_time + base::TimeDelta::FromHours(1));
-  double original_budget = GetBudget();
-
-  // Store the updated budget.
-  StoreBudget(original_budget);
-  EXPECT_NE(kTestBudget, original_budget);
-
-  // Now move time backwards a day and make sure that the current
-  // budget matches the budget of the most foward time.
-  clock->SetNow(starting_time - base::TimeDelta::FromDays(1));
-  EXPECT_NEAR(original_budget, GetBudget(), 0.01);
-}
-
-TEST_F(BudgetManagerTest, ReserveBudgetTest) {
-  // Reserve without any budget allocated should fail.
-  ASSERT_FALSE(ReserveBudget(blink::mojom::BudgetOperationType::SILENT_PUSH));
+  // The next consume should fail, since there is no reservation or budget
+  // available.
+  ASSERT_FALSE(ConsumeBudget(type));
 }
