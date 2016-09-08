@@ -233,8 +233,6 @@ bool AutoscrollController::panScrollInProgress() const
 }
 #endif
 
-// FIXME: This would get get better animation fidelity if it used the monotonicFrameBeginTime instead
-// of WTF::currentTime().
 void AutoscrollController::animate(double)
 {
     if (!m_autoscrollLayoutObject) {
@@ -244,7 +242,7 @@ void AutoscrollController::animate(double)
 
     switch (m_autoscrollType) {
     case AutoscrollForDragAndDrop:
-        if (WTF::currentTime() - m_dragAndDropAutoscrollStartTime > autoscrollDelay)
+        if (WTF::monotonicallyIncreasingTime() - m_dragAndDropAutoscrollStartTime > autoscrollDelay)
             m_autoscrollLayoutObject->autoscroll(m_dragAndDropAutoscrollReferencePosition);
         break;
     case AutoscrollForSelection:
