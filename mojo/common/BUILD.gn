@@ -12,14 +12,12 @@ group("common") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_common_custom_types
 mojom("common_custom_types") {
   sources = [
     "common_custom_types.mojom",
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_common_lib
 component("common_base") {
   output_name = "mojo_common_lib"
 
@@ -44,7 +42,6 @@ component("common_base") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_test_common_custom_types
 mojom("test_common_custom_types") {
   sources = [
     "test_common_custom_types.mojom",
@@ -55,7 +52,6 @@ mojom("test_common_custom_types") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_common_unittests
 test("mojo_common_unittests") {
   deps = [
     ":common",
