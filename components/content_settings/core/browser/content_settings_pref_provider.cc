@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
@@ -31,18 +30,6 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-
-namespace {
-
-// Obsolete prefs.
-// TODO(msramek): Remove the cleanup code after two releases (i.e. in M50).
-const char kObsoleteMetroSwitchToDesktopExceptions[] =
-    "profile.content_settings.exceptions.metro_switch_to_desktop";
-
-const char kObsoleteMediaStreamExceptions[] =
-    "profile.content_settings.exceptions.media_stream";
-
-}  // namespace
 
 namespace content_settings {
 
@@ -63,14 +50,6 @@ void PrefProvider::RegisterProfilePrefs(
     registry->RegisterDictionaryPref(info->pref_name(),
                                      info->GetPrefRegistrationFlags());
   }
-
-  // Obsolete prefs ----------------------------------------------------------
-
-  registry->RegisterDictionaryPref(
-      kObsoleteMetroSwitchToDesktopExceptions,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
-  registry->RegisterDictionaryPref(kObsoleteMediaStreamExceptions);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
@@ -109,8 +88,6 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
     UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
                          num_exceptions);
   }
-
-  DiscardObsoletePreferences();
 }
 
 PrefProvider::~PrefProvider() {
@@ -208,11 +185,6 @@ void PrefProvider::Notify(
                   secondary_pattern,
                   content_type,
                   resource_identifier);
-}
-
-void PrefProvider::DiscardObsoletePreferences() {
-  prefs_->ClearPref(kObsoleteMetroSwitchToDesktopExceptions);
-  prefs_->ClearPref(kObsoleteMediaStreamExceptions);
 }
 
 }  // namespace content_settings

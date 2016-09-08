@@ -80,16 +80,13 @@ class PrefProvider : public ObservableProvider {
               ContentSettingsType content_type,
               const std::string& resource_identifier);
 
-  // Clean up the obsolete preferences from the user's profile.
-  void DiscardObsoletePreferences();
-
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
 
   // Can be set for testing.
   std::unique_ptr<base::Clock> clock_;
 
-  bool is_incognito_;
+  const bool is_incognito_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

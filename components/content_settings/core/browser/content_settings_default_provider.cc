@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -28,15 +27,6 @@
 namespace content_settings {
 
 namespace {
-
-// Obsolete prefs to be removed from the pref file.
-// TODO(msramek): Remove this cleanup code after two releases (i.e. in M50).
-const char kObsoleteMetroSwitchToDesktopSetting[] =
-    "profile.default_content_setting_values.metro_switch_to_desktop";
-
-// TODO(msramek): Remove this cleanup code after two releases (i.e. in M51).
-const char kObsoleteMediaStreamSetting[] =
-    "profile.default_content_setting_values.media_stream";
 
 ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
@@ -91,17 +81,6 @@ void DefaultProvider::RegisterProfilePrefs(
                                   GetDefaultValue(info),
                                   info->GetPrefRegistrationFlags());
   }
-
-  // Obsolete prefs -------------------------------------------------------
-
-  // The removed content settings type METRO_SWITCH_TO_DESKTOP.
-  registry->RegisterIntegerPref(
-      kObsoleteMetroSwitchToDesktopSetting,
-      0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
-  // The removed content settings type MEDIASTREAM.
-  registry->RegisterIntegerPref(kObsoleteMediaStreamSetting, 0);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -109,9 +88,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       is_incognito_(incognito),
       updating_preferences_(false) {
   DCHECK(prefs_);
-
-  // Remove the obsolete preferences from the pref file.
-  DiscardObsoletePreferences();
 
   // Read global defaults.
   ReadDefaultSettings();
@@ -365,11 +341,6 @@ std::unique_ptr<base::Value> DefaultProvider::ReadFromPref(
     ContentSettingsType content_type) {
   int int_value = prefs_->GetInteger(GetPrefName(content_type));
   return ContentSettingToValue(IntToContentSetting(int_value));
-}
-
-void DefaultProvider::DiscardObsoletePreferences() {
-  prefs_->ClearPref(kObsoleteMetroSwitchToDesktopSetting);
-  prefs_->ClearPref(kObsoleteMediaStreamSetting);
 }
 
 }  // namespace content_settings
