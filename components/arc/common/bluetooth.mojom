@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 
 module arc.mojom;
+
+import "mojo/common/common_custom_types.mojom";
 
 [Extensible]
 enum BluetoothAdapterState {
@@ -231,6 +233,44 @@ struct BluetoothGattDBElement {
   uint8 properties;
 };
 
+// Bluetooth SDP types
+[Extensible]
+enum BluetoothSdpAttributeType {
+  NULLTYPE = 0,
+  UINT,
+  INT,
+  UUID,
+  STRING,
+  BOOL,
+  SEQUENCE,
+  URL,
+};
+
+/*
+ * A BluetoothSdpAttribute contains either a value or a sequence, where a
+ * sequence is an array of BluetoothSdpAttribute. A multi-layered attribute
+ * design is intended. Note BluetoothSdpAttribute supports up to depth 32 for
+ * the attribute with multi-layer sequences. The attributes within a sequence
+ * which has the depth beyond the maximum supported depth will be invalidated
+ * and ignored.
+ */
+struct BluetoothSdpAttribute {
+  BluetoothSdpAttributeType type;
+  uint32 type_size;
+  mojo.common.mojom.ListValue value;
+  array<BluetoothSdpAttribute> sequence;
+};
+
+struct BluetoothSdpRecord {
+  map<uint16, BluetoothSdpAttribute> attrs;
+};
+
+struct BluetoothCreateSdpRecordResult {
+  BluetoothStatus status;
+  uint32 service_handle;
+};
+
+// Next Method ID: 40
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
   DisableAdapter@1() => (BluetoothAdapterState state);
@@ -322,9 +362,17 @@ interface BluetoothHost {
                                    bool confirm,
                                    array<uint8> value)
       => (BluetoothGattStatus status);
+
+  // Bluetooth SDP functions
+  [MinVersion=5] GetSdpRecords@37(BluetoothAddress remote_addr,
+                                  BluetoothUUID target_uuid);
+  [MinVersion=5] CreateSdpRecord@38(BluetoothSdpRecord record)
+      => (BluetoothCreateSdpRecordResult result);
+  [MinVersion=5] RemoveSdpRecord@39(uint32 service_handle)
+      => (BluetoothStatus status);
 };
 
-// Next Method ID: 17
+// Next Method ID: 18
 interface BluetoothInstance {
   Init@0(BluetoothHost host_ptr);
 
@@ -376,4 +424,10 @@ interface BluetoothInstance {
                                      int32 offset,
                                      array<uint8> value)
       => (BluetoothGattStatus status);
+
+  // Bluetooth SDP function
+  [MinVersion=5] OnGetSdpRecords@17(BluetoothStatus status,
+                                    BluetoothAddress remove_addr,
+                                    BluetoothUUID target_uuid,
+                                    array<BluetoothSdpRecord> records);
 };

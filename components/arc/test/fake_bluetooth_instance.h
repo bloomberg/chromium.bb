@@ -120,6 +120,12 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
                         mojo::Array<uint8_t> value,
                         const RequestGattWriteCallback& callback) override;
 
+  void OnGetSdpRecords(
+      mojom::BluetoothStatus status,
+      mojom::BluetoothAddressPtr remove_addr,
+      mojom::BluetoothUUIDPtr target_uuid,
+      mojo::Array<mojom::BluetoothSdpRecordPtr> records) override;
+
   const std::vector<mojo::Array<mojom::BluetoothPropertyPtr>>&
   device_found_data() const {
     return device_found_data_;

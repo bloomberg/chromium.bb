@@ -7,6 +7,7 @@
 
 #include "components/arc/common/bluetooth.mojom.h"
 #include "device/bluetooth/bluetooth_common.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 
 namespace mojo {
 
@@ -46,6 +47,49 @@ struct EnumTraits<arc::mojom::BluetoothDeviceType,
         return false;
     }
     return true;
+  }
+};
+
+template <>
+struct EnumTraits<arc::mojom::BluetoothSdpAttributeType,
+                  bluez::BluetoothServiceAttributeValueBlueZ::Type> {
+  static arc::mojom::BluetoothSdpAttributeType ToMojom(
+      bluez::BluetoothServiceAttributeValueBlueZ::Type input) {
+    switch (input) {
+      case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
+      case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
+      case bluez::BluetoothServiceAttributeValueBlueZ::INT:
+      case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
+      case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
+      case bluez::BluetoothServiceAttributeValueBlueZ::BOOL:
+      case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE:
+      case bluez::BluetoothServiceAttributeValueBlueZ::URL:
+        return static_cast<arc::mojom::BluetoothSdpAttributeType>(input);
+      default:
+        NOTREACHED() << "Invalid type: " << static_cast<uint32_t>(input);
+        return arc::mojom::BluetoothSdpAttributeType::NULLTYPE;
+    }
+  }
+
+  static bool FromMojom(
+      arc::mojom::BluetoothSdpAttributeType input,
+      bluez::BluetoothServiceAttributeValueBlueZ::Type* output) {
+    switch (input) {
+      case arc::mojom::BluetoothSdpAttributeType::NULLTYPE:
+      case arc::mojom::BluetoothSdpAttributeType::UINT:
+      case arc::mojom::BluetoothSdpAttributeType::INT:
+      case arc::mojom::BluetoothSdpAttributeType::UUID:
+      case arc::mojom::BluetoothSdpAttributeType::STRING:
+      case arc::mojom::BluetoothSdpAttributeType::BOOL:
+      case arc::mojom::BluetoothSdpAttributeType::SEQUENCE:
+      case arc::mojom::BluetoothSdpAttributeType::URL:
+        *output = static_cast<bluez::BluetoothServiceAttributeValueBlueZ::Type>(
+            input);
+        return true;
+      default:
+        NOTREACHED() << "Invalid type: " << static_cast<uint32_t>(input);
+        return false;
+    }
   }
 };
 

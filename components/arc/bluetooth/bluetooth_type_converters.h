@@ -12,11 +12,25 @@
 
 #include "components/arc/common/bluetooth.mojom.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace device {
 class BluetoothUUID;
 }
+
+namespace arc {
+// The design of SDP attribute allows the attributes in the sequence of an
+// attribute to be of sequence type. To prevent a malicious party from sending
+// extremely deep attributes to cause the stack overflow, a maximum depth is
+// enforced during the conversion between
+// bluez::BluetoothServiceAttributeValueBlueZ and
+// arc::mojom::BluetoothSdpAttributePtr. However, there is no assigned number
+// defined in SDP specification, so we choose 32 as the limit based on the
+// depths observed from various Bluetooth devices in the field.
+constexpr size_t kBluetoothSDPMaxDepth = 32;
+}  // namespace arc
 
 namespace mojo {
 
@@ -47,6 +61,44 @@ struct TypeConverter<arc::mojom::BluetoothGattStatus,
                      device::BluetoothGattService::GattErrorCode> {
   static arc::mojom::BluetoothGattStatus Convert(
       const device::BluetoothGattService::GattErrorCode& error_code);
+};
+
+template <>
+struct TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
+                     bluez::BluetoothServiceAttributeValueBlueZ> {
+  static arc::mojom::BluetoothSdpAttributePtr Convert(
+      const bluez::BluetoothServiceAttributeValueBlueZ& attr_bluez,
+      size_t depth);
+  static arc::mojom::BluetoothSdpAttributePtr Convert(
+      const bluez::BluetoothServiceAttributeValueBlueZ& attr_bluez) {
+    return Convert(attr_bluez, 0);
+  }
+};
+
+template <>
+struct TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
+                     arc::mojom::BluetoothSdpAttributePtr> {
+  static bluez::BluetoothServiceAttributeValueBlueZ Convert(
+      const arc::mojom::BluetoothSdpAttributePtr& attr,
+      size_t depth);
+  static bluez::BluetoothServiceAttributeValueBlueZ Convert(
+      const arc::mojom::BluetoothSdpAttributePtr& attr) {
+    return Convert(attr, 0);
+  }
+};
+
+template <>
+struct TypeConverter<arc::mojom::BluetoothSdpRecordPtr,
+                     bluez::BluetoothServiceRecordBlueZ> {
+  static arc::mojom::BluetoothSdpRecordPtr Convert(
+      const bluez::BluetoothServiceRecordBlueZ& rcd_bluez);
+};
+
+template <>
+struct TypeConverter<bluez::BluetoothServiceRecordBlueZ,
+                     arc::mojom::BluetoothSdpRecordPtr> {
+  static bluez::BluetoothServiceRecordBlueZ Convert(
+      const arc::mojom::BluetoothSdpRecordPtr& rcd);
 };
 
 }  // namespace mojo

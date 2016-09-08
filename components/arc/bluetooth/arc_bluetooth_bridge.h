@@ -268,6 +268,14 @@ class ArcBluetoothBridge
                       mojo::Array<uint8_t> value,
                       const SendIndicationCallback& callback) override;
 
+  // Bluetooth Mojo host interface - Bluetooth SDP functions
+  void GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
+                     mojom::BluetoothUUIDPtr target_uuid) override;
+  void CreateSdpRecord(mojom::BluetoothSdpRecordPtr record_mojo,
+                       const CreateSdpRecordCallback& callback) override;
+  void RemoveSdpRecord(uint32_t service_handle,
+                       const RemoveSdpRecordCallback& callback) override;
+
   // Chrome observer callbacks
   void OnPoweredOn(
       const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
@@ -364,6 +372,15 @@ class ArcBluetoothBridge
 
   void OnSetDiscoverable(bool discoverable, bool success, uint32_t timeout);
   void SetDiscoverable(bool discoverable, uint32_t timeout);
+
+  void OnGetServiceRecordsDone(
+      mojom::BluetoothAddressPtr remote_addr,
+      mojom::BluetoothUUIDPtr target_uuid,
+      const std::vector<bluez::BluetoothServiceRecordBlueZ>& records_bluez);
+  void OnGetServiceRecordsError(
+      mojom::BluetoothAddressPtr remote_addr,
+      mojom::BluetoothUUIDPtr target_uuid,
+      bluez::BluetoothServiceRecordBlueZ::ErrorCode error_code);
 
   bool CalledOnValidThread();
 

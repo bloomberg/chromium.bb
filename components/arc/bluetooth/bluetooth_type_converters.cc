@@ -6,6 +6,7 @@
 #include <cctype>
 #include <iomanip>
 #include <ios>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -22,6 +23,13 @@ namespace {
 constexpr size_t kAddressSize = 6;
 constexpr size_t kUUIDSize = 16;
 constexpr char kInvalidAddress[] = "00:00:00:00:00:00";
+
+// SDP Service attribute IDs.
+constexpr uint16_t kServiceClassIDList = 0x0001;
+constexpr uint16_t kProtocolDescriptorList = 0x0004;
+constexpr uint16_t kBrowseGroupList = 0x0005;
+constexpr uint16_t kBluetoothProfileDescriptorList = 0x0009;
+constexpr uint16_t kServiceName = 0x0100;
 
 bool IsNonHex(char c) {
   return !isxdigit(c);
@@ -148,6 +156,159 @@ TypeConverter<arc::mojom::BluetoothGattStatus,
       break;
   }
   return ret;
+}
+
+// static
+arc::mojom::BluetoothSdpAttributePtr
+TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
+              bluez::BluetoothServiceAttributeValueBlueZ>::
+    Convert(const bluez::BluetoothServiceAttributeValueBlueZ& attr_bluez,
+            size_t depth) {
+  auto result = arc::mojom::BluetoothSdpAttribute::New();
+  result->type = attr_bluez.type();
+  result->type_size = 0;
+
+  switch (result->type) {
+    case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
+      result->value.Append(base::Value::CreateNullValue());
+      break;
+    case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
+    case bluez::BluetoothServiceAttributeValueBlueZ::INT:
+    case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
+    case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
+    case bluez::BluetoothServiceAttributeValueBlueZ::URL:
+    case bluez::BluetoothServiceAttributeValueBlueZ::BOOL:
+      result->type_size = attr_bluez.size();
+      result->value.Append(attr_bluez.value().CreateDeepCopy());
+      result->sequence =
+          mojo::Array<arc::mojom::BluetoothSdpAttributePtr>::New(0);
+      break;
+    case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE:
+      if (depth + 1 >= arc::kBluetoothSDPMaxDepth) {
+        result->type = bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
+        result->type_size = 0;
+        result->value.Append(base::Value::CreateNullValue());
+        result->sequence =
+            mojo::Array<arc::mojom::BluetoothSdpAttributePtr>::New(0);
+        return result;
+      }
+      for (const auto& child : attr_bluez.sequence()) {
+        result->sequence.push_back(Convert(child, depth + 1));
+      }
+      result->type_size = result->sequence.size();
+      result->value.Clear();
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return result;
+}
+
+// static
+bluez::BluetoothServiceAttributeValueBlueZ
+TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
+              arc::mojom::BluetoothSdpAttributePtr>::
+    Convert(const arc::mojom::BluetoothSdpAttributePtr& attr, size_t depth) {
+  bluez::BluetoothServiceAttributeValueBlueZ::Type type = attr->type;
+
+  switch (type) {
+    case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
+      return bluez::BluetoothServiceAttributeValueBlueZ();
+    case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
+    case bluez::BluetoothServiceAttributeValueBlueZ::INT:
+    case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
+    case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
+    case bluez::BluetoothServiceAttributeValueBlueZ::URL:
+    case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {
+      if (attr->value.GetSize() != 1) {
+        return bluez::BluetoothServiceAttributeValueBlueZ(
+            bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
+            base::Value::CreateNullValue());
+      }
+
+      std::unique_ptr<base::Value> value;
+      attr->value.Remove(0, &value);
+
+      return bluez::BluetoothServiceAttributeValueBlueZ(
+          type, static_cast<size_t>(attr->type_size), std::move(value));
+    }
+    case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE: {
+      if (depth + 1 >= arc::kBluetoothSDPMaxDepth || attr->sequence.empty()) {
+        return bluez::BluetoothServiceAttributeValueBlueZ(
+            bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
+            base::Value::CreateNullValue());
+      }
+
+      auto bluez_sequence = base::MakeUnique<
+          bluez::BluetoothServiceAttributeValueBlueZ::Sequence>();
+      for (const auto& child : attr->sequence) {
+        bluez_sequence->push_back(Convert(child, depth + 1));
+      }
+      return bluez::BluetoothServiceAttributeValueBlueZ(
+          std::move(bluez_sequence));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  return bluez::BluetoothServiceAttributeValueBlueZ(
+      bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
+      base::Value::CreateNullValue());
+}
+
+// static
+arc::mojom::BluetoothSdpRecordPtr
+TypeConverter<arc::mojom::BluetoothSdpRecordPtr,
+              bluez::BluetoothServiceRecordBlueZ>::
+    Convert(const bluez::BluetoothServiceRecordBlueZ& record_bluez) {
+  arc::mojom::BluetoothSdpRecordPtr result =
+      arc::mojom::BluetoothSdpRecord::New();
+
+  for (auto id : record_bluez.GetAttributeIds()) {
+    switch (id) {
+      case kServiceClassIDList:
+      case kProtocolDescriptorList:
+      case kBrowseGroupList:
+      case kBluetoothProfileDescriptorList:
+      case kServiceName:
+        result->attrs[id] = arc::mojom::BluetoothSdpAttribute::From(
+            record_bluez.GetAttributeValue(id));
+        break;
+      default:
+        // Android does not support this.
+        break;
+    }
+  }
+
+  return result;
+}
+
+// static
+bluez::BluetoothServiceRecordBlueZ
+TypeConverter<bluez::BluetoothServiceRecordBlueZ,
+              arc::mojom::BluetoothSdpRecordPtr>::
+    Convert(const arc::mojom::BluetoothSdpRecordPtr& record) {
+  bluez::BluetoothServiceRecordBlueZ record_bluez;
+
+  for (const auto& pair : record->attrs) {
+    switch (pair.first) {
+      case kServiceClassIDList:
+      case kProtocolDescriptorList:
+      case kBrowseGroupList:
+      case kBluetoothProfileDescriptorList:
+      case kServiceName:
+        record_bluez.AddRecordEntry(
+            pair.first,
+            pair.second.To<bluez::BluetoothServiceAttributeValueBlueZ>());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return record_bluez;
 }
 
 }  // namespace mojo
