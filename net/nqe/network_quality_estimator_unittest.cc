@@ -544,6 +544,9 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -598,6 +601,9 @@ TEST(NetworkQualityEstimatorTest, DefaultTransportRTTBasedThresholds) {
         base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -650,6 +656,9 @@ TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
         base::TimeDelta::FromMilliseconds(test.http_rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -700,6 +709,9 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyTransportRTT) {
         base::TimeDelta::FromMilliseconds(test.transport_rtt_msec));
     estimator.set_downlink_throughput_kbps(INT32_MAX);
     estimator.set_recent_downlink_throughput_kbps(INT32_MAX);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -760,6 +772,9 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsHttpRTTandThroughput) {
     estimator.set_downlink_throughput_kbps(test.downlink_throughput_kbps);
     estimator.set_recent_downlink_throughput_kbps(
         test.downlink_throughput_kbps);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -823,6 +838,9 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsTransportRTTandThroughput) {
     estimator.set_downlink_throughput_kbps(test.downlink_throughput_kbps);
     estimator.set_recent_downlink_throughput_kbps(
         test.downlink_throughput_kbps);
+    // Run one main frame request to force recomputation of effective connection
+    // type.
+    estimator.RunOneRequest();
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -1282,7 +1300,7 @@ TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
 
   EXPECT_EQ(0U, observer.effective_connection_types().size());
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
   tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(60));
 
   std::unique_ptr<URLRequest> request(context.CreateRequest(
@@ -1313,7 +1331,7 @@ TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
   // A change in effective connection type does not trigger notification to the
   // observers, since it is not accompanied by any new observation or a network
   // change event.
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   EXPECT_EQ(2U, observer.effective_connection_types().size());
 }
 
@@ -1332,7 +1350,11 @@ TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
   tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(60));
 
   size_t expected_effective_connection_type_notifications = 0;
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  estimator.set_recent_effective_connection_type(
+      EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  // Run one main frame request to force recomputation of effective connection
+  // type.
+  estimator.RunOneRequest();
   estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_WIFI,
                                   "test");
 
@@ -1345,7 +1367,8 @@ TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
     EXPECT_EQ(expected_effective_connection_type_notifications,
               observer.effective_connection_types().size());
   }
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  estimator.set_recent_effective_connection_type(
+      EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   // Even though there are 10 RTT samples already available, the addition of one
   // more RTT sample should trigger recomputation of the effective connection
   // type since the last computed effective connection type was unknown.
@@ -1381,7 +1404,7 @@ TEST(NetworkQualityEstimatorTest,
 
   EXPECT_EQ(0U, observer.effective_connection_types().size());
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
   tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(60));
 
   std::unique_ptr<URLRequest> request(context.CreateRequest(
@@ -1408,12 +1431,13 @@ TEST(NetworkQualityEstimatorTest,
     // Change the effective connection type so that the observers are
     // notified when the effective connection type is recomputed.
     if (repetition % 2 == 0) {
-      estimator.set_effective_connection_type(
+      estimator.set_recent_effective_connection_type(
           EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
     } else {
-      estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+      estimator.set_recent_effective_connection_type(
+          EFFECTIVE_CONNECTION_TYPE_3G);
     }
-    size_t rtt_observations_count = estimator.rtt_observations_.Size();
+    size_t rtt_observations_count = estimator.rtt_observations_.Size() * 0.5;
     // Increase the number of RTT observations to more than twice the number
     // of current observations. This should trigger recomputation of
     // effective connection type.
@@ -1982,24 +2006,25 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   estimator.NetworkQualityStoreForTesting()->AddNetworkQualitiesCacheObserver(
       &observer);
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test3g");
   estimator.RunOneRequest();
   EXPECT_EQ(1u, observer.get_notification_received_and_reset());
   EXPECT_EQ("test3g", observer.network_id().id);
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test2g");
   // One notification should be received for the previous network
   // ("test3g") right before the connection change event. The second
   // notification should be received for the second network ("test2g").
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, observer.get_notification_received_and_reset());
   estimator.RunOneRequest();
   EXPECT_EQ("test2g", observer.network_id().id);
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_4G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_4G);
   // Start multiple requests, but there should be only one notification
   // received, since the effective connection type does not change.
   estimator.RunOneRequest();
@@ -2007,14 +2032,14 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   estimator.RunOneRequest();
   EXPECT_EQ(1u, observer.get_notification_received_and_reset());
 
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
   estimator.RunOneRequest();
   EXPECT_EQ(1u, observer.get_notification_received_and_reset());
 
   // Remove |observer|, and it should not receive any notifications.
   estimator.NetworkQualityStoreForTesting()
       ->RemoveNetworkQualitiesCacheObserver(&observer);
-  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test2g");
   EXPECT_EQ(0u, observer.get_notification_received_and_reset());
@@ -2032,7 +2057,6 @@ TEST(NetworkQualityEstimatorTest,
         GetNameForEffectiveConnectionType(
             static_cast<EffectiveConnectionType>(i));
     TestNetworkQualityEstimator estimator(variation_params);
-    EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
 
     TestEffectiveConnectionTypeObserver observer;
     estimator.AddEffectiveConnectionTypeObserver(&observer);
@@ -2049,6 +2073,8 @@ TEST(NetworkQualityEstimatorTest,
     request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
     request->Start();
     base::RunLoop().Run();
+
+    EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
 
     size_t expected_count = static_cast<EffectiveConnectionType>(i) ==
                                     EFFECTIVE_CONNECTION_TYPE_UNKNOWN

@@ -386,7 +386,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       external_estimate_provider_(std::move(external_estimates_provider)),
       effective_connection_type_recomputation_interval_(
-          base::TimeDelta::FromSeconds(15)),
+          base::TimeDelta::FromSeconds(10)),
       rtt_observations_size_at_last_ect_computation_(0),
       throughput_observations_size_at_last_ect_computation_(0),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
@@ -661,6 +661,8 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality(
         estimated_http_rtt, estimated_transport_rtt,
         downstream_throughput_kbps);
+
+    ComputeEffectiveConnectionType();
     effective_connection_type_at_last_main_frame_ =
         GetEffectiveConnectionType();
 
@@ -1036,7 +1038,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     AddDefaultEstimates();
   estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
   throughput_analyzer_->OnConnectionTypeChanged();
-  MaybeRecomputeEffectiveConnectionType();
+  MaybeComputeEffectiveConnectionType();
   UpdateSignalStrength();
 }
 
@@ -1191,10 +1193,29 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   effective_connection_type_histogram->Add(effective_connection_type);
 }
 
+void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  const EffectiveConnectionType past_type = effective_connection_type_;
+  last_effective_connection_type_computation_ = now;
+
+  effective_connection_type_ =
+      GetRecentEffectiveConnectionType(base::TimeTicks());
+
+  if (past_type != effective_connection_type_)
+    NotifyObserversOfEffectiveConnectionTypeChanged();
+
+  rtt_observations_size_at_last_ect_computation_ = rtt_observations_.Size();
+  throughput_observations_size_at_last_ect_computation_ =
+      downstream_throughput_kbps_observations_.Size();
+}
+
 EffectiveConnectionType NetworkQualityEstimator::GetEffectiveConnectionType()
     const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return GetRecentEffectiveConnectionType(base::TimeTicks());
+  return effective_connection_type_;
 }
 
 EffectiveConnectionType
@@ -1605,7 +1626,7 @@ void NetworkQualityEstimator::NotifyObserversOfRTT(
 
   // Maybe recompute the effective connection type since a new RTT observation
   // is available.
-  MaybeRecomputeEffectiveConnectionType();
+  MaybeComputeEffectiveConnectionType();
   FOR_EACH_OBSERVER(
       RTTObserver, rtt_observer_list_,
       OnRTTObservation(observation.value.InMilliseconds(),
@@ -1619,7 +1640,7 @@ void NetworkQualityEstimator::NotifyObserversOfThroughput(
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.
-  MaybeRecomputeEffectiveConnectionType();
+  MaybeComputeEffectiveConnectionType();
   FOR_EACH_OBSERVER(
       ThroughputObserver, throughput_observer_list_,
       OnThroughputObservation(observation.value, observation.timestamp,
@@ -1648,7 +1669,7 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
   NotifyObserversOfThroughput(throughput_observation);
 }
 
-void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
+void NetworkQualityEstimator::MaybeComputeEffectiveConnectionType() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::TimeTicks now = tick_clock_->NowTicks();
@@ -1665,26 +1686,15 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
       // effective connection type was unknown.
       effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
       // Recompute the effective connection type if the number of samples
-      // available now are more than twice in count than the number of
-      // samples that were available when the effective connection type was
-      // last computed.
-      rtt_observations_size_at_last_ect_computation_ * 2 >=
+      // available now are 50% more than the number of samples that were
+      // available when the effective connection type was last computed.
+      rtt_observations_size_at_last_ect_computation_ * 1.5 >=
           rtt_observations_.Size() &&
-      throughput_observations_size_at_last_ect_computation_ * 2 >=
+      throughput_observations_size_at_last_ect_computation_ * 1.5 >=
           downstream_throughput_kbps_observations_.Size()) {
     return;
   }
-
-  const EffectiveConnectionType past_type = effective_connection_type_;
-  last_effective_connection_type_computation_ = now;
-  effective_connection_type_ = GetEffectiveConnectionType();
-
-  if (past_type != effective_connection_type_)
-    NotifyObserversOfEffectiveConnectionTypeChanged();
-
-  rtt_observations_size_at_last_ect_computation_ = rtt_observations_.Size();
-  throughput_observations_size_at_last_ect_computation_ =
-      downstream_throughput_kbps_observations_.Size();
+  ComputeEffectiveConnectionType();
 }
 
 void NetworkQualityEstimator::

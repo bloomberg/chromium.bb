@@ -148,8 +148,10 @@ class NET_EXPORT NetworkQualityEstimator
 
   ~NetworkQualityEstimator() override;
 
-  // Returns the effective type of the current connection. Virtualized for
-  // testing.
+  // Returns the last computed effective type of the current connection. The
+  // effective connection type is computed by the network quality estimator at
+  // regular intervals and at certain events (e.g., connection change).
+  // Virtualized for testing.
   virtual EffectiveConnectionType GetEffectiveConnectionType() const;
 
   // Returns the effective type of the current connection based on only the
@@ -426,7 +428,7 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Recomputes effective connection type, if it was computed more than the
   // specified duration ago, or if there has been a connection change recently.
-  void MaybeRecomputeEffectiveConnectionType();
+  void MaybeComputeEffectiveConnectionType();
 
   // Notify observers of a change in effective connection type.
   void NotifyObserversOfEffectiveConnectionTypeChanged();
@@ -482,6 +484,10 @@ class NET_EXPORT NetworkQualityEstimator
   // Returns true if transport RTT should be used for computing the effective
   // connection type.
   bool UseTransportRTT() const;
+
+  // Forces computation of effective connection type, and notifies observers
+  // if there is a change in its value.
+  void ComputeEffectiveConnectionType();
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
