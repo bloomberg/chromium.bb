@@ -948,6 +948,8 @@ split_static_library("browser") {
     "resources_util.h",
     "safe_browsing/safe_browsing_tab_observer.cc",
     "safe_browsing/safe_browsing_tab_observer.h",
+    "safe_browsing/srt_client_info_win.cc",
+    "safe_browsing/srt_client_info_win.h",
     "safe_browsing/srt_fetcher_win.cc",
     "safe_browsing/srt_fetcher_win.h",
     "safe_browsing/srt_field_trial_win.cc",

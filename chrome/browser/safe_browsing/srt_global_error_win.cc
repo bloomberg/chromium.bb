@@ -18,6 +18,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/safe_browsing/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -51,31 +52,9 @@ const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
 // A switch to add to the command line when executing the SRT.
 const char kChromePromptSwitch[] = "chrome-prompt";
-const char kChromeVersionSwitch[] = "chrome-version";
 const char kChromeSystemInstallSwitch[] = "chrome-system-install";
-const char kChromeChannelSwitch[] = "chrome-channel";
 const char kEnableCrashReporting[] = "enable-crash-reporting";
 const char kUmaUserSwitch[] = "uma-user";
-
-// Encodes Chrome's channel as an integer to be passed to the SRT on the command
-// line. The SRT binary expects to recieve Chrome's channel encoded as:
-//     0: unknown; 1: canary; 2: dev; 3: beta; 4: stable.
-int ChannelAsInt() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::UNKNOWN:
-      return 0;
-    case version_info::Channel::CANARY:
-      return 1;
-    case version_info::Channel::DEV:
-      return 2;
-    case version_info::Channel::BETA:
-      return 3;
-    case version_info::Channel::STABLE:
-      return 4;
-    default:
-      return 0;
-  }
-}
 
 void MaybeExecuteSRTFromBlockingPool(
     const base::FilePath& downloaded_path,

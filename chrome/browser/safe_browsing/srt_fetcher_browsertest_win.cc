@@ -4,17 +4,23 @@
 
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 
+#include <iterator>
 #include <memory>
+#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/srt_client_info_win.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +30,10 @@ namespace safe_browsing {
 
 namespace {
 
+const char* const kExpectedSwitches[] = {kExtendedSafeBrowsingEnabledSwitch,
+                                         kChromeVersionSwitch,
+                                         kChromeChannelSwitch};
+
 class SRTFetcherTest : public InProcessBrowserTest,
                        public SwReporterTestingDelegate {
  public:
@@ -31,6 +41,11 @@ class SRTFetcherTest : public InProcessBrowserTest,
     task_runner_ = new base::TestSimpleTaskRunner;
 
     SetSwReporterTestingDelegate(this);
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    ClearLastTimeSentReport();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
@@ -56,11 +71,17 @@ class SRTFetcherTest : public InProcessBrowserTest,
 
   void NotifyReporterDone() override { reporter_done_notified_ = true; }
 
-  void SetDaysSinceLastReport(int days) {
+  // Sets |path| in the local state to a date corresponding to |days| days ago.
+  void SetDateInLocalState(const std::string& path, int days) {
     PrefService* local_state = g_browser_process->local_state();
-    local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
+    DCHECK_NE(local_state, nullptr);
+    local_state->SetInt64(path,
                           (base::Time::Now() - base::TimeDelta::FromDays(days))
                               .ToInternalValue());
+  }
+
+  void SetDaysSinceLastReport(int days) {
+    SetDateInLocalState(prefs::kSwReporterLastTimeTriggered, days);
   }
 
   void ExpectToRunAgain(int days) {
@@ -69,6 +90,49 @@ class SRTFetcherTest : public InProcessBrowserTest,
               base::TimeDelta::FromDays(days));
     EXPECT_GT(task_runner_->NextPendingTaskDelay(),
               base::TimeDelta::FromDays(days) - base::TimeDelta::FromHours(1));
+  }
+
+  // Clears local state for last time the software reporter sent logs to |days|
+  // days ago. This prevents potential false positives that could arise from
+  // state not properly cleaned between successive tests.
+  void ClearLastTimeSentReport() {
+    DCHECK_NE(g_browser_process, nullptr);
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK_NE(local_state, nullptr);
+    local_state->ClearPref(prefs::kSwReporterLastTimeSentReport);
+  }
+
+  // Sets local state for last time the software reporter sent logs to |days|
+  // days ago.
+  void SetLastTimeSentReport(int days) {
+    SetDateInLocalState(prefs::kSwReporterLastTimeSentReport, days);
+  }
+
+  int64_t GetLastTimeSentReport() {
+    const PrefService* local_state = g_browser_process->local_state();
+    DCHECK_NE(local_state, nullptr);
+    DCHECK(local_state->HasPrefPath(prefs::kSwReporterLastTimeSentReport));
+    return local_state->GetInt64(prefs::kSwReporterLastTimeSentReport);
+  }
+
+  void ExpectLastTimeSentReportNotSet() {
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK_NE(local_state, nullptr);
+    EXPECT_FALSE(
+        local_state->HasPrefPath(prefs::kSwReporterLastTimeSentReport));
+  }
+
+  void ExpectLastReportSentInTheLastHour() {
+    const PrefService* local_state = g_browser_process->local_state();
+    DCHECK_NE(local_state, nullptr);
+    const base::Time now = base::Time::Now();
+    const base::Time last_time_sent_logs = base::Time::FromInternalValue(
+        local_state->GetInt64(prefs::kSwReporterLastTimeSentReport));
+
+    // Checks if the last time sent logs is set as no more than one hour ago,
+    // which should be enough time if the execution does not fail.
+    EXPECT_LT(now - base::TimeDelta::FromHours(1), last_time_sent_logs);
+    EXPECT_LT(last_time_sent_logs, now);
   }
 
   void TestReporterLaunchCycle(int expected_launch_count,
@@ -148,6 +212,30 @@ class SRTFetcherTest : public InProcessBrowserTest,
     // Make sure the flags are false for the next launch cycle test.
     ASSERT_FALSE(launch_ready_notified_);
     reporter_done_notified_ = false;
+  }
+
+  // Expects |reporter_launch_parameters_| to contain exactly the command line
+  // switches specified in |expected_switches|.
+  void ExpectLoggingSwitches(const std::set<std::string>& expected_switches) {
+    const base::CommandLine::SwitchMap& invocation_switches =
+        reporter_launch_parameters_.command_line.GetSwitches();
+    EXPECT_EQ(expected_switches.size(), invocation_switches.size());
+    // Checks if all expected switches are in the invocation switches. It's not
+    // necessary to check if all invocation switches are expected, since we
+    // checked if both sets should have the same size.
+    for (const std::string& expected_switch : expected_switches) {
+      EXPECT_NE(invocation_switches.find(expected_switch),
+                invocation_switches.end());
+    }
+  }
+
+  void EnableSBExtendedReporting() {
+    Browser* browser = chrome::FindLastActive();
+    ASSERT_NE(browser, nullptr);
+    Profile* profile = browser->profile();
+    ASSERT_NE(profile, nullptr);
+    profile->GetPrefs()->SetBoolean(
+        prefs::kSafeBrowsingExtendedReportingEnabled, true);
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -304,6 +392,77 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ParameterChange) {
     RunReporter(path3);
     TestReporterLaunchCycle(3, path3);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_FeatureDisabled) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kSwReporterExtendedSafeBrowsingFeature);
+  RunReporter();
+  TestReporterLaunchCycle(1, base::FilePath());
+  ExpectLoggingSwitches({/*expect no switches*/});
+  ExpectLastTimeSentReportNotSet();
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_NoSBExtendedReporting) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSwReporterExtendedSafeBrowsingFeature);
+  RunReporter();
+  TestReporterLaunchCycle(1, base::FilePath());
+  ExpectLoggingSwitches({/*expect no switches*/});
+  ExpectLastTimeSentReportNotSet();
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledFirstRun) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSwReporterExtendedSafeBrowsingFeature);
+  EnableSBExtendedReporting();
+  // Note: don't set last time sent logs in the local state.
+  // SBER is enabled and there is no record in the local state of the last time
+  // logs have been sent, so we should send logs in this run.
+  RunReporter();
+  TestReporterLaunchCycle(1, base::FilePath());
+  ExpectLoggingSwitches(std::set<std::string>(std::begin(kExpectedSwitches),
+                                              std::end(kExpectedSwitches)));
+  ExpectLastReportSentInTheLastHour();
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledNoRecentLogging) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSwReporterExtendedSafeBrowsingFeature);
+  // SBER is enabled and last time logs were sent was more than
+  // |kDaysBetweenReporterLogsSent| day ago, so we should send logs in this run.
+  EnableSBExtendedReporting();
+  SetLastTimeSentReport(kDaysBetweenReporterLogsSent + 3);
+  RunReporter();
+  TestReporterLaunchCycle(1, base::FilePath());
+  ExpectLoggingSwitches(std::set<std::string>(std::begin(kExpectedSwitches),
+                                              std::end(kExpectedSwitches)));
+  ExpectLastReportSentInTheLastHour();
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledRecentlyLogged) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSwReporterExtendedSafeBrowsingFeature);
+  // SBER is enabled, but logs have been sent less than
+  // |kDaysBetweenReporterLogsSent| day ago, so we shouldn't send any logs in
+  // this run.
+  EnableSBExtendedReporting();
+  SetLastTimeSentReport(kDaysBetweenReporterLogsSent - 1);
+  int64_t last_time_sent_logs = GetLastTimeSentReport();
+  RunReporter();
+  TestReporterLaunchCycle(1, base::FilePath());
+  ExpectLoggingSwitches(std::set<std::string>{/*expect no switches*/});
+  EXPECT_EQ(last_time_sent_logs, GetLastTimeSentReport());
 }
 
 }  // namespace safe_browsing

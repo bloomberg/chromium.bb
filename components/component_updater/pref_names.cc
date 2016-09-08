@@ -23,6 +23,10 @@ const char kSwReporterLastExitCode[] = "software_reporter.last_exit_code";
 const char kSwReporterLastTimeTriggered[] =
     "software_reporter.last_time_triggered";
 
+// The last time SwReporter ran in send report mode. Saved in local state.
+const char kSwReporterLastTimeSentReport[] =
+    "software_reporter.last_time_sent_report";
+
 // Identify whether there is a pending prompt to be added to the Chrome menu.
 const char kSwReporterPendingPrompt[] = "software_reporter.pending_prompt";
 

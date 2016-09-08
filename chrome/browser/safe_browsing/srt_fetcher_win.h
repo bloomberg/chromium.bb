@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 
@@ -40,6 +41,12 @@ const int kReporterFailureExitCode = INT_MAX;
 // The number of days to wait before triggering another reporter run.
 const int kDaysBetweenSuccessfulSwReporterRuns = 7;
 const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
+// The number of days to wait before sending out reporter logs.
+const int kDaysBetweenReporterLogsSent = 7;
+
+extern const char kExtendedSafeBrowsingEnabledSwitch[];
+
+extern const base::Feature kSwReporterExtendedSafeBrowsingFeature;
 
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {
@@ -55,6 +62,7 @@ struct SwReporterInvocation {
   bool is_experimental = false;
 
   SwReporterInvocation();
+  SwReporterInvocation(const SwReporterInvocation& other);
 
   static SwReporterInvocation FromFilePath(const base::FilePath& exe_path);
   static SwReporterInvocation FromCommandLine(

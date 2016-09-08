@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -30,16 +31,19 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/safe_browsing/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/srt_global_error_win.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -58,6 +62,12 @@ const wchar_t kCleanerSubKey[] = L"Cleaner";
 
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kStartTimeValueName[] = L"StartTime";
+
+const char kExtendedSafeBrowsingEnabledSwitch[] =
+    "extended-safebrowsing-enabled";
+
+const base::Feature kSwReporterExtendedSafeBrowsingFeature{
+    "SwReporterExtendedSafeBrowsingFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -435,6 +445,22 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
     global_error->ShowBubbleView(browser);
 }
 
+bool SafeBrowsingExtendedEnabledForBrowser(const Browser* browser) {
+  const Profile* profile = browser->profile();
+  return profile && !profile->IsOffTheRecord() &&
+         profile->GetPrefs()->GetBoolean(
+             prefs::kSafeBrowsingExtendedReportingEnabled);
+}
+
+// Returns true if there is a profile that is not in incognito mode and the user
+// has opted into Safe Browsing extended reporting.
+bool SafeBrowsingExtendedReportingEnabled() {
+  BrowserList* browser_list = BrowserList::GetInstance();
+  return std::any_of(browser_list->begin_last_active(),
+                     browser_list->end_last_active(),
+                     &SafeBrowsingExtendedEnabledForBrowser);
+}
+
 // This function is called from a worker thread to launch the SwReporter and
 // wait for termination to collect its exit code. This task could be
 // interrupted by a shutdown at any time, so it shouldn't depend on anything
@@ -728,13 +754,31 @@ class ReporterRunner : public chrome::BrowserListObserver {
       if (g_testing_delegate_)
         g_testing_delegate_->NotifyLaunchReady();
 
+      // Creating a new invocation to add switches for users who opted into
+      // extended Safe Browsing reporting. The invocation object is changed
+      // locally right before the actual process is launched because user status
+      // can change between this and the next run for this ReporterRunner
+      // object. For example, the ReporterDone() callback schedules the next run
+      // for a few days later, and the user might have changed settings in the
+      // meantime.
+      SwReporterInvocation actual_invocation(invocation_);
+      if (ShouldSendReporterLogs(*local_state)) {
+        AddSwitchesForExtendedReporterUser(&actual_invocation);
+        // Set the local state value before the first attempt to run the
+        // reporter, because we only want to upload logs once in the window
+        // defined by |kDaysBetweenReporterLogsSent|. If we set with other local
+        // state values after the reporter runs, we could send logs again too
+        // quickly (for example, if Chrome stops before the reporter finishes).
+        local_state->SetInt64(prefs::kSwReporterLastTimeSentReport,
+                              base::Time::Now().ToInternalValue());
+      }
       // It's OK to simply |PostTaskAndReplyWithResult| so that
       // |LaunchAndWaitForExit| doesn't need to access
       // |main_thread_task_runner_| since the callback is not delayed and the
       // test task runner won't need to force it.
       base::PostTaskAndReplyWithResult(
           blocking_task_runner_.get(), FROM_HERE,
-          base::Bind(&LaunchAndWaitForExit, invocation_),
+          base::Bind(&LaunchAndWaitForExit, actual_invocation),
           base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this),
                      base::Time::Now(), version_, invocation_));
     } else {
@@ -743,6 +787,37 @@ class ReporterRunner : public chrome::BrowserListObserver {
           base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
           next_trigger_delay);
     }
+  }
+
+  // Returns true if the experiment to send reporter logs is enabled, the user
+  // opted into Safe Browsing extended reporting, and logs have been sent at
+  // least |kSwReporterLastTimeSentReport| days ago.
+  bool ShouldSendReporterLogs(const PrefService& local_state) {
+    if (!base::FeatureList::IsEnabled(kSwReporterExtendedSafeBrowsingFeature) ||
+        !SafeBrowsingExtendedReportingEnabled()) {
+      return false;
+    }
+
+    const base::Time now = base::Time::Now();
+    const base::Time last_time_sent_logs = base::Time::FromInternalValue(
+        local_state.GetInt64(prefs::kSwReporterLastTimeSentReport));
+    // Send the logs if the last send was in the future. This is intended as a
+    // measure for failure recovery, in case the time in local state is
+    // incorrectly set to the future.
+    if (last_time_sent_logs > now)
+      return true;
+    // Otherwise, send them if the interval has passed.
+    return last_time_sent_logs +
+               base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent) <=
+           now;
+  }
+
+  void AddSwitchesForExtendedReporterUser(SwReporterInvocation* invocation) {
+    invocation->command_line.AppendSwitch(kExtendedSafeBrowsingEnabledSwitch);
+    invocation->command_line.AppendSwitchASCII(
+        kChromeVersionSwitch, version_info::GetVersionNumber());
+    invocation->command_line.AppendSwitchNative(
+        kChromeChannelSwitch, base::IntToString16(ChannelAsInt()));
   }
 
   bool first_run_ = true;
@@ -769,6 +844,11 @@ ReporterRunner* ReporterRunner::instance_ = nullptr;
 
 SwReporterInvocation::SwReporterInvocation()
     : command_line(base::CommandLine::NO_PROGRAM) {}
+
+SwReporterInvocation::SwReporterInvocation(const SwReporterInvocation& other)
+    : command_line(other.command_line),
+      suffix(other.suffix),
+      is_experimental(other.is_experimental) {}
 
 SwReporterInvocation SwReporterInvocation::FromFilePath(
     const base::FilePath& exe_path) {
