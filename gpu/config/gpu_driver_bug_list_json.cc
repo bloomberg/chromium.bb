@@ -1992,6 +1992,18 @@ LONG_STRING_CONST(
       "features": [
         "rewrite_texelfetchoffset_to_texelfetch"
       ]
+    },
+    {
+      "id": 185,
+      "description": "Zero-copy NV12 video displays incorrect colors on NVIDIA drivers.",
+      "cr_bugs": [635319],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "disable_dxgi_zero_copy_video"
+      ]
     }
   ]
   // Please update the version number at beginning of this file whenever you
