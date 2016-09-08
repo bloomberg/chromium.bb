@@ -449,6 +449,9 @@
     'ftp': {
       'filepath': 'ftp',
     },
+    'fuzzing': {
+      'filepath': 'fuzz|Fuzz',
+    },
     'gcm': {
       'filepath': 'chrome/browser/services/gcm/|'\
                   'components/gcm_driver/|'\
@@ -1765,6 +1768,7 @@
                  'yamaguchi+watch@chromium.org'],
     'filesapp_ui': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
+    'fuzzing': ['fuzzing@chromium.org'],
     'gcm': ['johnme+watch@chromium.org',
             'peter@chromium.org',
             'zea+watch@chromium.org'],
