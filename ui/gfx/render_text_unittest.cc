@@ -29,6 +29,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_names_testing.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/range/range.h"
@@ -1966,7 +1967,8 @@ TEST_P(RenderTextTest, StringSizeLongStrings) {
 
 TEST_P(RenderTextTest, StringSizeEmptyString) {
   // Ascent and descent of Arial and Symbol are different on most platforms.
-  const FontList font_list("Arial,Symbol, 16px");
+  const FontList font_list(
+      base::StringPrintf("Arial,%s, 16px", kSymbolFontName));
   RenderText* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetDisplayRect(Rect(0, 0, 0, font_list.GetHeight()));
@@ -1984,27 +1986,26 @@ TEST_P(RenderTextTest, StringSizeEmptyString) {
 }
 
 TEST_P(RenderTextTest, StringSizeRespectsFontListMetrics) {
-  // Check that Arial and Symbol have different font metrics.
+  // Check that Arial and the CJK font have different font metrics.
   Font arial_font("Arial", 16);
   ASSERT_EQ("arial",
             base::ToLowerASCII(arial_font.GetActualFontNameForTesting()));
-  Font symbol_font("Symbol", 16);
-  ASSERT_EQ("symbol",
-            base::ToLowerASCII(symbol_font.GetActualFontNameForTesting()));
-  EXPECT_NE(arial_font.GetHeight(), symbol_font.GetHeight());
-  EXPECT_NE(arial_font.GetBaseline(), symbol_font.GetBaseline());
-  // "a" should be rendered with Arial, not with Symbol.
+  Font cjk_font(kCJKFontName, 16);
+  ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
+            base::ToLowerASCII(cjk_font.GetActualFontNameForTesting()));
+  EXPECT_NE(arial_font.GetHeight(), cjk_font.GetHeight());
+  EXPECT_NE(arial_font.GetBaseline(), cjk_font.GetBaseline());
+  // "a" should be rendered with Arial, not with the CJK font.
   const char* arial_font_text = "a";
-  // "®" (registered trademark symbol) should be rendered with Symbol,
-  // not with Arial.
-  const char* symbol_font_text = "\xC2\xAE";
-
+  // "円" CJK UNIFIED IDEOGRAPH-5186, aka the Yen sign should be rendered with
+  // the CJK font, not with Arial.
+  const char* cjk_font_text = "\xE5\x86\x86";
   Font smaller_font = arial_font;
-  Font larger_font = symbol_font;
+  Font larger_font = cjk_font;
   const char* smaller_font_text = arial_font_text;
-  const char* larger_font_text = symbol_font_text;
-  if (symbol_font.GetHeight() < arial_font.GetHeight() &&
-      symbol_font.GetBaseline() < arial_font.GetBaseline()) {
+  const char* larger_font_text = cjk_font_text;
+  if (cjk_font.GetHeight() < arial_font.GetHeight() &&
+      cjk_font.GetBaseline() < arial_font.GetBaseline()) {
     std::swap(smaller_font, larger_font);
     std::swap(smaller_font_text, larger_font_text);
   }
@@ -2019,6 +2020,9 @@ TEST_P(RenderTextTest, StringSizeRespectsFontListMetrics) {
                                    render_text->font_list().GetHeight()));
   EXPECT_EQ(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(smaller_font.GetBaseline(), render_text->GetBaseline());
+  EXPECT_STRCASEEQ(
+      render_text->GetFontSpansForTesting()[0].first.GetFontName().c_str(),
+      smaller_font.GetFontName().c_str());
 
   // Layout the same text with mixed fonts.  The text should be rendered with
   // the smaller font, but the height and baseline are determined with the
@@ -2030,6 +2034,9 @@ TEST_P(RenderTextTest, StringSizeRespectsFontListMetrics) {
   render_text->SetFontList(font_list);
   render_text->SetDisplayRect(Rect(0, 0, 0,
                                    render_text->font_list().GetHeight()));
+  EXPECT_STRCASEEQ(
+      render_text->GetFontSpansForTesting()[0].first.GetFontName().c_str(),
+      smaller_font.GetFontName().c_str());
   EXPECT_LT(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_LT(smaller_font.GetBaseline(), render_text->GetBaseline());
   EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
@@ -2054,11 +2061,12 @@ TEST_P(RenderTextTest, MinLineHeight) {
 
 TEST_P(RenderTextTest, SetFontList) {
   RenderText* render_text = GetRenderText();
-  render_text->SetFontList(FontList("Arial,Symbol, 13px"));
+  render_text->SetFontList(
+      FontList(base::StringPrintf("Arial,%s, 13px", kSymbolFontName)));
   const std::vector<Font>& fonts = render_text->font_list().GetFonts();
   ASSERT_EQ(2U, fonts.size());
   EXPECT_EQ("Arial", fonts[0].GetFontName());
-  EXPECT_EQ("Symbol", fonts[1].GetFontName());
+  EXPECT_EQ(kSymbolFontName, fonts[1].GetFontName());
   EXPECT_EQ(13, render_text->font_list().GetFontSize());
 }
 
@@ -3394,12 +3402,12 @@ TEST_P(RenderTextTest, StringFitsOwnWidth) {
 // falling back to other fonts.
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_FontListFallback) {
   // Double-check that the requested fonts are present.
-  FontList font_list("Arial, Symbol, 12px");
+  FontList font_list(base::StringPrintf("Arial, %s, 12px", kSymbolFontName));
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
   ASSERT_EQ("arial",
             base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
-  ASSERT_EQ("symbol",
+  ASSERT_EQ(base::ToLowerASCII(kSymbolFontName),
             base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));
 
   // "⊕" (CIRCLED PLUS) should be rendered with Symbol rather than falling back
@@ -3410,7 +3418,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_FontListFallback) {
   const std::vector<RenderText::FontSpan> spans =
       render_text->GetFontSpansForTesting();
   ASSERT_EQ(static_cast<size_t>(1), spans.size());
-  EXPECT_EQ("Symbol", spans[0].first.GetFontName());
+  EXPECT_STRCASEEQ(kSymbolFontName, spans[0].first.GetFontName().c_str());
 }
 #endif  // !defined(OS_WIN)
 

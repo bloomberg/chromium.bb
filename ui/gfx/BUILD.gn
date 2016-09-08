@@ -549,6 +549,8 @@ static_library("test_support") {
 
 test("gfx_unittests") {
   sources = [
+    "font_names_testing.cc",
+    "font_names_testing.h",
     "font_render_params_linux_unittest.cc",
     "font_unittest.cc",
     "image/image_family_unittest.cc",

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/font_names_testing.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
@@ -145,11 +146,14 @@ TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
       << "Your test environment seems to be missing Arial font, which is "
       << "needed for unittests.  Check if Arial font is installed.\n"
       << "********";
-  Font symbol("Symbol", 16);
-  EXPECT_EQ("symbol", base::ToLowerASCII(symbol.GetActualFontNameForTesting()))
+  Font symbol(kSymbolFontName, 16);
+  EXPECT_EQ(base::ToLowerASCII(kSymbolFontName),
+            base::ToLowerASCII(symbol.GetActualFontNameForTesting()))
       << "********\n"
-      << "Your test environment seems to be missing Symbol font, which is "
-      << "needed for unittests.  Check if Symbol font is installed.\n"
+      << "Your test environment seems to be missing the " << kSymbolFontName
+      << " font, which is "
+      << "needed for unittests.  Check if " << kSymbolFontName
+      << " font is installed.\n"
       << "********";
 
   const char* const invalid_font_name = "no_such_font_name";
