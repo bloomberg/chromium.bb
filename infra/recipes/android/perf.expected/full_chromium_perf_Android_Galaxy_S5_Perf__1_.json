@@ -131,7 +131,7 @@
       "--paths",
       "{\"checkout\": \"[SLAVE_BUILD]/src\", \"runit.py\": \"RECIPE_PACKAGE_REPO[build]/scripts/tools/runit.py\", \"runtest.py\": \"RECIPE_PACKAGE_REPO[build]/scripts/slave/runtest.py\"}",
       "--properties",
-      "{\"buildername\": \"Android Galaxy S5 Perf (1)\", \"buildnumber\": 571, \"mastername\": \"chromium.perf\", \"slavename\": \"slavename\", \"target_platform\": \"android\"}"
+      "{\"buildername\": \"Android Galaxy S5 Perf (1)\", \"buildnumber\": 571, \"mastername\": \"chromium.perf\", \"perf-id\": \"android-galaxy-s5\", \"results-url\": \"https://chromeperf.appspot.com\", \"slavename\": \"slavename\", \"target_platform\": \"android\"}"
     ],
     "name": "get compile targets for scripts",
     "~followup_annotations": [
@@ -444,7 +444,7 @@
       "--paths",
       "{\"checkout\": \"[SLAVE_BUILD]/src\", \"runit.py\": \"RECIPE_PACKAGE_REPO[build]/scripts/tools/runit.py\", \"runtest.py\": \"RECIPE_PACKAGE_REPO[build]/scripts/slave/runtest.py\"}",
       "--properties",
-      "{\"buildername\": \"Android Galaxy S5 Perf (1)\", \"buildnumber\": 571, \"mastername\": \"chromium.perf\", \"slavename\": \"slavename\", \"target_platform\": \"android\"}",
+      "{\"buildername\": \"Android Galaxy S5 Perf (1)\", \"buildnumber\": 571, \"mastername\": \"chromium.perf\", \"perf-id\": \"android-galaxy-s5\", \"results-url\": \"https://chromeperf.appspot.com\", \"slavename\": \"slavename\", \"target_platform\": \"android\"}",
       "--args",
       "[\"--known-devices-file\", \"[HOME]/.android/known_devices.json\"]",
       "run",
