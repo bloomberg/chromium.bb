@@ -102,7 +102,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
         MakeSequencedTaskRunner(), MakeSequencedTaskRunner(),
-        content::BrowserThread::GetBlockingPool(), base_dir_.path(),
+        content::BrowserThread::GetBlockingPool(), base_dir_.GetPath(),
         NULL,  // task_logger
         NULL,  // notification_manager
         extension_service,

@@ -43,9 +43,9 @@ TEST_F(ExtensionFromUserScript, Basic) {
                        .AppendASCII("user_script_basic.user.js");
 
   base::string16 error;
-  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"),
-      extensions_dir.path(), &error));
+  scoped_refptr<Extension> extension(
+      ConvertUserScriptToExtension(test_file, GURL("http://www.google.com/foo"),
+                                   extensions_dir.GetPath(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(base::string16(), error);
@@ -98,7 +98,7 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
   base::string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"),
-      extensions_dir.path(), &error));
+      extensions_dir.GetPath(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(base::string16(), error);
@@ -147,7 +147,7 @@ TEST_F(ExtensionFromUserScript, NotUTF8) {
   base::string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"),
-      extensions_dir.path(), &error));
+      extensions_dir.GetPath(), &error));
 
   ASSERT_FALSE(extension.get());
   EXPECT_EQ(base::ASCIIToUTF16("User script must be UTF8 encoded."), error);
@@ -163,9 +163,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
                        .AppendASCII("user_script_run_at_start.user.js");
 
   base::string16 error;
-  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"),
-      extensions_dir.path(), &error));
+  scoped_refptr<Extension> extension(
+      ConvertUserScriptToExtension(test_file, GURL("http://www.google.com/foo"),
+                                   extensions_dir.GetPath(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(base::string16(), error);
@@ -198,9 +198,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
                        .AppendASCII("user_script_run_at_end.user.js");
 
   base::string16 error;
-  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"),
-      extensions_dir.path(), &error));
+  scoped_refptr<Extension> extension(
+      ConvertUserScriptToExtension(test_file, GURL("http://www.google.com/foo"),
+                                   extensions_dir.GetPath(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(base::string16(), error);
@@ -234,9 +234,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   ASSERT_TRUE(base::PathExists(test_file)) << test_file.value();
 
   base::string16 error;
-  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"),
-      extensions_dir.path(), &error));
+  scoped_refptr<Extension> extension(
+      ConvertUserScriptToExtension(test_file, GURL("http://www.google.com/foo"),
+                                   extensions_dir.GetPath(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(base::string16(), error);

@@ -26,7 +26,7 @@ TEST(ChromeURLOverridesHandlerTest, TestFileMissing) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   scoped_refptr<Extension> extension =
-      Extension::Create(dir.path(), Manifest::INTERNAL, *manifest_value,
+      Extension::Create(dir.GetPath(), Manifest::INTERNAL, *manifest_value,
                         Extension::NO_FLAGS, std::string(), &error);
   ASSERT_TRUE(extension);
   EXPECT_FALSE(

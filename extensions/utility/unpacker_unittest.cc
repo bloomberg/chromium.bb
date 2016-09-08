@@ -33,7 +33,7 @@ namespace keys = manifest_keys;
 class UnpackerTest : public testing::Test {
  public:
   ~UnpackerTest() override {
-    VLOG(1) << "Deleting temp dir: " << temp_dir_.path().LossyDisplayName();
+    VLOG(1) << "Deleting temp dir: " << temp_dir_.GetPath().LossyDisplayName();
     VLOG(1) << temp_dir_.Delete();
   }
 
@@ -47,13 +47,14 @@ class UnpackerTest : public testing::Test {
     // a temp folder to play in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    base::FilePath unzipped_dir = temp_dir_.path().AppendASCII("unzipped");
+    base::FilePath unzipped_dir = temp_dir_.GetPath().AppendASCII("unzipped");
     ASSERT_TRUE(zip::Unzip(crx_path, unzipped_dir))
         << "Failed to unzip " << crx_path.value() << " to "
         << unzipped_dir.value();
 
-    unpacker_.reset(new Unpacker(temp_dir_.path(), unzipped_dir, std::string(),
-                                 Manifest::INTERNAL, Extension::NO_FLAGS));
+    unpacker_.reset(new Unpacker(temp_dir_.GetPath(), unzipped_dir,
+                                 std::string(), Manifest::INTERNAL,
+                                 Extension::NO_FLAGS));
   }
 
  protected:

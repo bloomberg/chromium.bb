@@ -39,7 +39,7 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         crx_file::id_util::GenerateIdForPath(
-            base::MakeAbsoluteFilePath(test_extension_dir_.unpacked_path())));
+            base::MakeAbsoluteFilePath(test_extension_dir_.UnpackedPath())));
   }
 
   // Builds an extension manifest with the given content_capabilities matches
@@ -61,7 +61,7 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
         "}\n",
         matches.c_str(), permissions.c_str(), extension_permissions.c_str());
     test_extension_dir_.WriteManifest(manifest);
-    return LoadExtension(test_extension_dir_.unpacked_path());
+    return LoadExtension(test_extension_dir_.UnpackedPath());
   }
 
   std::string MakeJSONList(const std::string& s0 = "",

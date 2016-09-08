@@ -31,10 +31,10 @@ class PackExtensionTest : public testing::Test {
   bool TestPackExtension(const base::FilePath& path) {
     base::ScopedTempDir temp_dir;
     EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-    EXPECT_TRUE(base::CopyDirectory(path, temp_dir.path(), true));
+    EXPECT_TRUE(base::CopyDirectory(path, temp_dir.GetPath(), true));
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.AppendSwitchPath(switches::kPackExtension,
-                                  temp_dir.path().Append(path.BaseName()));
+                                  temp_dir.GetPath().Append(path.BaseName()));
     return startup_helper_.PackExtension(command_line);
   }
 

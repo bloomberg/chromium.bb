@@ -49,7 +49,7 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    storage_factory_ = new ValueStoreFactoryImpl(temp_dir_.path());
+    storage_factory_ = new ValueStoreFactoryImpl(temp_dir_.GetPath());
     ResetFrontend();
   }
 
@@ -163,7 +163,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
     base::StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_TRUE(result->status().ok());
-    EXPECT_TRUE(base::PathExists(temp_dir_.path()));
+    EXPECT_TRUE(base::PathExists(temp_dir_.GetPath()));
   }
 
   // Should need to both clear the database and delete the frontend for the
@@ -171,7 +171,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   {
     ValueStore::WriteResult result = storage->Clear();
     ASSERT_TRUE(result->status().ok());
-    EXPECT_TRUE(base::PathExists(temp_dir_.path()));
+    EXPECT_TRUE(base::PathExists(temp_dir_.GetPath()));
   }
 
   frontend_.reset();
@@ -179,7 +179,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // TODO(kalman): Figure out why this fails, despite appearing to work.
   // Leaving this commented out rather than disabling the whole test so that the
   // deletion code paths are at least exercised.
-  //EXPECT_FALSE(base::PathExists(temp_dir_.path()));
+  // EXPECT_FALSE(base::PathExists(temp_dir_.GetPath()));
 }
 
 // Disabled (slow), http://crbug.com/322751 .

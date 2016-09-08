@@ -24,20 +24,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
   base::CopyFile(
-      test_data_dir_.AppendASCII("i18nUpdate")
-                    .AppendASCII("manifest.json"),
-      extension_dir.path().AppendASCII("manifest.json"));
+      test_data_dir_.AppendASCII("i18nUpdate").AppendASCII("manifest.json"),
+      extension_dir.GetPath().AppendASCII("manifest.json"));
   base::CopyFile(
-      test_data_dir_.AppendASCII("i18nUpdate")
-                    .AppendASCII("contentscript.js"),
-      extension_dir.path().AppendASCII("contentscript.js"));
+      test_data_dir_.AppendASCII("i18nUpdate").AppendASCII("contentscript.js"),
+      extension_dir.GetPath().AppendASCII("contentscript.js"));
   base::CopyDirectory(
-      test_data_dir_.AppendASCII("i18nUpdate")
-                    .AppendASCII("_locales"),
-      extension_dir.path().AppendASCII("_locales"),
-      true);
+      test_data_dir_.AppendASCII("i18nUpdate").AppendASCII("_locales"),
+      extension_dir.GetPath().AppendASCII("_locales"), true);
 
-  const extensions::Extension* extension = LoadExtension(extension_dir.path());
+  const extensions::Extension* extension =
+      LoadExtension(extension_dir.GetPath());
 
   extensions::ResultCatcher catcher;
 
@@ -53,9 +50,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
 
   // Change messages.json file and reload extension.
   base::CopyFile(
-      test_data_dir_.AppendASCII("i18nUpdate")
-                    .AppendASCII("messages2.json"),
-      extension_dir.path().AppendASCII("_locales/en/messages.json"));
+      test_data_dir_.AppendASCII("i18nUpdate").AppendASCII("messages2.json"),
+      extension_dir.GetPath().AppendASCII("_locales/en/messages.json"));
   ReloadExtension(extension->id());
 
   // Check that the i18n message is also changed.

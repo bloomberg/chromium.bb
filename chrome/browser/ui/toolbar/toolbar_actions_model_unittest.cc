@@ -1117,11 +1117,11 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarIncognitoEnableExtension) {
     // The extension id will be calculated from the file path; we need this to
     // wait for the extension to load.
     base::FilePath path_for_id =
-        base::MakeAbsoluteFilePath(dirs[i]->unpacked_path());
+        base::MakeAbsoluteFilePath(dirs[i]->UnpackedPath());
     std::string id = crx_file::id_util::GenerateIdForPath(path_for_id);
     extensions::TestExtensionRegistryObserver observer(registry(), id);
-    extensions::UnpackedInstaller::Create(service())
-        ->Load(dirs[i]->unpacked_path());
+    extensions::UnpackedInstaller::Create(service())->Load(
+        dirs[i]->UnpackedPath());
     observer.WaitForExtensionLoaded();
     extensions[i] = registry()->enabled_extensions().GetByID(id);
     ASSERT_TRUE(extensions[i]);

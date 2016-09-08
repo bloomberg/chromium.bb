@@ -232,14 +232,14 @@ TEST_F(ExtensionUserScriptLoaderTest, Parse8) {
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
-  base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
+  base::FilePath path = temp_dir_.GetPath().AppendASCII("script.user.js");
   const std::string content("\xEF\xBB\xBF alert('hello');");
   size_t written = base::WriteFile(path, content.c_str(), content.size());
   ASSERT_EQ(written, content.size());
 
   std::unique_ptr<UserScript> user_script(new UserScript());
   user_script->js_scripts().push_back(base::MakeUnique<UserScript::File>(
-      temp_dir_.path(), path.BaseName(), GURL()));
+      temp_dir_.GetPath(), path.BaseName(), GURL()));
 
   UserScriptList user_scripts;
   user_scripts.push_back(std::move(user_script));
@@ -256,14 +256,14 @@ TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
-  base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
+  base::FilePath path = temp_dir_.GetPath().AppendASCII("script.user.js");
   const std::string content("alert('here's a BOOM: \xEF\xBB\xBF');");
   size_t written = base::WriteFile(path, content.c_str(), content.size());
   ASSERT_EQ(written, content.size());
 
   std::unique_ptr<UserScript> user_script(new UserScript());
   user_script->js_scripts().push_back(base::MakeUnique<UserScript::File>(
-      temp_dir_.path(), path.BaseName(), GURL()));
+      temp_dir_.GetPath(), path.BaseName(), GURL()));
 
   UserScriptList user_scripts;
   user_scripts.push_back(std::move(user_script));

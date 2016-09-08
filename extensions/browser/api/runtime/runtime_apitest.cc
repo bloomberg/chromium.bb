@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
   dir.WriteManifest(kManifest);
   dir.WriteFile(FILE_PATH_LITERAL("background.js"), "console.log('loaded');");
 
-  const Extension* extension = LoadExtension(dir.unpacked_path());
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
   ASSERT_TRUE(extension);
   const std::string extension_id = extension->id();
 

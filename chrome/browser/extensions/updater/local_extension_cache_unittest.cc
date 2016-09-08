@@ -55,13 +55,13 @@ class LocalExtensionCacheTest : public testing::Test {
   base::FilePath CreateCacheDir(bool initialized) {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
     if (initialized)
-      CreateFlagFile(cache_dir_.path());
-    return cache_dir_.path();
+      CreateFlagFile(cache_dir_.GetPath());
+    return cache_dir_.GetPath();
   }
 
   base::FilePath CreateTempDir() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    return temp_dir_.path();
+    return temp_dir_.GetPath();
   }
 
   void CreateFlagFile(const base::FilePath& dir) {
@@ -389,7 +389,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   // Create and initialize installation source directory.
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath temp_path = temp_dir.path();
+  const base::FilePath temp_path = temp_dir.GetPath();
   std::string version;
 
   // Right now we have two files for the first extension

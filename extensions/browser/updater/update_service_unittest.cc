@@ -209,9 +209,10 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
   base::FilePath bar_html(FILE_PATH_LITERAL("bar/bar.html"));
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.path(), foo_js, "hello"))
-      << "Failed to write " << temp_dir.path().value() << "/" << foo_js.value();
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.path(), bar_html, "world"));
+  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, "hello"))
+      << "Failed to write " << temp_dir.GetPath().value() << "/"
+      << foo_js.value();
+  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), bar_html, "world"));
 
   ExtensionBuilder builder;
   builder.SetManifest(DictionaryBuilder()
@@ -220,7 +221,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
                           .Set("manifest_version", 2)
                           .Build());
   builder.SetID(crx_file::id_util::GenerateId("whatever"));
-  builder.SetPath(temp_dir.path());
+  builder.SetPath(temp_dir.GetPath());
 
   scoped_refptr<Extension> extension1(builder.Build());
 
@@ -245,10 +246,10 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   // accidentally return paths outside the extension's dir, etc.
   base::FilePath tmp;
   EXPECT_TRUE(installer->GetInstalledFile(foo_js.MaybeAsASCII(), &tmp));
-  EXPECT_EQ(temp_dir.path().Append(foo_js), tmp) << tmp.value();
+  EXPECT_EQ(temp_dir.GetPath().Append(foo_js), tmp) << tmp.value();
 
   EXPECT_TRUE(installer->GetInstalledFile(bar_html.MaybeAsASCII(), &tmp));
-  EXPECT_EQ(temp_dir.path().Append(bar_html), tmp) << tmp.value();
+  EXPECT_EQ(temp_dir.GetPath().Append(bar_html), tmp) << tmp.value();
 
   EXPECT_FALSE(installer->GetInstalledFile("does_not_exist", &tmp));
   EXPECT_FALSE(installer->GetInstalledFile("does/not/exist", &tmp));
@@ -267,7 +268,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       extension1->manifest()->value()->DeepCopy());
   new_manifest->SetString("version", "2.0");
 
-  installer->Install(*new_manifest, new_version_dir.path());
+  installer->Install(*new_manifest, new_version_dir.GetPath());
 
   scoped_refptr<content::MessageLoopRunner> loop_runner =
       new content::MessageLoopRunner();
@@ -278,7 +279,8 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       extension_system()->install_requests();
   ASSERT_EQ(1u, requests->size());
   EXPECT_EQ(requests->at(0).extension_id, extension1->id());
-  EXPECT_NE(requests->at(0).temp_dir.value(), new_version_dir.path().value());
+  EXPECT_NE(requests->at(0).temp_dir.value(),
+            new_version_dir.GetPath().value());
 }
 
 TEST_F(UpdateServiceTest, UninstallPings) {

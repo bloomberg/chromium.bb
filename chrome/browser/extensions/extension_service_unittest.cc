@@ -1857,7 +1857,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath output_directory = temp_dir.path();
+  base::FilePath output_directory = temp_dir.GetPath();
 
   base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
   base::FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
@@ -1897,16 +1897,16 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   creator.reset(new ExtensionCreator());
-  ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
+  ASSERT_FALSE(creator->Run(temp_dir2.GetPath(), crx_path, privkey_path,
                             base::FilePath(), ExtensionCreator::kOverwriteCRX));
 
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
   ASSERT_TRUE(base::WriteFile(
-      temp_dir2.path().Append(extensions::kManifestFilename),
+      temp_dir2.GetPath().Append(extensions::kManifestFilename),
       invalid_manifest_content.c_str(), invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
-  ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
+  ASSERT_FALSE(creator->Run(temp_dir2.GetPath(), crx_path, privkey_path,
                             base::FilePath(), ExtensionCreator::kOverwriteCRX));
 
   // Try packing with a private key that is a valid key, but invalid for the
@@ -1954,16 +1954,16 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
 
   for (size_t i = 0; i < arraysize(punctuated_names); ++i) {
     SCOPED_TRACE(punctuated_names[i].value().c_str());
-    base::FilePath output_dir = temp_dir.path().Append(punctuated_names[i]);
+    base::FilePath output_dir = temp_dir.GetPath().Append(punctuated_names[i]);
 
     // Copy the extension into the output directory, as PackExtensionJob doesn't
     // let us choose where to output the packed extension.
     ASSERT_TRUE(base::CopyDirectory(input_directory, output_dir, true));
 
     base::FilePath expected_crx_path =
-        temp_dir.path().Append(expected_crx_names[i]);
+        temp_dir.GetPath().Append(expected_crx_names[i]);
     base::FilePath expected_private_key_path =
-        temp_dir.path().Append(expected_private_key_names[i]);
+        temp_dir.GetPath().Append(expected_private_key_names[i]);
     PackExtensionTestClient pack_client(expected_crx_path,
                                         expected_private_key_path);
     scoped_refptr<extensions::PackExtensionJob> packer(
@@ -1991,7 +1991,8 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 
   base::ScopedTempDir extension_temp_dir;
   ASSERT_TRUE(extension_temp_dir.CreateUniqueTempDir());
-  base::FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
+  base::FilePath input_directory =
+      extension_temp_dir.GetPath().AppendASCII("ext");
   ASSERT_TRUE(
       base::CopyDirectory(data_dir()
                               .AppendASCII("good")
@@ -2003,7 +2004,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 
   base::ScopedTempDir output_temp_dir;
   ASSERT_TRUE(output_temp_dir.CreateUniqueTempDir());
-  base::FilePath output_directory = output_temp_dir.path();
+  base::FilePath output_directory = output_temp_dir.GetPath();
 
   base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
   base::FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
@@ -2049,7 +2050,7 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath output_directory = temp_dir.path();
+  base::FilePath output_directory = temp_dir.GetPath();
 
   base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
 
@@ -2149,7 +2150,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
   // Set up the temporary extension directory.
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath extension_path = temp.path();
+  base::FilePath extension_path = temp.GetPath();
   base::FilePath manifest = extension_path.Append(
       extensions::kManifestFilename);
   base::FilePath icon_symlink = extension_path.AppendASCII("icon.png");
@@ -2601,7 +2602,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
 
   // We'll write the extension manifest dynamically to a temporary path
   // to make it easier to change the version number.
-  base::FilePath extension_path = temp.path();
+  base::FilePath extension_path = temp.GetPath();
   base::FilePath manifest_path =
       extension_path.Append(extensions::kManifestFilename);
   ASSERT_FALSE(base::PathExists(manifest_path));
@@ -3980,7 +3981,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionConflictsWithForceInstall) {
   base::FilePath pem_path = data_dir().AppendASCII("permissions_blocklist.pem");
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath crx_path = temp_dir.path().AppendASCII("temp.crx");
+  base::FilePath crx_path = temp_dir.GetPath().AppendASCII("temp.crx");
 
   PackCRX(path, pem_path, crx_path);
 
@@ -4080,7 +4081,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   // Pack the crx file.
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath crx_path = temp_dir.path().AppendASCII("temp.crx");
+  base::FilePath crx_path = temp_dir.GetPath().AppendASCII("temp.crx");
 
   PackCRX(path2, pem_path, crx_path);
 
@@ -6441,12 +6442,12 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   AddMockExternalProvider(provider);
 
   std::vector<BubbleErrorsTestData> data;
-  data.push_back(
-      BubbleErrorsTestData(updates_from_webstore, "1",
-                           temp_dir().path().AppendASCII("webstore.crx"), 1u));
-  data.push_back(
-      BubbleErrorsTestData(updates_from_webstore2, "1",
-                           temp_dir().path().AppendASCII("webstore2.crx"), 2u));
+  data.push_back(BubbleErrorsTestData(
+      updates_from_webstore, "1",
+      temp_dir().GetPath().AppendASCII("webstore.crx"), 1u));
+  data.push_back(BubbleErrorsTestData(
+      updates_from_webstore2, "1",
+      temp_dir().GetPath().AppendASCII("webstore2.crx"), 2u));
   data.push_back(BubbleErrorsTestData(good_crx, "1.0.0.0",
                                       data_dir().AppendASCII("good.crx"), 2u));
 
@@ -6510,7 +6511,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   // error bubble is for this newly added extension.
   {
     base::FilePath webstore_crx_three =
-        temp_dir().path().AppendASCII("webstore3.crx");
+        temp_dir().GetPath().AppendASCII("webstore3.crx");
     PackCRX(data_dir().AppendASCII("update_from_webstore3"),
             data_dir().AppendASCII("update_from_webstore3.pem"),
             webstore_crx_three);
@@ -6523,7 +6524,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
         content::NotificationService::AllSources());
     provider->UpdateOrAddExtension(
         updates_from_webstore3, "1",
-        temp_dir().path().AppendASCII("webstore3.crx"));
+        temp_dir().GetPath().AppendASCII("webstore3.crx"));
     service()->CheckForExternalUpdates();
     observer.Wait();
     // Make sure ExternalInstallError::OnDialogReady() fires.
@@ -6560,12 +6561,12 @@ TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
   AddMockExternalProvider(provider);
 
   std::vector<BubbleErrorsTestData> data;
-  data.push_back(
-      BubbleErrorsTestData(updates_from_webstore, "1",
-                           temp_dir().path().AppendASCII("webstore.crx"), 1u));
-  data.push_back(
-      BubbleErrorsTestData(updates_from_webstore2, "1",
-                           temp_dir().path().AppendASCII("webstore2.crx"), 2u));
+  data.push_back(BubbleErrorsTestData(
+      updates_from_webstore, "1",
+      temp_dir().GetPath().AppendASCII("webstore.crx"), 1u));
+  data.push_back(BubbleErrorsTestData(
+      updates_from_webstore2, "1",
+      temp_dir().GetPath().AppendASCII("webstore2.crx"), 2u));
 
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
           data_dir().AppendASCII("update_from_webstore.pem"), data[0].crx_path);
@@ -6654,7 +6655,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
   params.is_first_run = false;
   InitializeExtensionService(params);
 
-  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
@@ -6683,7 +6684,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
 
   InitializeEmptyExtensionService();
 
-  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
@@ -6715,7 +6716,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
   params.is_first_run = false;
   InitializeExtensionService(params);
 
-  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
@@ -6758,7 +6759,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
   params.is_first_run = false;
   InitializeExtensionService(params);
 
-  base::FilePath crx_path = temp_dir().path().AppendASCII("webstore.crx");
+  base::FilePath crx_path = temp_dir().GetPath().AppendASCII("webstore.crx");
   PackCRX(data_dir().AppendASCII("update_from_webstore"),
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);

@@ -380,7 +380,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   std::string GetFilename(const char* path) {
     std::string result =
-      downloads_directory_.path().AppendASCII(path).AsUTF8Unsafe();
+        downloads_directory_.GetPath().AppendASCII(path).AsUTF8Unsafe();
 #if defined(OS_WIN)
     for (std::string::size_type next = result.find("\\");
          next != std::string::npos;
@@ -570,7 +570,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   const base::FilePath& downloads_directory() {
-    return downloads_directory_.path();
+    return downloads_directory_.GetPath();
   }
 
   DownloadsEventsListener* events_listener() { return events_listener_.get(); }
@@ -591,8 +591,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void CreateAndSetDownloadsDirectory() {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
     current_browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory,
-        downloads_directory_.path());
+        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
   }
 
   base::ScopedTempDir downloads_directory_;

@@ -104,7 +104,7 @@ class PolicyValueStoreTest : public testing::Test {
     store_.reset(new PolicyValueStore(
         kTestExtensionId, observers_,
         base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName,
-                                            scoped_temp_dir_.path())));
+                                            scoped_temp_dir_.GetPath())));
   }
 
   void TearDown() override {

@@ -60,7 +60,7 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   }
 
   LeveldbValueStore* store() { return store_.get(); }
-  const base::FilePath& database_path() { return database_dir_.path(); }
+  const base::FilePath& database_path() { return database_dir_.GetPath(); }
 
  private:
   std::unique_ptr<LeveldbValueStore> store_;

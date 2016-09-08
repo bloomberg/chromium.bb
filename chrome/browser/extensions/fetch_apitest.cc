@@ -39,7 +39,7 @@ class ExtensionFetchTest : public ExtensionApiTest {
   const Extension* WriteFilesAndLoadTestExtension(TestExtensionDir* dir) {
     dir->WriteFile(FILE_PATH_LITERAL("text"), "text content");
     dir->WriteFile(FILE_PATH_LITERAL("bg.js"), "");
-    return LoadExtension(dir->unpacked_path());
+    return LoadExtension(dir->UnpackedPath());
   }
 
   // Returns |kFetchScript| with |url_expression| substituted as its test URL.

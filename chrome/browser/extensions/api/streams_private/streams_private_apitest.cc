@@ -158,7 +158,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     // Setup default downloads directory to the scoped tmp directory created for
     // the test.
     browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_dir_.path());
+        prefs::kDownloadDefaultDirectory, downloads_dir_.GetPath());
     // Ensure there are no prompts for download during the test.
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
 
   // The download's target file path.
   base::FilePath target_path =
-      downloads_dir_.path().Append(FILE_PATH_LITERAL("download_target.txt"));
+      downloads_dir_.GetPath().Append(FILE_PATH_LITERAL("download_target.txt"));
 
   // Set the downloads parameters.
   content::WebContents* web_contents =

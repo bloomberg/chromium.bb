@@ -74,7 +74,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     client_ = new MockSandboxedUnpackerClient;
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
-        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.path(),
+        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
@@ -109,7 +109,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath crx_path = GetCrxFullPath(crx_name);
-    ASSERT_TRUE(zip::Unzip(crx_path, temp_dir.path()));
+    ASSERT_TRUE(zip::Unzip(crx_path, temp_dir.GetPath()));
 
     std::string fake_id = crx_file::id_util::GenerateId(crx_name);
     std::string fake_public_key;

@@ -108,7 +108,7 @@ class WakeEventPageTest : public ExtensionBrowserTest {
     }
 
     // Install the extension, then close its background page if desired..
-    const Extension* extension = LoadExtension(extension_dir.unpacked_path());
+    const Extension* extension = LoadExtension(extension_dir.UnpackedPath());
     CHECK(extension);
 
     // Regardless of |will_be_open|, we haven't closed the background page yet,

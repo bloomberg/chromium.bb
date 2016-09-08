@@ -67,7 +67,7 @@ void ExtensionMessageBubbleBrowserTest::AddSettingsOverrideExtension(
     "  }\n"
     "}", settings_override_value.c_str());
   custom_extension_dir_->WriteManifestWithSingleQuotes(manifest);
-  ASSERT_TRUE(LoadExtension(custom_extension_dir_->unpacked_path()));
+  ASSERT_TRUE(LoadExtension(custom_extension_dir_->UnpackedPath()));
 }
 
 void ExtensionMessageBubbleBrowserTest::CheckBubble(

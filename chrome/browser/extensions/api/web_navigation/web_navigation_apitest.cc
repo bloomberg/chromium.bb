@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
   ASSERT_TRUE(download_directory.CreateUniqueTempDir());
   DownloadPrefs* download_prefs =
       DownloadPrefs::FromBrowserContext(browser()->profile());
-  download_prefs->SetDownloadPath(download_directory.path());
+  download_prefs->SetDownloadPath(download_directory.GetPath());
 
   DownloadTestObserverNotInProgress download_observer(
       content::BrowserContext::GetDownloadManager(profile()), 1);

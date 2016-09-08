@@ -464,7 +464,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     } else {
       dir->WriteFile(FILE_PATH_LITERAL("background.js"), "");
     }
-    return LoadExtension(dir->unpacked_path());
+    return LoadExtension(dir->UnpackedPath());
   }
 
   const char* common_manifest() {
@@ -1208,13 +1208,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingUserGesture) {
       "    function(msg, sender, reply) {\n"
       "      reply({result:chrome.test.isProcessingUserGesture()});\n"
       "    });");
-  const Extension* receiver = LoadExtension(receiver_dir.unpacked_path());
+  const Extension* receiver = LoadExtension(receiver_dir.UnpackedPath());
   ASSERT_TRUE(receiver);
 
   TestExtensionDir sender_dir;
   sender_dir.WriteManifest(kManifest);
   sender_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
-  const Extension* sender = LoadExtension(sender_dir.unpacked_path());
+  const Extension* sender = LoadExtension(sender_dir.UnpackedPath());
   ASSERT_TRUE(sender);
 
   EXPECT_EQ("false",

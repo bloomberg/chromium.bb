@@ -33,7 +33,7 @@ TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   base::FilePath locale = src_path.AppendASCII("ms");
   ASSERT_TRUE(base::CreateDirectory(locale));
 
@@ -45,7 +45,7 @@ TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
   manifest.SetString(keys::kDefaultLocale, "en");
   std::string error;
   EXPECT_FALSE(extension_l10n_util::ValidateExtensionLocales(
-      temp.path(), &manifest, &error));
+      temp.GetPath(), &manifest, &error));
   EXPECT_THAT(
       error,
       testing::HasSubstr(base::UTF16ToUTF8(messages_file.LossyDisplayName())));
@@ -55,7 +55,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string error;
@@ -70,7 +70,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("sr")));
 
@@ -86,7 +86,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
   // Supported locale.
   base::FilePath locale_1 = src_path.AppendASCII("sr");
@@ -142,7 +142,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("en")));
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("sr")));
@@ -157,7 +157,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   base::FilePath locale = src_path.AppendASCII("sr");
@@ -181,7 +181,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   base::FilePath locale_1 = src_path.AppendASCII("en");

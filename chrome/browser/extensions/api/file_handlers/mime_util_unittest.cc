@@ -56,7 +56,7 @@ class FileHandlersMimeUtilTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
-        content::CreateFileSystemContextForTesting(NULL, data_dir_.path());
+        content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
 
     EXPECT_TRUE(base::CreateTemporaryFile(&html_mime_file_path_));
     const std::string kSampleContent = "<html><body></body></html>";

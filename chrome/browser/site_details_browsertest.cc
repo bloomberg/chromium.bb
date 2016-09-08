@@ -235,7 +235,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
                        name.c_str(), iframe_url.c_str(), iframe_url2.c_str()));
     dir->WriteManifest(manifest.ToJSON());
 
-    const Extension* extension = LoadExtension(dir->unpacked_path());
+    const Extension* extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(extension);
     temp_dirs_.push_back(dir.release());
     return extension;
@@ -279,7 +279,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
                            name.c_str(), iframe_url.c_str()));
     dir->WriteManifest(manifest.ToJSON());
 
-    const Extension* extension = LoadExtension(dir->unpacked_path());
+    const Extension* extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(extension);
     temp_dirs_.push_back(dir.release());
   }
@@ -301,7 +301,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
                 .Build());
     dir->WriteManifest(manifest.ToJSON());
 
-    const Extension* extension = LoadExtension(dir->unpacked_path());
+    const Extension* extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(extension);
     temp_dirs_.push_back(dir.release());
     return extension;

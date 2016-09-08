@@ -85,7 +85,7 @@ void WebstoreInstallerTest::SetUpOnMainThread() {
   ASSERT_TRUE(download_directory_.CreateUniqueTempDir());
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       browser()->profile());
-  download_prefs->SetDownloadPath(download_directory_.path());
+  download_prefs->SetDownloadPath(download_directory_.GetPath());
 }
 
 GURL WebstoreInstallerTest::GenerateTestServerUrl(

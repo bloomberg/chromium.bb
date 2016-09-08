@@ -163,7 +163,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
                  injection_type == CONTENT_SCRIPT ? kContentScriptSource
                                                   : kBackgroundScriptSource);
 
-  const Extension* extension = LoadExtension(dir->unpacked_path());
+  const Extension* extension = LoadExtension(dir->UnpackedPath());
   if (extension) {
     test_extension_dirs_.push_back(std::move(dir));
     extensions_.push_back(extension);

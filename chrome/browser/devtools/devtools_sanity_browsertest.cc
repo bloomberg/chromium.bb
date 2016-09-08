@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionWithHttpIframe) {
                      http_iframe.spec() + "'></iframe>");
 
   // Install the extension.
-  const Extension* extension = LoadExtensionFromPath(dir->unpacked_path());
+  const Extension* extension = LoadExtensionFromPath(dir->UnpackedPath());
   ASSERT_TRUE(extension);
 
   // Open a devtools window.

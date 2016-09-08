@@ -45,18 +45,18 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath pem_path = test_data_dir_.
       AppendASCII("keybinding").AppendASCII("keybinding.pem");
-  base::FilePath path_v1 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
-                    .AppendASCII("v1"),
-      scoped_temp_dir.path().AppendASCII("v1.crx"),
-      pem_path,
-      base::FilePath());
-  base::FilePath path_v2 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
-                    .AppendASCII("v2"),
-      scoped_temp_dir.path().AppendASCII("v2.crx"),
-      pem_path,
-      base::FilePath());
+  base::FilePath path_v1 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("keybinding")
+                                   .AppendASCII("update")
+                                   .AppendASCII("v1"),
+                               scoped_temp_dir.GetPath().AppendASCII("v1.crx"),
+                               pem_path, base::FilePath());
+  base::FilePath path_v2 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("keybinding")
+                                   .AppendASCII("update")
+                                   .AppendASCII("v2"),
+                               scoped_temp_dir.GetPath().AppendASCII("v2.crx"),
+                               pem_path, base::FilePath());
 
   ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
       extension_service();

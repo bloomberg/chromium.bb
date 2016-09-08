@@ -177,7 +177,7 @@ TEST_F(ActivityDatabaseTest, Init) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityInit.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityInit.db");
   sql::Connection::Delete(db_file);
 
   ActivityDatabase* activity_db = OpenDatabase(db_file);
@@ -194,7 +194,7 @@ TEST_F(ActivityDatabaseTest, RecordAction) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityRecord.db");
   sql::Connection::Delete(db_file);
 
   ActivityDatabase* activity_db = OpenDatabase(db_file);
@@ -213,7 +213,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityRecord.db");
   sql::Connection::Delete(db_file);
 
   // Record some actions
@@ -231,7 +231,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityRecord.db");
   sql::Connection::Delete(db_file);
 
   // Record some actions
@@ -253,7 +253,7 @@ TEST_F(ActivityDatabaseTest, BatchModeFlush) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityFlush.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityFlush.db");
   sql::Connection::Delete(db_file);
 
   // Record some actions
@@ -275,7 +275,7 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
+  db_file = temp_dir.GetPath().AppendASCII("ActivityRecord.db");
   sql::Connection::Delete(db_file);
 
   ActivityDatabaseTestPolicy* delegate = new ActivityDatabaseTestPolicy();

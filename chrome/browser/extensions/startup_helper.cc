@@ -179,7 +179,7 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   base::RunLoop run_loop;
   CRXFileInfo file(path);
   scoped_refptr<ValidateCrxHelper> helper(
-      new ValidateCrxHelper(file, temp_dir.path(), &run_loop));
+      new ValidateCrxHelper(file, temp_dir.GetPath(), &run_loop));
   helper->Start();
   run_loop.Run();
 

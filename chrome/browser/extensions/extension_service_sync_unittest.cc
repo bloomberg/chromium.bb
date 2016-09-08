@@ -1421,9 +1421,9 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
 
   base::ScopedTempDir crx_dir;
   ASSERT_TRUE(crx_dir.CreateUniqueTempDir());
-  const base::FilePath crx_path_v1 = crx_dir.path().AppendASCII("temp1.crx");
+  const base::FilePath crx_path_v1 = crx_dir.GetPath().AppendASCII("temp1.crx");
   PackCRX(path_v1, pem_path, crx_path_v1);
-  const base::FilePath crx_path_v2 = crx_dir.path().AppendASCII("temp2.crx");
+  const base::FilePath crx_path_v2 = crx_dir.GetPath().AppendASCII("temp2.crx");
   PackCRX(path_v2, pem_path, crx_path_v2);
 
   const std::string v1("1");

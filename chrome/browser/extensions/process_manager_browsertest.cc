@@ -134,7 +134,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
 
     dir->WriteManifest(manifest.ToJSON());
 
-    const Extension* extension = LoadExtension(dir->unpacked_path());
+    const Extension* extension = LoadExtension(dir->UnpackedPath());
     EXPECT_TRUE(extension);
     temp_dirs_.push_back(std::move(dir));
     return extension;

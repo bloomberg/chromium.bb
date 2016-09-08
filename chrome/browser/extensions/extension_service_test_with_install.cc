@@ -105,7 +105,7 @@ const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
   base::FilePath crx_path;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  crx_path = temp_dir.path().AppendASCII("temp.crx");
+  crx_path = temp_dir.GetPath().AppendASCII("temp.crx");
 
   PackCRX(dir_path, pem_path, crx_path);
   return InstallCRX(crx_path, install_state, creation_flags);
@@ -249,7 +249,7 @@ void ExtensionServiceTestWithInstall::PackCRXAndUpdateExtension(
     UpdateState expected_state) {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath crx_path = temp_dir.path().AppendASCII("temp.crx");
+  base::FilePath crx_path = temp_dir.GetPath().AppendASCII("temp.crx");
 
   PackCRX(dir_path, pem_path, crx_path);
   UpdateExtension(id, crx_path, expected_state);
@@ -263,7 +263,7 @@ void ExtensionServiceTestWithInstall::UpdateExtension(
 
   // We need to copy this to a temporary location because Update() will delete
   // it.
-  base::FilePath path = temp_dir().path();
+  base::FilePath path = temp_dir().GetPath();
   path = path.Append(in_path.BaseName());
   ASSERT_TRUE(base::CopyFile(in_path, path));
 

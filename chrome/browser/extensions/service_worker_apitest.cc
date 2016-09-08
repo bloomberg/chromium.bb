@@ -254,16 +254,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
   base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
                                 .AppendASCII("update")
                                 .AppendASCII("service_worker.pem");
-  base::FilePath path_v1 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("service_worker")
-          .AppendASCII("update")
-          .AppendASCII("v1"),
-      scoped_temp_dir.path().AppendASCII("v1.crx"), pem_path, base::FilePath());
-  base::FilePath path_v2 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("service_worker")
-          .AppendASCII("update")
-          .AppendASCII("v2"),
-      scoped_temp_dir.path().AppendASCII("v2.crx"), pem_path, base::FilePath());
+  base::FilePath path_v1 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update")
+                                   .AppendASCII("v1"),
+                               scoped_temp_dir.GetPath().AppendASCII("v1.crx"),
+                               pem_path, base::FilePath());
+  base::FilePath path_v2 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update")
+                                   .AppendASCII("v2"),
+                               scoped_temp_dir.GetPath().AppendASCII("v2.crx"),
+                               pem_path, base::FilePath());
   const char* kId = "hfaanndiiilofhfokeanhddpkfffchdi";
 
   ExtensionTestMessageListener listener_v1("Pong from version 1", false);
@@ -292,16 +294,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateWithoutSkipWaiting) {
   base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
                                 .AppendASCII("update_without_skip_waiting")
                                 .AppendASCII("update_without_skip_waiting.pem");
-  base::FilePath path_v1 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("service_worker")
-          .AppendASCII("update_without_skip_waiting")
-          .AppendASCII("v1"),
-      scoped_temp_dir.path().AppendASCII("v1.crx"), pem_path, base::FilePath());
-  base::FilePath path_v2 = PackExtensionWithOptions(
-      test_data_dir_.AppendASCII("service_worker")
-          .AppendASCII("update_without_skip_waiting")
-          .AppendASCII("v2"),
-      scoped_temp_dir.path().AppendASCII("v2.crx"), pem_path, base::FilePath());
+  base::FilePath path_v1 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_without_skip_waiting")
+                                   .AppendASCII("v1"),
+                               scoped_temp_dir.GetPath().AppendASCII("v1.crx"),
+                               pem_path, base::FilePath());
+  base::FilePath path_v2 =
+      PackExtensionWithOptions(test_data_dir_.AppendASCII("service_worker")
+                                   .AppendASCII("update_without_skip_waiting")
+                                   .AppendASCII("v2"),
+                               scoped_temp_dir.GetPath().AppendASCII("v2.crx"),
+                               pem_path, base::FilePath());
   const char* kId = "mhnnnflgagdakldgjpfcofkiocpdmogl";
 
   // Install version 1.0 of the extension.

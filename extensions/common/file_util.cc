@@ -132,7 +132,7 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
     return base::FilePath();
   }
   base::FilePath crx_temp_source =
-      extension_temp_dir.path().Append(unpacked_source_dir.BaseName());
+      extension_temp_dir.GetPath().Append(unpacked_source_dir.BaseName());
   if (!base::Move(unpacked_source_dir, crx_temp_source)) {
     LOG(ERROR) << "Moving extension from : " << unpacked_source_dir.value()
                << " to : " << crx_temp_source.value() << " failed.";

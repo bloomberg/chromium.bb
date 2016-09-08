@@ -44,7 +44,7 @@ namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest
     : public ExtensionServiceTestBase {
  protected:
-  const base::FilePath& cache_dir() { return cache_dir_.path(); }
+  const base::FilePath& cache_dir() { return cache_dir_.GetPath(); }
 
   void SetUp() override {
 #if defined(ENABLE_PLUGINS)

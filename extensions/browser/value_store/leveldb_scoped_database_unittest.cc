@@ -28,12 +28,13 @@ class LeveldbScopedDatabaseUnitTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
-    db_ = new LeveldbScopedDatabase(kTestUMAClientName, database_dir_.path());
+    db_ =
+        new LeveldbScopedDatabase(kTestUMAClientName, database_dir_.GetPath());
   }
 
   void TearDown() override {
     db_ = nullptr;
-    base::DeleteFile(database_dir_.path(), true);
+    base::DeleteFile(database_dir_.GetPath(), true);
   }
 
   ValueStore::Status ReadAllValues(

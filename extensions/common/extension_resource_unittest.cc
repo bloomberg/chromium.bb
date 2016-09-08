@@ -52,12 +52,12 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath inner_dir = temp.path().AppendASCII("directory");
+  base::FilePath inner_dir = temp.GetPath().AppendASCII("directory");
   ASSERT_TRUE(base::CreateDirectory(inner_dir));
   base::FilePath sub_dir = inner_dir.AppendASCII("subdir");
   ASSERT_TRUE(base::CreateDirectory(sub_dir));
   base::FilePath inner_file = inner_dir.AppendASCII("inner");
-  base::FilePath outer_file = temp.path().AppendASCII("outer");
+  base::FilePath outer_file = temp.GetPath().AppendASCII("outer");
   ASSERT_TRUE(base::WriteFile(outer_file, "X", 1));
   ASSERT_TRUE(base::WriteFile(inner_file, "X", 1));
   std::string extension_id = crx_file::id_util::GenerateId("test");
@@ -124,13 +124,12 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
 
   // Create resource in the extension root.
   const char* filename = "res.ico";
-  base::FilePath root_resource = temp.path().AppendASCII(filename);
+  base::FilePath root_resource = temp.GetPath().AppendASCII(filename);
   std::string data = "some foo";
   ASSERT_TRUE(base::WriteFile(root_resource, data.c_str(), data.length()));
 
   // Create l10n resources (for current locale and its parents).
-  base::FilePath l10n_path =
-      temp.path().Append(kLocaleFolder);
+  base::FilePath l10n_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(l10n_path));
 
   std::vector<std::string> locales;
@@ -147,7 +146,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
 
   base::FilePath path;
   std::string extension_id = crx_file::id_util::GenerateId("test");
-  ExtensionResource resource(extension_id, temp.path(),
+  ExtensionResource resource(extension_id, temp.GetPath(),
                              base::FilePath().AppendASCII(filename));
   const base::FilePath& resolved_path = resource.GetFilePath();
 
@@ -158,7 +157,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ASSERT_FALSE(expected_path.empty());
 
   EXPECT_EQ(ToLower(expected_path.value()), ToLower(resolved_path.value()));
-  EXPECT_EQ(ToLower(temp.path().value()),
+  EXPECT_EQ(ToLower(temp.GetPath().value()),
             ToLower(resource.extension_root().value()));
   EXPECT_EQ(ToLower(base::FilePath().AppendASCII(filename).value()),
             ToLower(resource.relative_path().value()));

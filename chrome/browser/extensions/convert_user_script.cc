@@ -160,7 +160,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
 
   root->Set(keys::kContentScripts, content_scripts);
 
-  base::FilePath manifest_path = temp_dir.path().Append(kManifestFilename);
+  base::FilePath manifest_path = temp_dir.GetPath().Append(kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
     *error = base::ASCIIToUTF16("Could not write JSON.");
@@ -169,7 +169,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
 
   // Write the script file.
   if (!base::CopyFile(user_script_path,
-                      temp_dir.path().AppendASCII("script.js"))) {
+                      temp_dir.GetPath().AppendASCII("script.js"))) {
     *error = base::ASCIIToUTF16("Could not copy script file.");
     return NULL;
   }
@@ -177,12 +177,9 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
   // with base::string16
   std::string utf8_error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      temp_dir.path(),
-      Manifest::INTERNAL,
-      *root,
-      Extension::NO_FLAGS,
-      &utf8_error);
+  scoped_refptr<Extension> extension =
+      Extension::Create(temp_dir.GetPath(), Manifest::INTERNAL, *root,
+                        Extension::NO_FLAGS, &utf8_error);
   *error = base::UTF8ToUTF16(utf8_error);
   if (!extension.get()) {
     NOTREACHED() << "Could not init extension " << *error;

@@ -90,9 +90,10 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
       return base::FilePath();
     }
     FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
-        "test_temp", temp_dir_.path());
+        "test_temp", temp_dir_.GetPath());
 
-    base::FilePath destination = temp_dir_.path().AppendASCII(destination_name);
+    base::FilePath destination =
+        temp_dir_.GetPath().AppendASCII(destination_name);
     if (copy_gold) {
       base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
       EXPECT_TRUE(base::CopyFile(source, destination));
@@ -108,13 +109,13 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
       return std::vector<base::FilePath>();
     }
     FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
-        "test_temp", temp_dir_.path());
+        "test_temp", temp_dir_.GetPath());
 
     std::vector<base::FilePath> result;
     for (std::vector<std::string>::const_iterator it =
              destination_names.begin();
          it != destination_names.end(); ++it) {
-      base::FilePath destination = temp_dir_.path().AppendASCII(*it);
+      base::FilePath destination = temp_dir_.GetPath().AppendASCII(*it);
       if (copy_gold) {
         base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
         EXPECT_TRUE(base::CopyFile(source, destination));

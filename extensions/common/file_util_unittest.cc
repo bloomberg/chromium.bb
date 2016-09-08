@@ -68,7 +68,7 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
   // Create a source extension.
   std::string extension_id("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   std::string version("1.0");
-  base::FilePath src = temp.path().AppendASCII(extension_id);
+  base::FilePath src = temp.GetPath().AppendASCII(extension_id);
   ASSERT_TRUE(base::CreateDirectory(src));
 
   base::FilePath extension_content;
@@ -76,7 +76,7 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_TRUE(base::PathExists(extension_content));
 
   // Create a extensions tree.
-  base::FilePath all_extensions = temp.path().AppendASCII("extensions");
+  base::FilePath all_extensions = temp.GetPath().AppendASCII("extensions");
   ASSERT_TRUE(base::CreateDirectory(all_extensions));
 
   // Install in empty directory. Should create parent directories as needed.
@@ -148,14 +148,14 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesNoUnderscores) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().AppendASCII("some_dir");
+  base::FilePath src_path = temp.GetPath().AppendASCII("some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
   ASSERT_TRUE(base::WriteFile(
       src_path.AppendASCII("some_file.txt"), data.c_str(), data.length()));
   std::string error;
-  EXPECT_TRUE(file_util::CheckForIllegalFilenames(temp.path(), &error));
+  EXPECT_TRUE(file_util::CheckForIllegalFilenames(temp.GetPath(), &error));
 }
 
 TEST_F(FileUtilTest, CheckIllegalFilenamesOnlyReserved) {
@@ -166,26 +166,26 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesOnlyReserved) {
       extensions::kLocaleFolder, extensions::kPlatformSpecificFolder};
 
   for (size_t i = 0; i < arraysize(folders); i++) {
-    base::FilePath src_path = temp.path().Append(folders[i]);
+    base::FilePath src_path = temp.GetPath().Append(folders[i]);
     ASSERT_TRUE(base::CreateDirectory(src_path));
   }
 
   std::string error;
-  EXPECT_TRUE(file_util::CheckForIllegalFilenames(temp.path(), &error));
+  EXPECT_TRUE(file_util::CheckForIllegalFilenames(temp.GetPath(), &error));
 }
 
 TEST_F(FileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().Append(extensions::kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(extensions::kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
-  src_path = temp.path().AppendASCII("_some_dir");
+  src_path = temp.GetPath().AppendASCII("_some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string error;
-  EXPECT_FALSE(file_util::CheckForIllegalFilenames(temp.path(), &error));
+  EXPECT_FALSE(file_util::CheckForIllegalFilenames(temp.GetPath(), &error));
 }
 
 // These tests do not work on Windows, because it is illegal to create a
@@ -196,12 +196,12 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesDirectoryWindowsReserved) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().AppendASCII("aux");
+  base::FilePath src_path = temp.GetPath().AppendASCII("aux");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string error;
   EXPECT_FALSE(
-      file_util::CheckForWindowsReservedFilenames(temp.path(), &error));
+      file_util::CheckForWindowsReservedFilenames(temp.GetPath(), &error));
 }
 
 TEST_F(FileUtilTest,
@@ -209,7 +209,7 @@ TEST_F(FileUtilTest,
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().AppendASCII("some_dir");
+  base::FilePath src_path = temp.GetPath().AppendASCII("some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
@@ -218,7 +218,7 @@ TEST_F(FileUtilTest,
 
   std::string error;
   EXPECT_FALSE(
-      file_util::CheckForWindowsReservedFilenames(temp.path(), &error));
+      file_util::CheckForWindowsReservedFilenames(temp.GetPath(), &error));
 }
 #endif
 
@@ -260,7 +260,7 @@ TEST_F(FileUtilTest, ValidateThemeUTF8) {
   // "aeo" with accents. Use http://0xcc.net/jsescape/ to decode them.
   std::string non_ascii_file = "\xC3\xA0\xC3\xA8\xC3\xB2.png";
   base::FilePath non_ascii_path =
-      temp.path().Append(base::FilePath::FromUTF8Unsafe(non_ascii_file));
+      temp.GetPath().Append(base::FilePath::FromUTF8Unsafe(non_ascii_file));
   base::WriteFile(non_ascii_path, "", 0);
 
   std::string kManifest = base::StringPrintf(
@@ -270,7 +270,7 @@ TEST_F(FileUtilTest, ValidateThemeUTF8) {
       non_ascii_file.c_str());
   std::string error;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
-      kManifest, temp.path(), Manifest::UNPACKED, 0, &error);
+      kManifest, temp.GetPath(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   std::vector<extensions::InstallWarning> warnings;
@@ -294,8 +294,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
 
   std::string error;
   std::vector<extensions::InstallWarning> warnings;
-  scoped_refptr<Extension> extension =
-      LoadExtensionManifest(*value, temp.path(), Manifest::UNPACKED, 0, &error);
+  scoped_refptr<Extension> extension = LoadExtensionManifest(
+      *value, temp.GetPath(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   EXPECT_FALSE(
@@ -309,8 +309,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   scripts->Clear();
   scripts->AppendString("http://google.com/foo.js");
 
-  extension =
-      LoadExtensionManifest(*value, temp.path(), Manifest::UNPACKED, 0, &error);
+  extension = LoadExtensionManifest(*value, temp.GetPath(), Manifest::UNPACKED,
+                                    0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   warnings.clear();
@@ -347,7 +347,7 @@ TEST_F(FileUtilTest, FindPrivateKeyFiles) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.path().AppendASCII("some_dir");
+  base::FilePath src_path = temp.GetPath().AppendASCII("some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   ASSERT_TRUE(base::WriteFile(
@@ -364,7 +364,7 @@ TEST_F(FileUtilTest, FindPrivateKeyFiles) {
                               private_key,
                               arraysize(private_key) - 30));
   std::vector<base::FilePath> private_keys =
-      file_util::FindPrivateKeyFiles(temp.path());
+      file_util::FindPrivateKeyFiles(temp.GetPath());
   EXPECT_EQ(2U, private_keys.size());
   EXPECT_THAT(private_keys,
               testing::Contains(src_path.AppendASCII("a_key.pem")));
@@ -376,7 +376,7 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath ext_path = temp.path().AppendASCII("ext_root");
+  base::FilePath ext_path = temp.GetPath().AppendASCII("ext_root");
   ASSERT_TRUE(base::CreateDirectory(ext_path));
 
   const char manifest[] =

@@ -123,7 +123,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
         new ScopedTestDialogAutoConfirm(ScopedTestDialogAutoConfirm::ACCEPT));
 
     ASSERT_TRUE(webstore_install_dir_.CreateUniqueTempDir());
-    webstore_install_dir_copy_ = webstore_install_dir_.path();
+    webstore_install_dir_copy_ = webstore_install_dir_.GetPath();
     WebstoreInstaller::SetDownloadDirectoryForTests(
         &webstore_install_dir_copy_);
   }

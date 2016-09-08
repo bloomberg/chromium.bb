@@ -110,7 +110,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
 
   bool AddNewFileInTestGallery() {
     base::FilePath gallery_file =
-        test_gallery_.path().Append(FILE_PATH_LITERAL("test1.txt"));
+        test_gallery_.GetPath().Append(FILE_PATH_LITERAL("test1.txt"));
     std::string content("new content");
     int write_size =
         base::WriteFile(gallery_file, content.c_str(), content.length());
@@ -147,8 +147,8 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
 
     ASSERT_TRUE(test_gallery_.CreateUniqueTempDir());
     MediaGalleryPrefInfo gallery_info;
-    ASSERT_FALSE(
-        preferences->LookUpGalleryByPath(test_gallery_.path(), &gallery_info));
+    ASSERT_FALSE(preferences->LookUpGalleryByPath(test_gallery_.GetPath(),
+                                                  &gallery_info));
     MediaGalleryPrefId id =
         preferences->AddGallery(gallery_info.device_id,
                                 gallery_info.path,

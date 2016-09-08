@@ -125,7 +125,8 @@ void Operation::Unzip(const base::Closure& continuation) {
   // zip_reader_.
   zip::ZipReader::EntryInfo* entry_info = zip_reader_->current_entry_info();
   if (entry_info) {
-    image_path_ = temp_dir_.path().Append(entry_info->file_path().BaseName());
+    image_path_ =
+        temp_dir_.GetPath().Append(entry_info->file_path().BaseName());
   } else {
     Error(error::kTempDirError);
     return;

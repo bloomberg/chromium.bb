@@ -88,7 +88,7 @@ const extensions::Extension* LocationBarBrowserTest::LoadPageActionExtension(
   dir->WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundScriptSource);
 
   ExtensionTestMessageListener registered_listener("registered", false);
-  const extensions::Extension* extension = LoadExtension(dir->unpacked_path());
+  const extensions::Extension* extension = LoadExtension(dir->UnpackedPath());
   registered_listener.WaitUntilSatisfied();
 
   return extension;

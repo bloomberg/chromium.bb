@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
       "  });\n"
       "});\n");
   ExtensionTestMessageListener ready("ready", false);
-  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
   const ExtensionAction* page_action =
       ExtensionActionManager::Get(browser()->profile())->

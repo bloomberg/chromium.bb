@@ -321,7 +321,7 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
   base::FilePath zip_path;
   std::vector<uint8_t> signature;
   bool result = false;
-  if (CreateZip(extension_dir, temp_dir.path(), &zip_path) &&
+  if (CreateZip(extension_dir, temp_dir.GetPath(), &zip_path) &&
       SignZip(zip_path, key_pair.get(), &signature) &&
       WriteCRX(zip_path, key_pair.get(), signature, crx_path)) {
     result = true;

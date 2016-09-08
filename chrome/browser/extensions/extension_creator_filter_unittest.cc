@@ -23,7 +23,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    test_dir_ = temp_dir_.path();
+    test_dir_ = temp_dir_.GetPath();
 
     filter_ = new extensions::ExtensionCreatorFilter();
   }

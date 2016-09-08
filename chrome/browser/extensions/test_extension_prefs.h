@@ -48,7 +48,7 @@ class TestExtensionPrefs {
   PrefService* pref_service();
   const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry();
   void ResetPrefRegistry();
-  const base::FilePath& temp_dir() const { return temp_dir_.path(); }
+  const base::FilePath& temp_dir() const { return temp_dir_.GetPath(); }
   const base::FilePath& extensions_dir() const { return extensions_dir_; }
   ExtensionPrefValueMap* extension_pref_value_map() {
     return extension_pref_value_map_.get();

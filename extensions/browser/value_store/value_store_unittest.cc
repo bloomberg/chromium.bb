@@ -168,7 +168,7 @@ ValueStoreTest::~ValueStoreTest() {}
 
 void ValueStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  storage_.reset((GetParam())(temp_dir_.path().AppendASCII("dbName")));
+  storage_.reset((GetParam())(temp_dir_.GetPath().AppendASCII("dbName")));
   ASSERT_TRUE(storage_.get());
 }
 

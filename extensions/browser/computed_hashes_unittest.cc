@@ -26,7 +26,7 @@ TEST(ComputedHashes, ComputedHashes) {
   base::ScopedTempDir scoped_dir;
   ASSERT_TRUE(scoped_dir.CreateUniqueTempDir());
   base::FilePath computed_hashes =
-      scoped_dir.path().AppendASCII("computed_hashes.json");
+      scoped_dir.GetPath().AppendASCII("computed_hashes.json");
 
   // We'll add hashes for 2 files, one of which uses a subdirectory
   // path. The first file will have a list of 1 block hash, and the

@@ -145,7 +145,7 @@ class NativeMessagingTest : public ::testing::Test,
 
   base::FilePath CreateTempFileWithMessage(const std::string& message) {
     base::FilePath filename;
-    if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &filename))
+    if (!base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &filename))
       return base::FilePath();
 
     std::string message_with_header = FormatMessage(message);
@@ -171,7 +171,7 @@ class NativeMessagingTest : public ::testing::Test,
 
 // Read a single message from a local file.
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
-  base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
+  base::FilePath temp_output_file = temp_dir_.GetPath().AppendASCII("output");
   base::FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
   ASSERT_FALSE(temp_input_file.empty());
 
@@ -198,7 +198,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
-  base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
+  base::FilePath temp_output_file = temp_dir_.GetPath().AppendASCII("output");
 
   base::File read_file;
 #if defined(OS_WIN)

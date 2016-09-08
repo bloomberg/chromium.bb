@@ -26,7 +26,7 @@ DestroyPartitionsOperation::DestroyPartitionsOperation(
 DestroyPartitionsOperation::~DestroyPartitionsOperation() {}
 
 void DestroyPartitionsOperation::StartImpl() {
-  if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_)) {
+  if (!base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_path_)) {
     Error(error::kTempFileError);
     return;
   }

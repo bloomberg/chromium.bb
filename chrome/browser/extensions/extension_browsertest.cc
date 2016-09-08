@@ -329,7 +329,7 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
 
 base::FilePath ExtensionBrowserTest::PackExtension(
     const base::FilePath& dir_path) {
-  base::FilePath crx_path = temp_dir_.path().AppendASCII("temp.crx");
+  base::FilePath crx_path = temp_dir_.GetPath().AppendASCII("temp.crx");
   if (!base::DeleteFile(crx_path, false)) {
     ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
     return base::FilePath();

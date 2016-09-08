@@ -19,7 +19,7 @@ class DatabaseStringTableTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath db_file = temp_dir_.path().AppendASCII("StringTable.db");
+    base::FilePath db_file = temp_dir_.GetPath().AppendASCII("StringTable.db");
 
     ASSERT_TRUE(db_.Open(db_file));
   }

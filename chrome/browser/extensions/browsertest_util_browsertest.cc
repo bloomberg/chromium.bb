@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsertestUtilTest,
       "  \"background\": {\"scripts\": [\"background.js\"]}\n"
       "}\n");
   ext_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
-  const Extension* extension = LoadExtension(ext_dir.unpacked_path());
+  const Extension* extension = LoadExtension(ext_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   EXPECT_EQ(extension->id(),
             browsertest_util::ExecuteScriptInBackgroundPage(

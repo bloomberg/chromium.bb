@@ -117,8 +117,7 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0),
-      extensions_dir.path());
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
   ASSERT_TRUE(extension.get());
 
   base::ScopedTempDir extension_dir;
@@ -163,8 +162,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0),
-      extensions_dir.path());
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
   ASSERT_TRUE(extension.get());
 
   base::ScopedTempDir extension_dir;

@@ -160,7 +160,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
     integration_service_ = new drive::DriveIntegrationService(
         profile, NULL, fake_drive_service_, std::string(),
-        test_cache_root_.path(), NULL);
+        test_cache_root_.GetPath(), NULL);
     return integration_service_;
   }
 
@@ -244,7 +244,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
   void CreateTestingFileSystem(const std::string& mount_point_name,
                                bool read_only) {
     const base::FilePath mount_point_path =
-        temp_dir_.path().Append(mount_point_name);
+        temp_dir_.GetPath().Append(mount_point_name);
     ASSERT_TRUE(base::CreateDirectory(mount_point_path));
     ASSERT_TRUE(
         base::CreateDirectory(mount_point_path.Append(kChildDirectory)));

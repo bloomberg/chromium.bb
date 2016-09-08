@@ -82,7 +82,7 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
   path_override_.reset(new base::ScopedPathOverride(
       user_level ? chrome::DIR_USER_NATIVE_MESSAGING
                  : chrome::DIR_NATIVE_MESSAGING,
-      temp_dir_.path()));
+      temp_dir_.GetPath()));
 #endif
 
 #if defined(OS_POSIX)
@@ -91,10 +91,10 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
   base::FilePath host_path = test_user_data_dir.AppendASCII("echo.bat");
 #endif
   ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(
-      temp_dir_.path(), kHostName, host_path, user_level));
+      temp_dir_.GetPath(), kHostName, host_path, user_level));
 
   ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(
-      temp_dir_.path(), kBinaryMissingHostName,
+      temp_dir_.GetPath(), kBinaryMissingHostName,
       test_user_data_dir.AppendASCII("missing_nm_binary.exe"), user_level));
 }
 

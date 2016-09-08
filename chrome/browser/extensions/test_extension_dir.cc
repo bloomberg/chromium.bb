@@ -35,10 +35,9 @@ void TestExtensionDir::WriteManifestWithSingleQuotes(
 
 void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                                  base::StringPiece contents) {
-  EXPECT_EQ(
-      base::checked_cast<int>(contents.size()),
-      base::WriteFile(
-          dir_.path().Append(filename), contents.data(), contents.size()));
+  EXPECT_EQ(base::checked_cast<int>(contents.size()),
+            base::WriteFile(dir_.GetPath().Append(filename), contents.data(),
+                            contents.size()));
 }
 
 // This function packs the extension into a .crx, and returns the path to that
@@ -46,18 +45,15 @@ void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
 base::FilePath TestExtensionDir::Pack() {
   ExtensionCreator creator;
   base::FilePath crx_path =
-      crx_dir_.path().Append(FILE_PATH_LITERAL("ext.crx"));
+      crx_dir_.GetPath().Append(FILE_PATH_LITERAL("ext.crx"));
   base::FilePath pem_path =
-      crx_dir_.path().Append(FILE_PATH_LITERAL("ext.pem"));
+      crx_dir_.GetPath().Append(FILE_PATH_LITERAL("ext.pem"));
   base::FilePath pem_in_path, pem_out_path;
   if (base::PathExists(pem_path))
     pem_in_path = pem_path;
   else
     pem_out_path = pem_path;
-  if (!creator.Run(dir_.path(),
-                   crx_path,
-                   pem_in_path,
-                   pem_out_path,
+  if (!creator.Run(dir_.GetPath(), crx_path, pem_in_path, pem_out_path,
                    ExtensionCreator::kOverwriteCRX)) {
     ADD_FAILURE()
         << "ExtensionCreator::Run() failed: " << creator.error_message();
@@ -68,6 +64,10 @@ base::FilePath TestExtensionDir::Pack() {
     return base::FilePath();
   }
   return crx_path;
+}
+
+base::FilePath TestExtensionDir::UnpackedPath() {
+  return dir_.GetPath();
 }
 
 }  // namespace extensions

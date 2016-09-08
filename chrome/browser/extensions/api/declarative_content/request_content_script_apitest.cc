@@ -177,7 +177,7 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
   dir->WriteFile(FILE_PATH_LITERAL("script.js"),
                  kContentScriptSource);
 
-  const Extension* extension = LoadExtension(dir->unpacked_path());
+  const Extension* extension = LoadExtension(dir->UnpackedPath());
   if (!extension)
     return testing::AssertionFailure() << "Failed to load extension.";
 

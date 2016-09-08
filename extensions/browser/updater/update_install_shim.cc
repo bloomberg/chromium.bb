@@ -34,11 +34,11 @@ bool UpdateInstallShim::Install(const base::DictionaryValue& manifest,
 
   // The UpdateClient code will delete unpack_path if it still exists after
   // this method is done, so we rename it on top of our temp dir.
-  if (!base::DeleteFile(temp_dir.path(), true) ||
-      !base::Move(unpack_path, temp_dir.path())) {
+  if (!base::DeleteFile(temp_dir.GetPath(), true) ||
+      !base::Move(unpack_path, temp_dir.GetPath())) {
     LOG(ERROR) << "Trying to install update for " << extension_id_
                << "and failed to move " << unpack_path.value() << " to  "
-               << temp_dir.path().value();
+               << temp_dir.GetPath().value();
     return false;
   }
   content::BrowserThread::PostTask(

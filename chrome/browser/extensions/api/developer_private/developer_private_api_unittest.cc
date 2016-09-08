@@ -138,9 +138,9 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
   TestExtensionRegistryObserver registry_observer(registry());
   scoped_refptr<UnpackedInstaller> installer(
       UnpackedInstaller::Create(service()));
-  installer->Load(dir->unpacked_path());
+  installer->Load(dir->UnpackedPath());
   base::FilePath extension_path =
-      base::MakeAbsoluteFilePath(dir->unpacked_path());
+      base::MakeAbsoluteFilePath(dir->UnpackedPath());
   const Extension* extension = nullptr;
   do {
     extension = registry_observer.WaitForExtensionLoaded();
@@ -303,11 +303,12 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath root_path = data_dir().AppendASCII("good_unpacked");
-  ASSERT_TRUE(base::CopyDirectory(root_path, temp_dir.path(), true));
+  ASSERT_TRUE(base::CopyDirectory(root_path, temp_dir.GetPath(), true));
 
-  base::FilePath temp_root_path = temp_dir.path().Append(root_path.BaseName());
-  base::FilePath crx_path = temp_dir.path().AppendASCII("good_unpacked.crx");
-  base::FilePath pem_path = temp_dir.path().AppendASCII("good_unpacked.pem");
+  base::FilePath temp_root_path =
+      temp_dir.GetPath().Append(root_path.BaseName());
+  base::FilePath crx_path = temp_dir.GetPath().AppendASCII("good_unpacked.crx");
+  base::FilePath pem_path = temp_dir.GetPath().AppendASCII("good_unpacked.pem");
 
   EXPECT_FALSE(base::PathExists(crx_path))
       << "crx should not exist before the test is run!";

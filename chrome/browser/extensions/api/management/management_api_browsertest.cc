@@ -184,13 +184,11 @@ class ExtensionManagementApiEscalationTest :
         AppendASCII("permissions_increase").AppendASCII("permissions.pem");
     base::FilePath path_v1 = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v1"),
-        scoped_temp_dir_.path().AppendASCII("permissions1.crx"),
-        pem_path,
+        scoped_temp_dir_.GetPath().AppendASCII("permissions1.crx"), pem_path,
         base::FilePath());
     base::FilePath path_v2 = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v2"),
-        scoped_temp_dir_.path().AppendASCII("permissions2.crx"),
-        pem_path,
+        scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"), pem_path,
         base::FilePath());
 
     ExtensionService* service = ExtensionSystem::Get(browser()->profile())->

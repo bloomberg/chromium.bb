@@ -160,10 +160,10 @@ void ImageWriterTestUtils::SetUp() {
 
 void ImageWriterTestUtils::SetUp(bool is_browser_test) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
-                                             &test_image_path_));
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
-                                             &test_device_path_));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_image_path_));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_device_path_));
 
   ASSERT_TRUE(FillFile(test_image_path_, kImagePattern, kTestFileSize));
   ASSERT_TRUE(FillFile(test_device_path_, kDevicePattern, kTestFileSize));
@@ -217,7 +217,7 @@ void ImageWriterTestUtils::TearDown() {
 }
 
 const base::FilePath& ImageWriterTestUtils::GetTempDir() {
-  return temp_dir_.path();
+  return temp_dir_.GetPath();
 }
 
 const base::FilePath& ImageWriterTestUtils::GetImagePath() {
