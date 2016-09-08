@@ -15,6 +15,14 @@ function getTestFunctionFor(keys, fails) {
         pass(
           function(values) {
             for (var i = 0; i < keys.length; ++i) {
+              // Default session type should be normal.
+              if (keys[i] == 'sessionType') {
+                chrome.test.assertEq('normal', values[keys[i]]);
+              }
+              // PlayStoreStatus by default should be not available.
+              if (keys[i] == 'playStoreStatus') {
+                chrome.test.assertEq('not available', values[keys[i]]);
+              }
               // Debug
               if (keys[i] in values) {
                 console.log('  values["' + keys[i] + '"] = ' +
@@ -107,6 +115,8 @@ var tests = generateTestsForKeys(['hwid',
                                   'initialLocale',
                                   'board',
                                   'isOwner',
+                                  'sessionType',
+                                  'playStoreStatus',
                                   'clientId',
                                   'a11yLargeCursorEnabled',
                                   'a11yStickyKeysEnabled',

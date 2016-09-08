@@ -28,6 +28,18 @@
                  "a11ySwitchAccessEnabled",
                  "sendFunctionKeys"],
         "description": "Chrome OS system property name"
+      },
+      {
+        "id": "SessionType",
+        "type": "string",
+        "enum": ["normal", "kiosk", "public session"],
+        "description": "Current session type."
+      },
+      {
+        "id": "PlayStoreStatus",
+        "type": "string",
+        "enum": ["not available", "available", "enabled"],
+        "description": "Status of the play store. Note: 'available' means that the device supports the playstore but it is not enabled."
       }
     ],
     "functions": [
@@ -57,6 +69,8 @@
                   "hwid": {"type": "string", "optional": true, "description": "Hardware ID"},
                   "initialLocale" : {"type": "string", "optional": true, "description": "Initial locale for the device"},
                   "isOwner" : {"type": "boolean", "optional": true, "description": "True if current logged in user is device owner"},
+                  "sessionType": {"$ref": "SessionType", "optional": true},
+                  "playStoreStatus": {"$ref": "PlayStoreStatus", "optional": true},
                   "clientId" : {"type": "string", "optional": true, "description": "Device client id"},
                   "timezone" : {"type": "string", "optional": true, "description": "Timezone"},
                   "a11yLargeCursorEnabled" : {"type": "boolean", "optional": true, "description": "If true, ChromeOS is showing enlarged cursor."},

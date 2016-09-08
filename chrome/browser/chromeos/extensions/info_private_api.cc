@@ -8,10 +8,12 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -23,9 +25,11 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/error_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -103,6 +107,34 @@ const char kPropertySendFunctionsKeys[] = "sendFunctionKeys";
 
 // Property not found error message.
 const char kPropertyNotFound[] = "Property '*' does not exist.";
+
+// Key which corresponds to the sessionType property in JS.
+const char kPropertySessionType[] = "sessionType";
+
+// Key which corresponds to the "kiosk" value of the SessionType enum in JS.
+const char kSessionTypeKiosk[] = "kiosk";
+
+// Key which corresponds to the "public session" value of the SessionType enum
+// in JS.
+const char kSessionTypePublicSession[] = "public session";
+
+// Key which corresponds to the "normal" value of the SessionType enum in JS.
+const char kSessionTypeNormal[] = "normal";
+
+// Key which corresponds to the playStoreStatus property in JS.
+const char kPropertyPlayStoreStatus[] = "playStoreStatus";
+
+// Key which corresponds to the "not available" value of the PlayStoreStatus
+// enum in JS.
+const char kPlayStoreStatusNotAvailable[] = "not available";
+
+// Key which corresponds to the "available" value of the PlayStoreStatus enum in
+// JS.
+const char kPlayStoreStatusAvailable[] = "available";
+
+// Key which corresponds to the "enabled" value of the PlayStoreStatus enum in
+// JS.
+const char kPlayStoreStatusEnabled[] = "enabled";
 
 const struct {
   const char* api_name;
@@ -186,14 +218,18 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
     return new base::StringValue(hwid);
-  } else if (property_name == kPropertyCustomizationID) {
+  }
+
+  if (property_name == kPropertyCustomizationID) {
     std::string customization_id;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
                                   &customization_id);
     return new base::StringValue(customization_id);
-  } else if (property_name == kPropertyHomeProvider) {
+  }
+
+  if (property_name == kPropertyHomeProvider) {
     const chromeos::DeviceState* cellular_device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
             chromeos::NetworkTypePattern::Cellular());
@@ -201,31 +237,62 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     if (cellular_device)
       home_provider_id = cellular_device->home_provider_id();
     return new base::StringValue(home_provider_id);
-  } else if (property_name == kPropertyInitialLocale) {
+  }
+
+  if (property_name == kPropertyInitialLocale) {
     return new base::StringValue(
         chromeos::StartupUtils::GetInitialLocale());
-  } else if (property_name == kPropertyBoard) {
+  }
+
+  if (property_name == kPropertyBoard) {
     return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
-  } else if (property_name == kPropertyOwner) {
+  }
+
+  if (property_name == kPropertyOwner) {
     return new base::FundamentalValue(
         user_manager::UserManager::Get()->IsCurrentUserOwner());
-  } else if (property_name == kPropertyClientId) {
+  }
+
+  if (property_name == kPropertySessionType) {
+    if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
+      return new base::StringValue(kSessionTypeKiosk);
+    if (ExtensionsBrowserClient::Get()->IsLoggedInAsPublicAccount())
+      return new base::StringValue(kSessionTypePublicSession);
+    return new base::StringValue(kSessionTypeNormal);
+  }
+
+  if (property_name == kPropertyPlayStoreStatus) {
+    if (arc::ArcAuthService::IsAllowedForProfile(
+            Profile::FromBrowserContext(context_))) {
+      return new base::StringValue(kPlayStoreStatusEnabled);
+    }
+    if (arc::ArcBridgeService::GetAvailable(
+            base::CommandLine::ForCurrentProcess())) {
+      return new base::StringValue(kPlayStoreStatusAvailable);
+    }
+    return new base::StringValue(kPlayStoreStatusNotAvailable);
+  }
+
+  if (property_name == kPropertyClientId) {
     return new base::StringValue(GetClientId());
-  } else if (property_name == kPropertyTimezone) {
+  }
+
+  if (property_name == kPropertyTimezone) {
     return chromeos::CrosSettings::Get()->GetPref(
             chromeos::kSystemTimezone)->DeepCopy();
-  } else if (property_name == kPropertySupportedTimezones) {
+  }
+
+  if (property_name == kPropertySupportedTimezones) {
     std::unique_ptr<base::ListValue> values =
         chromeos::system::GetTimezoneList();
     return values.release();
-  } else {
-    const char* pref_name =
-        GetBoolPrefNameForApiProperty(property_name.c_str());
-    if (pref_name) {
-      return new base::FundamentalValue(
-          Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
-              pref_name));
-    }
+  }
+
+  const char* pref_name = GetBoolPrefNameForApiProperty(property_name.c_str());
+  if (pref_name) {
+    return new base::FundamentalValue(
+        Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
+            pref_name));
   }
 
   DLOG(ERROR) << "Unknown property request: " << property_name;
