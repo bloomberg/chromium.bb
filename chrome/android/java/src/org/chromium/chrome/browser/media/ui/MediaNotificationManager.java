@@ -27,8 +27,10 @@ import android.support.v7.app.NotificationCompat;
 import android.support.v7.media.MediaRouter;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.content_public.common.MediaMetadata;
@@ -43,6 +45,13 @@ import javax.annotation.Nullable;
  */
 public class MediaNotificationManager {
     private static final String TAG = "MediaNotification";
+
+    // MediaStyle large icon size for pre-N.
+    private static final int PRE_N_LARGE_ICON_SIZE_DP = 128;
+    // MediaStyle large icon size for N.
+    // TODO(zqzhang): use android.R.dimen.media_notification_expanded_image_max_size when Android
+    // SDK is rolled to level 24. See https://crbug.com/645059
+    private static final int N_LARGE_ICON_SIZE_DP = 94;
 
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
@@ -350,6 +359,33 @@ public class MediaNotificationManager {
         sManagers.clear();
     }
 
+    /**
+     * Scale a given bitmap to a proper size for display.
+     * @param icon The bitmap to be resized.
+     * @return A scaled icon to be used in media notification. Returns null if |icon| is null.
+     */
+    public static Bitmap scaleIconForDisplay(Bitmap icon) {
+        if (icon == null) return null;
+
+        int largeIconSizePx;
+        if (isRunningN()) {
+            largeIconSizePx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, N_LARGE_ICON_SIZE_DP,
+                    ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
+        } else {
+            largeIconSizePx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, PRE_N_LARGE_ICON_SIZE_DP,
+                    ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
+        }
+
+        if (icon.getWidth() > largeIconSizePx || icon.getHeight() > largeIconSizePx) {
+            return icon.createScaledBitmap(
+                    icon, largeIconSizePx, largeIconSizePx, true /* filter */);
+        }
+
+        return icon;
+    }
+
     private static MediaNotificationManager getManager(int notificationId) {
         if (sManagers == null) return null;
 
@@ -369,6 +405,12 @@ public class MediaNotificationManager {
         if (manager == null) return null;
 
         return manager.mNotificationBuilder;
+    }
+
+    private static boolean isRunningN() {
+        // TODO(zqzhang): Use Build.VERSION_CODES.N when Android SDK is rolled to level 24.
+        // See https://crbug.com/645059
+        return Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
     }
 
     private final Context mContext;
@@ -625,8 +667,8 @@ public class MediaNotificationManager {
             if (mDefaultLargeIcon == null) {
                 int resourceId = (mMediaNotificationInfo.defaultLargeIcon != 0)
                         ? mMediaNotificationInfo.defaultLargeIcon : R.drawable.audio_playing_square;
-                mDefaultLargeIcon = BitmapFactory.decodeResource(
-                        mContext.getResources(), resourceId);
+                mDefaultLargeIcon = scaleIconForDisplay(
+                        BitmapFactory.decodeResource(mContext.getResources(), resourceId));
             }
             builder.setLargeIcon(mDefaultLargeIcon);
         }
@@ -685,10 +727,5 @@ public class MediaNotificationManager {
             return artist + album;
         }
         return artist + " - " + album;
-    }
-
-    private boolean isRunningN() {
-        // TODO(zqzhang): update this when N is released.
-        return Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
     }
 }

@@ -300,7 +300,7 @@ public class MediaSessionTabHelper {
                                         || icon.getHeight() < mFavicon.getHeight())) {
             return false;
         }
-        mFavicon = icon;
+        mFavicon = MediaNotificationManager.scaleIconForDisplay(icon);
         return true;
     }
 }
