@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_paths.h"
-#include "chromeos/attestation/attestation.pb.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -24,13 +23,6 @@
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace chromeos {
-
-namespace {
-// Signature nonces are twenty bytes. This matches the attestation code.
-constexpr char kTwentyBytesNonce[] = "+addtwentybytesnonce";
-// A symbolic signature.
-constexpr char kSignature[] = "signed";
-}  // namespace
 
 FakeCryptohomeClient::FakeCryptohomeClient()
     : service_is_available_(true),
@@ -88,7 +80,7 @@ void FakeCryptohomeClient::AsyncCheckKey(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncMigrateKey(
@@ -96,13 +88,13 @@ void FakeCryptohomeClient::AsyncMigrateKey(
     const std::string& from_key,
     const std::string& to_key,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncRemove(
     const cryptohome::Identification& cryptohome_id,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::RenameCryptohome(
@@ -151,7 +143,7 @@ void FakeCryptohomeClient::AsyncMount(
     const std::string& key,
     int flags,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncAddKey(
@@ -159,19 +151,19 @@ void FakeCryptohomeClient::AsyncAddKey(
     const std::string& key,
     const std::string& new_key,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncMountGuest(
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncMountPublic(
     const cryptohome::Identification& public_mount_id,
     int flags,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::TpmIsReady(
@@ -374,14 +366,14 @@ void FakeCryptohomeClient::TpmAttestationIsEnrolled(
 void FakeCryptohomeClient::AsyncTpmAttestationCreateEnrollRequest(
     chromeos::attestation::PrivacyCAType pca_type,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodData(callback, std::string());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationEnroll(
     chromeos::attestation::PrivacyCAType pca_type,
     const std::string& pca_response,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodResult(callback);
+  ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
@@ -390,7 +382,7 @@ void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
     const cryptohome::Identification& cryptohome_id,
     const std::string& request_origin,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodData(callback, std::string());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationFinishCertRequest(
@@ -399,7 +391,7 @@ void FakeCryptohomeClient::AsyncTpmAttestationFinishCertRequest(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodData(callback, std::string());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
@@ -436,7 +428,7 @@ void FakeCryptohomeClient::TpmAttestationRegisterKey(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodData(callback, std::string());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
@@ -448,7 +440,7 @@ void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
     attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const AsyncMethodCallback& callback) {
-  ReturnAsyncMethodData(callback, std::string());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::TpmAttestationSignSimpleChallenge(
@@ -457,10 +449,7 @@ void FakeCryptohomeClient::TpmAttestationSignSimpleChallenge(
     const std::string& key_name,
     const std::string& challenge,
     const AsyncMethodCallback& callback) {
-  chromeos::attestation::SignedData signed_data;
-  signed_data.set_data(challenge + kTwentyBytesNonce);
-  signed_data.set_signature(kSignature);
-  ReturnAsyncMethodData(callback, signed_data.SerializeAsString());
+  ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::TpmAttestationGetKeyPayload(
@@ -599,41 +588,26 @@ void FakeCryptohomeClient::ReturnProtobufMethodCallback(
 }
 
 void FakeCryptohomeClient::ReturnAsyncMethodResult(
-    const AsyncMethodCallback& callback) {
+    const AsyncMethodCallback& callback,
+    bool returns_data) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeCryptohomeClient::ReturnAsyncMethodResultInternal,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void FakeCryptohomeClient::ReturnAsyncMethodData(
-    const AsyncMethodCallback& callback,
-    const std::string& data) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeCryptohomeClient::ReturnAsyncMethodDataInternal,
-                 weak_ptr_factory_.GetWeakPtr(), callback, data));
+                 weak_ptr_factory_.GetWeakPtr(), callback, returns_data));
 }
 
 void FakeCryptohomeClient::ReturnAsyncMethodResultInternal(
-    const AsyncMethodCallback& callback) {
+    const AsyncMethodCallback& callback,
+    bool returns_data) {
   callback.Run(async_call_id_);
-  if (!async_call_status_handler_.is_null()) {
+  if (!returns_data && !async_call_status_handler_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(async_call_status_handler_, async_call_id_, true,
                               cryptohome::MOUNT_ERROR_NONE));
-  }
-  ++async_call_id_;
-}
-
-void FakeCryptohomeClient::ReturnAsyncMethodDataInternal(
-    const AsyncMethodCallback& callback,
-    const std::string& data) {
-  callback.Run(async_call_id_);
-  if (!async_call_status_data_handler_.is_null()) {
+  } else if (returns_data && !async_call_status_data_handler_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(async_call_status_data_handler_, async_call_id_,
-                              true, data));
+                              true, std::string()));
   }
   ++async_call_id_;
 }
