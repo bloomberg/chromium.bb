@@ -36,7 +36,6 @@ struct SnippetSource {
 class NTPSnippet {
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
-  using CategoryMap = std::map<Category, PtrVector, Category::CompareByID>;
 
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.

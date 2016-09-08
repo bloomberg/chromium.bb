@@ -47,7 +47,19 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
 
-  using OptionalSnippets = base::Optional<NTPSnippet::CategoryMap>;
+  struct FetchedCategory {
+    Category category;
+    base::string16 localized_title;  // Ignored for non-server categories.
+    NTPSnippet::PtrVector snippets;
+
+    FetchedCategory(Category c);
+    FetchedCategory(FetchedCategory&&);             // = default, in .cc
+    ~FetchedCategory();                             // = default, in .cc
+    FetchedCategory& operator=(FetchedCategory&&);  // = default, in .cc
+  };
+  using FetchedCategoriesVector = std::vector<FetchedCategory>;
+  using OptionalSnippets = base::Optional<FetchedCategoriesVector>;
+
   // |snippets| contains parsed snippets if a fetch succeeded. If problems
   // occur, |snippets| contains no value (no actual vector in base::Optional).
   // Error details can be retrieved using last_status().
@@ -186,7 +198,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   bool JsonToSnippets(const base::Value& parsed,
-                      NTPSnippet::CategoryMap* snippets);
+                      FetchedCategoriesVector* categories);
   void OnJsonParsed(std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& error);
   void FetchFinished(OptionalSnippets snippets,

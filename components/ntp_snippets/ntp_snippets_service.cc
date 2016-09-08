@@ -219,6 +219,8 @@ NTPSnippetsService::NTPSnippetsService(
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
   // Articles category always exists; others will be added as needed.
   categories_[articles_category_] = CategoryContent();
+  categories_[articles_category_].localized_title =
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER);
   observer->OnCategoryStatusChanged(this, articles_category_,
                                     categories_[articles_category_].status);
   if (database_->IsErrorState()) {
@@ -300,12 +302,11 @@ CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
 
 CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   DCHECK(categories_.find(category) != categories_.end());
-  // TODO(sfiera): pass back titles for server categories.
-  return CategoryInfo(
-      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
-      ContentSuggestionsCardLayout::FULL_CARD,
-      /* has_more_button */ false,
-      /* show_if_empty */ true);
+  const CategoryContent& content = categories_[category];
+  return CategoryInfo(content.localized_title,
+                      ContentSuggestionsCardLayout::FULL_CARD,
+                      /* has_more_button */ false,
+                      /* show_if_empty */ true);
 }
 
 void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {
@@ -543,9 +544,16 @@ void NTPSnippetsService::OnFetchFinished(
   // If snippets were fetched successfully, update our |categories_| from each
   // category provided by the server.
   if (snippets) {
-    for (std::pair<const Category, NTPSnippet::PtrVector>& item : *snippets) {
-      Category category = item.first;
-      NTPSnippet::PtrVector& new_snippets = item.second;
+    for (NTPSnippetsFetcher::FetchedCategory& fetched_category : *snippets) {
+      Category category = fetched_category.category;
+
+      // TODO(sfiera): Avoid hard-coding articles category checks in so many
+      // places.
+      if (category != articles_category_) {
+        // Only update titles from server-side provided categories.
+        categories_[category].localized_title =
+            fetched_category.localized_title;
+      }
 
       DCHECK_LE(snippets->size(), static_cast<size_t>(kMaxSnippetCount));
       // TODO(sfiera): histograms for server categories.
@@ -553,10 +561,10 @@ void NTPSnippetsService::OnFetchFinished(
       // kMaxSnippetCount).
       if (category == articles_category_) {
         UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
-                                    new_snippets.size());
+                                    fetched_category.snippets.size());
       }
 
-      MergeSnippets(category, std::move(new_snippets));
+      MergeSnippets(category, std::move(fetched_category.snippets));
 
       // If there are more snippets than we want to show, delete the extra ones.
       CategoryContent* content = &categories_[category];

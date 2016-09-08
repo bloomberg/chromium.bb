@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -173,6 +174,15 @@ std::string PosixLocaleFromBCP47Language(const std::string& language_code) {
 }
 
 }  // namespace
+
+NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c)
+    : category(c) {}
+
+NTPSnippetsFetcher::FetchedCategory::FetchedCategory(FetchedCategory&&) =
+    default;
+NTPSnippetsFetcher::FetchedCategory::~FetchedCategory() = default;
+NTPSnippetsFetcher::FetchedCategory& NTPSnippetsFetcher::FetchedCategory::
+operator=(FetchedCategory&&) = default;
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     SigninManagerBase* signin_manager,
@@ -563,7 +573,7 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
-                                        NTPSnippet::CategoryMap* snippets) {
+                                        FetchedCategoriesVector* categories) {
   const base::DictionaryValue* top_dict = nullptr;
   if (!parsed.GetAsDictionary(&top_dict)) {
     return false;
@@ -571,39 +581,44 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 
   switch (fetch_api_) {
     case CHROME_READER_API: {
-      Category category =
-          category_factory_->FromKnownCategory(KnownCategories::ARTICLES);
-      NTPSnippet::PtrVector* articles = &(*snippets)[category];
+      categories->push_back(FetchedCategory(
+          category_factory_->FromKnownCategory(KnownCategories::ARTICLES)));
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
              AddSnippetsFromListValue(/* content_suggestions_api = */ false,
-                                      *recos, articles);
+                                      *recos, &categories->back().snippets);
     }
 
     case CHROME_CONTENT_SUGGESTIONS_API: {
-      const base::ListValue* categories = nullptr;
-      if (!top_dict->GetList("categories", &categories)) {
+      const base::ListValue* categories_value = nullptr;
+      if (!top_dict->GetList("categories", &categories_value)) {
         return false;
       }
 
-      for (const auto& v : *categories) {
+      for (const auto& v : *categories_value) {
+        std::string utf8_title;
         int category_id = -1;
         const base::DictionaryValue* category_value = nullptr;
         if (!(v->GetAsDictionary(&category_value) &&
+              category_value->GetString("localizedTitle", &utf8_title) &&
               category_value->GetInteger("id", &category_id) &&
               (category_id > 0))) {
           return false;
         }
-        Category category = category_factory_->FromRemoteCategory(category_id);
+
+        categories->push_back(FetchedCategory(
+            category_factory_->FromRemoteCategory(category_id)));
+        categories->back().localized_title = base::UTF8ToUTF16(utf8_title);
+
         const base::ListValue* suggestions = nullptr;
-        NTPSnippet::PtrVector* articles = &(*snippets)[category];
         if (!category_value->GetList("suggestions", &suggestions)) {
           // Absence of a list of suggestions is treated as an empty list, which
           // is permissible.
           continue;
         }
         if (!AddSnippetsFromListValue(
-                /* content_suggestions_api = */ true, *suggestions, articles)) {
+                /* content_suggestions_api = */ true, *suggestions,
+                &categories->back().snippets)) {
           return false;
         }
       }
@@ -615,9 +630,9 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 }
 
 void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
-  NTPSnippet::CategoryMap snippets;
-  if (JsonToSnippets(*parsed, &snippets)) {
-    FetchFinished(OptionalSnippets(std::move(snippets)), FetchResult::SUCCESS,
+  FetchedCategoriesVector categories;
+  if (JsonToSnippets(*parsed, &categories)) {
+    FetchFinished(OptionalSnippets(std::move(categories)), FetchResult::SUCCESS,
                   /*extra_message=*/std::string());
   } else {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;

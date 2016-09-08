@@ -66,14 +66,15 @@ MATCHER(HasValue, "") {
 
 MATCHER(IsEmptyArticleList, "is an empty list of articles") {
   NTPSnippetsFetcher::OptionalSnippets& snippets = *arg;
-  return snippets && snippets->size() == 1 && snippets->begin()->second.empty();
+  return snippets && snippets->size() == 1 &&
+         snippets->begin()->snippets.empty();
 }
 
 MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
   NTPSnippetsFetcher::OptionalSnippets& snippets = *arg;
   return snippets && snippets->size() == 1 &&
-         snippets->begin()->second.size() == 1 &&
-         snippets->begin()->second[0]->best_source().url.spec() == url;
+         snippets->begin()->snippets.size() == 1 &&
+         snippets->begin()->snippets[0]->best_source().url.spec() == url;
 }
 
 MATCHER_P(EqualsJSON, json, "equals JSON") {
@@ -553,8 +554,8 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   ASSERT_TRUE(snippets);
   ASSERT_THAT(snippets->size(), Eq(2u));
   for (const auto& category : *snippets) {
-    const auto& articles = category.second;
-    switch (category.first.id()) {
+    const auto& articles = category.snippets;
+    switch (category.category.id()) {
       case static_cast<int>(KnownCategories::ARTICLES):
         ASSERT_THAT(articles.size(), Eq(1u));
         EXPECT_THAT(articles[0]->best_source().url.spec(),
@@ -566,7 +567,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
                     Eq("http://localhost/foo2"));
         break;
       default:
-        FAIL() << "unknown category ID " << category.first.id();
+        FAIL() << "unknown category ID " << category.category.id();
     }
   }
 

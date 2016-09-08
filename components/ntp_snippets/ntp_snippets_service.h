@@ -284,8 +284,12 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
 
   const Category articles_category_;
 
+  // TODO(sfiera): Reduce duplication of CategoryContent with CategoryInfo.
   struct CategoryContent {
     CategoryStatus status = CategoryStatus::INITIALIZING;
+
+    // The title of the section, localized to the running UI language.
+    base::string16 localized_title;
 
     // True iff the server returned results in this category in the last fetch.
     // We never remove categories that the server still provides, but if the
