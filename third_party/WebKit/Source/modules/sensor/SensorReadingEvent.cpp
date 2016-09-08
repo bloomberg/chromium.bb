@@ -6,27 +6,18 @@
 
 namespace blink {
 
-SensorReadingEvent::~SensorReadingEvent()
-{
-}
+SensorReadingEvent::~SensorReadingEvent() = default;
 
-SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType)
-    : Event(eventType, true, false) // let default be bubbles but is not cancelable.
-    , m_reading(SensorReading::create())
-{
-}
-
-SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType, SensorReading& reading)
-    : Event(eventType, true, false) // let default be bubbles but is not cancelable.
+SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType, SensorReading* reading)
+    : Event(eventType, false, false) // Does not bubble and is not cancelable.
     , m_reading(reading)
 {
+    DCHECK(m_reading);
 }
 
 SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType, const SensorReadingEventInit& initializer)
-    : Event(eventType, initializer)
-    , m_reading(SensorReading::create())
+    : SensorReadingEvent(eventType, initializer.reading())
 {
-    setCanBubble(true);
 }
 
 const AtomicString& SensorReadingEvent::interfaceName() const

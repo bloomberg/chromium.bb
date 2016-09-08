@@ -16,12 +16,7 @@ class SensorReadingEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static SensorReadingEvent* create(const AtomicString& eventType)
-    {
-        return new SensorReadingEvent(eventType);
-    }
-
-    static SensorReadingEvent* create(const AtomicString& eventType, SensorReading& reading)
+    static SensorReadingEvent* create(const AtomicString& eventType, SensorReading* reading)
     {
         return new SensorReadingEvent(eventType, reading);
     }
@@ -33,8 +28,8 @@ public:
 
     ~SensorReadingEvent() override;
 
-    // TODO(riju): crbug.com/614797 .
-    SensorReading* reading() const { return m_reading.get(); }
+    const SensorReading* reading() const { return m_reading.get(); }
+    SensorReading* reading() { return m_reading.get(); }
     const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -43,8 +38,7 @@ protected:
     Member<SensorReading> m_reading;
 
 private:
-    explicit SensorReadingEvent(const AtomicString& eventType);
-    SensorReadingEvent(const AtomicString& eventType, SensorReading&);
+    SensorReadingEvent(const AtomicString& eventType, SensorReading*);
     SensorReadingEvent(const AtomicString& eventType, const SensorReadingEventInit& initializer);
 
 };

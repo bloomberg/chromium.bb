@@ -4,33 +4,34 @@
 
 #include "modules/sensor/SensorReading.h"
 
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
+
 namespace blink {
 
-SensorReading::SensorReading()
+SensorReading::SensorReading(SensorProxy* sensorProxy)
+    : m_sensorProxy(sensorProxy)
 {
-}
-
-SensorReading::SensorReading(bool providesTimeStamp, DOMHighResTimeStamp timeStamp)
-    : m_canProvideTimeStamp(providesTimeStamp)
-    , m_timeStamp(timeStamp)
-{
-}
-
-DOMHighResTimeStamp SensorReading::timeStamp(bool& isNull)
-{
-    if (m_canProvideTimeStamp)
-        return m_timeStamp;
-
-    isNull = true;
-    return 0;
-}
-
-SensorReading::~SensorReading()
-{
+    DCHECK(m_sensorProxy);
 }
 
 DEFINE_TRACE(SensorReading)
 {
+    visitor->trace(m_sensorProxy);
+}
+
+DOMHighResTimeStamp SensorReading::timeStamp(ScriptState* scriptState) const
+{
+    LocalDOMWindow* window = scriptState->domWindow();
+    if (!window)
+        return 0.0;
+
+    Performance* performance = DOMWindowPerformance::performance(*window);
+    DCHECK(performance);
+
+    return performance->monotonicTimeToDOMHighResTimeStamp(m_sensorProxy->reading().timestamp);
 }
 
 } // namespace blink

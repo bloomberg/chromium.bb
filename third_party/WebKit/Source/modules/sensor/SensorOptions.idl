@@ -7,5 +7,4 @@
 
 dictionary SensorOptions {
     double? frequency;
-    double? timeout;
 };

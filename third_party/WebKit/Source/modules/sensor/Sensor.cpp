@@ -6,43 +6,78 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
-#include "core/events/Event.h"
-
+#include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
+#include "modules/sensor/SensorErrorEvent.h"
+#include "modules/sensor/SensorPollingStrategy.h"
+#include "modules/sensor/SensorProviderProxy.h"
 #include "modules/sensor/SensorReading.h"
+#include "modules/sensor/SensorReadingEvent.h"
+
+using namespace device::mojom::blink;
 
 namespace blink {
 
-Sensor::~Sensor()
+Sensor::Sensor(ExecutionContext* executionContext, const SensorOptions& sensorOptions, SensorType type)
+    : ActiveScriptWrappable(this)
+    , ContextLifecycleObserver(executionContext)
+    , PageVisibilityObserver(toDocument(executionContext)->page())
+    , m_sensorOptions(sensorOptions)
+    , m_type(type)
+    , m_state(Sensor::SensorState::IDLE)
+    , m_storedData()
 {
 }
 
-Sensor::Sensor(ExecutionContext* executionContext, const SensorOptions& sensorOptions)
-    : ActiveScriptWrappable(this)
-    , ActiveDOMObject(executionContext)
-    , PlatformEventController(toDocument(executionContext)->page())
-    , m_sensorState(SensorState::Idle)
-    , m_sensorReading(nullptr)
-    , m_sensorOptions(sensorOptions)
+Sensor::~Sensor() = default;
+
+void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState)
 {
+    if (m_state != Sensor::SensorState::IDLE && m_state != Sensor::SensorState::ERRORED) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot start because SensorState is not idle or errored");
+        return;
+    }
+
+    initSensorProxyIfNeeded();
+
+    if (!m_sensorProxy) {
+        exceptionState.throwDOMException(InvalidStateError, "The Sensor is no longer associated to a frame.");
+        return;
+    }
+
+    startListening();
+}
+
+void Sensor::stop(ScriptState*, ExceptionState& exceptionState)
+{
+    if (m_state == Sensor::SensorState::IDLE || m_state == Sensor::SensorState::ERRORED) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot stop because SensorState is either idle or errored");
+        return;
+    }
+
+    stopListening();
+}
+
+static String ToString(Sensor::SensorState state)
+{
+    switch (state) {
+    case Sensor::SensorState::IDLE:
+        return "idle";
+    case Sensor::SensorState::ACTIVATING:
+        return "activating";
+    case Sensor::SensorState::ACTIVE:
+        return "active";
+    case Sensor::SensorState::ERRORED:
+        return "errored";
+    default:
+        NOTREACHED();
+    }
+    return "idle";
 }
 
 // Getters
 String Sensor::state() const
 {
-    // TODO(riju): Validate the transitions.
-    switch (m_sensorState) {
-    case SensorState::Idle:
-        return "idle";
-    case SensorState::Activating:
-        return "activating";
-    case SensorState::Active:
-        return "active";
-    case SensorState::Errored:
-        return "errored";
-    }
-    NOTREACHED();
-    return "idle";
+    return ToString(m_state);
 }
 
 SensorReading* Sensor::reading() const
@@ -50,86 +85,179 @@ SensorReading* Sensor::reading() const
     return m_sensorReading.get();
 }
 
-void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState)
+DEFINE_TRACE(Sensor)
 {
-
-    if (m_sensorState != SensorState::Idle && m_sensorState != SensorState::Errored) {
-        exceptionState.throwDOMException(InvalidStateError, "Invalid State: SensorState is not idle or errored");
-        return;
-    }
-
-    updateState(SensorState::Activating);
-
-    // TODO(riju) : Add Permissions stuff later.
-
-    m_hasEventListener = true;
-
-    // TODO(riju): verify the correct order of onstatechange(active) and the first onchange(event).
-    startUpdating();
-}
-
-void Sensor::stop(ScriptState* scriptState, ExceptionState& exceptionState)
-{
-    if (m_sensorState == SensorState::Idle || m_sensorState == SensorState::Errored) {
-        exceptionState.throwDOMException(InvalidStateError, "Invalid State: SensorState is either idle or errored");
-        return;
-    }
-
-    m_hasEventListener = false;
-    stopUpdating();
-
-    m_sensorReading.clear();
-    updateState(SensorState::Idle);
-}
-
-void Sensor::updateState(SensorState newState)
-{
-    DCHECK(isMainThread());
-    if (m_sensorState == newState)
-        return;
-
-    m_sensorState = newState;
-    // Notify context that state changed.
-    if (getExecutionContext())
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyStateChange, wrapPersistent(this)));
-}
-
-void Sensor::notifyStateChange()
-{
-    dispatchEvent(Event::create(EventTypeNames::statechange));
-}
-
-void Sensor::suspend()
-{
-    m_hasEventListener = false;
-    stopUpdating();
-}
-
-void Sensor::resume()
-{
-    m_hasEventListener = true;
-    startUpdating();
-}
-
-void Sensor::stop()
-{
-    m_hasEventListener = false;
-    stopUpdating();
+    visitor->trace(m_sensorProxy);
+    visitor->trace(m_sensorReading);
+    ActiveScriptWrappable::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
+    PageVisibilityObserver::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 bool Sensor::hasPendingActivity() const
 {
-    // Prevent V8 from garbage collecting the wrapper object if there are
-    // event listeners attached to it.
+    if (m_state == Sensor::SensorState::IDLE || m_state == Sensor::SensorState::ERRORED)
+        return false;
     return hasEventListeners();
 }
 
-DEFINE_TRACE(Sensor)
+void Sensor::initSensorProxyIfNeeded()
 {
-    ActiveDOMObject::trace(visitor);
-    EventTargetWithInlineData::trace(visitor);
-    PlatformEventController::trace(visitor);
-    visitor->trace(m_sensorReading);
+    if (m_sensorProxy)
+        return;
+
+    Document* document = toDocument(getExecutionContext());
+    if (!document || !document->frame())
+        return;
+
+    m_sensorProxy = SensorProviderProxy::from(document->frame())->getOrCreateSensor(m_type);
+}
+
+void Sensor::contextDestroyed()
+{
+    if (m_state == Sensor::SensorState::ACTIVE || m_state == Sensor::SensorState::ACTIVATING)
+        stopListening();
+}
+
+void Sensor::onSensorInitialized()
+{
+    if (m_state != Sensor::SensorState::ACTIVATING)
+        return;
+
+    m_configuration = createSensorConfig(m_sensorOptions);
+    if (!m_configuration) {
+        reportError();
+        return;
+    }
+
+    DCHECK(m_sensorProxy);
+    auto startCallback = WTF::bind(&Sensor::onStartRequestCompleted, wrapWeakPersistent(this));
+    m_sensorProxy->addConfiguration(m_configuration->Clone(), std::move(startCallback));
+}
+
+void Sensor::onSensorReadingChanged()
+{
+    if (m_polling)
+        m_polling->onSensorReadingChanged();
+}
+
+void Sensor::onSensorError()
+{
+    reportError();
+}
+
+void Sensor::onStartRequestCompleted(bool result)
+{
+    if (m_state != Sensor::SensorState::ACTIVATING)
+        return;
+
+    if (!result) {
+        reportError();
+        return;
+    }
+
+    DCHECK(m_configuration);
+    DCHECK(m_sensorProxy);
+    auto pollCallback = WTF::bind(&Sensor::pollForData, wrapWeakPersistent(this));
+    m_polling = SensorPollingStrategy::create(m_configuration->frequency, std::move(pollCallback), m_sensorProxy->reportingMode());
+    updateState(Sensor::SensorState::ACTIVE);
+}
+
+void Sensor::onStopRequestCompleted(bool result)
+{
+    if (m_state == Sensor::SensorState::IDLE)
+        return;
+
+    if (!result)
+        reportError();
+
+    DCHECK(m_sensorProxy);
+    m_sensorProxy->removeObserver(this);
+}
+
+void Sensor::pageVisibilityChanged()
+{
+    updatePollingStatus();
+}
+
+void Sensor::startListening()
+{
+    DCHECK(m_sensorProxy);
+    updateState(Sensor::SensorState::ACTIVATING);
+    if (!m_sensorReading)
+        m_sensorReading = createSensorReading(m_sensorProxy);
+
+    m_sensorProxy->addObserver(this);
+    if (m_sensorProxy->isInitialized()) {
+        auto callback = WTF::bind(&Sensor::onStartRequestCompleted, wrapWeakPersistent(this));
+        DCHECK(m_configuration);
+        m_sensorProxy->addConfiguration(m_configuration->Clone(), std::move(callback));
+    } else {
+        m_sensorProxy->initialize();
+    }
+}
+
+void Sensor::stopListening()
+{
+    DCHECK(m_sensorProxy);
+    m_sensorReading = nullptr;
+    updateState(Sensor::SensorState::IDLE);
+
+    if (m_sensorProxy->isInitialized()) {
+        auto callback = WTF::bind(&Sensor::onStopRequestCompleted, wrapWeakPersistent(this));
+        DCHECK(m_configuration);
+        m_sensorProxy->removeConfiguration(m_configuration->Clone(), std::move(callback));
+    } else {
+        m_sensorProxy->removeObserver(this);
+    }
+}
+
+void Sensor::pollForData()
+{
+    if (m_state != Sensor::SensorState::ACTIVE) {
+        DCHECK(m_polling);
+        m_polling->stopPolling();
+        return;
+    }
+
+    DCHECK(m_sensorProxy);
+    DCHECK(m_sensorProxy->isInitialized());
+    m_sensorProxy->updateInternalReading();
+
+    DCHECK(m_sensorReading);
+    if (m_sensorReading->isReadingUpdated(m_storedData))
+        dispatchEvent(SensorReadingEvent::create(EventTypeNames::change, m_sensorReading));
+
+    m_storedData = m_sensorProxy->reading();
+}
+
+void Sensor::updateState(Sensor::SensorState newState)
+{
+    if (newState == m_state)
+        return;
+    m_state = newState;
+    dispatchEvent(Event::create(EventTypeNames::statechange));
+    updatePollingStatus();
+}
+
+void Sensor::reportError()
+{
+    updateState(Sensor::SensorState::ERRORED);
+    // TODO(Mikhail) : Dispatch Sensor Error event.
+}
+
+void Sensor::updatePollingStatus()
+{
+    if (!m_polling)
+        return;
+
+    if (m_state != Sensor::SensorState::ACTIVE
+        || page()->visibilityState() != PageVisibilityStateVisible) {
+        m_polling->stopPolling();
+    } else {
+        m_polling->startPolling();
+    }
 }
 
 } // namespace blink

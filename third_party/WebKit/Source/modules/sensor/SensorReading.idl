@@ -8,5 +8,5 @@
 [
     RuntimeEnabled=Sensor,
 ] interface SensorReading {
-    readonly attribute DOMHighResTimeStamp? timeStamp;
+    [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp timeStamp;
 };
