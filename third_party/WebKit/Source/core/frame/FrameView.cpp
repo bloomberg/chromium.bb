@@ -2695,7 +2695,7 @@ void FrameView::synchronizedPaint()
     }
 
     // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
-    // webkit_unit_tests (http://crbug.com/607987).
+    // webkit_unit_tests (http://crbug.com/644788).
     if (m_viewportScrollableArea) {
         if (GraphicsLayer* layerForHorizontalScrollbar = m_viewportScrollableArea->layerForHorizontalScrollbar()) {
             synchronizedPaintRecursively(layerForHorizontalScrollbar);
