@@ -18,8 +18,6 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 
@@ -209,17 +207,6 @@ AssociatedInterfaceRequest<Interface> GetProxy(
 
   ptr->Bind(std::move(ptr_info), std::move(runner));
   return request;
-}
-
-// Creates an associated interface proxy which casts its messages into the void.
-template <typename Interface>
-void GetDummyProxyForTesting(AssociatedInterfacePtr<Interface>* proxy) {
-  MessagePipe pipe;
-  scoped_refptr<internal::MultiplexRouter> router =
-      new internal::MultiplexRouter(false, std::move(pipe.handle0),
-                                    base::ThreadTaskRunnerHandle::Get());
-  std::unique_ptr<AssociatedGroup> group = router->CreateAssociatedGroup();
-  GetProxy(proxy, group.get());
 }
 
 }  // namespace mojo
