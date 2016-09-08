@@ -18,7 +18,7 @@ import java.util.Locale;
  * Unit tests for the CurrencyStringFormatter class.
  */
 @RunWith(Parameterized.class)
-public class CurrencyStringFormatterTest {
+public class CurrencyStringFormatterUnitTest {
     /**
      * Unicode non-breaking space.
      */
@@ -115,7 +115,7 @@ public class CurrencyStringFormatterTest {
         return currency.toString();
     }
 
-    public CurrencyStringFormatterTest(String amount, String currency, String languageTag,
+    public CurrencyStringFormatterUnitTest(String amount, String currency, String languageTag,
             String expectedCurrencyFormatting, String expectedAmountFormatting,
             ExpectedValidity expectedValidity) {
         mAmount = amount;

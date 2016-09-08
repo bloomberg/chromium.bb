@@ -21,7 +21,7 @@ import java.util.Arrays;
  * Unit tests for NotificationPlatformBridge.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
-public class NotificationPlatformBridgeTest {
+public class NotificationPlatformBridgeUnitTest {
     /**
      * Verifies that the getOriginFromTag method returns the origin for valid input, and null for
      * invalid input.

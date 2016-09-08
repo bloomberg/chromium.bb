@@ -28,7 +28,7 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class LogcatExtractionCallableTest {
+public class LogcatExtractionCallableUnitTest {
     private static final int MAX_LINES = 5;
 
     @Test
@@ -48,7 +48,7 @@ public class LogcatExtractionCallableTest {
     @Test
     public void testElideUrl2() {
         String original =
-                "exception at org.chromium.chrome.browser.crash.LogcatExtractionCallableTest";
+                "exception at org.chromium.chrome.browser.crash.LogcatExtractionCallableUnitTest";
         assertEquals(original, LogcatExtractionCallable.elideUrl(original));
     }
 

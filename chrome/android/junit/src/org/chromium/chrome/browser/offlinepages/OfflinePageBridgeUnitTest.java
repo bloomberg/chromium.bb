@@ -43,7 +43,7 @@ import java.util.Set;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
         shadows = {ShadowMultiDex.class})
-public class OfflinePageBridgeTest {
+public class OfflinePageBridgeUnitTest {
     private OfflinePageBridge mBridge;
 
     private static final String TEST_NAMESPACE = "TEST_NAMESPACE";
