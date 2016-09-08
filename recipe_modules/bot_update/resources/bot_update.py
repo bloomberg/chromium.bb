@@ -1452,7 +1452,7 @@ def print_debug_info():
     'BUILD_DIR': BUILD_DIR,
     'ROOT_DIR': ROOT_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
-  },
+  }
   for k, v in sorted(debug_params.iteritems()):
     print "%s: %r" % (k, v)
 
