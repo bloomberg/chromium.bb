@@ -141,29 +141,47 @@ var vary_entries = [
 // Run |test_function| with a Cache object and a map of entries. Prior to the
 // call, the Cache is populated by cache entries from |entries|. The latter is
 // expected to be an Object mapping arbitrary keys to objects of the form
-// {request: <Request object>, response: <Response object>}. There's no
-// guarantee on the order in which entries will be added to the cache.
+// {request: <Request object>, response: <Response object>}. The entries are
+// added sequentially so that tests can verify the ordering of the cache
+// methods.
 //
 // |test_function| should return a Promise that can be used with promise_test.
 function prepopulated_cache_test(entries, test_function, description) {
   cache_test(function(cache) {
-      var p = Promise.resolve();
       var hash = {};
-      return Promise.all(entries.map(function(entry) {
-          hash[entry.name] = entry;
-          return cache.put(entry.request.clone(),
-                           entry.response.clone())
-            .catch(function(e) {
-                assert_unreached(
-                  'Test setup failed for entry ' + entry.name + ': ' + e);
-            });
-        }))
-        .then(function() {
-            assert_equals(Object.keys(hash).length, entries.length);
+      var resolveMethod = null;
+
+      var promise = new Promise(function(resolve, reject) {
+          resolveMethod = resolve;
         })
-        .then(function() {
-            return test_function(cache, hash);
+      .then(function() {
+          assert_equals(Object.keys(hash).length, entries.length);
+          return test_function(cache, hash);
         });
+
+      // Add the entries to the cache sequentially.
+      // TODO(jkarlin): Once async/await is available use it to prettify this
+      // code.
+      var i = 0;
+      var processNextEntry = function(i) {
+          if (i == entries.length) {
+            resolveMethod();
+            return;
+          }
+          entry = entries[i];
+          hash[entry.name] = entry;
+          cache.put(entry.request.clone(), entry.response.clone())
+          .then(function() {
+              processNextEntry(i+1);
+            })
+          .catch(function(e) {
+              assert_unreached(
+                'Test setup failed for entry ' + entry.name + ': ' + e);
+            })
+        }
+
+      processNextEntry(0);
+      return promise;
     }, description);
 }
 
@@ -192,23 +210,6 @@ function assert_response_equals(actual, expected, description) {
                       description + " Attributes differ: " + attribute + ".");
     });
     assert_header_equals(actual.headers, expected.headers, description);
-}
-
-// Assert that the two arrays |actual| and |expected| contain the same
-// set of Responses as determined by assert_response_equals. The order
-// is not significant.
-//
-// |expected| is assumed to not contain any duplicates.
-function assert_response_array_equivalent(actual, expected, description) {
-    assert_true(Array.isArray(actual), description);
-    assert_equals(actual.length, expected.length, description);
-    expected.forEach(function(expected_element) {
-        // assert_response_in_array treats the first argument as being
-        // 'actual', and the second as being 'expected array'. We are
-        // switching them around because we want to be resilient
-        // against the |actual| array containing duplicates.
-        assert_response_in_array(expected_element, actual, description);
-    });
 }
 
 // Asserts that two arrays |actual| and |expected| contain the same

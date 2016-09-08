@@ -49,4 +49,5 @@ message CacheResponse {
 message CacheMetadata {
   required CacheRequest request = 1;
   required CacheResponse response = 2;
+  optional int64 entry_time = 3;
 }

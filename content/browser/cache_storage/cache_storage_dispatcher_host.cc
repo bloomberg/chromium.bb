@@ -459,7 +459,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
     DCHECK(response);
     responses->push_back(*response);
     if (blob_data_handle)
-      blob_data_handles->push_back(*blob_data_handle);
+      blob_data_handles->push_back(std::move(blob_data_handle));
   }
   OnCacheMatchAllCallback(thread_id, request_id, std::move(cache_handle), error,
                           std::move(responses), std::move(blob_data_handles));
@@ -478,8 +478,10 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
     return;
   }
 
-  for (const storage::BlobDataHandle& handle : *blob_data_handles)
-    StoreBlobDataHandle(handle);
+  for (const auto& handle : *blob_data_handles) {
+    if (handle)
+      StoreBlobDataHandle(*handle);
+  }
 
   Send(new CacheStorageMsg_CacheMatchAllSuccess(thread_id, request_id,
                                                 *responses));
@@ -497,16 +499,7 @@ void CacheStorageDispatcherHost::OnCacheKeysCallback(
     return;
   }
 
-  CacheStorageCache::Requests out;
-
-  for (CacheStorageCache::Requests::const_iterator it = requests->begin();
-       it != requests->end(); ++it) {
-    ServiceWorkerFetchRequest request(it->url, it->method, it->headers,
-                                      it->referrer, it->is_reload);
-    out.push_back(request);
-  }
-
-  Send(new CacheStorageMsg_CacheKeysSuccess(thread_id, request_id, out));
+  Send(new CacheStorageMsg_CacheKeysSuccess(thread_id, request_id, *requests));
 }
 
 void CacheStorageDispatcherHost::OnCacheBatchCallback(

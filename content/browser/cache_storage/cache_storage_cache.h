@@ -51,7 +51,7 @@ class CONTENT_EXPORT CacheStorageCache {
                           std::unique_ptr<ServiceWorkerResponse>,
                           std::unique_ptr<storage::BlobDataHandle>)>;
   using Responses = std::vector<ServiceWorkerResponse>;
-  using BlobDataHandles = std::vector<storage::BlobDataHandle>;
+  using BlobDataHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
   using ResponsesCallback =
       base::Callback<void(CacheStorageError,
                           std::unique_ptr<Responses>,
@@ -155,18 +155,6 @@ class CONTENT_EXPORT CacheStorageCache {
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
  private:
-  friend class base::RefCounted<CacheStorageCache>;
-  friend class TestCacheStorageCache;
-  friend class CacheStorageCacheTest;
-
-  struct OpenAllEntriesContext;
-  struct PutContext;
-  struct QueryCacheResults;
-
-  using QueryCacheResultsCallback =
-      base::Callback<void(CacheStorageError,
-                          std::unique_ptr<QueryCacheResults>)>;
-
   enum class QueryCacheType { REQUESTS, REQUESTS_AND_RESPONSES, CACHE_ENTRIES };
 
   // The backend progresses from uninitialized, to open, to closed, and cannot
@@ -177,6 +165,19 @@ class CONTENT_EXPORT CacheStorageCache {
     BACKEND_CLOSED          // Backend cannot be used.  All ops should fail.
   };
 
+  friend class base::RefCounted<CacheStorageCache>;
+  friend class TestCacheStorageCache;
+  friend class CacheStorageCacheTest;
+
+  struct OpenAllEntriesContext;
+  struct PutContext;
+  struct QueryCacheContext;
+  struct QueryCacheResult;
+
+  using QueryCacheResults = std::vector<QueryCacheResult>;
+  using QueryCacheCallback =
+      base::Callback<void(CacheStorageError,
+                          std::unique_ptr<QueryCacheResults>)>;
   using Entries = std::vector<disk_cache::Entry*>;
   using ScopedBackendPtr = std::unique_ptr<disk_cache::Backend>;
   using BlobToDiskCacheIDMap =
@@ -209,19 +210,21 @@ class CONTENT_EXPORT CacheStorageCache {
   void QueryCache(std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCacheQueryParams& options,
                   QueryCacheType query_type,
-                  const QueryCacheResultsCallback& callback);
+                  const QueryCacheCallback& callback);
   void QueryCacheDidOpenFastPath(
-      std::unique_ptr<QueryCacheResults> query_cache_results,
+      std::unique_ptr<QueryCacheContext> query_cache_context,
       int rv);
   void QueryCacheOpenNextEntry(
-      std::unique_ptr<QueryCacheResults> query_cache_results);
+      std::unique_ptr<QueryCacheContext> query_cache_context);
   void QueryCacheFilterEntry(
-      std::unique_ptr<QueryCacheResults> query_cache_results,
+      std::unique_ptr<QueryCacheContext> query_cache_context,
       int rv);
   void QueryCacheDidReadMetadata(
-      std::unique_ptr<QueryCacheResults> query_cache_results,
+      std::unique_ptr<QueryCacheContext> query_cache_context,
       disk_cache::ScopedEntryPtr entry,
       std::unique_ptr<CacheMetadata> metadata);
+  static bool QueryCacheResultCompare(const QueryCacheResult& lhs,
+                                      const QueryCacheResult& rhs);
 
   // Match callbacks
   void MatchImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,

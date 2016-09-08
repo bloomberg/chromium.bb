@@ -6,7 +6,7 @@ if (self.importScripts) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll('not-present-in-the-cache')
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result, [],
             'Cache.matchAll should resolve with an empty array on failure.');
         });
@@ -52,7 +52,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a.request,
                           {ignoreSearch: true})
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.a.response,
@@ -69,7 +69,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a_with_query.request,
                           {ignoreSearch: true})
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.a.response,
@@ -134,7 +134,7 @@ cache_test(function(cache) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.cat.request.url + '#mouse')
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.cat.response,
@@ -146,7 +146,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll('http')
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result, [],
             'Cache.matchAll should treat query as a URL and not ' +
             'just a string fragment.');
@@ -156,7 +156,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll()
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.a.response,
@@ -179,7 +179,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(vary_entries, function(cache, entries) {
     return cache.matchAll('http://example.com/c')
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.vary_cookie_absent.response
@@ -195,7 +195,7 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
                         {headers: {'Cookies': 'none-of-the-above'}}));
         })
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
             ],
@@ -210,7 +210,7 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
                         {headers: {'Cookies': 'is-for-cookie'}}));
         })
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [entries.vary_cookie_is_cookie.response],
             'Cache.matchAll should match the entire header if a vary header ' +
@@ -222,7 +222,7 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
     return cache.matchAll('http://example.com/c',
                           {ignoreVary: true})
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.vary_cookie_is_cookie.response,

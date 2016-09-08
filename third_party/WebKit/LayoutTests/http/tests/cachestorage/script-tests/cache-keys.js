@@ -50,10 +50,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.keys(entries.a.request, {ignoreSearch: true})
       .then(function(result) {
-          // TODO(zino): Should use assert_request_array_equals() instead of
-          // assert_request_array_equivalent() once keys() returns request
-          // keys in key insertion order. Please see http://crbug.com/627821.
-          assert_request_array_equivalent(
+          assert_request_array_equals(
             result,
             [
               entries.a.request,
@@ -69,10 +66,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.keys(entries.a_with_query.request, {ignoreSearch: true})
       .then(function(result) {
-          // TODO(zino): Should use assert_request_array_equals() instead of
-          // assert_request_array_equivalent() if once keys() returns request
-          // keys in key insertion order. Please see http://crbug.com/627821.
-          assert_request_array_equivalent(
+          assert_request_array_equals(
             result,
             [
               entries.a.request,
@@ -101,7 +95,7 @@ cache_test(function(cache) {
                             {ignoreMethod: true});
         })
       .then(function(result) {
-          assert_request_array_equivalent(
+          assert_request_array_equals(
             result,
             [
               request,
@@ -130,7 +124,7 @@ cache_test(function(cache) {
                               {ignoreVary: true});
         })
       .then(function(result) {
-          assert_request_array_equivalent(
+          assert_request_array_equals(
             result,
             [
               vary_request,
@@ -165,10 +159,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.keys()
       .then(function(result) {
-          // TODO(zino): Should use assert_request_array_equals() instead of
-          // assert_request_array_equivalent() once keys() returns request
-          // keys in key insertion order. Please see http://crbug.com/627821.
-          assert_request_array_equivalent(
+          assert_request_array_equals(
             result,
             [
               entries.a.request,

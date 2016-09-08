@@ -646,21 +646,6 @@ class CacheStorageCacheTest : public testing::Test {
       run_loop->Quit();
   }
 
-  bool VerifyKeys(const std::vector<std::string>& expected_keys) {
-    if (expected_keys.size() != callback_strings_.size())
-      return false;
-
-    std::set<std::string> found_set;
-    for (int i = 0, max = callback_strings_.size(); i < max; ++i)
-      found_set.insert(callback_strings_[i]);
-
-    for (int i = 0, max = expected_keys.size(); i < max; ++i) {
-      if (found_set.find(expected_keys[i]) == found_set.end())
-        return false;
-    }
-    return true;
-  }
-
   bool TestResponseType(blink::WebServiceWorkerResponseType response_type) {
     body_response_.response_type = response_type;
     EXPECT_TRUE(Put(body_request_, body_response_));
@@ -939,7 +924,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_NoBody) {
   ASSERT_EQ(1u, responses->size());
   EXPECT_TRUE(
       ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
-  EXPECT_TRUE(body_handles->empty());
+  EXPECT_FALSE(body_handles->at(0));
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_Body) {
@@ -953,7 +938,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_Body) {
   ASSERT_EQ(1u, body_handles->size());
   EXPECT_TRUE(
       ResponseMetadataEqual(SetCacheName(body_response_), responses->at(0)));
-  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, body_handles->at(0)));
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(0)));
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
@@ -963,25 +948,14 @@ TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
   std::unique_ptr<CacheStorageCache::Responses> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
-  ASSERT_EQ(2u, responses->size());
-  ASSERT_EQ(1u, body_handles->size());
+  ASSERT_TRUE(body_handles->at(1));
 
-  // Order of returned responses is not guaranteed.
-  std::set<std::string> matched_set;
-  for (const ServiceWorkerResponse& response : *responses) {
-    if (response.url.spec() == "http://example.com/no_body.html") {
-      EXPECT_TRUE(
-          ResponseMetadataEqual(SetCacheName(no_body_response_), response));
-      matched_set.insert(response.url.spec());
-    } else if (response.url.spec() == "http://example.com/body.html") {
-      EXPECT_TRUE(
-          ResponseMetadataEqual(SetCacheName(body_response_), response));
-      EXPECT_TRUE(
-          ResponseBodiesEqual(expected_blob_data_, body_handles->at(0)));
-      matched_set.insert(response.url.spec());
-    }
-  }
-  EXPECT_EQ(2u, matched_set.size());
+  EXPECT_TRUE(
+      ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
+  EXPECT_FALSE(body_handles->at(0));
+  EXPECT_TRUE(
+      ResponseMetadataEqual(SetCacheName(body_response_), responses->at(1)));
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(1)));
 
   responses->clear();
   body_handles->clear();
@@ -992,7 +966,8 @@ TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
   ASSERT_EQ(1u, responses->size());
   EXPECT_TRUE(
       ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
-  EXPECT_TRUE(body_handles->empty());
+  ASSERT_EQ(1u, body_handles->size());
+  EXPECT_FALSE(body_handles->at(0));
 }
 
 TEST_P(CacheStorageCacheTestP, Match_IgnoreSearch) {
@@ -1193,7 +1168,7 @@ TEST_P(CacheStorageCacheTestP, MatchAll_Head) {
   ASSERT_EQ(1u, body_handles->size());
   EXPECT_TRUE(
       ResponseMetadataEqual(SetCacheName(body_response_), responses->at(0)));
-  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, body_handles->at(0)));
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(0)));
 }
 
 TEST_P(CacheStorageCacheTestP, Vary) {
@@ -1265,29 +1240,23 @@ TEST_P(CacheStorageCacheTestP, TwoKeys) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(2u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_.url.spec());
-  expected_keys.push_back(body_request_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys{no_body_request_.url.spec(),
+                                         body_request_.url.spec()};
+  EXPECT_EQ(expected_keys, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, TwoKeysThenOne) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(2u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_.url.spec());
-  expected_keys.push_back(body_request_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys{no_body_request_.url.spec(),
+                                         body_request_.url.spec()};
+  EXPECT_EQ(expected_keys, callback_strings_);
 
   EXPECT_TRUE(Delete(body_request_));
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(1u, callback_strings_.size());
-  std::vector<std::string> expected_key;
-  expected_key.push_back(no_body_request_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_key));
+  std::vector<std::string> expected_keys2{no_body_request_.url.spec()};
+  EXPECT_EQ(expected_keys2, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, KeysWithIgnoreSearchTrue) {
@@ -1299,10 +1268,9 @@ TEST_P(CacheStorageCacheTestP, KeysWithIgnoreSearchTrue) {
   match_params.ignore_search = true;
 
   EXPECT_TRUE(Keys(body_request_with_query_, match_params));
-  EXPECT_EQ(2u, callback_strings_.size());
   std::vector<std::string> expected_keys = {
       body_request_.url.spec(), body_request_with_query_.url.spec()};
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  EXPECT_EQ(expected_keys, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, KeysWithIgnoreSearchFalse) {
@@ -1317,10 +1285,9 @@ TEST_P(CacheStorageCacheTestP, KeysWithIgnoreSearchFalse) {
             CacheStorageCacheQueryParams().ignore_search);
 
   EXPECT_TRUE(Keys(body_request_with_query_, match_params));
-  EXPECT_EQ(1u, callback_strings_.size());
   std::vector<std::string> expected_keys = {
       body_request_with_query_.url.spec()};
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  EXPECT_EQ(expected_keys, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, DeleteNoBody) {
@@ -1351,12 +1318,10 @@ TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchTrue) {
   EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
 
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(3u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_.url.spec());
-  expected_keys.push_back(body_request_.url.spec());
-  expected_keys.push_back(body_request_with_query_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys{no_body_request_.url.spec(),
+                                         body_request_.url.spec(),
+                                         body_request_with_query_.url.spec()};
+  EXPECT_EQ(expected_keys, callback_strings_);
 
   // The following delete operation will remove both of body_request_ and
   // body_request_with_query_ from cache storage.
@@ -1365,10 +1330,9 @@ TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchTrue) {
   EXPECT_TRUE(Delete(body_request_with_query_, match_params));
 
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(1u, callback_strings_.size());
   expected_keys.clear();
-  expected_keys.push_back(no_body_request_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys2{no_body_request_.url.spec()};
+  EXPECT_EQ(expected_keys2, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchFalse) {
@@ -1377,12 +1341,10 @@ TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchFalse) {
   EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
 
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(3u, callback_strings_.size());
-  std::vector<std::string> expected_keys;
-  expected_keys.push_back(no_body_request_.url.spec());
-  expected_keys.push_back(body_request_.url.spec());
-  expected_keys.push_back(body_request_with_query_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys{no_body_request_.url.spec(),
+                                         body_request_.url.spec(),
+                                         body_request_with_query_.url.spec()};
+  EXPECT_EQ(expected_keys, callback_strings_);
 
   // Default value of ignore_search is false.
   CacheStorageCacheQueryParams match_params;
@@ -1393,11 +1355,9 @@ TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchFalse) {
   EXPECT_TRUE(Delete(body_request_with_query_, match_params));
 
   EXPECT_TRUE(Keys());
-  EXPECT_EQ(2u, callback_strings_.size());
-  expected_keys.clear();
-  expected_keys.push_back(no_body_request_.url.spec());
-  expected_keys.push_back(body_request_.url.spec());
-  EXPECT_TRUE(VerifyKeys(expected_keys));
+  std::vector<std::string> expected_keys2{no_body_request_.url.spec(),
+                                          body_request_.url.spec()};
+  EXPECT_EQ(expected_keys2, callback_strings_);
 }
 
 TEST_P(CacheStorageCacheTestP, QuickStressNoBody) {

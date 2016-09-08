@@ -117,7 +117,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a_with_query.request,
                           { ignoreSearch: true })
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.a.response,
@@ -131,7 +131,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
                                 { ignoreSearch: true });
         })
       .then(function(result) {
-          assert_response_array_equivalent(result, []);
+          assert_response_array_equals(result, []);
         });
   },
   'Cache.delete with ignoreSearch option (request with search parameters)');
@@ -140,7 +140,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a_with_query.request,
                           { ignoreSearch: true })
       .then(function(result) {
-          assert_response_array_equivalent(
+          assert_response_array_equals(
             result,
             [
               entries.a.response,
@@ -156,7 +156,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
                                 { ignoreSearch: true });
         })
       .then(function(result) {
-          assert_response_array_equivalent(result, [ entries.a.response ]);
+          assert_response_array_equals(result, [ entries.a.response ]);
         });
   },
   'Cache.delete with ignoreSearch option (when it is specified as false)');
