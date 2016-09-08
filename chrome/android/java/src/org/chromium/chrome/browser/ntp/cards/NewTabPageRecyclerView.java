@@ -241,7 +241,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         }
 
         // If we have the card offset field trial enabled, don't peek at all.
-        if (CardsFieldTrial.getFirstCardOffsetDp() != 0) {
+        if (CardsVariationParameters.getFirstCardOffsetDp() != 0) {
             peekingCard.updatePeek(0, /* shouldAnimate */ false);
             return;
         }

@@ -91,10 +91,6 @@ public class NewTabPage
     static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
     static final int ID_REMOVE = 3;
 
-    // The name of the trial for obtaining variation parameters for the ntp snippets feature. Also
-    // defined in ntp_snippets_constants.cc.
-    public static final String FIELD_TRIAL_NAME = "NTPSnippets";
-
     // UMA enum constants. CTA means the "click-to-action" icon.
     private static final String LOGO_SHOWN_UMA_NAME = "NewTabPage.LogoShown";
     private static final int STATIC_LOGO_SHOWN = 0;

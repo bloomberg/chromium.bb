@@ -33,16 +33,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
+import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.WindowOpenDisposition;
 
 import java.net.URI;
@@ -58,10 +57,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
-
-    // The variation parameter to fetch the value from the favicon service.
-    private static final String PARAMETER_FAVICON_SERVICE_NAME = "favicons_fetch_from_service";
-    private static final String PARAMETER_DISABLED_VALUE = "off";
 
     // ContextMenu item ids. These must be unique.
     private static final int ID_OPEN_IN_NEW_WINDOW = 0;
@@ -179,9 +174,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             }
         });
 
-        mUseFaviconService =
-                !PARAMETER_DISABLED_VALUE.equals(VariationsAssociatedData.getVariationParamValue(
-                        NewTabPage.FIELD_TRIAL_NAME, PARAMETER_FAVICON_SERVICE_NAME));
+        mUseFaviconService = CardsVariationParameters.isFaviconServiceEnabled();
     }
 
     @Override

@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.cards.CardsFieldTrial;
+import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 
 /**
@@ -73,7 +73,7 @@ public class NewTabPageLayout extends LinearLayout {
                 res.getDimensionPixelSize(R.dimen.snippets_padding_and_peeking_card_height);
         mTabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
         mFieldTrialLayoutAdjustment = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                CardsFieldTrial.getFirstCardOffsetDp(), res.getDisplayMetrics());
+                CardsVariationParameters.getFirstCardOffsetDp(), res.getDisplayMetrics());
     }
 
     @Override
