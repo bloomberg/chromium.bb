@@ -315,9 +315,10 @@ class HWTestList(object):
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict)]
+
   @classmethod
-  def ToolchainTest(cls, **kwargs):
-    """Return a list of HWTESTConfigs which run toolchain correctness tests."""
+  def ToolchainTestFull(cls, **kwargs):
+    """Return full set of HWTESTConfigs to run toolchain correctness tests."""
     default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
                         file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
@@ -335,6 +336,40 @@ class HWTestList(object):
             config_lib.HWTestConfig('kernel_daily_benchmarks',
                                     **default_dict)]
 
+  @classmethod
+  def ToolchainTestMedium(cls, **kwargs):
+    """Return list of HWTESTConfigs to run toolchain LLVM correctness tests.
+
+    Since the kernel is not built with LLVM, it makes no sense for the
+    toolchain to run kernel tests on LLVM builds.
+    """
+    default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
+                        file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY)
+    default_dict.update(kwargs)
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig('security',
+                                    **default_dict)]
+
+  @classmethod
+  def ToolchainTestLight(cls, **kwargs):
+    """Return miminal list of HWTESTConfigs to run toolchain correctness tests.
+
+    This is a minimum set of tests, currently for some x86 boards.
+    """
+    default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
+                        file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY)
+    default_dict.update(kwargs)
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                    **default_dict)]
 
 
 def append_useflags(useflags):
@@ -2170,8 +2205,6 @@ def GetConfig():
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       git_sync=False,
-      hw_tests=HWTestList.ToolchainTest(),
-      hw_tests_override=HWTestList.ToolchainTest(),
       trybot_list=False,
       description="Toolchain Builds (internal)",
   )
@@ -2210,14 +2243,30 @@ def GetConfig():
       description='Full release build with next minor GCC toolchain revision',
       gcc_githash='svn-mirror/google/gcc-4_9',
       latest_toolchain=True,
+      hw_tests=HWTestList.ToolchainTestFull(),
+      hw_tests_override=HWTestList.ToolchainTestFull(),
+  )
+  _gcc_builder_light = _gcc_builder.derive(
+      hw_tests=HWTestList.ToolchainTestLight(),
+      hw_tests_override=HWTestList.ToolchainTestLight(),
   )
   _llvm_builder = config_lib.BuildConfig(
       description='Full release build with LLVM toolchain',
       profile='llvm',
+      hw_tests=HWTestList.ToolchainTestMedium(),
+      hw_tests_override=HWTestList.ToolchainTestMedium(),
+  )
+  _llvm_builder_light = _llvm_builder.derive(
+      hw_tests=HWTestList.ToolchainTestLight(),
+      hw_tests_override=HWTestList.ToolchainTestLight(),
   )
   _llvm_next_builder = _llvm_builder.derive(
       description='Full release build with LLVM (next) toolchain',
       useflags=append_useflags(['llvm-next', 'clang']),
+  )
+  _llvm_next_builder_light = _llvm_next_builder.derive(
+      hw_tests=HWTestList.ToolchainTestLight(),
+      hw_tests_override=HWTestList.ToolchainTestLight(),
   )
 
   ### Toolchain builder configs: 4 boards {peppy,daisy,x86-alex,oak}
@@ -2262,19 +2311,19 @@ def GetConfig():
 
   site_config.Add(
       'x86-alex-gcc-toolchain',
-      _toolchain, _gcc_builder,
+      _toolchain, _gcc_builder_light,
       boards=['x86-alex'],
   )
 
   site_config.Add(
       'x86-alex-llvm-toolchain',
-      _toolchain, _llvm_builder,
+      _toolchain, _llvm_builder_light,
       boards=['x86-alex'],
   )
 
   site_config.Add(
       'x86-alex-llvm-next-toolchain',
-      _toolchain, _llvm_next_builder,
+      _toolchain, _llvm_next_builder_light,
       boards=['x86-alex'],
   )
 
