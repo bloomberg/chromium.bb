@@ -1725,7 +1725,8 @@ template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {
     DCHECK(range.isNotNull());
-    range.document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!range.document().needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(range.document().lifecycle());
 
     // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
     // redundant.
