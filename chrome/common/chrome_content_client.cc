@@ -34,7 +34,6 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
-#include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/cdm_info.h"
@@ -625,11 +624,6 @@ void ChromeContentClient::AddAdditionalSchemes(
   savable_schemes->push_back(extensions::kExtensionResourceScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(dom_distiller::kDomDistillerScheme);
-}
-
-bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
-  return message->type() ==
-         DataReductionProxyViewHostMsg_IsDataReductionProxy::ID;
 }
 
 std::string ChromeContentClient::GetProduct() const {

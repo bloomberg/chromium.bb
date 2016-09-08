@@ -43432,6 +43432,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_Connect" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from connectStart to connectEnd based on Navigation Timing.
@@ -43514,6 +43517,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DomainLookup" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domainLookupStart to domainLookupEnd based on Navigation Timing.
@@ -43521,6 +43527,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DomContentLoaded" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToDOMContentLoadedEventFired
+    instead.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domContentLoadedEventStart to domContentLoadedEventEnd based on
@@ -43529,6 +43540,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DomInteractive" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domInteractive to domContentLoadEventStart based on Navigation
@@ -43537,6 +43551,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DomLoading" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domLoading to domInteractive based on Navigation Timing.
@@ -43544,6 +43561,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_LoadEvent" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from loadEventStart to loadEventEnd based on Navigation Timing.
@@ -43679,6 +43701,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToCommit_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 9/2016. Use Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToCommit
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43703,6 +43730,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToFinish_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 9/2016. Use Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43727,6 +43759,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToFinishDoc_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43750,6 +43787,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_CommitToFinish_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43773,6 +43815,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_CommitToFinishDoc_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43797,6 +43844,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_FinishDocToFinish_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -43844,6 +43894,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToFinish_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016. Use
+    PageLoad.Clients.DataReductionProxy.DocumentTiming.NavigationToLoadEventFired
+    instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
@@ -43877,6 +43932,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToStart_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -43896,6 +43954,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_StartToCommit_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -43914,6 +43975,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_StartToFinish_DataReductionProxy" units="ms">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -99578,6 +99642,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxy">
+  <obsolete>
+    Deprecated 9/2016.
+  </obsolete>
   <suffix name="DataReductionProxy"
       label="Only page loads through the data reduction proxy are considered."/>
   <suffix name="HTTPS_DataReductionProxy"
@@ -99669,6 +99736,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxy_AutoLoFi" separator="_">
+  <obsolete>
+    Deprecated 09/2016.
+  </obsolete>
   <suffix name="DataReductionProxy_AutoLoFiOn"
       label="Only page loads through the data reduction proxy with auto LoFi
              enabled are considered."/>

@@ -76,7 +76,6 @@ class ChromeContentClient : public content::ContentClient {
   void AddAdditionalSchemes(std::vector<url::SchemeWithType>* standard_schemes,
                             std::vector<url::SchemeWithType>* referrer_schemes,
                             std::vector<std::string>* saveable_shemes) override;
-  bool CanSendWhileSwappedOut(const IPC::Message* message) override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
   base::string16 GetLocalizedString(int message_id) const override;

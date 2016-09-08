@@ -22,8 +22,6 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
-#include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -120,42 +118,6 @@ void PltHistogramWithGwsPreview(const char* name,
                              websearch_chrome_joint_experiment_id);            \
 }
 
-// In addition to PLT_HISTOGRAM, add the *_DataReductionProxy variant
-// conditionally. This macro runs only in one thread.
-#define PLT_HISTOGRAM_DRP(                                              \
-    name, sample, data_reduction_proxy_was_used, scheme_type)           \
-  do {                                                                  \
-    static base::HistogramBase* counter(NULL);                          \
-    static base::HistogramBase* drp_counter(NULL);                      \
-    static base::HistogramBase* https_drp_counter(NULL);                \
-    if (!counter) {                                                     \
-      DCHECK(drp_counter == NULL);                                      \
-      DCHECK(https_drp_counter == NULL);                                \
-      counter = base::Histogram::FactoryTimeGet(                        \
-          name, kPLTMin(), kPLTMax(), kPLTCount,                        \
-          base::Histogram::kUmaTargetedHistogramFlag);                  \
-    }                                                                   \
-    counter->AddTime(sample);                                           \
-    if (!data_reduction_proxy_was_used) break;                          \
-    if (scheme_type & URLPattern::SCHEME_HTTPS) {                       \
-      if (!https_drp_counter) {                                         \
-        https_drp_counter = base::Histogram::FactoryTimeGet(            \
-            std::string(name) + "_HTTPS_DataReductionProxy",            \
-            kPLTMin(), kPLTMax(), kPLTCount,                            \
-            base::Histogram::kUmaTargetedHistogramFlag);                \
-      }                                                                 \
-      https_drp_counter->AddTime(sample);                               \
-    } else {                                                            \
-      if (!drp_counter) {                                               \
-        drp_counter = base::Histogram::FactoryTimeGet(                  \
-            std::string(name) + "_DataReductionProxy",                  \
-            kPLTMin(), kPLTMax(), kPLTCount,                            \
-            base::Histogram::kUmaTargetedHistogramFlag);                \
-      }                                                                 \
-      drp_counter->AddTime(sample);                                     \
-    }                                                                   \
-  } while (0)
-
 // Returns the scheme type of the given URL if its type is one for which we
 // dump page load histograms. Otherwise returns NULL.
 URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
@@ -228,9 +190,6 @@ int GetQueryStringBasedExperiment(const GURL& referrer) {
 
 void DumpHistograms(const WebPerformance& performance,
                     DocumentState* document_state,
-                    bool data_reduction_proxy_was_used,
-                    bool lofi_active_for_page,  // LoFi was used, unless part of
-                                                // the control group.
                     bool came_from_websearch,
                     int websearch_chrome_joint_experiment_id,
                     bool is_preview,
@@ -243,22 +202,13 @@ void DumpHistograms(const WebPerformance& performance,
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
-  Time domain_lookup_start = Time::FromDoubleT(performance.domainLookupStart());
-  Time domain_lookup_end = Time::FromDoubleT(performance.domainLookupEnd());
-  Time connect_start = Time::FromDoubleT(performance.connectStart());
-  Time connect_end = Time::FromDoubleT(performance.connectEnd());
   Time request_start = Time::FromDoubleT(performance.requestStart());
   Time response_start = Time::FromDoubleT(performance.responseStart());
-  Time dom_loading = Time::FromDoubleT(performance.domLoading());
-  Time dom_interactive = Time::FromDoubleT(performance.domInteractive());
   Time dom_content_loaded_start =
       Time::FromDoubleT(performance.domContentLoadedEventStart());
-  Time dom_content_loaded_end =
-      Time::FromDoubleT(performance.domContentLoadedEventEnd());
   Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
   Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
   Time begin = (request.is_null() ? navigation_start : request_start);
-  Time first_paint = document_state->first_paint_time();
 
   DCHECK(!navigation_start.is_null());
 
@@ -282,35 +232,6 @@ void DumpHistograms(const WebPerformance& performance,
     return;
   document_state->set_web_timing_histograms_recorded(true);
 
-  PLT_HISTOGRAM_DRP("PLT.NT_DomainLookup",
-                    domain_lookup_end - domain_lookup_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
-  PLT_HISTOGRAM_DRP("PLT.NT_Connect",
-                    connect_end - connect_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
-
-  if (!dom_interactive.is_null() && !dom_loading.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_DomLoading",
-                      dom_interactive - dom_loading,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
-  if (!dom_content_loaded_start.is_null() && !dom_interactive.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_DomInteractive",
-                      dom_content_loaded_start - dom_interactive,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
-  if (!dom_content_loaded_start.is_null() &&
-      !dom_content_loaded_end.is_null() ) {
-    PLT_HISTOGRAM_DRP("PLT.NT_DomContentLoaded",
-                      dom_content_loaded_end - dom_content_loaded_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
-
   // TODO(simonjam): There is no way to distinguish between abandonment and
   // intentional Javascript navigation before the load event fires.
   // TODO(dominich): Load type breakdown
@@ -330,23 +251,6 @@ void DumpHistograms(const WebPerformance& performance,
                                    came_from_websearch,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
-    if (data_reduction_proxy_was_used) {
-      if (scheme_type & URLPattern::SCHEME_HTTPS) {
-        PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_HTTPS_DataReductionProxy",
-                      load_event_start - begin);
-        PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_HTTPS_DataReductionProxy",
-                      load_event_start - response_start);
-        PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_HTTPS_DataReductionProxy",
-                      load_event_start - navigation_start);
-      } else {
-        PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_DataReductionProxy",
-                      load_event_start - begin);
-        PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_DataReductionProxy",
-                      load_event_start - response_start);
-        PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_DataReductionProxy",
-                      load_event_start - navigation_start);
-      }
-    }
   }
   if (!load_event_end.is_null()) {
     PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.PT_BeginToFinish",
@@ -369,116 +273,10 @@ void DumpHistograms(const WebPerformance& performance,
                                    came_from_websearch,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
-    if (data_reduction_proxy_was_used) {
-      // TODO(megjablon): Move these repetitive cases into an anonymous
-      // function.
-      bool in_lofi_enabled_group =
-          data_reduction_proxy::params::IsIncludedInLoFiEnabledFieldTrial();
-      bool in_lofi_control_group =
-          data_reduction_proxy::params::IsIncludedInLoFiControlFieldTrial();
-      if (scheme_type & URLPattern::SCHEME_HTTPS) {
-        PLT_HISTOGRAM("PLT.PT_BeginToFinish_HTTPS_DataReductionProxy",
-                      load_event_end - begin);
-        PLT_HISTOGRAM("PLT.PT_CommitToFinish_HTTPS_DataReductionProxy",
-                      load_event_end - response_start);
-        PLT_HISTOGRAM("PLT.PT_RequestToFinish_HTTPS_DataReductionProxy",
-                      load_event_end - navigation_start);
-        PLT_HISTOGRAM("PLT.PT_StartToFinish_HTTPS_DataReductionProxy",
-                      load_event_end - request_start);
-        if (lofi_active_for_page && in_lofi_enabled_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
-              load_event_end - begin);
-          PLT_HISTOGRAM(
-              "PLT.PT_CommitToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
-              load_event_end - response_start);
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
-              load_event_end - navigation_start);
-          PLT_HISTOGRAM(
-              "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
-              load_event_end - request_start);
-          if (!first_paint.is_null()) {
-            PLT_HISTOGRAM(
-                "PLT.BeginToFirstPaint_HTTPS_DataReductionProxy_AutoLoFiOn",
-                first_paint - begin);
-          }
-        } else if (lofi_active_for_page && in_lofi_control_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
-              load_event_end - begin);
-          PLT_HISTOGRAM(
-              "PLT.PT_CommitToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
-              load_event_end - response_start);
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
-              load_event_end - navigation_start);
-          PLT_HISTOGRAM(
-              "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
-              load_event_end - request_start);
-          if (!first_paint.is_null()) {
-            PLT_HISTOGRAM(
-                "PLT.BeginToFirstPaint_HTTPS_DataReductionProxy_AutoLoFiOff",
-                first_paint - begin);
-          }
-        }
-      } else {
-        PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy",
-                      load_event_end - begin);
-        PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy",
-                      load_event_end - response_start);
-        PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy",
-                      load_event_end - navigation_start);
-        PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
-                      load_event_end - request_start);
-        if (lofi_active_for_page && in_lofi_enabled_group) {
-          PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOn",
-                        load_event_end - begin);
-          PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOn",
-                        load_event_end - response_start);
-          PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy_AutoLoFiOn",
-                        load_event_end - navigation_start);
-          PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOn",
-                        load_event_end - request_start);
-          if (!first_paint.is_null()) {
-            PLT_HISTOGRAM("PLT.BeginToFirstPaint_DataReductionProxy_AutoLoFiOn",
-                          first_paint - begin);
-          }
-        } else if (lofi_active_for_page && in_lofi_control_group) {
-          PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOff",
-                        load_event_end - begin);
-          PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOff",
-                        load_event_end - response_start);
-          PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy_AutoLoFiOff",
-                        load_event_end - navigation_start);
-          PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOff",
-                        load_event_end - request_start);
-          if (!first_paint.is_null()) {
-            PLT_HISTOGRAM(
-                "PLT.BeginToFirstPaint_DataReductionProxy_AutoLoFiOff",
-                first_paint - begin);
-          }
-        }
-      }
-    }
   }
   if (!load_event_start.is_null() && !load_event_end.is_null()) {
     PLT_HISTOGRAM("PLT.PT_FinishDocToFinish",
                   load_event_end - load_event_start);
-    PLT_HISTOGRAM_DRP("PLT.NT_LoadEvent",
-                      load_event_end - load_event_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-
-    if (data_reduction_proxy_was_used) {
-      if (scheme_type & URLPattern::SCHEME_HTTPS) {
-        PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_HTTPS_DataReductionProxy",
-                      load_event_end - load_event_start);
-      } else {
-        PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
-                      load_event_end - load_event_start);
-      }
-    }
   }
   if (!dom_content_loaded_start.is_null()) {
     PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.PT_RequestToDomContentLoaded",
@@ -486,40 +284,6 @@ void DumpHistograms(const WebPerformance& performance,
                                    came_from_websearch,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
-    if (data_reduction_proxy_was_used) {
-      bool in_lofi_enabled_group =
-          data_reduction_proxy::params::IsIncludedInLoFiEnabledFieldTrial();
-      bool in_lofi_control_group =
-          data_reduction_proxy::params::IsIncludedInLoFiControlFieldTrial();
-      if (scheme_type & URLPattern::SCHEME_HTTPS) {
-        PLT_HISTOGRAM(
-            "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy",
-            dom_content_loaded_start - navigation_start);
-        if (lofi_active_for_page && in_lofi_enabled_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
-              "AutoLoFiOn",
-              dom_content_loaded_start - navigation_start);
-        } else if (lofi_active_for_page && in_lofi_control_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
-              "AutoLoFiOff",
-              dom_content_loaded_start - navigation_start);
-        }
-      } else {
-        PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
-                      dom_content_loaded_start - navigation_start);
-        if (lofi_active_for_page && in_lofi_enabled_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOn",
-              dom_content_loaded_start - navigation_start);
-        } else if (lofi_active_for_page && in_lofi_control_group) {
-          PLT_HISTOGRAM(
-              "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOff",
-              dom_content_loaded_start - navigation_start);
-        }
-      }
-    }
   }
   PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.PT_BeginToCommit",
                                  response_start - begin,
@@ -541,27 +305,6 @@ void DumpHistograms(const WebPerformance& performance,
                                  came_from_websearch,
                                  websearch_chrome_joint_experiment_id,
                                  is_preview);
-  if (data_reduction_proxy_was_used) {
-    if (scheme_type & URLPattern::SCHEME_HTTPS) {
-      PLT_HISTOGRAM("PLT.PT_BeginToCommit_HTTPS_DataReductionProxy",
-                    response_start - begin);
-      PLT_HISTOGRAM("PLT.PT_RequestToStart_HTTPS_DataReductionProxy",
-                    request_start - navigation_start);
-      PLT_HISTOGRAM("PLT.PT_StartToCommit_HTTPS_DataReductionProxy",
-                    response_start - request_start);
-      PLT_HISTOGRAM("PLT.PT_RequestToCommit_HTTPS_DataReductionProxy",
-                    response_start - navigation_start);
-    } else {
-      PLT_HISTOGRAM("PLT.PT_BeginToCommit_DataReductionProxy",
-                    response_start - begin);
-      PLT_HISTOGRAM("PLT.PT_RequestToStart_DataReductionProxy",
-                    request_start - navigation_start);
-      PLT_HISTOGRAM("PLT.PT_StartToCommit_DataReductionProxy",
-                    response_start - request_start);
-      PLT_HISTOGRAM("PLT.PT_RequestToCommit_DataReductionProxy",
-                    response_start - navigation_start);
-    }
-  }
 }
 
 bool WasWebRequestUsedBySomeExtensions() {
@@ -579,7 +322,6 @@ bool WasWebRequestUsedBySomeExtensions() {
 // needed. Please do not add new metrics based on DocumentState.
 void DumpDeprecatedHistograms(const WebPerformance& performance,
                               DocumentState* document_state,
-                              bool data_reduction_proxy_was_used,
                               bool came_from_websearch,
                               int websearch_chrome_joint_experiment_id,
                               bool is_preview,
@@ -752,11 +494,6 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
       break;
   }
 
-  if (data_reduction_proxy_was_used) {
-    PLT_HISTOGRAM("PLT.BeginToFinishDoc_SpdyProxy", begin_to_finish_doc);
-    PLT_HISTOGRAM("PLT.BeginToFinish_SpdyProxy", begin_to_finish_all_loads);
-  }
-
   if (document_state->was_prefetcher()) {
     PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
                   begin_to_finish_doc);
@@ -834,16 +571,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
 
-  bool data_reduction_proxy_was_used = false;
-  if (!document_state->proxy_server().IsEmpty()) {
-    bool handled =
-        Send(new DataReductionProxyViewHostMsg_IsDataReductionProxy(
-            document_state->proxy_server(), &data_reduction_proxy_was_used));
-    // If the IPC call is not handled, then |data_reduction_proxy_was_used|
-    // should remain |false|.
-    DCHECK(handled || !data_reduction_proxy_was_used);
-  }
-
   bool came_from_websearch = IsFromGoogleSearchResult(
       frame->document().url(),
       blink::WebStringToGURL(frame->document().referrer()));
@@ -855,24 +582,16 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     is_preview = ViaHeaderContains(frame, "1.1 Google Instant Proxy Preview");
   }
 
-  content::RenderFrame* render_frame =
-      content::RenderFrame::FromWebFrame(frame);
-
   // Metrics based on the timing information recorded for the Navigation Timing
   // API - http://www.w3.org/TR/navigation-timing/.
-  DumpHistograms(
-      frame->performance(), document_state, data_reduction_proxy_was_used,
-      render_frame && render_frame->IsUsingLoFi(), came_from_websearch,
-      websearch_chrome_joint_experiment_id, is_preview, scheme_type);
+  DumpHistograms(frame->performance(), document_state, came_from_websearch,
+                 websearch_chrome_joint_experiment_id, is_preview, scheme_type);
 
   // Old metrics based on the timing information stored in DocumentState. These
   // are deprecated and should go away.
-  DumpDeprecatedHistograms(frame->performance(), document_state,
-                           data_reduction_proxy_was_used,
-                           came_from_websearch,
-                           websearch_chrome_joint_experiment_id,
-                           is_preview,
-                           scheme_type);
+  DumpDeprecatedHistograms(
+      frame->performance(), document_state, came_from_websearch,
+      websearch_chrome_joint_experiment_id, is_preview, scheme_type);
 
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());

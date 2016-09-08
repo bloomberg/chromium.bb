@@ -169,7 +169,6 @@ static_library("common") {
     "//components/component_updater",
     "//components/content_settings/core/common",
     "//components/crash/core/common",
-    "//components/data_reduction_proxy/content/common",
     "//components/dom_distiller/core",
     "//components/error_page/common",
     "//components/favicon_base",
