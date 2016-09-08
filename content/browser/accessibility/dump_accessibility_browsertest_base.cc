@@ -72,7 +72,9 @@ bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
 
 typedef AccessibilityTreeFormatter::Filter Filter;
 
-DumpAccessibilityTestBase::DumpAccessibilityTestBase() {
+DumpAccessibilityTestBase::DumpAccessibilityTestBase()
+    : is_blink_pass_(false),
+      enable_accessibility_after_navigating_(false) {
 }
 
 DumpAccessibilityTestBase::~DumpAccessibilityTestBase() {
@@ -242,19 +244,33 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   AddDefaultFilters(&filters_);
   ParseHtmlForExtraDirectives(html_contents, &filters_, &wait_for);
 
-  // Load the test html and wait for the "load complete" AX event.
+  // Get the test URL.
   GURL url(embedded_test_server()->GetURL(
       "/" + std::string(file_dir) + "/" + file_path.BaseName().MaybeAsASCII()));
-  AccessibilityNotificationWaiter accessibility_waiter(
-      shell()->web_contents(),
-      AccessibilityModeComplete,
-      ui::AX_EVENT_LOAD_COMPLETE);
-  NavigateToURL(shell(), url);
-  accessibility_waiter.WaitForNotification();
-
-  // Get the url of every frame in the frame tree.
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
+
+  if (enable_accessibility_after_navigating_ &&
+      web_contents->GetAccessibilityMode() == AccessibilityModeOff) {
+    // Load the url, then enable accessibility.
+    NavigateToURL(shell(), url);
+    AccessibilityNotificationWaiter accessibility_waiter(
+        web_contents,
+        AccessibilityModeComplete,
+        ui::AX_EVENT_NONE);
+    accessibility_waiter.WaitForNotification();
+  } else {
+    // Enable accessibility, then load the test html and wait for the
+    // "load complete" AX event.
+    AccessibilityNotificationWaiter accessibility_waiter(
+        web_contents,
+        AccessibilityModeComplete,
+        ui::AX_EVENT_LOAD_COMPLETE);
+    NavigateToURL(shell(), url);
+    accessibility_waiter.WaitForNotification();
+  }
+
+  // Get the url of every frame in the frame tree.
   FrameTree* frame_tree = web_contents->GetFrameTree();
   std::vector<std::string> all_frame_urls;
   for (FrameTreeNode* node : frame_tree->Nodes()) {
