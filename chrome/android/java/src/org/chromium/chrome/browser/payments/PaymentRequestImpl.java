@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -25,6 +26,13 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.safejson.JsonSanitizer;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
@@ -109,8 +117,24 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
 
+    /** Monitors changes in the TabModelSelector. */
+    private final TabModelSelectorObserver mSelectorObserver = new EmptyTabModelSelectorObserver() {
+        @Override
+        public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+            onDismiss();
+        }
+    };
+
+    /** Monitors changes in the current TabModel. */
+    private final TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
+        @Override
+        public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            if (tab == null || tab.getId() != lastId) onDismiss();
+        }
+    };
+
     private final Handler mHandler = new Handler();
-    private final Activity mContext;
+    private final ChromeActivity mContext;
     private final PaymentRequestDismissObserver mDismissObserver;
     private final String mMerchantName;
     private final String mOrigin;
@@ -178,7 +202,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         assert webContents != null;
         assert dismissObserver != null;
 
-        mContext = context;
+        assert context instanceof ChromeActivity;
+        mContext = (ChromeActivity) context;
+
         mDismissObserver = dismissObserver;
         mMerchantName = webContents.getTitle();
         // The feature is available only in secure context, so it's OK to not show HTTPS.
@@ -345,6 +371,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mIsShowing = true;
         if (disconnectIfNoPaymentMethodsSupported()) return;
+
+        // Catch any time the user switches tabs.  Because the dialog is modal, a user shouldn't be
+        // allowed to switch tabs, which can happen if the user receives an external Intent.
+        mContext.getTabModelSelector().addObserver(mSelectorObserver);
+        mContext.getCurrentTabModel().addObserver(mTabModelObserver);
 
         mUI.show();
         recordSuccessFunnelHistograms("Shown");
@@ -1069,6 +1100,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
             mPaymentMethodsSection = null;
         }
+
+        mContext.getTabModelSelector().removeObserver(mSelectorObserver);
+        mContext.getCurrentTabModel().removeObserver(mTabModelObserver);
     }
 
     private void closeClient() {
