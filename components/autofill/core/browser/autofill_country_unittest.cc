@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/country_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#if defined(ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 using base::ASCIIToUTF16;
 
@@ -49,9 +54,19 @@ TEST(AutofillCountryTest, CountryCodeForLocale) {
 
 // Test mapping all country codes to country names.
 TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
+  std::set<std::string> expected_failures;
+#if defined(ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_KITKAT) {
+    expected_failures.insert("BQ");
+    expected_failures.insert("SS");
+  }
+#endif
   const std::vector<std::string>& country_codes =
       CountryDataMap::GetInstance()->country_codes();
   for (const std::string& country_code : country_codes) {
+    if (base::ContainsKey(expected_failures, country_code))
+      continue;
     SCOPED_TRACE("Country code '" + country_code + "' should have a name.");
     EXPECT_NE(ASCIIToUTF16(country_code),
               AutofillCountry(country_code, "en").name());
