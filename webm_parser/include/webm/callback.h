@@ -10,9 +10,9 @@
 
 #include <cstdint>
 
-#include "dom_types.h"
-#include "reader.h"
-#include "status.h"
+#include "./dom_types.h"
+#include "./reader.h"
+#include "./status.h"
 
 /**
  \file

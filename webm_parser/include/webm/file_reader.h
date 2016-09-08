@@ -13,8 +13,8 @@
 #include <cstdlib>
 #include <memory>
 
-#include "reader.h"
-#include "status.h"
+#include "./reader.h"
+#include "./status.h"
 
 /**
  \file

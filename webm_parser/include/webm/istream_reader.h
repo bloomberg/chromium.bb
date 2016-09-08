@@ -14,8 +14,8 @@
 #include <memory>
 #include <type_traits>
 
-#include "reader.h"
-#include "status.h"
+#include "./reader.h"
+#include "./status.h"
 
 /**
  \file

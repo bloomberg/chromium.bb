@@ -10,9 +10,9 @@
 
 #include <memory>
 
-#include "callback.h"
-#include "reader.h"
-#include "status.h"
+#include "./callback.h"
+#include "./reader.h"
+#include "./status.h"
 
 /**
  \file

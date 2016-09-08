@@ -13,8 +13,8 @@
 #include <initializer_list>
 #include <vector>
 
-#include "reader.h"
-#include "status.h"
+#include "./reader.h"
+#include "./status.h"
 
 /**
  \file
