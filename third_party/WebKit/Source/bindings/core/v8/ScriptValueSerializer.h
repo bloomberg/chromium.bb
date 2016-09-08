@@ -5,6 +5,7 @@
 #ifndef ScriptValueSerializer_h
 #define ScriptValueSerializer_h
 
+#include "base/gtest_prod_util.h"
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -540,7 +541,7 @@ private:
             if (m_position >= m_length)
                 return false;
             currentByte = m_buffer[m_position++];
-            *value |= ((currentByte & SerializedScriptValue::varIntMask) << shift);
+            *value |= (static_cast<T>(currentByte & SerializedScriptValue::varIntMask) << shift);
             shift += SerializedScriptValue::varIntShift;
         } while (currentByte & (1 << SerializedScriptValue::varIntShift));
         return true;
@@ -557,6 +558,8 @@ private:
     uint32_t m_version;
     const WebBlobInfoArray* m_blobInfo;
     const BlobDataHandleMap& m_blobDataHandles;
+
+    FRIEND_TEST_ALL_PREFIXES(ScriptValueSerializerTest, Uint64Decode);
 };
 
 class CORE_EXPORT ScriptValueDeserializer {
