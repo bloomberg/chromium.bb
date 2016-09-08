@@ -130,6 +130,8 @@ public:
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 
+    String addExceptionContext(const String&) const;
+
 protected:
     // An ExceptionCode for the case that an exception is rethrown.  In that
     // case, we cannot determine an exception code.
@@ -138,8 +140,6 @@ protected:
     void setException(ExceptionCode, const String&, v8::Local<v8::Value>);
 
 private:
-    String addExceptionContext(const String&) const;
-
     ExceptionCode m_code;
     ContextType m_context;
     String m_message;

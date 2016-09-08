@@ -7,13 +7,14 @@
 #include "bindings/core/v8/ToV8.h"
 #include "core/dom/DOMArrayBufferBase.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
 V8ScriptValueSerializer::V8ScriptValueSerializer(RefPtr<ScriptState> scriptState)
     : m_scriptState(std::move(scriptState))
     , m_serializedScriptValue(SerializedScriptValue::create())
-    , m_serializer(m_scriptState->isolate())
+    , m_serializer(m_scriptState->isolate(), this)
 {
     DCHECK(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled());
 }
@@ -25,6 +26,7 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(v8::Local<v8::V
     m_serializeInvoked = true;
 #endif
     DCHECK(m_serializedScriptValue);
+    AutoReset<const ExceptionState*> reset(&m_exceptionState, &exceptionState);
     ScriptState::Scope scope(m_scriptState.get());
 
     // Prepare to transfer the provided transferables.
@@ -42,11 +44,7 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(v8::Local<v8::V
         exceptionState.rethrowV8Exception(tryCatch.Exception());
         return nullptr;
     }
-    if (!wroteValue) {
-        DCHECK(!tryCatch.HasCaught());
-        exceptionState.throwDOMException(DataCloneError, "An object could not be cloned.");
-        return nullptr;
-    }
+    DCHECK(wroteValue);
 
     // Finalize the results.
     std::vector<uint8_t> buffer = m_serializer.ReleaseBuffer();
@@ -83,6 +81,16 @@ void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionSt
             NOTREACHED() << "Unknown type of array buffer in transfer list.";
         }
     }
+}
+
+void V8ScriptValueSerializer::ThrowDataCloneError(v8::Local<v8::String> v8Message)
+{
+    DCHECK(m_exceptionState);
+    String message = m_exceptionState->addExceptionContext(
+        v8StringToWebCoreString<String>(v8Message, DoNotExternalize));
+    v8::Local<v8::Value> exception = V8ThrowException::createDOMException(
+        m_scriptState->isolate(), DataCloneError, message);
+    V8ThrowException::throwException(m_scriptState->isolate(), exception);
 }
 
 } // namespace blink

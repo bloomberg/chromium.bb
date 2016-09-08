@@ -25,7 +25,7 @@ class Transferables;
 //
 // A serializer cannot be used multiple times; it is expected that its serialize
 // method will be invoked exactly once.
-class V8ScriptValueSerializer {
+class GC_PLUGIN_IGNORE("https://crbug.com/644725") V8ScriptValueSerializer : public v8::ValueSerializer::Delegate {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 public:
@@ -35,9 +35,13 @@ public:
 private:
     void transfer(Transferables*, ExceptionState&);
 
+    // v8::ValueSerializer::Delegate
+    void ThrowDataCloneError(v8::Local<v8::String> message) override;
+
     RefPtr<ScriptState> m_scriptState;
     RefPtr<SerializedScriptValue> m_serializedScriptValue;
     v8::ValueSerializer m_serializer;
+    const ExceptionState* m_exceptionState = nullptr;
 #if DCHECK_IS_ON()
     bool m_serializeInvoked = false;
 #endif
