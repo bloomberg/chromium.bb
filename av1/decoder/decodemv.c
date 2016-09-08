@@ -569,8 +569,13 @@ static int read_mv_component(aom_reader *r, const nmv_component *mvcomp,
   }
 
   // Fractional part
+#if CONFIG_DAALA_EC
+  fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
+                       MV_FP_SIZE, ACCT_STR);
+#else
   fr = aom_read_tree(r, av1_mv_fp_tree,
                      class0 ? mvcomp->class0_fp[d] : mvcomp->fp, ACCT_STR);
+#endif
 
   // High precision part (if hp is not used, the default value of the hp is 1)
   hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
