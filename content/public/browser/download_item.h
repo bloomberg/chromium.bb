@@ -52,6 +52,8 @@ class WebContents;
 // This is intended to be used only on the UI thread.
 class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.browser
   enum DownloadState {
     // Download is actively progressing.
     IN_PROGRESS = 0,

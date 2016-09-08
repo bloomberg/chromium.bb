@@ -241,14 +241,11 @@ void DownloadManagerService::OnDownloadUpdated(
   if (java_ref_.is_null())
     return;
 
-  // Ignore anything that isn't a completed download notification.
-  if (item->GetState() != content::DownloadItem::DownloadState::COMPLETE)
-    return;
-
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadManagerService_onDownloadItemUpdated(
       env,
       java_ref_.obj(),
+      item->GetState(),
       ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
       ConvertUTF8ToJavaString(
           env, item->GetFileNameToReportUser().value()).obj(),

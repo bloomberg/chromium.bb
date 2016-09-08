@@ -31,6 +31,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.DownloadState;
 
 import java.util.List;
 
@@ -140,7 +141,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(updateItem, false);
+                mAdapter.onDownloadItemUpdated(updateItem, false, DownloadState.COMPLETE);
             }
         });
         mAdapterObserver.onChangedCallback.waitForCallback(callCount);
@@ -153,7 +154,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(deletedItem, false);
+                mAdapter.onDownloadItemUpdated(deletedItem, false, DownloadState.COMPLETE);
             }
         });
         mAdapterObserver.onChangedCallback.waitForCallback(callCount);

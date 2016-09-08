@@ -264,6 +264,7 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/browser/android/gesture_event_type.h",
     "//content/browser/device_sensors/device_sensors_consts.h",
     "//content/browser/device_sensors/sensor_manager_android.h",
+    "//content/public/browser/download_item.h",
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
     "//content/public/browser/readback_types.h",

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBri
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.content_public.browser.DownloadState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -174,8 +175,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /**
      * Updates the list when new information about a download comes in.
      */
-    public void onDownloadItemUpdated(DownloadItem item, boolean isOffTheRecord) {
+    public void onDownloadItemUpdated(DownloadItem item, boolean isOffTheRecord, int state) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
+
+        // The adapter currently only cares about completion events.
+        if (state != DownloadState.COMPLETE) return;
 
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         int index = findItemIndex(list, item.getId());

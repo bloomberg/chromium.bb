@@ -1554,14 +1554,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
-    private void onDownloadItemUpdated(String guid, String displayName, String filepath, String url,
-            String mimeType, long startTimestamp, long totalBytes, boolean isOffTheRecord,
-            boolean hasBeenExternallyRemoved) {
+    private void onDownloadItemUpdated(int state, String guid, String displayName, String filepath,
+            String url, String mimeType, long startTimestamp, long totalBytes,
+            boolean isOffTheRecord, boolean hasBeenExternallyRemoved) {
         DownloadItem item = createDownloadItem(
                 guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes,
                 hasBeenExternallyRemoved);
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onDownloadItemUpdated(item, isOffTheRecord);
+            adapter.onDownloadItemUpdated(item, isOffTheRecord, state);
         }
     }
 
