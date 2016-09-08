@@ -79,7 +79,9 @@ drm_intel_gem_context_create
 drm_intel_gem_context_destroy
 drm_intel_get_aperture_sizes
 drm_intel_get_eu_total
+drm_intel_get_min_eu_in_pool
 drm_intel_get_pipe_from_crtc_id
+drm_intel_get_pooled_eu
 drm_intel_get_reset_stats
 drm_intel_get_subslice_total
 drm_intel_reg_read
