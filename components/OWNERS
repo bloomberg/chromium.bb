@@ -52,8 +52,6 @@ per-file data_use_measurement.gypi=file://components/data_use_measurement/OWNERS
 
 per-file device_event_log.gypi=file://components/device_event_log/OWNERS
 
-per-file devtools_http_handler.gypi=file://components/devtools_http_handler/OWNERS
-
 per-file display_compositor.gypi=file://components/display_compositor/OWNERS
 
 per-file dom_distiller.gypi=file://components/dom_distiller/OWNERS

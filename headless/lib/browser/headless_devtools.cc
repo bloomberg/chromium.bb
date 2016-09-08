@@ -9,8 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/navigation_entry.h"
@@ -19,8 +18,6 @@
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
-
-using devtools_http_handler::DevToolsHttpHandler;
 
 namespace headless {
 
@@ -56,45 +53,21 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 
-class HeadlessDevToolsDelegate
-    : public devtools_http_handler::DevToolsHttpHandlerDelegate {
- public:
-  HeadlessDevToolsDelegate();
-  ~HeadlessDevToolsDelegate() override;
-
-  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation:
-  std::string GetDiscoveryPageHTML() override;
-  std::string GetFrontendResource(const std::string& path) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsDelegate);
-};
-
-HeadlessDevToolsDelegate::HeadlessDevToolsDelegate() {}
-
-HeadlessDevToolsDelegate::~HeadlessDevToolsDelegate() {}
-
-std::string HeadlessDevToolsDelegate::GetDiscoveryPageHTML() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE).as_string();
-}
-
-std::string HeadlessDevToolsDelegate::GetFrontendResource(
-    const std::string& path) {
-  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
-}
-
 }  // namespace
 
-std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
+void StartLocalDevToolsHttpHandler(
     HeadlessBrowser::Options* options) {
   const net::IPEndPoint& endpoint = options->devtools_endpoint;
   std::unique_ptr<content::DevToolsSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
-  return base::MakeUnique<DevToolsHttpHandler>(
-      std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),
+  content::DevToolsAgentHost::StartRemoteDebuggingServer(
+      std::move(socket_factory), std::string(),
       options->user_data_dir,  // TODO(altimin): Figure a proper value for this.
       base::FilePath(), std::string(), options->user_agent);
+}
+
+void StopLocalDevToolsHttpHandler() {
+  content::DevToolsAgentHost::StopRemoteDebuggingServer();
 }
 
 }  // namespace headless

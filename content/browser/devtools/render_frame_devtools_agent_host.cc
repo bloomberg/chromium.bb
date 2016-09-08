@@ -904,6 +904,9 @@ std::string RenderFrameDevToolsAgentHost::GetTitle() {
 }
 
 std::string RenderFrameDevToolsAgentHost::GetDescription() {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate())
+    return manager->delegate()->GetTargetDescription(current_->host());
   return "";
 }
 

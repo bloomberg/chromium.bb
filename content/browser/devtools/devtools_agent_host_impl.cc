@@ -44,12 +44,6 @@ char DevToolsAgentHost::kTypeBrowser[] = "browser";
 char DevToolsAgentHost::kTypeOther[] = "other";
 
 // static
-DevToolsManagerDelegate* DevToolsAgentHost::GetDevToolsManagerDelegate() {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  return manager->delegate();
-}
-
-// static
 std::string DevToolsAgentHost::GetProtocolVersion() {
   return std::string(devtools::kProtocolVersion);
 }
@@ -114,9 +108,9 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
     : id_(id),
       session_id_(0),
-      description_(""),
       client_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(g_instances.Get().find(id_) == g_instances.Get().end());
   g_instances.Get()[id_] = this;
 }
 
@@ -137,9 +131,13 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
 }
 
 // static
-scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Create(
-    DevToolsExternalAgentProxyDelegate* delegate) {
-  return new ForwardingAgentHost(delegate);
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Forward(
+    const std::string& id,
+    std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate) {
+  scoped_refptr<DevToolsAgentHost> result = DevToolsAgentHost::GetForId(id);
+  if (result)
+    return result;
+  return new ForwardingAgentHost(id, std::move(delegate));
 }
 
 bool DevToolsAgentHostImpl::InnerAttach(DevToolsAgentHostClient* client,
@@ -211,12 +209,7 @@ std::string DevToolsAgentHostImpl::GetParentId() {
 }
 
 std::string DevToolsAgentHostImpl::GetDescription() {
-  return description_;
-}
-
-void DevToolsAgentHostImpl::SetDescriptionOverride(
-    const std::string& description) {
-  description_ = description;
+  return "";
 }
 
 GURL DevToolsAgentHostImpl::GetFaviconURL() {

@@ -9,11 +9,14 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents.h"
+#include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/domains/browser.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
 
@@ -62,19 +65,14 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return result.release();
 }
 
-std::string HeadlessDevToolsManagerDelegate::GetTargetType(
-    content::RenderFrameHost* host) {
-  return content::DevToolsAgentHost::kTypePage;
+std::string HeadlessDevToolsManagerDelegate::GetDiscoveryPageHTML() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE).as_string();
 }
 
-std::string HeadlessDevToolsManagerDelegate::GetTargetTitle(
-    content::RenderFrameHost* host) {
-  return "";
-}
-
-scoped_refptr<content::DevToolsAgentHost>
-HeadlessDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  return nullptr;
+std::string HeadlessDevToolsManagerDelegate::GetFrontendResource(
+    const std::string& path) {
+  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(

@@ -3,7 +3,6 @@ include_rules = [
   "-components/devtools_bridge",
   "+cc/layers/layer.h",
   "+cc/output/context_provider.h",
-  "+components/devtools_http_handler",
   "+components/ntp_snippets",
   "+components/spellcheck/browser",
   "+components/sync/android",

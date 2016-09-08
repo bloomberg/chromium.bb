@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/devtools_http_handler/devtools_http_handler.h"
+#include "content/browser/devtools/devtools_http_handler.h"
 
 #include <stdint.h>
 
@@ -18,7 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -28,9 +29,7 @@
 #include "net/socket/server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-
-namespace devtools_http_handler {
+namespace content {
 namespace {
 
 const uint16_t kDummyPort = 4321;
@@ -61,7 +60,7 @@ void QuitFromHandlerThread(const base::Closure& quit_closure) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
 }
 
-class DummyServerSocketFactory : public content::DevToolsSocketFactory {
+class DummyServerSocketFactory : public DevToolsSocketFactory {
  public:
   DummyServerSocketFactory(base::Closure quit_closure_1,
                            base::Closure quit_closure_2)
@@ -104,12 +103,12 @@ class FailingServerSocketFactory : public DummyServerSocketFactory {
   }
 };
 
-class DummyDelegate : public DevToolsHttpHandlerDelegate {
+class BrowserClient : public ContentBrowserClient {
  public:
-  std::string GetDiscoveryPageHTML() override { return std::string(); }
-
-  std::string GetFrontendResource(const std::string& path) override {
-    return std::string();
+  BrowserClient() {}
+  ~BrowserClient() override {}
+  DevToolsManagerDelegate* GetDevToolsManagerDelegate() override {
+    return new DevToolsManagerDelegate();
   }
 };
 
@@ -119,36 +118,42 @@ class DevToolsHttpHandlerTest : public testing::Test {
  public:
   DevToolsHttpHandlerTest() : testing::Test() { }
 
+  void SetUp() override {
+    content_client_.reset(new ContentClient());
+    browser_content_client_.reset(new BrowserClient());
+    SetBrowserClientForTesting(browser_content_client_.get());
+  }
+
  private:
+  std::unique_ptr<ContentClient> content_client_;
+  std::unique_ptr<ContentBrowserClient> browser_content_client_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<content::DevToolsSocketFactory> factory(
+  std::unique_ptr<DevToolsSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
-      new DevToolsHttpHandler(std::move(factory), std::string(),
-                              new DummyDelegate(), base::FilePath(),
-                              base::FilePath(), std::string(), std::string()));
+  DevToolsAgentHost::StartRemoteDebuggingServer(
+      std::move(factory), std::string(), base::FilePath(), base::FilePath(),
+      std::string(), std::string());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
-  devtools_http_handler.reset();
+  DevToolsAgentHost::StopRemoteDebuggingServer();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 }
 
 TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<content::DevToolsSocketFactory> factory(
+  std::unique_ptr<DevToolsSocketFactory> factory(
       new FailingServerSocketFactory(run_loop.QuitClosure(),
                                      run_loop_2.QuitClosure()));
-  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
-      new DevToolsHttpHandler(std::move(factory), std::string(),
-                              new DummyDelegate(), base::FilePath(),
-                              base::FilePath(), std::string(), std::string()));
+  DevToolsAgentHost::StartRemoteDebuggingServer(
+      std::move(factory), std::string(), base::FilePath(), base::FilePath(),
+      std::string(), std::string());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
@@ -156,7 +161,7 @@ TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
     RunAllPendingInMessageLoop(BrowserThread::UI);
     RunAllPendingInMessageLoop(BrowserThread::FILE);
   }
-  devtools_http_handler.reset();
+  DevToolsAgentHost::StopRemoteDebuggingServer();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 }
@@ -166,17 +171,17 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   base::RunLoop run_loop, run_loop_2;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  std::unique_ptr<content::DevToolsSocketFactory> factory(
+  std::unique_ptr<DevToolsSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
-      new DevToolsHttpHandler(std::move(factory), std::string(),
-                              new DummyDelegate(), temp_dir.path(),
-                              base::FilePath(), std::string(), std::string()));
+
+  DevToolsAgentHost::StartRemoteDebuggingServer(
+      std::move(factory), std::string(), temp_dir.path(), base::FilePath(),
+      std::string(), std::string());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
-  devtools_http_handler.reset();
+  DevToolsAgentHost::StopRemoteDebuggingServer();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 
@@ -192,4 +197,4 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   EXPECT_EQ(static_cast<int>(kDummyPort), port);
 }
 
-}  // namespace devtools_http_handler
+}  // namespace content

@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -19,29 +20,39 @@ class BrowserContext;
 class DevToolsAgentHost;
 class RenderFrameHost;
 
-class DevToolsManagerDelegate {
+class CONTENT_EXPORT DevToolsManagerDelegate {
  public:
-  virtual ~DevToolsManagerDelegate() {}
-
   // Opens the inspector for |agent_host|.
-  virtual void Inspect(DevToolsAgentHost* agent_host) = 0;
+  virtual void Inspect(DevToolsAgentHost* agent_host);
 
   virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                         bool attached) = 0;
+                                         bool attached);
 
   // Returns DevToolsAgentHost type to use for given |host| target.
-  virtual std::string GetTargetType(RenderFrameHost* host) = 0;
+  virtual std::string GetTargetType(RenderFrameHost* host);
 
   // Returns DevToolsAgentHost title to use for given |host| target.
-  virtual std::string GetTargetTitle(RenderFrameHost* host) = 0;
+  virtual std::string GetTargetTitle(RenderFrameHost* host);
+
+  // Returns DevToolsAgentHost title to use for given |host| target.
+  virtual std::string GetTargetDescription(RenderFrameHost* host);
 
   // Creates new inspectable target given the |url|.
-  virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) = 0;
+  virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url);
 
   // Result ownership is passed to the caller.
   virtual base::DictionaryValue* HandleCommand(
       DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command) = 0;
+      base::DictionaryValue* command);
+
+  // Should return discovery page HTML that should list available tabs
+  // and provide attach links.
+  virtual std::string GetDiscoveryPageHTML();
+
+  // Returns frontend resource data by |path|.
+  virtual std::string GetFrontendResource(const std::string& path);
+
+  virtual ~DevToolsManagerDelegate();
 };
 
 }  // namespace content

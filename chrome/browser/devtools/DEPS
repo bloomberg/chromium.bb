@@ -1,3 +1,0 @@
-include_rules = [
-  "+components/devtools_http_handler",
-]

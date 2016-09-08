@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/dev_tools_server.h"
+#include "chrome/browser/android/devtools_server.h"
 
 #include <pwd.h>
 #include <cstring>
@@ -27,8 +27,6 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,13 +44,11 @@
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using base::android::JavaParamRef;
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
 using content::WebContents;
-using devtools_http_handler::DevToolsHttpHandler;
 
 namespace {
 
@@ -81,28 +77,6 @@ bool AuthorizeSocketAccessWithDebugPermission(
       credentials.process_id, credentials.user_id) ||
       content::CanUserConnectToDevTools(credentials);
 }
-
-// Delegate implementation for the devtools http handler on android. A new
-// instance of this gets created each time devtools is enabled.
-class DevToolsServerDelegate :
-    public devtools_http_handler::DevToolsHttpHandlerDelegate {
- public:
-  DevToolsServerDelegate() {
-  }
-
-  std::string GetDiscoveryPageHTML() override {
-    return ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
-  }
-
-  std::string GetFrontendResource(const std::string& path) override {
-    return std::string();
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
-};
 
 // Factory for UnixDomainServerSocket. It tries a fallback socket when
 // original socket doesn't work.
@@ -157,7 +131,8 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
 
 DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
-                                      socket_name_prefix.c_str())) {
+                                      socket_name_prefix.c_str())),
+      is_started_(false) {
   // Override the socket name if one is specified on the command line.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -172,7 +147,7 @@ DevToolsServer::~DevToolsServer() {
 }
 
 void DevToolsServer::Start(bool allow_debug_permission) {
-  if (devtools_http_handler_)
+  if (is_started_)
     return;
 
   net::UnixDomainServerSocket::AuthCallback auth_callback =
@@ -181,19 +156,21 @@ void DevToolsServer::Start(bool allow_debug_permission) {
           base::Bind(&content::CanUserConnectToDevTools);
   std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
-  devtools_http_handler_.reset(new DevToolsHttpHandler(
+  DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new DevToolsServerDelegate(), base::FilePath(), base::FilePath(),
-      version_info::GetProductNameAndVersionForUserAgent(), ::GetUserAgent()));
+      base::FilePath(), base::FilePath(),
+      version_info::GetProductNameAndVersionForUserAgent(), ::GetUserAgent());
+  is_started_ = true;
 }
 
 void DevToolsServer::Stop() {
-  devtools_http_handler_.reset();
+  is_started_ = false;
+  DevToolsAgentHost::StopRemoteDebuggingServer();
 }
 
 bool DevToolsServer::IsStarted() const {
-  return !!devtools_http_handler_;
+  return is_started_;
 }
 
 bool RegisterDevToolsServer(JNIEnv* env) {

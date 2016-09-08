@@ -211,7 +211,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
 
 class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
  public:
-  TestExternalAgentDelegate() : id_(base::GenerateGUID()) {
+  TestExternalAgentDelegate() {
   }
   ~TestExternalAgentDelegate() override {
     expectEvent(1, "Attach");
@@ -222,7 +222,6 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   }
 
  private:
-  std::string id_;
   std::map<std::string,int> event_counter_;
 
   void recordEvent(const std::string& name) {
@@ -241,7 +240,6 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 
   void Detach() override { recordEvent("Detach"); };
 
-  std::string GetId() override { return id_; }
   std::string GetType() override { return ""; }
   std::string GetTitle() override { return ""; }
   std::string GetDescription() override { return ""; }
@@ -260,10 +258,11 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 };
 
 TEST_F(DevToolsManagerTest, TestExternalProxy) {
-  TestExternalAgentDelegate* delegate = new TestExternalAgentDelegate();
+  std::unique_ptr<TestExternalAgentDelegate> delegate(
+      new TestExternalAgentDelegate());
 
   scoped_refptr<DevToolsAgentHost> agent_host =
-      DevToolsAgentHost::Create(delegate);
+      DevToolsAgentHost::Forward(base::GenerateGUID(), std::move(delegate));
   EXPECT_EQ(agent_host, DevToolsAgentHost::GetForId(agent_host->GetId()));
 
   TestDevToolsClientHost client_host;

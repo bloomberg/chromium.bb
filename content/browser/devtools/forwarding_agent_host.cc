@@ -10,9 +10,10 @@
 namespace content {
 
 ForwardingAgentHost::ForwardingAgentHost(
-    DevToolsExternalAgentProxyDelegate* delegate)
-      : DevToolsAgentHostImpl(delegate->GetId()),
-        delegate_(delegate) {
+    const std::string& id,
+    std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate)
+      : DevToolsAgentHostImpl(id),
+        delegate_(std::move(delegate)) {
 }
 
 ForwardingAgentHost::~ForwardingAgentHost() {

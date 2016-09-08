@@ -300,6 +300,7 @@ class DevToolsAndroidBridge::AgentHostDelegate
       const std::string& target_path,
       const std::string& type,
       base::DictionaryValue* value);
+  ~AgentHostDelegate() override;
 
  private:
   AgentHostDelegate(
@@ -309,11 +310,9 @@ class DevToolsAndroidBridge::AgentHostDelegate
       const std::string& target_path,
       const std::string& type,
       base::DictionaryValue* value);
-  ~AgentHostDelegate() override;
   // DevToolsExternalAgentProxyDelegate overrides.
   void Attach(content::DevToolsExternalAgentProxy* proxy) override;
   void Detach() override;
-  std::string GetId() override;
   std::string GetType() override;
   std::string GetTitle() override;
   std::string GetDescription() override;
@@ -401,10 +400,10 @@ DevToolsAndroidBridge::AgentHostDelegate::GetOrCreateAgentHost(
   if (it != bridge->host_delegates_.end())
     return it->second->agent_host_;
 
-  AgentHostDelegate* delegate = new AgentHostDelegate(
-      bridge, browser_id, local_id, target_path, type, value);
+  std::unique_ptr<AgentHostDelegate> delegate(new AgentHostDelegate(
+      bridge, browser_id, local_id, target_path, type, value));
   scoped_refptr<content::DevToolsAgentHost> result =
-      content::DevToolsAgentHost::Create(delegate);
+      content::DevToolsAgentHost::Forward(local_id, std::move(delegate));
   delegate->agent_host_ = result.get();
   return result;
 }
@@ -462,10 +461,6 @@ void DevToolsAndroidBridge::AgentHostDelegate::Detach() {
   web_socket_.reset();
   device_ = nullptr;
   proxy_ = nullptr;
-}
-
-std::string DevToolsAndroidBridge::AgentHostDelegate::GetId() {
-  return local_id_;
 }
 
 std::string DevToolsAndroidBridge::AgentHostDelegate::GetType() {

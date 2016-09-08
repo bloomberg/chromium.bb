@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/devtools_http_handler",
   "+content/public",
   "+mojo/public",
   "+net",

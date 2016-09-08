@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
@@ -21,6 +22,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "ui/base/resource/resource_bundle.h"
 
 char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] = "background_page";
@@ -130,6 +132,16 @@ ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   if (!params.target_contents)
     return nullptr;
   return content::DevToolsAgentHost::GetOrCreateFor(params.target_contents);
+}
+
+std::string ChromeDevToolsManagerDelegate::GetDiscoveryPageHTML() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+}
+
+std::string ChromeDevToolsManagerDelegate::GetFrontendResource(
+    const std::string& path) {
+  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentStateChanged(

@@ -32,10 +32,8 @@ class HeadlessDevToolsManagerDelegate
                                  bool attached) override{};
   base::DictionaryValue* HandleCommand(content::DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
-  std::string GetTargetType(content::RenderFrameHost* host) override;
-  std::string GetTargetTitle(content::RenderFrameHost* host) override;
-  scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
-      const GURL& url) override;
+  std::string GetDiscoveryPageHTML() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
  private:
   std::unique_ptr<base::Value> CreateTarget(

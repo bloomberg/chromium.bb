@@ -12,8 +12,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -110,12 +110,10 @@ base::StringPiece PlatformResourceProvider(int key) {
 ShellBrowserMainParts::ShellBrowserMainParts(
     const MainFunctionParams& parameters)
     : parameters_(parameters),
-      run_message_loop_(true),
-      devtools_http_handler_(nullptr) {
+      run_message_loop_(true) {
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
-  DCHECK(!devtools_http_handler_);
 }
 
 #if !defined(OS_MACOSX)
@@ -187,10 +185,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       new ShellGeolocationDelegate(browser_context()));
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
-
-  devtools_http_handler_.reset(
-      ShellDevToolsManagerDelegate::CreateHttpHandler(browser_context_.get()));
-
+  ShellDevToolsManagerDelegate::StartHttpHandler(browser_context_.get());
   InitializeMessageLoopContext();
 
   if (parameters_.ui_task) {
@@ -205,7 +200,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  devtools_http_handler_.reset();
+  ShellDevToolsManagerDelegate::StopHttpHandler();
   browser_context_.reset();
   off_the_record_browser_context_.reset();
 }

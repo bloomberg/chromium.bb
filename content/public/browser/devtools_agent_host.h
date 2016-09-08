@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -29,6 +30,7 @@ namespace content {
 class BrowserContext;
 class DevToolsExternalAgentProxyDelegate;
 class DevToolsManagerDelegate;
+class DevToolsSocketFactory;
 class RenderFrameHost;
 class WebContents;
 
@@ -43,10 +45,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   static char kTypeExternal[];
   static char kTypeBrowser[];
   static char kTypeOther[];
-
-  // This is temporary while we are merging http handler and discovery
-  // into content/.
-  static DevToolsManagerDelegate* GetDevToolsManagerDelegate();
 
   // Latest DevTools protocol version supported.
   static std::string GetProtocolVersion();
@@ -83,8 +81,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Creates DevToolsAgentHost that communicates to the target by means of
   // provided |delegate|. |delegate| ownership is passed to the created agent
   // host.
-  static scoped_refptr<DevToolsAgentHost> Create(
-      DevToolsExternalAgentProxyDelegate* delegate);
+  static scoped_refptr<DevToolsAgentHost> Forward(
+      const std::string& id,
+      std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate);
 
   using CreateServerSocketCallback =
       base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
@@ -110,6 +109,24 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns all possible DevToolsAgentHosts embedder is aware of.
   static List DiscoverAllHosts();
+
+  // Starts remote debugging.
+  // Takes ownership over |socket_factory|.
+  // If |frontend_url| is empty, assumes it's bundled.
+  // If |active_port_output_directory| is non-empty, it is assumed the
+  // socket_factory was initialized with an ephemeral port (0). The
+  // port selected by the OS will be written to a well-known file in
+  // the output directory.
+  static void StartRemoteDebuggingServer(
+      std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
+      const std::string& frontend_url,
+      const base::FilePath& active_port_output_directory,
+      const base::FilePath& debug_frontend_dir,
+      const std::string& product_name,
+      const std::string& user_agent);
+
+  // Stops remote debugging.
+  static void StopRemoteDebuggingServer();
 
   // Attaches |client| to this agent host to start debugging.
   // Returns true iff attach succeeded.
@@ -163,9 +180,6 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns the host description.
   virtual std::string GetDescription() = 0;
-
-  // Override host description.
-  virtual void SetDescriptionOverride(const std::string& description) = 0;
 
   // Returns url associated with agent host.
   virtual GURL GetURL() = 0;

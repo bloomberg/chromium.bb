@@ -18,7 +18,9 @@ class ForwardingAgentHost
     : public DevToolsAgentHostImpl,
       public DevToolsExternalAgentProxy {
  public:
-  ForwardingAgentHost(DevToolsExternalAgentProxyDelegate* delegate);
+  ForwardingAgentHost(
+      const std::string& id,
+      std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate);
 
  private:
   ~ForwardingAgentHost() override;

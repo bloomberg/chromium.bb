@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DEVTOOLS_HTTP_HANDLER_DEVTOOLS_HTTP_HANDLER_H_
-#define COMPONENTS_DEVTOOLS_HTTP_HANDLER_DEVTOOLS_HTTP_HANDLER_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_HTTP_HANDLER_H_
+#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_HTTP_HANDLER_H_
 
 #include <map>
 #include <memory>
@@ -24,6 +24,7 @@ class Value;
 }
 
 namespace content {
+class DevToolsManagerDelegate;
 class DevToolsSocketFactory;
 }
 
@@ -33,7 +34,7 @@ class HttpServerRequestInfo;
 class ServerSocket;
 }
 
-namespace devtools_http_handler {
+namespace content {
 
 class DevToolsAgentHostClientImpl;
 class DevToolsHttpHandlerDelegate;
@@ -44,7 +45,7 @@ class ServerWrapper;
 // this browser.
 class DevToolsHttpHandler {
  public:
-  // Takes ownership over |socket_factory| and |delegate|.
+  // Takes ownership over |socket_factory|.
   // If |frontend_url| is empty, assumes it's bundled, and uses
   // |delegate->GetFrontendResource()|.
   // |delegate| is only accessed on UI thread.
@@ -53,9 +54,9 @@ class DevToolsHttpHandler {
   // port selected by the OS will be written to a well-known file in
   // the output directory.
   DevToolsHttpHandler(
-      std::unique_ptr<content::DevToolsSocketFactory> server_socket_factory,
+      DevToolsManagerDelegate* delegate,
+      std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
       const std::string& frontend_url,
-      DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory,
       const base::FilePath& debug_frontend_dir,
       const std::string& product_name,
@@ -68,7 +69,7 @@ class DevToolsHttpHandler {
       base::WeakPtr<DevToolsHttpHandler> handler,
       base::Thread* thread,
       ServerWrapper* server_wrapper,
-      content::DevToolsSocketFactory* socket_factory,
+      DevToolsSocketFactory* socket_factory,
       std::unique_ptr<net::IPEndPoint> ip_address);
 
   void OnJsonRequest(int connection_id,
@@ -82,10 +83,10 @@ class DevToolsHttpHandler {
 
   void ServerStarted(base::Thread* thread,
                      ServerWrapper* server_wrapper,
-                     content::DevToolsSocketFactory* socket_factory,
+                     DevToolsSocketFactory* socket_factory,
                      std::unique_ptr<net::IPEndPoint> ip_address);
 
-  scoped_refptr<content::DevToolsAgentHost> GetAgentHost(
+  scoped_refptr<DevToolsAgentHost> GetAgentHost(
       const std::string& target_id);
 
   void SendJson(int connection_id,
@@ -106,7 +107,7 @@ class DevToolsHttpHandler {
                                      const std::string& host);
 
   std::unique_ptr<base::DictionaryValue> SerializeDescriptor(
-      scoped_refptr<content::DevToolsAgentHost> agent_host,
+      scoped_refptr<DevToolsAgentHost> agent_host,
       const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
@@ -118,16 +119,16 @@ class DevToolsHttpHandler {
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
   typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
   ConnectionToClientMap connection_to_client_;
-  const std::unique_ptr<DevToolsHttpHandlerDelegate> delegate_;
-  content::DevToolsSocketFactory* socket_factory_;
+  DevToolsManagerDelegate* delegate_;
+  DevToolsSocketFactory* socket_factory_;
   using DescriptorMap =
-      std::map<std::string, scoped_refptr<content::DevToolsAgentHost>>;
+      std::map<std::string, scoped_refptr<DevToolsAgentHost>>;
   DescriptorMap agent_host_map_;
   base::WeakPtrFactory<DevToolsHttpHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandler);
 };
 
-}  // namespace devtools_http_handler
+}  // namespace content
 
-#endif  // COMPONENTS_DEVTOOLS_HTTP_HANDLER_DEVTOOLS_HTTP_HANDLER_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_HTTP_HANDLER_H_

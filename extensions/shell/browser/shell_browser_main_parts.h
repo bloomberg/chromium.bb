@@ -22,10 +22,6 @@ class BrowserContext;
 struct MainFunctionParams;
 }
 
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 namespace views {
 class Widget;
 }
@@ -93,8 +89,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<AppWindowClient> app_window_client_;
   std::unique_ptr<ExtensionsClient> extensions_client_;
   std::unique_ptr<ExtensionsBrowserClient> extensions_browser_client_;
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
   std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
   std::unique_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 

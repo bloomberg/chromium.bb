@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/native/aw_dev_tools_server.h"
+#include "android_webview/native/aw_devtools_server.h"
 
 #include <utility>
 
+#include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
@@ -27,9 +27,6 @@
 
 using base::android::JavaParamRef;
 using content::DevToolsAgentHost;
-using content::RenderViewHost;
-using content::WebContents;
-using devtools_http_handler::DevToolsHttpHandler;
 
 namespace {
 
@@ -40,41 +37,6 @@ const char kTetheringSocketName[] = "webview_devtools_tethering_%d_%d";
 
 const int kBackLog = 10;
 
-// Delegate implementation for the devtools http handler for WebView. A new
-// instance of this gets created each time web debugging is enabled.
-class AwDevToolsServerDelegate :
-    public devtools_http_handler::DevToolsHttpHandlerDelegate {
- public:
-  AwDevToolsServerDelegate() {
-  }
-
-  ~AwDevToolsServerDelegate() override {}
-
-  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
-  std::string GetDiscoveryPageHTML() override;
-  std::string GetFrontendResource(const std::string& path) override;
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(AwDevToolsServerDelegate);
-};
-
-
-std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
-  const char html[] =
-      "<html>"
-      "<head><title>WebView remote debugging</title></head>"
-      "<body>Please use <a href=\'chrome://inspect\'>chrome://inspect</a>"
-      "</body>"
-      "</html>";
-  return html;
-}
-
-std::string AwDevToolsServerDelegate::GetFrontendResource(
-    const std::string& path) {
-  return std::string();
-}
-
 // Factory for UnixDomainServerSocket.
 class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
@@ -84,7 +46,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
   }
 
  private:
-  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsAgentHost::ServerSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
@@ -120,7 +82,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
 
 namespace android_webview {
 
-AwDevToolsServer::AwDevToolsServer() {
+AwDevToolsServer::AwDevToolsServer() : is_started_(false) {
 }
 
 AwDevToolsServer::~AwDevToolsServer() {
@@ -128,25 +90,27 @@ AwDevToolsServer::~AwDevToolsServer() {
 }
 
 void AwDevToolsServer::Start() {
-  if (devtools_http_handler_)
+  if (is_started_)
     return;
+  is_started_ = true;
 
   std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
-  devtools_http_handler_.reset(new DevToolsHttpHandler(
+  DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new AwDevToolsServerDelegate(), base::FilePath(), base::FilePath(),
-      GetProduct(), GetUserAgent()));
+      base::FilePath(), base::FilePath(),
+      GetProduct(), GetUserAgent());
 }
 
 void AwDevToolsServer::Stop() {
-  devtools_http_handler_.reset();
+  DevToolsAgentHost::StopRemoteDebuggingServer();
+  is_started_ = false;
 }
 
 bool AwDevToolsServer::IsStarted() const {
-  return !!devtools_http_handler_;
+  return is_started_;
 }
 
 bool RegisterAwDevToolsServer(JNIEnv* env) {

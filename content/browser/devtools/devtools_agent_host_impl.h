@@ -45,7 +45,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   std::string GetId() override;
   std::string GetParentId() override;
   std::string GetDescription() override;
-  void SetDescriptionOverride(const std::string& description) override;
   GURL GetFaviconURL() override;
   base::TimeTicks GetLastActivityTime() override;
   BrowserContext* GetBrowserContext() override;
@@ -81,7 +80,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   const std::string id_;
   int session_id_;
-  std::string description_;
   DevToolsAgentHostClient* client_;
   devtools::DevToolsIOContext io_context_;
 };

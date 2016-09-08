@@ -16,6 +16,7 @@
 namespace content {
 
 class DevToolsAgentHostImpl;
+class DevToolsHttpHandler;
 
 // This class is a singleton that manage global DevTools state for the whole
 // browser.
@@ -33,10 +34,13 @@ class CONTENT_EXPORT DevToolsManager {
 
   void AgentHostStateChanged(DevToolsAgentHostImpl* agent_host, bool attached);
 
+  void SetHttpHandler(std::unique_ptr<DevToolsHttpHandler> http_handler);
+
  private:
   friend struct base::DefaultSingletonTraits<DevToolsManager>;
 
   std::unique_ptr<DevToolsManagerDelegate> delegate_;
+  std::unique_ptr<DevToolsHttpHandler> http_handler_;
   int attached_hosts_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);

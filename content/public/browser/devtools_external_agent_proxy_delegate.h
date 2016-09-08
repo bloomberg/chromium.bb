@@ -24,9 +24,6 @@ class DevToolsExternalAgentProxyDelegate {
   // Informs the agent that a client host has detached.
   virtual void Detach() = 0;
 
-  // Returns agent host id.
-  virtual std::string GetId() = 0;
-
   // Returns agent host type.
   virtual std::string GetType() = 0;
 

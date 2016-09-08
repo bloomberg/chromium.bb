@@ -33,6 +33,8 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   std::string GetTargetTitle(content::RenderFrameHost* host) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
+  std::string GetDiscoveryPageHTML() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
  private:
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;

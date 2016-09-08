@@ -175,6 +175,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   OverrideCreateExternalVideoSurfaceContainer(
       content::WebContents* web_contents) override;
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
  protected:
   CastContentBrowserClient();

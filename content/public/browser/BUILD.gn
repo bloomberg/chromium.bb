@@ -92,6 +92,7 @@ source_set("browser_sources") {
     "devtools_external_agent_proxy.h",
     "devtools_external_agent_proxy_delegate.h",
     "devtools_frontend_host.h",
+    "devtools_manager_delegate.cc",
     "devtools_manager_delegate.h",
     "devtools_socket_factory.h",
     "dom_storage_context.h",

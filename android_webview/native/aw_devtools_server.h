@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_DEV_TOOLS_SERVER_H_
-#define ANDROID_WEBVIEW_NATIVE_AW_DEV_TOOLS_SERVER_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_SERVER_H_
+#define ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_SERVER_H_
 
 #include <jni.h>
 
@@ -11,10 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
 
 namespace android_webview {
 
@@ -33,9 +29,7 @@ class AwDevToolsServer {
   bool IsStarted() const;
 
  private:
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
-
+  bool is_started_;
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);
 };
 
@@ -43,4 +37,4 @@ bool RegisterAwDevToolsServer(JNIEnv* env);
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_DEV_TOOLS_SERVER_H_
+#endif  // ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_SERVER_H_

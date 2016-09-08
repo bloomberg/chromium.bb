@@ -18,10 +18,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/grit/browser_resources.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "net/base/net_errors.h"
@@ -86,36 +84,6 @@ class TCPServerSocketFactory
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 
-class ChromeDevToolsHttpHandlerDelegate
-    : public devtools_http_handler::DevToolsHttpHandlerDelegate {
- public:
-  ChromeDevToolsHttpHandlerDelegate();
-  ~ChromeDevToolsHttpHandlerDelegate() override;
-
-  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
-  std::string GetDiscoveryPageHTML() override;
-  std::string GetFrontendResource(const std::string& path) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsHttpHandlerDelegate);
-};
-
-ChromeDevToolsHttpHandlerDelegate::ChromeDevToolsHttpHandlerDelegate() {
-}
-
-ChromeDevToolsHttpHandlerDelegate::~ChromeDevToolsHttpHandlerDelegate() {
-}
-
-std::string ChromeDevToolsHttpHandlerDelegate::GetDiscoveryPageHTML() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
-}
-
-std::string ChromeDevToolsHttpHandlerDelegate::GetFrontendResource(
-    const std::string& path) {
-  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
-}
-
 }  // namespace
 
 // static
@@ -139,14 +107,18 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
   PathService::Get(chrome::DIR_INSPECTOR, &debug_frontend_dir);
 #endif
 
-  devtools_http_handler_.reset(new devtools_http_handler::DevToolsHttpHandler(
-      base::WrapUnique(new TCPServerSocketFactory(ip, port)), std::string(),
-      new ChromeDevToolsHttpHandlerDelegate(), output_dir, debug_frontend_dir,
-      version_info::GetProductNameAndVersionForUserAgent(), ::GetUserAgent()));
+  content::DevToolsAgentHost::StartRemoteDebuggingServer(
+      base::WrapUnique(new TCPServerSocketFactory(ip, port)),
+      std::string(),
+      output_dir,
+      debug_frontend_dir,
+      version_info::GetProductNameAndVersionForUserAgent(),
+      ::GetUserAgent());
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
   // Ensure Profile is alive, because the whole DevTools subsystem
   // accesses it during shutdown.
   DCHECK(g_browser_process->profile_manager());
+  content::DevToolsAgentHost::StopRemoteDebuggingServer();
 }

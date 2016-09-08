@@ -29,6 +29,7 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
+#include "chromecast/browser/devtools/cast_devtools_delegate.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -498,6 +499,11 @@ CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
       web_contents);
 }
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
+
+content::DevToolsManagerDelegate*
+CastContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new CastDevToolsDelegate();
+}
 
 #if !defined(OS_ANDROID)
 int CastContentBrowserClient::GetCrashSignalFD(

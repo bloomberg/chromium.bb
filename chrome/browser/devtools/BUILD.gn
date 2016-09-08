@@ -73,7 +73,6 @@ static_library("devtools") {
       "//chrome:strings",
       "//chrome/app/theme:theme_resources",
       "//chrome/common/extensions/api",
-      "//components/devtools_http_handler",
       "//net:http_server",
       "//skia",
       "//third_party/icu",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
-#define CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
+#ifndef CHROME_BROWSER_ANDROID_DEVTOOLS_SERVER_H_
+#define CHROME_BROWSER_ANDROID_DEVTOOLS_SERVER_H_
 
 #include <jni.h>
 
@@ -11,10 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
 
 // This class controls Developer Tools remote debugging server.
 class DevToolsServer {
@@ -32,12 +28,11 @@ class DevToolsServer {
 
  private:
   std::string socket_name_;
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServer);
 };
 
 bool RegisterDevToolsServer(JNIEnv* env);
 
-#endif  // CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
+#endif  // CHROME_BROWSER_ANDROID_DEVTOOLS_SERVER_H_

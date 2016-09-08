@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "components/prefs/pref_member.h"
 
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 namespace chromecast {
 namespace shell {
 
@@ -29,12 +25,9 @@ class RemoteDebuggingServer {
  private:
   // Called when pref_enabled_ is changed.
   void OnEnabledChanged();
-
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
-
   BooleanPrefMember pref_enabled_;
   uint16_t port_;
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };

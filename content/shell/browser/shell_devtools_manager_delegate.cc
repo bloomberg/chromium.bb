@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -40,8 +39,6 @@
 #include "content/public/browser/android/devtools_auth.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #endif
-
-using devtools_http_handler::DevToolsHttpHandler;
 
 namespace content {
 
@@ -141,62 +138,29 @@ std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory() {
 #endif
 }
 
-// ShellDevToolsDelegate ----------------------------------------------------
-
-class ShellDevToolsDelegate :
-    public devtools_http_handler::DevToolsHttpHandlerDelegate {
- public:
-  explicit ShellDevToolsDelegate();
-  ~ShellDevToolsDelegate() override;
-
-  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
-  std::string GetDiscoveryPageHTML() override;
-  std::string GetFrontendResource(const std::string& path) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
-};
-
-ShellDevToolsDelegate::ShellDevToolsDelegate() {
-}
-
-ShellDevToolsDelegate::~ShellDevToolsDelegate() {
-}
-
-std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
-#if defined(OS_ANDROID)
-  return std::string();
-#else
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
-#endif
-}
-
-std::string ShellDevToolsDelegate::GetFrontendResource(
-    const std::string& path) {
-  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
-}
-
-}  // namespace
+} //  namespace
 
 // ShellDevToolsManagerDelegate ----------------------------------------------
 
 // static
-DevToolsHttpHandler*
-ShellDevToolsManagerDelegate::CreateHttpHandler(
+void ShellDevToolsManagerDelegate::StartHttpHandler(
     BrowserContext* browser_context) {
   std::string frontend_url;
 #if defined(OS_ANDROID)
   frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
 #endif
-  return new DevToolsHttpHandler(
+  DevToolsAgentHost::StartRemoteDebuggingServer(
       CreateSocketFactory(),
       frontend_url,
-      new ShellDevToolsDelegate(),
       browser_context->GetPath(),
       base::FilePath(),
       std::string(),
       GetShellUserAgent());
+}
+
+// static
+void ShellDevToolsManagerDelegate::StopHttpHandler() {
+  DevToolsAgentHost::StopRemoteDebuggingServer();
 }
 
 ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
@@ -207,22 +171,6 @@ ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
 ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
 }
 
-base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
-    DevToolsAgentHost* agent_host,
-    base::DictionaryValue* command_dict) {
-  return nullptr;
-}
-
-std::string ShellDevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
-  return DevToolsAgentHost::kTypePage;
-}
-
-std::string ShellDevToolsManagerDelegate::GetTargetTitle(
-    RenderFrameHost* host) {
-  return "";
-}
-
-
 scoped_refptr<DevToolsAgentHost>
 ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_,
@@ -230,6 +178,20 @@ ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
                                         nullptr,
                                         gfx::Size());
   return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
+}
+
+std::string ShellDevToolsManagerDelegate::GetDiscoveryPageHTML() {
+#if defined(OS_ANDROID)
+  return std::string();
+#else
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
+#endif
+}
+
+std::string ShellDevToolsManagerDelegate::GetFrontendResource(
+    const std::string& path) {
+  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
 }  // namespace content

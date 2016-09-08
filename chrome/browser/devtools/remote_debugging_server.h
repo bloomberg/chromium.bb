@@ -12,10 +12,6 @@
 
 #include "base/macros.h"
 
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 class RemoteDebuggingServer {
  public:
   static void EnableTetheringForDebug();
@@ -26,8 +22,6 @@ class RemoteDebuggingServer {
   virtual ~RemoteDebuggingServer();
 
  private:
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };
 

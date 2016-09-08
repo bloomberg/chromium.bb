@@ -9,16 +9,12 @@
 
 #include "headless/public/headless_browser.h"
 
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 namespace headless {
 
 // Starts a DevTools HTTP handler on the loopback interface on the port
 // configured by HeadlessBrowser::Options.
-std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-CreateLocalDevToolsHttpHandler(HeadlessBrowser::Options* options);
+void StartLocalDevToolsHttpHandler(HeadlessBrowser::Options* options);
+void StopLocalDevToolsHttpHandler();
 
 }  // namespace headless
 

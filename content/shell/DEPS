@@ -27,7 +27,6 @@ include_rules = [
   #   1) it's an example browser
   #   2) it's not linked into the content library
   "+components/crash",
-  "+components/devtools_http_handler",
   "+components/url_formatter",
 ]
 

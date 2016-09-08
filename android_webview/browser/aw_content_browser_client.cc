@@ -11,6 +11,7 @@
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
+#include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_locale_manager.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
@@ -519,6 +520,11 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
             navigation_handle));
   }
   return throttles;
+}
+
+content::DevToolsManagerDelegate*
+AwContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new AwDevToolsManagerDelegate();
 }
 
 }  // namespace android_webview

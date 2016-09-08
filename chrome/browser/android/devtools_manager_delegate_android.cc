@@ -5,6 +5,7 @@
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -13,11 +14,13 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/features.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::DevToolsAgentHost;
 using content::WebContents;
@@ -58,10 +61,6 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
       agent_host_->DetachClient(this);
     agent_host_ = nullptr;
     proxy_ = nullptr;
-  }
-
-  std::string GetId() override {
-    return base::IntToString(tab_id_);
   }
 
   std::string GetType() override {
@@ -172,7 +171,9 @@ DevToolsAgentHost::List GetDescriptors() {
         continue;
 
       scoped_refptr<DevToolsAgentHost> host =
-          DevToolsAgentHost::Create(new TabProxyDelegate(tab));
+          DevToolsAgentHost::Forward(
+              base::IntToString(tab->GetAndroidId()),
+              base::WrapUnique(new TabProxyDelegate(tab)));
     }
   }
 
@@ -247,7 +248,14 @@ DevToolsManagerDelegateAndroid::CreateNewTarget(const GURL& url) {
   if (!tab)
     return nullptr;
 
-  return DevToolsAgentHost::Create(new TabProxyDelegate(tab));
+  return DevToolsAgentHost::Forward(
+      base::IntToString(tab->GetAndroidId()),
+      base::WrapUnique(new TabProxyDelegate(tab)));
+}
+
+std::string DevToolsManagerDelegateAndroid::GetDiscoveryPageHTML() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
 void DevToolsManagerDelegateAndroid::DevToolsAgentStateChanged(

@@ -225,7 +225,6 @@ static_library("headless_lib") {
     ":gen_devtools_client_api",
     ":pak",
     "//base",
-    "//components/devtools_http_handler",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child",

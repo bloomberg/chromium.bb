@@ -7,12 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
 
 namespace content {
 
@@ -20,8 +15,8 @@ class BrowserContext;
 
 class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
  public:
-  static devtools_http_handler::DevToolsHttpHandler* CreateHttpHandler(
-      BrowserContext* browser_context);
+  static void StartHttpHandler(BrowserContext* browser_context);
+  static void StopHttpHandler();
 
   explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
   ~ShellDevToolsManagerDelegate() override;
@@ -30,11 +25,9 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   void Inspect(DevToolsAgentHost* agent_host) override {}
   void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
                                  bool attached) override {}
-  base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
-                                       base::DictionaryValue* command) override;
-  std::string GetTargetType(RenderFrameHost* host) override;
-  std::string GetTargetTitle(RenderFrameHost* host) override;
   scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) override;
+  std::string GetDiscoveryPageHTML() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
  private:
   BrowserContext* browser_context_;

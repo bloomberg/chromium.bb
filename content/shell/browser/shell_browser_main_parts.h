@@ -19,14 +19,6 @@ class CrashDumpManager;
 }
 #endif
 
-namespace base {
-class Thread;
-}
-
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 namespace net {
 class NetLog;
 }
@@ -49,10 +41,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
-
-  devtools_http_handler::DevToolsHttpHandler* devtools_http_handler() {
-    return devtools_http_handler_.get();
-  }
 
   ShellBrowserContext* browser_context() { return browser_context_.get(); }
   ShellBrowserContext* off_the_record_browser_context() {
@@ -83,9 +71,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
   // For running content_browsertests.
   const MainFunctionParams parameters_;
   bool run_message_loop_;
-
-  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-      devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

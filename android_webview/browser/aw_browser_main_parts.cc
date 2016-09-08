@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/aw_dev_tools_discovery_provider.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
@@ -130,8 +129,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
 
   device::GeolocationProvider::SetGeolocationDelegate(
       new AwGeolocationDelegate());
-
-  AwDevToolsDiscoveryProvider::Install();
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 }

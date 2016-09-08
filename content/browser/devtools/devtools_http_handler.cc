@@ -22,8 +22,8 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
+#include "content/browser/devtools/devtools_http_handler.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -43,11 +43,7 @@
 #include "base/android/build_info.h"
 #endif
 
-using content::BrowserThread;
-using content::DevToolsAgentHost;
-using content::DevToolsAgentHostClient;
-
-namespace devtools_http_handler {
+namespace content {
 
 namespace {
 
@@ -171,7 +167,7 @@ void ServerWrapper::Close(int connection_id) {
 
 void TerminateOnUI(base::Thread* thread,
                    ServerWrapper* server_wrapper,
-                   content::DevToolsSocketFactory* socket_factory) {
+                   DevToolsSocketFactory* socket_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (server_wrapper) {
     DCHECK(thread);
@@ -189,7 +185,7 @@ void TerminateOnUI(base::Thread* thread,
 void ServerStartedOnUI(base::WeakPtr<DevToolsHttpHandler> handler,
                        base::Thread* thread,
                        ServerWrapper* server_wrapper,
-                       content::DevToolsSocketFactory* socket_factory,
+                       DevToolsSocketFactory* socket_factory,
                        std::unique_ptr<net::IPEndPoint> ip_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler && thread && server_wrapper) {
@@ -203,7 +199,7 @@ void ServerStartedOnUI(base::WeakPtr<DevToolsHttpHandler> handler,
 void StartServerOnHandlerThread(
     base::WeakPtr<DevToolsHttpHandler> handler,
     base::Thread* thread,
-    content::DevToolsSocketFactory* socket_factory,
+    DevToolsSocketFactory* socket_factory,
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
@@ -235,7 +231,7 @@ void StartServerOnHandlerThread(
 
 void StartServerOnFile(
     base::WeakPtr<DevToolsHttpHandler> handler,
-    content::DevToolsSocketFactory* socket_factory,
+    DevToolsSocketFactory* socket_factory,
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
@@ -526,7 +522,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     base::DictionaryValue version;
     version.SetString("Protocol-Version",
         DevToolsAgentHost::GetProtocolVersion().c_str());
-    version.SetString("WebKit-Version", content::GetWebKitVersion());
+    version.SetString("WebKit-Version", GetWebKitVersion());
     version.SetString("Browser", product_name_);
     version.SetString("User-Agent", user_agent_);
 #if defined(OS_ANDROID)
@@ -540,7 +536,7 @@ void DevToolsHttpHandler::OnJsonRequest(
   if (command == "list") {
     std::string host = info.headers["host"];
     DevToolsAgentHost::List agent_hosts =
-        content::DevToolsAgentHost::DiscoverAllHosts();
+        DevToolsAgentHost::DiscoverAllHosts();
     std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
     agent_host_map_.clear();
     base::ListValue list_value;
@@ -559,10 +555,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
     scoped_refptr<DevToolsAgentHost> agent_host = nullptr;
-    content::DevToolsManagerDelegate* delegate =
-        DevToolsAgentHost::GetDevToolsManagerDelegate();
-    if (delegate)
-      agent_host = delegate->CreateNewTarget(url);
+    agent_host = delegate_->CreateNewTarget(url);
     if (!agent_host) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
@@ -650,7 +643,7 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
             thread_->task_runner(),
-            base::Bind(&content::DevToolsSocketFactory::CreateForTethering,
+            base::Bind(&DevToolsSocketFactory::CreateForTethering,
                        base::Unretained(socket_factory_)));
     connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
         thread_->message_loop(), server_wrapper_, connection_id, browser_agent);
@@ -703,9 +696,9 @@ void DevToolsHttpHandler::OnClose(int connection_id) {
 }
 
 DevToolsHttpHandler::DevToolsHttpHandler(
-    std::unique_ptr<content::DevToolsSocketFactory> socket_factory,
+    DevToolsManagerDelegate* delegate,
+    std::unique_ptr<DevToolsSocketFactory> socket_factory,
     const std::string& frontend_url,
-    DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& output_directory,
     const base::FilePath& debug_frontend_dir,
     const std::string& product_name,
@@ -735,7 +728,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
 void DevToolsHttpHandler::ServerStarted(
     base::Thread* thread,
     ServerWrapper* server_wrapper,
-    content::DevToolsSocketFactory* socket_factory,
+    DevToolsSocketFactory* socket_factory,
     std::unique_ptr<net::IPEndPoint> ip_address) {
   thread_ = thread;
   server_wrapper_ = server_wrapper;
@@ -865,4 +858,4 @@ std::unique_ptr<base::DictionaryValue> DevToolsHttpHandler::SerializeDescriptor(
   return dictionary;
 }
 
-}  // namespace devtools_http_handler
+}  // namespace content
