@@ -1370,6 +1370,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"thirdPartyCookie", IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE},
       {"thirdPartyCookieSublabel",
        IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL},
+      {"deleteDataPostSession",
+       IDS_SETTINGS_SITE_SETTINGS_DELETE_DATA_POST_SESSION},
       {"handlerIsDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT},
       {"handlerSetDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_SET_DEFAULT},
       {"handlerRemove", IDS_SETTINGS_SITE_SETTINGS_REMOVE},

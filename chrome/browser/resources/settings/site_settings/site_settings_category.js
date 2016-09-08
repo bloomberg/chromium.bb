@@ -42,7 +42,17 @@ Polymer({
     flashAskFirst_: {
       type: Boolean,
       value: true,
-    }
+    },
+
+    /**
+     * Used only for Cookies to keep track of the Session Only state.
+     * Defaults to true, as the checkbox should be checked unless the user
+     * has explicitly unchecked it or has the ALLOW setting on Cookies.
+     */
+    cookiesSessionOnly_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   observers: [
@@ -71,7 +81,6 @@ Polymer({
   onChangePermissionControl_: function(event) {
     switch (this.category) {
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
-      case settings.ContentSettingsTypes.COOKIES:
       case settings.ContentSettingsTypes.IMAGES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
       case settings.ContentSettingsTypes.KEYGEN:
@@ -96,6 +105,17 @@ Polymer({
             this.categoryEnabled ?
                 settings.PermissionValues.ASK :
                 settings.PermissionValues.BLOCK);
+        break;
+      case settings.ContentSettingsTypes.COOKIES:
+        // This category is tri-state: "Allow", "Block", "Keep data until
+        // browser quits".
+        var value = settings.PermissionValues.BLOCK;
+        if (this.categoryEnabled) {
+          value = this.cookiesSessionOnly_ ?
+              settings.PermissionValues.SESSION_ONLY :
+              settings.PermissionValues.ALLOW;
+        }
+        this.browserProxy.setDefaultValueForContentType(this.category, value);
         break;
       case settings.ContentSettingsTypes.PLUGINS:
         // This category is tri-state: "Allow", "Block", "Ask before running".
@@ -128,15 +148,27 @@ Polymer({
               if (this.category == settings.ContentSettingsTypes.PLUGINS &&
                   setting == settings.PermissionValues.IMPORTANT_CONTENT) {
                 sliderSetting = settings.PermissionValues.ALLOW;
+              } else if (
+                  this.category == settings.ContentSettingsTypes.COOKIES &&
+                  setting == settings.PermissionValues.SESSION_ONLY) {
+                sliderSetting = settings.PermissionValues.ALLOW;
               }
               this.sliderDescription_ =
                   this.computeCategoryDesc(this.category, sliderSetting, true);
 
-              // The checkbox should only be cleared when the Flash setting
-              // is explicitly set to ALLOW.
-              if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-                  setting == settings.PermissionValues.ALLOW) {
-                this.flashAskFirst_ = false;
+              if (this.category == settings.ContentSettingsTypes.PLUGINS) {
+                // The checkbox should only be cleared when the Flash setting
+                // is explicitly set to ALLOW.
+                if (setting == settings.PermissionValues.ALLOW)
+                  this.flashAskFirst_ = false;
+                if (setting == settings.PermissionValues.IMPORTANT_CONTENT)
+                  this.flashAskFirst_ = true;
+              } else if (
+                  this.category == settings.ContentSettingsTypes.COOKIES) {
+                if (setting == settings.PermissionValues.ALLOW)
+                  this.cookiesSessionOnly_ = false;
+                else if (setting == settings.PermissionValues.SESSION_ONLY)
+                  this.cookiesSessionOnly_ = true;
               }
             }.bind(this));
   },
@@ -144,6 +176,11 @@ Polymer({
   /** @private */
   isFlashCategory_: function(category) {
     return category == settings.ContentSettingsTypes.PLUGINS;
+  },
+
+  /** @private */
+  isCookiesCategory_: function(category) {
+    return category == settings.ContentSettingsTypes.COOKIES;
   },
 
   /**

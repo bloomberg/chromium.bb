@@ -262,10 +262,12 @@ var SiteSettingsBehaviorImpl = {
                 'siteSettingsAskBeforeAccessingRecommended') :
             loadTimeData.getString('siteSettingsAskBeforeAccessing');
       case settings.ContentSettingsTypes.COOKIES:
-        // "Allow sites to save and read cookie data" vs "Blocked".
-        if (!categoryEnabled) {
+        // Tri-state: "Allow sites to save and read cookie data" vs "Blocked"
+        //     vs "Keep local data only until you quit your browser".
+        if (setting == settings.PermissionValues.BLOCK)
           return loadTimeData.getString('siteSettingsBlocked');
-        }
+        if (setting == settings.PermissionValues.SESSION_ONLY)
+          return loadTimeData.getString('deleteDataPostSession');
         return showRecommendation ?
             loadTimeData.getString('siteSettingsCookiesAllowedRecommended') :
             loadTimeData.getString('siteSettingsCookiesAllowed');

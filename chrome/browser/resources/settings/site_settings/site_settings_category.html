@@ -46,7 +46,15 @@
           on-change="onChangePermissionControl_"></paper-toggle-button>
     </div>
 
-    <content select=".cookie-controls"></content>
+    <template is="dom-if" if="[[isCookiesCategory_(category)]]">
+      <div class="settings-box">
+        <paper-checkbox id="sessionOnlyCheckbox" disabled="[[!categoryEnabled]]"
+            checked="{{cookiesSessionOnly_}}"
+            on-change="onChangePermissionControl_">
+          <div>$i18n{deleteDataPostSession}</div>
+        </paper-checkbox>
+      </div>
+    </template>
 
     <template is="dom-if" if="[[isFlashCategory_(category)]]">
       <div class="settings-box two-line">
@@ -58,6 +66,8 @@
         </paper-checkbox>
       </div>
     </template>
+
+    <content select=".cookie-controls"></content>
 
     <div class="settings-box layout horizontal">
 <if expr="chromeos">
