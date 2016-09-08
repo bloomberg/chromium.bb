@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -67,6 +68,7 @@ public class PopupWindowTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testOnPageFinishedCalledOnDomModificationAfterNavigation() throws Throwable {
         final String popupPath = "/popup.html";
         final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"

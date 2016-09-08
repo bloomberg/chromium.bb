@@ -32,6 +32,7 @@ import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -2638,6 +2639,7 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @RetryOnFailure
     public void testForceZeroLayoutHeightViewportTagWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
