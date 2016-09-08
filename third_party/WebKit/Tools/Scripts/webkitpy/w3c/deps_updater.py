@@ -304,7 +304,7 @@ class DepsUpdater(object):
         if self.git_cl.has_failing_try_results():
             self.write_test_expectations()
 
-        self.run(['set-commit', '--rietveld'])
+        self.git_cl.run(['set-commit', '--rietveld'])
         if self.git_cl.has_failing_try_results():
             self.print_('## CL has failing results when trying to land; aborting.')
             self.git_cl.run(['set-close'])
