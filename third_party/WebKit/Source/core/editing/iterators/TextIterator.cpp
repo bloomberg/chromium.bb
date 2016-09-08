@@ -611,11 +611,21 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                     size_t subrunEnd = str.find('\n', runStart);
                     if (subrunEnd == kNotFound || subrunEnd > runEnd) {
                         subrunEnd = runEnd;
-                        // Restore the collapsed trailing space for copy & paste.
+                        // Restore the collapsed space for copy & paste.
                         // See http://crbug.com/318925
+                        // For trailing space.
                         if (!nextTextBox && m_textBox->root().nextRootBox() && m_textBox->root().lastChild() == m_textBox) {
                             if (str.endsWith(' ') && subrunEnd == str.length() - 1 && str[subrunEnd - 1] != ' ')
                                 ++subrunEnd;
+                        }
+                        // For leading space.
+                        if (m_textBox->root().prevRootBox() && m_textBox->root().firstChild() == m_textBox) {
+                            InlineBox* lastChildOfPrevRoot = m_textBox->root().prevRootBox()->lastChild();
+                            if (!lastChildOfPrevRoot->isText() && !lastChildOfPrevRoot->getLineLayoutItem().isBR()
+                                && !lastChildOfPrevRoot->isInlineFlowBox()) {
+                                if (runStart > 0 && str[0] == ' ')
+                                    --runStart;
+                            }
                         }
                     }
 
