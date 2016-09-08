@@ -102,7 +102,7 @@ TEST(LifecycleContextTest, shouldObserveContextDestroyed)
     EXPECT_FALSE(observer->contextDestroyedCalled());
     context->notifyContextDestroyed();
     context = nullptr;
-    ThreadState::current()-> collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
     EXPECT_TRUE(observer->contextDestroyedCalled());
 }
@@ -114,7 +114,7 @@ TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
     observer->unobserve();
     context->notifyContextDestroyed();
     context = nullptr;
-    ThreadState::current()-> collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
     EXPECT_FALSE(observer->contextDestroyedCalled());
 }
@@ -136,7 +136,7 @@ TEST(LifecycleContextTest, observerRemovedDuringNotifyDestroyed)
     context->notifyContextDestroyed();
     EXPECT_EQ(observer->innerObserver(), nullptr);
     context = nullptr;
-    ThreadState::current()-> collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
     EXPECT_TRUE(observer->contextDestroyedCalled());
 }

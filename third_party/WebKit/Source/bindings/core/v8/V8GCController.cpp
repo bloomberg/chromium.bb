@@ -351,8 +351,7 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     if (BlameContext* blameContext = Platform::current()->topLevelBlameContext())
         blameContext->Leave();
 
-    ThreadState* currentThreadState = ThreadState::current();
-    if (currentThreadState && !currentThreadState->isGCForbidden()) {
+    if (ThreadState::current() && !ThreadState::current()->isGCForbidden()) {
         // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
         // when a garbage collection was forced from V8. This is either used
         // for tests that force GCs from JavaScript to verify that objects die
@@ -368,11 +367,11 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
             // to collect all garbage, you need to wait until the next event loop.
             // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
             // GCController.collectAll() forces multiple V8's GC.
-            currentThreadState->collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+            ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
             // Forces a precise GC at the end of the current event loop.
-            RELEASE_ASSERT(!currentThreadState->isInGC());
-            currentThreadState->setGCState(ThreadState::FullGCScheduled);
+            RELEASE_ASSERT(!ThreadState::current()->isInGC());
+            ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
         }
 
         // v8::kGCCallbackFlagCollectAllAvailableGarbage is used when V8 handles
@@ -380,11 +379,12 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
         if ((flags & v8::kGCCallbackFlagCollectAllAvailableGarbage)
             || (flags & v8::kGCCallbackFlagCollectAllExternalMemory)) {
             // This single GC is not enough. See the above comment.
-            currentThreadState->collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+            ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
             // The conservative GC might have left floating garbage. Schedule
             // precise GC to ensure that we collect all available garbage.
-            currentThreadState->schedulePreciseGC();
+            if (ThreadState::current())
+                ThreadState::current()->schedulePreciseGC();
         }
     }
 

@@ -100,7 +100,7 @@ CanvasRenderingContextUsageTrackingTest::CanvasRenderingContextUsageTrackingTest
 
 void CanvasRenderingContextUsageTrackingTest::TearDown()
 {
-    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     replaceMemoryCacheForTesting(m_globalMemoryCache.release());
 }
 

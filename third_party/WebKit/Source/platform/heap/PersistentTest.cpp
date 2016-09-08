@@ -14,7 +14,7 @@ namespace {
 
 void preciselyCollectGarbage()
 {
-    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 }
 
 class Receiver : public GarbageCollected<Receiver> {

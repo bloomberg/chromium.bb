@@ -47,12 +47,12 @@ WebHeap::SafePointScope::~SafePointScope()
 
 void WebHeap::collectGarbageForTesting()
 {
-    ThreadState::current()->collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 }
 
 void WebHeap::collectAllGarbageForTesting()
 {
-    ThreadState::current()-> collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 } // namespace blink

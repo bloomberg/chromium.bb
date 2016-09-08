@@ -49,7 +49,7 @@ protected:
     virtual void TearDown()
     {
         document.release();
-        ThreadState::current()-> collectAllGarbage();
+        ThreadHeap::collectAllGarbage();
     }
 
     std::unique_ptr<DummyPageHolder> pageHolder;

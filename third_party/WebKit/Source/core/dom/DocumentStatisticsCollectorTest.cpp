@@ -29,7 +29,7 @@ protected:
 
     void TearDown() override
     {
-        ThreadState::current()-> collectAllGarbage();
+        ThreadHeap::collectAllGarbage();
     }
 
     Document& document() const { return m_dummyPageHolder->document(); }

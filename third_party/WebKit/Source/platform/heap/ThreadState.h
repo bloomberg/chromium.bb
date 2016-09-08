@@ -530,10 +530,6 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
 
-    void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, BlinkGC::GCReason);
-    void collectGarbageForTerminatingThread();
-    void collectAllGarbage();
-
 private:
     enum SnapshotType {
         HeapSnapshot,

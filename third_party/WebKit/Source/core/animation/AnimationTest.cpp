@@ -743,7 +743,7 @@ TEST_F(AnimationAnimationTest, AttachedAnimations)
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     EXPECT_EQ(1U, element->elementAnimations()->animations().find(animation)->value);
 
-    ThreadState::current()-> collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
 }
 
