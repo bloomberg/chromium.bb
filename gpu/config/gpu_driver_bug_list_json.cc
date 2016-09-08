@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.94",
+  "version": "8.95",
   "entries": [
     {
       "id": 1,
@@ -41,26 +41,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_vendor": "ARM.*",
       "features": [
         "use_client_side_arrays_for_stream_buffers"
-      ]
-    },
-    {
-      "id": 5,
-      "description": "Always call glUseProgram after a successful link to avoid a driver bug",
-      "cr_bugs": [349137],
-      "vendor_id": "0x10de",
-      "exceptions": [
-        {
-          "os": {
-            "type": "macosx",
-            "version": {
-              "op": ">=",
-              "value": "10.9"
-            }
-          }
-        }
-      ],
-      "features": [
-        "use_current_program_after_successful_link"
       ]
     },
     {
