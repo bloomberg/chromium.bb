@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -51,6 +52,8 @@ const char kFrontEndURL[] =
 
 const int kBackLog = 10;
 
+base::subtle::Atomic32 g_last_used_port;
+
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
@@ -91,6 +94,10 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
     if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
       return std::unique_ptr<net::ServerSocket>();
+
+    net::IPEndPoint endpoint;
+    if (socket->GetLocalAddress(&endpoint) == net::OK)
+      base::subtle::NoBarrier_Store(&g_last_used_port, endpoint.port());
 
     return socket;
   }
@@ -141,6 +148,11 @@ std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory() {
 } //  namespace
 
 // ShellDevToolsManagerDelegate ----------------------------------------------
+
+// static
+int ShellDevToolsManagerDelegate::GetHttpHandlerPort() {
+  return base::subtle::NoBarrier_Load(&g_last_used_port);
+}
 
 // static
 void ShellDevToolsManagerDelegate::StartHttpHandler(

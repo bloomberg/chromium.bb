@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -21,13 +20,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/common/shell_switches.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -98,20 +95,7 @@ int ResponseWriter::Finish(const net::CompletionCallback& callback) {
 }
 
 static GURL GetFrontendURL() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  uint16_t port = 0;
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
-    int temp_port;
-    std::string port_str =
-        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    if (base::StringToInt(port_str, &temp_port) &&
-        temp_port >= 0 && temp_port < 65535) {
-      port = static_cast<uint16_t>(temp_port);
-    } else {
-      DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
-    }
-  }
+  int port = ShellDevToolsManagerDelegate::GetHttpHandlerPort();
   return GURL(
       base::StringPrintf("http://127.0.0.1:%d/devtools/inspector.html", port));
 }

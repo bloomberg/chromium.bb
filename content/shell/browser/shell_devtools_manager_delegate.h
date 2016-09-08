@@ -17,6 +17,7 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
  public:
   static void StartHttpHandler(BrowserContext* browser_context);
   static void StopHttpHandler();
+  static int GetHttpHandlerPort();
 
   explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
   ~ShellDevToolsManagerDelegate() override;
