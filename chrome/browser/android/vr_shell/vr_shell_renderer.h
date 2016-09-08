@@ -21,6 +21,8 @@ enum ShaderID {
   SHADER_UNRECOGNIZED = 0,
   TEXTURE_QUAD_VERTEX_SHADER,
   TEXTURE_QUAD_FRAGMENT_SHADER,
+  WEBVR_VERTEX_SHADER,
+  WEBVR_FRAGMENT_SHADER,
   SHADER_ID_MAX
 };
 
@@ -44,6 +46,36 @@ class TexturedQuadRenderer {
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
 };
 
+// Renders a page-generated stereo VR view.
+class WebVrRenderer {
+ public:
+  WebVrRenderer();
+  ~WebVrRenderer();
+
+  void Draw(int texture_handle);
+
+  void UpdateTextureBounds(int eye, const gvr::Rectf& bounds);
+
+ private:
+  static constexpr size_t VERTEX_STRIDE = sizeof(float) * 4;
+  static constexpr size_t POSITION_ELEMENTS = 2;
+  static constexpr size_t TEXCOORD_ELEMENTS = 2;
+  static constexpr size_t POSITION_OFFSET = 0;
+  static constexpr size_t TEXCOORD_OFFSET = sizeof(float) * 2;
+
+  GLuint program_handle_;
+  GLuint tex_uniform_handle_;
+  GLuint src_rect_uniform_handle_;
+  GLuint position_handle_;
+  GLuint texcoord_handle_;
+  GLuint vertex_buffer_;
+
+  gvr::Rectf left_bounds_;
+  gvr::Rectf right_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
+};
+
 class VrShellRenderer {
  public:
   VrShellRenderer();
@@ -53,8 +85,13 @@ class VrShellRenderer {
     return textured_quad_renderer_.get();
   }
 
+  WebVrRenderer* GetWebVrRenderer() {
+    return webvr_renderer_.get();
+  }
+
  private:
   std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
+  std::unique_ptr<WebVrRenderer> webvr_renderer_;
   DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
 

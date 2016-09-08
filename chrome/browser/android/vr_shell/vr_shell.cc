@@ -56,7 +56,8 @@ void ContentRect::Translate(float x, float y, float z) {
   transfrom_to_world.m[2][3] += z;
 }
 
-VrShell::VrShell(JNIEnv* env, jobject obj) {
+VrShell::VrShell(JNIEnv* env, jobject obj) :
+    webvr_mode_(false) {
   j_vr_shell_.Reset(env, obj);
 }
 
@@ -69,13 +70,17 @@ bool RegisterVrShell(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-VrShell::~VrShell() {}
+VrShell::~VrShell() {
+  device::GvrDelegateManager::GetInstance()->Shutdown();
+}
 
 void VrShell::GvrInit(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
   gvr_api_ =
       gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(native_gvr_api));
+
+  device::GvrDelegateManager::GetInstance()->Initialize(this);
 }
 
 void VrShell::InitializeGl(JNIEnv* env,
@@ -105,6 +110,20 @@ void VrShell::DrawFrame(JNIEnv* env,
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
   head_pose_ = gvr_api_->GetHeadPoseInStartSpace(target_time);
 
+  // Bind back to the default framebuffer.
+  frame.BindBuffer(0);
+
+  if (webvr_mode_) {
+    DrawWebVr();
+  } else {
+    DrawVrShell();
+  }
+
+  frame.Unbind();
+  frame.Submit(*buffer_viewport_list_, head_pose_);
+}
+
+void VrShell::DrawVrShell() {
   // Content area positioning.
   content_rect_->SetIdentity();
   content_rect_->Translate(kContentRectPositionDefault.x,
@@ -112,12 +131,9 @@ void VrShell::DrawFrame(JNIEnv* env,
                            kContentRectPositionDefault.z);
 
   gvr::Mat4f left_eye_view_matrix =
-      MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE), head_pose_);
+    MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE), head_pose_);
   gvr::Mat4f right_eye_view_matrix =
       MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE), head_pose_);
-
-  // Bind back to the default framebuffer.
-  frame.BindBuffer(0);
 
   // Use culling to remove back faces.
   glEnable(GL_CULL_FACE);
@@ -138,9 +154,6 @@ void VrShell::DrawFrame(JNIEnv* env,
   buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
                                            buffer_viewport_.get());
   DrawEye(right_eye_view_matrix, *buffer_viewport_);
-
-  frame.Unbind();
-  frame.Submit(*buffer_viewport_list_, head_pose_);
 }
 
 void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
@@ -172,6 +185,22 @@ void VrShell::DrawContentRect() {
       content_rect_->content_texture_handle, content_rect_combined_matrix);
 }
 
+void VrShell::DrawWebVr() {
+  // Don't need face culling, depth testing, blending, etc. Turn it all off.
+  glDisable(GL_CULL_FACE);
+  glDepthMask(GL_FALSE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
+  glDisable(GL_BLEND);
+  glDisable(GL_POLYGON_OFFSET_FILL);
+
+  // Don't need to clear, since we're drawing over the entire render target.
+
+  glViewport(0, 0, render_size_.width, render_size_.height);
+  vr_shell_renderer_->GetWebVrRenderer()->Draw(
+      reinterpret_cast<int>(content_rect_->content_texture_handle));
+}
+
 void VrShell::OnPause(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj) {
   if (gvr_api_ == nullptr)
@@ -185,6 +214,27 @@ void VrShell::OnResume(JNIEnv* env,
     return;
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
+}
+
+void VrShell::RequestWebVRPresent() {
+  webvr_mode_ = true;
+}
+
+void VrShell::ExitWebVRPresent() {
+  webvr_mode_ = false;
+}
+
+void VrShell::SubmitWebVRFrame() {
+}
+
+void VrShell::UpdateWebVRTextureBounds(
+    int eye, float left, float top, float width, float height) {
+  gvr::Rectf bounds = { left, top, width, height };
+  vr_shell_renderer_->GetWebVrRenderer()->UpdateTextureBounds(eye, bounds);
+}
+
+gvr::GvrApi* VrShell::gvr_api() {
+  return gvr_api_.get();
 }
 
 // ----------------------------------------------------------------------------

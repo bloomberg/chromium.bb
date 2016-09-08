@@ -20,6 +20,7 @@ static_library("vr_shell") {
   deps = [
     ":vr_shell_jni_headers",
     "//base",
+    "//device/vr",
     "//third_party/gvr-android-sdk:gvr_base_java",
     "//third_party/gvr-android-sdk:gvr_common_java",
     "//third_party/gvr-android-sdk:libgvr",

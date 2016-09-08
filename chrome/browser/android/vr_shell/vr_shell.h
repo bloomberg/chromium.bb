@@ -10,6 +10,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 
@@ -27,7 +28,7 @@ class ContentRect {
   int content_texture_handle;
 };
 
-class VrShell {
+class VrShell : public device::GvrDelegate {
  public:
   VrShell(JNIEnv* env, jobject obj);
 
@@ -43,12 +44,22 @@ class VrShell {
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
- private:
-  ~VrShell();
+  // GvrDelegate
+  void RequestWebVRPresent() override;
+  void ExitWebVRPresent() override;
+  void SubmitWebVRFrame() override;
+  void UpdateWebVRTextureBounds(
+      int eye, float left, float top, float width, float height) override;
+  gvr::GvrApi* gvr_api() override;
 
+ private:
+  virtual ~VrShell();
+
+  void DrawVrShell();
   void DrawEye(const gvr::Mat4f& view_matrix,
                const gvr::BufferViewport& params);
   void DrawContentRect();
+  void DrawWebVr();
 
   std::unique_ptr<ContentRect> content_rect_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
@@ -66,6 +77,8 @@ class VrShell {
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
+
+  bool webvr_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShell);
 };
