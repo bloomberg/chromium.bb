@@ -151,7 +151,10 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   markers recorded in atrace, Chrome tracing is not enabled for this
   benchmark.
   """
-  page_set = page_sets.BlankPageSet
+  options = {'pageset_repeat': 20}
+
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthStorySet(platform='mobile', case='blank')
 
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()
@@ -168,3 +171,21 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'system_health.webview_startup'
+
+
+@benchmark.Enabled('android-webview')
+class WebviewMultiprocessStartupSystemHealthBenchmark(
+    WebviewStartupSystemHealthBenchmark):
+  """Webview multiprocess startup time benchmark
+
+  Benchmark that measures how long WebView takes to start up
+  and load a blank page with multiprocess enabled.
+  """
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(
+        ['--webview-sandboxed-renderer'])
+
+  @classmethod
+  def Name(cls):
+    return 'system_health.webview_startup_multiprocess'
