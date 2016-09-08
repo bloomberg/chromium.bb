@@ -25,7 +25,6 @@ def RunSteps(api):
                                                  'HEAD')
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
-  force = True if api.properties.get('force') else False
   no_shallow = True if api.properties.get('no_shallow') else False
   output_manifest = api.properties.get('output_manifest', False)
   with_branch_heads = api.properties.get('with_branch_heads', False)
@@ -44,7 +43,6 @@ def RunSteps(api):
         gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
   else:
     api.bot_update.ensure_checkout(
-        force=force,
         no_shallow=no_shallow,
         patch=patch,
         with_branch_heads=with_branch_heads,
@@ -124,12 +122,6 @@ def GenTests(api):
       rietveld='https://rietveld.example.com/',
       fail_patch='download'
   ) + api.step_data('bot_update', retcode=87)
-  yield api.test('forced') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
-      force=1
-  )
   yield api.test('no_shallow') + api.properties(
       mastername='experimental',
       buildername='Experimental Builder',

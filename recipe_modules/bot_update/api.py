@@ -67,7 +67,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
-                      force=False, patch_root=None, no_shallow=False,
+                      patch_root=None, no_shallow=False,
                       with_branch_heads=False, refs=None,
                       patch_oauth2=False, use_site_config_creds=True,
                       output_manifest=True, clobber=False,
@@ -214,8 +214,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     if clobber:
       cmd.append('--clobber')
-    if force:
-      cmd.append('--force')
     if no_shallow:
       cmd.append('--no_shallow')
     if output_manifest:
@@ -230,8 +228,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        master, builder, slave, root, first_sln, rev_map, force,
-        self._fail_patch,
+        master, builder, slave, root, first_sln, rev_map, self._fail_patch,
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.
