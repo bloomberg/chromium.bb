@@ -271,7 +271,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
     // Create a temp dir for this test.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Construct a temp file name in our dir.
-    temp_file_ = temp_dir_.path().Append(L"test.etl");
+    temp_file_ = temp_dir_.GetPath().Append(L"test.etl");
   }
 
   void TearDown() override {

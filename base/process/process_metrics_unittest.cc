@@ -488,7 +488,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
 TEST(ProcessMetricsTest, GetOpenFdCount) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const FilePath temp_path = temp_dir.path();
+  const FilePath temp_path = temp_dir.GetPath();
   CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
   child_command_line.AppendSwitchPath(kTempDirFlag, temp_path);
   Process child = SpawnMultiProcessTestChild(

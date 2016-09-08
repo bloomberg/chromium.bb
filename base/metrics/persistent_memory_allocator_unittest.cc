@@ -613,7 +613,7 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
 TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("persistent_memory");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("persistent_memory");
 
   PersistentMemoryAllocator::MemoryInfo meminfo1;
   Reference r123, r456, r789;
@@ -668,7 +668,7 @@ TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
 TEST(FilePersistentMemoryAllocatorTest, ExtendTest) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("extend_test");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("extend_test");
   MemoryMappedFile::Region region = {0, 16 << 10};  // 16KiB maximum size.
 
   // Start with a small but valid file of persistent data.
@@ -734,7 +734,7 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
   char filename[100];
   for (size_t filesize = minsize; filesize > 0; --filesize) {
     strings::SafeSPrintf(filename, "memory_%d_A", filesize);
-    FilePath file_path = temp_dir.path().AppendASCII(filename);
+    FilePath file_path = temp_dir.GetPath().AppendASCII(filename);
     ASSERT_FALSE(PathExists(file_path));
     {
       File writer(file_path, File::FLAG_CREATE | File::FLAG_WRITE);
@@ -784,7 +784,7 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     }
 
     strings::SafeSPrintf(filename, "memory_%d_B", filesize);
-    file_path = temp_dir.path().AppendASCII(filename);
+    file_path = temp_dir.GetPath().AppendASCII(filename);
     ASSERT_FALSE(PathExists(file_path));
     {
       File writer(file_path, File::FLAG_CREATE | File::FLAG_WRITE);

@@ -32,15 +32,15 @@ class ShortcutTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(temp_dir_2_.CreateUniqueTempDir());
 
-    link_file_ = temp_dir_.path().Append(L"My Link.lnk");
+    link_file_ = temp_dir_.GetPath().Append(L"My Link.lnk");
 
     // Shortcut 1's properties
     {
-      const FilePath target_file(temp_dir_.path().Append(L"Target 1.txt"));
+      const FilePath target_file(temp_dir_.GetPath().Append(L"Target 1.txt"));
       WriteFile(target_file, kFileContents, arraysize(kFileContents));
 
       link_properties_.set_target(target_file);
-      link_properties_.set_working_dir(temp_dir_.path());
+      link_properties_.set_working_dir(temp_dir_.GetPath());
       link_properties_.set_arguments(L"--magic --awesome");
       link_properties_.set_description(L"Chrome is awesome.");
       link_properties_.set_icon(link_properties_.target, 4);
@@ -50,11 +50,11 @@ class ShortcutTest : public testing::Test {
 
     // Shortcut 2's properties (all different from properties of shortcut 1).
     {
-      const FilePath target_file_2(temp_dir_.path().Append(L"Target 2.txt"));
+      const FilePath target_file_2(temp_dir_.GetPath().Append(L"Target 2.txt"));
       WriteFile(target_file_2, kFileContents2, arraysize(kFileContents2));
 
       FilePath icon_path_2;
-      CreateTemporaryFileInDir(temp_dir_.path(), &icon_path_2);
+      CreateTemporaryFileInDir(temp_dir_.GetPath(), &icon_path_2);
 
       link_properties_2_.set_target(target_file_2);
       link_properties_2_.set_working_dir(temp_dir_2_.path());
@@ -88,7 +88,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
     valid_properties |= ShortcutProperties::PROPERTIES_WIN7;
 
   // Test all properties.
-  FilePath file_1(temp_dir_.path().Append(L"Link1.lnk"));
+  FilePath file_1(temp_dir_.GetPath().Append(L"Link1.lnk"));
   ASSERT_TRUE(CreateOrUpdateShortcutLink(
       file_1, link_properties_, SHORTCUT_CREATE_ALWAYS));
 
@@ -109,7 +109,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   }
 
   // Test simple shortcut with no special properties set.
-  FilePath file_2(temp_dir_.path().Append(L"Link2.lnk"));
+  FilePath file_2(temp_dir_.GetPath().Append(L"Link2.lnk"));
   ShortcutProperties only_target_properties;
   only_target_properties.set_target(link_properties_.target);
   ASSERT_TRUE(CreateOrUpdateShortcutLink(

@@ -42,8 +42,7 @@ class FileUtilProxyTest : public testing::Test {
   TaskRunner* file_task_runner() const {
     return file_thread_.task_runner().get();
   }
-  const FilePath& test_dir_path() const { return dir_.path(); }
-  const FilePath test_path() const { return dir_.path().AppendASCII("test"); }
+  const FilePath TestPath() const { return dir_.GetPath().AppendASCII("test"); }
 
   MessageLoopForIO message_loop_;
   Thread file_thread_;
@@ -59,14 +58,13 @@ class FileUtilProxyTest : public testing::Test {
 
 TEST_F(FileUtilProxyTest, GetFileInfo_File) {
   // Setup.
-  ASSERT_EQ(4, WriteFile(test_path(), "test", 4));
+  ASSERT_EQ(4, WriteFile(TestPath(), "test", 4));
   File::Info expected_info;
-  GetFileInfo(test_path(), &expected_info);
+  GetFileInfo(TestPath(), &expected_info);
 
   // Run.
   FileUtilProxy::GetFileInfo(
-      file_task_runner(),
-      test_path(),
+      file_task_runner(), TestPath(),
       Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
@@ -82,14 +80,13 @@ TEST_F(FileUtilProxyTest, GetFileInfo_File) {
 
 TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
   // Setup.
-  ASSERT_TRUE(base::CreateDirectory(test_path()));
+  ASSERT_TRUE(base::CreateDirectory(TestPath()));
   File::Info expected_info;
-  GetFileInfo(test_path(), &expected_info);
+  GetFileInfo(TestPath(), &expected_info);
 
   // Run.
   FileUtilProxy::GetFileInfo(
-      file_task_runner(),
-      test_path(),
+      file_task_runner(), TestPath(),
       Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
@@ -104,21 +101,18 @@ TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
 }
 
 TEST_F(FileUtilProxyTest, Touch) {
-  ASSERT_EQ(4, WriteFile(test_path(), "test", 4));
+  ASSERT_EQ(4, WriteFile(TestPath(), "test", 4));
   Time last_accessed_time = Time::Now() - TimeDelta::FromDays(12345);
   Time last_modified_time = Time::Now() - TimeDelta::FromHours(98765);
 
   FileUtilProxy::Touch(
-      file_task_runner(),
-      test_path(),
-      last_accessed_time,
-      last_modified_time,
+      file_task_runner(), TestPath(), last_accessed_time, last_modified_time,
       Bind(&FileUtilProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
   File::Info info;
-  GetFileInfo(test_path(), &info);
+  GetFileInfo(TestPath(), &info);
 
   // The returned values may only have the seconds precision, so we cast
   // the double values to int here.

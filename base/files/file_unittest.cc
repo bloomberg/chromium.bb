@@ -20,7 +20,7 @@ using base::FilePath;
 TEST(FileTest, Create) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("create_file_1");
 
   {
     // Don't create a File at all.
@@ -92,7 +92,7 @@ TEST(FileTest, Create) {
 
   {
     // Create a delete-on-close file.
-    file_path = temp_dir.path().AppendASCII("create_file_2");
+    file_path = temp_dir.GetPath().AppendASCII("create_file_2");
     File file(file_path,
               base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
                   base::File::FLAG_DELETE_ON_CLOSE);
@@ -107,7 +107,7 @@ TEST(FileTest, Create) {
 TEST(FileTest, Async) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("create_file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("create_file");
 
   {
     File file(file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_ASYNC);
@@ -125,7 +125,7 @@ TEST(FileTest, Async) {
 TEST(FileTest, DeleteOpenFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("create_file_1");
 
   // Create a file.
   File file(file_path,
@@ -152,7 +152,7 @@ TEST(FileTest, DeleteOpenFile) {
 TEST(FileTest, ReadWrite) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("read_write_file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("read_write_file");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
@@ -224,7 +224,7 @@ TEST(FileTest, ReadWrite) {
 TEST(FileTest, Append) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("append_file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("append_file");
   File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_APPEND);
   ASSERT_TRUE(file.IsValid());
 
@@ -272,7 +272,7 @@ TEST(FileTest, Append) {
 TEST(FileTest, Length) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("truncate_file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("truncate_file");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
@@ -324,7 +324,7 @@ TEST(FileTest, DISABLED_TouchGetInfo) {
 #endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  File file(temp_dir.path().AppendASCII("touch_get_info_file"),
+  File file(temp_dir.GetPath().AppendASCII("touch_get_info_file"),
             base::File::FLAG_CREATE | base::File::FLAG_WRITE |
                 base::File::FLAG_WRITE_ATTRIBUTES);
   ASSERT_TRUE(file.IsValid());
@@ -387,7 +387,8 @@ TEST(FileTest, DISABLED_TouchGetInfo) {
 TEST(FileTest, ReadAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("read_at_current_position");
+  FilePath file_path =
+      temp_dir.GetPath().AppendASCII("read_at_current_position");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
@@ -411,7 +412,8 @@ TEST(FileTest, ReadAtCurrentPosition) {
 TEST(FileTest, WriteAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("write_at_current_position");
+  FilePath file_path =
+      temp_dir.GetPath().AppendASCII("write_at_current_position");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
@@ -434,7 +436,7 @@ TEST(FileTest, WriteAtCurrentPosition) {
 TEST(FileTest, Seek) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("seek_file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("seek_file");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
@@ -451,7 +453,7 @@ TEST(FileTest, Seek) {
 TEST(FileTest, Duplicate) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("file");
   File file(file_path,(base::File::FLAG_CREATE |
                        base::File::FLAG_READ |
                        base::File::FLAG_WRITE));
@@ -478,7 +480,7 @@ TEST(FileTest, Duplicate) {
 TEST(FileTest, DuplicateDeleteOnClose) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path = temp_dir.path().AppendASCII("file");
+  FilePath file_path = temp_dir.GetPath().AppendASCII("file");
   File file(file_path,(base::File::FLAG_CREATE |
                        base::File::FLAG_READ |
                        base::File::FLAG_WRITE |
@@ -495,7 +497,8 @@ TEST(FileTest, DuplicateDeleteOnClose) {
 TEST(FileTest, GetInfoForDirectory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath empty_dir = temp_dir.path().Append(FILE_PATH_LITERAL("gpfi_test"));
+  FilePath empty_dir =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("gpfi_test"));
   ASSERT_TRUE(CreateDirectory(empty_dir));
 
   base::File dir(

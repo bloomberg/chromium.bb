@@ -12,7 +12,7 @@ namespace base {
 ScopedPathOverride::ScopedPathOverride(int key) : key_(key) {
   bool result = temp_dir_.CreateUniqueTempDir();
   CHECK(result);
-  result = PathService::Override(key, temp_dir_.path());
+  result = PathService::Override(key, temp_dir_.GetPath());
   CHECK(result);
 }
 

@@ -131,7 +131,7 @@ TEST_F(PersistentHistogramAllocatorTest, CreateWithFileTest) {
   const char temp_name[] = "CreateWithFileTest";
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath temp_file = temp_dir.path().AppendASCII(temp_name);
+  FilePath temp_file = temp_dir.GetPath().AppendASCII(temp_name);
   const size_t temp_size = 64 << 10;  // 64 KiB
 
   // Test creation of a new file.

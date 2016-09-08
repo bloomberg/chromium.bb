@@ -108,7 +108,7 @@ TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
   // The file must already exist in order to set its exclusion property.
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath dummy_file_path = temp_dir_.path().Append("DummyFile");
+  FilePath dummy_file_path = temp_dir_.GetPath().Append("DummyFile");
   const char dummy_data[] = "All your base are belong to us!";
   // Dump something real into the file.
   ASSERT_EQ(static_cast<int>(arraysize(dummy_data)),
@@ -235,7 +235,7 @@ TEST_F(MacUtilTest, ParseModelIdentifier) {
 TEST_F(MacUtilTest, TestRemoveQuarantineAttribute) {
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath dummy_folder_path = temp_dir_.path().Append("DummyFolder");
+  FilePath dummy_folder_path = temp_dir_.GetPath().Append("DummyFolder");
   ASSERT_TRUE(base::CreateDirectory(dummy_folder_path));
   const char* quarantine_str = "0000;4b392bb2;Chromium;|org.chromium.Chromium";
   const char* file_path_str = dummy_folder_path.value().c_str();
@@ -252,7 +252,7 @@ TEST_F(MacUtilTest, TestRemoveQuarantineAttribute) {
 TEST_F(MacUtilTest, TestRemoveQuarantineAttributeTwice) {
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath dummy_folder_path = temp_dir_.path().Append("DummyFolder");
+  FilePath dummy_folder_path = temp_dir_.GetPath().Append("DummyFolder");
   const char* file_path_str = dummy_folder_path.value().c_str();
   ASSERT_TRUE(base::CreateDirectory(dummy_folder_path));
   EXPECT_EQ(-1, getxattr(file_path_str, "com.apple.quarantine", NULL, 0, 0, 0));
@@ -267,7 +267,7 @@ TEST_F(MacUtilTest, TestRemoveQuarantineAttributeTwice) {
 TEST_F(MacUtilTest, TestRemoveQuarantineAttributeNonExistentPath) {
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath non_existent_path = temp_dir_.path().Append("DummyPath");
+  FilePath non_existent_path = temp_dir_.GetPath().Append("DummyPath");
   ASSERT_FALSE(PathExists(non_existent_path));
   EXPECT_FALSE(RemoveQuarantineAttribute(non_existent_path));
 }

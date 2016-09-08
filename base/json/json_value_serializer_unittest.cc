@@ -148,7 +148,7 @@ TEST(JSONValueDeserializerTest, ReadProperJSONFromFile) {
   ScopedTempDir tempdir;
   ASSERT_TRUE(tempdir.CreateUniqueTempDir());
   // Write it down in the file.
-  FilePath temp_file(tempdir.path().AppendASCII("test.json"));
+  FilePath temp_file(tempdir.GetPath().AppendASCII("test.json"));
   ASSERT_EQ(static_cast<int>(strlen(kProperJSON)),
             WriteFile(temp_file, kProperJSON, strlen(kProperJSON)));
 
@@ -172,7 +172,7 @@ TEST(JSONValueDeserializerTest, ReadJSONWithCommasFromFile) {
   ScopedTempDir tempdir;
   ASSERT_TRUE(tempdir.CreateUniqueTempDir());
   // Write it down in the file.
-  FilePath temp_file(tempdir.path().AppendASCII("test.json"));
+  FilePath temp_file(tempdir.GetPath().AppendASCII("test.json"));
   ASSERT_EQ(static_cast<int>(strlen(kProperJSONWithCommas)),
             WriteFile(temp_file, kProperJSONWithCommas,
                       strlen(kProperJSONWithCommas)));
@@ -431,7 +431,7 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
 
   // Now try writing.
   const FilePath written_file_path =
-      temp_dir_.path().AppendASCII("test_output.js");
+      temp_dir_.GetPath().AppendASCII("test_output.js");
 
   ASSERT_FALSE(PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);
@@ -456,7 +456,8 @@ TEST_F(JSONFileValueSerializerTest, RoundtripNested) {
   ASSERT_TRUE(root);
 
   // Now try writing.
-  FilePath written_file_path = temp_dir_.path().AppendASCII("test_output.json");
+  FilePath written_file_path =
+      temp_dir_.GetPath().AppendASCII("test_output.json");
 
   ASSERT_FALSE(PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);
