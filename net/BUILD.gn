@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//net/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
@@ -38,24 +39,6 @@ posix_avoid_mmap = is_android && current_cpu != "x86"
 
 use_v8_in_net = !is_ios
 enable_built_in_dns = !is_ios
-
-declare_args() {
-  # Disables support for file URLs.  File URL support requires use of icu.
-  disable_file_support = false
-
-  # WebSockets and socket stream code are not used on iOS and are optional in
-  # cronet.
-  enable_websockets = !is_ios
-  disable_ftp_support = is_ios || is_chromecast
-
-  # Enable Kerberos authentication. It is disabled by default on ChromeOS, iOS,
-  # Chromecast, at least for now. This feature needs configuration (krb5.conf
-  # and so on).
-  use_kerberos = !is_chromeos && !is_ios && !is_chromecast
-
-  # Do not disable brotli filter by default.
-  disable_brotli_filter = false
-}
 
 config("net_config") {
   defines = []
