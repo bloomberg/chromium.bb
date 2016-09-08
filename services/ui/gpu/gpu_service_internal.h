@@ -98,7 +98,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-  void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
   void StoreShaderToDisk(int client_id,
                          const std::string& key,
                          const std::string& shader) override;

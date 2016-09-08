@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
-#include "gpu/ipc/common/gpu_memory_uma_stats.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -35,15 +34,9 @@ IPC_ENUM_TRAITS_VALIDATE(gpu::GpuPreferences::VpxDecodeVendors,
                          ((value >= gpu::GpuPreferences::VPX_VENDOR_NONE) &&
                           (value <= gpu::GpuPreferences::VPX_VENDOR_ALL)))
 
-IPC_STRUCT_TRAITS_BEGIN(gpu::GPUMemoryUmaStats)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats)
   IPC_STRUCT_TRAITS_MEMBER(process_map)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_historical_max)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats::ProcessStats)
@@ -233,10 +226,6 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_DidLoseContext,
                      GURL /* url */)
 
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext, GURL /* url */)
-
-// Tells the browser about GPU memory usage statistics for UMA logging.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
-                     gpu::GPUMemoryUmaStats /* GPU memory UMA stats */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

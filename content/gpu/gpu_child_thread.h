@@ -91,7 +91,6 @@ class GpuChildThread : public ChildThreadImpl,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-  void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
       gpu::SurfaceHandle parent_window,

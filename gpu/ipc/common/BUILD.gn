@@ -67,7 +67,6 @@ source_set("ipc_common_sources") {
   sources = [
     "gpu_memory_buffer_support.cc",
     "gpu_memory_buffer_support.h",
-    "gpu_memory_uma_stats.h",
     "gpu_message_generator.cc",
     "gpu_message_generator.h",
     "gpu_messages.h",

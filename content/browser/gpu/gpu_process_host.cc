@@ -441,8 +441,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       swiftshader_rendering_(false),
       kind_(kind),
       process_launched_(false),
-      initialized_(false),
-      uma_memory_stats_received_(false) {
+      initialized_(false) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -490,19 +489,6 @@ GpuProcessHost::~GpuProcessHost() {
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
 #endif
-  UMA_HISTOGRAM_BOOLEAN("GPU.AtExitReceivedMemoryStats",
-                        uma_memory_stats_received_);
-
-  if (uma_memory_stats_received_) {
-    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitContextGroupCount",
-                             uma_memory_stats_.context_group_count);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "GPU.AtExitMBytesAllocated",
-        uma_memory_stats_.bytes_allocated_current / 1024 / 1024, 1, 2000, 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "GPU.AtExitMBytesAllocatedMax",
-        uma_memory_stats_.bytes_allocated_max / 1024 / 1024, 1, 2000, 50);
-  }
 
   std::string message;
   bool block_offscreen_contexts = true;
@@ -658,8 +644,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidLoseContext, OnDidLoseContext)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidDestroyOffscreenContext,
                         OnDidDestroyOffscreenContext)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryUmaStats,
-                        OnGpuMemoryUmaStatsReceived)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel, OnDestroyChannel)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader, OnCacheShader)
 #if defined(OS_WIN)
@@ -918,13 +902,6 @@ void GpuProcessHost::OnDidLoseContext(bool offscreen,
 
 void GpuProcessHost::OnDidDestroyOffscreenContext(const GURL& url) {
   urls_with_live_offscreen_contexts_.erase(url);
-}
-
-void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
-    const gpu::GPUMemoryUmaStats& stats) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryUmaStatsReceived");
-  uma_memory_stats_received_ = true;
-  uma_memory_stats_ = stats;
 }
 
 void GpuProcessHost::OnFieldTrialActivated(const std::string& trial_name) {

@@ -133,11 +133,6 @@ void GpuServiceInternal::DidLoseContext(bool offscreen,
   NOTIMPLEMENTED();
 }
 
-void GpuServiceInternal::GpuMemoryUmaStats(
-    const gpu::GPUMemoryUmaStats& params) {
-  NOTIMPLEMENTED();
-}
-
 void GpuServiceInternal::StoreShaderToDisk(int client_id,
                                            const std::string& key,
                                            const std::string& shader) {

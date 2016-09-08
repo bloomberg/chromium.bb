@@ -43,9 +43,6 @@ struct GPU_EXPORT VideoMemoryUsageStats {
 
   // The total amount of GPU memory allocated at the time of the request.
   uint64_t bytes_allocated;
-
-  // The maximum amount of GPU memory ever allocated at once.
-  uint64_t bytes_allocated_historical_max;
 };
 
 }  // namespace gpu

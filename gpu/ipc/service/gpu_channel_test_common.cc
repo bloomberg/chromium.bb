@@ -33,9 +33,6 @@ void TestGpuChannelManagerDelegate::DidLoseContext(
     error::ContextLostReason reason,
     const GURL& active_url) {}
 
-void TestGpuChannelManagerDelegate::GpuMemoryUmaStats(
-    const GPUMemoryUmaStats& params) {}
-
 void TestGpuChannelManagerDelegate::StoreShaderToDisk(
     int32_t client_id,
     const std::string& key,

@@ -48,9 +48,6 @@ class GPU_EXPORT GpuMemoryManager :
   typedef std::map<gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
       TrackingGroupMap;
 
-  // Send memory usage stats to the browser process.
-  void SendUmaStatsToHost();
-
   // Get the current number of bytes allocated.
   uint64_t GetCurrentUsage() const { return bytes_allocated_current_; }
 
@@ -68,7 +65,6 @@ class GPU_EXPORT GpuMemoryManager :
 
   // The current total memory usage, and historical maximum memory usage
   uint64_t bytes_allocated_current_;
-  uint64_t bytes_allocated_historical_max_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };

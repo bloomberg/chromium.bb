@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/ipc/common/gpu_memory_uma_stats.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -22,8 +21,6 @@
 
 namespace gpu {
 namespace {
-
-const uint64_t kBytesAllocatedStep = 16 * 1024 * 1024;
 
 void TrackValueChanged(uint64_t old_size,
                        uint64_t new_size,
@@ -36,8 +33,7 @@ void TrackValueChanged(uint64_t old_size,
 
 GpuMemoryManager::GpuMemoryManager(GpuChannelManager* channel_manager)
     : channel_manager_(channel_manager),
-      bytes_allocated_current_(0),
-      bytes_allocated_historical_max_(0) {}
+      bytes_allocated_current_(0) {}
 
 GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
@@ -50,14 +46,6 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
     uint64_t new_size) {
   TrackValueChanged(old_size, new_size, &tracking_group->size_);
   TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
-
-  if (GetCurrentUsage() > bytes_allocated_historical_max_ +
-                          kBytesAllocatedStep) {
-      bytes_allocated_historical_max_ = GetCurrentUsage();
-      // If we're blowing into new memory usage territory, spam the browser
-      // process with the most up-to-date information about our memory usage.
-      SendUmaStatsToHost();
-  }
 }
 
 bool GpuMemoryManager::EnsureGPUMemoryAvailable(uint64_t /* size_needed */) {
@@ -107,17 +95,6 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
       base::GetCurrentProcId()].has_duplicates = true;
 
   video_memory_usage_stats->bytes_allocated = GetCurrentUsage();
-  video_memory_usage_stats->bytes_allocated_historical_max =
-      bytes_allocated_historical_max_;
 }
 
-void GpuMemoryManager::SendUmaStatsToHost() {
-  if (!channel_manager_)
-    return;
-  GPUMemoryUmaStats params;
-  params.bytes_allocated_current = GetCurrentUsage();
-  params.bytes_allocated_max = bytes_allocated_historical_max_;
-  params.context_group_count = static_cast<uint32_t>(tracking_groups_.size());
-  channel_manager_->delegate()->GpuMemoryUmaStats(params);
-}
 }  // namespace gpu
