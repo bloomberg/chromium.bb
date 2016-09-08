@@ -88434,6 +88434,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Opened a foreign session (from other devices section)"/>
   <int value="7" label="Navigated to the webpage for a snippet"/>
   <int value="8" label="Clicked on an interest item"/>
+  <int value="9" label="Clicked on Learn More"/>
 </enum>
 
 <enum name="NewTabPageBookmarkActionAndroid" type="int">

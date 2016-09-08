@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit;
  * Records UMA stats for which actions the user takes on the NTP in the
  * "NewTabPage.ActionAndroid" histogram.
  */
-public class NewTabPageUma {
+public final class NewTabPageUma {
+    private NewTabPageUma() {}
+
     // Possible actions taken by the user on the NTP. These values are also defined in
     // histograms.xml. WARNING: these values must stay in sync with histograms.xml.
 
@@ -48,8 +50,10 @@ public class NewTabPageUma {
     public static final int ACTION_OPENED_SNIPPET = 7;
     // User clicked on an interest item.
     public static final int ACTION_CLICKED_INTEREST = 8;
+    // User clicked on the "learn more" link in the footer.
+    public static final int ACTION_CLICKED_LEARN_MORE = 9;
     // The number of possible actions
-    private static final int NUM_ACTIONS = 9;
+    private static final int NUM_ACTIONS = 10;
 
     // User navigated to a page using the omnibox.
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;

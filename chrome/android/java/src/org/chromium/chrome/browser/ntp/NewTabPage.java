@@ -246,7 +246,7 @@ public class NewTabPage
         @Override
         public void onLearnMoreClicked() {
             if (mIsDestroyed) return;
-            // TODO(mvanouwerkerk): UMA logging.
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
             String url = "https://support.google.com/chrome/?p=new_tab";
             openUrl(WindowOpenDisposition.CURRENT_TAB, url);
         }
