@@ -406,6 +406,24 @@ unsigned long long PerformanceTiming::parseBlockedOnScriptLoadFromDocumentWriteD
     return toIntegerMilliseconds(timing->parserBlockedOnScriptLoadFromDocumentWriteDuration());
 }
 
+unsigned long long PerformanceTiming::parseBlockedOnScriptExecutionDuration() const
+{
+    const DocumentParserTiming* timing = documentParserTiming();
+    if (!timing)
+        return 0;
+
+    return toIntegerMilliseconds(timing->parserBlockedOnScriptExecutionDuration());
+}
+
+unsigned long long PerformanceTiming::parseBlockedOnScriptExecutionFromDocumentWriteDuration() const
+{
+    const DocumentParserTiming* timing = documentParserTiming();
+    if (!timing)
+        return 0;
+
+    return toIntegerMilliseconds(timing->parserBlockedOnScriptExecutionFromDocumentWriteDuration());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
     if (!m_frame)

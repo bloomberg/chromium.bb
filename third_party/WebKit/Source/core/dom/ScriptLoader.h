@@ -23,6 +23,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/PendingScript.h"
+#include "core/dom/ScriptRunner.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ScriptResource.h"
@@ -97,6 +98,7 @@ private:
     void logScriptMimetype(ScriptResource*, LocalFrame*, String);
 
     bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
+    bool doExecuteScript(const ScriptSourceCode&);
 
     ScriptLoaderClient* client() const;
 
@@ -116,10 +118,11 @@ private:
     bool m_haveFiredLoad : 1;
     bool m_willBeParserExecuted : 1; // Same as "The parser will handle executing the script."
     bool m_readyToBeParserExecuted : 1;
-    bool m_willExecuteInOrder : 1;
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
     const bool m_createdDuringDocumentWrite : 1;
+
+    ScriptRunner::AsyncExecutionType m_asyncExecType;
 
     Member<PendingScript> m_pendingScript;
 };

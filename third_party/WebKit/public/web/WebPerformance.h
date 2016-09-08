@@ -95,6 +95,8 @@ public:
     BLINK_EXPORT double parseStop() const;
     BLINK_EXPORT double parseBlockedOnScriptLoadDuration() const;
     BLINK_EXPORT double parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
+    BLINK_EXPORT double parseBlockedOnScriptExecutionDuration() const;
+    BLINK_EXPORT double parseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
 
 #if BLINK_IMPLEMENTATION
     WebPerformance(Performance*);

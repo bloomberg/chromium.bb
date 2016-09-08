@@ -39411,6 +39411,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptExecution" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the execution of
+    scripts, for main frame documents that finished parsing.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the execution of
+    scripts inserted from document.write, for main frame documents that finished
+    parsing.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad" units="ms">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

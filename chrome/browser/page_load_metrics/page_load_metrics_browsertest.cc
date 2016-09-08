@@ -54,6 +54,8 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramParseDuration, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseBlockedOnScriptLoad, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramParseBlockedOnScriptExecution, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,

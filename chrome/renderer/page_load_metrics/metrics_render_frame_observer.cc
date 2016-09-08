@@ -158,6 +158,12 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
     timing.parse_blocked_on_script_load_from_document_write_duration =
         base::TimeDelta::FromSecondsD(
             perf.parseBlockedOnScriptLoadFromDocumentWriteDuration());
+    timing.parse_blocked_on_script_execution_duration =
+        base::TimeDelta::FromSecondsD(
+            perf.parseBlockedOnScriptExecutionDuration());
+    timing.parse_blocked_on_script_execution_from_document_write_duration =
+        base::TimeDelta::FromSecondsD(
+            perf.parseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
   return timing;
 }

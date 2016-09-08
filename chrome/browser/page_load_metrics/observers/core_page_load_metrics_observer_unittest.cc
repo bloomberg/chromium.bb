@@ -72,15 +72,19 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta parse_start = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta parse_stop = base::TimeDelta::FromMilliseconds(5);
-  base::TimeDelta parse_script_block_duration =
+  base::TimeDelta parse_script_load_duration =
       base::TimeDelta::FromMilliseconds(3);
+  base::TimeDelta parse_script_exec_duration =
+      base::TimeDelta::FromMilliseconds(1);
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_layout = first_layout;
   timing.parse_start = parse_start;
   timing.parse_stop = parse_stop;
-  timing.parse_blocked_on_script_load_duration = parse_script_block_duration;
+  timing.parse_blocked_on_script_load_duration = parse_script_load_duration;
+  timing.parse_blocked_on_script_execution_duration =
+      parse_script_exec_duration;
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -102,7 +106,10 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
       (parse_stop - parse_start).InMilliseconds(), 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramParseBlockedOnScriptLoad,
-      parse_script_block_duration.InMilliseconds(), 1);
+      parse_script_load_duration.InMilliseconds(), 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramParseBlockedOnScriptExecution,
+      parse_script_exec_duration.InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
 

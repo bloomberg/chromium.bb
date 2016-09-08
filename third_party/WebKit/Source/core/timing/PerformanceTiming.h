@@ -100,6 +100,8 @@ public:
     unsigned long long parseStop() const;
     unsigned long long parseBlockedOnScriptLoadDuration() const;
     unsigned long long parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
+    unsigned long long parseBlockedOnScriptExecutionDuration() const;
+    unsigned long long parseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 

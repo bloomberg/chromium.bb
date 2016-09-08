@@ -70,8 +70,8 @@ public:
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
 {
     MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
-    m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::Async);
 
     EXPECT_CALL(*scriptLoader, execute());
     m_platform.runUntilIdle();
@@ -80,12 +80,12 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
 {
     MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
-    m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader, isReady()).WillOnce(Return(true));
     EXPECT_CALL(*scriptLoader, execute());
 
-    m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::InOrder);
 
     m_platform.runUntilIdle();
 }
@@ -102,7 +102,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
     scriptLoaders.append(scriptLoader3);
 
     for (ScriptLoader* scriptLoader : scriptLoaders) {
-        m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
+        m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
     }
 
     for (size_t i = 0; i < scriptLoaders.size(); ++i) {
@@ -124,7 +124,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
 
     for (int i = 2; i >= 0; i--) {
         isReady[i] = true;
-        m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::IN_ORDER_EXECUTION);
+        m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::InOrder);
         m_platform.runUntilIdle();
     }
 
@@ -140,29 +140,28 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts)
     MockScriptLoader* scriptLoader4 = MockScriptLoader::create(m_element.get());
     MockScriptLoader* scriptLoader5 = MockScriptLoader::create(m_element.get());
 
-
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader4, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader5, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader4, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader5, ScriptRunner::Async);
 
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady())
         .WillRepeatedly(Return(false));
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader3, isReady())
         .WillRepeatedly(Return(false));
-    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader3, isReady())
         .WillRepeatedly(Return(true));
-    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::InOrder);
 
-    m_scriptRunner->notifyScriptReady(scriptLoader4, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader5, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader4, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader5, ScriptRunner::Async);
 
     EXPECT_CALL(*scriptLoader1, execute()).WillOnce(Invoke([this] {
         m_order.append(1);
@@ -192,21 +191,21 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async)
     MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
     MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::Async);
 
     MockScriptLoader* scriptLoader = scriptLoader2;
     EXPECT_CALL(*scriptLoader1, execute()).WillOnce(Invoke([scriptLoader, this] {
         m_order.append(1);
-        m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::ASYNC_EXECUTION);
+        m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::Async);
     }));
 
     scriptLoader = scriptLoader3;
     EXPECT_CALL(*scriptLoader2, execute()).WillOnce(Invoke([scriptLoader, this] {
         m_order.append(2);
-        m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::ASYNC_EXECUTION);
+        m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::Async);
     }));
 
     EXPECT_CALL(*scriptLoader3, execute()).WillOnce(Invoke([this] {
@@ -235,23 +234,23 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder)
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader3, isReady()).WillRepeatedly(Return(true));
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
 
     MockScriptLoader* scriptLoader = scriptLoader2;
     EXPECT_CALL(*scriptLoader1, execute())
         .WillOnce(Invoke([scriptLoader, &scriptLoader2, this] {
             m_order.append(1);
-            m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
-            m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
+            m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
+            m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
         }));
 
     scriptLoader = scriptLoader3;
     EXPECT_CALL(*scriptLoader2, execute())
         .WillOnce(Invoke([scriptLoader, &scriptLoader3, this] {
             m_order.append(2);
-            m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
-            m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
+            m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
+            m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::InOrder);
         }));
 
     EXPECT_CALL(*scriptLoader3, execute()).WillOnce(Invoke([this] {
@@ -280,7 +279,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
         scriptLoaders[i] = MockScriptLoader::create(m_element.get());
         EXPECT_CALL(*scriptLoaders[i], isReady()).WillRepeatedly(Return(true));
 
-        m_scriptRunner->queueScriptForExecution(scriptLoaders[i], ScriptRunner::ASYNC_EXECUTION);
+        m_scriptRunner->queueScriptForExecution(scriptLoaders[i], ScriptRunner::Async);
 
         if (i > 0) {
             EXPECT_CALL(*scriptLoaders[i], execute()).WillOnce(Invoke([this, i] {
@@ -289,12 +288,12 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
         }
     }
 
-    m_scriptRunner->notifyScriptReady(scriptLoaders[0], ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoaders[1], ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoaders[0], ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoaders[1], ScriptRunner::Async);
 
     EXPECT_CALL(*scriptLoaders[0], execute()).WillOnce(Invoke([&scriptLoaders, this] {
         for (int i = 2; i < 20; i++)
-            m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::ASYNC_EXECUTION);
+            m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::Async);
         m_order.append(0);
     }));
 
@@ -313,9 +312,9 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
     MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
     MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader1, execute()).WillOnce(Invoke([this] {
         m_order.append(1);
@@ -336,17 +335,17 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady())
         .WillRepeatedly(Return(false));
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader2, isReady())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader3, isReady())
         .WillRepeatedly(Return(false));
-    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader3, isReady())
         .WillRepeatedly(Return(true));
-    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::InOrder);
 
     m_platform.runSingleTask();
     m_scriptRunner->suspend();
@@ -363,13 +362,13 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async)
     MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
     MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader3, ScriptRunner::Async);
 
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::Async);
 
     EXPECT_CALL(*scriptLoader1, execute())
         .WillOnce(Invoke([this] {
@@ -401,8 +400,8 @@ TEST_F(ScriptRunnerTest, LateNotifications)
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::InOrder);
 
     EXPECT_CALL(*scriptLoader1, execute()).WillOnce(Invoke([this] {
         m_order.append(1);
@@ -411,11 +410,11 @@ TEST_F(ScriptRunnerTest, LateNotifications)
         m_order.append(2);
     }));
 
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
     m_platform.runUntilIdle();
 
     // At this moment all tasks can be already executed. Make sure that we do not crash here.
-    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
     m_platform.runUntilIdle();
 
     EXPECT_THAT(m_order, ElementsAre(1, 2));
@@ -429,11 +428,11 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
 
-    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::Async);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::Async);
 
-    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::ASYNC_EXECUTION);
-    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::Async);
+    m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::Async);
 
     m_scriptRunner.release();
 

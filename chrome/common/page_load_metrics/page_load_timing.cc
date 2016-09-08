@@ -28,7 +28,12 @@ bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
          parse_blocked_on_script_load_duration ==
              other.parse_blocked_on_script_load_duration &&
          parse_blocked_on_script_load_from_document_write_duration ==
-             other.parse_blocked_on_script_load_from_document_write_duration;
+             other.parse_blocked_on_script_load_from_document_write_duration &&
+         parse_blocked_on_script_execution_duration ==
+             other.parse_blocked_on_script_execution_duration &&
+         parse_blocked_on_script_execution_from_document_write_duration ==
+             other
+                 .parse_blocked_on_script_execution_from_document_write_duration;
 }
 
 bool PageLoadTiming::IsEmpty() const {
@@ -38,7 +43,9 @@ bool PageLoadTiming::IsEmpty() const {
          !first_image_paint && !first_contentful_paint &&
          !first_meaningful_paint && !parse_start && !parse_stop &&
          !parse_blocked_on_script_load_duration &&
-         !parse_blocked_on_script_load_from_document_write_duration;
+         !parse_blocked_on_script_load_from_document_write_duration &&
+         !parse_blocked_on_script_execution_duration &&
+         !parse_blocked_on_script_execution_from_document_write_duration;
 }
 
 PageLoadMetadata::PageLoadMetadata() {}

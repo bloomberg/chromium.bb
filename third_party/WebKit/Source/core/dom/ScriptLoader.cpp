@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentParserTiming.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/ScriptLoaderClient.h"
 #include "core/dom/ScriptRunner.h"
@@ -66,10 +67,10 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_haveFiredLoad(false)
     , m_willBeParserExecuted(false)
     , m_readyToBeParserExecuted(false)
-    , m_willExecuteInOrder(false)
     , m_willExecuteWhenDocumentFinishedParsing(false)
     , m_forceAsync(!parserInserted)
     , m_createdDuringDocumentWrite(createdDuringDocumentWrite)
+    , m_asyncExecType(ScriptRunner::None)
 {
     DCHECK(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
@@ -254,19 +255,20 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_pendingScript = PendingScript::create(m_element, m_resource.get());
-        m_willExecuteInOrder = true;
-        contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::IN_ORDER_EXECUTION);
+        m_asyncExecType = ScriptRunner::InOrder;
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_asyncExecType);
         // Note that watchForLoad can immediately call notifyFinished.
         m_pendingScript->watchForLoad(this);
     } else if (client->hasSourceAttribute()) {
         m_pendingScript = PendingScript::create(m_element, m_resource.get());
+        m_asyncExecType = ScriptRunner::Async;
         LocalFrame* frame = m_element->document().frame();
         if (frame) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
             if (scriptState)
                 ScriptStreamer::startStreaming(m_pendingScript.get(), ScriptStreamer::Async, frame->settings(), scriptState, frame->frameScheduler()->loadingTaskRunner());
         }
-        contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_asyncExecType);
         // Note that watchForLoad can immediately call notifyFinished.
         m_pendingScript->watchForLoad(this);
     } else {
@@ -356,6 +358,20 @@ void ScriptLoader::logScriptMimetype(ScriptResource* resource, LocalFrame* frame
 }
 
 bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
+{
+    double scriptExecStartTime = monotonicallyIncreasingTime();
+    bool result = doExecuteScript(sourceCode);
+
+    // NOTE: we do not check m_willBeParserExecuted here, since
+    // m_willBeParserExecuted is false for inline scripts, and we want to
+    // include inline script execution time as part of parser blocked script
+    // execution time.
+    if (m_asyncExecType == ScriptRunner::None)
+        DocumentParserTiming::from(m_element->document()).recordParserBlockedOnScriptExecutionDuration(monotonicallyIncreasingTime() - scriptExecStartTime, wasCreatedDuringDocumentWrite());
+    return result;
+}
+
+bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode)
 {
     DCHECK(m_alreadyStarted);
 
@@ -448,6 +464,7 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 void ScriptLoader::execute()
 {
     DCHECK(!m_willBeParserExecuted);
+    DCHECK(m_asyncExecType != ScriptRunner::None);
     DCHECK(m_pendingScript->resource());
     bool errorOccurred = false;
     ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
@@ -467,6 +484,7 @@ void ScriptLoader::execute()
 void ScriptLoader::notifyFinished(Resource* resource)
 {
     DCHECK(!m_willBeParserExecuted);
+    DCHECK(m_asyncExecType != ScriptRunner::None);
 
     Document* contextDocument = m_element->document().contextDocument();
     if (!contextDocument) {
@@ -476,14 +494,13 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
     ASSERT_UNUSED(resource, resource == m_resource);
 
-    ScriptRunner::ExecutionType runOrder = m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION;
     if (m_resource->errorOccurred()) {
-        contextDocument->scriptRunner()->notifyScriptLoadError(this, runOrder);
+        contextDocument->scriptRunner()->notifyScriptLoadError(this, m_asyncExecType);
         detach();
         dispatchErrorEvent();
         return;
     }
-    contextDocument->scriptRunner()->notifyScriptReady(this, runOrder);
+    contextDocument->scriptRunner()->notifyScriptReady(this, m_asyncExecType);
     m_pendingScript->stopWatchingForLoad();
 }
 

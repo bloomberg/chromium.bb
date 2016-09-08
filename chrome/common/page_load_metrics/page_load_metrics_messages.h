@@ -28,6 +28,9 @@ IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(parse_blocked_on_script_load_duration)
   IPC_STRUCT_TRAITS_MEMBER(
       parse_blocked_on_script_load_from_document_write_duration)
+  IPC_STRUCT_TRAITS_MEMBER(parse_blocked_on_script_execution_duration)
+  IPC_STRUCT_TRAITS_MEMBER(
+      parse_blocked_on_script_execution_from_document_write_duration)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadMetadata)

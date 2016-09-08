@@ -48,18 +48,21 @@ ScriptRunner::ScriptRunner(Document* document)
 #endif
 }
 
-void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
+void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, AsyncExecutionType executionType)
 {
     DCHECK(scriptLoader);
     m_document->incrementLoadEventDelayCount();
     switch (executionType) {
-    case ASYNC_EXECUTION:
+    case Async:
         m_pendingAsyncScripts.add(scriptLoader);
         break;
 
-    case IN_ORDER_EXECUTION:
+    case InOrder:
         m_pendingInOrderScripts.append(scriptLoader);
         m_numberOfInOrderScriptsWithPendingNotification++;
+        break;
+    case None:
+        NOTREACHED();
         break;
     }
 }
@@ -104,11 +107,11 @@ void ScriptRunner::scheduleReadyInOrderScripts()
     }
 }
 
-void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
+void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, AsyncExecutionType executionType)
 {
     SECURITY_CHECK(scriptLoader);
     switch (executionType) {
-    case ASYNC_EXECUTION:
+    case Async:
         // RELEASE_ASSERT makes us crash in a controlled way in error cases
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
@@ -122,12 +125,15 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
 
         break;
 
-    case IN_ORDER_EXECUTION:
+    case InOrder:
         SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
         m_numberOfInOrderScriptsWithPendingNotification--;
 
         scheduleReadyInOrderScripts();
 
+        break;
+    case None:
+        NOTREACHED();
         break;
     }
 }
@@ -145,10 +151,10 @@ bool ScriptRunner::removePendingInOrderScript(ScriptLoader* scriptLoader)
     return false;
 }
 
-void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionType executionType)
+void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, AsyncExecutionType executionType)
 {
     switch (executionType) {
-    case ASYNC_EXECUTION: {
+    case Async: {
         // SECURITY_CHECK makes us crash in a controlled way in error cases
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
@@ -157,9 +163,12 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
     }
-    case IN_ORDER_EXECUTION:
+    case InOrder:
         SECURITY_CHECK(removePendingInOrderScript(scriptLoader));
         scheduleReadyInOrderScripts();
+        break;
+    case None:
+        NOTREACHED();
         break;
     }
     m_document->decrementLoadEventDelayCount();
@@ -194,13 +203,13 @@ void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocumen
 void ScriptRunner::movePendingScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
 {
     if (m_pendingAsyncScripts.contains(scriptLoader)) {
-        newRunner->queueScriptForExecution(scriptLoader, ASYNC_EXECUTION);
+        newRunner->queueScriptForExecution(scriptLoader, Async);
         m_pendingAsyncScripts.remove(scriptLoader);
         m_document->decrementLoadEventDelayCount();
         return;
     }
     if (removePendingInOrderScript(scriptLoader)) {
-        newRunner->queueScriptForExecution(scriptLoader, IN_ORDER_EXECUTION);
+        newRunner->queueScriptForExecution(scriptLoader, InOrder);
         m_document->decrementLoadEventDelayCount();
     }
 }

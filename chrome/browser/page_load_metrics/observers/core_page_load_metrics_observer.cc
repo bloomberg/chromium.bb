@@ -132,6 +132,10 @@ const char kHistogramParseBlockedOnScriptLoadDocumentWrite[] =
 const char kBackgroundHistogramParseBlockedOnScriptLoadDocumentWrite[] =
     "PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite."
     "Background";
+const char kHistogramParseBlockedOnScriptExecution[] =
+    "PageLoad.ParseTiming.ParseBlockedOnScriptExecution";
+const char kHistogramParseBlockedOnScriptExecutionDocumentWrite[] =
+    "PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite";
 
 const char kHistogramFirstContentfulPaintNoStore[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.NoStore";
@@ -455,6 +459,13 @@ void CorePageLoadMetricsObserver::OnParseStop(
         internal::kHistogramParseBlockedOnScriptLoadDocumentWrite,
         timing.parse_blocked_on_script_load_from_document_write_duration
             .value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramParseBlockedOnScriptExecution,
+        timing.parse_blocked_on_script_execution_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramParseBlockedOnScriptExecutionDocumentWrite,
+        timing.parse_blocked_on_script_execution_from_document_write_duration
+            .value());
 
     int total_requests = info.num_cache_requests + info.num_network_requests;
     if (total_requests) {
@@ -477,7 +488,6 @@ void CorePageLoadMetricsObserver::OnParseStop(
             parse_duration);
       }
     }
-
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramParseDuration,
                         parse_duration);

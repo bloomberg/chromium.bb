@@ -51,6 +51,13 @@ public:
     void recordParserBlockedOnScriptLoadDuration(
         double duration, bool scriptInsertedViaDocumentWrite);
 
+    // Record a duration of time that the parser spent executing a script, in
+    // seconds. scriptInsertedViaDocumentWrite indicates whether the script
+    // being executed was inserted via document.write. This may be called
+    // multiple times, once for each time the parser executes a script.
+    void recordParserBlockedOnScriptExecutionDuration(
+        double duration, bool scriptInsertedViaDocumentWrite);
+
     // The getters below return monotonically-increasing seconds, or zero if the
     // given parser event has not yet occurred.  See the comments for
     // monotonicallyIncreasingTime in wtf/CurrentTime.h for additional details.
@@ -68,6 +75,16 @@ public:
     // crbug/600711 for details.
     double parserBlockedOnScriptLoadFromDocumentWriteDuration() const { return m_parserBlockedOnScriptLoadFromDocumentWriteDuration; }
 
+    // Returns the sum of all script execution durations reported via
+    // recordParseBlockedOnScriptExecutionDuration.
+    double parserBlockedOnScriptExecutionDuration() const { return m_parserBlockedOnScriptExecutionDuration; }
+
+    // Returns the sum of all script execution durations due to
+    // document.write reported via recordParseBlockedOnScriptExecutionDuration. Note
+    // that some uncommon cases are not currently covered by this method. See
+    // crbug/600711 for details.
+    double parserBlockedOnScriptExecutionFromDocumentWriteDuration() const { return m_parserBlockedOnScriptExecutionFromDocumentWriteDuration; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -78,6 +95,8 @@ private:
     double m_parserStop = 0.0;
     double m_parserBlockedOnScriptLoadDuration = 0.0;
     double m_parserBlockedOnScriptLoadFromDocumentWriteDuration = 0.0;
+    double m_parserBlockedOnScriptExecutionDuration = 0.0;
+    double m_parserBlockedOnScriptExecutionFromDocumentWriteDuration = 0.0;
     bool m_parserDetached = false;
 
     Member<Document> m_document;

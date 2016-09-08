@@ -215,6 +215,16 @@ double WebPerformance::parseBlockedOnScriptLoadFromDocumentWriteDuration() const
     return millisecondsToSeconds(m_private->timing()->parseBlockedOnScriptLoadFromDocumentWriteDuration());
 }
 
+double WebPerformance::parseBlockedOnScriptExecutionDuration() const
+{
+    return millisecondsToSeconds(m_private->timing()->parseBlockedOnScriptExecutionDuration());
+}
+
+double WebPerformance::parseBlockedOnScriptExecutionFromDocumentWriteDuration() const
+{
+    return millisecondsToSeconds(m_private->timing()->parseBlockedOnScriptExecutionFromDocumentWriteDuration());
+}
+
 WebPerformance::WebPerformance(Performance* performance)
     : m_private(performance)
 {

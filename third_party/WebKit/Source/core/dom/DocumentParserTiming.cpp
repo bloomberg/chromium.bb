@@ -56,6 +56,17 @@ void DocumentParserTiming::recordParserBlockedOnScriptLoadDuration(
     notifyDocumentParserTimingChanged();
 }
 
+void DocumentParserTiming::recordParserBlockedOnScriptExecutionDuration(
+    double duration, bool scriptInsertedViaDocumentWrite)
+{
+    if (m_parserDetached || m_parserStart == 0.0 || m_parserStop > 0.0)
+        return;
+    m_parserBlockedOnScriptExecutionDuration += duration;
+    if (scriptInsertedViaDocumentWrite)
+        m_parserBlockedOnScriptExecutionFromDocumentWriteDuration += duration;
+    notifyDocumentParserTimingChanged();
+}
+
 DEFINE_TRACE(DocumentParserTiming)
 {
     visitor->trace(m_document);
