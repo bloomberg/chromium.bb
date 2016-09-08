@@ -93,6 +93,14 @@ bool IsProxyError(NetworkStateInformer::State state,
          reason == NetworkError::ERROR_REASON_PROXY_CONNECTION_FAILED;
 }
 
+
+// Returns the enterprise domain after enrollment, or an empty string.
+std::string GetEnterpriseDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetEnterpriseDomain();
+}
+
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
@@ -178,6 +186,11 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
   ShowStep(kEnrollmentStepWorking);
 }
 
+void EnrollmentScreenHandler::ShowAttestationBasedEnrollmentSuccessScreen(
+    const std::string& enterprise_domain) {
+  CallJS("showAttestationBasedEnrollmentSuccess", enterprise_domain);
+}
+
 void EnrollmentScreenHandler::ShowAuthError(
     const GoogleServiceAuthError& error) {
   switch (error.state()) {
@@ -224,7 +237,10 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     policy::EnrollmentStatus status) {
   switch (status.status()) {
     case policy::EnrollmentStatus::STATUS_SUCCESS:
-      ShowStep(kEnrollmentStepSuccess);
+      if (config_.is_mode_attestation())
+        ShowAttestationBasedEnrollmentSuccessScreen(GetEnterpriseDomain());
+      else
+        ShowStep(kEnrollmentStepSuccess);
       return;
     case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_STATE_KEYS, false);
@@ -349,6 +365,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollNextBtn", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
   builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
   builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
+  builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplaneAttributeLink",

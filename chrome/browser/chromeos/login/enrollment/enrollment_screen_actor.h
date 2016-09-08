@@ -58,6 +58,10 @@ class EnrollmentScreenActor {
   virtual void ShowAttributePromptScreen(const std::string& asset_id,
                                          const std::string& location) = 0;
 
+  // Shows a success string for attestation-based enrollment.
+  virtual void ShowAttestationBasedEnrollmentSuccessScreen(
+      const std::string& enterprise_domain) = 0;
+
   // Shows the spinner screen for enrollment.
   virtual void ShowEnrollmentSpinnerScreen() = 0;
 

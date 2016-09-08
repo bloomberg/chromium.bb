@@ -6022,6 +6022,12 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
     Your device has successfully been enrolled for enterprise management.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS" desc="Success message to be shown once attestation-based enterprise enrollment completes.">
+    Your device has successfully been enrolled for enterprise management by
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    <ph name="LINE_BREAK_AND_EMPTY_LINE">&lt;br&gt;&lt;br&gt;</ph>
+    If this is unexpected, please contact support.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL" desc="Label for asset id text box on the device naming screen in the enterprise enrollment dialog.">
     Asset Identifier
   </message>

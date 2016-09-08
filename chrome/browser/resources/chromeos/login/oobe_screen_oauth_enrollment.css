@@ -24,7 +24,8 @@
 }
 
 .oauth-enroll-state-error #oauth-enroll-step-error,
-.oauth-enroll-state-success #oauth-enroll-step-success {
+.oauth-enroll-state-success #oauth-enroll-step-success,
+.oauth-enroll-state-abe-success #oauth-enroll-step-abe-success {
   display: table;
   height: 480px;
   margin: 0 auto;

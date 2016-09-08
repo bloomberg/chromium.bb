@@ -46,6 +46,8 @@ class EnrollmentScreenHandler
   void ShowSigninScreen() override;
   void ShowAttributePromptScreen(const std::string& asset_id,
                                  const std::string& location) override;
+  void ShowAttestationBasedEnrollmentSuccessScreen(
+      const std::string& enterprise_domain) override;
   void ShowEnrollmentSpinnerScreen() override;
   void ShowAuthError(const GoogleServiceAuthError& error) override;
   void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
