@@ -2593,6 +2593,10 @@ if (enable_java_templates) {
   #   aar_path: Path to the AAR.
   #   proguard_configs: List of proguard configs to use in final apk step for
   #     any apk that depends on this library.
+  #   ignore_aidl: Whether to ignore .aidl files found with the .aar.
+  #   ignore_assets: Whether to ignore assets found in the .aar.
+  #   ignore_manifest: Whether to ignore merging of AndroidManifest.xml.
+  #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
   #   requires_android: Whether this target can only be used for compiling Android related targets.
   #
@@ -2601,9 +2605,14 @@ if (enable_java_templates) {
   #     aar_path = "foo.aar"
   #   }
   template("android_aar_prebuilt") {
-    assert(defined(invoker.aar_path))
     _output_path = "${target_gen_dir}/${target_name}"
     _unpack_target_name = "${target_name}__unpack_aar"
+    _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
+    _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
+    _ignore_manifest =
+        defined(invoker.ignore_manifest) && invoker.ignore_manifest
+    _ignore_native_libraries = defined(invoker.ignore_native_libraries) &&
+                               invoker.ignore_native_libraries
 
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
@@ -2615,6 +2624,24 @@ if (enable_java_templates) {
                       "--list",
                     ],
                     "scope")
+
+    assert(_ignore_aidl || _scanned_files.aidl == [],
+           "android_aar_prebuilt() aidl not yet supported." +
+               " Implement or use ignore_aidl = true." +
+               " http://crbug.com/644439")
+    assert(_ignore_assets || _scanned_files.assets == [],
+           "android_aar_prebuilt() assets not yet supported." +
+               " Implement or use ignore_assets = true." +
+               " http://crbug.com/643966")
+    assert(_ignore_native_libraries || !_scanned_files.has_native_libraries,
+           "android_aar_prebuilt() with .so files is not supported." +
+               " Use ignore_native_libraries = true to silence this error.")
+    assert(_ignore_manifest || _scanned_files.is_manifest_empty,
+           "android_aar_prebuilt() manifest merging not yet supported and" +
+               " non-trivial AndroidManifest.xml detected." +
+               " Implement or use ignore_manifest = true." +
+               " http://crbug.com/643967")
+    assert(_scanned_files.has_classes_jar || _scanned_files.subjars == [])
 
     action(_unpack_target_name) {
       script = "//build/android/gyp/aar.py"  # Unzips the AAR
@@ -2638,19 +2665,20 @@ if (enable_java_templates) {
                 rebase_path(_scanned_files.resources, "", _output_path),
                 "abspath")
       }
-      if (defined(_scanned_files.jars)) {
-        outputs +=
-            get_path_info(rebase_path(_scanned_files.jars, "", _output_path),
-                          "abspath")
+      if (_scanned_files.has_classes_jar) {
+        outputs += [ "${_output_path}/classes.jar" ]
+      }
+      outputs +=
+          get_path_info(rebase_path(_scanned_files.subjars, "", _output_path),
+                        "abspath")
+      if (_scanned_files.has_proguard_flags) {
+        outputs += [ "${_output_path}/proguard.txt" ]
       }
     }
-
-    _resource_targets = []
 
     # Create the android_resources target for resources.
     if (_scanned_files.resources != []) {
       _res_target_name = "${target_name}__res"
-      _resource_targets += [ ":$_res_target_name" ]
       android_resources(_res_target_name) {
         forward_variables_from(invoker, [ "deps" ])
         if (!defined(deps)) {
@@ -2667,14 +2695,32 @@ if (enable_java_templates) {
       }
     }
 
-    # Create android_java_prebuilt targets for jar files.
-    _jar_targets = []
-    _counter = 0
-    foreach(jar, _scanned_files.jars) {
-      _counter += 1
-      _current_target = "${target_name}__jar_$_counter"
-      _jar_targets += [ ":$_current_target" ]
+    # Create android_java_prebuilt target for extra jars within jars/.
+    _subjar_targets = []
+    foreach(_tuple, _scanned_files.subjar_tuples) {
+      _current_target = "${target_name}__subjar_${_tuple[0]}"
+      _subjar_targets += [ ":$_current_target" ]
       java_prebuilt(_current_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "jar_excluded_patterns",
+                                 "requires_android",
+                               ])
+        deps = [
+          ":$_unpack_target_name",
+        ]
+        if (!defined(requires_android)) {
+          requires_android = true
+        }
+        supports_android = true
+        jar_path = "$_output_path/${_tuple[1]}"
+      }
+    }
+
+    # Create android_java_prebuilt target for classes.jar.
+    if (_scanned_files.has_classes_jar) {
+      _jar_target_name = "${target_name}__classes"
+      java_prebuilt(_jar_target_name) {
         forward_variables_from(invoker,
                                [
                                  "deps",
@@ -2686,17 +2732,38 @@ if (enable_java_templates) {
         if (!defined(deps)) {
           deps = []
         }
-        deps += _resource_targets + [ ":$_unpack_target_name" ]
+        deps += _subjar_targets + [ ":$_unpack_target_name" ]
+        if (defined(_res_target_name)) {
+          deps += [ ":$_res_target_name" ]
+        }
         if (!defined(requires_android)) {
           requires_android = true
         }
         supports_android = true
-        jar_path = "${_output_path}/$jar"
+        jar_path = "$_output_path/classes.jar"
+
+        if (_scanned_files.has_proguard_flags) {
+          if (!defined(proguard_configs)) {
+            proguard_configs = []
+          }
+          proguard_configs += [ "$_output_path/proguard.txt" ]
+        }
       }
     }
 
     java_group(target_name) {
-      deps = _resource_targets + _jar_targets
+      deps = []
+      if (defined(_jar_target_name)) {
+        deps += [ ":$_jar_target_name" ]
+
+        # Although subjars are meant to be private, we add them as deps here
+        # because in practice they seem to contain classes required to be in the
+        # classpath.
+        deps += _subjar_targets
+      }
+      if (defined(_res_target_name)) {
+        deps += [ ":$_res_target_name" ]
+      }
     }
   }
 }

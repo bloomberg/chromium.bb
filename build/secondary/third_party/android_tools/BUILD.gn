@@ -65,6 +65,7 @@ android_java_prebuilt("android_support_annotations_java") {
 android_aar_prebuilt("android_support_v4_java") {
   lib_name = "support-v4"
   aar_path = "$lib_path/$lib_name/$lib_version/$lib_name-$lib_version.aar"
+  ignore_aidl = true  # We don't appear to need these currently.
 }
 
 android_aar_prebuilt("android_support_v13_java") {
