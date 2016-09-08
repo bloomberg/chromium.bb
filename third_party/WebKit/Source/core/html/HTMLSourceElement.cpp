@@ -81,10 +81,12 @@ HTMLSourceElement::~HTMLSourceElement()
 
 void HTMLSourceElement::createMediaQueryList(const AtomicString& media)
 {
-    if (media.isEmpty())
-        return;
-
     removeMediaQueryListListener();
+    if (media.isEmpty()) {
+        m_mediaQueryList = nullptr;
+        return;
+    }
+
     MediaQuerySet* set = MediaQuerySet::create(media);
     m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set);
     addMediaQueryListListener();
