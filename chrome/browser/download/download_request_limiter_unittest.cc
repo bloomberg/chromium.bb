@@ -239,12 +239,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     testing_delegate_.UpdateExpectations(action);
   }
 
-  void NavigateAndCommitWithParams(
-      content::NavigationController::LoadURLParams& params) {
-    controller().LoadURLWithParams(params);
-    content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
-  }
-
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
   // Number of times ContinueDownload was invoked.
@@ -364,12 +358,10 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
   // Set up a renderer-initiated navigation to the same host.
-  content::NavigationController::LoadURLParams load_params(
-      GURL("http://foo.com/bar2"));
-  load_params.is_renderer_initiated = true;
-  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  load_params.referrer = content::Referrer();
-  NavigateAndCommitWithParams(load_params);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  rfh_tester->NavigateAndCommitRendererInitiated(1, true,
+                                                 GURL("http://foo.com/bar2"));
   LoadCompleted();
 
   // The state should not be reset.
@@ -377,15 +369,13 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
   // Renderer-initiated nav to a different host shouldn't reset the state.
-  load_params.url = GURL("http://fooey.com/bar");
-  NavigateAndCommitWithParams(load_params);
+  rfh_tester->NavigateAndCommitRendererInitiated(2, true,
+                                                 GURL("http://fooey.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
   // Set up a subframe. Navigations in the subframe shouldn't reset the state.
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
@@ -406,14 +396,14 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
 
   // The state should not be reset on a renderer-initiated load to either the
   // same host or a different host, in either the main frame or the subframe.
-  load_params.url = GURL("http://fooeybar.com/bar");
-  NavigateAndCommitWithParams(load_params);
+  rfh_tester->NavigateAndCommitRendererInitiated(
+      3, true, GURL("http://fooeybar.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  load_params.url = GURL("http://foo.com/bar");
-  NavigateAndCommitWithParams(load_params);
+  rfh_tester->NavigateAndCommitRendererInitiated(4, true,
+                                                 GURL("http://foo.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
@@ -451,8 +441,10 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
 
   // The state should not be reset on a pending renderer-initiated load to
   // the same host.
-  load_params.url = GURL("http://foobar.com/bar");
-  NavigateAndCommitWithParams(load_params);
+  rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  rfh_tester->NavigateAndCommitRendererInitiated(5, true,
+                                                 GURL("http://foobar.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
             download_request_limiter_->GetDownloadStatus(web_contents()));
@@ -472,8 +464,8 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
 
   // But a pending load to a different host in the main frame should reset the
   // state.
-  load_params.url = GURL("http://foo.com");
-  NavigateAndCommitWithParams(load_params);
+  rfh_tester->NavigateAndCommitRendererInitiated(6, true,
+                                                 GURL("http://foo.com"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));

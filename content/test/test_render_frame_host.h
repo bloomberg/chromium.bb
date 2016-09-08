@@ -79,6 +79,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SetContentsMimeType(const std::string& mime_type) override;
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
+  void NavigateAndCommitRendererInitiated(int page_id,
+                                          bool did_create_new_entry,
+                                          const GURL& url) override;
 
   void SendNavigateWithReplacement(int page_id,
                                    int nav_entry_id,
@@ -96,11 +99,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const ModificationCallback& callback);
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params);
-
-  // Simulate a renderer-initiated navigation up until commit.
-  void NavigateAndCommitRendererInitiated(int page_id,
-                                          bool did_create_new_entry,
-                                          const GURL& url);
 
   // With the current navigation logic this method is a no-op.
   // PlzNavigate: this method simulates receiving a BeginNavigation IPC.

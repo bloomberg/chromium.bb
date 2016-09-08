@@ -127,6 +127,11 @@ class RenderFrameHostTester {
   // Simulates the SwapOut_ACK that fires if you commit a cross-site
   // navigation without making any network requests.
   virtual void SimulateSwapOutACK() = 0;
+
+  // Simulate a renderer-initiated navigation up until commit.
+  virtual void NavigateAndCommitRendererInitiated(int page_id,
+                                                  bool did_create_new_entry,
+                                                  const GURL& url) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.

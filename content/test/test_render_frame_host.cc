@@ -231,6 +231,22 @@ void TestRenderFrameHost::SimulateSwapOutACK() {
   OnSwappedOut();
 }
 
+void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
+    int page_id,
+    bool did_create_new_entry,
+    const GURL& url) {
+  SendRendererInitiatedNavigationRequest(url, false);
+  // PlzNavigate: If no network request is needed by the navigation, then there
+  // will be no NavigationRequest, nor is it necessary to simulate the network
+  // stack commit.
+  if (frame_tree_node()->navigation_request())
+    PrepareForCommit();
+  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
+  CHECK(!browser_side_navigation || is_loading());
+  CHECK(!browser_side_navigation || !frame_tree_node()->navigation_request());
+  SendNavigate(page_id, 0, did_create_new_entry, url);
+}
+
 void TestRenderFrameHost::SendNavigate(int page_id,
                                        int nav_entry_id,
                                        bool did_create_new_entry,
@@ -363,22 +379,6 @@ void TestRenderFrameHost::SendNavigateWithParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
   FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), *params);
   OnDidCommitProvisionalLoad(msg);
-}
-
-void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
-    int page_id,
-    bool did_create_new_entry,
-    const GURL& url) {
-  SendRendererInitiatedNavigationRequest(url, false);
-  // PlzNavigate: If no network request is needed by the navigation, then there
-  // will be no NavigationRequest, nor is it necessary to simulate the network
-  // stack commit.
-  if (frame_tree_node()->navigation_request())
-    PrepareForCommit();
-  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
-  CHECK(!browser_side_navigation || is_loading());
-  CHECK(!browser_side_navigation || !frame_tree_node()->navigation_request());
-  SendNavigate(page_id, 0, did_create_new_entry, url);
 }
 
 void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
