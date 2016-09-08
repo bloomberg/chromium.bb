@@ -525,7 +525,7 @@ const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString cu
     const ComputedStyle* style = computeComputedStyle();
     if (!style)
         return nullptr;
-    return ComputedStyleCSSValueMapping::get(customPropertyName, *style);
+    return ComputedStyleCSSValueMapping::get(customPropertyName, *style, styledNode->document().propertyRegistry());
 }
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> CSSComputedStyleDeclaration::getVariables() const

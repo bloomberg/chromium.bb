@@ -1562,13 +1562,13 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
     applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
     // TODO(leviw): stop recalculating every time
-    CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
+    CSSVariableResolver::resolveVariableDefinitions(state);
 
     if (RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
         if (cacheCustomPropertiesForApplyAtRules(state, matchResult.authorRules())) {
             applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
             applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
-            CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
+            CSSVariableResolver::resolveVariableDefinitions(state);
         }
     }
 

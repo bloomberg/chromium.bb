@@ -5,6 +5,7 @@
 #ifndef StyleVariableData_h
 #define StyleVariableData_h
 
+#include "core/css/CSSValue.h"
 #include "core/css/CSSVariableData.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -24,7 +25,10 @@ public:
 
     void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }
     CSSVariableData* getVariable(const AtomicString& name) const;
-    void removeVariable(const AtomicString& name) { return setVariable(name, nullptr); }
+    void removeVariable(const AtomicString&);
+
+    void setRegisteredInheritedProperty(const AtomicString&, const CSSValue*);
+    CSSValue* registeredInheritedProperty(const AtomicString& name) const { return m_registeredData.get(name); }
 
     // This map will contain null pointers if variables are invalid due to
     // cycles or referencing invalid variables without using a fallback.
@@ -39,6 +43,7 @@ private:
     friend class CSSVariableResolver;
 
     HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
+    HashMap<AtomicString, Persistent<CSSValue>> m_registeredData;
     RefPtr<StyleVariableData> m_root;
 };
 

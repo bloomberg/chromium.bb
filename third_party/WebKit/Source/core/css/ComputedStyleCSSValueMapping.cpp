@@ -53,6 +53,7 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
+#include "core/css/PropertyRegistry.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
@@ -1633,9 +1634,21 @@ static EBreak mapToColumnBreakValue(EBreak genericBreakValue)
     }
 }
 
-const CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
+const CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style, const PropertyRegistry* registry)
 {
     StyleVariableData* variables = style.variables();
+    if (registry) {
+        const PropertyRegistry::Registration* registration = registry->registration(customPropertyName);
+        if (registration) {
+            if (variables) {
+                const CSSValue* result = variables->registeredInheritedProperty(customPropertyName);
+                if (result)
+                    return result;
+            }
+            return registration->initial();
+        }
+    }
+
     if (!variables)
         return nullptr;
 

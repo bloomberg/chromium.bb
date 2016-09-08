@@ -36,6 +36,7 @@ StyleVariableData::StyleVariableData(StyleVariableData& other)
         m_root = &other;
     } else {
         m_data = other.m_data;
+        m_registeredData = other.m_registeredData;
         m_root = other.m_root;
     }
 }
@@ -48,6 +49,19 @@ CSSVariableData* StyleVariableData::getVariable(const AtomicString& name) const
     if (result == m_data.end())
         return nullptr;
     return result->value.get();
+}
+
+void StyleVariableData::setRegisteredInheritedProperty(const AtomicString& name, const CSSValue* parsedValue)
+{
+    m_registeredData.set(name, const_cast<CSSValue*>(parsedValue));
+}
+
+void StyleVariableData::removeVariable(const AtomicString& name)
+{
+    m_data.set(name, nullptr);
+    auto iterator = m_registeredData.find(name);
+    if (iterator != m_registeredData.end())
+        iterator->value = nullptr;
 }
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> StyleVariableData::getVariables() const

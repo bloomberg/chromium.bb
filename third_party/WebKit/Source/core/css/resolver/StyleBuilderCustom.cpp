@@ -51,6 +51,8 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "core/css/PropertyRegistration.h"
+#include "core/css/PropertyRegistry.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/CSSVariableResolver.h"
@@ -798,25 +800,49 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleReso
 void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& state, const CSSValue& value)
 {
     const CSSCustomPropertyDeclaration& declaration = toCSSCustomPropertyDeclaration(value);
+    const AtomicString& name = declaration.name();
+    const PropertyRegistry::Registration* registration = nullptr;
+    const PropertyRegistry* registry = state.document().propertyRegistry();
+    if (registry)
+        registration = registry->registration(name);
+
     switch (declaration.id()) {
     case CSSValueInitial:
-        state.style()->removeVariable(declaration.name());
+        state.style()->removeVariable(name);
         break;
 
     case CSSValueUnset:
     case CSSValueInherit: {
-        state.style()->removeVariable(declaration.name());
+        state.style()->removeVariable(name);
         StyleVariableData* parentVariables = state.parentStyle()->variables();
         if (!parentVariables)
             return;
-        CSSVariableData* value = parentVariables->getVariable(declaration.name());
+        CSSVariableData* value = parentVariables->getVariable(name);
         if (!value)
             return;
-        state.style()->setVariable(declaration.name(), value);
+        state.style()->setVariable(name, value);
+        if (registration)
+            state.style()->setRegisteredInheritedProperty(name, parentVariables->registeredInheritedProperty(name));
         break;
     }
     case CSSValueInternalVariableValue:
-        state.style()->setVariable(declaration.name(), declaration.value());
+        if (registration) {
+            if (declaration.value()->needsVariableResolution()) {
+                state.style()->setVariable(name, declaration.value());
+                return;
+            }
+            const CSSValue* parsedValue = declaration.value()->parseForSyntax(registration->syntax());
+            if (!parsedValue) {
+                state.style()->setVariable(name, nullptr);
+                state.style()->setRegisteredInheritedProperty(name, nullptr);
+                return;
+            }
+            parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(state, *parsedValue);
+            state.style()->setVariable(name, declaration.value());
+            state.style()->setRegisteredInheritedProperty(name, parsedValue);
+            return;
+        }
+        state.style()->setVariable(name, declaration.value());
         break;
     default:
         NOTREACHED();

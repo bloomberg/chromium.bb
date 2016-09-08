@@ -69,6 +69,7 @@ CSSSnapSize status=experimental
 CSSStickyPosition status=experimental
 CSSTouchActionPanDirections status=experimental
 CSSTypedOM status=experimental
+CSSVariables2 status=experimental
 CSSViewport status=experimental
 CSSScrollSnapPoints status=test
 CustomElementsV1 status=stable

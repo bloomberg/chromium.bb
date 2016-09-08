@@ -1460,6 +1460,19 @@ void ComputedStyle::setVariable(const AtomicString& name, PassRefPtr<CSSVariable
     variables->setVariable(name, std::move(value));
 }
 
+void ComputedStyle::setRegisteredInheritedProperty(const AtomicString& name, const CSSValue* parsedValue)
+{
+    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
+    // The CSSVariableData needs to be set before calling this function
+    DCHECK(variables);
+    DCHECK(!!parsedValue == !!variables->getVariable(name));
+    DCHECK(!(variables->getVariable(name) && variables->getVariable(name)->needsVariableResolution()));
+
+    if (!variables->hasOneRef())
+        variables = variables->copy();
+    variables->setRegisteredInheritedProperty(name, parsedValue);
+}
+
 void ComputedStyle::removeVariable(const AtomicString& name)
 {
     RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;

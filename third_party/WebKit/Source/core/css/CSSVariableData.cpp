@@ -4,6 +4,7 @@
 
 #include "core/css/CSSVariableData.h"
 
+#include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "wtf/text/StringBuilder.h"
@@ -65,6 +66,12 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range, bool needsVar
 {
     ASSERT(!range.atEnd());
     consumeAndUpdateTokens(range);
+}
+
+const CSSValue* CSSVariableData::parseForSyntax(const CSSSyntaxDescriptor& syntax) const
+{
+    DCHECK(!needsVariableResolution());
+    return syntax.parse(tokenRange());
 }
 
 } // namespace blink

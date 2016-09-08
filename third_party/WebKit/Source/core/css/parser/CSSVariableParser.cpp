@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSVariableParser.h"
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 
 namespace blink {
@@ -135,6 +136,23 @@ CSSCustomPropertyDeclaration* CSSVariableParser::parseDeclarationValue(const Ato
     if (type == CSSValueInternalVariableValue)
         return CSSCustomPropertyDeclaration::create(variableName, CSSVariableData::create(range, hasReferences || hasAtApplyRule));
     return CSSCustomPropertyDeclaration::create(variableName, type);
+}
+
+CSSVariableReferenceValue* CSSVariableParser::parseRegisteredPropertyValue(CSSParserTokenRange range, bool requireVarReference)
+{
+    if (range.atEnd())
+        return nullptr;
+
+    bool hasReferences;
+    bool hasAtApplyRule;
+    CSSValueID type = classifyVariableRange(range, hasReferences, hasAtApplyRule);
+
+    if (type != CSSValueInternalVariableValue)
+        return nullptr; // Invalid or a css-wide keyword
+    if (requireVarReference && !hasReferences)
+        return nullptr;
+    // TODO(timloh): Should this be hasReferences || hasAtApplyRule?
+    return CSSVariableReferenceValue::create(CSSVariableData::create(range, hasReferences));
 }
 
 } // namespace blink

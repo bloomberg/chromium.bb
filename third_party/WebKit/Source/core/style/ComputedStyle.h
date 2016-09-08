@@ -1760,6 +1760,9 @@ public:
     void setHasVariableReferenceFromNonInheritedProperty() { m_nonInheritedData.m_variableReference = true; }
     bool hasVariableReferenceFromNonInheritedProperty() const { return m_nonInheritedData.m_variableReference; }
 
+    // Call these after setting the CSSVariableData
+    void setRegisteredInheritedProperty(const AtomicString&, const CSSValue*);
+
     // Animations.
     CSSAnimationData& accessAnimations();
     const CSSAnimationData* animations() const { return m_rareNonInheritedData->m_animations.get(); }

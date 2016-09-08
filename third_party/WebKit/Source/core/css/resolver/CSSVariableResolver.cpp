@@ -12,10 +12,12 @@
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "core/css/PropertyRegistry.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/StyleVariableData.h"
 #include "wtf/Vector.h"
@@ -33,6 +35,8 @@ bool CSSVariableResolver::resolveFallback(CSSParserTokenRange range, Vector<CSSP
 
 CSSVariableData* CSSVariableResolver::valueForCustomProperty(AtomicString name)
 {
+    // TODO(timloh): Registered properties shouldn't return nullptr in failure
+    // cases (aside from cycles?), but instead return the initial/inherited value.
     if (m_variablesSeen.contains(name)) {
         m_cycleStartPoints.add(name);
         return nullptr;
@@ -46,6 +50,25 @@ CSSVariableData* CSSVariableResolver::valueForCustomProperty(AtomicString name)
     if (!variableData->needsVariableResolution())
         return variableData;
     RefPtr<CSSVariableData> newVariableData = resolveCustomProperty(name, *variableData);
+
+    DCHECK(m_registry || !RuntimeEnabledFeatures::cssVariables2Enabled());
+    if (m_registry) {
+        const PropertyRegistry::Registration* registration = m_registry->registration(name);
+        if (registration) {
+            const CSSValue* parsedValue = nullptr;
+            if (newVariableData) {
+                parsedValue = newVariableData->parseForSyntax(registration->syntax());
+                if (parsedValue)
+                    parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(m_styleResolverState, *parsedValue);
+                else
+                    newVariableData = nullptr;
+            }
+            m_styleVariableData->setVariable(name, newVariableData);
+            m_styleVariableData->setRegisteredInheritedProperty(name, parsedValue);
+            return newVariableData.get();
+        }
+    }
+
     m_styleVariableData->setVariable(name, newVariableData);
     return newVariableData.get();
 }
@@ -134,7 +157,7 @@ const CSSValue* CSSVariableResolver::resolveVariableReferences(const StyleResolv
 {
     ASSERT(!isShorthandProperty(id));
 
-    CSSVariableResolver resolver(state.style()->variables());
+    CSSVariableResolver resolver(state);
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
         return CSSUnsetValue::create();
@@ -155,7 +178,7 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(StyleResolverSt
         CSSVariableReferenceValue* shorthandValue = pendingValue.shorthandValue();
         CSSPropertyID shorthandPropertyId = pendingValue.shorthandPropertyId();
 
-        CSSVariableResolver resolver(state.style()->variables());
+        CSSVariableResolver resolver(state);
 
         Vector<CSSParserToken> tokens;
         if (resolver.resolveTokenRange(shorthandValue->variableDataValue()->tokens(), tokens)) {
@@ -180,21 +203,24 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(StyleResolverSt
 }
 
 
-void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variables)
+void CSSVariableResolver::resolveVariableDefinitions(const StyleResolverState& state)
 {
+    StyleVariableData* variables = state.style()->variables();
     if (!variables)
         return;
 
-    CSSVariableResolver resolver(variables);
-    for (auto& variable : variables->m_data) {
-        if (variable.value && variable.value->needsVariableResolution())
-            variable.value = resolver.resolveCustomProperty(variable.key, *variable.value);
-    }
+    CSSVariableResolver resolver(state);
+    for (auto& variable : variables->m_data)
+        resolver.valueForCustomProperty(variable.key);
 }
 
-CSSVariableResolver::CSSVariableResolver(StyleVariableData* styleVariableData)
-    : m_styleVariableData(styleVariableData)
+CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
+    : m_styleResolverState(state)
+    , m_styleVariableData(state.style()->variables())
+    , m_registry(state.document().propertyRegistry())
 {
 }
+
+DEFINE_TRACE(CSSVariableResolver) { visitor->trace(m_registry); }
 
 } // namespace blink

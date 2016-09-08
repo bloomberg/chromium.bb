@@ -408,7 +408,9 @@ interface CDATASection : Text
     method constructor
 interface CSS
     static method escape
+    static method registerProperty
     static method supports
+    static method unregisterProperty
     attribute @@toStringTag
     method constructor
 interface CSSAngleValue : CSSStyleValue

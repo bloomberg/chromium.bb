@@ -1101,4 +1101,10 @@ PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(StyleResolverStat
     return nullptr;
 }
 
+const CSSValue& StyleBuilderConverter::convertRegisteredPropertyValue(const StyleResolverState& state, const CSSValue& value)
+{
+    // TODO(timloh): Resolve ems, etc.
+    return value;
+}
+
 } // namespace blink

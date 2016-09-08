@@ -15,6 +15,7 @@
 namespace blink {
 
 class CSSParserTokenRange;
+class CSSSyntaxDescriptor;
 
 class CSSVariableData : public RefCounted<CSSVariableData> {
     WTF_MAKE_NONCOPYABLE(CSSVariableData);
@@ -30,13 +31,15 @@ public:
         return adoptRef(new CSSVariableData(resolvedTokens, unresolvedData.m_backingString));
     }
 
-    CSSParserTokenRange tokenRange() { return m_tokens; }
+    CSSParserTokenRange tokenRange() const { return m_tokens; }
 
     const Vector<CSSParserToken>& tokens() const { return m_tokens; }
 
     bool operator==(const CSSVariableData& other) const;
 
     bool needsVariableResolution() const { return m_needsVariableResolution; }
+
+    const CSSValue* parseForSyntax(const CSSSyntaxDescriptor&) const;
 
     StylePropertySet* propertySet();
 

@@ -53,6 +53,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/MediaQueryMatcher.h"
+#include "core/css/PropertyRegistry.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
@@ -5974,6 +5975,14 @@ LayoutViewItem Document::layoutViewItem() const
     return LayoutViewItem(m_layoutView);
 }
 
+PropertyRegistry* Document::propertyRegistry()
+{
+    // TODO(timloh): When the flag is removed, return a reference instead.
+    if (!m_propertyRegistry && RuntimeEnabledFeatures::cssVariables2Enabled())
+        m_propertyRegistry = PropertyRegistry::create();
+    return m_propertyRegistry;
+}
+
 DEFINE_TRACE(Document)
 {
     visitor->trace(m_importsController);
@@ -6031,6 +6040,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_intersectionObserverData);
     visitor->trace(m_snapCoordinator);
     visitor->trace(m_resizeObserverController);
+    visitor->trace(m_propertyRegistry);
     Supplementable<Document>::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);

@@ -22,6 +22,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/css/FontFaceSetLoadEventInit.h",
   "$blink_core_output_dir/css/MediaQueryListEventInit.cpp",
   "$blink_core_output_dir/css/MediaQueryListEventInit.h",
+  "$blink_core_output_dir/css/PropertyDescriptor.cpp",
+  "$blink_core_output_dir/css/PropertyDescriptor.h",
   "$blink_core_output_dir/css/cssom/CSSCalcDictionary.cpp",
   "$blink_core_output_dir/css/cssom/CSSCalcDictionary.h",
   "$blink_core_output_dir/dom/DOMPointInit.cpp",

@@ -140,6 +140,7 @@ class OriginAccessEntry;
 class Page;
 class PlatformMouseEvent;
 class ProcessingInstruction;
+class PropertyRegistry;
 class QualifiedName;
 class Range;
 class ResizeObserverController;
@@ -1105,6 +1106,8 @@ public:
 
     void onVisibilityMaybeChanged(bool visible);
 
+    PropertyRegistry* propertyRegistry();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1429,6 +1432,8 @@ private:
     Member<SnapCoordinator> m_snapCoordinator;
 
     bool m_visibilityWasLogged;
+
+    Member<PropertyRegistry> m_propertyRegistry;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

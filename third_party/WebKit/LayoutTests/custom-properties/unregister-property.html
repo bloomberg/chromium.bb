@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+test(function() {
+    var reregisterError = {name: 'InvalidModificationError'};
+    var unregisterError = {name: 'NotFoundError'};
+    CSS.registerProperty({name: '--property'});
+    assert_throws(reregisterError, () => CSS.registerProperty({name: '--property'}));
+    assert_throws(unregisterError, () => CSS.unregisterProperty({name: '--property2'}));
+
+    CSS.registerProperty({name: '--property2', syntax: '<length>', initialValue: '5px'});
+    assert_throws(reregisterError, () => CSS.registerProperty({name: '--property2'}));
+    assert_throws(reregisterError, () => CSS.registerProperty({name: '--property'}));
+
+    CSS.unregisterProperty('--property');
+    assert_throws(unregisterError, () => CSS.unregisterProperty({name: '--property'}));
+    assert_throws(reregisterError, () => CSS.registerProperty({name: '--property2'}));
+    CSS.registerProperty({name: '--property'});
+    assert_throws(reregisterError, () => CSS.registerProperty({name: '--property'}));
+
+    CSS.unregisterProperty('--property2');
+    assert_throws(unregisterError, () => CSS.unregisterProperty({name: '--property2'}));
+}, "Registration state is correctly managed and correct errors are thrown");
+</script>

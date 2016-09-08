@@ -121,6 +121,8 @@ public:
     static StyleMotionRotation convertMotionRotation(const CSSValue&);
     template <CSSValueID cssValueFor0, CSSValueID cssValueFor100> static Length convertPositionLength(StyleResolverState&, const CSSValue&);
     static Rotation convertRotation(const CSSValue&);
+
+    static const CSSValue& convertRegisteredPropertyValue(const StyleResolverState&, const CSSValue&);
 };
 
 template <typename T>

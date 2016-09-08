@@ -33,6 +33,8 @@ extern const char Language[];
 extern const char LinkColorChange[];
 extern const char PlatformColorChange[];
 extern const char PropagateInheritChangeToDistributedNodes[];
+extern const char PropertyRegistration[];
+extern const char PropertyUnregistration[];
 extern const char PseudoClass[];
 extern const char SVGContainerSizeChange[];
 extern const char SVGCursor[];
