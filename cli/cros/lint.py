@@ -393,7 +393,8 @@ class SourceChecker(BaseChecker):
   priority = -1
   MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
   msgs = {
-      'R9200': ('Shebang should be #!/usr/bin/python2 or #!/usr/bin/python3',
+      'R9200': ('Shebang should be #!/usr/bin/env python2 or '
+                '#!/usr/bin/env python3',
                 ('bad-shebang'), _MessageR9200),
       'R9201': ('Shebang is missing, but file is executable',
                 ('missing-shebang'), _MessageR9201),
@@ -428,8 +429,8 @@ class SourceChecker(BaseChecker):
     elif not executable:
       self.add_message('R9202')
 
-    parts = shebang.split()
-    if parts[0] not in ('#!/usr/bin/python2', '#!/usr/bin/python3'):
+    if shebang.strip() not in (
+        '#!/usr/bin/env python2', '#!/usr/bin/env python3'):
       self.add_message('R9200')
 
   def _check_module_name(self, node):

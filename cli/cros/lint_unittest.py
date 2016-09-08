@@ -382,7 +382,9 @@ class SourceCheckerTest(CheckerTestCase):
     shebangs = (
         '#!/usr/bin/python\n',
         '#! /usr/bin/python2 \n',
-        '#!/usr/bin/env python3\n',
+        '#!/usr/bin/env python\n',
+        '#! /usr/bin/env python2 \n',
+        '#!/usr/bin/python2\n',
     )
     with open('/dev/null') as f:
       self._testShebang(shebangs, 2, f.fileno())
@@ -390,10 +392,9 @@ class SourceCheckerTest(CheckerTestCase):
   def testGoodShebang(self):
     """Verify _check_shebang accepts good shebangs"""
     shebangs = (
-        '#!/usr/bin/python2\n',
-        '#!/usr/bin/python2  \n',
-        '#!/usr/bin/python3\n',
-        '#!/usr/bin/python3\t\n',
+        '#!/usr/bin/env python2\n',
+        '#!/usr/bin/env python3\n',
+        '#!/usr/bin/env python2\t\n',
     )
     with open('/bin/sh') as f:
       self._testShebang(shebangs, 0, f.fileno())
