@@ -45,7 +45,8 @@ class CommandBufferServiceTest : public testing::Test {
 
   int32_t GetError() { return command_buffer_->GetLastState().error; }
 
-  bool Initialize(size_t size) {
+  bool Initialize(size_t entries) {
+    size_t size = entries * sizeof(CommandBufferEntry);
     int32_t id;
     command_buffer_->CreateTransferBuffer(size, &id);
     EXPECT_GT(id, 0);

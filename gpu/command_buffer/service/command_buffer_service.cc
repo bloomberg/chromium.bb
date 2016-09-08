@@ -87,7 +87,7 @@ void CommandBufferService::WaitForGetOffsetInRange(int32_t start, int32_t end) {
 }
 
 void CommandBufferService::Flush(int32_t put_offset) {
-  if (put_offset < 0 || put_offset > num_entries_) {
+  if (put_offset < 0 || put_offset >= num_entries_) {
     error_ = gpu::error::kOutOfBounds;
     return;
   }
