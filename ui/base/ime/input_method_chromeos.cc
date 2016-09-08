@@ -231,15 +231,6 @@ void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
     ResetContext();
 }
 
-void InputMethodChromeOS::OnInputLocaleChanged() {
-  // Not supported.
-}
-
-std::string InputMethodChromeOS::GetInputLocale() {
-  // Not supported.
-  return "";
-}
-
 bool InputMethodChromeOS::IsCandidatePopupOpen() const {
   // TODO(yukishiino): Implement this method.
   return false;

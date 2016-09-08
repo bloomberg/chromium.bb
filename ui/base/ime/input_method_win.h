@@ -31,7 +31,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   void OnInputLocaleChanged() override;
-  std::string GetInputLocale() override;
+  bool IsInputLocaleCJK() const override;
   bool IsCandidatePopupOpen() const override;
 
  protected:

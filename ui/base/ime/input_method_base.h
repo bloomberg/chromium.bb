@@ -47,6 +47,8 @@ class UI_BASE_IME_EXPORT InputMethodBase
   // If a derived class overrides this method, it should call parent's
   // implementation.
   void OnTextInputTypeChanged(const TextInputClient* client) override;
+  void OnInputLocaleChanged() override;
+  bool IsInputLocaleCJK() const override;
 
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;

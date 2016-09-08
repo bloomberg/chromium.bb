@@ -125,9 +125,9 @@ class InputMethod {
   // TODO(ime): Consider to take a parameter of TextInputClient.
   virtual void OnInputLocaleChanged() = 0;
 
-  // Returns the locale of current keyboard layout or input method, as a BCP-47
-  // tag, or an empty string if the input method cannot provide it.
-  virtual std::string GetInputLocale() = 0;
+  // Returns whether the system input locale is in CJK languages.
+  // This is only used in Windows platforms.
+  virtual bool IsInputLocaleCJK() const = 0;
 
   // TODO(yoichio): Following 3 methods(GetTextInputType, GetTextInputMode and
   // CanComposeInline) calls client's same method and returns its value. It is

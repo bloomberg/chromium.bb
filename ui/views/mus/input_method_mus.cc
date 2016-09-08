@@ -102,12 +102,6 @@ void InputMethodMus::OnInputLocaleChanged() {
   // whether we want to support this or not.
 }
 
-std::string InputMethodMus::GetInputLocale() {
-  // TODO(moshayedi): crbug.com/637418. Not supported in ChromeOS. Investigate
-  // whether we want to support this or not.
-  return std::string();
-}
-
 bool InputMethodMus::IsCandidatePopupOpen() const {
   // TODO(moshayedi): crbug.com/637416. Implement this properly when we have a
   // mean for displaying candidate list popup.

@@ -267,12 +267,18 @@ void InputMethodWin::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
-  // Note: OnInputLocaleChanged() is for crbug.com/168971.
+  // Note: OnInputLocaleChanged() is for capturing the input language which can
+  // be used to determine the appropriate TextInputType for Omnibox.
+  // See crbug.com/344834.
+  // Currently OnInputLocaleChanged() on Windows relies on WM_INPUTLANGCHANGED,
+  // which is known to be incompatible with TSF.
+  // TODO(shuchen): Use ITfLanguageProfileNotifySink instead.
   OnInputMethodChanged();
+  imm32_manager_.SetInputLanguage();
 }
 
-std::string InputMethodWin::GetInputLocale() {
-  return imm32_manager_.GetInputLanguageName();
+bool InputMethodWin::IsInputLocaleCJK() const {
+  return imm32_manager_.IsInputLanguageCJK();
 }
 
 bool InputMethodWin::IsCandidatePopupOpen() const {

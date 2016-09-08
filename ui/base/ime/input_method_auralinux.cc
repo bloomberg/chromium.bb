@@ -320,13 +320,6 @@ void InputMethodAuraLinux::ResetContext() {
   composition_changed_ = false;
 }
 
-void InputMethodAuraLinux::OnInputLocaleChanged() {
-}
-
-std::string InputMethodAuraLinux::GetInputLocale() {
-  return "";
-}
-
 bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
   // There seems no way to detect candidate windows or any popups.
   return false;

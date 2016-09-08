@@ -39,7 +39,6 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void CancelComposition(const ui::TextInputClient* client) override;
   void OnInputLocaleChanged() override;
-  std::string GetInputLocale() override;
   bool IsCandidatePopupOpen() const override;
 
  private:

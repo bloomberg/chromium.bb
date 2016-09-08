@@ -344,11 +344,6 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
 // Tests public APIs in ui::InputMethod first.
 
-TEST_F(InputMethodChromeOSTest, GetInputLocale) {
-  // ui::InputMethodChromeOS does not support the API.
-  EXPECT_EQ("", ime_->GetInputLocale());
-}
-
 TEST_F(InputMethodChromeOSTest, GetInputTextType) {
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;

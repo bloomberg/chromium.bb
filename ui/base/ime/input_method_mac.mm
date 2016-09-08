@@ -29,13 +29,6 @@ void InputMethodMac::OnCaretBoundsChanged(const TextInputClient* client) {
 void InputMethodMac::CancelComposition(const TextInputClient* client) {
 }
 
-void InputMethodMac::OnInputLocaleChanged() {
-}
-
-std::string InputMethodMac::GetInputLocale() {
-  return "";
-}
-
 bool InputMethodMac::IsCandidatePopupOpen() const {
   // There seems to be no way to tell if a candidate window is open.
   return false;

@@ -65,6 +65,13 @@ void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   NotifyTextInputStateChanged(client);
 }
 
+void InputMethodBase::OnInputLocaleChanged() {
+}
+
+bool InputMethodBase::IsInputLocaleCJK() const {
+  return false;
+}
+
 TextInputType InputMethodBase::GetTextInputType() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;

@@ -23,8 +23,6 @@ class UI_BASE_IME_EXPORT InputMethodMinimal : public InputMethodBase {
   void DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
-  void OnInputLocaleChanged() override;
-  std::string GetInputLocale() override;
   bool IsCandidatePopupOpen() const override;
 
  private:

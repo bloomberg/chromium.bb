@@ -49,12 +49,6 @@ void InputMethodMinimal::OnCaretBoundsChanged(const TextInputClient* client) {}
 
 void InputMethodMinimal::CancelComposition(const TextInputClient* client) {}
 
-void InputMethodMinimal::OnInputLocaleChanged() {}
-
-std::string InputMethodMinimal::GetInputLocale() {
-  return std::string();
-}
-
 bool InputMethodMinimal::IsCandidatePopupOpen() const {
   return false;
 }

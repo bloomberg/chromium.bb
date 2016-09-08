@@ -80,8 +80,8 @@ void MockInputMethod::CancelComposition(const TextInputClient* client) {
 void MockInputMethod::OnInputLocaleChanged() {
 }
 
-std::string MockInputMethod::GetInputLocale() {
-  return "";
+bool MockInputMethod::IsInputLocaleCJK() const {
+  return false;
 }
 
 TextInputType MockInputMethod::GetTextInputType() const {

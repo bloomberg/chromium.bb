@@ -49,12 +49,6 @@ void InputMethodAndroid::CancelComposition(
     const ui::TextInputClient* client) {
 }
 
-void InputMethodAndroid::OnInputLocaleChanged() {}
-
-std::string InputMethodAndroid::GetInputLocale() {
-  return "";
-}
-
 bool InputMethodAndroid::IsCandidatePopupOpen() const {
   return false;
 }

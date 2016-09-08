@@ -101,30 +101,6 @@ OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
 OmniboxState::~OmniboxState() {
 }
 
-
-// Helpers --------------------------------------------------------------------
-
-// We'd like to set the text input type to TEXT_INPUT_TYPE_URL, because this
-// triggers URL-specific layout in software keyboards, e.g. adding top-level "/"
-// and ".com" keys for English.  However, this also causes IMEs to default to
-// Latin character mode, which makes entering search queries difficult for IME
-// users.  Therefore, we try to guess whether an IME will be used based on the
-// application language, and set the input type accordingly.
-ui::TextInputType DetermineTextInputType() {
-#if defined(OS_WIN)
-  DCHECK(g_browser_process);
-  const std::string& locale = g_browser_process->GetApplicationLocale();
-  const std::string& language = locale.substr(0, 2);
-  // Assume CJK + Thai users are using an IME.
-  if (language == "ja" ||
-      language == "ko" ||
-      language == "th" ||
-      language == "zh")
-    return ui::TEXT_INPUT_TYPE_SEARCH;
-#endif
-  return ui::TEXT_INPUT_TYPE_URL;
-}
-
 }  // namespace
 
 
@@ -171,7 +147,7 @@ OmniboxViewViews::~OmniboxViewViews() {
 
 void OmniboxViewViews::Init() {
   set_controller(this);
-  SetTextInputType(DetermineTextInputType());
+  SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
 
   if (popup_window_mode_)
     SetReadOnly(true);
@@ -371,6 +347,26 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       return;
   }
 }
+
+ui::TextInputType OmniboxViewViews::GetTextInputType() const {
+  ui::TextInputType input_type = views::Textfield::GetTextInputType();
+  // We'd like to set the text input type to TEXT_INPUT_TYPE_URL, because this
+  // triggers URL-specific layout in software keyboards, e.g. adding top-level
+  // "/" and ".com" keys for English.  However, this also causes IMEs to default
+  // to Latin character mode, which makes entering search queries difficult for
+  // IME users. Therefore, we try to guess whether an IME will be used based on
+  // the input language, and set the input type accordingly.
+#if defined(OS_WIN)
+  if (input_type != ui::TEXT_INPUT_TYPE_NONE && location_bar_view_) {
+    ui::InputMethod* input_method =
+        location_bar_view_->GetWidget()->GetInputMethod();
+    if (input_method && input_method->IsInputLocaleCJK())
+      return ui::TEXT_INPUT_TYPE_SEARCH;
+  }
+#endif
+  return input_type;
+}
+
 
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {

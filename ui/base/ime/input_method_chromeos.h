@@ -34,8 +34,6 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
-  void OnInputLocaleChanged() override;
-  std::string GetInputLocale() override;
   bool IsCandidatePopupOpen() const override;
 
  protected:

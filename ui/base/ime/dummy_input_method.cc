@@ -52,8 +52,8 @@ void DummyInputMethod::CancelComposition(const TextInputClient* client) {
 void DummyInputMethod::OnInputLocaleChanged() {
 }
 
-std::string DummyInputMethod::GetInputLocale() {
-  return std::string();
+bool DummyInputMethod::IsInputLocaleCJK() const {
+  return false;
 }
 
 TextInputType DummyInputMethod::GetTextInputType() const {
