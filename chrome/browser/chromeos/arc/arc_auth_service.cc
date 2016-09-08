@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/arc/arc_android_management_checker.h"
+#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -598,6 +599,7 @@ void ArcAuthService::ShutdownBridge() {
   playstore_launcher_.reset();
   auth_callback_.Reset();
   android_management_checker_.reset();
+  auth_code_fetcher_.reset();
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
     SetState(State::STOPPED);
@@ -791,6 +793,19 @@ void ArcAuthService::OnPrepareContextFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
+void ArcAuthService::OnAuthCodeSuccess(const std::string& auth_code) {
+  SetAuthCodeAndStartArc(auth_code);
+}
+
+void ArcAuthService::OnAuthCodeFailed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::FETCHING_CODE);
+  ShutdownBridgeAndShowUI(
+      UIPage::ERROR,
+      l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
+  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
+}
+
 void ArcAuthService::CheckAndroidManagement(bool background_mode) {
   // Do not send requests for Chrome OS managed users.
   if (IsAccountManaged(profile_)) {
@@ -840,13 +855,28 @@ void ArcAuthService::OnAndroidManagementChecked(
 }
 
 void ArcAuthService::StartArcIfSignedIn() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (state_ == State::ACTIVE)
     return;
+
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
       IsOptInVerificationDisabled()) {
     StartArc();
   } else {
-    ShowUI(UIPage::LSO_PROGRESS, base::string16());
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    std::string auth_endpoint;
+    if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
+      auth_endpoint = command_line->GetSwitchValueASCII(
+          chromeos::switches::kArcUseAuthEndpoint);
+    }
+
+    if (!auth_endpoint.empty()) {
+      auth_code_fetcher_.reset(new ArcAuthCodeFetcher(
+          this, context_->GetURLRequestContext(), profile_, auth_endpoint));
+    } else {
+      ShowUI(UIPage::LSO_PROGRESS, base::string16());
+    }
   }
 }
 

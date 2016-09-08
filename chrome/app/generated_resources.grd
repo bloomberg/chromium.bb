@@ -13580,6 +13580,20 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enables the browser task scheduler to dispatch tasks instead of the existing worker pools. The browser task scheduler will only be used if variation parameters are available.
       </message>
 
+      <!-- Arc authorization -->
+      <if expr="chromeos">
+        <message name="IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_NAME"
+                 desc="Name of about:flag option to control the arc authorization endpoint."
+                 translateable="false">
+          Android apps authorization point
+        </message>
+        <message name="IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_DESCRIPTION"
+                 desc="Desciption of about:flag option to control the arc authorization endpoint."
+                 translateable="false">
+          Enable Android apps authorization point to automatic sign-in in OptIn flow.
+        </message>
+      </if>
+
       <!-- Windows 8 Metro mode. -->
       <if expr="is_win">
         <message name="IDS_METRO_FLOW_DESCRIPTION"

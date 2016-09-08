@@ -2067,6 +2067,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-gamepad-extensions", IDS_FLAGS_GAMEPAD_EXTENSIONS_NAME,
      IDS_FLAGS_GAMEPAD_EXTENSIONS_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kGamepadExtensions)},
+#if defined(OS_CHROMEOS)
+    {"arc-use-auth-endpoint", IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_NAME,
+     IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE_AND_VALUE(
+       chromeos::switches::kArcUseAuthEndpoint,
+       "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/" \
+       "ExchangeToken")},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

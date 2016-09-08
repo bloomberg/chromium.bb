@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/arc_android_management_checker_delegate.h"
+#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher_delegate.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context_delegate.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
@@ -37,6 +38,7 @@ class PrefRegistrySyncable;
 namespace arc {
 
 class ArcAndroidManagementChecker;
+class ArcAuthCodeFetcher;
 class ArcAuthContext;
 enum class ProvisioningResult : int;
 
@@ -48,6 +50,7 @@ class ArcAuthService : public ArcService,
                        public InstanceHolder<mojom::AuthInstance>::Observer,
                        public ArcAndroidManagementCheckerDelegate,
                        public ArcAuthContextDelegate,
+                       public ArcAuthCodeFetcherDelegate,
                        public syncable_prefs::PrefServiceSyncableObserver,
                        public syncable_prefs::SyncedPrefObserver {
  public:
@@ -175,6 +178,10 @@ class ArcAuthService : public ArcService,
   void OnContextReady() override;
   void OnPrepareContextFailed() override;
 
+  // ArcAuthCodeFetcherDelegate:
+  void OnAuthCodeSuccess(const std::string& auth_code) override;
+  void OnAuthCodeFailed() override;
+
   // ArcAndroidManagementCheckerDelegate:
   void OnAndroidManagementChecked(
       policy::AndroidManagementClient::Result result) override;
@@ -234,6 +241,7 @@ class ArcAuthService : public ArcService,
   bool waiting_for_reply_ = false;
 
   std::unique_ptr<ArcAuthContext> context_;
+  std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   base::Time sign_in_time_;

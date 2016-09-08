@@ -85650,6 +85650,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1454363479" label="disable-storage-manager"/>
+  <int value="1458583431" label="arc-use-auth-endpoint"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>

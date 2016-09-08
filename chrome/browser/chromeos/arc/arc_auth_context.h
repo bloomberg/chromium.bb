@@ -19,6 +19,10 @@ namespace content {
 class StoragePartition;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace arc {
 
 class ArcAuthContextDelegate;
@@ -31,6 +35,9 @@ class ArcAuthContext : public UbertokenConsumer,
   ~ArcAuthContext() override;
 
   void PrepareContext();
+
+  // Returns the URL request context information associated with this context.
+  net::URLRequestContextGetter* GetURLRequestContext();
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -50,6 +57,7 @@ class ArcAuthContext : public UbertokenConsumer,
 
  private:
   void StartFetchers();
+  void ResetFetchers();
   void OnRefreshTokenTimeout();
 
   // Unowned pointers.

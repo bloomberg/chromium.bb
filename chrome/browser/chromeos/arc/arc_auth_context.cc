@@ -69,16 +69,19 @@ void ArcAuthContext::OnRefreshTokenTimeout() {
 
 void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
   context_prepared_ = true;
+  ResetFetchers();
   delegate_->OnContextReady();
 }
 
 void ArcAuthContext::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
   VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
+  ResetFetchers();
   delegate_->OnPrepareContextFailed();
 }
 
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
+  ResetFetchers();
   merger_fetcher_.reset(
       new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
                           storage_partition_->GetURLRequestContext()));
@@ -87,6 +90,7 @@ void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
 
 void ArcAuthContext::OnUbertokenFailure(const GoogleServiceAuthError& error) {
   VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
+  ResetFetchers();
   delegate_->OnPrepareContextFailed();
 }
 
@@ -112,11 +116,21 @@ void ArcAuthContext::PrepareContext() {
 
 void ArcAuthContext::StartFetchers() {
   DCHECK(!refresh_token_timeout_.IsRunning());
-  merger_fetcher_.reset();
+  ResetFetchers();
   ubertoken_fetcher_.reset(
       new UbertokenFetcher(token_service_, this, GaiaConstants::kChromeOSSource,
                            storage_partition_->GetURLRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
+}
+
+void ArcAuthContext::ResetFetchers() {
+  merger_fetcher_.reset();
+  ubertoken_fetcher_.reset();
+}
+
+net::URLRequestContextGetter* ArcAuthContext::GetURLRequestContext() {
+  DCHECK(context_prepared_);
+  return storage_partition_->GetURLRequestContext();
 }
 
 }  // namespace arc
