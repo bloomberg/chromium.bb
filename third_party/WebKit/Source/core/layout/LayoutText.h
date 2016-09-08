@@ -180,7 +180,6 @@ public:
 
     float hyphenWidth(const Font&, TextDirection);
 
-    void applyTextTransformFromTo(int from, int len, const ComputedStyle*);
 protected:
     void willBeDestroyed() override;
 
