@@ -2277,18 +2277,6 @@ crbug.com/636463 fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertic
 crbug.com/636463 fast/text/international/bidi-neutral-in-mixed-direction-run-crash.html [ Crash ]
 crbug.com/636463 fast/text/whitespace/whitespace-and-margin-wrap-after-list-marker-crash.html [ Crash ]
 
-crbug.com/642240 fast/backgrounds/gradient-background-leakage-hidpi.html [ Failure ]
-crbug.com/642240 fast/canvas/canvas-hidpi-blurry.html [ Failure ]
-crbug.com/642240 fast/hidpi/broken-image-icon-hidpi.html [ Failure ]
-crbug.com/642240 fast/hidpi/broken-image-with-size-hidpi.html [ Failure ]
-crbug.com/642240 fast/hidpi/clip-text-in-hidpi.html [ Failure ]
-crbug.com/642240 fast/hidpi/device-scale-factor-paint.html [ Failure ]
-crbug.com/642240 fast/hidpi/focus-rings.html [ Failure ]
-crbug.com/642240 fast/hidpi/gradient-with-scaled-ancestor.html [ Failure ]
-crbug.com/642240 fast/hidpi/resize-corner-hidpi.html [ Failure ]
-crbug.com/642240 fast/sub-pixel/shadows-hidpi.html [ Failure ]
-crbug.com/642240 svg/as-image/image-respects-deviceScaleFactor.html [ Failure ]
-
 crbug.com/644358 fast/forms/relayout-shifts-inner-editor.html [ Crash ]
 crbug.com/644358 fast/repaint/bugzilla-6388.html [ Failure ]
 crbug.com/644358 fast/repaint/change-transform.html [ Failure ]

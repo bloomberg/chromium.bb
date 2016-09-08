@@ -218,6 +218,9 @@ public:
         m_effectStack.append(BlinkEffectAndCcIdPair{nullptr, kSecondaryRootNodeId});
     }
 
+    // TODO(pdr): This will need to be unified with how viewport scale works.
+    void setDeviceScaleFactor(float);
+
     int compositorIdForTransformNode(const TransformPaintPropertyNode*);
     int compositorIdForClipNode(const ClipPaintPropertyNode*);
     int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
@@ -254,6 +257,12 @@ private:
     bool m_isFirstEffectEver;
 #endif
 };
+
+void PropertyTreeManager::setDeviceScaleFactor(float deviceScaleFactor)
+{
+    auto& rootTransformNode = *transformTree().Node(kSecondaryRootNodeId);
+    rootTransformNode.local.Scale(deviceScaleFactor, deviceScaleFactor);
+}
 
 int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintPropertyNode* transformNode)
 {
@@ -434,6 +443,7 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
 
     setMinimalPropertyTrees(host->GetLayerTree()->property_trees(), m_rootLayer->id());
+
     m_rootLayer->RemoveAllChildren();
     m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
     m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
@@ -442,6 +452,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
     PropertyTreeManager propertyTreeManager(*host->GetLayerTree()->property_trees(), m_rootLayer.get());
+    propertyTreeManager.setDeviceScaleFactor(host->GetLayerTree()->device_scale_factor());
+
     m_contentLayerClients.clear();
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
