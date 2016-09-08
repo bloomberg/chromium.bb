@@ -56,7 +56,6 @@ public:
     void setPreferCompositingToLCDTextEnabled(bool) override;
     void setAccessibilityEnabled(bool) override;
     void setAccessibilityPasswordValuesEnabled(bool) override;
-    void setAllowDisplayOfInsecureContent(bool) override;
     void setAllowFileAccessFromFileURLs(bool) override;
     void setAllowCustomScrollbarInMainFrame(bool) override;
     void setAllowGeolocationOnInsecureOrigins(bool) override;

@@ -287,7 +287,6 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // FIXME: When we support FetchEvent.default(), we should relax this
     // restriction.
     settings->setStrictMixedContentChecking(true);
-    settings->setAllowDisplayOfInsecureContent(false);
     settings->setAllowRunningOfInsecureContent(false);
     settings->setDataSaverEnabled(m_workerStartData.dataSaverEnabled);
     m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(WebTreeScopeType::Document, this));

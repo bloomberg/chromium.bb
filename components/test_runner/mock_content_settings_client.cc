@@ -54,12 +54,6 @@ bool MockContentSettingsClient::allowPlugins(bool enabled_per_settings) {
   return enabled_per_settings && flags_->plugins_allowed();
 }
 
-bool MockContentSettingsClient::allowDisplayingInsecureContent(
-    bool enabled_per_settings,
-    const blink::WebURL& url) {
-  return enabled_per_settings || flags_->displaying_insecure_content_allowed();
-}
-
 bool MockContentSettingsClient::allowRunningInsecureContent(
     bool enabled_per_settings,
     const blink::WebSecurityOrigin& context,

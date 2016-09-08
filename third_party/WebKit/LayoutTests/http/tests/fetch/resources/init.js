@@ -9,8 +9,6 @@ if (window.testRunner) {
   // Turning the switch below to false makes this condition above false, and
   // make content_shell to run into Step 7 to test mixed content blocking.
   testRunner.overridePreference('WebKitAllowRunningInsecureContent', false);
-  //FIXME: to be removed.
-  //testRunner.overridePreference('WebKitAllowDisplayingInsecureContent', true);
 
   // Accept all cookies.
   testRunner.setBlockThirdPartyCookies(false);

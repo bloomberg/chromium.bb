@@ -263,14 +263,6 @@ bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imag
     return enabledPerSettings;
 }
 
-bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, const KURL& url)
-{
-    if (m_webFrame->contentSettingsClient())
-        return m_webFrame->contentSettingsClient()->allowDisplayingInsecureContent(enabledPerSettings, WebURL(url));
-
-    return enabledPerSettings;
-}
-
 bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
 {
     if (m_webFrame->contentSettingsClient())
@@ -285,6 +277,12 @@ bool FrameLoaderClientImpl::allowAutoplay(bool defaultValue)
         return m_webFrame->contentSettingsClient()->allowAutoplay(defaultValue);
 
     return defaultValue;
+}
+
+void FrameLoaderClientImpl::passiveInsecureContentFound(const KURL& url)
+{
+    if (m_webFrame->contentSettingsClient())
+        return m_webFrame->contentSettingsClient()->passiveInsecureContentFound(WebURL(url));
 }
 
 void FrameLoaderClientImpl::didNotAllowScript()

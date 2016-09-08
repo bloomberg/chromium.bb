@@ -310,6 +310,8 @@ const char kStaticEncodings[] = "intl.static_encodings";
 // Deprecated 9/2016.
 const char kWebKitUsesUniversalDetector[] =
     "webkit.webprefs.uses_universal_detector";
+const char kWebKitAllowDisplayingInsecureContent[] =
+    "webkit.webprefs.allow_displaying_insecure_content";
 
 void DeleteWebRTCIdentityStoreDBOnFileThread(
     const base::FilePath& profile_path) {
@@ -656,6 +658,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(kStaticEncodings, std::string());
   registry->RegisterStringPref(kRecentlySelectedEncoding, std::string());
   registry->RegisterBooleanPref(kWebKitUsesUniversalDetector, true);
+
+  registry->RegisterBooleanPref(kWebKitAllowDisplayingInsecureContent, true);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -763,6 +767,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 9/2016.
   profile_prefs->ClearPref(kWebKitUsesUniversalDetector);
+  profile_prefs->ClearPref(kWebKitAllowDisplayingInsecureContent);
 }
 
 }  // namespace chrome

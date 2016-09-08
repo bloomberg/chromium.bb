@@ -191,7 +191,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
   void SetAcceptLanguages(const std::string& accept_languages);
-  void SetAllowDisplayOfInsecureContent(bool allowed);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void SetAllowRunningOfInsecureContent(bool allowed);
   void SetAutoplayAllowed(bool allowed);
@@ -481,8 +480,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("sendBluetoothManualChooserEvent",
                  &TestRunnerBindings::SendBluetoothManualChooserEvent)
       .SetMethod("setAcceptLanguages", &TestRunnerBindings::SetAcceptLanguages)
-      .SetMethod("setAllowDisplayOfInsecureContent",
-                 &TestRunnerBindings::SetAllowDisplayOfInsecureContent)
       .SetMethod("setAllowFileAccessFromFileURLs",
                  &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
       .SetMethod("setAllowRunningOfInsecureContent",
@@ -1130,11 +1127,6 @@ void TestRunnerBindings::SetStorageAllowed(bool allowed) {
 void TestRunnerBindings::SetPluginsAllowed(bool allowed) {
   if (runner_)
     runner_->SetPluginsAllowed(allowed);
-}
-
-void TestRunnerBindings::SetAllowDisplayOfInsecureContent(bool allowed) {
-  if (runner_)
-    runner_->SetAllowDisplayOfInsecureContent(allowed);
 }
 
 void TestRunnerBindings::SetAllowRunningOfInsecureContent(bool allowed) {
@@ -2313,8 +2305,6 @@ void TestRunner::OverridePreference(const std::string& key,
     prefs->hyperlink_auditing_enabled = value->BooleanValue();
   } else if (key == "WebKitEnableCaretBrowsing") {
     prefs->caret_browsing_enabled = value->BooleanValue();
-  } else if (key == "WebKitAllowDisplayingInsecureContent") {
-    prefs->allow_display_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitAllowRunningInsecureContent") {
     prefs->allow_running_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitDisableReadingFromCanvas") {
@@ -2478,11 +2468,6 @@ void TestRunner::SetStorageAllowed(bool allowed) {
 
 void TestRunner::SetPluginsAllowed(bool allowed) {
   layout_test_runtime_flags_.set_plugins_allowed(allowed);
-  OnLayoutTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetAllowDisplayOfInsecureContent(bool allowed) {
-  layout_test_runtime_flags_.set_displaying_insecure_content_allowed(allowed);
   OnLayoutTestRuntimeFlagsChanged();
 }
 

@@ -91,7 +91,6 @@ antialiasedClips2dCanvasEnabled initial=false
 accelerated2dCanvasMSAASampleCount type=int, initial=0
 
 hyperlinkAuditingEnabled initial=false
-allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 
 mediaControlsOverlayPlayButtonEnabled initial=false

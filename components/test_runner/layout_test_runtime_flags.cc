@@ -39,7 +39,6 @@ void LayoutTestRuntimeFlags::Reset() {
   set_scripts_allowed(true);
   set_storage_allowed(true);
   set_plugins_allowed(true);
-  set_displaying_insecure_content_allowed(false);
   set_running_insecure_content_allowed(false);
   set_autoplay_allowed(true);
 

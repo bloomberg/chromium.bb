@@ -195,9 +195,13 @@ public:
     virtual bool allowPlugins(bool enabledPerSettings) { return enabledPerSettings; }
     virtual bool allowImage(bool enabledPerSettings, const KURL&) { return enabledPerSettings; }
     virtual bool allowMedia(const KURL&) { return true; }
-    virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, const KURL&) { return enabledPerSettings; }
     virtual bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) { return enabledPerSettings; }
     virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
+
+    // Reports that passive mixed content was found at the provided URL. It may
+    // or may not be actually displayed later, what would be flagged by
+    // didDisplayInsecureContent.
+    virtual void passiveInsecureContentFound(const KURL&) {}
 
     // This callback notifies the client that the frame was about to run
     // JavaScript but did not because allowScript returned false. We

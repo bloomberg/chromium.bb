@@ -39,10 +39,7 @@ public:
     // Controls whether scripts loaded from the given URL are allowed to execute for this frame.
     virtual bool allowScriptFromSource(bool enabledPerSettings, const WebURL& scriptURL) { return enabledPerSettings; }
 
-    // Controls whether insecrure content is allowed to display for this frame.
-    virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, const WebURL&) { return enabledPerSettings; }
-
-    // Controls whether insecrure scripts are allowed to execute for this frame.
+    // Controls whether insecure scripts are allowed to execute for this frame.
     virtual bool allowRunningInsecureContent(bool enabledPerSettings, const WebSecurityOrigin&, const WebURL&) { return enabledPerSettings; }
 
     // Controls whether the given script extension should run in a new script
@@ -77,6 +74,9 @@ public:
 
     // Controls whether autoplay is allowed for this frame.
     virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
+
+    // Reports that passive mixed content was found at the provided URL.
+    virtual void passiveInsecureContentFound(const WebURL&) {}
 
     // Notifies the client that the frame would have instantiated a plugin if plugins were enabled.
     virtual void didNotAllowPlugins() { }

@@ -54,7 +54,7 @@ class WebTestDelegate;
 // 1. It implements |testRunner| javascript bindings for "global" / "ambient".
 //    Examples:
 //    - testRunner.dumpAsText (test flag affecting test behavior)
-//    - testRunner.setAllowDisplayOfInsecureContent (test flag affecting product
+//    - testRunner.setAllowRunningOfInsecureContent (test flag affecting product
 //      behavior)
 //    - testRunner.setTextSubpixelPositioning (directly interacts with product).
 //    Note that "per-view" (non-"global") bindings are handled by
@@ -405,7 +405,6 @@ class TestRunner : public WebTestRunner {
   void SetScriptsAllowed(bool allowed);
   void SetStorageAllowed(bool allowed);
   void SetPluginsAllowed(bool allowed);
-  void SetAllowDisplayOfInsecureContent(bool allowed);
   void SetAllowRunningOfInsecureContent(bool allowed);
   void SetAutoplayAllowed(bool allowed);
   void DumpPermissionClientCallbacks();

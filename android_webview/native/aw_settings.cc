@@ -417,10 +417,14 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       web_prefs->experimental_webgl_enabled &&
       enable_supported_hardware_accelerated_features;
 
-  web_prefs->allow_displaying_insecure_content =
-      Java_AwSettings_getAllowDisplayingInsecureContentLocked(env, obj);
+  // If strict mixed content checking is enabled then running should not be
+  // allowed.
+  DCHECK(!Java_AwSettings_getUseStricMixedContentCheckingLocked(env, obj) ||
+         !Java_AwSettings_getAllowRunningInsecureContentLocked(env, obj));
   web_prefs->allow_running_insecure_content =
       Java_AwSettings_getAllowRunningInsecureContentLocked(env, obj);
+  web_prefs->strict_mixed_content_checking =
+      Java_AwSettings_getUseStricMixedContentCheckingLocked(env, obj);
 
   web_prefs->fullscreen_supported =
       Java_AwSettings_getFullscreenSupportedLocked(env, obj);

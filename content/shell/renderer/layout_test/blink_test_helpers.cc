@@ -36,8 +36,6 @@ void ExportLayoutTestSpecificPreferences(
   // experimentalCSSRegionsEnabled is deprecated and ignored.
   to->hyperlink_auditing_enabled = from.hyperlink_auditing_enabled;
   to->caret_browsing_enabled = from.caret_browsing_enabled;
-  to->allow_displaying_insecure_content =
-      from.allow_display_of_insecure_content;
   to->allow_running_insecure_content = from.allow_running_of_insecure_content;
   to->should_respect_image_orientation = from.should_respect_image_orientation;
   to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;
@@ -72,7 +70,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->application_cache_enabled = true;
   prefs->tabs_to_links = false;
   prefs->hyperlink_auditing_enabled = false;
-  prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = false;
   prefs->disable_reading_from_canvas = false;
   prefs->strict_mixed_content_checking = false;

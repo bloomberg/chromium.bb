@@ -1027,8 +1027,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(prefs.tabs_to_links);
 
-  settings->setAllowDisplayOfInsecureContent(
-      prefs.allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(
       prefs.allow_running_insecure_content);
   settings->setDisableReadingFromCanvas(prefs.disable_reading_from_canvas);

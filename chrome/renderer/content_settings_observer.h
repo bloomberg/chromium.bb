@@ -80,12 +80,11 @@ class ContentSettingsObserver
   void didNotAllowPlugins() override;
   void didNotAllowScript() override;
   void didUseKeygen() override;
-  bool allowDisplayingInsecureContent(bool allowed_per_settings,
-                                      const blink::WebURL& url) override;
   bool allowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
   bool allowAutoplay(bool default_value) override;
+  void passiveInsecureContentFound(const blink::WebURL&) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
@@ -133,7 +132,6 @@ class ContentSettingsObserver
 #endif
 
   // Insecure content may be permitted for the duration of this render view.
-  bool allow_displaying_insecure_content_;
   bool allow_running_insecure_content_;
 
   // A pointer to content setting rules stored by the renderer. Normally, the

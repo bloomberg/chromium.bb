@@ -582,11 +582,6 @@ void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue)
     m_settings->setValidationMessageTimerMagnification(newValue);
 }
 
-void WebSettingsImpl::setAllowDisplayOfInsecureContent(bool enabled)
-{
-    m_settings->setAllowDisplayOfInsecureContent(enabled);
-}
-
 void WebSettingsImpl::setAllowRunningOfInsecureContent(bool enabled)
 {
     m_settings->setAllowRunningOfInsecureContent(enabled);

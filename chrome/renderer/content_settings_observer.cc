@@ -389,15 +389,6 @@ bool ContentSettingsObserver::allowMutationEvents(bool default_value) {
   return IsPlatformApp() ? false : default_value;
 }
 
-bool ContentSettingsObserver::allowDisplayingInsecureContent(
-    bool allowed_per_settings,
-    const blink::WebURL& resource_url) {
-  DCHECK(allowed_per_settings);
-  ReportInsecureContent(SslInsecureContentType::DISPLAY);
-  FilteredReportInsecureContentDisplayed(GURL(resource_url));
-  return true;
-}
-
 bool ContentSettingsObserver::allowRunningInsecureContent(
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& origin,
@@ -422,6 +413,12 @@ bool ContentSettingsObserver::allowAutoplay(bool default_value) {
              blink::WebStringToGURL(
                  frame->document().getSecurityOrigin().toString())) ==
          CONTENT_SETTING_ALLOW;
+}
+
+void ContentSettingsObserver::passiveInsecureContentFound(
+    const blink::WebURL& resource_url) {
+  ReportInsecureContent(SslInsecureContentType::DISPLAY);
+  FilteredReportInsecureContentDisplayed(GURL(resource_url));
 }
 
 void ContentSettingsObserver::didUseKeygen() {

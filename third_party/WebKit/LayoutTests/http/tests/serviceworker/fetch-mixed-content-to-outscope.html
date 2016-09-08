@@ -9,7 +9,7 @@
 if (window.testRunner) {
   // In Chromium we need to change the setting to disallow displaying insecure
   // contents.
-  testRunner.overridePreference('WebKitAllowDisplayingInsecureContent', false);
+  testRunner.overridePreference("WebKitStrictMixedContentChecking", true);
 }
 
 async_test(function(t) {

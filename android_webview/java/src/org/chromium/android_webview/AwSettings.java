@@ -1636,10 +1636,9 @@ public class AwSettings {
     }
 
     @CalledByNative
-    private boolean getAllowDisplayingInsecureContentLocked() {
+    private boolean getUseStricMixedContentCheckingLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mMixedContentMode == WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                || mMixedContentMode == WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE;
+        return mMixedContentMode == WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     }
 
     public boolean getOffscreenPreRaster() {

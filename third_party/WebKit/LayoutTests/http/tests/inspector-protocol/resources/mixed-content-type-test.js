@@ -1,6 +1,5 @@
 if (window.testRunner) {
     testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
-    testRunner.overridePreference("WebKitAllowDisplayingInsecureContent", true);
 }
 
 function test()
