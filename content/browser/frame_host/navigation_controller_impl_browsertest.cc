@@ -5927,8 +5927,11 @@ class CommitMessageFilter : public BrowserMessageFilter {
 // the cross-origin navigation and updates the URL, but not the origin of the
 // document. This results in mismatch between the two and causes the renderer
 // process to be killed. See https://crbug.com/630103.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       RaceCrossOriginNavigationAndSamePageHistoryNavigation) {
+// TODO(nasko): Investigate why this test is flaky, likely related to
+// https://crbug.com/638089, and enable once resolved.
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    DISABLED_RaceCrossOriginNavigationAndSamePageHistoryNavigation) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
