@@ -199,7 +199,7 @@ bool MediaRecorderHandler::start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.push_back(new VideoTrackRecorder(
+    video_recorders_.emplace_back(new VideoTrackRecorder(
         codec_id_, video_track, on_encoded_video_cb, video_bits_per_second_));
   }
 
@@ -217,7 +217,7 @@ bool MediaRecorderHandler::start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
-    audio_recorders_.push_back(new AudioTrackRecorder(
+    audio_recorders_.emplace_back(new AudioTrackRecorder(
         audio_track, on_encoded_audio_cb, audio_bits_per_second_));
   }
 
@@ -240,9 +240,9 @@ void MediaRecorderHandler::pause() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(recording_);
   recording_ = false;
-  for (auto* video_recorder : video_recorders_)
+  for (const auto& video_recorder : video_recorders_)
     video_recorder->Pause();
-  for (auto* audio_recorder : audio_recorders_)
+  for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Pause();
   webm_muxer_->Pause();
 }
@@ -251,9 +251,9 @@ void MediaRecorderHandler::resume() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   recording_ = true;
-  for (auto* video_recorder : video_recorders_)
+  for (const auto& video_recorder : video_recorders_)
     video_recorder->Resume();
-  for (auto* audio_recorder : audio_recorders_)
+  for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Resume();
   webm_muxer_->Resume();
 }
@@ -298,20 +298,20 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
 void MediaRecorderHandler::OnVideoFrameForTesting(
     const scoped_refptr<media::VideoFrame>& frame,
     const TimeTicks& timestamp) {
-  for (auto* recorder : video_recorders_)
+  for (const auto& recorder : video_recorders_)
     recorder->OnVideoFrameForTesting(frame, timestamp);
 }
 
 void MediaRecorderHandler::OnAudioBusForTesting(
     const media::AudioBus& audio_bus,
     const base::TimeTicks& timestamp) {
-  for (auto* recorder : audio_recorders_)
+  for (const auto& recorder : audio_recorders_)
     recorder->OnData(audio_bus, timestamp);
 }
 
 void MediaRecorderHandler::SetAudioFormatForTesting(
     const media::AudioParameters& params) {
-  for (auto* recorder : audio_recorders_)
+  for (const auto& recorder : audio_recorders_)
     recorder->OnSetFormat(params);
 }
 

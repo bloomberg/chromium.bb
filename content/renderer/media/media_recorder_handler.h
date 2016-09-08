@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
@@ -104,8 +103,8 @@ class CONTENT_EXPORT MediaRecorderHandler final
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
   blink::WebMediaRecorderHandlerClient* client_;
 
-  ScopedVector<VideoTrackRecorder> video_recorders_;
-  ScopedVector<AudioTrackRecorder> audio_recorders_;
+  std::vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
+  std::vector<std::unique_ptr<AudioTrackRecorder>> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.
   std::unique_ptr<media::WebmMuxer> webm_muxer_;
