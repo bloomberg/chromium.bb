@@ -1595,6 +1595,10 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile) {
     app_service->AddObserverAndStart(this);
 }
 
+void ChromeLauncherControllerImpl::SetProfileForTest(Profile* profile) {
+  profile_ = profile;
+}
+
 void ChromeLauncherControllerImpl::ReleaseProfile() {
   if (app_sync_ui_state_)
     app_sync_ui_state_->RemoveObserver(this);

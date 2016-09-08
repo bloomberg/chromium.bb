@@ -1150,8 +1150,11 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     manager->ActiveUserChanged(account_id);
     launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
         account_id.GetUserEmail());
-    launcher_controller_->app_window_controller_for_test()->ActiveUserChanged(
-        account_id.GetUserEmail());
+
+    for (const auto& controller :
+         launcher_controller_->app_window_controllers_for_test()) {
+      controller->ActiveUserChanged(account_id.GetUserEmail());
+    }
   }
 
   // Creates a browser with a |profile| and load a tab with a |title| and |url|.
@@ -1178,8 +1181,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     V1App* v1_app = new V1App(profile, app_name);
     // Create a new launcher controller helper and assign it to the launcher so
     // that this app gets properly detected.
-    // TODO(skuhne): Create a more intelligent launcher contrller helper that is
-    // able to detect all running apps properly.
+    // TODO(skuhne): Create a more intelligent launcher controller helper that
+    // is able to detect all running apps properly.
     TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
     helper->SetAppID(v1_app->browser()->tab_strip_model()->GetWebContentsAt(0),
                      app_name);
@@ -1221,6 +1224,18 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 
   DISALLOW_COPY_AND_ASSIGN(
       MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest);
+};
+
+class ChromeLauncherControllerImplMultiProfileWithArcTest
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest {
+ protected:
+  ChromeLauncherControllerImplMultiProfileWithArcTest() {
+    auto_start_arc_test_ = true;
+  }
+  ~ChromeLauncherControllerImplMultiProfileWithArcTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplMultiProfileWithArcTest);
 };
 
 TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
@@ -1832,6 +1847,67 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
 
   EXPECT_TRUE((request1->IsForApp(app2) && request2->IsForApp(app3)) ||
               (request1->IsForApp(app3) && request2->IsForApp(app2)));
+}
+
+TEST_F(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
+  SendListOfArcApps();
+
+  InitLauncherController();
+  SetLauncherControllerHelper(new TestLauncherControllerHelper);
+
+  // App1 exists all the time.
+  // App2 is created when primary user is active and destroyed when secondary
+  // user is active.
+  // App3 created when secondary user is active.
+
+  const std::string user2 = "user2";
+  TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  const AccountId account_id(
+      multi_user_util::GetAccountIdFromProfile(profile()));
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
+
+  const std::string arc_app_id1 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  const std::string arc_app_id2 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[1]);
+  const std::string arc_app_id3 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[2]);
+
+  std::string window_app_id1("org.chromium.arc.1");
+  views::Widget* arc_window1 = CreateArcWindow(window_app_id1);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+
+  std::string window_app_id2("org.chromium.arc.2");
+  views::Widget* arc_window2 = CreateArcWindow(window_app_id2);
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+
+  launcher_controller_->SetProfileForTest(profile2);
+  SwitchActiveUser(account_id2);
+
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+
+  std::string window_app_id3("org.chromium.arc.3");
+  views::Widget* arc_window3 = CreateArcWindow(window_app_id3);
+  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[2]);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+
+  arc_window2->CloseNow();
+  arc_test_.app_instance()->SendTaskDestroyed(2);
+
+  launcher_controller_->SetProfileForTest(profile());
+  SwitchActiveUser(account_id);
+
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+
+  // Close active window to let test passes.
+  arc_window1->CloseNow();
+  arc_window3->CloseNow();
 }
 
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {

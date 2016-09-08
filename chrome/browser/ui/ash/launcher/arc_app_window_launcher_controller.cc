@@ -299,7 +299,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanging(
     aura::Window* window,
     bool visible) {
   // The application id property should be set at this time.
-  if (visible)
+  if (visible && observed_profile_ == owner()->GetProfile())
     AttachControllerToWindowIfNeeded(window);
 }
 
@@ -420,6 +420,10 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   DCHECK(!GetAppWindowForTask(task_id));
   task_id_to_shelf_app_id_[task_id] = GetShelfAppIdFromArcAppId(
       ArcAppListPrefs::GetAppId(package_name, activity_name));
+
+  // Don't create shelf icon for non-primary user.
+  if (observed_profile_ != owner()->GetProfile())
+    return;
 
   AttachControllerToWindowsIfNeeded();
 }

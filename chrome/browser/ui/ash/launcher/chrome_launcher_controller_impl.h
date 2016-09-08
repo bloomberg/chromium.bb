@@ -139,14 +139,17 @@ class ChromeLauncherControllerImpl
   void OnUserProfileReadyToSwitch(Profile* profile) override;
   ArcAppDeferredLauncherController* GetArcDeferredLauncher() override;
 
+  void SetProfileForTest(Profile* profile);
+
   // Access to the BrowserStatusMonitor for tests.
   BrowserStatusMonitor* browser_status_monitor_for_test() {
     return browser_status_monitor_.get();
   }
 
-  // Access to the AppWindowLauncherController for tests.
-  AppWindowLauncherController* app_window_controller_for_test() {
-    return app_window_controllers_[0].get();
+  // Access to the AppWindowLauncherController list for tests.
+  const std::vector<std::unique_ptr<AppWindowLauncherController>>&
+  app_window_controllers_for_test() {
+    return app_window_controllers_;
   }
 
   // ash::ShelfDelegate:
@@ -284,7 +287,7 @@ class ChromeLauncherControllerImpl
                             ash::ShelfItemDelegate* item_delegate);
 
   // Attach to a specific profile.
-  void AttachProfile(Profile* proifile);
+  void AttachProfile(Profile* profile);
 
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();

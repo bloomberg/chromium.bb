@@ -50,7 +50,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   // Returns Arc app id. Arc platform host app is mapped to Play Store app.
   static std::string GetArcAppIdFromShelfAppId(const std::string& shelf_app_id);
 
-  // AppWindowLauncherControllre:
+  // AppWindowLauncherController:
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
 
