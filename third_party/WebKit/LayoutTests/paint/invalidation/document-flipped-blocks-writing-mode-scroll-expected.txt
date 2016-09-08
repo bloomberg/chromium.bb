@@ -1,0 +1,15 @@
+{
+  "name": "Content Root Layer",
+  "position": [-716, 0],
+  "bounds": [1516, 585],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1516, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    }
+  ]
+}
+
