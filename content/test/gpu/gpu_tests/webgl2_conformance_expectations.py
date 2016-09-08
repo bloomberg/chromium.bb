@@ -39,6 +39,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     # All platforms.
+    self.Fail('conformance/misc/object-deletion-behaviour.html', bug=644957)
+    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
+        bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
 
@@ -328,6 +331,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
+    self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
+        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/instancedrendering.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',

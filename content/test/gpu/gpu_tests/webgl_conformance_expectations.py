@@ -101,6 +101,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Conformance expectations
     # ========================
     # Fails on all platforms
+    self.Fail('conformance/misc/object-deletion-behaviour.html', bug=644957)
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
@@ -194,6 +195,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # La la la la la la la la ...
 
     # Mac AMD failures
+    self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
+        ['mac', 'amd'], bug=483282)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['mac', 'amd'], bug=625365)
     self.Fail('conformance/rendering/clipping-wide-points.html',
