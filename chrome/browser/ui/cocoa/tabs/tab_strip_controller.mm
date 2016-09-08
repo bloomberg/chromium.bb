@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -31,6 +32,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
@@ -135,6 +137,12 @@ private:
   bool animate_;
   DISALLOW_COPY_AND_ASSIGN(ScopedNSAnimationContextGroup);
 };
+
+CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
+  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL())
+    return [view frame].size.width - x - width;
+  return x;
+}
 
 }  // namespace
 
@@ -999,7 +1007,10 @@ private:
 
   BOOL visible = [[tabStripView_ window] isVisible];
 
-  CGFloat offset = [self leftIndentForControls];
+  CGFloat offset =
+      cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()
+          ? [self rightIndentForControls]
+          : [self leftIndentForControls];
   bool hasPlaceholderGap = false;
   // Whether or not the last tab processed by the loop was a pinned tab.
   BOOL isLastTabPinned = NO;
@@ -1108,6 +1119,9 @@ private:
       }
     }
 
+    tabFrame.origin.x =
+        FlipXInView(tabStripView_, tabFrame.size.width, tabFrame.origin.x);
+
     // Check the frame by identifier to avoid redundant calls to animator.
     id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
     NSValue* identifier = [NSValue valueWithPointer:[tab view]];
@@ -1148,6 +1162,11 @@ private:
     // so we don't have to check it against the available space. We do need
     // to make sure we put it after any placeholder.
     CGFloat maxTabX = MAX(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
+    if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+      maxTabX = FlipXInView(tabStripView_, [newTabButton_ frame].size.width,
+                            maxTabX) -
+                (2 * kNewTabButtonOffset);
+    }
     newTabNewFrame.origin = NSMakePoint(maxTabX + kNewTabButtonOffset, 0);
     if ([tabContentsArray_ count])
       [newTabButton_ setHidden:NO];

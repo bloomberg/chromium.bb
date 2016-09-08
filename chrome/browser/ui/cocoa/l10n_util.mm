@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -80,6 +81,13 @@ NSString* TooltipForURLAndTitle(NSString* url, NSString* title) {
     return title;
   else
     return [NSString stringWithFormat:@"%@\n%@", title, url];
+}
+
+const base::Feature kExperimentalMacRTL{"ExperimentalMacRTL",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool ExperimentalMacRTLIsEnabled() {
+  return base::FeatureList::IsEnabled(kExperimentalMacRTL);
 }
 
 }  // namespace cocoa_l10n_util

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/grit/theme_resources.h"
@@ -158,6 +160,11 @@ const CGFloat kWindowGradientHeight = 24.0;
       // fallthrough
     default:
       break;
+  }
+
+  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+    buttonFrame.origin.x =
+        NSWidth([self frame]) - buttonFrame.origin.x - NSWidth([button frame]);
   }
 
   BOOL didPost = [button postsBoundsChangedNotifications];

@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 
+#include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
@@ -412,12 +414,16 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   [bezierPath closePath];
 
-  // The SVG path is flipped for some reason, so flip it back.
-  const CGFloat kSVGHeight = 32;
-  NSAffineTransformStruct flipStruct = { 1, 0, 0, -1, 0, kSVGHeight };
-  NSAffineTransform* flipTransform = [NSAffineTransform transform];
-  [flipTransform setTransformStruct:flipStruct];
-  [bezierPath transformUsingAffineTransform:flipTransform];
+  // The SVG path is flipped for some reason, so flip it back. However, in RTL,
+  // we'd need to flip it again below, so when in RTL mode just leave the flip
+  // out altogether.
+  if (!cocoa_l10n_util::ExperimentalMacRTLIsEnabled() || !base::i18n::IsRTL()) {
+    const CGFloat kSVGHeight = 32;
+    NSAffineTransformStruct flipStruct = {1, 0, 0, -1, 0, kSVGHeight};
+    NSAffineTransform* flipTransform = [NSAffineTransform transform];
+    [flipTransform setTransformStruct:flipStruct];
+    [bezierPath transformUsingAffineTransform:flipTransform];
+  }
 
   // The SVG data is for the 2x version so scale it down.
   NSAffineTransform* scaleTransform = [NSAffineTransform transform];

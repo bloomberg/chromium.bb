@@ -33,4 +33,8 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 // Generates a tooltip string for a given URL and title.
 NSString* TooltipForURLAndTitle(NSString* url, NSString* title);
 
+// Returns whether experimental Mac RTL support is enabled via
+// --enable-features=ExperimentalMacRTL.
+bool ExperimentalMacRTLIsEnabled();
+
 }  // namespace cocoa_l10n_util

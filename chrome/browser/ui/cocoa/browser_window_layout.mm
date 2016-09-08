@@ -7,8 +7,10 @@
 #include <math.h>
 #include <string.h>
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace chrome {
@@ -247,6 +249,12 @@ const CGFloat kLocationBarRightOffset = 35;
     maxX = std::min(maxX, NSMinX(layout.avatarFrame));
   }
   layout.rightIndent = width - maxX;
+
+  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+    std::swap(layout.leftIndent, layout.rightIndent);
+    layout.avatarFrame.origin.x =
+        width - parameters_.avatarSize.width - layout.avatarFrame.origin.x;
+  }
 
   output_.tabStripLayout = layout;
 }
