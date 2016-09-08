@@ -43,11 +43,12 @@ std::unique_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
     PictureLayerTilingClient* client,
     int tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
-    int skewport_extrapolation_limit_in_screen_pixels) {
-  return base::WrapUnique(
-      new PictureLayerTilingSet(tree, client, tiling_interest_area_padding,
-                                skewport_target_time_in_seconds,
-                                skewport_extrapolation_limit_in_screen_pixels));
+    int skewport_extrapolation_limit_in_screen_pixels,
+    float max_preraster_distance) {
+  return base::WrapUnique(new PictureLayerTilingSet(
+      tree, client, tiling_interest_area_padding,
+      skewport_target_time_in_seconds,
+      skewport_extrapolation_limit_in_screen_pixels, max_preraster_distance));
 }
 
 PictureLayerTilingSet::PictureLayerTilingSet(
@@ -55,13 +56,15 @@ PictureLayerTilingSet::PictureLayerTilingSet(
     PictureLayerTilingClient* client,
     int tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
-    int skewport_extrapolation_limit_in_screen_pixels)
+    int skewport_extrapolation_limit_in_screen_pixels,
+    float max_preraster_distance)
     : tiling_interest_area_padding_(tiling_interest_area_padding),
       skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
       skewport_extrapolation_limit_in_screen_pixels_(
           skewport_extrapolation_limit_in_screen_pixels),
       tree_(tree),
-      client_(client) {}
+      client_(client),
+      max_preraster_distance_(max_preraster_distance) {}
 
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
@@ -84,7 +87,8 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
     if (!this_tiling) {
       std::unique_ptr<PictureLayerTiling> new_tiling(new PictureLayerTiling(
-          tree_, contents_scale, raster_source_, client_));
+          tree_, contents_scale, raster_source_, client_,
+          kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
       tilings_.push_back(std::move(new_tiling));
       this_tiling = tilings_.back().get();
       tiling_sort_required = true;
@@ -272,7 +276,8 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
   }
 
   tilings_.push_back(base::MakeUnique<PictureLayerTiling>(
-      tree_, contents_scale, raster_source, client_));
+      tree_, contents_scale, raster_source, client_,
+      kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
   PictureLayerTiling* appended = tilings_.back().get();
   state_since_last_tile_priority_update_.added_tilings = true;
 

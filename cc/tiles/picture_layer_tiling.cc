@@ -34,16 +34,21 @@ PictureLayerTiling::PictureLayerTiling(
     WhichTree tree,
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
-    PictureLayerTilingClient* client)
+    PictureLayerTilingClient* client,
+    float min_preraster_distance,
+    float max_preraster_distance)
     : contents_scale_(contents_scale),
       client_(client),
       tree_(tree),
       raster_source_(raster_source),
+      min_preraster_distance_(min_preraster_distance),
+      max_preraster_distance_(max_preraster_distance),
       resolution_(NON_IDEAL_RESOLUTION),
       may_contain_low_resolution_tiles_(false),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
       can_require_tiles_for_activation_(false),
       current_content_to_screen_scale_(0.f),
+      max_skewport_extent_in_screen_space_(0.f),
       has_visible_rect_tiles_(false),
       has_skewport_rect_tiles_(false),
       has_soon_border_rect_tiles_(false),
@@ -589,6 +594,18 @@ void PictureLayerTiling::SetTilePriorityRects(
   has_soon_border_rect_tiles_ =
       tiling_rect.Intersects(current_soon_border_rect_);
   has_eventually_rect_tiles_ = tiling_rect.Intersects(current_eventually_rect_);
+
+  // Note that we use the largest skewport extent from the viewport as the
+  // "skewport extent". Also note that this math can't produce negative numbers,
+  // since skewport.Contains(visible_rect) is always true.
+  max_skewport_extent_in_screen_space_ =
+      current_content_to_screen_scale_ *
+      std::max(std::max(current_visible_rect_.x() - current_skewport_rect_.x(),
+                        current_skewport_rect_.right() -
+                            current_visible_rect_.right()),
+               std::max(current_visible_rect_.y() - current_skewport_rect_.y(),
+                        current_skewport_rect_.bottom() -
+                            current_visible_rect_.bottom()));
 }
 
 void PictureLayerTiling::SetLiveTilesRect(
@@ -778,9 +795,17 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
                                    1.f / tile->contents_scale())
              .ToString();
 
-  return PrioritizedTile(tile, this,
-                         ComputePriorityForTile(tile, priority_rect_type),
-                         IsTileOccluded(tile));
+  const auto& tile_priority = ComputePriorityForTile(tile, priority_rect_type);
+  // Note that TileManager will consider this flag but may rasterize the tile
+  // anyway (if tile is required for activation for example). We should process
+  // the tile for images only if it's further than half of the skewport extent.
+  bool process_for_images_only =
+      tile_priority.distance_to_visible > min_preraster_distance_ &&
+      (tile_priority.distance_to_visible > max_preraster_distance_ ||
+       tile_priority.distance_to_visible >
+           0.5f * max_skewport_extent_in_screen_space_);
+  return PrioritizedTile(tile, this, tile_priority, IsTileOccluded(tile),
+                         process_for_images_only);
 }
 
 std::map<const Tile*, PrioritizedTile>

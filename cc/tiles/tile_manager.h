@@ -98,8 +98,7 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client,
               base::SequencedTaskRunner* task_runner,
               size_t scheduled_raster_task_limit,
-              bool use_partial_raster,
-              int max_preraster_distance_in_screen_pixels);
+              bool use_partial_raster);
   virtual ~TileManager();
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
@@ -338,7 +337,6 @@ class CC_EXPORT TileManager {
   uint64_t next_tile_id_;
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
-  const int max_preraster_distance_in_screen_pixels_;
   std::vector<std::pair<DrawImage, scoped_refptr<TileTask>>> locked_images_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;

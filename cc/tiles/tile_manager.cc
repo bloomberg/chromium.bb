@@ -308,8 +308,7 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 TileManager::TileManager(TileManagerClient* client,
                          base::SequencedTaskRunner* task_runner,
                          size_t scheduled_raster_task_limit,
-                         bool use_partial_raster,
-                         int max_preraster_distance_in_screen_pixels)
+                         bool use_partial_raster)
     : client_(client),
       task_runner_(task_runner),
       resource_pool_(nullptr),
@@ -330,8 +329,6 @@ TileManager::TileManager(TileManagerClient* client,
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
       next_tile_id_(0u),
-      max_preraster_distance_in_screen_pixels_(
-          max_preraster_distance_in_screen_pixels),
       task_set_finished_weak_ptr_factory_(this) {}
 
 TileManager::~TileManager() {
@@ -656,8 +653,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
 
     // Prepaint tiles that are far away are only processed for images.
     if (!tile->required_for_activation() && !tile->required_for_draw() &&
-        priority.distance_to_visible >
-            max_preraster_distance_in_screen_pixels_) {
+        prioritized_tile.is_process_for_images_only()) {
       work_to_schedule.tiles_to_process_for_images.push_back(prioritized_tile);
       continue;
     }

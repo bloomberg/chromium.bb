@@ -1097,7 +1097,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
       PictureLayerTilingSet::Create(
           ACTIVE_TREE, &client, settings.tiling_interest_area_padding,
           settings.skewport_target_time_in_seconds,
-          settings.skewport_extrapolation_limit_in_screen_pixels);
+          settings.skewport_extrapolation_limit_in_screen_pixels,
+          settings.max_preraster_distance_in_screen_pixels);
 
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
@@ -1209,7 +1210,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
       PictureLayerTilingSet::Create(
           ACTIVE_TREE, &client, settings.tiling_interest_area_padding,
           settings.skewport_target_time_in_seconds,
-          settings.skewport_extrapolation_limit_in_screen_pixels);
+          settings.skewport_extrapolation_limit_in_screen_pixels,
+          settings.max_preraster_distance_in_screen_pixels);
 
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
@@ -1366,7 +1368,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
 
   std::unique_ptr<PictureLayerTilingSet> tiling_set =
       PictureLayerTilingSet::Create(WhichTree::ACTIVE_TREE, &pending_client,
-                                    1.0f, 1.0f, 1000);
+                                    1.0f, 1.0f, 1000, 1000.f);
   pending_client.set_twin_tiling_set(tiling_set.get());
 
   auto* tiling = tiling_set->AddTiling(1.0f, raster_source);

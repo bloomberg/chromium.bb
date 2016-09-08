@@ -55,7 +55,9 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
         tree, contents_scale, raster_source, client,
         settings.tiling_interest_area_padding,
         settings.skewport_target_time_in_seconds,
-        settings.skewport_extrapolation_limit_in_screen_pixels));
+        settings.skewport_extrapolation_limit_in_screen_pixels,
+        312.f, /* min_preraster_distance */
+        settings.max_preraster_distance_in_screen_pixels));
   }
 
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
@@ -70,8 +72,15 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
                              PictureLayerTilingClient* client,
                              size_t tiling_interest_area_padding,
                              float skewport_target_time,
-                             int skewport_extrapolation_limit)
-      : PictureLayerTiling(tree, contents_scale, raster_source, client) {}
+                             int skewport_extrapolation_limit,
+                             float min_preraster_distance,
+                             float max_preraster_distance)
+      : PictureLayerTiling(tree,
+                           contents_scale,
+                           raster_source,
+                           client,
+                           min_preraster_distance,
+                           max_preraster_distance) {}
 };
 
 class PictureLayerTilingIteratorTest : public testing::Test {
