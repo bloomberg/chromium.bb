@@ -303,6 +303,37 @@ template("aggregate_generated_bindings") {
   }
 }
 
+# Calls the aggregate_generated_bindings script.
+#
+# Parameters:
+#   sources = a list of source IDL files.
+#   component_dir = Name of directory for these files (one word, no slashes).
+#   outputs = a list of files to write to.
+template("aggregate_generated_bindings") {
+  action(target_name) {
+    script = "//third_party/WebKit/Source/bindings/scripts/aggregate_generated_bindings.py"
+
+    # Write lists of main IDL files to a file, so that the command lines don't
+    # exceed OS length limits.
+    idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
+    write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
+
+    inputs = [ idl_files_list ] + invoker.sources
+    outputs = invoker.outputs
+
+    args = [
+      "--component-directory",
+      invoker.component_dir,
+      "--input-file",
+      rebase_path(idl_files_list, root_build_dir),
+    ]
+    if (invoker.is_partial) {
+      args += [ "--partial" ]
+    }
+    args += rebase_path(invoker.outputs, root_build_dir)
+  }
+}
+
 # Calls the compute_global_objects script.
 #
 # Parameters:
