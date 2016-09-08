@@ -108,7 +108,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
         // Multiple shapes require PathOps. In some degenerate cases PathOps can exhibit quadratic
         // behavior, so we cap the number of ops to a reasonable count.
         const unsigned kMaxOps = 42;
-        if (!RuntimeEnabledFeatures::pathOpsSVGClippingEnabled() || ++opCount > kMaxOps) {
+        if (++opCount > kMaxOps) {
             m_clipContentPath.clear();
             return false;
         }
