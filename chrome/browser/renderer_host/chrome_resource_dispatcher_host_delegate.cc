@@ -472,9 +472,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 
-  signin::AppendMirrorRequestHeaderHelper(request, GURL() /* redirect_url */,
-                                          io_data, info->GetChildID(),
-                                          info->GetRouteID());
+  signin::FixMirrorRequestHeaderHelper(request, GURL() /* redirect_url */,
+                                       io_data, info->GetChildID(),
+                                       info->GetRouteID());
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -788,13 +788,14 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
-  // In the Mirror world, Chrome should append a X-Chrome-Connected header to
-  // all Gaia requests from a connected profile so Gaia could return a 204
-  // response and let Chrome handle the action with native UI. The only
-  // exception is requests from gaia webview, since the native profile
-  // management UI is built on top of it.
-  signin::AppendMirrorRequestHeaderHelper(
-      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
+  // In the Mirror world (for users that are signed in to the browser on
+  // Android, the identity is mirrored into the content area), Chrome should
+  // append a X-Chrome-Connected header to all Gaia requests from a connected
+  // profile so Gaia could return a 204 response and let Chrome handle the
+  // action with native UI. The only exception is requests from gaia webview,
+  // since the native profile management UI is built on top of it.
+  signin::FixMirrorRequestHeaderHelper(request, redirect_url, io_data,
+                                       info->GetChildID(), info->GetRouteID());
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(

@@ -30,6 +30,8 @@ enum ProfileMode {
   PROFILE_MODE_ADD_ACCOUNT_DISABLED = 1 << 1
 };
 
+extern const char kChromeConnectedHeader[];
+
 // The ServiceType specified by GAIA in the response header accompanying the 204
 // response. This indicates the action Chrome is supposed to lead the user to
 // perform.
@@ -73,6 +75,10 @@ struct ManageAccountsParams {
 bool SettingsAllowSigninCookies(
     const content_settings::CookieSettings* cookie_settings);
 
+// Checks if the url has the required properties to have an
+// X-CHROME-CONNECTED header.
+bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url);
+
 // Returns the X-CHROME-CONNECTED cookie, or an empty string if it should not be
 // added to the request to |url|.
 std::string BuildMirrorRequestCookieIfPossible(
@@ -83,8 +89,8 @@ std::string BuildMirrorRequestCookieIfPossible(
 
 // Adds X-Chrome-Connected header to all Gaia requests from a connected profile,
 // with the exception of requests from gaia webview.
-// Returns true if the account management header was added to the request.
-bool AppendMirrorRequestHeaderIfPossible(
+// Removes the header in case it should not be transfered to a redirected url.
+bool AppendOrRemoveMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,

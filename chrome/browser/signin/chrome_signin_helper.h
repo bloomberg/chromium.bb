@@ -24,11 +24,13 @@ namespace signin {
 // with the exception of requests from gaia webview. Must be called on IO
 // thread.
 // Returns true if the account management header was added to the request.
-bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
-                                     const GURL& redirect_url,
-                                     ProfileIOData* io_data,
-                                     int child_id,
-                                     int route_id);
+// Removes X-Chrome-Connected header if it is already in the headers and
+// it should not be there.
+void FixMirrorRequestHeaderHelper(net::URLRequest* request,
+                                  const GURL& redirect_url,
+                                  ProfileIOData* io_data,
+                                  int child_id,
+                                  int route_id);
 
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the

@@ -118,15 +118,15 @@ ManageAccountsParams BuildManageAccountsParamsHelper(net::URLRequest* request,
 
 }  // namespace
 
-bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
-                                     const GURL& redirect_url,
-                                     ProfileIOData* io_data,
-                                     int child_id,
-                                     int route_id) {
+void FixMirrorRequestHeaderHelper(net::URLRequest* request,
+                                  const GURL& redirect_url,
+                                  ProfileIOData* io_data,
+                                  int child_id,
+                                  int route_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (io_data->IsOffTheRecord())
-    return false;
+    return;
 
 #if !defined(OS_ANDROID)
   extensions::WebViewRendererState::WebViewInfo webview_info;
@@ -138,7 +138,7 @@ bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
   // gaia uses the header to decide whether it returns 204 for certain end
   // points.
   if (is_guest && webview_info.owner_host.empty())
-    return false;
+    return;
 #endif  // !defined(OS_ANDROID)
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
@@ -148,7 +148,8 @@ bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  return AppendMirrorRequestHeaderIfPossible(
+  // If new url is eligible to have the header, add it, otherwise remove it.
+  AppendOrRemoveMirrorRequestHeaderIfPossible(
       request, redirect_url, io_data->google_services_account_id()->GetValue(),
       io_data->GetCookieSettings(), profile_mode_mask);
 }
