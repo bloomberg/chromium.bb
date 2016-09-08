@@ -428,9 +428,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     if (!editable)
         return;
 
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!editable->document().needsLayoutTreeUpdate());
 
     const EphemeralRange range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
     if (range.isNull())

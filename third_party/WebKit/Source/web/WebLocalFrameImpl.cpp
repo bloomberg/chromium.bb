@@ -1239,6 +1239,10 @@ bool WebLocalFrameImpl::setCompositionFromExistingText(int compositionStart, int
     if (compositionStart == compositionEnd)
         return true;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     inputMethodController.setCompositionFromExistingText(CompositionUnderlineVectorBuilder(underlines), compositionStart, compositionEnd);
 
     return true;
