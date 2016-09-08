@@ -40,6 +40,7 @@ const char kSessionManagerInitMachineInfo[] = "InitMachineInfo";
 const char kSessionManagerCheckArcAvailability[] = "CheckArcAvailability";
 const char kSessionManagerStartArcInstance[] = "StartArcInstance";
 const char kSessionManagerStopArcInstance[] = "StopArcInstance";
+const char kSessionManagerPrioritizeArcInstance[] = "PrioritizeArcInstance";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
 const char kSessionManagerRemoveArcData[] = "RemoveArcData";
 const char kSessionManagerStartContainer[] = "StartContainer";
