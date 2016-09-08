@@ -79,12 +79,14 @@ def main():
   if is_os:
     target_os = 'ios'
     test_target = 'cronet_test'
-    gn_args = 'target_cpu = "x64" '
+    gn_args = 'is_cronet_build=true is_component_build=false '
     gn_extra = '--ide=xcode'
-    out_dir_suffix = '-iphonesimulator'
     if options.iphoneos:
-      gn_args = 'target_cpu = "arm64" '
+      gn_args += ' target_cpu="arm64" '
       out_dir_suffix = '-iphoneos'
+    else:
+      gn_args += ' target_cpu="x64" '
+      out_dir_suffix = '-iphonesimulator'
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
