@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 
+#include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/ng/ng_units.h"
 
 namespace blink {
@@ -54,9 +56,13 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   // XXX for orthogonal writing mode this is not right
   LayoutUnit container_logical_width =
       std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
-  // XXX Make sure this height is correct
-  LayoutUnit container_logical_height =
-      box.containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+  LayoutUnit container_logical_height;
+  if (!box.parent()) {
+    container_logical_height = box.view()->viewLogicalHeightForPercentages();
+  } else if (box.containingBlock()) {
+    container_logical_height =
+        box.containingBlock()->availableLogicalHeightForPercentageComputation();
+  }
   if (box.hasOverrideLogicalContentWidth()) {
     container_logical_width = box.overrideLogicalContentWidth();
     fixed_inline = true;
