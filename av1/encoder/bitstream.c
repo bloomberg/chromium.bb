@@ -2126,6 +2126,10 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #else
                         &counts->mv);
 #endif
+#if CONFIG_DAALA_EC
+    av1_tree_to_cdf(av1_mv_joint_tree, cm->fc->nmvc.joints,
+                    cm->fc->nmvc.joint_cdf);
+#endif
     update_ext_tx_probs(cm, header_bc);
   }
 
