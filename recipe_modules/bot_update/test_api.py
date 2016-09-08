@@ -3,15 +3,12 @@
 # found in the LICENSE file.
 
 import hashlib
-import os
 import struct
-import sys
 from recipe_engine import recipe_test_api
 
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
-  def output_json(self, master, builder, slave, root, first_sln,
-                  revision_mapping, fail_patch=False,
+  def output_json(self, root, first_sln, revision_mapping, fail_patch=False,
                   output_manifest=False, fixed_revisions=None):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.

@@ -10,12 +10,9 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, mastername, buildername, slavename, issue, patchset,
-               repository, gerrit_ref, rietveld, revision, parent_got_revision,
-               deps_revision_overrides, fail_patch, *args, **kwargs):
-    self._mastername = mastername
-    self._buildername = buildername
-    self._slavename = slavename
+  def __init__(self, issue, patchset, repository, gerrit_ref, rietveld,
+               revision, parent_got_revision, deps_revision_overrides,
+               fail_patch, *args, **kwargs):
     self._issue = issue
     self._patchset = patchset
     self._repository = repository
@@ -94,11 +91,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert cfg is not None, (
         'missing gclient_config or forgot api.gclient.set_config(...) before?')
 
-    # Used by bot_update to determine if we want to run or not.
-    master = self._mastername
-    builder = self._buildername
-    slave = self._slavename
-
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
     root = patch_root
@@ -154,18 +146,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
     rev_map = cfg.got_revision_mapping.as_jsonish()
 
     flags = [
-        # 1. Do we want to run? (master/builder/slave).
-        ['--master', master],
-        ['--builder', builder],
-        ['--slave', slave],
-
-        # 2. What do we want to check out (spec/root/rev/rev_map).
+        # What do we want to check out (spec/root/rev/rev_map).
         ['--spec', self.m.gclient.config_to_pythonish(cfg)],
         ['--root', root],
         ['--revision_mapping_file', self.m.json.input(rev_map)],
         ['--git-cache-dir', cfg.cache_dir],
 
-        # 3. How to find the patch, if any (issue/patchset).
+        # How to find the patch, if any (issue/patchset).
         ['--issue', issue],
         ['--patchset', patchset],
         ['--rietveld_server', rietveld or self._rietveld],
@@ -174,7 +161,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--apply_issue_email_file', email_file],
         ['--apply_issue_key_file', key_file],
 
-        # 4. Hookups to JSON output back into recipes.
+        # Hookups to JSON output back into recipes.
         ['--output_json', self.m.json.output()],]
 
 
@@ -228,7 +215,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        master, builder, slave, root, first_sln, rev_map, self._fail_patch,
+        root, first_sln, rev_map, self._fail_patch,
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.

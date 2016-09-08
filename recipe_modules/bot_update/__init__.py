@@ -15,9 +15,6 @@ from recipe_engine.recipe_api import Property
 from recipe_engine.types import freeze
 
 PROPERTIES = {
-  'mastername': Property(default=None),
-  'buildername': Property(default=None),
-  'slavename': Property(default=None),
   'issue': Property(default=None),
   'patchset': Property(default=None),
   'patch_project': Property(default=None),

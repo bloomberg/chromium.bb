@@ -57,99 +57,57 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test('basic') + api.properties(
-      mastername='chromium.linux',
-      buildername='Linux Builder',
-      slavename='totallyaslave-m1',
       patch=False,
       revision='abc'
   )
   yield api.test('basic_with_branch_heads') + api.properties(
-      mastername='chromium.linux',
-      buildername='Linux Builder',
-      slavename='totallyaslave-m1',
       with_branch_heads=True,
       suffix='with branch heads'
   )
   yield api.test('basic_output_manifest') + api.properties(
-      mastername='chromium.linux',
-      buildername='Linux Builder',
-      slavename='totallyaslave-m1',
       output_manifest=True,
   )
   yield api.test('tryjob') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
   )
   yield api.test('trychange') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       refs=['+refs/change/1/2/333'],
   )
   yield api.test('trychange_oauth2') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       oauth2=True,
   )
   yield api.test('tryjob_fail') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
   ) + api.step_data('bot_update', retcode=1)
   yield api.test('tryjob_fail_patch') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
       fail_patch='apply',
   ) + api.step_data('bot_update', retcode=88)
   yield api.test('tryjob_fail_patch_download') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
       fail_patch='download'
   ) + api.step_data('bot_update', retcode=87)
   yield api.test('no_shallow') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
       no_shallow=1
   )
   yield api.test('clobber') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
       clobber=1
   )
   yield api.test('reset_root_solution_revision') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
       root_solution_revision='revision',
   )
   yield api.test('gerrit_no_reset') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
       gerrit_no_reset=1
   )
   yield api.test('gerrit_no_rebase_patch_ref') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
       gerrit_no_rebase_patch_ref=True
   )
   yield api.test('apply_gerrit_ref') + api.properties(
@@ -159,9 +117,6 @@ def GenTests(api):
       test_apply_gerrit_ref=True,
   )
   yield api.test('tryjob_v8') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',

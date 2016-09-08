@@ -167,62 +167,6 @@ GOT_REVISION_MAPPINGS = {
 }
 
 
-BOT_UPDATE_MESSAGE = """
-What is the "Bot Update" step?
-==============================
-
-This step ensures that the source checkout on the bot (e.g. Chromium's src/ and
-its dependencies) is checked out in a consistent state. This means that all of
-the necessary repositories are checked out, no extra repositories are checked
-out, and no locally modified files are present.
-
-These actions used to be taken care of by the "gclient revert" and "update"
-steps. However, those steps are known to be buggy and occasionally flaky. This
-step has two main advantages over them:
-  * it only operates in Git, so the logic can be clearer and cleaner; and
-  * it is a slave-side script, so its behavior can be modified without
-    restarting the master.
-
-Why Git, you ask? Because that is the direction that the Chromium project is
-heading. This step is an integral part of the transition from using the SVN repo
-at chrome/trunk/src to using the Git repo src.git. Please pardon the dust while
-we fully convert everything to Git. This message will get out of your way
-eventually, and the waterfall will be a happier place because of it.
-
-This step can be activated or deactivated independently on every builder on
-every master. When it is active, the "gclient revert" and "update" steps become
-no-ops. When it is inactive, it prints this message, cleans up after itself, and
-lets everything else continue as though nothing has changed. Eventually, when
-everything is stable enough, this step will replace them entirely.
-
-Debugging information:
-(master/builder/slave may be unspecified on recipes)
-master: %(master)s
-builder: %(builder)s
-slave: %(slave)s
-forced by recipes: %(recipe)s
-CURRENT_DIR: %(CURRENT_DIR)s
-BUILDER_DIR: %(BUILDER_DIR)s
-SLAVE_DIR: %(SLAVE_DIR)s
-THIS_DIR: %(THIS_DIR)s
-SCRIPTS_DIR: %(SCRIPTS_DIR)s
-BUILD_DIR: %(BUILD_DIR)s
-ROOT_DIR: %(ROOT_DIR)s
-DEPOT_TOOLS_DIR: %(DEPOT_TOOLS_DIR)s
-bot_update.py is:"""
-
-ACTIVATED_MESSAGE = """ACTIVE.
-The bot will perform a Git checkout in this step.
-The "gclient revert" and "update" steps are no-ops.
-
-"""
-
-NOT_ACTIVATED_MESSAGE = """INACTIVE.
-This step does nothing. You actually want to look at the "update" step.
-
-"""
-
-
 GCLIENT_TEMPLATE = """solutions = %(solutions)s
 
 cache_dir = r%(cache_dir)s
@@ -254,98 +198,6 @@ RECOGNIZED_PATHS = {
         'https://chrome-internal.googlesource.com/chrome/src-internal.git',
 }
 RECOGNIZED_PATHS.update(internal_data.get('RECOGNIZED_PATHS', {}))
-
-ENABLED_MASTERS = [
-    'bot_update.always_on',
-    'chromium.android',
-    'chromium.angle',
-    'chromium.chrome',
-    'chromium.chromedriver',
-    'chromium.chromiumos',
-    'chromium',
-    'chromium.fyi',
-    'chromium.goma',
-    'chromium.gpu',
-    'chromium.gpu.fyi',
-    'chromium.infra',
-    'chromium.infra.cron',
-    'chromium.linux',
-    'chromium.lkgr',
-    'chromium.mac',
-    'chromium.memory',
-    'chromium.memory.fyi',
-    'chromium.perf',
-    'chromium.perf.fyi',
-    'chromium.swarm',
-    'chromium.webkit',
-    'chromium.webrtc',
-    'chromium.webrtc.fyi',
-    'chromium.win',
-    'client.catapult',
-    'client.drmemory',
-    'client.mojo',
-    'client.nacl',
-    'client.nacl.ports',
-    'client.nacl.sdk',
-    'client.nacl.toolchain',
-    'client.pdfium',
-    'client.skia',
-    'client.skia.fyi',
-    'client.v8',
-    'client.v8.branches',
-    'client.v8.fyi',
-    'client.v8.ports',
-    'client.webrtc',
-    'client.webrtc.fyi',
-    'tryserver.blink',
-    'tryserver.client.catapult',
-    'tryserver.client.mojo',
-    'tryserver.chromium.android',
-    'tryserver.chromium.angle',
-    'tryserver.chromium.linux',
-    'tryserver.chromium.mac',
-    'tryserver.chromium.perf',
-    'tryserver.chromium.win',
-    'tryserver.infra',
-    'tryserver.nacl',
-    'tryserver.v8',
-    'tryserver.webrtc',
-]
-ENABLED_MASTERS += internal_data.get('ENABLED_MASTERS', [])
-
-ENABLED_BUILDERS = {
-    'client.dart.fyi': [
-        'v8-linux-release',
-        'v8-mac-release',
-        'v8-win-release',
-    ],
-    'client.dynamorio': [
-        'linux-v8-dr',
-    ],
-}
-ENABLED_BUILDERS.update(internal_data.get('ENABLED_BUILDERS', {}))
-
-ENABLED_SLAVES = {}
-ENABLED_SLAVES.update(internal_data.get('ENABLED_SLAVES', {}))
-
-# Disabled filters get run AFTER enabled filters, so for example if a builder
-# config is enabled, but a bot on that builder is disabled, that bot will
-# be disabled.
-DISABLED_BUILDERS = {}
-DISABLED_BUILDERS.update(internal_data.get('DISABLED_BUILDERS', {}))
-
-DISABLED_SLAVES = {}
-DISABLED_SLAVES.update(internal_data.get('DISABLED_SLAVES', {}))
-
-# These masters work only in Git, meaning for got_revision, always output
-# a git hash rather than a SVN rev.
-GIT_MASTERS = [
-    'client.v8',
-    'client.v8.branches',
-    'client.v8.ports',
-    'tryserver.v8',
-]
-GIT_MASTERS += internal_data.get('GIT_MASTERS', [])
 
 
 # How many times to try before giving up.
@@ -523,34 +375,6 @@ def get_gclient_spec(solutions, target_os, target_os_only, git_cache_dir):
       'target_os': ('\ntarget_os=%s' % target_os) if target_os else '',
       'target_os_only': '\ntarget_os_only=%s' % target_os_only
   }
-
-
-def check_enabled(master, builder, slave):
-  if master in ENABLED_MASTERS:
-    return True
-  builder_list = ENABLED_BUILDERS.get(master)
-  if builder_list and builder in builder_list:
-    return True
-  slave_list = ENABLED_SLAVES.get(master)
-  if slave_list and slave in slave_list:
-    return True
-  return False
-
-
-def check_disabled(master, builder, slave):
-  """Returns True if disabled, False if not disabled."""
-  builder_list = DISABLED_BUILDERS.get(master)
-  if builder_list and builder in builder_list:
-    return True
-  slave_list = DISABLED_SLAVES.get(master)
-  if slave_list and slave in slave_list:
-    return True
-  return False
-
-
-def check_valid_host(master, builder, slave):
-  return (check_enabled(master, builder, slave)
-          and not check_disabled(master, builder, slave))
 
 
 def maybe_ignore_revision(revision, buildspec):
@@ -1388,9 +1212,6 @@ def parse_args():
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
-  parse.add_option('--master',
-                   help='Master name. If specified and it is not in '
-                        'bot_update\'s whitelist, bot_update will be noop.')
   parse.add_option('-f', '--force', action='store_true',
                    help='Bypass check to see if we want to be run. '
                         'Should ONLY be used locally or by smart recipes.')
@@ -1411,8 +1232,6 @@ def parse_args():
                    help=('Add manifest json to the json output.'))
   parse.add_option('--slave_name', default=socket.getfqdn().split('.')[0],
                    help='Hostname of the current machine, '
-                   'used for determining whether or not to activate.')
-  parse.add_option('--builder_name', help='Name of the builder, '
                    'used for determining whether or not to activate.')
   parse.add_option('--build_dir', default=os.getcwd())
   parse.add_option('--flag_file', default=path.join(os.getcwd(),
@@ -1520,7 +1339,7 @@ def prepare(options, git_slns, active):
   return revisions, step_text
 
 
-def checkout(options, git_slns, specs, buildspec, master,
+def checkout(options, git_slns, specs, buildspec,
              svn_root, revisions, step_text):
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
@@ -1583,8 +1402,7 @@ def checkout(options, git_slns, specs, buildspec, master,
       print '@@@STEP_TEXT@%s PATCH FAILED@@@' % step_text
     raise
 
-  # Revision is an svn revision, unless it's a git master.
-  use_svn_rev = master not in GIT_MASTERS
+  use_svn_rev = False
 
   # Take care of got_revisions outputs.
   revision_mapping = dict(GOT_REVISION_MAPPINGS.get(svn_root, {}))
@@ -1623,22 +1441,9 @@ def checkout(options, git_slns, specs, buildspec, master,
     emit_properties(got_revisions)
 
 
-def print_help_text(force, output_json, active, master, builder, slave):
-  """Print helpful messages to tell devs whats going on."""
-  if force and output_json:
-    recipe_force = 'Forced on by recipes'
-  elif active and output_json:
-    recipe_force = 'Off by recipes, but forced on by bot update'
-  elif not active and output_json:
-    recipe_force = 'Forced off by recipes'
-  else:
-    recipe_force = 'N/A. Was not called by recipes'
-
-  print BOT_UPDATE_MESSAGE % {
-    'master': master or 'Not specified',
-    'builder': builder or 'Not specified',
-    'slave': slave or 'Not specified',
-    'recipe': recipe_force,
+def print_debug_info():
+  print "Debugging info:"
+  debug_params = {
     'CURRENT_DIR': CURRENT_DIR,
     'BUILDER_DIR': BUILDER_DIR,
     'SLAVE_DIR': SLAVE_DIR,
@@ -1648,26 +1453,23 @@ def print_help_text(force, output_json, active, master, builder, slave):
     'ROOT_DIR': ROOT_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
   },
-  print ACTIVATED_MESSAGE if active else NOT_ACTIVATED_MESSAGE
+  for k, v in sorted(debug_params.iteritems()):
+    print "%s: %r" % (k, v)
 
 
 def main():
   # Get inputs.
   options, _ = parse_args()
-  builder = options.builder_name
-  slave = options.slave_name
-  master = options.master
 
   # Always run. This option will be removed in a later CL, but for now make sure
   # that bot_update is ALWAYS set to run, no matter what.
   options.force = True
 
   # Check if this script should activate or not.
-  active = options.force or check_valid_host(master, builder, slave)
+  active = True
 
   # Print a helpful message to tell developers whats going on with this step.
-  print_help_text(
-      options.force, options.output_json, active, master, builder, slave)
+  print_debug_info()
 
   # Parse, munipulate, and print the gclient solutions.
   specs = {}
@@ -1681,7 +1483,7 @@ def main():
   try:
     # Dun dun dun, the main part of bot_update.
     revisions, step_text = prepare(options, git_slns, active)
-    checkout(options, git_slns, specs, buildspec, master, svn_root, revisions,
+    checkout(options, git_slns, specs, buildspec, svn_root, revisions,
              step_text)
 
   except Inactive:
