@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 
 /**
  * Represents the data for a header of a group of snippets
@@ -35,5 +36,11 @@ public class SectionHeader implements NewTabPageItem {
 
     public String getHeaderText() {
         return mHeaderText;
+    }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof SectionHeaderViewHolder;
+        ((SectionHeaderViewHolder) holder).onBindViewHolder(this);
     }
 }

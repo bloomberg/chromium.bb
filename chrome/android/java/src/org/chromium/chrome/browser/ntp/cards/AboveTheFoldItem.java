@@ -18,4 +18,9 @@ class AboveTheFoldItem extends SingleItemGroup {
     public int getType() {
         return NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD;
     }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        // Nothing to do.
+    }
 }

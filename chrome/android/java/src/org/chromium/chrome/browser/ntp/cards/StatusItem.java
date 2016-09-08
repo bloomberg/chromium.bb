@@ -47,22 +47,19 @@ public abstract class StatusItem implements NewTabPageItem {
             mActionView = (Button) itemView.findViewById(R.id.status_action_button);
         }
 
-        @Override
-        public void onBindViewHolder(NewTabPageItem item) {
-            assert item instanceof StatusItem;
-            super.onBindViewHolder(item);
+        public void onBindViewHolder(final StatusItem item) {
+            super.onBindViewHolder();
 
-            final StatusItem listItem = (StatusItem) item;
-            mTitleView.setText(listItem.mHeaderStringId);
-            mBodyView.setText(listItem.mDescriptionStringId);
+            mTitleView.setText(item.mHeaderStringId);
+            mBodyView.setText(item.mDescriptionStringId);
 
-            if (listItem.hasAction()) {
-                mActionView.setText(listItem.mActionStringId);
+            if (item.hasAction()) {
+                mActionView.setText(item.mActionStringId);
                 mActionView.setOnClickListener(new OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
-                        listItem.performAction(v.getContext());
+                        item.performAction(v.getContext());
                     }
                 });
                 mActionView.setVisibility(View.VISIBLE);
@@ -187,5 +184,11 @@ public abstract class StatusItem implements NewTabPageItem {
     @Override
     public int getType() {
         return NewTabPageItem.VIEW_TYPE_STATUS;
+    }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof ViewHolder;
+        ((ViewHolder) holder).onBindViewHolder(this);
     }
 }

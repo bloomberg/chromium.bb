@@ -23,15 +23,6 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
     }
 
     /**
-     * Called when the NTP cards adapter is requested to update the currently visible
-     * {@link ViewHolder} with data. The default implementation does nothing.
-     *
-     * @param item The {@link NewTabPageItem} that holds the data for this {@link ViewHolder}
-     */
-    public void onBindViewHolder(NewTabPageItem item) {
-    }
-
-    /**
      * Whether this item can be swiped and dismissed. The default implementation disallows it.
      * @return {@code true} if the item can be swiped and dismissed, {@code false} otherwise.
      */

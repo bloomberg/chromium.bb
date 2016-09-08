@@ -25,4 +25,10 @@ class ProgressItem implements NewTabPageItem {
     public void setVisible(boolean visible) {
         mVisible = visible;
     }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof ProgressViewHolder;
+        ((ProgressViewHolder) holder).onBindViewHolder(this);
+    }
 }

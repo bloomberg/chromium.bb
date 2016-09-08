@@ -81,10 +81,14 @@ class ActionItem implements NewTabPageItem {
             });
         }
 
-        @Override
-        public void onBindViewHolder(NewTabPageItem item) {
-            super.onBindViewHolder(item);
-            mActionListItem = (ActionItem) item;
+        public void onBindViewHolder(ActionItem item) {
+            mActionListItem = item;
         }
+    }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof ViewHolder;
+        ((ViewHolder) holder).onBindViewHolder(this);
     }
 }

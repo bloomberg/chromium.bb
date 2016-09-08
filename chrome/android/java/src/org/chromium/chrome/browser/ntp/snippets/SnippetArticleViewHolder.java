@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -291,9 +290,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mPublisherTextView.setLayoutParams(params);
     }
 
-    @Override
-    public void onBindViewHolder(NewTabPageItem article) {
-        super.onBindViewHolder(article);
+    public void onBindViewHolder(SnippetArticle article) {
+        super.onBindViewHolder();
 
         mArticle = (SnippetArticle) article;
         updateLayout();

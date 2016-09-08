@@ -78,4 +78,10 @@ public interface NewTabPageItem {
       */
     @ViewType
     public int getType();
+
+    /**
+     * Update the given {@link NewTabPageViewHolder} with data from this item.
+     * @param holder The {@link NewTabPageViewHolder} to update.
+     */
+    void onBindViewHolder(NewTabPageViewHolder holder);
 }

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
 /**
@@ -93,6 +94,12 @@ public class SnippetArticle implements NewTabPageItem {
     @Override
     public int getType() {
         return NewTabPageItem.VIEW_TYPE_SNIPPET;
+    }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        assert holder instanceof SnippetArticleViewHolder;
+        ((SnippetArticleViewHolder) holder).onBindViewHolder(this);
     }
 
     /**

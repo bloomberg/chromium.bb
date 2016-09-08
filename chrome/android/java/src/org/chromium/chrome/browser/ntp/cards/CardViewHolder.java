@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
@@ -113,12 +114,10 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     /**
      * Called when the NTP cards adapter is requested to update the currently visible ViewHolder
-     * with data. {@link CardViewHolder}'s implementation must be called by subclasses.
-     *
-     * @param item The NewTabPageListItem object that holds the data for this ViewHolder
+     * with data.
      */
-    @Override
-    public void onBindViewHolder(NewTabPageItem item) {
+    @CallSuper
+    protected void onBindViewHolder() {
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
         if (getAdapterPosition() != mRecyclerView.getNewTabPageAdapter().getFirstCardPosition()) {
             // Not the first card, we can't peek anyway.

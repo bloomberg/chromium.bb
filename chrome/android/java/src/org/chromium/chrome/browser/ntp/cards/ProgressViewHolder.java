@@ -22,9 +22,8 @@ public class ProgressViewHolder extends NewTabPageViewHolder {
         mProgressIndicator = (ProgressIndicatorView) itemView.findViewById(R.id.snippets_progress);
     }
 
-    @Override
-    public void onBindViewHolder(NewTabPageItem item) {
-        mListItem = (ProgressItem) item;
+    public void onBindViewHolder(ProgressItem item) {
+        mListItem = item;
         updateDisplay();
     }
 

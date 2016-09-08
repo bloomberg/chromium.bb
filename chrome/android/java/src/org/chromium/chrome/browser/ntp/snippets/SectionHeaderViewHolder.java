@@ -10,7 +10,6 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.MarginResizer;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -22,8 +21,6 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     private static final double SCROLL_HEADER_HEIGHT_PERCENTAGE = 0.7;
 
     private final int mMaxSnippetHeaderHeight;
-    private final int mMaxPeekPadding;
-    private final NewTabPageRecyclerView mRecyclerView;
 
     private SectionHeader mHeaderListItem;
 
@@ -32,17 +29,11 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
                         .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
         mMaxSnippetHeaderHeight = itemView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_article_header_height);
-
-        mMaxPeekPadding = itemView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_padding_and_peeking_card_height);
-
-        mRecyclerView = recyclerView;
         MarginResizer.createWithViewAdapter(itemView, config);
     }
 
-    @Override
-    public void onBindViewHolder(NewTabPageItem header) {
-        mHeaderListItem = (SectionHeader) header;
+    public void onBindViewHolder(SectionHeader header) {
+        mHeaderListItem = header;
         ((TextView) itemView).setText(mHeaderListItem.getHeaderText());
         updateDisplay(0, false);
     }

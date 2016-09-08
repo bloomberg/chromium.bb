@@ -35,4 +35,9 @@ public class SpacingItem extends SingleItemGroup {
     public int getType() {
         return NewTabPageItem.VIEW_TYPE_SPACING;
     }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        // Nothing to do.
+    }
 }

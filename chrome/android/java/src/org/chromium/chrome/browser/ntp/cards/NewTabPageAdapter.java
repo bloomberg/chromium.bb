@@ -275,7 +275,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        holder.onBindViewHolder(getItems().get(position));
+        getItems().get(position).onBindViewHolder(holder);
     }
 
     @Override

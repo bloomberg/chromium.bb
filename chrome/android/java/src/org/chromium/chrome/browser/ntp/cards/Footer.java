@@ -24,6 +24,11 @@ public class Footer extends SingleItemGroup {
         return NewTabPageItem.VIEW_TYPE_FOOTER;
     }
 
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder) {
+        // Nothing to do (the footer view is static).
+    }
+
     /**
      * The {@code ViewHolder} for the {@link Footer}.
      */
