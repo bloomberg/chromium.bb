@@ -41,7 +41,11 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, const aom_prob *p) {
 static PREDICTION_MODE read_intra_mode_y(AV1_COMMON *cm, MACROBLOCKD *xd,
                                          aom_reader *r, int size_group) {
   const PREDICTION_MODE y_mode =
+#if CONFIG_DAALA_EC
+      read_intra_mode_cdf(r, cm->fc->y_mode_cdf[size_group]);
+#else
       read_intra_mode(r, cm->fc->y_mode_prob[size_group]);
+#endif
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->y_mode[size_group][y_mode];
   return y_mode;
