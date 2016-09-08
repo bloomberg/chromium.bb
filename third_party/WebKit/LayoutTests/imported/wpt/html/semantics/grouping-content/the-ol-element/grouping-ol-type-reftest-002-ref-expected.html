@@ -5,11 +5,12 @@
     <title>ol element</title>
     <link rel="author" title="dzenana" href="mailto:dzenana.trenutak@gmail.com">
     <link rel="help" href="https://html.spec.whatwg.org/multipage/#the-ol-element">
-    <link rel="match" href="grouping-ol-type-reftest-002.html" />
+    <link rel="match" href="grouping-ol-type-reftest-002-ref.html" />
     <meta name="assert" content="List items are rendered consistently with the state of the type attribute." />
     <style type="text/css">
         span p {display:list-item; margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0;}
-        span span p {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span li {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span ol {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace; list-style-position: inside;}
     </style>
 </head>
 <body>
@@ -22,40 +23,41 @@
     <p>(Note: each list item has no content; only the sequencing should appear.)</p>
 
     <span>
-        <p>1, 2, 3 (type attribute of "1" results in decimal type)</p>
-        <span>
-            <p>1.</p>
-            <p>2.</p>
-            <p>3.</p>
-        </span>
 
-        <p>aa, ab, ac (type attribute of "a" results in lower case latin alphabet, start = 27)</p>
-        <span>
-            <p>aa.</p>
-            <p>ab.</p>
-            <p>ac.</p>
-        </span>
+    <p>1, 2, 3 (type attribute of "1" results in decimal type)</p>
+    <ol type="1">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
-        <p>AA, AB, AC (type attribute of "A" results in upper case latin alphabet, start = 27)</p>
-        <span>
-            <p>AA.</p>
-            <p>AB.</p>
-            <p>AC.</p>
-        </span>
+    <p>aa, ab, ac (type attribute of "a" results in lower case latin alphabet, start = 27)</p>
+    <ol type="a" start="27">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
-        <p>i, v, c (type attribute of "i" results in lower case roman alphabet, list values = 1, 5, 100)</p>
-        <span>
-            <p>i.</p>
-            <p>v.</p>
-            <p>c.</p>
-        </span>
+    <p>AA, AB, AC (type attribute of "A" results in upper case latin alphabet, start = 27)</p>
+    <ol type="A" start="27">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
-        <p>I, V, C (type attribute of "I" results in upper case roman alphabet, list values = 1, 5, 100)</p>
-        <span>
-            <p>I.</p>
-            <p>V.</p>
-            <p>C.</p>
-        </span>
+    <p>i, v, c (type attribute of "i" results in lower case roman alphabet, list values = 1, 5, 100)</p>
+    <ol type="i">
+        <li value="1"></li>
+        <li value="5"></li>
+        <li value="100"></li>
+    </ol>
+
+    <p>I, V, C (type attribute of "I" results in upper case roman alphabet, list values = 1, 5, 100)</p>
+    <ol type="I">
+        <li value="1"></li>
+        <li value="5"></li>
+        <li value="100"></li>
+    </ol>
 
     </span>
 

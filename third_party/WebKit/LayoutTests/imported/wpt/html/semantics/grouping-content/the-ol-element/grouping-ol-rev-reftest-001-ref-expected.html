@@ -5,11 +5,13 @@
     <title>ol element</title>
     <link rel="author" title="dzenana" href="mailto:dzenana.trenutak@gmail.com">
     <link rel="help" href="https://html.spec.whatwg.org/multipage/#the-ol-element">
-    <link rel="match" href="grouping-ol-rev-reftest-001.html" />
+    <link rel="match" href="grouping-ol-rev-reftest-001-ref.html" />
     <meta name="assert" content="OL's reversed attribute creates a descending list." />
     <style type="text/css">
         span p {display:list-item; margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0;}
-        span span p {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span li {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span ol {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace;
+                list-style-position: inside; list-style-type: decimal; }
     </style>
 </head>
 <body>
@@ -27,28 +29,31 @@
     <span>
 
     <p>Ordered List</p>
-    <span>
-        <p>1.</p>
-        <p>2.</p>
-        <p>3.</p>
-    </span>
+    <ol>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
     <p>Ordered List - reversed via content attribute</p>
-    <span>
-        <p>3.</p>
-        <p>2.</p>
-        <p>1.</p>
-    </span>
+    <ol reversed="reversed">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
     <p>Ordered List - reversed via IDL</p>
-    <span>
-        <p>3.</p>
-        <p>2.</p>
-        <p>1.</p>
-    </span>
+    <ol id="reverse_me">
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
     </span>
 
+    <script>
+        document.getElementById("reverse_me").reversed = true;
+    </script>
 
 </body>
 </html>

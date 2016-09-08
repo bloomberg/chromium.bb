@@ -28,22 +28,15 @@ if (!window.assert_times_equal) {
 // creates div element, appends it to the document body and
 // removes the created element during test cleanup
 function createDiv(test, doc) {
-  return createElement(test, 'div', doc);
-}
-
-// creates element of given tagName, appends it to the document body and
-// removes the created element during test cleanup
-// if tagName is null or undefined, returns div element
-function createElement(test, tagName, doc) {
   if (!doc) {
     doc = document;
   }
-  var element = doc.createElement(tagName || 'div');
-  doc.body.appendChild(element);
+  var div = doc.createElement('div');
+  doc.body.appendChild(div);
   test.add_cleanup(function() {
-    element.remove();
+    div.remove();
   });
-  return element;
+  return div;
 }
 
 // Creates a style element with the specified rules, appends it to the document

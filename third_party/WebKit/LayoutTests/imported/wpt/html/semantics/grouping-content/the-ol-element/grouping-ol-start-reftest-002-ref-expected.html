@@ -5,11 +5,13 @@
     <title>ol element</title>
     <link rel="author" title="dzenana" href="mailto:dzenana.trenutak@gmail.com">
     <link rel="help" href="https://html.spec.whatwg.org/multipage/#the-ol-element">
-    <link rel="match" href="grouping-ol-start-reftest-001.html" />
-    <meta name="assert" content="Sequences produced by calculated values for LI elements within OL match spec's expectations. (part one)" />
+    <link rel="match" href="grouping-ol-start-reftest-002-ref.html" />
+    <meta name="assert" content="Sequences produced by calculated values for LI elements within OL match spec's expectations. (part two)" />
     <style type="text/css">
         span p {display:list-item; margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0;}
-        span span p {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span li {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-top: 0; padding-bottom: 0; font-family: monospace;}
+        span ol {margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 5em; padding-top: 0; padding-bottom: 0; font-family: monospace;
+                list-style-position: inside; list-style-type: decimal; }
     </style>
 </head>
 <body>
@@ -24,35 +26,36 @@
 
     <span>
 
-    <p>2, 3, 4 (ol has start attribute of 2)</p>
-    <span>
-        <p>2.</p>
-        <p>3.</p>
-        <p>4.</p>
+    <p>4, 5, 6 (ol has start attribute of 2 which is overridden by first list item's value attribute of 4)</p>
+    <ol start="2">
+        <li value="4"></li>
+        <li></li>
+        <li></li>
+    </ol>
+
+    <p>4, 5, 6 (ol has start attribute of -10 which is overridden by first list item's value attribute of 4)</p>
+    <ol start="-10">
+        <li value="4"></li>
+        <li></li>
+        <li></li>
+    </ol>
+
+    <p>1, 5, 6 (2nd list item has value attribute of 5)</p>
+    <ol>
+        <li></li>
+        <li value="5"></li>
+        <li></li>
+    </ol>
+
+    <p>-1, -5, -4 (list has a start attribute of -1, and 2nd list item has value attribute of -5)</p>
+    <ol start="-1">
+        <li></li>
+        <li value="-5"></li>
+        <li></li>
+    </ol>
+
     </span>
 
-    <p>-9, -8, -7 (ol has start attribute of -9)</p>
-    <span>
-        <p>-9.</p>
-        <p>-8.</p>
-        <p>-7.</p>
-    </span>
-
-    <p>1000, 1001, 1002 (list's start attribute of 1000 provided by JavaScript)</p>
-    <span>
-        <p>1000.</p>
-        <p>1001.</p>
-        <p>1002.</p>
-    </span>
-
-    <p>2, 1, 9 (each list item has a specified value attribute, list has a start attribute of 1000)</p>
-    <span>
-        <p>2.</p>
-        <p>1.</p>
-        <p>9.</p>
-    </span>
-
-    </span>
 
 </body>
 </html>
