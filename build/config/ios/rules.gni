@@ -6,12 +6,6 @@ import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
 
-# Control whether an intermediate source_set is used when building executables
-# and shared_libraries for ios_app_bundle and ios_framework_bundle. This is a
-# temporary flag that will be removed once scoped_nsobject_unittest{_arc}.mm
-# tests are passing with this flag set to true (see crbug.com/637065)
-_use_intermediate_source_set = true
-
 # Invokes lipo on multiple arch-specific binaries to create a fat binary.
 #
 # Arguments
@@ -383,30 +377,25 @@ template("ios_app_bundle") {
   _arch_executable_target = _target_name + "_arch_executable"
   _lipo_executable_target = _target_name + "_executable"
 
-  if (_use_intermediate_source_set) {
-    source_set(_arch_executable_source) {
-      forward_variables_from(invoker,
-                             "*",
-                             [
-                               "bundle_deps",
-                               "bundle_deps_filter",
-                               "bundle_extension",
-                               "enable_code_signing",
-                               "entitlements_path",
-                               "extra_substitutions",
-                               "extra_system_frameworks",
-                               "info_plist",
-                               "info_plist_target",
-                               "output_name",
-                               "product_type",
-                               "visibility",
-                             ])
+  source_set(_arch_executable_source) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "bundle_deps",
+                             "bundle_deps_filter",
+                             "bundle_extension",
+                             "enable_code_signing",
+                             "entitlements_path",
+                             "extra_substitutions",
+                             "extra_system_frameworks",
+                             "info_plist",
+                             "info_plist_target",
+                             "output_name",
+                             "product_type",
+                             "visibility",
+                           ])
 
-      visibility = [ ":$_arch_executable_target" ]
-    }
-  } else {
-    assert(_arch_executable_source != "",
-           "mark _arch_executable_source as used")
+    visibility = [ ":$_arch_executable_target" ]
   }
 
   if (use_ios_simulator) {
@@ -434,9 +423,6 @@ template("ios_app_bundle") {
                              "sources",
                              "visibility",
                            ])
-    if (!_use_intermediate_source_set) {
-      forward_variables_from(invoker, [ "sources" ])
-    }
 
     visibility = [ ":$_lipo_executable_target($default_toolchain)" ]
     if (current_toolchain != default_toolchain) {
@@ -446,9 +432,7 @@ template("ios_app_bundle") {
     if (!defined(deps)) {
       deps = []
     }
-    if (_use_intermediate_source_set) {
-      deps += [ ":$_arch_executable_source" ]
-    }
+    deps += [ ":$_arch_executable_source" ]
 
     if (!defined(libs)) {
       libs = []
@@ -888,38 +872,33 @@ template("ios_framework_bundle") {
   _arch_shared_library_target = _target_name + "_arch_shared_library"
   _lipo_shared_library_target = _target_name + "_shared_library"
 
-  if (_use_intermediate_source_set) {
-    source_set(_arch_shared_library_source) {
-      forward_variables_from(invoker,
-                             "*",
-                             [
-                               "bundle_deps",
-                               "bundle_deps_filter",
-                               "data_deps",
-                               "enable_code_signing",
-                               "info_plist",
-                               "info_plist_target",
-                               "output_name",
-                               "visibility",
-                             ])
+  source_set(_arch_shared_library_source) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "bundle_deps",
+                             "bundle_deps_filter",
+                             "data_deps",
+                             "enable_code_signing",
+                             "info_plist",
+                             "info_plist_target",
+                             "output_name",
+                             "visibility",
+                           ])
 
-      visibility = [ ":$_arch_shared_library_target" ]
+    visibility = [ ":$_arch_shared_library_target" ]
 
-      if (_has_public_headers) {
-        configs += [
-          ":$_framework_headers_config($default_toolchain)",
-          ":$_headers_map_config($default_toolchain)",
-        ]
+    if (_has_public_headers) {
+      configs += [
+        ":$_framework_headers_config($default_toolchain)",
+        ":$_headers_map_config($default_toolchain)",
+      ]
 
-        if (!defined(deps)) {
-          deps = []
-        }
-        deps += [ ":$_framework_headers_target($default_toolchain)" ]
+      if (!defined(deps)) {
+        deps = []
       }
+      deps += [ ":$_framework_headers_target($default_toolchain)" ]
     }
-  } else {
-    assert(_arch_shared_library_source != "",
-           "mark _arch_shared_library_source as used")
   }
 
   shared_library(_arch_shared_library_target) {
@@ -936,9 +915,6 @@ template("ios_framework_bundle") {
                              "sources",
                              "visibility",
                            ])
-    if (!_use_intermediate_source_set) {
-      forward_variables_from(invoker, [ "sources" ])
-    }
 
     visibility = [ ":$_lipo_shared_library_target($default_toolchain)" ]
     if (current_toolchain != default_toolchain) {
@@ -948,21 +924,7 @@ template("ios_framework_bundle") {
     if (!defined(deps)) {
       deps = []
     }
-    if (_use_intermediate_source_set) {
-      deps += [ ":$_arch_shared_library_source" ]
-    } else {
-      if (_has_public_headers) {
-        configs += [
-          ":$_framework_headers_config($default_toolchain)",
-          ":$_headers_map_config($default_toolchain)",
-        ]
-
-        if (!defined(deps)) {
-          deps = []
-        }
-        deps += [ ":$_framework_headers_target($default_toolchain)" ]
-      }
-    }
+    deps += [ ":$_arch_shared_library_source" ]
     configs += [ ":$_install_name_config($default_toolchain)" ]
 
     output_extension = ""
