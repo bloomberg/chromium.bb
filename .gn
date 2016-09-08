@@ -260,6 +260,7 @@ exec_script_whitelist = [
   "//third_party/android_platform/BUILD.gn",
   "//third_party/angle/BUILD.gn",
   "//third_party/angle/src/tests/BUILD.gn",
+  "//third_party/angle/src/vulkan_support/BUILD.gn",
   "//third_party/boringssl/BUILD.gn",
   "//third_party/catapult/tracing/BUILD.gn",
   "//third_party/cld_2/BUILD.gn",
