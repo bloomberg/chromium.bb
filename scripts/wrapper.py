@@ -140,14 +140,14 @@ def FindTarget(target):
     except ImportError as e:
       print('%s: could not import chromite module: %s: %s'
             % (sys.argv[0], full_path, e), file=sys.stderr)
-      sys.exit(1)
+      raise
   else:
     try:
       module = imp.load_source('main', full_path)
     except IOError as e:
       print('%s: could not import external module: %s: %s'
             % (sys.argv[0], full_path, e), file=sys.stderr)
-      sys.exit(1)
+      raise
 
   # Run the module's main func if it has one.
   main = getattr(module, 'main', None)
