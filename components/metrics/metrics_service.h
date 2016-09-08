@@ -352,9 +352,10 @@ class MetricsService : public base::HistogramFlattener {
   // Prepares the initial stability log, which is only logged when the previous
   // run of Chrome crashed.  This log contains any stability metrics left over
   // from that previous run, and only these stability metrics.  It uses the
-  // system profile from the previous session.  Returns true if a log was
-  // created.
-  bool PrepareInitialStabilityLog();
+  // system profile from the previous session.  |prefs_previous_version| is used
+  // to validate the version number recovered from the system profile.  Returns
+  // true if a log was created.
+  bool PrepareInitialStabilityLog(const std::string& prefs_previous_version);
 
   // Prepares the initial metrics log, which includes startup histograms and
   // profiler data, as well as incremental stability-related metrics.

@@ -117,9 +117,9 @@ MetricsLog::~MetricsLog() {
 
 // static
 void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail, 0);
   registry->RegisterIntegerPref(
       prefs::kStabilityBreakpadRegistrationSuccess, 0);
@@ -129,6 +129,9 @@ void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
   registry->RegisterStringPref(prefs::kStabilitySavedSystemProfileHash,
                                std::string());
+  registry->RegisterIntegerPref(prefs::kStabilityDeferredCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityDiscardCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityVersionMismatchCount, 0);
 }
 
 // static
@@ -241,6 +244,31 @@ void MetricsLog::RecordStabilityMetrics(
   if (debugger_not_present_count) {
     pref->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
     stability->set_debugger_not_present_count(debugger_not_present_count);
+  }
+
+  // Note: only logging the following histograms for non-zero values.
+
+  int deferred_count = pref->GetInteger(prefs::kStabilityDeferredCount);
+  if (deferred_count) {
+    local_state_->SetInteger(prefs::kStabilityDeferredCount, 0);
+    UMA_STABILITY_HISTOGRAM_COUNTS_100(
+        "Stability.Internals.InitialStabilityLogDeferredCount", deferred_count);
+  }
+
+  int discard_count = local_state_->GetInteger(prefs::kStabilityDiscardCount);
+  if (discard_count) {
+    local_state_->SetInteger(prefs::kStabilityDiscardCount, 0);
+    UMA_STABILITY_HISTOGRAM_COUNTS_100("Stability.Internals.DataDiscardCount",
+                                       discard_count);
+  }
+
+  int version_mismatch_count =
+      local_state_->GetInteger(prefs::kStabilityVersionMismatchCount);
+  if (version_mismatch_count) {
+    local_state_->SetInteger(prefs::kStabilityVersionMismatchCount, 0);
+    UMA_STABILITY_HISTOGRAM_COUNTS_100(
+        "Stability.Internals.VersionMismatchCount",
+        version_mismatch_count);
   }
 }
 
@@ -401,7 +429,10 @@ void MetricsLog::RecordEnvironment(
   }
 }
 
-bool MetricsLog::LoadSavedEnvironmentFromPrefs() {
+bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {
+  DCHECK(app_version);
+  app_version->clear();
+
   PrefService* local_state = local_state_;
   const std::string base64_system_profile =
       local_state->GetString(prefs::kStabilitySavedSystemProfile);
@@ -415,10 +446,14 @@ bool MetricsLog::LoadSavedEnvironmentFromPrefs() {
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   std::string serialized_system_profile;
-  return base::Base64Decode(base64_system_profile,
-                            &serialized_system_profile) &&
-         ComputeSHA1(serialized_system_profile) == system_profile_hash &&
-         system_profile->ParseFromString(serialized_system_profile);
+
+  bool success =
+      base::Base64Decode(base64_system_profile, &serialized_system_profile) &&
+      ComputeSHA1(serialized_system_profile) == system_profile_hash &&
+      system_profile->ParseFromString(serialized_system_profile);
+  if (success)
+    *app_version = system_profile->app_version();
+  return success;
 }
 
 void MetricsLog::CloseLog() {

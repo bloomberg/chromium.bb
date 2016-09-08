@@ -57743,6 +57743,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Stability.Internals.DataDiscardCount" units="counts">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Number of times stability data was discarded. This is accumulated since the
+    last report, even across versions. This is logged during stability metric
+    recording for the following log sent.
+  </summary>
+</histogram>
+
+<histogram name="Stability.Internals.InitialStabilityLogDeferredCount"
+    units="counts">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Number of times the initial stability log upload was deferred to the next
+    startup. This is logged during stability metric recording for the following
+    log sent.
+  </summary>
+</histogram>
+
+<histogram name="Stability.Internals.VersionMismatchCount" units="counts">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Number of times the version number stored in prefs did not match the
+    serialized system profile version number. This is logged during stability
+    metric recording.
+  </summary>
+</histogram>
+
 <histogram name="Stability.MobileSessionShutdownType"
     enum="MobileSessionShutdownType">
   <owner>lpromero@chromium.org</owner>

@@ -533,6 +533,10 @@ void MetricsService::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
   local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
+  local_state_->SetInteger(prefs::kStabilityDeferredCount, 0);
+  // Note: kStabilityDiscardCount is not cleared as its intent is to measure
+  // the number of times data is discarded, even across versions.
+  local_state_->SetInteger(prefs::kStabilityVersionMismatchCount, 0);
 }
 
 void MetricsService::PushExternalLog(const std::string& log) {
@@ -566,8 +570,11 @@ void MetricsService::InitializeMetricsState() {
   const int64_t buildtime = MetricsLog::GetBuildTime();
   const std::string version = client_->GetVersionString();
   bool version_changed = false;
-  if (local_state_->GetInt64(prefs::kStabilityStatsBuildTime) != buildtime ||
-      local_state_->GetString(prefs::kStabilityStatsVersion) != version) {
+  int64_t previous_buildtime =
+      local_state_->GetInt64(prefs::kStabilityStatsBuildTime);
+  std::string previous_version =
+      local_state_->GetString(prefs::kStabilityStatsVersion);
+  if (previous_buildtime != buildtime || previous_version != version) {
     local_state_->SetString(prefs::kStabilityStatsVersion, version);
     local_state_->SetInt64(prefs::kStabilityStatsBuildTime, buildtime);
     version_changed = true;
@@ -599,8 +606,11 @@ void MetricsService::InitializeMetricsState() {
     // If the previous session didn't exit cleanly, or if any provider
     // explicitly requests it, prepare an initial stability log -
     // provided UMA is enabled.
-    if (state_manager_->IsMetricsReportingEnabled())
-      has_initial_stability_log = PrepareInitialStabilityLog();
+    if (state_manager_->IsMetricsReportingEnabled()) {
+      has_initial_stability_log = PrepareInitialStabilityLog(previous_version);
+      if (!has_initial_stability_log)
+        IncrementPrefValue(prefs::kStabilityDeferredCount);
+    }
   }
 
   // If no initial stability log was generated and there was a version upgrade,
@@ -609,8 +619,10 @@ void MetricsService::InitializeMetricsState() {
   // number of different edge cases, such as if the last version crashed before
   // it could save off a system profile or if UMA reporting is disabled (which
   // normally results in stats being accumulated).
-  if (!has_initial_stability_log && version_changed)
+  if (!has_initial_stability_log && version_changed) {
     ClearSavedStabilityMetrics();
+    IncrementPrefValue(prefs::kStabilityDiscardCount);
+  }
 
   // Update session ID.
   ++session_id_;
@@ -906,7 +918,8 @@ bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
   return false;
 }
 
-bool MetricsService::PrepareInitialStabilityLog() {
+bool MetricsService::PrepareInitialStabilityLog(
+    const std::string& prefs_previous_version) {
   DCHECK_EQ(INITIALIZED, state_);
 
   std::unique_ptr<MetricsLog> initial_stability_log(
@@ -914,9 +927,13 @@ bool MetricsService::PrepareInitialStabilityLog() {
 
   // Do not call NotifyOnDidCreateMetricsLog here because the stability
   // log describes stats from the _previous_ session.
-
-  if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
+  std::string system_profile_app_version;
+  if (!initial_stability_log->LoadSavedEnvironmentFromPrefs(
+          &system_profile_app_version)) {
     return false;
+  }
+  if (system_profile_app_version != prefs_previous_version)
+    IncrementPrefValue(prefs::kStabilityVersionMismatchCount);
 
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(std::move(initial_stability_log));

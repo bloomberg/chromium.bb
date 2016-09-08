@@ -100,9 +100,11 @@ class MetricsLog {
       int64_t metrics_reporting_enabled_date);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
-  // call from prefs and clears the pref value. Returns true on success or false
-  // if there was no saved environment in prefs or it could not be decoded.
-  bool LoadSavedEnvironmentFromPrefs();
+  // call from prefs and clears the pref value. On success, returns true and
+  // |app_version| contains the recovered version. Otherwise (if there was no
+  // saved environment in prefs or it could not be decoded), returns false and
+  // |app_version| is empty.
+  bool LoadSavedEnvironmentFromPrefs(std::string* app_version);
 
   // Writes application stability metrics, including stability metrics provided
   // by the specified set of |metrics_providers|. The system profile portion of

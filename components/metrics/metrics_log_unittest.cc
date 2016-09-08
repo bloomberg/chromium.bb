@@ -276,12 +276,15 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
       prefs::kStabilitySavedSystemProfileHash;
 
   TestMetricsServiceClient client;
+  client.set_version_string("bogus version");
 
   // The pref value is empty, so loading it from prefs should fail.
   {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
-    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
+    std::string app_version;
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs(&app_version));
+    EXPECT_TRUE(app_version.empty());
   }
 
   // Do a RecordEnvironment() call and check whether the pref is recorded.
@@ -298,7 +301,9 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
   {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
-    EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs());
+    std::string app_version;
+    EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs(&app_version));
+    EXPECT_EQ("bogus version", app_version);
     // Check some values in the system profile.
     EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
     EXPECT_EQ(kEnabledDateExpected, log.system_profile().uma_enabled_date());
@@ -322,7 +327,9 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     prefs_.SetString(kSystemProfileHashPref, "deadbeef");
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
-    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
+    std::string app_version;
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs(&app_version));
+    EXPECT_TRUE(app_version.empty());
     // Ensure that the prefs are cleared, even if the call failed.
     EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
     EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
