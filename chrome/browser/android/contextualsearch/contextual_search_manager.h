@@ -21,7 +21,8 @@ class ContextualSearchManager
     : public contextual_search::ContextualSearchJsApiHandler {
  public:
   // Constructs a native manager associated with the Java manager.
-  ContextualSearchManager(JNIEnv* env, jobject obj);
+  ContextualSearchManager(JNIEnv* env,
+                          const base::android::JavaRef<jobject>& obj);
   ~ContextualSearchManager() override;
 
   // Called by the Java ContextualSearchManager when it is being destroyed.

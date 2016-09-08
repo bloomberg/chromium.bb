@@ -11,6 +11,7 @@
 #include "jni/DataReductionPromoInfoBarDelegate_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 // static
 void DataReductionPromoInfoBarDelegateAndroid::Create(
@@ -39,7 +40,8 @@ bool DataReductionPromoInfoBarDelegateAndroid::Register(JNIEnv* env) {
 
 // static
 void DataReductionPromoInfoBarDelegateAndroid::Launch(
-    JNIEnv* env, jclass, jobject jweb_contents) {
+    JNIEnv* env,
+    const JavaRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
@@ -72,5 +74,5 @@ bool DataReductionPromoInfoBarDelegateAndroid::Accept() {
 void Launch(JNIEnv* env,
             const JavaParamRef<jclass>& clazz,
             const JavaParamRef<jobject>& jweb_contents) {
-  DataReductionPromoInfoBarDelegateAndroid::Launch(env, clazz, jweb_contents);
+  DataReductionPromoInfoBarDelegateAndroid::Launch(env, jweb_contents);
 }

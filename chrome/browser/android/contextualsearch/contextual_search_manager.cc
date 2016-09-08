@@ -28,14 +28,16 @@
 #include "services/shell/public/cpp/interface_registry.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using content::WebContents;
 
 // This class manages the native behavior of the Contextual Search feature.
 // Instances of this class are owned by the Java ContextualSearchManager.
 // Most of the work is actually done in an associated delegate to this class:
 // the ContextualSearchDelegate.
-ContextualSearchManager::ContextualSearchManager(JNIEnv* env, jobject obj) {
-  java_manager_.Reset(env, obj);
+ContextualSearchManager::ContextualSearchManager(JNIEnv* env,
+                                                 const JavaRef<jobject>& obj) {
+  java_manager_.Reset(obj);
   Java_ContextualSearchManager_setNativeManager(
       env, obj, reinterpret_cast<intptr_t>(this));
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -68,7 +70,7 @@ void ContextualSearchManager::StartSearchTermResolutionRequest(
     const JavaParamRef<jobject>& j_base_web_contents,
     jboolean j_may_send_base_page_url) {
   WebContents* base_web_contents =
-      WebContents::FromJavaWebContents(j_base_web_contents.obj());
+      WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
@@ -88,7 +90,7 @@ void ContextualSearchManager::GatherSurroundingText(
     const JavaParamRef<jobject>& j_base_web_contents,
     jboolean j_may_send_base_page_url) {
   WebContents* base_web_contents =
-      WebContents::FromJavaWebContents(j_base_web_contents.obj());
+      WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
@@ -174,7 +176,7 @@ void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
     jobject obj,
     const JavaParamRef<jobject>& j_overlay_web_contents) {
   WebContents* overlay_web_contents =
-      WebContents::FromJavaWebContents(j_overlay_web_contents.obj());
+      WebContents::FromJavaWebContents(j_overlay_web_contents);
   DCHECK(overlay_web_contents);
   // Tell our Overlay Notifier Service that this is currently a CS page.
   content::RenderFrameHost* render_frame_host =

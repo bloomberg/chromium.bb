@@ -99,6 +99,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using content::BrowserThread;
 using content::GlobalRequestID;
 using content::NavigationController;
@@ -120,7 +121,7 @@ TabAndroid* TabAndroid::FromWebContents(
   return static_cast<TabAndroid*>(core_delegate);
 }
 
-TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
+TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, const JavaRef<jobject>& obj) {
   return reinterpret_cast<TabAndroid*>(Java_Tab_getNativePtr(env, obj));
 }
 
@@ -130,7 +131,7 @@ void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
   TabHelpers::AttachTabHelpers(web_contents);
 }
 
-TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
+TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
     : weak_java_tab_(env, obj),
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(NULL),
@@ -368,8 +369,7 @@ void TabAndroid::InitWebContents(
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator) {
-  web_contents_.reset(
-      content::WebContents::FromJavaWebContents(jweb_contents.obj()));
+  web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
   DCHECK(web_contents_.get());
 
   AttachTabHelpers(web_contents_.get());
@@ -894,7 +894,7 @@ void TabAndroid::AttachOverlayWebContents(
     const JavaParamRef<jobject>& jweb_contents,
     jboolean visible) {
   WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents.obj());
+      content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
   DCHECK(web_contents->GetNativeView());
 
@@ -907,7 +907,7 @@ void TabAndroid::DetachOverlayWebContents(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents.obj());
+      content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
   DCHECK(web_contents->GetNativeView());
 

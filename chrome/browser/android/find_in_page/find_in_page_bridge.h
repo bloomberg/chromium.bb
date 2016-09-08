@@ -13,7 +13,9 @@
 
 class FindInPageBridge {
  public:
-  FindInPageBridge(JNIEnv* env, jobject obj, jobject j_web_contents);
+  FindInPageBridge(JNIEnv* env,
+                   const base::android::JavaRef<jobject>& obj,
+                   const base::android::JavaRef<jobject>& j_web_contents);
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   void StartFinding(JNIEnv* env,

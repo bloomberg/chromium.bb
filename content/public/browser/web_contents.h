@@ -711,7 +711,7 @@ class WebContents : public PageNavigator,
 
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
-      jobject jweb_contents_android);
+      const base::android::JavaRef<jobject>& jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;
 
   // Selects and zooms to the find result nearest to the point (x,y) defined in

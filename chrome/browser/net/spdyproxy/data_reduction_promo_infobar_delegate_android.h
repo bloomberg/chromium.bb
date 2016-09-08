@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -33,8 +34,7 @@ class DataReductionPromoInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   static bool Register(JNIEnv* env);
 
   static void Launch(JNIEnv* env,
-                     jclass,
-                     jobject jweb_contents);
+                     const base::android::JavaRef<jobject>& jweb_contents);
 
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(JNIEnv* env);
 

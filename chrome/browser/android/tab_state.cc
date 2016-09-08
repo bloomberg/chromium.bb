@@ -571,9 +571,8 @@ static void CreateHistoricalTab(JNIEnv* env,
                                 const JavaParamRef<jobject>& state,
                                 jint saved_state_version) {
   std::unique_ptr<WebContents> web_contents(WebContents::FromJavaWebContents(
-      WebContentsState::RestoreContentsFromByteBuffer(env, clazz, state,
-                                                      saved_state_version, true)
-          .obj()));
+      WebContentsState::RestoreContentsFromByteBuffer(
+          env, clazz, state, saved_state_version, true)));
   if (web_contents.get())
     TabAndroid::CreateHistoricalTabFromContents(web_contents.get());
 }

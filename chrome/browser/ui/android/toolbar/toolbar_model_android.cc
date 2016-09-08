@@ -47,7 +47,7 @@ content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
     return NULL;
   ScopedJavaLocalRef<jobject> jweb_contents =
       Java_ToolbarModelDelegate_getActiveWebContents(env, jdelegate);
-  return content::WebContents::FromJavaWebContents(jweb_contents.obj());
+  return content::WebContents::FromJavaWebContents(jweb_contents);
 }
 
 // static

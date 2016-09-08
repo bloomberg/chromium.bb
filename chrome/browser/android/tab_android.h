@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -83,12 +84,13 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Returns the native TabAndroid stored in the Java Tab represented by
   // |obj|.
-  static TabAndroid* GetNativeTab(JNIEnv* env, jobject obj);
+  static TabAndroid* GetNativeTab(JNIEnv* env,
+                                  const base::android::JavaRef<jobject>& obj);
 
   // Function to attach helpers to the contentView.
   static void AttachTabHelpers(content::WebContents* web_contents);
 
-  TabAndroid(JNIEnv* env, jobject obj);
+  TabAndroid(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
   ~TabAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
