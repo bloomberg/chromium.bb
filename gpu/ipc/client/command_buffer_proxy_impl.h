@@ -209,6 +209,7 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   // Updates the highest verified release fence sync.
   void UpdateVerifiedReleases(uint32_t verified_flush);
+  void CleanupFlushedReleases(uint32_t highest_verified_flush_id);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
