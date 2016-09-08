@@ -99955,7 +99955,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="MediumTriggeringRequest"
       label="Triggering request medium bypass"/>
   <suffix name="LongAll" label="Long bypass"/>
-  <suffix name="LongTriggering_Request" label="Triggering request long bypass"/>
+  <suffix name="LongTriggeringRequest" label="Triggering request long bypass"/>
   <suffix name="MissingViaHeader4xx"
       label="Bypass due to a 4xx missing via header"/>
   <suffix name="MissingViaHeaderOther"
