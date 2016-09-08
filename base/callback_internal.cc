@@ -9,6 +9,11 @@
 namespace base {
 namespace internal {
 
+BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
+                             void (*destructor)(BindStateBase*))
+      : polymorphic_invoke_(polymorphic_invoke),
+        ref_count_(0), destructor_(destructor) {}
+
 void BindStateBase::AddRef() {
   AtomicRefCountInc(&ref_count_);
 }

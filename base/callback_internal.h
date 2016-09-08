@@ -30,15 +30,13 @@ class CallbackBase;
 // Creating a vtable for every BindState template instantiation results in a lot
 // of bloat. Its only task is to call the destructor which can be done with a
 // function pointer.
-class BindStateBase {
+class BASE_EXPORT BindStateBase {
  public:
   using InvokeFuncStorage = void(*)();
 
  protected:
   BindStateBase(InvokeFuncStorage polymorphic_invoke,
-                void (*destructor)(BindStateBase*))
-      : polymorphic_invoke_(polymorphic_invoke),
-        ref_count_(0), destructor_(destructor) {}
+                void (*destructor)(BindStateBase*));
   ~BindStateBase() = default;
 
  private:
