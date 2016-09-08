@@ -45,10 +45,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
 
-    # All platforms with AMD GPU.
-    self.Fail('deqp/functional/gles3/multisample.html',
-        ['amd'], bug=617290)
-
     # Windows only.
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['win'], bug=638470)
@@ -56,6 +52,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
+
+    # This should be fixed in the latest driver.
+    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
+        ['win', 'nvidia'], bug=1246) # ANGLE bug.
 
     # Win / AMD
 
@@ -71,6 +71,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['win', ('amd', 0x6779)], bug=617290)
 
     # Keep a separate set of failures for the R7 240, since it can use a new
     # and updated driver. The older drivers won't ever get fixes from AMD.
@@ -335,6 +337,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
         ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['mac', 'amd'], bug=617290)
     self.Fail('deqp/functional/gles3/instancedrendering.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
@@ -548,6 +552,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['linux', 'amd'], bug=617290)
     self.Fail('deqp/data/gles3/shaders/conversions.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/arrays.html',
