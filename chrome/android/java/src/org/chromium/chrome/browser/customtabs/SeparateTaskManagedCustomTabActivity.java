@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.webapps.ActivityAssigner;
  * limited number of activities that we will cycle through.
  */
 public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabActivity {
+    private static final String FORCE_FINISH = "CCT.ForceFinish";
+
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs = 0;
 
@@ -38,6 +40,10 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
     @Override
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
+        if (intent != null && intent.getBooleanExtra(FORCE_FINISH, false)) {
+            finish();
+            return;
+        }
         super.onNewIntent(intent);
     }
 
@@ -79,5 +85,14 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
         assert className.matches("^" + baseClassName + "[0-9]+$");
         String indexString = className.substring(baseClassName.length());
         return Integer.parseInt(indexString);
+    }
+
+    @Override
+    public void finishAndClose() {
+        Intent intent = new Intent(getIntent());
+        intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        intent.putExtra(FORCE_FINISH, true);
+        startActivity(intent);
     }
 }
