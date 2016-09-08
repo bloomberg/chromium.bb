@@ -54,6 +54,10 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
   // data needed to add the shortcut.
   void AddShortcut(const ShortcutInfo& info, const SkBitmap& icon);
 
+  // Called only when the AddToHomescreenDataFetcher has retrieved all of the
+  // data needed to install a WebAPK.
+  void CreateInfoBarForWebAPK(const ShortcutInfo& info, const SkBitmap& icon);
+
   void RecordAddToHomescreen();
 
   // AddToHomescreenDataFetcher::Observer:
@@ -70,6 +74,9 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
   // Whether the user has requested that a shortcut be added while a fetch was
   // in progress.
   bool add_shortcut_pending_;
+
+  // Whether the site is WebAPK-compatible.
+  bool is_webapk_compatible_;
 
   // Fetches data required to add a shortcut.
   scoped_refptr<AddToHomescreenDataFetcher> data_fetcher_;

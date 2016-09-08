@@ -8,8 +8,10 @@
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -33,7 +35,8 @@ jlong InitializeAndStart(JNIEnv* env,
 }
 
 AddToHomescreenManager::AddToHomescreenManager(JNIEnv* env, jobject obj)
-    : add_shortcut_pending_(false) {
+    : add_shortcut_pending_(false),
+      is_webapk_compatible_(false) {
   java_ref_.Reset(env, obj);
 }
 
@@ -129,13 +132,15 @@ void AddToHomescreenManager::RecordAddToHomescreen() {
 
 void AddToHomescreenManager::OnDidDetermineWebApkCompatibility(
     bool is_webapk_compatible) {
-  // TODO(pkotwicz): Select whether to use dialog or not based on
-  // |is_webapk_compatible|.
-  ShowDialog();
+  is_webapk_compatible_ = is_webapk_compatible;
+  if (!is_webapk_compatible)
+    ShowDialog();
 }
 
 void AddToHomescreenManager::OnUserTitleAvailable(
     const base::string16& user_title) {
+  if (is_webapk_compatible_)
+    return;
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_user_title =
       base::android::ConvertUTF16ToJavaString(env, user_title);
@@ -146,6 +151,11 @@ void AddToHomescreenManager::OnUserTitleAvailable(
 
 void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
                                              const SkBitmap& icon) {
+  if (is_webapk_compatible_) {
+    CreateInfoBarForWebAPK(info, icon);
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon.getSize())
@@ -155,6 +165,15 @@ void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
 
   if (add_shortcut_pending_)
     AddShortcut(info, icon);
+}
+
+void AddToHomescreenManager::CreateInfoBarForWebAPK(const ShortcutInfo& info,
+                                                    const SkBitmap& icon) {
+  banners::AppBannerInfoBarDelegateAndroid::Create(
+      data_fetcher_->web_contents(), nullptr, info.user_title,
+      base::MakeUnique<ShortcutInfo>(info), base::MakeUnique<SkBitmap>(icon),
+      -1 /* event_request_id */, true /* is_webapk */,
+      true /* start_install_webapk */);
 }
 
 SkBitmap AddToHomescreenManager::FinalizeLauncherIconInBackground(

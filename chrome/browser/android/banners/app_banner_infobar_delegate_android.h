@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/common/manifest.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -24,25 +23,30 @@ class InfoBarManager;
 }
 
 class AppBannerInfoBar;
+struct ShortcutInfo;
 
 namespace banners {
 
 // Manages installation of an app being promoted by a page.
 class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
  public:
-  // Delegate for promoting a web app.
-  AppBannerInfoBarDelegateAndroid(
+  // Creates an infobar and delegate for promoting the installation of a web
+  // app, and adds the infobar to the InfoBarManager for |web_contents|.
+  static bool Create(
+      content::WebContents* web_contents,
       base::WeakPtr<AppBannerManager> weak_manager,
       const base::string16& app_title,
-      const GURL& manifest_url,
-      const content::Manifest& manifest,
-      const GURL& icon_url,
+      std::unique_ptr<ShortcutInfo> info,
       std::unique_ptr<SkBitmap> icon,
       int event_request_id,
-      bool is_webapk);
+      bool is_webapk,
+      bool start_install_webapk);
 
-  // Delegate for promoting an Android app.
-  AppBannerInfoBarDelegateAndroid(
+  // Creates and shows the infobar for an Android app.
+  // Creates an infobar and delegate for promoting the installation of an
+  // Android app, and adds the infobar to the InfoBarManager for |web_contents|.
+  static bool Create(
+      content::WebContents* web_contents,
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       std::unique_ptr<SkBitmap> icon,
@@ -67,11 +71,35 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                          const base::android::JavaParamRef<jobject>& obj,
                          jboolean success);
 
+  // When user accepts to install a WebAPK, this function sends a request
+  // to the WebAPK Server to create a WebAPK and install it. It returns
+  // false to prevent infobar from disappearing when installation starts.
+  // When user clicks the Open button after the intallation is compelete, this
+  // function launches the installed WebAPK and returns true.
+  bool AcceptWebApk(content::WebContents* web_contents);
+
  private:
+  // Delegate for promoting a web app.
+  AppBannerInfoBarDelegateAndroid(
+      base::WeakPtr<AppBannerManager> weak_manager,
+      const base::string16& app_title,
+      std::unique_ptr<ShortcutInfo> info,
+      std::unique_ptr<SkBitmap> icon,
+      int event_request_id,
+      bool is_webapk);
+
+  // Delegate for promoting an Android app.
+  AppBannerInfoBarDelegateAndroid(
+      const base::string16& app_title,
+      const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
+      std::unique_ptr<SkBitmap> icon,
+      const std::string& native_app_package,
+      const std::string& referrer,
+      int event_request_id);
+
   void CreateJavaDelegate();
   bool AcceptNativeApp(content::WebContents* web_contents);
   bool AcceptWebApp(content::WebContents* web_contents);
-  bool AcceptWebApk(content::WebContents* web_contents);
   void SendBannerAccepted(content::WebContents* web_contents,
                           const std::string& platform);
   void OnWebApkInstallFinished(bool success, const std::string& webapk_package);
@@ -91,12 +119,10 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   base::WeakPtr<AppBannerManager> weak_manager_;
 
   base::string16 app_title_;
-  GURL manifest_url_;
-  content::Manifest manifest_;
+  std::unique_ptr<ShortcutInfo> shortcut_info_;
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
 
-  GURL icon_url_;
   std::unique_ptr<SkBitmap> icon_;
 
   std::string native_app_package_;
@@ -110,7 +136,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   base::WeakPtrFactory<AppBannerInfoBarDelegateAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
-};  // AppBannerInfoBarDelegateAndroid
+};
 
 // Register native methods.
 bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env);
