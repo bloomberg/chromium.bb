@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -37,9 +38,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   static std::unique_ptr<BluetoothRemoteGattServiceAndroid> Create(
       BluetoothAdapterAndroid* adapter,
       BluetoothDeviceAndroid* device,
-      jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper,
+      const base::android::JavaRef<jobject>&
+          bluetooth_gatt_service_wrapper,  // BluetoothGattServiceWrapper
       const std::string& instance_id,
-      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
+      const base::android::JavaRef<jobject>&
+          chrome_bluetooth_device);  // ChromeBluetoothDevice
 
   ~BluetoothRemoteGattServiceAndroid() override;
 

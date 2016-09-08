@@ -44,7 +44,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   // The BluetoothAdapterAndroid instance will indirectly hold a Java reference
   // to |bluetooth_adapter_wrapper|.
   static base::WeakPtr<BluetoothAdapterAndroid> Create(
-      jobject bluetooth_adapter_wrapper);  // Java Type: bluetoothAdapterWrapper
+      const base::android::JavaRef<jobject>&
+          bluetooth_adapter_wrapper);  // Java Type: bluetoothAdapterWrapper
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);

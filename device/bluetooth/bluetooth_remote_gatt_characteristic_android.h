@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -39,9 +40,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
       BluetoothAdapterAndroid* adapter,
       BluetoothRemoteGattServiceAndroid* service,
       const std::string& instance_id,
-      jobject /* BluetoothGattCharacteristicWrapper */
+      const base::android::JavaRef<
+          jobject>& /* BluetoothGattCharacteristicWrapper */
       bluetooth_gatt_characteristic_wrapper,
-      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
+      const base::android::JavaRef<
+          jobject>& /* ChromeBluetoothDevice */ chrome_bluetooth_device);
 
   ~BluetoothRemoteGattCharacteristicAndroid() override;
 

@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
@@ -34,7 +35,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   // this correctly. http://crbug.com/506416
   static BluetoothDeviceAndroid* Create(
       BluetoothAdapterAndroid* adapter,
-      jobject bluetooth_device_wrapper);  // Java Type: bluetoothDeviceWrapper
+      const base::android::JavaRef<jobject>&
+          bluetooth_device_wrapper);  // Java Type: bluetoothDeviceWrapper
 
   ~BluetoothDeviceAndroid() override;
 

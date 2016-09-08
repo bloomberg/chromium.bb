@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -28,9 +29,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
   // reference to |bluetooth_gatt_descriptor_wrapper|.
   static std::unique_ptr<BluetoothRemoteGattDescriptorAndroid> Create(
       const std::string& instanceId,
-      jobject /* BluetoothGattDescriptorWrapper */
+      const base::android::JavaRef<jobject>& /* BluetoothGattDescriptorWrapper
+                                                */
       bluetooth_gatt_descriptor_wrapper,
-      jobject /* chromeBluetoothDevice */ chrome_bluetooth_device);
+      const base::android::JavaRef<
+          jobject>& /* chromeBluetoothDevice */ chrome_bluetooth_device);
 
   ~BluetoothRemoteGattDescriptorAndroid() override;
 

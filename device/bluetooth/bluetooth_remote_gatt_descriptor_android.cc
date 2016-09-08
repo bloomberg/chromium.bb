@@ -19,6 +19,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace device {
 
@@ -26,9 +27,9 @@ namespace device {
 std::unique_ptr<BluetoothRemoteGattDescriptorAndroid>
 BluetoothRemoteGattDescriptorAndroid::Create(
     const std::string& instance_id,
-    jobject /* BluetoothGattDescriptorWrapper */
+    const JavaRef<jobject>& /* BluetoothGattDescriptorWrapper */
     bluetooth_gatt_descriptor_wrapper,
-    jobject /* chromeBluetoothDevice */
+    const JavaRef<jobject>& /* chromeBluetoothDevice */
     chrome_bluetooth_device) {
   std::unique_ptr<BluetoothRemoteGattDescriptorAndroid> descriptor(
       new BluetoothRemoteGattDescriptorAndroid(instance_id));

@@ -15,6 +15,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace device {
 
@@ -23,9 +24,10 @@ std::unique_ptr<BluetoothRemoteGattServiceAndroid>
 BluetoothRemoteGattServiceAndroid::Create(
     BluetoothAdapterAndroid* adapter,
     BluetoothDeviceAndroid* device,
-    jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper,
+    const JavaRef<jobject>&
+        bluetooth_gatt_service_wrapper,  // BluetoothGattServiceWrapper
     const std::string& instance_id,
-    jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
+    const JavaRef<jobject>& chrome_bluetooth_device) {  // ChromeBluetoothDevice
   std::unique_ptr<BluetoothRemoteGattServiceAndroid> service(
       new BluetoothRemoteGattServiceAndroid(adapter, device, instance_id));
 
