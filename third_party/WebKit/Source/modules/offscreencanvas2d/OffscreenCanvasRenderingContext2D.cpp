@@ -93,6 +93,8 @@ bool OffscreenCanvasRenderingContext2D::hasImageBuffer() const
 
 static bool shouldAccelerate(IntSize surfaceSize)
 {
+    if (!isMainThread())
+        return false; // Add support on Workers crbug.com/
     return RuntimeEnabledFeatures::accelerated2dCanvasEnabled();
 }
 
@@ -127,6 +129,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     if (!imageBuffer())
         return nullptr;
     sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, SnapshotReasonTransferToImageBitmap);
+    DCHECK(isMainThread() || !skImage->isTextureBacked()); // Acceleration not yet supported in Workers
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(skImage));
     image->setOriginClean(this->originClean());
     m_imageBuffer.reset(); // "Transfer" means no retained buffer

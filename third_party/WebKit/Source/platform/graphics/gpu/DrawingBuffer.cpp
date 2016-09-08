@@ -459,6 +459,8 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
     backendTexture.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(textureInfo);
     sk_sp<SkImage> skImage = SkImage::MakeFromAdoptedTexture(grContext, backendTexture);
 
+    // Hold a ref on the GrContext for the texture backing the |skImage|.
+    sk_sp<GrContext> grContextRef = sk_ref_sp(grContext);
     // We reuse the same mailbox name from above since our texture id was consumed from it.
     const auto& skImageMailbox = textureMailbox.mailbox();
     // Use the sync token generated after producing the mailbox. Waiting for this before trying to use
@@ -469,7 +471,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
 
     // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
     // transferFromImageBitmap, and try to use them in DrawingBuffer.
-    return AcceleratedStaticBitmapImage::createFromWebGLContextImage(std::move(skImage), skImageMailbox, skImageSyncToken);
+    return AcceleratedStaticBitmapImage::create(std::move(skImage), grContextRef, skImageMailbox, skImageSyncToken);
 }
 
 DrawingBuffer::TextureParameters DrawingBuffer::chromiumImageTextureParameters()
