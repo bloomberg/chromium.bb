@@ -39,9 +39,8 @@ class OfflinerPolicy {
         max_completed_tries_(max_completed_tries) {}
 
   // TODO(petewil): Numbers here are chosen arbitrarily, do the proper studies
-  // to get good policy numbers.
-
-  // TODO(petewil): Eventually this should get data from a finch experiment.
+  // to get good policy numbers. Eventually this should get data from a finch
+  // experiment.
 
   // Returns true if we should prefer retrying lesser tried requests.
   bool ShouldPreferUntriedRequests() const { return prefer_untried_requests_; }

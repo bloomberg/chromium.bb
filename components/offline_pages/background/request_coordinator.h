@@ -78,14 +78,12 @@ class RequestCoordinator : public KeyedService,
       RemoveRequestsCallback;
 
   // Remove a list of requests by |request_id|.  This removes requests from the
-  // request queue, but does not cancel an in-progress pre-render.
-  // TODO(petewil): Add code to cancel an in-progress pre-render.
+  // request queue, and cancels an in-progress prerender.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveRequestsCallback& callback);
 
   // Pause a list of requests by |request_id|.  This will change the state
   // in the request queue so the request cannot be started.
-  // TODO(petewil): Add code to cancel an in-progress pre-render.
   void PauseRequests(const std::vector<int64_t>& request_ids);
 
   // Resume a list of previously paused requests, making them available.

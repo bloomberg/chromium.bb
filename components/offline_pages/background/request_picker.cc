@@ -127,15 +127,11 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
 
   // If we have already started this page the max number of times, it is not
   // eligible to try again.
-  // TODO(petewil): We should have code to remove the page from the
-  // queue after the last retry.
   if (request.started_attempt_count() >= policy_->GetMaxStartedTries())
     return false;
 
   // If we have already completed trying this page the max number of times, it
   // is not eligible to try again.
-  // TODO(petewil): We should have code to remove the page from the
-  // queue after the last retry.
   if (request.completed_attempt_count() >= policy_->GetMaxCompletedTries())
     return false;
 
@@ -144,7 +140,6 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
     return false;
 
   // If the request is expired, do not consider it.
-  // TODO(petewil): We need to remove this from the queue.
   base::TimeDelta requestAge = base::Time::Now() - request.creation_time();
   if (requestAge >
       base::TimeDelta::FromSeconds(

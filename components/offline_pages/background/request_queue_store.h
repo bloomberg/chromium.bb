@@ -29,8 +29,6 @@ class RequestQueueStore {
       const std::vector<SavePageRequest>& /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(UpdateStatus)> UpdateCallback;
-  // TODO(petewil) - UpdateMultiple looks exactly like Remove, consider
-  // merging them into a single callback.
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
       const std::vector<SavePageRequest>& /* requests */)>
