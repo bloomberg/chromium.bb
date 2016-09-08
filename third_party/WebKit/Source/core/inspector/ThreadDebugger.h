@@ -9,11 +9,10 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include <memory>
+#include <v8-inspector.h>
 #include <v8.h>
 
 namespace blink {

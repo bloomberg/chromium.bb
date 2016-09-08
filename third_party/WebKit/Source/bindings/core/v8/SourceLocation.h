@@ -7,11 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/CrossThreadCopier.h"
-#include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
-#include <v8.h>
+#include <v8-inspector-protocol.h>
 
 namespace blink {
 

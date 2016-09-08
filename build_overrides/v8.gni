@@ -20,4 +20,4 @@ v8_extra_library_files = [
 ]
 v8_experimental_extra_library_files = []
 
-v8_enable_inspector_override = false
+v8_enable_inspector_override = true

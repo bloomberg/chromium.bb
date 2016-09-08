@@ -8,8 +8,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
-import(
-    "//third_party/WebKit/Source/platform/inspector_protocol/inspector_protocol.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 # Most targets in this file are private actions so use that as the default.
@@ -178,94 +176,6 @@ executable("character_data_generator") {
   ]
 }
 
-# Inspector protocol
-
-inspector_protocol_generate("inspector_protocol_sources") {
-  out_dir = blink_platform_output_dir
-
-  config_file = "v8_inspector/inspector_protocol_config.json"
-  inputs = [
-    "v8_inspector/js_protocol.json",
-    "v8_inspector/inspector_protocol_config.json",
-  ]
-
-  # This are relative to blink_platform_output_dir.
-  outputs = [
-    "v8_inspector/protocol/Forward.h",
-    "v8_inspector/protocol/Protocol.cpp",
-    "v8_inspector/protocol/Protocol.h",
-    "v8_inspector/protocol/Console.cpp",
-    "v8_inspector/protocol/Console.h",
-    "v8_inspector/protocol/Debugger.cpp",
-    "v8_inspector/protocol/Debugger.h",
-    "v8_inspector/protocol/HeapProfiler.cpp",
-    "v8_inspector/protocol/HeapProfiler.h",
-    "v8_inspector/protocol/Profiler.cpp",
-    "v8_inspector/protocol/Profiler.h",
-    "v8_inspector/protocol/Runtime.cpp",
-    "v8_inspector/protocol/Runtime.h",
-    "v8_inspector/protocol/Schema.cpp",
-    "v8_inspector/protocol/Schema.h",
-    "v8_inspector/public/protocol/Debugger.h",
-    "v8_inspector/public/protocol/Runtime.h",
-    "v8_inspector/public/protocol/Schema.h",
-  ]
-
-  deps = [
-    ":inspector_protocol_compatibility",
-  ]
-}
-
-action("inspector_protocol_compatibility") {
-  script = "inspector_protocol/CheckProtocolCompatibility.py"
-  inputs = [
-    "v8_inspector/js_protocol.json",
-  ]
-  _stamp = "$blink_platform_output_dir/v8_inspector/js_protocol.stamp"
-  outputs = [
-    _stamp,
-  ]
-
-  args = [
-    "--stamp",
-    rebase_path(_stamp, root_build_dir),
-    rebase_path("v8_inspector/js_protocol.json", root_build_dir),
-  ]
-}
-
-action("inspector_injected_script") {
-  script = "v8_inspector/build/xxd.py"
-  inputs = [
-    "v8_inspector/InjectedScriptSource.js",
-  ]
-  outputs = [
-    "$blink_platform_output_dir/v8_inspector/InjectedScriptSource.h",
-  ]
-  args = [
-    "InjectedScriptSource_js",
-    rebase_path("v8_inspector/InjectedScriptSource.js", root_build_dir),
-    rebase_path(
-        "$blink_platform_output_dir/v8_inspector/InjectedScriptSource.h",
-        root_build_dir),
-  ]
-}
-
-action("inspector_debugger_script") {
-  script = "v8_inspector/build/xxd.py"
-  inputs = [
-    "v8_inspector/DebuggerScript.js",
-  ]
-  outputs = [
-    "$blink_platform_output_dir/v8_inspector/DebuggerScript.h",
-  ]
-  args = [
-    "DebuggerScript_js",
-    rebase_path("v8_inspector/DebuggerScript.js", root_build_dir),
-    rebase_path("$blink_platform_output_dir/v8_inspector/DebuggerScript.h",
-                root_build_dir),
-  ]
-}
-
 # This isn't strictly necessary since we can just add the deps to "platform",
 # but it helps to have the targets match the GYP build.
 group("make_platform_generated") {
@@ -277,9 +187,6 @@ group("make_platform_generated") {
     ":color_data",
     ":font_family_names",
     ":http_names",
-    ":inspector_debugger_script",
-    ":inspector_injected_script",
-    ":inspector_protocol_sources",
     ":runtime_enabled_features",
   ]
 }
@@ -1416,70 +1323,6 @@ component("platform") {
     "transforms/TransformationMatrix.h",
     "transforms/TranslateTransformOperation.cpp",
     "transforms/TranslateTransformOperation.h",
-    "v8_inspector/Allocator.h",
-    "v8_inspector/Atomics.h",
-    "v8_inspector/InjectedScript.cpp",
-    "v8_inspector/InjectedScript.h",
-    "v8_inspector/InjectedScriptNative.cpp",
-    "v8_inspector/InjectedScriptNative.h",
-    "v8_inspector/InspectedContext.cpp",
-    "v8_inspector/InspectedContext.h",
-    "v8_inspector/JavaScriptCallFrame.cpp",
-    "v8_inspector/JavaScriptCallFrame.h",
-    "v8_inspector/ProtocolPlatform.h",
-    "v8_inspector/RemoteObjectId.cpp",
-    "v8_inspector/RemoteObjectId.h",
-    "v8_inspector/ScriptBreakpoint.h",
-    "v8_inspector/SearchUtil.cpp",
-    "v8_inspector/SearchUtil.h",
-    "v8_inspector/String16.cpp",
-    "v8_inspector/String16.h",
-    "v8_inspector/StringUtil.cpp",
-    "v8_inspector/StringUtil.h",
-    "v8_inspector/V8Compat.h",
-    "v8_inspector/V8Console.cpp",
-    "v8_inspector/V8Console.h",
-    "v8_inspector/V8ConsoleAgentImpl.cpp",
-    "v8_inspector/V8ConsoleAgentImpl.h",
-    "v8_inspector/V8ConsoleMessage.cpp",
-    "v8_inspector/V8ConsoleMessage.h",
-    "v8_inspector/V8Debugger.cpp",
-    "v8_inspector/V8Debugger.h",
-    "v8_inspector/V8DebuggerAgentImpl.cpp",
-    "v8_inspector/V8DebuggerAgentImpl.h",
-    "v8_inspector/V8DebuggerScript.cpp",
-    "v8_inspector/V8DebuggerScript.h",
-    "v8_inspector/V8FunctionCall.cpp",
-    "v8_inspector/V8FunctionCall.h",
-    "v8_inspector/V8HeapProfilerAgentImpl.cpp",
-    "v8_inspector/V8HeapProfilerAgentImpl.h",
-    "v8_inspector/V8InjectedScriptHost.cpp",
-    "v8_inspector/V8InjectedScriptHost.h",
-    "v8_inspector/V8InspectorImpl.cpp",
-    "v8_inspector/V8InspectorImpl.h",
-    "v8_inspector/V8InspectorSessionImpl.cpp",
-    "v8_inspector/V8InspectorSessionImpl.h",
-    "v8_inspector/V8InternalValueType.cpp",
-    "v8_inspector/V8InternalValueType.h",
-    "v8_inspector/V8ProfilerAgentImpl.cpp",
-    "v8_inspector/V8ProfilerAgentImpl.h",
-    "v8_inspector/V8Regex.cpp",
-    "v8_inspector/V8Regex.h",
-    "v8_inspector/V8RuntimeAgentImpl.cpp",
-    "v8_inspector/V8RuntimeAgentImpl.h",
-    "v8_inspector/V8SchemaAgentImpl.cpp",
-    "v8_inspector/V8SchemaAgentImpl.h",
-    "v8_inspector/V8StackTraceImpl.cpp",
-    "v8_inspector/V8StackTraceImpl.h",
-    "v8_inspector/V8ValueCopier.cpp",
-    "v8_inspector/V8ValueCopier.h",
-    "v8_inspector/public/StringBuffer.h",
-    "v8_inspector/public/StringView.h",
-    "v8_inspector/public/V8ContextInfo.h",
-    "v8_inspector/public/V8Inspector.h",
-    "v8_inspector/public/V8InspectorClient.h",
-    "v8_inspector/public/V8InspectorSession.h",
-    "v8_inspector/public/V8StackTrace.h",
     "web_memory_allocator_dump.cc",
     "web_memory_allocator_dump.h",
     "web_process_memory_dump.cc",
@@ -1514,9 +1357,6 @@ component("platform") {
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names") +
              get_target_outputs(":http_names") +
-             get_target_outputs(":inspector_debugger_script") +
-             get_target_outputs(":inspector_injected_script") +
-             get_target_outputs(":inspector_protocol_sources") +
              get_target_outputs(":runtime_enabled_features")
 
   configs += [

@@ -28,7 +28,6 @@
 #include "core/inspector/V8InspectorString.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/text/Base64.h"
 #include <memory>
 

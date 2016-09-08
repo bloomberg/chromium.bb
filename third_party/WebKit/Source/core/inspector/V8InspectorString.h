@@ -7,8 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/Decimal.h"
-#include "platform/v8_inspector/public/StringBuffer.h"
-#include "platform/v8_inspector/public/StringView.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
@@ -16,6 +14,7 @@
 #include "wtf/text/WTFString.h"
 
 #include <memory>
+#include <v8-inspector.h>
 
 namespace blink {
 

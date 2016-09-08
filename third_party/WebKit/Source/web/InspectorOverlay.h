@@ -41,10 +41,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
-
-namespace v8_inspector {
-class V8InspectorSession;
-}
+#include <v8-inspector.h>
 
 namespace blink {
 

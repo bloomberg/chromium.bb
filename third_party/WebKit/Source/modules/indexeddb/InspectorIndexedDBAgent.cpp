@@ -56,7 +56,6 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"

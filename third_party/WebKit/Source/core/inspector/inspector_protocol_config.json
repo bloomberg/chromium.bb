@@ -9,8 +9,8 @@
     },
 
     "imported": {
-        "path": "../../platform/v8_inspector/js_protocol.json",
-        "package": "platform/v8_inspector/public/protocol",
+        "path": "../../../../../v8/src/inspector/js_protocol.json",
+        "header": "<v8-inspector-protocol.h>",
         "to_imported_string": "toV8InspectorStringView(%s)",
         "from_imported_string": "toCoreString(%s)",
         "namespace": ["v8_inspector", "protocol"]

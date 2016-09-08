@@ -63,7 +63,6 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include <memory>

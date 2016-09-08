@@ -11,8 +11,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/inspector/protocol/Protocol.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace blink {
 

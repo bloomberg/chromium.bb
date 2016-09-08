@@ -63,7 +63,6 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/ListHashSet.h"

@@ -8,15 +8,11 @@
 #include "core/CoreExport.h"
 #include "core/inspector/protocol/Forward.h"
 #include "platform/heap/Handle.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace v8_inspector {
-class V8Inspector;
-}
+#include <v8-inspector-protocol.h>
 
 namespace blink {
 

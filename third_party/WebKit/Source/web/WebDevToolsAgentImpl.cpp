@@ -71,8 +71,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
@@ -93,6 +91,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
+#include <v8-inspector.h>
 
 namespace blink {
 

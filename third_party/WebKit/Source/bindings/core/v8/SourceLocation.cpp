@@ -14,7 +14,6 @@
 #include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 

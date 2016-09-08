@@ -36,9 +36,7 @@
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace v8_inspector {
-class V8InspectorSession;
-}
+#include <v8-inspector.h>
 
 namespace blink {
 

@@ -37,13 +37,13 @@
 #include "core/inspector/protocol/DOM.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include <memory>
+#include <v8-inspector.h>
 
 namespace blink {
 

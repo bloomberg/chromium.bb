@@ -39,7 +39,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/V8InspectorString.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace {
 
