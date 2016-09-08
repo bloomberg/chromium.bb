@@ -318,12 +318,6 @@ WorkerInspectorController* WorkerThread::workerInspectorController()
     return m_workerInspectorController.get();
 }
 
-bool WorkerThread::terminated()
-{
-    MutexLocker lock(m_threadStateMutex);
-    return m_requestedToTerminate;
-}
-
 unsigned WorkerThread::workerThreadCount()
 {
     MutexLocker lock(threadSetMutex());
@@ -625,22 +619,14 @@ void WorkerThread::performShutdownOnWorkerThread()
 void WorkerThread::performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     DCHECK(isCurrentThread());
-    if (isInShutdown())
+    if (m_threadState != ThreadState::Running)
         return;
 
-    WorkerOrWorkletGlobalScope* global = globalScope();
-    // If the thread is terminated before it had a chance initialize (see
-    // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
-    if (!global) {
-        DCHECK(terminated());
-        return;
-    }
-
-    InspectorInstrumentation::AsyncTask asyncTask(global, task.get(), isInstrumented);
+    InspectorInstrumentation::AsyncTask asyncTask(globalScope(), task.get(), isInstrumented);
     {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
         ScopedUsHistogramTimer timer(scopedUsCounter);
-        task->performTask(global);
+        task->performTask(globalScope());
     }
 }
 

@@ -140,9 +140,6 @@ public:
     // and the worker thread.
     WorkerThreadLifecycleContext* getWorkerThreadLifecycleContext() const { return m_workerThreadLifecycleContext; }
 
-    // Returns true once one of the terminate* methods is called.
-    bool terminated();
-
     // Number of active worker threads.
     static unsigned workerThreadCount();
 
