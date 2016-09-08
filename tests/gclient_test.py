@@ -33,13 +33,14 @@ def write(filename, content):
 
 
 class SCMMock(object):
-  def __init__(self, unit_test, url):
+  def __init__(self, unit_test, name, url):
     self.unit_test = unit_test
+    self.name = name
     self.url = url
 
   def RunCommand(self, command, options, args, file_list):
     self.unit_test.assertEquals('None', command)
-    self.unit_test.processed.put(self.url)
+    self.unit_test.processed.put((self.name, self.url))
 
   def FullUrlForRelativeUrl(self, url):
     return self.url + url
@@ -75,7 +76,7 @@ class GclientTest(trial_dir.TestCase):
   def _createscm(self, parsed_url, root_dir, name, out_fh=None, out_cb=None):
     self.assertTrue(parsed_url.startswith('svn://example.com/'), parsed_url)
     self.assertTrue(root_dir.startswith(self.root_dir), root_dir)
-    return SCMMock(self, parsed_url)
+    return SCMMock(self, name, parsed_url)
 
   def testDependencies(self):
     self._dependencies('1')
@@ -139,26 +140,28 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', args)
     actual = self._get_processed()
     first_3 = [
-        'svn://example.com/bar',
-        'svn://example.com/bar_empty',
-        'svn://example.com/foo',
+        ('bar', 'svn://example.com/bar'),
+        ('bar/empty', 'svn://example.com/bar_empty'),
+        ('foo', 'svn://example.com/foo'),
     ]
     if jobs != 1:
       # We don't care of the ordering of these items except that bar must be
       # before bar/empty.
       self.assertTrue(
-          actual.index('svn://example.com/bar') <
-          actual.index('svn://example.com/bar_empty'))
+          actual.index(('bar', 'svn://example.com/bar')) <
+          actual.index(('bar/empty', 'svn://example.com/bar_empty')))
       self.assertEquals(first_3, sorted(actual[0:3]))
     else:
       self.assertEquals(first_3, actual[0:3])
     self.assertEquals(
         [
-          'svn://example.com/foo/dir1',
-          'svn://example.com/bar/dir1/dir2',
-          'svn://example.com/foo/dir1/dir2/dir3',
-          'svn://example.com/foo/dir1/dir2/dir3/dir4',
-          'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another',
+          ('foo/dir1', 'svn://example.com/foo/dir1'),
+          ('foo/dir1/dir2', 'svn://example.com/bar/dir1/dir2'),
+          ('foo/dir1/dir2/dir3', 'svn://example.com/foo/dir1/dir2/dir3'),
+          ('foo/dir1/dir2/dir3/dir4',
+           'svn://example.com/foo/dir1/dir2/dir3/dir4'),
+          ('foo/dir1/dir2/dir5/dir6',
+           'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another'),
         ],
         actual[3:])
 
@@ -475,11 +478,11 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(['unix'], sorted(obj.enforced_os))
     self.assertEquals(
         [
-          'svn://example.com/bar',
-          'svn://example.com/bar/unix',
-          'svn://example.com/foo',
-          'svn://example.com/foo/baz',
-          'svn://example.com/foo/unix',
+          ('bar', 'svn://example.com/bar'),
+          ('bar/unix', 'svn://example.com/bar/unix'),
+          ('foo', 'svn://example.com/foo'),
+          ('foo/baz', 'svn://example.com/foo/baz'),
+          ('foo/unix', 'svn://example.com/foo/unix'),
           ],
         sorted(self._get_processed()))
 
@@ -603,10 +606,10 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(['unix'], sorted(obj.enforced_os))
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/foo/baz',
-          'svn://example.com/foo/src_unix',
-          'svn://example.com/foo/unix',
+          ('foo', 'svn://example.com/foo'),
+          ('foo/baz', 'svn://example.com/foo/baz'),
+          ('foo/src', 'svn://example.com/foo/src_unix'),
+          ('foo/unix', 'svn://example.com/foo/unix'),
           ],
         sorted(self._get_processed()))
 
@@ -652,11 +655,11 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/bar',
-          'svn://example.com/foo/bar',
-          'svn://example.com/foo/bar/baz',
-          'svn://example.com/foo/bar/baz/fizz',
+          ('foo', 'svn://example.com/foo'),
+          ('foo/bar', 'svn://example.com/bar'),
+          ('bar', 'svn://example.com/foo/bar'),
+          ('baz', 'svn://example.com/foo/bar/baz'),
+          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
         ],
         self._get_processed())
 
@@ -711,12 +714,12 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/bar',
-          'svn://example.com/foo',
-          'svn://example.com/foo/bar',
-          'svn://example.com/foo/bar/baz',
-          'svn://example.com/foo/bar/baz/fizz',
-          'svn://example.com/tar',
+          ('bar', 'svn://example.com/foo/bar'),
+          ('baz', 'svn://example.com/foo/bar/baz'),
+          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
+          ('foo', 'svn://example.com/foo'),
+          ('foo/bar', 'svn://example.com/bar'),
+          ('foo/tar', 'svn://example.com/tar'),
         ],
         sorted(self._get_processed()))
 
@@ -751,10 +754,11 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          # use_relative_paths means the following dep evaluates with 'foo'
-          # prepended.
-          'svn://example.com/foo/bar',
+          ('foo', 'svn://example.com/foo'),
+          ('foo/bar', 'svn://example.com/foo/bar'),
+          # TODO(agable): Figure out why baz isn't included here. The
+          # recursedeps = ["bar"] in foo's DEPS means that we should be
+          # fetching the entries in bar's DEPS file, which includes baz.
         ],
         self._get_processed())
 
@@ -834,13 +838,13 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/bar',
-          'svn://example.com/foo/bar',
+          ('foo', 'svn://example.com/foo'),
+          ('foo/bar', 'svn://example.com/bar'),
+          ('bar', 'svn://example.com/foo/bar'),
           # Deps after this would have been skipped if we were obeying
           # |recursedeps|.
-          'svn://example.com/foo/bar/baz',
-          'svn://example.com/foo/bar/baz/fizz',
+          ('baz', 'svn://example.com/foo/bar/baz'),
+          ('fizz', 'svn://example.com/foo/bar/baz/fizz'),
           # And this dep would have been picked up if we were obeying
           # |recursedeps|.
           # 'svn://example.com/foo/bar/baz/fuzz',
@@ -877,9 +881,9 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/foo/bar',
-          'svn://example.com/foo/bar/baz',
+          ('foo', 'svn://example.com/foo'),
+          ('bar', 'svn://example.com/foo/bar'),
+          ('baz', 'svn://example.com/foo/bar/baz'),
         ],
         self._get_processed())
 
@@ -913,8 +917,8 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/foo/bar',
+          ('foo', 'svn://example.com/foo'),
+          ('bar', 'svn://example.com/foo/bar'),
         ],
         self._get_processed())
 
@@ -938,8 +942,8 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/foo/bar',
+          ('foo', 'svn://example.com/foo'),
+          ('bar', 'svn://example.com/foo/bar'),
         ],
         self._get_processed())
 
