@@ -282,7 +282,7 @@ public class ResourceExtractor {
     }
 
     private File getAppDataDir() {
-        return new File(PathUtils.getDataDirectory(mContext));
+        return new File(PathUtils.getDataDirectory());
     }
 
     private File getOutputDir() {

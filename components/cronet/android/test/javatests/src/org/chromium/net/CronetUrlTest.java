@@ -72,7 +72,7 @@ public class CronetUrlTest extends CronetTestBase {
     @OnlyRunNativeCronet // No NetLog from HttpURLConnection
     public void testNetLog() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
                 context, new CronetEngine.Builder(null /*context*/).setLibraryName("cronet_tests"));

@@ -538,7 +538,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @OnlyRunNativeCronet // No netlogs for pure java impl
     public void testNetLog() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         CronetEngine cronetEngine = new CronetUrlRequestContext(
                 new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
@@ -566,7 +566,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @OnlyRunNativeCronet // No netlogs for pure java impl
     public void testBoundedFileNetLog() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
@@ -599,7 +599,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // will take care of it. crbug.com/623701.
     public void testNoStopNetLog() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         CronetEngine cronetEngine = new CronetUrlRequestContext(
                 new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
@@ -627,7 +627,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // will take care of it. crbug.com/623701.
     public void testNoStopBoundedFileNetLog() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
@@ -657,7 +657,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void testNetLogContainEventsFromAllLiveEngines() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File file1 = File.createTempFile("cronet1", "json", directory);
         File file2 = File.createTempFile("cronet2", "json", directory);
         CronetEngine cronetEngine1 = new CronetUrlRequestContext(
@@ -699,7 +699,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void testBoundedFileNetLogContainEventsFromAllLiveEngines() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir1 = new File(directory, "NetLog1");
         assertFalse(netLogDir1.exists());
         assertTrue(netLogDir1.mkdir());
@@ -863,7 +863,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         callback.blockForDone();
         testFramework.mCronetEngine.shutdown();
 
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         try {
             testFramework.mCronetEngine.startNetLogToFile(file.getPath(), false);
@@ -888,7 +888,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         callback.blockForDone();
         testFramework.mCronetEngine.shutdown();
 
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
@@ -909,7 +909,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLogStartMultipleTimes() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFramework();
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         // Start NetLog multiple times.
         testFramework.mCronetEngine.startNetLogToFile(file.getPath(), false);
@@ -934,7 +934,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testBoundedFileNetLogStartMultipleTimes() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFramework();
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
@@ -963,7 +963,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNetLogStopMultipleTimes() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFramework();
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         testFramework.mCronetEngine.startNetLogToFile(file.getPath(), false);
         // Start a request.
@@ -989,7 +989,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testBoundedFileNetLogStopMultipleTimes() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFramework();
-        File directory = new File(PathUtils.getDataDirectory(getContext()));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
@@ -1020,7 +1020,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testNetLogWithBytes() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
         CronetEngine cronetEngine = new CronetUrlRequestContext(
                 new CronetEngine.Builder(context).setLibraryName("cronet_tests"));
@@ -1045,7 +1045,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testBoundedFileNetLogWithBytes() throws Exception {
         Context context = getContext();
-        File directory = new File(PathUtils.getDataDirectory(context));
+        File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());

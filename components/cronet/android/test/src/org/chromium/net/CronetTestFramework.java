@@ -150,26 +150,26 @@ public class CronetTestFramework {
      * Prepares the path for the test storage (http cache, QUIC server info).
      */
     public static void prepareTestStorage(Context context) {
-        File storage = new File(getTestStorageDirectory(context));
+        File storage = new File(getTestStorageDirectory());
         if (storage.exists()) {
             assertTrue(recursiveDelete(storage));
         }
-        ensureTestStorageExists(context);
+        ensureTestStorageExists();
     }
 
     /**
      * Returns the path for the test storage (http cache, QUIC server info).
      * NOTE: Does not ensure it exists; tests should use {@link #getTestStorage}.
      */
-    private static String getTestStorageDirectory(Context context) {
-        return PathUtils.getDataDirectory(context) + "/test_storage";
+    private static String getTestStorageDirectory() {
+        return PathUtils.getDataDirectory() + "/test_storage";
     }
 
     /**
      * Ensures test storage directory exists, i.e. creates one if it does not exist.
      */
-    private static void ensureTestStorageExists(Context context) {
-        File storage = new File(getTestStorageDirectory(context));
+    private static void ensureTestStorageExists() {
+        File storage = new File(getTestStorageDirectory());
         if (!storage.exists()) {
             assertTrue(storage.mkdir());
         }
@@ -180,8 +180,8 @@ public class CronetTestFramework {
      * Also ensures it exists.
      */
     static String getTestStorage(Context context) {
-        ensureTestStorageExists(context);
-        return getTestStorageDirectory(context);
+        ensureTestStorageExists();
+        return getTestStorageDirectory();
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")

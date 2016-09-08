@@ -99,7 +99,7 @@ public abstract class AwBrowserProcess {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            String dataPath = PathUtils.getDataDirectory(ContextUtils.getApplicationContext());
+            String dataPath = PathUtils.getDataDirectory();
             File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
             boolean success = false;
             try {

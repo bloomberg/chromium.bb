@@ -73,7 +73,7 @@ public class HttpCacheTest extends AwTestBase {
         Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
         PathUtils.setPrivateDataDirectorySuffix(
                 AwBrowserProcess.PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
-        File webViewLegacyCacheDir = new File(PathUtils.getDataDirectory(appContext), "Cache");
+        File webViewLegacyCacheDir = new File(PathUtils.getDataDirectory(), "Cache");
         if (!webViewLegacyCacheDir.isDirectory()) {
             assertTrue(webViewLegacyCacheDir.mkdir());
             assertTrue(webViewLegacyCacheDir.isDirectory());

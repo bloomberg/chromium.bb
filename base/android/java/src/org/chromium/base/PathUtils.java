@@ -151,7 +151,7 @@ public abstract class PathUtils {
      * @return the private directory that is used to store application data.
      */
     @CalledByNative
-    public static String getDataDirectory(Context appContext) {
+    public static String getDataDirectory() {
         assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
         return getDirectoryPath(DATA_DIRECTORY);
     }
@@ -160,7 +160,7 @@ public abstract class PathUtils {
      * @return the private directory that is used to store application database.
      */
     @CalledByNative
-    public static String getDatabaseDirectory(Context appContext) {
+    public static String getDatabaseDirectory() {
         assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
         return getDirectoryPath(DATABASE_DIRECTORY);
     }
@@ -168,15 +168,14 @@ public abstract class PathUtils {
     /**
      * @return the cache directory.
      */
-    @SuppressWarnings("unused")
     @CalledByNative
-    public static String getCacheDirectory(Context appContext) {
+    public static String getCacheDirectory() {
         assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
         return getDirectoryPath(CACHE_DIRECTORY);
     }
 
     @CalledByNative
-    public static String getThumbnailCacheDirectory(Context appContext) {
+    public static String getThumbnailCacheDirectory() {
         assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
         return getDirectoryPath(THUMBNAIL_DIRECTORY);
     }
@@ -186,7 +185,7 @@ public abstract class PathUtils {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static String getDownloadsDirectory(Context appContext) {
+    private static String getDownloadsDirectory() {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/508615
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         String downloadsPath;
@@ -207,8 +206,8 @@ public abstract class PathUtils {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static String getNativeLibraryDirectory(Context appContext) {
-        ApplicationInfo ai = appContext.getApplicationInfo();
+    private static String getNativeLibraryDirectory() {
+        ApplicationInfo ai = ContextUtils.getApplicationContext().getApplicationInfo();
         if ((ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
                 || (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
             return ai.nativeLibraryDir;

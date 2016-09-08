@@ -47,7 +47,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testSetSSLKeyLogFile() throws Exception {
         String url = Http2TestServer.getEchoMethodUrl();
-        File dir = new File(PathUtils.getDataDirectory(getContext()));
+        File dir = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("ssl_key_log_file", "", dir);
 
         JSONObject experimentalOptions = new JSONObject().put("ssl_key_log_file", file.getPath());

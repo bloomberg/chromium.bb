@@ -42,7 +42,7 @@ public final class TestFilesInstaller {
      * Returns the installed path of the test files.
      */
     public static String getInstalledPath(Context context) {
-        return PathUtils.getDataDirectory(context) + "/" + TEST_FILE_ASSET_PATH;
+        return PathUtils.getDataDirectory() + "/" + TEST_FILE_ASSET_PATH;
     }
 
     /**
@@ -64,7 +64,7 @@ public final class TestFilesInstaller {
         AssetManager assetManager = context.getAssets();
         String files[] = assetManager.list(path);
         Log.i(TAG, "Loading " + path + " ...");
-        String root = PathUtils.getDataDirectory(context);
+        String root = PathUtils.getDataDirectory();
         if (files.length == 0) {
             // The path is a file, so copy the file now.
             copyTestFile(context, path, root + "/" + path);

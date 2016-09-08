@@ -239,7 +239,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         if (!versionCodeGE(currentVersion, lastVersion)) {
             // The WebView package has been downgraded since we last ran in this application.
             // Delete the WebView data directory's contents.
-            String dataDir = PathUtils.getDataDirectory(ContextUtils.getApplicationContext());
+            String dataDir = PathUtils.getDataDirectory();
             Log.i(TAG, "WebView package downgraded from " + lastVersion + " to " + currentVersion
                             + "; deleting contents of " + dataDir);
             deleteContents(new File(dataDir));

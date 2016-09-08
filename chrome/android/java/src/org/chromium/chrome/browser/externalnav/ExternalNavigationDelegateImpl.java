@@ -393,7 +393,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         // If the url points inside of Chromium's data directory, no permissions are necessary.
         // This is required to prevent permission prompt when uses wants to access offline pages.
-        if (url.startsWith("file://" + PathUtils.getDataDirectory(mApplicationContext))) {
+        if (url.startsWith("file://" + PathUtils.getDataDirectory())) {
             return false;
         }
 

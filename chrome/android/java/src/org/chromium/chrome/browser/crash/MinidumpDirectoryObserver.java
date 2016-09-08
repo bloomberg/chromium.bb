@@ -22,11 +22,10 @@ import java.io.File;
 public class MinidumpDirectoryObserver extends FileObserver {
 
     private static final String TAG = "MinidumpDirObserver";
-    private static Context sContext = ContextUtils.getApplicationContext();
 
     public MinidumpDirectoryObserver() {
         // The file observer detects MOVED_TO for child processes.
-        super(new File(PathUtils.getCacheDirectory(sContext),
+        super(new File(PathUtils.getCacheDirectory(),
                 CrashFileManager.CRASH_DUMP_DIR).toString(), FileObserver.MOVED_TO);
     }
 
@@ -37,9 +36,11 @@ public class MinidumpDirectoryObserver extends FileObserver {
     public void onEvent(int event, String path) {
         // This is executed on a thread dedicated to FileObserver.
         if (CrashFileManager.isMinidumpMIMEFirstTry(path)) {
+            Context appContext = ContextUtils.getApplicationContext();
             try {
-                Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(sContext);
-                sContext.startService(intent);
+                Intent intent =
+                        MinidumpUploadService.createFindAndUploadLastCrashIntent(appContext);
+                appContext.startService(intent);
                 Log.i(TAG, "Detects a new minidump %s send intent to MinidumpUploadService", path);
                 RecordUserAction.record("MobileBreakpadUploadAttempt");
             } catch (SecurityException e) {
