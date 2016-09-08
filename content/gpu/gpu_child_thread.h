@@ -64,8 +64,7 @@ class GpuChildThread : public ChildThreadImpl,
                  const DeferredMessages& deferred_messages,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
-  GpuChildThread(const gpu::GpuPreferences& gpu_preferences,
-                 const InProcessChildThreadParams& params,
+  GpuChildThread(const InProcessChildThreadParams& params,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   ~GpuChildThread() override;
@@ -74,8 +73,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
-
-  gpu::GpuPreferences gpu_preferences() { return gpu_preferences_; }
 
  private:
   // ChildThreadImpl:.
@@ -130,8 +127,6 @@ class GpuChildThread : public ChildThreadImpl,
   void OnLoseAllContexts();
 
   void BindServiceFactoryRequest(shell::mojom::ServiceFactoryRequest request);
-
-  gpu::GpuPreferences gpu_preferences_;
 
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.

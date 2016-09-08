@@ -50,8 +50,8 @@ void InProcessGpuThread::Init() {
 
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
-  GpuChildThread* child_thread = new GpuChildThread(
-      gpu_preferences_, params_, gpu_memory_buffer_factory_.get());
+  GpuChildThread* child_thread =
+      new GpuChildThread(params_, gpu_memory_buffer_factory_.get());
 
   // Since we are in the browser process, use the thread start time as the
   // process start time.

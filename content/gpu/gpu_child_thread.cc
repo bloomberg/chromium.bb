@@ -162,7 +162,6 @@ GpuChildThread::GpuChildThread(
 }
 
 GpuChildThread::GpuChildThread(
-    const gpu::GpuPreferences& gpu_preferences,
     const InProcessChildThreadParams& params,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
@@ -172,7 +171,6 @@ GpuChildThread::GpuChildThread(
                               gpu_memory_buffer_factory))
                           .ConnectToBrowser(true)
                           .Build()),
-      gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),
       in_browser_process_(true),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
@@ -313,13 +311,10 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 }
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
-  gpu_preferences_ = gpu_preferences;
-
   gpu_info_.video_decode_accelerator_capabilities =
-      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
+      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
   gpu_info_.video_encode_accelerator_supported_profiles =
-      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(
-          gpu_preferences_);
+      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences);
   gpu_info_.jpeg_decode_accelerator_supported =
       media::GpuJpegDecodeAccelerator::IsSupported();
 
@@ -357,12 +352,12 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  gpu_channel_manager_.reset(
-      new gpu::GpuChannelManager(gpu_preferences_, this, watchdog_thread_.get(),
-                            base::ThreadTaskRunnerHandle::Get().get(),
-                            ChildProcess::current()->io_task_runner(),
-                            ChildProcess::current()->GetShutDownEvent(),
-                            sync_point_manager, gpu_memory_buffer_factory_));
+  gpu_channel_manager_.reset(new gpu::GpuChannelManager(
+      gpu_preferences, this, watchdog_thread_.get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
+      ChildProcess::current()->io_task_runner(),
+      ChildProcess::current()->GetShutDownEvent(), sync_point_manager,
+      gpu_memory_buffer_factory_));
 
   media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
 
@@ -373,8 +368,8 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
       &GpuChildThread::BindServiceFactoryRequest, base::Unretained(this)));
 
   if (GetContentClient()->gpu()) {  // NULL in tests.
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
-        GetInterfaceRegistry(), gpu_preferences_);
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(GetInterfaceRegistry(),
+                                                         gpu_preferences);
     GetContentClient()->gpu()->ConsumeInterfacesFromBrowser(
         GetRemoteInterfaces());
   }

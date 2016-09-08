@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
@@ -169,7 +170,7 @@ class GPU_EXPORT GpuChannelManager {
   void DoWakeUpGpu();
 #endif
 
-  const GpuPreferences& gpu_preferences_;
+  const GpuPreferences gpu_preferences_;
   GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   GpuChannelManagerDelegate* const delegate_;
