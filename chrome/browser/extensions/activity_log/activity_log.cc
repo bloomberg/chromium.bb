@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -397,6 +399,14 @@ void LogApiActivityOnUI(content::BrowserContext* browser_context,
                         std::unique_ptr<base::ListValue> args,
                         Action::ActionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // There's a chance that the |browser_context| was deleted some time during
+  // the thread hops.
+  // TODO(devlin): We should probably be doing this more extensively throughout
+  // extensions code.
+  if (g_browser_process->IsShuttingDown() ||
+      !g_browser_process->profile_manager()->IsValidProfile(browser_context)) {
+    return;
+  }
   ActivityLog* activity_log = ActivityLog::GetInstance(browser_context);
   if (!activity_log || !activity_log->ShouldLog(extension_id))
     return;
