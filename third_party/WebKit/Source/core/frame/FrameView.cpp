@@ -2205,6 +2205,9 @@ void FrameView::sendResizeEventIfNeeded()
     m_lastViewportSize = layoutSize(IncludeScrollbars);
     m_lastZoomFactor = layoutViewItem.style()->zoom();
 
+    if (RuntimeEnabledFeatures::visualViewportAPIEnabled())
+        m_frame->document()->enqueueVisualViewportResizeEvent();
+
     m_frame->document()->enqueueResizeEvent();
 
     if (m_frame->isMainFrame())

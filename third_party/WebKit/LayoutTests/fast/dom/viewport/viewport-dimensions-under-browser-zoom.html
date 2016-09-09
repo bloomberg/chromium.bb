@@ -18,8 +18,15 @@
     return window.visualViewport;
   }
 
+  var numCallsResize = 0;
+
   async_test(function(t) {
     window.onload = t.step_func(function() {
+
+      window.visualViewport.addEventListener('resize', function(e) {
+        numCallsResize++;
+      });
+
       window.scrollTo(100, 100);
 
       // TODO(ymalik): Remove hook to internals to pinch-zoom here and browser
@@ -38,14 +45,19 @@
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
 
-      // Visual viewport dimensions should be scaled by the browser zoom factor.
-      assert_equals(viewport().scrollTop, 10 / browserZoomFactor);
-      assert_equals(viewport().scrollLeft, 10 / browserZoomFactor);
-      assert_equals(viewport().clientWidth, 400 / browserZoomFactor);
-      assert_equals(viewport().clientHeight, 300 / browserZoomFactor);
-      assert_equals(viewport().scale, 2);
+      requestAnimationFrame(function() {
+        t.step(function() {
+          assert_equals(numCallsResize, 1, "resize listener called for browzer zoom");
+          // Visual viewport dimensions should be scaled by the browser zoom factor.
+          assert_equals(viewport().scrollTop, 10 / browserZoomFactor);
+          assert_equals(viewport().scrollLeft, 10 / browserZoomFactor);
+          assert_equals(viewport().clientWidth, 400 / browserZoomFactor);
+          assert_equals(viewport().clientHeight, 300 / browserZoomFactor);
+          assert_equals(viewport().scale, 2);
 
-      t.done();
+          t.done();
+        });
+      });
     });
   }, 'Verify viewport dimensions under bowser zoom.');
 </script>
