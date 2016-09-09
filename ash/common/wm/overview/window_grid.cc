@@ -410,6 +410,7 @@ WindowGrid::WindowGrid(WmWindow* root_window,
     ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_,
                                     window_selector_->text_filter_bottom());
   }
+  PrepareForUsingMasksOrShapes(windows_in_root.size());
   for (auto* window : windows_in_root) {
     window_observer_.Add(window);
     window_list_.push_back(new WindowSelectorItem(window, window_selector_));
@@ -419,6 +420,9 @@ WindowGrid::WindowGrid(WmWindow* root_window,
 WindowGrid::~WindowGrid() {}
 
 void WindowGrid::Shutdown() {
+  for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
+    (*iter)->Shutdown();
+
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
     // of |this|.
@@ -428,7 +432,7 @@ void WindowGrid::Shutdown() {
         widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_IN);
+    animation_settings.SetTweenType(gfx::Tween::EASE_IN_2);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     // CleanupAnimationObserver will delete itself (and the shield widget) when
@@ -457,34 +461,7 @@ void WindowGrid::PrepareForOverview() {
 void WindowGrid::PositionWindowsMD(bool animate) {
   if (window_list_.empty())
     return;
-
-  const int kUnlimited = -1;
-  const size_t windows_count = window_list_.size();
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  int windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
-  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseMaskInOverview) &&
-      (!base::StringToInt(command_line->GetSwitchValueASCII(
-                              switches::kAshMaxWindowsToUseMaskInOverview),
-                          &windows_to_use_masks) ||
-       windows_to_use_masks <= kUnlimited)) {
-    windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
-  }
-  int windows_to_use_shapes = kUnlimited;
-  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseShapeInOverview) &&
-      (!base::StringToInt(command_line->GetSwitchValueASCII(
-                              switches::kAshMaxWindowsToUseShapeInOverview),
-                          &windows_to_use_shapes) ||
-       windows_to_use_shapes <= kUnlimited)) {
-    windows_to_use_shapes = kUnlimited;
-  }
-  WindowSelectorItem::set_use_mask(windows_to_use_masks <= kUnlimited ||
-                                   static_cast<int>(windows_count) <=
-                                       windows_to_use_masks);
-  WindowSelectorItem::set_use_shape(windows_to_use_shapes <= kUnlimited ||
-                                    static_cast<int>(windows_count) <=
-                                        windows_to_use_shapes);
-
+  PrepareForUsingMasksOrShapes(window_list_.size());
   gfx::Rect total_bounds =
       root_window_->ConvertRectToScreen(wm::GetDisplayWorkAreaBoundsInParent(
           root_window_->GetChildByShellWindowId(
@@ -593,7 +570,7 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   }
   // Position the windows centering the left-aligned rows vertically.
   gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
-  for (size_t i = 0; i < windows_count; ++i) {
+  for (size_t i = 0; i < window_list_.size(); ++i) {
     window_list_[i]->SetBounds(
         rects[i] + offset,
         animate
@@ -862,7 +839,7 @@ void WindowGrid::InitShieldWidget() {
       widget_window->GetLayer()->GetAnimator());
   animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kOverviewSelectorTransitionMilliseconds));
-  animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  animation_settings.SetTweenType(gfx::Tween::EASE_IN);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   shield_widget_->SetOpacity(kShieldOpacity);
@@ -1060,6 +1037,34 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     *max_bottom = top + height;
   }
   return windows_fit;
+}
+
+void WindowGrid::PrepareForUsingMasksOrShapes(size_t windows_count) const {
+  const int kUnlimited = -1;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  int windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
+  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseMaskInOverview) &&
+      (!base::StringToInt(command_line->GetSwitchValueASCII(
+                              switches::kAshMaxWindowsToUseMaskInOverview),
+                          &windows_to_use_masks) ||
+       windows_to_use_masks <= kUnlimited)) {
+    windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
+  }
+  int windows_to_use_shapes = kUnlimited;
+  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseShapeInOverview) &&
+      (!base::StringToInt(command_line->GetSwitchValueASCII(
+                              switches::kAshMaxWindowsToUseShapeInOverview),
+                          &windows_to_use_shapes) ||
+       windows_to_use_shapes <= kUnlimited)) {
+    windows_to_use_shapes = kUnlimited;
+  }
+  WindowSelectorItem::set_use_mask(windows_to_use_masks <= kUnlimited ||
+                                   static_cast<int>(windows_count) <=
+                                       windows_to_use_masks);
+  WindowSelectorItem::set_use_shape(windows_to_use_shapes <= kUnlimited ||
+                                    static_cast<int>(windows_count) <=
+                                        windows_to_use_shapes);
 }
 
 }  // namespace ash

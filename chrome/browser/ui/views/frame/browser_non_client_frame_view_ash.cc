@@ -360,6 +360,8 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 // ash::ShellObserver:
 
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
+  frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
+                                          GetFrameColor());
   if (ash::MaterialDesignController::IsOverviewMaterial())
     caption_button_container_->SetVisible(false);
 }

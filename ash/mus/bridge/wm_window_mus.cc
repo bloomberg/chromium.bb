@@ -296,6 +296,12 @@ float WmWindowMus::GetTargetOpacity() const {
   return window_->opacity();
 }
 
+gfx::Rect WmWindowMus::GetMinimizeAnimationTargetBoundsInScreen() const {
+  // TODO: need animation support: http://crbug.com/615087.
+  NOTIMPLEMENTED();
+  return GetBoundsInScreen();
+}
+
 void WmWindowMus::SetTransform(const gfx::Transform& transform) {
   // TODO: mus needs to support transforms: http://crbug.com/615089.
   NOTIMPLEMENTED();
@@ -330,6 +336,27 @@ bool WmWindowMus::GetBoolProperty(WmWindowProperty key) {
 
   NOTREACHED();
   return false;
+}
+
+SkColor WmWindowMus::GetColorProperty(WmWindowProperty key) {
+  if (key == WmWindowProperty::TOP_VIEW_COLOR) {
+    // TODO: need support for TOP_VIEW_COLOR: http://crbug.com/615100.
+    NOTIMPLEMENTED();
+    return 0;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
+void WmWindowMus::SetColorProperty(WmWindowProperty key, SkColor value) {
+  if (key == WmWindowProperty::TOP_VIEW_COLOR) {
+    // TODO: need support for TOP_VIEW_COLOR: http://crbug.com/615100.
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  NOTREACHED();
 }
 
 int WmWindowMus::GetIntProperty(WmWindowProperty key) {

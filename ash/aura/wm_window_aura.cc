@@ -248,6 +248,10 @@ float WmWindowAura::GetTargetOpacity() const {
   return window_->layer()->GetTargetOpacity();
 }
 
+gfx::Rect WmWindowAura::GetMinimizeAnimationTargetBoundsInScreen() const {
+  return ash::GetMinimizeAnimationTargetBoundsInScreen(window_);
+}
+
 void WmWindowAura::SetTransform(const gfx::Transform& transform) {
   window_->SetTransform(transform);
 }
@@ -277,6 +281,23 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
   }
 
   return false;
+}
+
+SkColor WmWindowAura::GetColorProperty(WmWindowProperty key) {
+  if (key == WmWindowProperty::TOP_VIEW_COLOR)
+    return window_->GetProperty(aura::client::kTopViewColor);
+
+  NOTREACHED();
+  return 0;
+}
+
+void WmWindowAura::SetColorProperty(WmWindowProperty key, SkColor value) {
+  if (key == WmWindowProperty::TOP_VIEW_COLOR) {
+    window_->SetProperty(aura::client::kTopViewColor, value);
+    return;
+  }
+
+  NOTREACHED();
 }
 
 int WmWindowAura::GetIntProperty(WmWindowProperty key) {

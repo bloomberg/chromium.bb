@@ -94,6 +94,14 @@ void HeaderView::SetFrameColors(SkColor active_frame_color,
   header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
 }
 
+SkColor HeaderView::GetActiveFrameColor() const {
+  return header_painter_->GetActiveFrameColor();
+}
+
+SkColor HeaderView::GetInactiveFrameColor() const {
+  return header_painter_->GetInactiveFrameColor();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderView, views::View overrides:
 

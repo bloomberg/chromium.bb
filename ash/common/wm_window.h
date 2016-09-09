@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/wm/core/window_animations.h"
@@ -117,12 +118,16 @@ class ASH_EXPORT WmWindow {
   virtual void SetOpacity(float opacity) = 0;
   virtual float GetTargetOpacity() const = 0;
 
+  virtual gfx::Rect GetMinimizeAnimationTargetBoundsInScreen() const = 0;
+
   virtual void SetTransform(const gfx::Transform& transform) = 0;
   virtual gfx::Transform GetTargetTransform() const = 0;
 
   virtual bool IsSystemModal() const = 0;
 
   virtual bool GetBoolProperty(WmWindowProperty key) = 0;
+  virtual SkColor GetColorProperty(WmWindowProperty key) = 0;
+  virtual void SetColorProperty(WmWindowProperty key, SkColor value) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;
   virtual void SetIntProperty(WmWindowProperty key, int value) = 0;
 

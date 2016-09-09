@@ -271,7 +271,8 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_,
-               false /* use_mask */, false /* use_shape */, 0);
+               false /* use_mask */);
+  set_overview_transform(original_transform_);
 
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
       CreateScopedOverviewAnimationSettings(
@@ -296,19 +297,8 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
 
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    ui::Layer* layer = window()->GetLayer();
-    layer->SetMaskLayer(nullptr);
-    mask_.reset();
-
-    if (original_window_shape_) {
-      layer->SetAlphaShape(
-          base::MakeUnique<SkRegion>(*original_window_shape_.get()));
-    } else {
-      layer->SetAlphaShape(nullptr);
-    }
-    window()->SetMasksToBounds(false);
-  }
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    ShowHeaderAndResetShape();
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
@@ -345,6 +335,9 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
 
 gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds(
     bool hide_header) const {
+  if (window_->GetWindowState()->IsMinimized())
+    return window_->GetMinimizeAnimationTargetBoundsInScreen();
+
   const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   const int top_inset = hide_header ? GetTopInset() : 0;
   gfx::Rect bounds;
@@ -375,6 +368,18 @@ gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds(
         ToEnclosingRect(window_bounds)));
   }
   return bounds;
+}
+
+SkColor ScopedTransformOverviewWindow::GetTopColor() const {
+  for (auto* window : GetTransientTreeIterator(window_)) {
+    // If there are regular windows in the transient ancestor tree, all those
+    // windows are shown in the same overview item and the header is not masked.
+    if (window != window_ && (window->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
+                              window->GetType() == ui::wm::WINDOW_TYPE_PANEL)) {
+      return SK_ColorTRANSPARENT;
+    }
+  }
+  return window_->GetColorProperty(WmWindowProperty::TOP_VIEW_COLOR);
 }
 
 int ScopedTransformOverviewWindow::GetTopInset() const {
@@ -466,9 +471,7 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* root_window,
     const gfx::Transform& transform,
-    bool use_mask,
-    bool use_shape,
-    float radius) {
+    bool use_mask) {
   DCHECK(overview_started_);
 
   if (ash::MaterialDesignController::IsOverviewMaterial() &&
@@ -483,26 +486,6 @@ void ScopedTransformOverviewWindow::SetTransform(
       SkRegion* window_shape = window()->GetLayer()->alpha_shape();
       if (!original_window_shape_ && window_shape)
         original_window_shape_.reset(new SkRegion(*window_shape));
-    }
-    gfx::Rect bounds(GetTargetBoundsInScreen().size());
-    const int inset = (use_mask || use_shape) ? GetTopInset() : 0;
-    if (mask_) {
-      // Mask layer is used both to hide the window header and to use rounded
-      // corners. Its layout needs to be update when setting a transform.
-      mask_->layer()->SetBounds(bounds);
-      mask_->set_inset(inset);
-      mask_->set_radius(radius);
-      window()->GetLayer()->SchedulePaint(bounds);
-    } else if (inset > 0) {
-      // Alpha shape is only used to to hide the window header and only when
-      // not using a mask layer.
-      bounds.Inset(0, inset, 0, 0);
-      SkRegion* region = new SkRegion;
-      region->setRect(RectToSkIRect(bounds));
-      if (original_window_shape_)
-        region->op(*original_window_shape_, SkRegion::kIntersect_Op);
-      window()->GetLayer()->SetAlphaShape(base::WrapUnique(region));
-      window()->SetMasksToBounds(true);
     }
   }
 
@@ -524,6 +507,45 @@ void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
   for (auto* window : GetTransientTreeIterator(window_)) {
     window->SetOpacity(opacity);
   }
+}
+
+void ScopedTransformOverviewWindow::HideHeaderAndSetShape(bool use_mask,
+                                                          bool use_shape,
+                                                          int radius) {
+  gfx::Rect bounds(GetTargetBoundsInScreen().size());
+  const int inset = (use_mask || use_shape) ? GetTopInset() : 0;
+  if (mask_) {
+    // Mask layer is used both to hide the window header and to use rounded
+    // corners. Its layout needs to be updated when setting a transform.
+    mask_->layer()->SetBounds(bounds);
+    mask_->set_inset(inset);
+    mask_->set_radius(radius);
+    window()->GetLayer()->SchedulePaint(bounds);
+  } else if (inset > 0) {
+    // Alpha shape is only used to hide the window header and only when not
+    // using a mask layer.
+    bounds.Inset(0, inset, 0, 0);
+    std::unique_ptr<SkRegion> region(new SkRegion);
+    region->setRect(RectToSkIRect(bounds));
+    if (original_window_shape_)
+      region->op(*original_window_shape_, SkRegion::kIntersect_Op);
+    window()->GetLayer()->SetAlphaShape(std::move(region));
+    window()->SetMasksToBounds(true);
+  }
+}
+
+void ScopedTransformOverviewWindow::ShowHeaderAndResetShape() {
+  ui::Layer* layer = window()->GetLayer();
+  layer->SetMaskLayer(nullptr);
+  mask_.reset();
+
+  if (original_window_shape_) {
+    layer->SetAlphaShape(
+        base::MakeUnique<SkRegion>(*original_window_shape_.get()));
+  } else {
+    layer->SetAlphaShape(nullptr);
+  }
+  window()->SetMasksToBounds(false);
 }
 
 void ScopedTransformOverviewWindow::Close() {
