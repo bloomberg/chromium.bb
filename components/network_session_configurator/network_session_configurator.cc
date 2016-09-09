@@ -152,27 +152,6 @@ bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
 }
 
-int GetQuicMaxNumberOfLossyConnections(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(GetVariationParam(quic_trial_params,
-                                          "max_number_of_lossy_connections"),
-                        &value)) {
-    return value;
-  }
-  return 0;
-}
-
-float GetQuicPacketLossThreshold(const VariationParameters& quic_trial_params) {
-  double value;
-  if (base::StringToDouble(
-          GetVariationParam(quic_trial_params, "packet_loss_threshold"),
-          &value)) {
-    return static_cast<float>(value);
-  }
-  return 0.0f;
-}
-
 int GetQuicSocketReceiveBufferSize(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -337,15 +316,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicDisableDiskCache(quic_trial_params);
     params->quic_prefer_aes = ShouldQuicPreferAes(quic_trial_params);
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
-    int max_number_of_lossy_connections =
-        GetQuicMaxNumberOfLossyConnections(quic_trial_params);
-    if (max_number_of_lossy_connections != 0) {
-      params->quic_max_number_of_lossy_connections =
-          max_number_of_lossy_connections;
-    }
-    float packet_loss_threshold = GetQuicPacketLossThreshold(quic_trial_params);
-    if (packet_loss_threshold != 0)
-      params->quic_packet_loss_threshold = packet_loss_threshold;
     // Default to disabling port selection on all channels.
     params->enable_quic_port_selection = false;
     params->quic_connection_options =

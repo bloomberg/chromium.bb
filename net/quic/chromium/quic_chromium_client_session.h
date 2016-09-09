@@ -58,18 +58,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       public QuicChromiumPacketReader::Visitor,
       public QuicChromiumPacketWriter::Delegate {
  public:
-  // Reasons to disable QUIC, that is under certain pathological
-  // connection errors.  Note: these values must be kept in sync with
-  // the corresponding values of QuicDisabledReason in:
-  // tools/metrics/histograms/histograms.xml
-  enum QuicDisabledReason {
-    QUIC_DISABLED_NOT = 0,  // default, not disabled
-    QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE = 1,
-    QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS = 2,
-    QUIC_DISABLED_BAD_PACKET_LOSS_RATE = 3,
-    QUIC_DISABLED_MAX = 4,
-  };
-
   // An interface for observing events on a session.
   class NET_EXPORT_PRIVATE Observer {
    public:
@@ -251,8 +239,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   const QuicServerId& server_id() const { return server_id_; }
 
-  QuicDisabledReason disabled_reason() const { return disabled_reason_; }
-
   // Migrates session onto new socket, i.e., starts reading from
   // |socket| in addition to any previous sockets, and sets |writer|
   // to be the new default writer. Returns true if socket was
@@ -360,7 +346,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool going_away_;
   // True when the session receives a go away from server due to port migration.
   bool port_migration_detected_;
-  QuicDisabledReason disabled_reason_;
   TokenBindingSignatureMap token_binding_signatures_;
   // UMA histogram counters for streams pushed to this session.
   int streams_pushed_count_;

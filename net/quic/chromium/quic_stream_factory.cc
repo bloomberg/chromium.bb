@@ -730,11 +730,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_non_blocking_io,
     bool disable_disk_cache,
     bool prefer_aes,
-    int max_number_of_lossy_connections,
-    float packet_loss_threshold,
-    int max_disabled_reasons,
-    int threshold_public_resets_post_handshake,
-    int threshold_timeouts_with_open_streams,
     int socket_receive_buffer_size,
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
@@ -781,17 +776,8 @@ QuicStreamFactory::QuicStreamFactory(
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
       prefer_aes_(prefer_aes),
-      max_number_of_lossy_connections_(max_number_of_lossy_connections),
-      packet_loss_threshold_(packet_loss_threshold),
-      max_disabled_reasons_(max_disabled_reasons),
-      num_public_resets_post_handshake_(0),
-      num_timeouts_with_open_streams_(0),
-      max_public_resets_post_handshake_(0),
-      max_timeouts_with_open_streams_(0),
-      threshold_timeouts_with_open_streams_(
-          threshold_timeouts_with_open_streams),
-      threshold_public_resets_post_handshake_(
-          threshold_public_resets_post_handshake),
+      disable_quic_on_timeout_with_open_streams_(
+          disable_quic_on_timeout_with_open_streams),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
@@ -820,8 +806,6 @@ QuicStreamFactory::QuicStreamFactory(
       weak_factory_(this) {
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
-  if (disable_quic_on_timeout_with_open_streams)
-    threshold_timeouts_with_open_streams_ = 1;
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   crypto_config_.set_user_agent_id(user_agent_id);
@@ -1157,86 +1141,19 @@ std::unique_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
       new QuicHttpStream(session->GetWeakPtr()));
 }
 
-QuicChromiumClientSession::QuicDisabledReason
-QuicStreamFactory::QuicDisabledReason(uint16_t port) const {
-  if (max_number_of_lossy_connections_ > 0 &&
-      number_of_lossy_connections_.find(port) !=
-          number_of_lossy_connections_.end() &&
-      number_of_lossy_connections_.at(port) >=
-          max_number_of_lossy_connections_) {
-    return QuicChromiumClientSession::QUIC_DISABLED_BAD_PACKET_LOSS_RATE;
-  }
-  if (threshold_public_resets_post_handshake_ > 0 &&
-      num_public_resets_post_handshake_ >=
-          threshold_public_resets_post_handshake_) {
-    return QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE;
-  }
-  if (threshold_timeouts_with_open_streams_ > 0 &&
-      num_timeouts_with_open_streams_ >=
-          threshold_timeouts_with_open_streams_) {
-    return QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS;
-  }
-  return QuicChromiumClientSession::QUIC_DISABLED_NOT;
-}
-
-const char* QuicStreamFactory::QuicDisabledReasonString() const {
-  // TODO(ckrasic) - better solution for port/lossy connections?
-  const uint16_t port = 443;
-  switch (QuicDisabledReason(port)) {
-    case QuicChromiumClientSession::QUIC_DISABLED_BAD_PACKET_LOSS_RATE:
-      return "Bad packet loss rate.";
-    case QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE:
-      return "Public resets after successful handshakes.";
-    case QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS:
-      return "Connection timeouts with streams open.";
-    default:
-      return "";
-  }
-}
-
-bool QuicStreamFactory::IsQuicDisabled(uint16_t port) const {
+bool QuicStreamFactory::IsQuicDisabled() const {
   return status_ != OPEN;
 }
 
-bool QuicStreamFactory::OnHandshakeConfirmed(QuicChromiumClientSession* session,
-                                             float packet_loss_rate) {
-  DCHECK(session);
-  uint16_t port = session->server_id().port();
-  if (packet_loss_rate < packet_loss_threshold_) {
-    number_of_lossy_connections_[port] = 0;
+bool QuicStreamFactory::OnHandshakeConfirmed(
+    QuicChromiumClientSession* session) {
+  if (!IsQuicDisabled())
     return false;
-  }
 
-  // We mark it as recently broken, which means that 0-RTT will be disabled
-  // but we'll still race.
-  http_server_properties_->MarkAlternativeServiceRecentlyBroken(
-      AlternativeService(QUIC, session->server_id().host(), port));
+  session->CloseSessionOnErrorAndNotifyFactoryLater(
+      ERR_ABORTED, QUIC_TIMEOUTS_WITH_OPEN_STREAMS);
 
-  bool was_quic_disabled = IsQuicDisabled(port);
-  ++number_of_lossy_connections_[port];
-
-  // Collect data for port 443 for packet loss events.
-  if (port == 443 && max_number_of_lossy_connections_ > 0) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        base::StringPrintf("Net.QuicStreamFactory.BadPacketLossEvents%d",
-                           max_number_of_lossy_connections_),
-        std::min(number_of_lossy_connections_[port],
-                 max_number_of_lossy_connections_));
-  }
-
-  MaybeDisableQuic(port);
-
-  bool is_quic_disabled = IsQuicDisabled(port);
-  if (is_quic_disabled) {
-    // Close QUIC connection if Quic is disabled for this port.
-    session->CloseSessionOnErrorAndNotifyFactoryLater(
-        ERR_ABORTED, QUIC_BAD_PACKET_LOSS_RATE);
-
-    // If this bad packet loss rate disabled the QUIC, then record it.
-    if (!was_quic_disabled)
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
-  }
-  return is_quic_disabled;
+  return true;
 }
 
 void QuicStreamFactory::OnTcpJobCompleted(bool succeeded) {
@@ -1252,7 +1169,6 @@ void QuicStreamFactory::OnTcpJobCompleted(bool succeeded) {
   }
 
   status_ = OPEN;
-  num_timeouts_with_open_streams_ = 0;
 }
 
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
@@ -1284,97 +1200,8 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   session_aliases_.erase(session);
 }
 
-void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
-  DCHECK(session);
-  uint16_t port = session->server_id().port();
-  if (IsQuicDisabled(port))
-    return;
-
-  // Expire the oldest disabled_reason if appropriate.  This enforces that we
-  // only consider the max_disabled_reasons_ most recent sessions.
-  QuicChromiumClientSession::QuicDisabledReason disabled_reason;
-  if (static_cast<int>(disabled_reasons_.size()) == max_disabled_reasons_) {
-    disabled_reason = disabled_reasons_.front();
-    disabled_reasons_.pop_front();
-    if (disabled_reason ==
-        QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
-      --num_public_resets_post_handshake_;
-    } else if (disabled_reason == QuicChromiumClientSession::
-                                      QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
-      --num_timeouts_with_open_streams_;
-    }
-  }
-  disabled_reason = session->disabled_reason();
-  disabled_reasons_.push_back(disabled_reason);
-  if (disabled_reason ==
-      QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
-    ++num_public_resets_post_handshake_;
-  } else if (disabled_reason == QuicChromiumClientSession::
-                                    QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
-    ++num_timeouts_with_open_streams_;
-  }
-  if (num_timeouts_with_open_streams_ > max_timeouts_with_open_streams_) {
-    max_timeouts_with_open_streams_ = num_timeouts_with_open_streams_;
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicStreamFactory.TimeoutsWithOpenStreams",
-                                num_timeouts_with_open_streams_, 1, 20, 10);
-  }
-
-  if (num_public_resets_post_handshake_ > max_public_resets_post_handshake_) {
-    max_public_resets_post_handshake_ = num_public_resets_post_handshake_;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Net.QuicStreamFactory.PublicResetsPostHandshake",
-        num_public_resets_post_handshake_, 1, 20, 10);
-  }
-
-  MaybeDisableQuic(port);
-  if (IsQuicDisabled(port)) {
-    if (disabled_reason ==
-        QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
-      session->CloseSessionOnErrorAndNotifyFactoryLater(
-          ERR_ABORTED, QUIC_PUBLIC_RESETS_POST_HANDSHAKE);
-    } else if (disabled_reason == QuicChromiumClientSession::
-                                      QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
-      session->CloseSessionOnErrorAndNotifyFactoryLater(
-          ERR_ABORTED, QUIC_TIMEOUTS_WITH_OPEN_STREAMS);
-    }
-    UMA_HISTOGRAM_ENUMERATION("Net.QuicStreamFactory.DisabledReasons",
-                              disabled_reason,
-                              QuicChromiumClientSession::QUIC_DISABLED_MAX);
-  }
-}
-
-void QuicStreamFactory::MaybeDisableQuic(uint16_t port) {
-  if (status_ == DISABLED)
-    return;
-
-  QuicChromiumClientSession::QuicDisabledReason disabled_reason =
-      QuicDisabledReason(port);
-  if (disabled_reason == QuicChromiumClientSession::QUIC_DISABLED_NOT) {
-    DCHECK_EQ(OPEN, status_);
-    return;
-  }
-
-  if (disabled_reason ==
-      QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
-    // When QUIC there are too many timeouts with open stream, the factory
-    // should be closed. When TCP jobs complete, they will move the factory
-    // to either fully disabled or back to open.
-    status_ = CLOSED;
-    DCHECK(IsQuicDisabled(port));
-    DCHECK_NE(QuicChromiumClientSession::QuicDisabledReason(port),
-              QuicChromiumClientSession::QUIC_DISABLED_NOT);
-    return;
-  }
-
-  status_ = DISABLED;
-  DCHECK(IsQuicDisabled(port));
-  DCHECK_NE(QuicChromiumClientSession::QuicDisabledReason(port),
-            QuicChromiumClientSession::QUIC_DISABLED_NOT);
-}
-
 void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   DCHECK_EQ(0u, session->GetNumActiveStreams());
-  MaybeDisableQuic(session);
   OnSessionGoingAway(session);
   delete session;
   all_sessions_.erase(session);
@@ -1385,6 +1212,8 @@ void QuicStreamFactory::OnTimeoutWithOpenStreams() {
   if (ping_timeout_ > reduced_ping_timeout_) {
     ping_timeout_ = reduced_ping_timeout_;
   }
+  if (disable_quic_on_timeout_with_open_streams_)
+    status_ = CLOSED;
 }
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
@@ -1439,14 +1268,12 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
-  num_timeouts_with_open_streams_ = 0;
   status_ = OPEN;
   CloseAllSessions(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
-  num_timeouts_with_open_streams_ = 0;
   status_ = OPEN;
 }
 
