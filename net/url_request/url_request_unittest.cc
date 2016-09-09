@@ -751,8 +751,8 @@ class URLRequestTest : public PlatformTest {
         "data", base::WrapUnique(new DataProtocolHandler));
 #if !defined(DISABLE_FILE_SUPPORT)
     job_factory_impl_->SetProtocolHandler(
-        "file", base::WrapUnique(new FileProtocolHandler(
-                    base::ThreadTaskRunnerHandle::Get())));
+        "file", base::MakeUnique<FileProtocolHandler>(
+                    base::ThreadTaskRunnerHandle::Get()));
 #endif
   }
 
@@ -5693,9 +5693,9 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-    element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(), path, 0,
-        std::numeric_limits<uint64_t>::max(), base::Time())));
+        std::numeric_limits<uint64_t>::max(), base::Time()));
     r->set_upload(base::WrapUnique<UploadDataStream>(
         new ElementsUploadDataStream(std::move(element_readers), 0)));
 
@@ -5734,11 +5734,11 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
 
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0, std::numeric_limits<uint64_t>::max(), base::Time())));
+        0, std::numeric_limits<uint64_t>::max(), base::Time()));
     r->set_upload(base::WrapUnique<UploadDataStream>(
         new ElementsUploadDataStream(std::move(element_readers), 0)));
 
@@ -9892,8 +9892,7 @@ class URLRequestTestFTP : public URLRequestTest {
   void SetUpFactory() override {
     // Add FTP support to the default URLRequestContext.
     job_factory_impl_->SetProtocolHandler(
-        "ftp",
-        base::WrapUnique(new FtpProtocolHandler(&ftp_transaction_factory_)));
+        "ftp", base::MakeUnique<FtpProtocolHandler>(&ftp_transaction_factory_));
   }
 
   std::string GetTestFileContents() {

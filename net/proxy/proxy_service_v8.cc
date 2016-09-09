@@ -34,10 +34,10 @@ std::unique_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
 
   std::unique_ptr<ProxyService> proxy_service(new ProxyService(
       std::move(proxy_config_service),
-      base::WrapUnique(new ProxyResolverFactoryV8TracingWrapper(
+      base::MakeUnique<ProxyResolverFactoryV8TracingWrapper>(
           host_resolver, net_log,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
-                     base::ThreadTaskRunnerHandle::Get()))),
+                     base::ThreadTaskRunnerHandle::Get())),
       net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.

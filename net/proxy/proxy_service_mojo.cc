@@ -38,11 +38,11 @@ std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
 
   std::unique_ptr<ProxyService> proxy_service(new ProxyService(
       std::move(proxy_config_service),
-      base::WrapUnique(new ProxyResolverFactoryMojo(
+      base::MakeUnique<ProxyResolverFactoryMojo>(
           mojo_proxy_factory, host_resolver,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
                      base::ThreadTaskRunnerHandle::Get()),
-          net_log)),
+          net_log),
       net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.

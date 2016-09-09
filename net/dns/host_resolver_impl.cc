@@ -2130,7 +2130,7 @@ std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   // for it.
   const DnsConfig* dns_config = dns_client_->GetConfig();
   if (!dns_config)
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   return dns_config->ToValue();
 }

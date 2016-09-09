@@ -132,7 +132,7 @@ class URLRequestSimpleJobTest : public ::testing::Test {
                              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         context_(true) {
     job_factory_.SetProtocolHandler(
-        "data", base::WrapUnique(new SimpleJobProtocolHandler(task_runner_)));
+        "data", base::MakeUnique<SimpleJobProtocolHandler>(task_runner_));
     context_.set_job_factory(&job_factory_);
     context_.Init();
 

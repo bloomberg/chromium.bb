@@ -955,8 +955,8 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   Initialize();
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(base::WrapUnique(
-      new UploadBytesElementReader(kUploadData, strlen(kUploadData))));
+  element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
+      kUploadData, strlen(kUploadData)));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   request_.method = "POST";
   request_.url = GURL("http://www.example.org/");

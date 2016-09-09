@@ -260,7 +260,7 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     store->AddCookie(*cc);
   }
 
-  return base::WrapUnique(new CookieMonster(store.get(), nullptr));
+  return base::MakeUnique<CookieMonster>(store.get(), nullptr);
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {

@@ -228,7 +228,7 @@ bool VerifyUsingPathBuilder(
   //
   // TODO(akalin): Remove this once http://crbug.com/146421 is fixed.
   url_request_context_builder.set_proxy_config_service(
-      base::WrapUnique(new net::ProxyConfigServiceFixed(net::ProxyConfig())));
+      base::MakeUnique<net::ProxyConfigServiceFixed>(net::ProxyConfig()));
 #endif
   std::unique_ptr<net::URLRequestContext> url_request_context =
       url_request_context_builder.Build();

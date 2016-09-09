@@ -132,9 +132,9 @@ class ProxyServiceMojoTest : public testing::Test,
 
     fetcher_ = new MockProxyScriptFetcher;
     proxy_service_ = CreateProxyServiceUsingMojoFactory(
-        this, base::WrapUnique(new ProxyConfigServiceFixed(
-                  ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)))),
-        fetcher_, base::WrapUnique(new DoNothingDhcpProxyScriptFetcher()),
+        this, base::MakeUnique<ProxyConfigServiceFixed>(
+                  ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
+        fetcher_, base::MakeUnique<DoNothingDhcpProxyScriptFetcher>(),
         &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
@@ -144,8 +144,8 @@ class ProxyServiceMojoTest : public testing::Test,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override {
     InProcessMojoProxyResolverFactory::GetInstance()->CreateResolver(
         pac_script, std::move(req), std::move(client));
-    return base::WrapUnique(
-        new base::ScopedClosureRunner(on_delete_closure_.closure()));
+    return base::MakeUnique<base::ScopedClosureRunner>(
+        on_delete_closure_.closure());
   }
 
   TestNetworkDelegate network_delegate_;

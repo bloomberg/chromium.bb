@@ -128,7 +128,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
   }
 
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      base::WrapUnique(new SSLPlatformKeyChromecast(std::move(key))),
+      base::MakeUnique<SSLPlatformKeyChromecast>(std::move(key)),
       GetSSLPlatformKeyTaskRunner()));
 }
 

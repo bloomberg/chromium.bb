@@ -92,9 +92,8 @@ MojoProxyResolverFactoryImpl::Job::Job(
                  base::Unretained(this)));
   factory_->CreateProxyResolverV8Tracing(
       pac_script,
-      base::WrapUnique(new MojoProxyResolverV8TracingBindings<
-                       interfaces::ProxyResolverFactoryRequestClient>(
-          client_ptr_.get())),
+      base::MakeUnique<MojoProxyResolverV8TracingBindings<
+          interfaces::ProxyResolverFactoryRequestClient>>(client_ptr_.get()),
       &proxy_resolver_impl_,
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated,
                  base::Unretained(this)),

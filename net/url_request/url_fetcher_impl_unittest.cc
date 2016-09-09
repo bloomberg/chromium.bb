@@ -179,7 +179,7 @@ class FetcherTestURLRequestContext : public TestURLRequestContext {
     context_storage_.set_host_resolver(
         std::unique_ptr<HostResolver>(mock_resolver_));
     context_storage_.set_throttler_manager(
-        base::WrapUnique(new URLRequestThrottlerManager()));
+        base::MakeUnique<URLRequestThrottlerManager>());
     Init();
   }
 

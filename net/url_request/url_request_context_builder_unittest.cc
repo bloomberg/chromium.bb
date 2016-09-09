@@ -61,8 +61,8 @@ class URLRequestContextBuilderTest : public PlatformTest {
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-    builder_.set_proxy_config_service(base::WrapUnique(
-        new ProxyConfigServiceFixed(ProxyConfig::CreateDirect())));
+    builder_.set_proxy_config_service(
+        base::MakeUnique<ProxyConfigServiceFixed>(ProxyConfig::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
 
@@ -116,8 +116,9 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   GURL gurl("www.google.com");
   const int kBasicReturnCode = OK;
   std::unique_ptr<HttpAuthHandler> handler;
-  builder_.SetHttpAuthHandlerFactory(base::WrapUnique(
-      new MockHttpAuthHandlerFactory("ExtraScheme", kBasicReturnCode)));
+  builder_.SetHttpAuthHandlerFactory(
+      base::MakeUnique<MockHttpAuthHandlerFactory>("ExtraScheme",
+                                                   kBasicReturnCode));
   std::unique_ptr<URLRequestContext> context(builder_.Build());
   SSLInfo null_ssl_info;
   // Verify that a handler is returned for a custom scheme.

@@ -471,8 +471,8 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   void PrepareReadFrames(IsSync async,
                          int error,
                          const InitFrame (&frames)[N]) {
-    responses_.push_back(base::WrapUnique(
-        new Response(async, error, CreateFrameVector(frames))));
+    responses_.push_back(
+        base::MakeUnique<Response>(async, error, CreateFrameVector(frames)));
   }
 
   // An alternate version of PrepareReadFrames for when we need to construct
@@ -482,13 +482,13 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
       int error,
       std::vector<std::unique_ptr<WebSocketFrame>> frames) {
     responses_.push_back(
-        base::WrapUnique(new Response(async, error, std::move(frames))));
+        base::MakeUnique<Response>(async, error, std::move(frames)));
   }
 
   // Prepares a fake error response (ie. there is no data).
   void PrepareReadFramesError(IsSync async, int error) {
-    responses_.push_back(base::WrapUnique(new Response(
-        async, error, std::vector<std::unique_ptr<WebSocketFrame>>())));
+    responses_.push_back(base::MakeUnique<Response>(
+        async, error, std::vector<std::unique_ptr<WebSocketFrame>>()));
   }
 
   int ReadFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
@@ -927,7 +927,7 @@ class ChannelDeletingFakeWebSocketEventInterface
 
 std::unique_ptr<WebSocketEventInterface>
 WebSocketChannelDeletingTest::CreateEventInterface() {
-  return base::WrapUnique(new ChannelDeletingFakeWebSocketEventInterface(this));
+  return base::MakeUnique<ChannelDeletingFakeWebSocketEventInterface>(this);
 }
 
 // Base class for tests which verify that EventInterface methods are called
@@ -1196,9 +1196,9 @@ TEST_F(WebSocketChannelDeletingTest, OnNotifyFinishOpeningHandshakeError) {
   scoped_refptr<HttpResponseHeaders> response_headers(
       new HttpResponseHeaders(""));
   channel_->OnFinishOpeningHandshake(
-      base::WrapUnique(new WebSocketHandshakeResponseInfo(
+      base::MakeUnique<WebSocketHandshakeResponseInfo>(
           GURL("http://www.example.com/"), 200, "OK", response_headers,
-          base::Time())));
+          base::Time()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, channel_.get());
 }
@@ -1367,7 +1367,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ProtocolPassed) {
   CreateChannelAndConnect();
 
   connect_data_.argument_saver.connect_delegate->OnSuccess(
-      base::WrapUnique(new FakeWebSocketStream("Bob", "")));
+      base::MakeUnique<FakeWebSocketStream>("Bob", ""));
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ExtensionsPassed) {
@@ -1378,7 +1378,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ExtensionsPassed) {
   CreateChannelAndConnect();
 
   connect_data_.argument_saver.connect_delegate->OnSuccess(
-      base::WrapUnique(new FakeWebSocketStream("", "extension1, extension2")));
+      base::MakeUnique<FakeWebSocketStream>("", "extension1, extension2"));
 }
 
 // The first frames from the server can arrive together with the handshake, in

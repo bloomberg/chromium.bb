@@ -236,9 +236,9 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
 
   std::unique_ptr<ProxyResolverFactory> CreateProxyResolverFactory() override {
 #if defined(OS_WIN)
-    return base::WrapUnique(new ProxyResolverFactoryWinHttp());
+    return base::MakeUnique<ProxyResolverFactoryWinHttp>();
 #elif defined(OS_MACOSX)
-    return base::WrapUnique(new ProxyResolverFactoryMac());
+    return base::MakeUnique<ProxyResolverFactoryMac>();
 #else
     NOTREACHED();
     return NULL;
@@ -978,7 +978,7 @@ std::unique_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
 
   return base::WrapUnique(new ProxyService(
       std::move(proxy_config_service),
-      base::WrapUnique(new ProxyResolverFactoryForSystem(num_pac_threads)),
+      base::MakeUnique<ProxyResolverFactoryForSystem>(num_pac_threads),
       net_log));
 }
 
@@ -996,7 +996,7 @@ std::unique_ptr<ProxyService> ProxyService::CreateFixed(const ProxyConfig& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      base::WrapUnique(new ProxyConfigServiceFixed(pc)), 0, NULL);
+      base::MakeUnique<ProxyConfigServiceFixed>(pc), 0, NULL);
 }
 
 // static
@@ -1030,8 +1030,7 @@ std::unique_ptr<ProxyService> ProxyService::CreateFixedFromPacResult(
 
   return base::WrapUnique(new ProxyService(
       std::move(proxy_config_service),
-      base::WrapUnique(new ProxyResolverFactoryForPacResult(pac_string)),
-      NULL));
+      base::MakeUnique<ProxyResolverFactoryForPacResult>(pac_string), NULL));
 }
 
 int ProxyService::ResolveProxy(const GURL& raw_url,
@@ -1524,11 +1523,11 @@ ProxyService::CreateSystemProxyConfigService(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
 #if defined(OS_WIN)
-  return base::WrapUnique(new ProxyConfigServiceWin());
+  return base::MakeUnique<ProxyConfigServiceWin>();
 #elif defined(OS_IOS)
-  return base::WrapUnique(new ProxyConfigServiceIOS());
+  return base::MakeUnique<ProxyConfigServiceIOS>();
 #elif defined(OS_MACOSX)
-  return base::WrapUnique(new ProxyConfigServiceMac(io_task_runner));
+  return base::MakeUnique<ProxyConfigServiceMac>(io_task_runner);
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
@@ -1553,12 +1552,12 @@ ProxyService::CreateSystemProxyConfigService(
 
   return std::move(linux_config_service);
 #elif defined(OS_ANDROID)
-  return base::WrapUnique(new ProxyConfigServiceAndroid(
-      io_task_runner, base::ThreadTaskRunnerHandle::Get()));
+  return base::MakeUnique<ProxyConfigServiceAndroid>(
+      io_task_runner, base::ThreadTaskRunnerHandle::Get());
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";
-  return base::WrapUnique(new ProxyConfigServiceDirect());
+  return base::MakeUnique<ProxyConfigServiceDirect>();
 #endif
 }
 

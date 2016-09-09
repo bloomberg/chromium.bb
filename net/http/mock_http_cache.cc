@@ -541,11 +541,11 @@ int MockBackendFactory::CreateBackend(
 //-----------------------------------------------------------------------------
 
 MockHttpCache::MockHttpCache()
-    : MockHttpCache(base::WrapUnique(new MockBackendFactory())) {}
+    : MockHttpCache(base::MakeUnique<MockBackendFactory>()) {}
 
 MockHttpCache::MockHttpCache(
     std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory)
-    : http_cache_(base::WrapUnique(new MockNetworkLayer()),
+    : http_cache_(base::MakeUnique<MockNetworkLayer>(),
                   std::move(disk_cache_factory),
                   true) {}
 

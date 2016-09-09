@@ -20,7 +20,7 @@ TEST(WebSocketDeflatePredictorImpl, Predict) {
   WebSocketDeflatePredictorImpl predictor;
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   frames.push_back(
-      base::WrapUnique(new WebSocketFrame(WebSocketFrameHeader::kOpCodeText)));
+      base::MakeUnique<WebSocketFrame>(WebSocketFrameHeader::kOpCodeText));
   Result result = predictor.Predict(frames, 0);
 
   EXPECT_EQ(WebSocketDeflatePredictor::DEFLATE, result);

@@ -219,10 +219,10 @@ std::unique_ptr<WebSocketEncoder> WebSocketEncoder::CreateServer(
     }
     DCHECK(response.IsValidAsResponse());
     DCHECK(offer.IsCompatibleWith(response));
-    auto deflater = base::WrapUnique(
-        new WebSocketDeflater(response.server_context_take_over_mode()));
-    auto inflater = base::WrapUnique(
-        new WebSocketInflater(kInflaterChunkSize, kInflaterChunkSize));
+    auto deflater = base::MakeUnique<WebSocketDeflater>(
+        response.server_context_take_over_mode());
+    auto inflater = base::MakeUnique<WebSocketInflater>(kInflaterChunkSize,
+                                                        kInflaterChunkSize);
     if (!deflater->Initialize(response.PermissiveServerMaxWindowBits()) ||
         !inflater->Initialize(response.PermissiveClientMaxWindowBits())) {
       // For some reason we cannot accept the parameters.
@@ -265,10 +265,10 @@ std::unique_ptr<WebSocketEncoder> WebSocketEncoder::CreateClient(
     return base::WrapUnique(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
 
-  auto deflater = base::WrapUnique(
-      new WebSocketDeflater(params.client_context_take_over_mode()));
-  auto inflater = base::WrapUnique(
-      new WebSocketInflater(kInflaterChunkSize, kInflaterChunkSize));
+  auto deflater = base::MakeUnique<WebSocketDeflater>(
+      params.client_context_take_over_mode());
+  auto inflater = base::MakeUnique<WebSocketInflater>(kInflaterChunkSize,
+                                                      kInflaterChunkSize);
   if (!deflater->Initialize(params.PermissiveClientMaxWindowBits()) ||
       !inflater->Initialize(params.PermissiveServerMaxWindowBits())) {
     // TODO (yhirano): Fail the connection.

@@ -23,8 +23,8 @@ std::unique_ptr<FtpTransaction> FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
     return std::unique_ptr<FtpTransaction>();
 
-  return base::WrapUnique(new FtpNetworkTransaction(
-      session_->host_resolver(), ClientSocketFactory::GetDefaultFactory()));
+  return base::MakeUnique<FtpNetworkTransaction>(
+      session_->host_resolver(), ClientSocketFactory::GetDefaultFactory());
 }
 
 void FtpNetworkLayer::Suspend(bool suspend) {

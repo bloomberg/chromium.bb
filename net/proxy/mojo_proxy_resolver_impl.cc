@@ -89,8 +89,8 @@ void MojoProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
       &request_handle_,
-      base::WrapUnique(new MojoProxyResolverV8TracingBindings<
-                       interfaces::ProxyResolverRequestClient>(client_.get())));
+      base::MakeUnique<MojoProxyResolverV8TracingBindings<
+          interfaces::ProxyResolverRequestClient>>(client_.get()));
   client_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }

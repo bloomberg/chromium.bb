@@ -64,11 +64,11 @@ class RequestContext : public URLRequestContext {
     params.ssl_config_service = ssl_config_service();
     params.http_server_properties = http_server_properties();
     storage_.set_http_network_session(
-        base::WrapUnique(new HttpNetworkSession(params)));
-    storage_.set_http_transaction_factory(base::WrapUnique(new HttpCache(
+        base::MakeUnique<HttpNetworkSession>(params));
+    storage_.set_http_transaction_factory(base::MakeUnique<HttpCache>(
         storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
-        false /* set_up_quic_server_info */)));
-    storage_.set_job_factory(base::WrapUnique(new URLRequestJobFactoryImpl()));
+        false /* set_up_quic_server_info */));
+    storage_.set_job_factory(base::MakeUnique<URLRequestJobFactoryImpl>());
   }
 
   ~RequestContext() override { AssertNoURLRequests(); }

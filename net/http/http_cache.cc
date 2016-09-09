@@ -293,7 +293,7 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
 HttpCache::HttpCache(HttpNetworkSession* session,
                      std::unique_ptr<BackendFactory> backend_factory,
                      bool set_up_quic_server_info)
-    : HttpCache(base::WrapUnique(new HttpNetworkLayer(session)),
+    : HttpCache(base::MakeUnique<HttpNetworkLayer>(session),
                 std::move(backend_factory),
                 set_up_quic_server_info) {}
 

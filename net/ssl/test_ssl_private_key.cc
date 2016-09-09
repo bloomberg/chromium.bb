@@ -123,7 +123,7 @@ scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY key) {
       return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      base::WrapUnique(new TestSSLPlatformKey(std::move(key), type)),
+      base::MakeUnique<TestSSLPlatformKey>(std::move(key), type),
       GetSSLPlatformKeyTaskRunner()));
 }
 

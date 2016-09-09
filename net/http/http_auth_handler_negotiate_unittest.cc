@@ -375,8 +375,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
       new HttpAuthHandlerNegotiate::Factory());
   negotiate_factory->set_host_resolver(host_resolver);
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
-  negotiate_factory->set_library(base::WrapUnique(
-      new GSSAPISharedLibrary("/this/library/does/not/exist")));
+  negotiate_factory->set_library(
+      base::MakeUnique<GSSAPISharedLibrary>("/this/library/does/not/exist"));
 
   GURL gurl("http://www.example.com");
   std::unique_ptr<HttpAuthHandler> generic_handler;

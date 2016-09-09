@@ -102,7 +102,7 @@ void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
 
   for (it = channel_ids_.begin(); it != channel_ids_.end(); ++it) {
     channel_ids->push_back(
-        base::WrapUnique(new DefaultChannelIDStore::ChannelID(it->second)));
+        base::MakeUnique<DefaultChannelIDStore::ChannelID>(it->second));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -145,13 +145,13 @@ TEST(DefaultChannelIDStoreTest, TestLoading) {
   DefaultChannelIDStore store(persistent_store.get());
   // Load has not occurred yet.
   EXPECT_EQ(0, store.GetChannelIDCount());
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "verisign.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set task.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, store.GetChannelIDCount());
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "twitter.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "twitter.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Set should be synchronous now that load is done.
   EXPECT_EQ(3, store.GetChannelIDCount());
 }
@@ -185,12 +185,12 @@ TEST(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
 
   std::unique_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, store.GetChannelIDCount());
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time::FromInternalValue(123),
-      crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+      crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time::FromInternalValue(456),
-      expected_key->Copy())));
+      expected_key->Copy()));
 
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
@@ -231,12 +231,12 @@ TEST(DefaultChannelIDStoreTest, TestDeleteAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "verisign.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "google.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "harvard.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "google.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "harvard.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
 
@@ -251,12 +251,12 @@ TEST(DefaultChannelIDStoreTest, TestDeleteForDomains) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "verisign.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "google.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "harvard.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "google.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "harvard.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, store.GetChannelIDCount());
@@ -315,13 +315,13 @@ TEST(DefaultChannelIDStoreTest, TestDelete) {
 
   std::unique_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, store.GetChannelIDCount());
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "verisign.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set task.
   base::RunLoop().RunUntilIdle();
 
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "google.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "google.com", base::Time(), crypto::ECPrivateKey::Create()));
 
   EXPECT_EQ(2, store.GetChannelIDCount());
   int delete_finished = 0;
@@ -394,14 +394,14 @@ TEST(DefaultChannelIDStoreTest, TestGetAll) {
   DefaultChannelIDStore store(persistent_store.get());
 
   EXPECT_EQ(0, store.GetChannelIDCount());
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "verisign.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "google.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "harvard.com", base::Time(), crypto::ECPrivateKey::Create())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "mit.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "google.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "harvard.com", base::Time(), crypto::ECPrivateKey::Create()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "mit.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
 
@@ -421,10 +421,10 @@ TEST(DefaultChannelIDStoreTest, TestInitializeFrom) {
   std::unique_ptr<crypto::ECPrivateKey> copied_key(
       crypto::ECPrivateKey::Create());
 
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "preexisting.com", base::Time(), preexisting_key->Copy())));
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
-      "both.com", base::Time(), crypto::ECPrivateKey::Create())));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "preexisting.com", base::Time(), preexisting_key->Copy()));
+  store.SetChannelID(base::MakeUnique<ChannelIDStore::ChannelID>(
+      "both.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, store.GetChannelIDCount());

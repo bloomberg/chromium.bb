@@ -136,7 +136,7 @@ FuzzedSocketFactory::CreateDatagramClientSocket(
     const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLog::Source& source) {
-  return base::WrapUnique(new FuzzedDatagramClientSocket(data_provider_));
+  return base::MakeUnique<FuzzedDatagramClientSocket>(data_provider_);
 }
 
 std::unique_ptr<StreamSocket> FuzzedSocketFactory::CreateTransportClientSocket(
@@ -157,7 +157,7 @@ std::unique_ptr<SSLClientSocket> FuzzedSocketFactory::CreateSSLClientSocket(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
-  return base::WrapUnique(new FailingSSLClientSocket());
+  return base::MakeUnique<FailingSSLClientSocket>();
 }
 
 void FuzzedSocketFactory::ClearSSLSessionCache() {}

@@ -98,7 +98,7 @@ bool CookieValuePredicate(const std::string& true_value,
 
 struct CookieMonsterTestTraits {
   static std::unique_ptr<CookieStore> Create() {
-    return base::WrapUnique(new CookieMonster(nullptr, nullptr));
+    return base::MakeUnique<CookieMonster>(nullptr, nullptr);
   }
 
   static const bool supports_http_only = true;
@@ -112,7 +112,7 @@ struct CookieMonsterTestTraits {
 
 struct CookieMonsterEnforcingStrictSecure {
   static std::unique_ptr<CookieStore> Create() {
-    return base::WrapUnique(new CookieMonster(nullptr, nullptr));
+    return base::MakeUnique<CookieMonster>(nullptr, nullptr);
   }
 
   static const bool supports_http_only = true;

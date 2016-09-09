@@ -2936,7 +2936,7 @@ TEST(HttpCache, SimplePOST_LoadOnlyFromCache_Hit) {
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("hello", 5)));
+      base::MakeUnique<UploadBytesElementReader>("hello", 5));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers),
                                               kUploadId);
   MockHttpRequest request(transaction);

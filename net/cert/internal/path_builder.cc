@@ -576,8 +576,8 @@ CompletionStatus CertPathIter::DoGetNextIssuerComplete() {
       return CompletionStatus::SYNC;
     }
 
-    cur_path_.Append(base::WrapUnique(new CertIssuersIter(
-        std::move(next_issuer_.cert), &cert_issuer_sources_, trust_store_)));
+    cur_path_.Append(base::MakeUnique<CertIssuersIter>(
+        std::move(next_issuer_.cert), &cert_issuer_sources_, trust_store_));
     next_issuer_ = CertificateOrTrustAnchor();
     DVLOG(1) << "CertPathIter cur_path_ = " << cur_path_.PathDebugString();
     // Continue descending the tree.

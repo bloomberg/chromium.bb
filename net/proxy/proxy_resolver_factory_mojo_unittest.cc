@@ -290,8 +290,9 @@ void MockMojoProxyResolver::GetProxyForUrl(
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);
       client->ResolveDns(std::move(request), std::move(dns_client));
-      blocked_clients_.push_back(base::WrapUnique(
-          new interfaces::ProxyResolverRequestClientPtr(std::move(client))));
+      blocked_clients_.push_back(
+          base::MakeUnique<interfaces::ProxyResolverRequestClientPtr>(
+              std::move(client)));
       break;
     }
   }
@@ -425,16 +426,16 @@ void MockMojoProxyResolverFactory::CreateResolver(
     }
     case CreateProxyResolverAction::DROP_CLIENT: {
       // Save |request| so its pipe isn't closed.
-      blocked_resolver_requests_.push_back(base::WrapUnique(
-          new mojo::InterfaceRequest<interfaces::ProxyResolver>(
-              std::move(request))));
+      blocked_resolver_requests_.push_back(
+          base::MakeUnique<mojo::InterfaceRequest<interfaces::ProxyResolver>>(
+              std::move(request)));
       break;
     }
     case CreateProxyResolverAction::DROP_RESOLVER: {
       // Save |client| so its pipe isn't closed.
       blocked_clients_.push_back(
-          base::WrapUnique(new interfaces::ProxyResolverFactoryRequestClientPtr(
-              std::move(client))));
+          base::MakeUnique<interfaces::ProxyResolverFactoryRequestClientPtr>(
+              std::move(client)));
       break;
     }
     case CreateProxyResolverAction::DROP_BOTH: {
@@ -459,8 +460,8 @@ void MockMojoProxyResolverFactory::CreateResolver(
       mojo::GetProxy(&dns_client);
       client->ResolveDns(std::move(request), std::move(dns_client));
       blocked_clients_.push_back(
-          base::WrapUnique(new interfaces::ProxyResolverFactoryRequestClientPtr(
-              std::move(client))));
+          base::MakeUnique<interfaces::ProxyResolverFactoryRequestClientPtr>(
+              std::move(client)));
       break;
     }
   }
@@ -540,7 +541,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
   }
 
   std::unique_ptr<Request> MakeRequest(const GURL& url) {
-    return base::WrapUnique(new Request(proxy_resolver_mojo_.get(), url));
+    return base::MakeUnique<Request>(proxy_resolver_mojo_.get(), url);
   }
 
   std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
@@ -548,8 +549,8 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override {
     factory_ptr_->CreateResolver(pac_script, std::move(req), std::move(client));
-    return base::WrapUnique(
-        new base::ScopedClosureRunner(on_delete_callback_.closure()));
+    return base::MakeUnique<base::ScopedClosureRunner>(
+        on_delete_callback_.closure());
   }
 
   mojo::Array<interfaces::ProxyServerPtr> ProxyServersFromPacString(

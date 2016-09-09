@@ -252,10 +252,10 @@ class URLRequestFtpJobTest : public testing::Test {
  public:
   URLRequestFtpJobTest()
       : request_context_(&socket_factory_,
-                         base::WrapUnique(new ProxyService(
+                         base::MakeUnique<ProxyService>(
                              base::WrapUnique(new SimpleProxyConfigService),
-                             NULL,
-                             NULL)),
+                             nullptr,
+                             nullptr),
                          &network_delegate_,
                          &ftp_transaction_factory_) {}
 
@@ -266,8 +266,9 @@ class URLRequestFtpJobTest : public testing::Test {
 
   void AddSocket(MockRead* reads, size_t reads_size,
                  MockWrite* writes, size_t writes_size) {
-    std::unique_ptr<SequencedSocketData> socket_data(base::WrapUnique(
-        new SequencedSocketData(reads, reads_size, writes, writes_size)));
+    std::unique_ptr<SequencedSocketData> socket_data(
+        base::MakeUnique<SequencedSocketData>(reads, reads_size, writes,
+                                              writes_size));
     socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
     socket_factory_.AddSocketDataProvider(socket_data.get());
 

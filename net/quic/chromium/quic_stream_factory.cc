@@ -694,14 +694,14 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
 std::unique_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
   if (!session_)
     return nullptr;
-  return base::WrapUnique(new QuicHttpStream(session_));
+  return base::MakeUnique<QuicHttpStream>(session_);
 }
 
 std::unique_ptr<BidirectionalStreamImpl>
 QuicStreamRequest::CreateBidirectionalStreamImpl() {
   if (!session_)
     return nullptr;
-  return base::WrapUnique(new BidirectionalStreamQuicImpl(session_));
+  return base::MakeUnique<BidirectionalStreamQuicImpl>(session_);
 }
 
 QuicStreamFactory::QuicStreamFactory(

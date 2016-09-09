@@ -174,9 +174,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
   Initialize(false);
 
   HttpRequestInfo request_info;
@@ -204,9 +204,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
   Initialize(false);
 
   HttpRequestInfo request_info;
@@ -271,9 +271,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
   Initialize(false);
 
   HttpRequestInfo request_info;
@@ -315,9 +315,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
   Initialize(false);
 
   HttpRequestInfo request_info;
@@ -367,9 +367,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
   Initialize(false);
 
   HttpRequestInfo request_info;
@@ -466,7 +466,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DoNotResumeMainJobBeforeWait) {
   proxy_config.set_auto_detect(true);
   proxy_config.set_pac_mandatory(true);
   session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
+      base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
       base::WrapUnique(new FailingProxyResolverFactory), nullptr));
 
   Initialize(false);
@@ -529,9 +529,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
 
   HangingResolver* host_resolver = new HangingResolver();
   session_deps_.host_resolver.reset(host_resolver);
@@ -597,9 +597,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Use asynchronous proxy resolver.
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(proxy_resolver_factory), nullptr));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
 
   Initialize(false);
 

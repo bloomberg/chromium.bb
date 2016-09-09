@@ -101,9 +101,9 @@ void URLRequestHangingReadJob::AddUrlHandler() {
   // Add |hostname| to URLRequestFilter for HTTP and HTTPS.
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor("http", kMockHostname,
-                                 base::WrapUnique(new MockJobInterceptor()));
+                                 base::MakeUnique<MockJobInterceptor>());
   filter->AddHostnameInterceptor("https", kMockHostname,
-                                 base::WrapUnique(new MockJobInterceptor()));
+                                 base::MakeUnique<MockJobInterceptor>());
 }
 
 // static

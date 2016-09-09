@@ -72,7 +72,7 @@ BidirectionalStream::BidirectionalStream(
                           session,
                           send_request_headers_automatically,
                           delegate,
-                          base::WrapUnique(new base::Timer(false, false))) {}
+                          base::MakeUnique<base::Timer>(false, false)) {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,

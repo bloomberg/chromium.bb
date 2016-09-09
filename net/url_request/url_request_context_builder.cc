@@ -304,8 +304,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
 
-  storage->set_http_user_agent_settings(base::WrapUnique(
-      new StaticHttpUserAgentSettings(accept_language_, user_agent_)));
+  storage->set_http_user_agent_settings(
+      base::MakeUnique<StaticHttpUserAgentSettings>(accept_language_,
+                                                    user_agent_));
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);
@@ -371,7 +372,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   storage->set_transport_security_state(
-      base::WrapUnique(new TransportSecurityState()));
+      base::MakeUnique<TransportSecurityState>());
   if (!transport_security_persister_path_.empty()) {
     context->set_transport_security_persister(
         base::WrapUnique<TransportSecurityPersister>(
@@ -406,7 +407,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(
-        base::WrapUnique(new URLRequestThrottlerManager()));
+        base::MakeUnique<URLRequestThrottlerManager>());
   }
 
   HttpNetworkSession::Params network_session_params;
@@ -461,7 +462,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   storage->set_http_network_session(
-      base::WrapUnique(new HttpNetworkSession(network_session_params)));
+      base::MakeUnique<HttpNetworkSession>(network_session_params));
 
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
@@ -503,8 +504,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 #if !defined(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
-        "file", base::WrapUnique(
-                    new FileProtocolHandler(context->GetFileTaskRunner())));
+        "file",
+        base::MakeUnique<FileProtocolHandler>(context->GetFileTaskRunner()));
   }
 #endif  // !defined(DISABLE_FILE_SUPPORT)
 
@@ -512,9 +513,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (ftp_enabled_) {
     ftp_transaction_factory_.reset(
         new FtpNetworkLayer(context->host_resolver()));
-    job_factory->SetProtocolHandler(
-        "ftp", base::WrapUnique(
-                   new FtpProtocolHandler(ftp_transaction_factory_.get())));
+    job_factory->SetProtocolHandler("ftp", base::MakeUnique<FtpProtocolHandler>(
+                                               ftp_transaction_factory_.get()));
   }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 

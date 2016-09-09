@@ -43,8 +43,8 @@ int CaptureModeToInt(NetLogCaptureMode capture_mode) {
 
 std::unique_ptr<base::Value> CaptureModeToValue(
     NetLogCaptureMode capture_mode) {
-  return base::WrapUnique(
-      new base::FundamentalValue(CaptureModeToInt(capture_mode)));
+  return base::MakeUnique<base::FundamentalValue>(
+      CaptureModeToInt(capture_mode));
 }
 
 std::unique_ptr<base::Value> NetCaptureModeCallback(

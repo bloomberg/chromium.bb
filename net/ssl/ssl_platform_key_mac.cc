@@ -243,7 +243,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      base::WrapUnique(new SSLPlatformKeyMac(private_key.get(), cssm_key)),
+      base::MakeUnique<SSLPlatformKeyMac>(private_key.get(), cssm_key),
       GetSSLPlatformKeyTaskRunner()));
 }
 

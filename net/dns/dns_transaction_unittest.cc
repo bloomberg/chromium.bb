@@ -97,8 +97,8 @@ class DnsSocketData {
   // Adds pre-built response from |data| buffer.
   void AddResponseData(const uint8_t* data, size_t length, IoMode mode) {
     CHECK(!provider_.get());
-    AddResponse(base::WrapUnique(new DnsResponse(
-                    reinterpret_cast<const char*>(data), length, 0)),
+    AddResponse(base::MakeUnique<DnsResponse>(
+                    reinterpret_cast<const char*>(data), length, 0),
                 mode);
   }
 
@@ -910,9 +910,9 @@ TEST_F(DnsTransactionTest, TCPMalformed) {
   // examine the answer section until asked to parse it, so truncating it in
   // the answer section would result in the DnsTransaction itself succeeding.
   data->AddResponseWithLength(
-      base::WrapUnique(
-          new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
-                          arraysize(kT0ResponseDatagram), 0)),
+      base::MakeUnique<DnsResponse>(
+          reinterpret_cast<const char*>(kT0ResponseDatagram),
+          arraysize(kT0ResponseDatagram), 0),
       ASYNC, static_cast<uint16_t>(kT0QuerySize - 1));
   AddSocketData(std::move(data));
 
@@ -925,8 +925,8 @@ TEST_F(DnsTransactionTest, TCPTimeout) {
   ConfigureFactory();
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
-  AddSocketData(base::WrapUnique(
-      new DnsSocketData(1 /* id */, kT0HostName, kT0Qtype, ASYNC, true)));
+  AddSocketData(base::MakeUnique<DnsSocketData>(1 /* id */, kT0HostName,
+                                                kT0Qtype, ASYNC, true));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
@@ -939,9 +939,9 @@ TEST_F(DnsTransactionTest, TCPReadReturnsZeroAsync) {
       new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
   // Return all but the last byte of the response.
   data->AddResponseWithLength(
-      base::WrapUnique(
-          new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
-                          arraysize(kT0ResponseDatagram) - 1, 0)),
+      base::MakeUnique<DnsResponse>(
+          reinterpret_cast<const char*>(kT0ResponseDatagram),
+          arraysize(kT0ResponseDatagram) - 1, 0),
       ASYNC, static_cast<uint16_t>(arraysize(kT0ResponseDatagram)));
   // Then return a 0-length read.
   data->AddReadError(0, ASYNC);
@@ -958,9 +958,9 @@ TEST_F(DnsTransactionTest, TCPReadReturnsZeroSynchronous) {
       new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
   // Return all but the last byte of the response.
   data->AddResponseWithLength(
-      base::WrapUnique(
-          new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
-                          arraysize(kT0ResponseDatagram) - 1, 0)),
+      base::MakeUnique<DnsResponse>(
+          reinterpret_cast<const char*>(kT0ResponseDatagram),
+          arraysize(kT0ResponseDatagram) - 1, 0),
       SYNCHRONOUS, static_cast<uint16_t>(arraysize(kT0ResponseDatagram)));
   // Then return a 0-length read.
   data->AddReadError(0, SYNCHRONOUS);

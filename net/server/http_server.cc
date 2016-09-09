@@ -239,8 +239,7 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
     connection->socket()->GetPeerAddress(&request.peer);
 
     if (request.HasHeaderValue("connection", "upgrade")) {
-      connection->SetWebSocket(
-          base::WrapUnique(new WebSocket(this, connection)));
+      connection->SetWebSocket(base::MakeUnique<WebSocket>(this, connection));
       read_buf->DidConsume(pos);
       delegate_->OnWebSocketRequest(connection->id(), request);
       if (HasClosedConnection(connection))

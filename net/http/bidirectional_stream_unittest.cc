@@ -52,7 +52,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   TestDelegateBase(IOBuffer* read_buf, int read_buf_len)
       : TestDelegateBase(read_buf,
                          read_buf_len,
-                         base::WrapUnique(new base::Timer(false, false))) {}
+                         base::MakeUnique<base::Timer>(false, false)) {}
 
   TestDelegateBase(IOBuffer* read_buf,
                    int read_buf_len,

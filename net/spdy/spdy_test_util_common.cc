@@ -457,7 +457,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
       HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(
       std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
-  storage_.set_job_factory(base::WrapUnique(new URLRequestJobFactoryImpl()));
+  storage_.set_job_factory(base::MakeUnique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();
@@ -471,13 +471,13 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   params.enable_spdy_ping_based_connection_checking = false;
   params.http_server_properties = http_server_properties();
   storage_.set_http_network_session(
-      base::WrapUnique(new HttpNetworkSession(params)));
+      base::MakeUnique<HttpNetworkSession>(params));
   SpdySessionPoolPeer pool_peer(
       storage_.http_network_session()->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  storage_.set_http_transaction_factory(base::WrapUnique(
-      new HttpCache(storage_.http_network_session(),
-                    HttpCache::DefaultBackend::InMemory(0), false)));
+  storage_.set_http_transaction_factory(base::MakeUnique<HttpCache>(
+      storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
+      false));
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {

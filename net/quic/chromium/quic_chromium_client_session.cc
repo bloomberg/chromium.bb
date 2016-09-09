@@ -245,13 +245,13 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       use_error_code_from_rewrite_(false),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
-  packet_readers_.push_back(base::WrapUnique(new QuicChromiumPacketReader(
+  packet_readers_.push_back(base::MakeUnique<QuicChromiumPacketReader>(
       sockets_.back().get(), clock, this, yield_after_packets,
-      yield_after_duration, net_log_)));
+      yield_after_duration, net_log_));
   crypto_stream_.reset(
       crypto_client_stream_factory->CreateQuicCryptoClientStream(
-          server_id, this, base::WrapUnique(new ProofVerifyContextChromium(
-                               cert_verify_flags, net_log_)),
+          server_id, this, base::MakeUnique<ProofVerifyContextChromium>(
+                               cert_verify_flags, net_log_),
           crypto_config));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
@@ -389,9 +389,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 void QuicChromiumClientSession::Initialize() {
   QuicClientSessionBase::Initialize();
   headers_stream()->SetHpackEncoderDebugVisitor(
-      base::WrapUnique(new HpackEncoderDebugVisitor()));
+      base::MakeUnique<HpackEncoderDebugVisitor>());
   headers_stream()->SetHpackDecoderDebugVisitor(
-      base::WrapUnique(new HpackDecoderDebugVisitor()));
+      base::MakeUnique<HpackDecoderDebugVisitor>());
 }
 
 void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(

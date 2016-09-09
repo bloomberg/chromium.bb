@@ -292,8 +292,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
   const HttpRequestInfo& CreatePostRequest() {
     if (!post_request_initialized_) {
       std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-      element_readers.push_back(base::WrapUnique(
-          new UploadBytesElementReader(kUploadData, kUploadDataSize)));
+      element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
+          kUploadData, kUploadDataSize));
       upload_data_stream_.reset(
           new ElementsUploadDataStream(std::move(element_readers), 0));
 
@@ -313,9 +313,9 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
                base::WriteFile(file_path, kUploadData, kUploadDataSize));
 
       std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-      element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+      element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
           base::ThreadTaskRunnerHandle::Get().get(), file_path, 0,
-          kUploadDataSize, base::Time())));
+          kUploadDataSize, base::Time()));
       upload_data_stream_.reset(
           new ElementsUploadDataStream(std::move(element_readers), 0));
 
@@ -338,9 +338,9 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     CHECK(base::MakeFileUnreadable(file_path));
 
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-    element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(), file_path, 0,
-        kUploadDataSize, base::Time())));
+        kUploadDataSize, base::Time()));
     upload_data_stream_.reset(
         new ElementsUploadDataStream(std::move(element_readers), 0));
 
@@ -363,14 +363,14 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
                base::WriteFile(file_path, kUploadData, kUploadDataSize));
 
       std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-      element_readers.push_back(base::WrapUnique(
-          new UploadBytesElementReader(kUploadData, kFileRangeOffset)));
-      element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+      element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
+          kUploadData, kFileRangeOffset));
+      element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
           base::ThreadTaskRunnerHandle::Get().get(), file_path,
-          kFileRangeOffset, kFileRangeLength, base::Time())));
-      element_readers.push_back(base::WrapUnique(new UploadBytesElementReader(
+          kFileRangeOffset, kFileRangeLength, base::Time()));
+      element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
           kUploadData + kFileRangeOffset + kFileRangeLength,
-          kUploadDataSize - (kFileRangeOffset + kFileRangeLength))));
+          kUploadDataSize - (kFileRangeOffset + kFileRangeLength)));
       upload_data_stream_.reset(
           new ElementsUploadDataStream(std::move(element_readers), 0));
 

@@ -1807,8 +1807,8 @@ bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
 
   for (const auto& cookie : list) {
     // Use an empty GURL.  This method does not support setting secure cookies.
-    if (!SetCanonicalCookie(base::WrapUnique(new CanonicalCookie(cookie)),
-                            GURL(), options)) {
+    if (!SetCanonicalCookie(base::MakeUnique<CanonicalCookie>(cookie), GURL(),
+                            options)) {
       return false;
     }
   }

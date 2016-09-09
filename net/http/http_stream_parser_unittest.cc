@@ -241,8 +241,9 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  std::unique_ptr<UploadDataStream> body(base::WrapUnique(
-      new ElementsUploadDataStream(std::move(element_readers), 0)));
+  std::unique_ptr<UploadDataStream> body(
+      base::MakeUnique<ElementsUploadDataStream>(std::move(element_readers),
+                                                 0));
   ASSERT_THAT(body->Init(CompletionCallback(), BoundNetLog()), IsOk());
   // Shouldn't be merged if upload data is empty.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -270,9 +271,9 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
   {
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(base::WrapUnique(
-        new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                    temp_file_path, 0, 0, base::Time())));
+    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
+        base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, 0,
+        base::Time()));
 
     std::unique_ptr<UploadDataStream> body(
         new ElementsUploadDataStream(std::move(element_readers), 0));
@@ -292,8 +293,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   const std::string payload = "123";
-  element_readers.push_back(base::WrapUnique(
-      new UploadBytesElementReader(payload.data(), payload.size())));
+  element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
+      payload.data(), payload.size()));
 
   std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
@@ -306,8 +307,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   const std::string payload(10000, 'a');  // 'a' x 10000.
-  element_readers.push_back(base::WrapUnique(
-      new UploadBytesElementReader(payload.data(), payload.size())));
+  element_readers.push_back(base::MakeUnique<UploadBytesElementReader>(
+      payload.data(), payload.size()));
 
   std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
@@ -451,7 +452,7 @@ TEST(HttpStreamParser, SentBytesPost) {
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("hello world!", 12)));
+      base::MakeUnique<UploadBytesElementReader>("hello world!", 12));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback(),
                                       BoundNetLog()),

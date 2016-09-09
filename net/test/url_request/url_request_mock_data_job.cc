@@ -183,9 +183,9 @@ void URLRequestMockDataJob::AddUrlHandlerForHostname(
   // Add |hostname| to URLRequestFilter for HTTP and HTTPS.
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor("http", hostname,
-                                 base::WrapUnique(new MockJobInterceptor()));
+                                 base::MakeUnique<MockJobInterceptor>());
   filter->AddHostnameInterceptor("https", hostname,
-                                 base::WrapUnique(new MockJobInterceptor()));
+                                 base::MakeUnique<MockJobInterceptor>());
 }
 
 // static

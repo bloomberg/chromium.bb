@@ -1196,7 +1196,7 @@ TEST_F(HttpNetworkTransactionTest, ReuseConnection) {
 TEST_F(HttpNetworkTransactionTest, Ignores100) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -6434,7 +6434,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 TEST_F(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request[2];
@@ -9549,9 +9549,9 @@ TEST_F(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
       overriding_content_length(kFakeSize);
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+  element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
       base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0,
-      std::numeric_limits<uint64_t>::max(), base::Time())));
+      std::numeric_limits<uint64_t>::max(), base::Time()));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -9596,9 +9596,9 @@ TEST_F(HttpNetworkTransactionTest, UploadUnreadableFile) {
   ASSERT_TRUE(base::MakeFileUnreadable(temp_file));
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  element_readers.push_back(base::WrapUnique(new UploadFileElementReader(
+  element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
       base::ThreadTaskRunnerHandle::Get().get(), temp_file, 0,
-      std::numeric_limits<uint64_t>::max(), base::Time())));
+      std::numeric_limits<uint64_t>::max(), base::Time()));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -11064,11 +11064,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   proxy_config.set_pac_url(GURL("http://fooproxyurl"));
 
   CapturingProxyResolver capturing_proxy_resolver;
-  session_deps_.proxy_service.reset(new ProxyService(
-      base::WrapUnique(new ProxyConfigServiceFixed(proxy_config)),
-      base::WrapUnique(
-          new CapturingProxyResolverFactory(&capturing_proxy_resolver)),
-      NULL));
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::MakeUnique<CapturingProxyResolverFactory>(
+                           &capturing_proxy_resolver),
+                       NULL));
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
@@ -14760,7 +14760,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
 TEST_F(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -14899,7 +14899,7 @@ TEST_F(HttpNetworkTransactionTest,
        PostReadsErrorResponseAfterResetPartialBodySent) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15010,7 +15010,7 @@ TEST_F(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
 TEST_F(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15063,7 +15063,7 @@ TEST_F(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
 TEST_F(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15105,7 +15105,7 @@ TEST_F(HttpNetworkTransactionTest,
        PostIgnoresNonErrorResponseAfterResetAnd100) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15148,7 +15148,7 @@ TEST_F(HttpNetworkTransactionTest,
 TEST_F(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15188,7 +15188,7 @@ TEST_F(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
 TEST_F(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15410,7 +15410,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
 TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
@@ -15454,7 +15454,7 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
 TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::WrapUnique(new UploadBytesElementReader("foo", 3)));
+      base::MakeUnique<UploadBytesElementReader>("foo", 3));
   ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
