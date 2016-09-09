@@ -65,6 +65,16 @@ class DryRunMgr(object):
       # This happens in unittests where func is a mocked function.
       # pylint: disable=W0212
       func_name = func._name
+    except Exception as e:
+      if 'UnknownMethodCallError' in type(e).__name__:
+        # This is a mox exception that can happen in unittests when func is
+        # mocked out with mox. In this case it's safe to just call the func.
+        # Note: We are using the string match against the exception name
+        # because mox is not always available for import here (and importing
+        # mox into non-test code is dirty).
+        return self._Call(func, *args, **kwargs)
+      else:
+        raise
 
     if self.dry_run:
       return self._Skip(func_name, *args, **kwargs)

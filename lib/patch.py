@@ -702,7 +702,7 @@ class PatchQuery(object):
       return self.id == other
 
     if self.id is not None:
-      return self.id == other.id
+      return self.id == getattr(other, 'id', None)
 
     return ((self.remote, self.project, self.tracking_branch,
              self.gerrit_number, self.change_id, self.sha1) ==
