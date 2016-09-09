@@ -28,15 +28,17 @@ constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
 
 }  // namespace
 
+// TODO(muyuanli): This will be removed once SetWallpaperDelegate class is
+// removed.
+SetWallpaperDelegate* SetWallpaperDelegate::instance_ = nullptr;
+
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,
     const scoped_refptr<ActivityIconLoader>& icon_loader,
-    std::unique_ptr<SetWallpaperDelegate> set_wallpaper_delegate,
     const scoped_refptr<LocalActivityResolver>& activity_resolver)
     : ArcService(bridge_service),
       binding_(this),
       icon_loader_(icon_loader),
-      set_wallpaper_delegate_(std::move(set_wallpaper_delegate)),
       activity_resolver_(activity_resolver) {
   DCHECK(thread_checker_.CalledOnValidThread());
   arc_bridge_service()->intent_helper()->AddObserver(this);
@@ -87,7 +89,12 @@ void ArcIntentHelperBridge::OpenWallpaperPicker() {
 
 void ArcIntentHelperBridge::SetWallpaper(mojo::Array<uint8_t> jpeg_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  set_wallpaper_delegate_->SetWallpaper(jpeg_data.PassStorage());
+  SetWallpaperDelegate* delegate = SetWallpaperDelegate::instance();
+  if (delegate == nullptr) {
+    LOG(ERROR) << "SetWallpaperDelegate is not available.";
+    return;
+  }
+  delegate->SetWallpaperJpeg(jpeg_data.PassStorage());
 }
 
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(

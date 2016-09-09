@@ -65,6 +65,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::StorageManagerInstancePtr storage_manager_ptr) override;
   void OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
+  void OnWallpaperInstanceReady(
+      mojom::WallpaperInstancePtr wallpaper_ptr) override;
 
  private:
   // Called when the bridge channel is closed. This typically only happens when
