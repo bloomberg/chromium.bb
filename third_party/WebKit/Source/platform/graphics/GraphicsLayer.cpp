@@ -779,7 +779,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlag
                 for (auto& underPaintInvalidation : underPaintInvalidations) {
                     std::unique_ptr<JSONObject> underPaintInvalidationJSON = JSONObject::create();
                     underPaintInvalidationJSON->setDouble("x", underPaintInvalidation.x);
-                    underPaintInvalidationJSON->setDouble("y", underPaintInvalidation.x);
+                    underPaintInvalidationJSON->setDouble("y", underPaintInvalidation.y);
                     underPaintInvalidationJSON->setString("oldPixel", Color(underPaintInvalidation.oldPixel).nameForLayoutTreeAsText());
                     underPaintInvalidationJSON->setString("newPixel", Color(underPaintInvalidation.newPixel).nameForLayoutTreeAsText());
                     underPaintInvalidationsJSON->pushObject(std::move(underPaintInvalidationJSON));

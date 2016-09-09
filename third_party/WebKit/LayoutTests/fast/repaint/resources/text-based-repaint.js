@@ -71,9 +71,9 @@ function finishRepaintTest()
         testRunner.setCustomTextOutput(repaintRects);
 
     if (window.afterTest)
-        window.afterTest();
+        window.afterTest(repaintRects);
 
-    // Play nice with async JS tests which want to notifyDone themselves.
-    if (!window.jsTestIsAsync)
+    // Play nice with async JS tests and harness tests which want to notifyDone themselves.
+    if (!window.jsTestIsAsync && !window.add_completion_callback)
         testRunner.notifyDone();
 }
