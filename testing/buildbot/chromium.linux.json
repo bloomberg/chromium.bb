@@ -2104,6 +2104,16 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--enable-browser-side-navigation"
+        ],
+        "name": "browser_side_navigation_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
