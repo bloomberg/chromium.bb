@@ -45,8 +45,6 @@ class CommonSwitches {
         extension_action_redesign(switches::kExtensionActionRedesign,
                                   kExtensionActionRedesignExperiment,
                                   FeatureSwitch::DEFAULT_ENABLED),
-        extension_action_redesign_override(switches::kExtensionActionRedesign,
-                                           FeatureSwitch::DEFAULT_ENABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
@@ -55,7 +53,7 @@ class CommonSwitches {
                          FeatureSwitch::DEFAULT_ENABLED),
         media_router(kMediaRouterFlag,
                      kEnableMediaRouterExperiment,
-                     FeatureSwitch::DEFAULT_DISABLED) {
+                     FeatureSwitch::DEFAULT_ENABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -71,7 +69,6 @@ class CommonSwitches {
   FeatureSwitch error_console;
   FeatureSwitch enable_override_bookmarks_ui;
   FeatureSwitch extension_action_redesign;
-  FeatureSwitch extension_action_redesign_override;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
@@ -99,16 +96,6 @@ FeatureSwitch* FeatureSwitch::enable_override_bookmarks_ui() {
   return &g_common_switches.Get().enable_override_bookmarks_ui;
 }
 FeatureSwitch* FeatureSwitch::extension_action_redesign() {
-  // Force-enable the redesigned extension action toolbar when the Media Router
-  // is enabled. Should be removed when the toolbar redesign is used by default.
-  // See crbug.com/514694
-  // Note that if Media Router is enabled by experiment, it implies that the
-  // extension action redesign is also enabled by experiment. Thus it is fine
-  // to return the override switch.
-  // TODO(kmarshall): Remove this override.
-  if (media_router()->IsEnabled())
-    return &g_common_switches.Get().extension_action_redesign_override;
-
   return &g_common_switches.Get().extension_action_redesign;
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {

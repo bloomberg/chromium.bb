@@ -342,9 +342,10 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
 // context menu without the toolbar redesign.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideLegacy) {
   // Start with the toolbar redesign disabled.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
-      new FeatureSwitch::ScopedOverride(
-          FeatureSwitch::extension_action_redesign(), false));
+  FeatureSwitch::ScopedOverride enable_media_router(
+      extensions::FeatureSwitch::media_router(), false);
+  FeatureSwitch::ScopedOverride toolbar_redesign_override(
+      FeatureSwitch::extension_action_redesign(), false);
 
   InitializeEmptyExtensionService();
   Browser* browser = GetBrowser();
