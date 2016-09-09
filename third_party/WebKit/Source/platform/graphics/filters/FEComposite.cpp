@@ -117,7 +117,7 @@ FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalReque
 {
     FloatRect requestedRect = originalRequestedRect;
     if (clipsToBounds())
-        requestedRect.intersect(maxEffectRect());
+        requestedRect.intersect(absoluteBounds());
 
     // We may be called multiple times if result is used more than once. Return
     // quickly if nothing new is required.

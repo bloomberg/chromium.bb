@@ -48,12 +48,20 @@ DEFINE_TRACE(FilterEffect)
     visitor->trace(m_filter);
 }
 
+FloatRect FilterEffect::absoluteBounds() const
+{
+    FloatRect computedBounds = getFilter()->filterRegion();
+    if (!filterPrimitiveSubregion().isEmpty())
+        computedBounds.intersect(filterPrimitiveSubregion());
+    return getFilter()->mapLocalRectToAbsoluteRect(computedBounds);
+}
+
 FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
 {
     FloatRect requestedRect = originalRequestedRect;
     // Filters in SVG clip to primitive subregion, while CSS doesn't.
-    if (m_clipsToBounds)
-        requestedRect.intersect(maxEffectRect());
+    if (clipsToBounds())
+        requestedRect.intersect(absoluteBounds());
 
     // We may be called multiple times if result is used more than once. Return
     // quickly if if nothing new is required.
@@ -125,42 +133,6 @@ TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const
     // FIXME: We should dump the subRegions of the filter primitives here later. This isn't
     // possible at the moment, because we need more detailed informations from the target object.
     return ts;
-}
-
-FloatRect FilterEffect::determineMaximumEffectRect()
-{
-    DCHECK(getFilter());
-    Filter* filter = getFilter();
-
-    // Compute the union of the inputs. Always do this because it has
-    // side-effects. (It computes the maximum effect rect of the input.)
-    FloatRect absoluteInputUnion;
-    for (auto& effect : m_inputEffects)
-        absoluteInputUnion.unite(effect->determineMaximumEffectRect());
-
-    FloatRect absoluteSubregion;
-    switch (getFilterEffectType()) {
-    default:
-        if (m_inputEffects.size()) {
-            absoluteSubregion = absoluteInputUnion;
-            if (clipsToBounds())
-                absoluteSubregion.intersect(filter->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion()));
-            break;
-        }
-        // Else fall-through and use the primitive region. (FETurbulence/FEFlood/FEImage)
-    case FilterEffectTypeTile:
-        absoluteSubregion = filter->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
-        break;
-    case FilterEffectTypeSourceInput:
-        absoluteSubregion = filter->absoluteFilterRegion();
-        break;
-    }
-
-    // Clip every filter effect to the filter region.
-    absoluteSubregion.intersect(filter->absoluteFilterRegion());
-
-    m_maxEffectRect = absoluteSubregion;
-    return absoluteSubregion;
 }
 
 sk_sp<SkImageFilter> FilterEffect::createImageFilter()

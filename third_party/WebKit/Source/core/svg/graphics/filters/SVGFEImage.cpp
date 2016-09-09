@@ -98,7 +98,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
 
     FloatRect requestedRect = originalRequestedRect;
     if (clipsToBounds())
-        requestedRect.intersect(maxEffectRect());
+        requestedRect.intersect(absoluteBounds());
 
     FloatRect destRect = getFilter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
     FloatRect srcRect;

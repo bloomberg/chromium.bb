@@ -67,7 +67,8 @@ public:
 
     IntRect absolutePaintRect() const { return m_absolutePaintRect; }
 
-    FloatRect maxEffectRect() const { return m_maxEffectRect; }
+    // Clipped primitive subregion in the coordinate space of the target.
+    FloatRect absoluteBounds() const;
 
     virtual sk_sp<SkImageFilter> createImageFilter();
     virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation();
@@ -105,8 +106,6 @@ public:
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
 
-    FloatRect determineMaximumEffectRect();
-
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
     virtual bool affectsTransparentPixels() { return false; }
 
@@ -138,9 +137,6 @@ private:
 
     IntRect m_absolutePaintRect;
 
-    // The maximum size of a filter primitive. In SVG this is the primitive subregion in absolute coordinate space.
-    // The absolute paint rect should never be bigger than m_maxEffectRect.
-    FloatRect m_maxEffectRect;
     Member<Filter> m_filter;
 
     // The following member variables are SVG specific and will move to LayoutSVGResourceFilterPrimitive.

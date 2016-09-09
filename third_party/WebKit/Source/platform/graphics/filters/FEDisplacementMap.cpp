@@ -160,7 +160,7 @@ FloatRect FEDisplacementMap::determineAbsolutePaintRect(const FloatRect& request
 {
     FloatRect rect = requestedRect;
     if (clipsToBounds())
-        rect.intersect(maxEffectRect());
+        rect.intersect(absoluteBounds());
 
     if (absolutePaintRect().contains(enclosingIntRect(rect)))
         return rect;

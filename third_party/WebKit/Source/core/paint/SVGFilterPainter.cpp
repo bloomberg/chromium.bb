@@ -15,7 +15,7 @@ namespace blink {
 
 GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 {
-    ASSERT(filterData->m_state == FilterData::Initial);
+    DCHECK_EQ(filterData->m_state, FilterData::Initial);
 
     // Create a new context so the contents of the filter can be drawn and cached.
     m_paintController = PaintController::create();
@@ -27,14 +27,14 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 
 void SVGFilterRecordingContext::endContent(FilterData* filterData)
 {
-    ASSERT(filterData->m_state == FilterData::RecordingContent);
+    DCHECK_EQ(filterData->m_state, FilterData::RecordingContent);
 
     SourceGraphic* sourceGraphic = filterData->filter->getSourceGraphic();
-    ASSERT(sourceGraphic);
+    DCHECK(sourceGraphic);
 
     // Use the context that contains the filtered content.
-    ASSERT(m_paintController);
-    ASSERT(m_context);
+    DCHECK(m_paintController);
+    DCHECK(m_context);
     m_context->beginRecording(filterData->filter->filterRegion());
     m_paintController->commitNewDisplayItems();
     m_paintController->paintArtifact().replay(*m_context);
@@ -50,19 +50,19 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 
 static void paintFilteredContent(GraphicsContext& context, FilterData* filterData)
 {
-    ASSERT(filterData->m_state == FilterData::ReadyToPaint);
-    ASSERT(filterData->filter->getSourceGraphic());
+    DCHECK_EQ(filterData->m_state, FilterData::ReadyToPaint);
+    DCHECK(filterData->filter->getSourceGraphic());
 
     filterData->m_state = FilterData::PaintingFilter;
 
-    sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
-    FloatRect boundaries = filterData->filter->filterRegion();
+    FilterEffect* lastEffect = filterData->filter->lastEffect();
+    sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
     context.save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
-    FilterEffect* lastEffect = filterData->filter->lastEffect();
-    context.clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
+    context.clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->absoluteBounds()));
 
+    FloatRect boundaries = filterData->filter->filterRegion();
     context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, std::move(imageFilter));
     context.endLayer();
     context.restore();
@@ -95,7 +95,6 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
 
     IntRect sourceRegion = enclosingIntRect(intersection(filter->filterRegion(), object.strokeBoundingBox()));
     filter->getSourceGraphic()->setSourceRect(sourceRegion);
-    filter->lastEffect()->determineMaximumEffectRect();
 
     FilterData* filterData = FilterData::create();
     filterData->filter = filter;

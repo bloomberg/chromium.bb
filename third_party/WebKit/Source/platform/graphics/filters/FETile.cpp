@@ -40,7 +40,7 @@ FETile* FETile::create(Filter* filter)
 
 FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward) const
 {
-    return forward ? maxEffectRect() : inputEffect(0)->maxEffectRect();
+    return forward ? absoluteBounds() : inputEffect(0)->absoluteBounds();
 }
 
 sk_sp<SkImageFilter> FETile::createImageFilter()
