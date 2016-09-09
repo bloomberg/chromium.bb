@@ -330,6 +330,7 @@ if (!is_android) {
     deps = [
       "//components/metrics:test_support",
       "//components/os_crypt:test_support",
+      "//content/public/browser:browser",
       "//skia",
       "//testing/gtest",
     ]
