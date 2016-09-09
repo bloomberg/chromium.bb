@@ -23,9 +23,7 @@ class PlatformScreenDelegate {
   // displays are added or modified.
 
   // Called when a display is added. |bounds| is in DIP.
-  virtual void OnDisplayAdded(PlatformScreen* platform_screen,
-                              int64_t id,
-                              const gfx::Rect& bounds) = 0;
+  virtual void OnDisplayAdded(int64_t id, const gfx::Rect& bounds) = 0;
 
   // Called when a display is removed.
   virtual void OnDisplayRemoved(int64_t id) = 0;

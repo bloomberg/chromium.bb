@@ -1,0 +1,18 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module display.mojom;
+
+// An interface for clients that are allowed to make changes to the display 
+// state.
+interface DisplayController {
+  // Toggles adding or removing a virtual display. If there is only one display
+  // a second display is added. If there is more than one display then the last
+  // display is removed. 
+  ToggleVirtualDisplay() => (bool success);
+
+  // TODO(kylechar): This interface will need to be expanded to provide
+  // additional functionality for the display settings page and other ash
+  // keyboard accelerators.
+};

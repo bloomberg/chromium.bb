@@ -82,9 +82,7 @@ class DisplayManager : public UserIdTrackerObserver,
                              const UserId& active_id) override;
 
   // display::PlatformScreenDelegate:
-  void OnDisplayAdded(display::PlatformScreen* platform_screen_,
-                      int64_t id,
-                      const gfx::Rect& bounds) override;
+  void OnDisplayAdded(int64_t id, const gfx::Rect& bounds) override;
   void OnDisplayRemoved(int64_t id) override;
   void OnDisplayModified(int64_t id, const gfx::Rect& bounds) override;
 

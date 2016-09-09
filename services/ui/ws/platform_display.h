@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "services/ui/display/platform_screen.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -172,7 +171,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   const ViewportMetrics& GetViewportMetrics() override;
 
   int64_t id_;
-  display::PlatformScreen* platform_screen_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ui::CursorLoader> cursor_loader_;

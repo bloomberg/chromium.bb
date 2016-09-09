@@ -7,6 +7,7 @@ import("//testing/test.gni")
 
 source_set("display") {
   sources = [
+    "platform_screen.cc",
     "platform_screen.h",
     "platform_screen_delegate.h",
   ]
@@ -24,6 +25,7 @@ source_set("display") {
     ]
 
     deps += [
+      "//services/ui/public/interfaces/display",
       "//skia",
       "//ui/ozone",
     ]

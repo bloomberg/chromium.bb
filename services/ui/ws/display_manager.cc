@@ -167,13 +167,10 @@ void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
     current_window_manager_state->Activate(mouse_location_on_screen);
 }
 
-void DisplayManager::OnDisplayAdded(display::PlatformScreen* platform_screen,
-                                    int64_t id,
-                                    const gfx::Rect& bounds) {
+void DisplayManager::OnDisplayAdded(int64_t id, const gfx::Rect& bounds) {
   PlatformDisplayInitParams params;
   params.display_bounds = bounds;
   params.display_id = id;
-  params.platform_screen = platform_screen;
   params.surfaces_state = window_server_->GetSurfacesState();
 
   ws::Display* display = new ws::Display(window_server_, params);

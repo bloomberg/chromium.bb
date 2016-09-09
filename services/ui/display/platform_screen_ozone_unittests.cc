@@ -79,9 +79,7 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
   }
 
  private:
-  void OnDisplayAdded(PlatformScreen* platform_screen,
-                      int64_t id,
-                      const gfx::Rect& bounds) override {
+  void OnDisplayAdded(int64_t id, const gfx::Rect& bounds) override {
     added_.push_back({id, bounds});
   }
 

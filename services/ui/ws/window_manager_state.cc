@@ -103,7 +103,8 @@ class WindowManagerState::ProcessedEventTarget {
 bool WindowManagerState::DebugAccelerator::Matches(
     const ui::KeyEvent& event) const {
   return key_code == event.key_code() &&
-         event_flags == (kAcceleratorEventFlags & event.flags());
+         event_flags == (kAcceleratorEventFlags & event.flags()) &&
+         !event.is_char();
 }
 
 WindowManagerState::QueuedEvent::QueuedEvent() {}

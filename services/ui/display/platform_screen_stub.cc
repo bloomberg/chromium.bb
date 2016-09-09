@@ -29,7 +29,7 @@ PlatformScreenStub::PlatformScreenStub() : weak_ptr_factory_(this) {}
 PlatformScreenStub::~PlatformScreenStub() {}
 
 void PlatformScreenStub::FixedSizeScreenConfiguration() {
-  delegate_->OnDisplayAdded(this, kDisplayId, gfx::Rect(1024, 768));
+  delegate_->OnDisplayAdded(kDisplayId, gfx::Rect(1024, 768));
 }
 
 void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {

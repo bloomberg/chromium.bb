@@ -64,6 +64,25 @@ int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
+void PlatformScreenOzone::ToggleVirtualDisplay(
+    const ToggleVirtualDisplayCallback& callback) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    callback.Run(false);
+    return;
+  }
+
+  if (cached_displays_.size() == 1) {
+    display_configurator_.AddVirtualDisplay(cached_displays_[0].bounds.size());
+    callback.Run(true);
+  } else if (cached_displays_.size() > 1) {
+    callback.Run(
+        display_configurator_.RemoveVirtualDisplay(cached_displays_.back().id));
+  } else {
+    NOTREACHED();
+    callback.Run(false);
+  }
+}
+
 void PlatformScreenOzone::ProcessRemovedDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   std::vector<int64_t> current_ids;
@@ -155,7 +174,7 @@ void PlatformScreenOzone::AddNewDisplays(
       primary_display_id_ = id;
 
     cached_displays_.push_back(DisplayInfo(id, bounds));
-    delegate_->OnDisplayAdded(this, id, bounds);
+    delegate_->OnDisplayAdded(id, bounds);
   }
 }
 

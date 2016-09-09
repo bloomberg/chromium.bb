@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "services/ui/display/platform_screen_delegate.h"
 
 namespace display {
@@ -15,10 +16,12 @@ namespace display {
 // attached physical displays.
 class PlatformScreen {
  public:
-  virtual ~PlatformScreen() {}
+  PlatformScreen();
+  virtual ~PlatformScreen();
 
-  // Creates a PlatformScreen instance.
+  // Creates a singleton PlatformScreen instance.
   static std::unique_ptr<PlatformScreen> Create();
+  static PlatformScreen* GetInstance();
 
   // Triggers initial display configuration to start. On device this will
   // configuration the connected displays. Off device this will create one or
@@ -28,6 +31,11 @@ class PlatformScreen {
   virtual void Init(PlatformScreenDelegate* delegate) = 0;
 
   virtual int64_t GetPrimaryDisplayId() const = 0;
+
+ private:
+  static PlatformScreen* instance_;  // Instance is not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformScreen);
 };
 
 }  // namespace display

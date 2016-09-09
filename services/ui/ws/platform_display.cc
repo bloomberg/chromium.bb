@@ -12,6 +12,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/ui/display/platform_screen.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/platform_display_factory.h"
@@ -55,7 +56,6 @@ PlatformDisplay* PlatformDisplay::Create(
 DefaultPlatformDisplay::DefaultPlatformDisplay(
     const PlatformDisplayInitParams& init_params)
     : id_(init_params.display_id),
-      platform_screen_(init_params.platform_screen),
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
@@ -169,7 +169,7 @@ gfx::Rect DefaultPlatformDisplay::GetBounds() const {
 }
 
 bool DefaultPlatformDisplay::IsPrimaryDisplay() const {
-  return platform_screen_->GetPrimaryDisplayId() == id_;
+  return display::PlatformScreen::GetInstance()->GetPrimaryDisplayId() == id_;
 }
 
 void DefaultPlatformDisplay::OnGpuChannelEstablished(

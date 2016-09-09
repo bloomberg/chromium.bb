@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "services/ui/display/platform_screen.h"
+#include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display.h"
 
@@ -21,7 +22,8 @@ namespace display {
 // PlatformScreenOzone provides the necessary functionality to configure all
 // attached physical displays on the ozone platform.
 class PlatformScreenOzone : public PlatformScreen,
-                            public ui::DisplayConfigurator::Observer {
+                            public ui::DisplayConfigurator::Observer,
+                            public mojom::DisplayController {
  public:
   PlatformScreenOzone();
   ~PlatformScreenOzone() override;
@@ -29,6 +31,10 @@ class PlatformScreenOzone : public PlatformScreen,
   // PlatformScreen:
   void Init(PlatformScreenDelegate* delegate) override;
   int64_t GetPrimaryDisplayId() const override;
+
+  // mojom::DisplayController:
+  void ToggleVirtualDisplay(
+      const ToggleVirtualDisplayCallback& callback) override;
 
  private:
   // TODO(kylechar): This struct is just temporary until we migrate
