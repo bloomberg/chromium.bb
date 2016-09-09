@@ -11,10 +11,10 @@ function test()
 
     function createUISourceCode(projectId, path)
     {
+        if (projectId.startsWith("1:"))
+            projectId = projectId.substring(2);
         var project = projects[projectId];
         if (!projects[projectId]) {
-            if (projectId.startsWith("1:"))
-                projectId = projectId.substring(2);
             project = new WebInspector.ProjectStore(workspace, projectId, WebInspector.projectTypes.Network, "");
             workspace.addProject(project);
             projects[projectId] = project;

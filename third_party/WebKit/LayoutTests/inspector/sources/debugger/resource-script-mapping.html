@@ -13,7 +13,7 @@ function test()
     {
         InspectorTest.createWorkspace();
         InspectorTest.testTargetManager.addTarget(target);
-        defaultScriptMapping = new WebInspector.DefaultScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
+        defaultScriptMapping = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target)._defaultMapping;
         var resourceScriptMapping = new WebInspector.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
         return resourceScriptMapping;
     }

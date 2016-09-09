@@ -5,11 +5,11 @@
 <script>
 function test()
 {
+    var mockProjectId = 0;
     function createMockProject()
     {
         var workspace = new WebInspector.Workspace();
-        var project = new WebInspector.ContentProviderBasedProject(workspace, "");
-        workspace.addProject(project);
+        var project = new WebInspector.ContentProviderBasedProject(workspace, "mockProject:" + (++mockProjectId));
         project.requestFileContent = function(uri, callback)
         {
             callback("<script content>");
