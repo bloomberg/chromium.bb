@@ -99,10 +99,14 @@ bool FragmentainerIterator::setFragmentainersOfInterest()
     // might not have to walk the entire fragmentainer group.
     group.columnIntervalForBlockRangeInFlowThread(m_logicalTopInFlowThread, m_logicalBottomInFlowThread, m_currentFragmentainerIndex, m_endFragmentainerIndex);
 
-    // Now intersect with the fragmentainers that actually intersect with the clip rect, to narrow
-    // it down even further.
+    // Now intersect with the fragmentainers that actually intersect with the visual clip rect, to
+    // narrow it down even further. The clip rect needs to be relative to the current fragmentainer
+    // group.
+    LayoutRect clipRect = m_clipRectInMulticolContainer;
+    LayoutSize offset = group.flowThreadTranslationAtOffset(group.logicalTopInFlowThread(), CoordinateSpaceConversion::Visual);
+    clipRect.move(-offset);
     unsigned firstFragmentainerInClipRect, lastFragmentainerInClipRect;
-    group.columnIntervalForVisualRect(m_clipRectInMulticolContainer, firstFragmentainerInClipRect, lastFragmentainerInClipRect);
+    group.columnIntervalForVisualRect(clipRect, firstFragmentainerInClipRect, lastFragmentainerInClipRect);
     // If the two fragmentainer intervals are disjoint, there's nothing of interest in this
     // fragmentainer group.
     if (firstFragmentainerInClipRect > m_endFragmentainerIndex || lastFragmentainerInClipRect < m_currentFragmentainerIndex)
