@@ -109,6 +109,8 @@ if (enable_extensions) {
       "features/feature_channel.h",
       "features/feature_provider.cc",
       "features/feature_provider.h",
+      "features/feature_session_type.cc",
+      "features/feature_session_type.h",
       "features/feature_util.cc",
       "features/feature_util.h",
       "features/json_feature_provider_source.cc",

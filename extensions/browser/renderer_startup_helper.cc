@@ -17,6 +17,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "ui/base/webui/web_ui_util.h"
 
 using content::BrowserContext;
@@ -66,9 +67,11 @@ void RendererStartupHelper::InitializeProcess(
         new ExtensionMsg_SetActivityLoggingEnabled(activity_logging_enabled));
   }
 
-  // Extensions need to know the channel for API restrictions. Send the channel
-  // to all renderers, as the non-extension renderers may have content scripts.
-  process->Send(new ExtensionMsg_SetChannel(GetCurrentChannel()));
+  // Extensions need to know the channel and the session type for API
+  // restrictions. The values are sent to all renderers, as the non-extension
+  // renderers may have content scripts.
+  process->Send(new ExtensionMsg_SetSessionInfo(
+      GetCurrentChannel(), GetCurrentFeatureSessionType()));
 
   // Platform apps need to know the system font.
   // TODO(dbeam): this is not the system font in all cases.

@@ -938,7 +938,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect, OnDispatchOnDisconnect)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_SetChannel, OnSetChannel)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_SetSessionInfo, OnSetSessionInfo)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                       OnSetScriptingWhitelist)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
@@ -1113,8 +1113,11 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
       NULL, extension_id, module_name, function_name, args, user_gesture);
 }
 
-void Dispatcher::OnSetChannel(version_info::Channel channel) {
+void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
+                                  FeatureSessionType session_type) {
   SetCurrentChannel(channel);
+  SetCurrentFeatureSessionType(session_type);
+
   if (feature_util::ExtensionServiceWorkersEnabled()) {
     // chrome-extension: resources should be allowed to register ServiceWorkers.
     blink::WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(

@@ -24,6 +24,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -180,7 +181,8 @@ class Dispatcher : public content::RenderThreadObserver,
                        const std::string& function_name,
                        const base::ListValue& args,
                        bool user_gesture);
-  void OnSetChannel(version_info::Channel channel);
+  void OnSetSessionInfo(version_info::Channel channel,
+                        FeatureSessionType session_type);
   void OnSetScriptingWhitelist(
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,
