@@ -117,6 +117,11 @@ void DesktopEngagementService::EndSession() {
   in_session_ = false;
 
   base::TimeDelta delta = base::TimeTicks::Now() - session_start_;
+
+  // If timer is not running then session ended because of inactivity.
+  if (!timer_.IsRunning())
+    delta -= inactivity_timeout_;
+
   DVLOG(4) << "Logging session length of " << delta.InSeconds() << " seconds.";
 
   // Note: This metric is recorded separately for Android in

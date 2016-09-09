@@ -147,3 +147,26 @@ TEST(DesktopEngagementServiceTest, TestAudioEvent) {
   EXPECT_FALSE(instance.is_audio_playing());
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
 }
+
+TEST(DesktopEngagementServiceTest, TestTimeoutDiscount) {
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::HistogramTester histogram_tester;
+
+  MockDesktopEngagementService instance;
+  instance.SetInactivityTimeoutForTesting(2);
+
+  instance.OnVisibilityChanged(true);
+  instance.OnUserEvent();
+  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+
+  // Wait until the session expires.
+  while (!instance.is_timeout()) {
+    base::RunLoop().RunUntilIdle();
+  }
+
+  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
+
+  // The recorded value should be in the 0 bucket even though inactivity timeout
+  // is 2 seconds.
+  histogram_tester.ExpectUniqueSample("Session.TotalDuration", 0, 1);
+}
