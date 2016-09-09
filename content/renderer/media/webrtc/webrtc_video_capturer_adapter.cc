@@ -136,8 +136,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   // Return |frame| directly if it is GpuMemoryBuffer backed, as we want to
   // keep the frame on native buffers.
   if (frame->HasTextures() ||
-      frame->storage_type() ==
-      media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
+      frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
     OnFrame(cricket::WebRtcVideoFrame(
                 new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame),
                 webrtc::kVideoRotation_0, translated_camera_time_us),
@@ -145,17 +144,19 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     return;
   }
 
-  // Create a centered cropped visible rect that preservers aspect ratio for
-  // cropped natural size.
-  gfx::Rect visible_rect = frame->visible_rect();
-  visible_rect.ClampToCenteredSize(gfx::Size(
-      visible_rect.width() * adapted_width / orig_width,
-      visible_rect.height() * adapted_height / orig_height));
+  // Translate crop rectangle from natural size to visible size.
+  gfx::Rect cropped_visible_rect(
+      frame->visible_rect().x() +
+          crop_x * frame->visible_rect().width() / orig_width,
+      frame->visible_rect().y() +
+          crop_y * frame->visible_rect().height() / orig_height,
+      crop_width * frame->visible_rect().width() / orig_width,
+      crop_height * frame->visible_rect().height() / orig_height);
 
   const gfx::Size adapted_size(adapted_width, adapted_height);
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::WrapVideoFrame(frame, frame->format(),
-                                        visible_rect, adapted_size);
+                                        cropped_visible_rect, adapted_size);
   if (!video_frame)
     return;
 
