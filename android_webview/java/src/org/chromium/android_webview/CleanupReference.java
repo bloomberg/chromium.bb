@@ -163,10 +163,11 @@ public class CleanupReference extends WeakReference<Object> {
     private void runCleanupTaskInternal() {
         if (DEBUG) Log.d(TAG, "runCleanupTaskInternal");
         sRefs.remove(this);
-        if (mCleanupTask != null) {
+        Runnable cleanupTask = mCleanupTask;
+        mCleanupTask = null;
+        if (cleanupTask != null) {
             if (DEBUG) Log.i(TAG, "--- CLEANING ONE REF");
-            mCleanupTask.run();
-            mCleanupTask = null;
+            cleanupTask.run();
         }
         clear();
     }
