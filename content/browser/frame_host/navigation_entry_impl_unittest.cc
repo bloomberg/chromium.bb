@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/public/common/ssl_status.h"
+#include "content/public/browser/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

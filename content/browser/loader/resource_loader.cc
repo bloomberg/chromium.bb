@@ -25,15 +25,12 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
-#include "content/common/security_style_util.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/security_style.h"
-#include "content/public/common/ssl_status.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -99,11 +96,6 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     request->GetLoadTimingInfo(&response->head.load_timing);
 
   if (request->ssl_info().cert.get()) {
-    SSLStatus ssl_status;
-    // TODO(jam): keep this call temporarily since it's what adds the
-    // certificate to the CertStore.
-    ResourceLoader::GetSSLStatusForRequest(
-        request->url(), request->ssl_info(), info->GetChildID(), &ssl_status);
     response->head.has_major_certificate_errors =
         net::IsCertStatusError(request->ssl_info().cert_status) &&
         !net::IsCertStatusMinorError(request->ssl_info().cert_status);
@@ -140,16 +132,6 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 }
 
 }  // namespace
-
-void ResourceLoader::GetSSLStatusForRequest(const GURL& url,
-                                            const net::SSLInfo& ssl_info,
-                                            int child_id,
-                                            SSLStatus* ssl_status) {
-  DCHECK(ssl_info.cert);
-  *ssl_status = SSLStatus(GetSecurityStyleForResource(
-                              url, !!ssl_info.cert, ssl_info.cert_status),
-                          ssl_info.cert, ssl_info);
-}
 
 ResourceLoader::ResourceLoader(std::unique_ptr<net::URLRequest> request,
                                std::unique_ptr<ResourceHandler> handler,
@@ -668,16 +650,6 @@ void ResourceLoader::ResponseCompleted() {
 
   DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
   RecordHistograms();
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  const net::SSLInfo& ssl_info = request_->ssl_info();
-  if (ssl_info.cert.get() != NULL) {
-    SSLStatus ssl_status;
-    // TODO(jam): keep this call temporarily since it's what adds the
-    // certificate to the CertStore.
-    GetSSLStatusForRequest(request_->url(), ssl_info, info->GetChildID(),
-                           &ssl_status);
-  }
 
   bool defer = false;
   {

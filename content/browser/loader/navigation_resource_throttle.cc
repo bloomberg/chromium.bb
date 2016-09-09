@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/resource_loader.h"
+#include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -21,8 +21,8 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/ssl_status.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -258,7 +258,7 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
 
   SSLStatus ssl_status;
   if (request_->ssl_info().cert.get()) {
-    ResourceLoader::GetSSLStatusForRequest(
+    NavigationResourceHandler::GetSSLStatusForRequest(
         request_->url(), request_->ssl_info(), info->GetChildID(), &ssl_status);
   }
 

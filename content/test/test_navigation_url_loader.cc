@@ -8,9 +8,9 @@
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/navigation_data.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
-#include "content/public/common/ssl_status.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {

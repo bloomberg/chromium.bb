@@ -12,7 +12,6 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
-#include "content/public/common/ssl_status.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"

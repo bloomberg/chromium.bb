@@ -14,16 +14,28 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
+#include "content/common/security_style_util.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
-#include "content/public/common/ssl_status.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
+
+void NavigationResourceHandler::GetSSLStatusForRequest(
+    const GURL& url,
+    const net::SSLInfo& ssl_info,
+    int child_id,
+    SSLStatus* ssl_status) {
+  DCHECK(ssl_info.cert);
+  *ssl_status = SSLStatus(GetSecurityStyleForResource(
+                              url, !!ssl_info.cert, ssl_info.cert_status),
+                          ssl_info.cert, ssl_info);
+}
 
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
@@ -114,9 +126,8 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   SSLStatus ssl_status;
   if (request()->ssl_info().cert.get()) {
-    ResourceLoader::GetSSLStatusForRequest(
-        request()->url(), request()->ssl_info(), info->GetChildID(),
-        &ssl_status);
+    GetSSLStatusForRequest(request()->url(), request()->ssl_info(),
+                           info->GetChildID(), &ssl_status);
   }
 
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),

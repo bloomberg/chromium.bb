@@ -21,8 +21,8 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/ssl_status.h"
 
 namespace content {
 class ResourceRequestBodyImpl;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
-#define CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
+#ifndef CONTENT_PUBLIC_BROWSER_SSL_STATUS_H_
+#define CONTENT_PUBLIC_BROWSER_SSL_STATUS_H_
 
 #include <stdint.h>
 
@@ -82,4 +82,4 @@ struct CONTENT_EXPORT SSLStatus {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SSL_STATUS_H_

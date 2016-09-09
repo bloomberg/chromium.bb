@@ -47,6 +47,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/ssl_status.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)

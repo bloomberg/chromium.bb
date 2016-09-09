@@ -5,8 +5,8 @@
 #include "base/macros.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/ssl_status.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {

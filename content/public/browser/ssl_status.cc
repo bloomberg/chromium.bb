@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/ssl_status.h"
+#include "content/public/browser/ssl_status.h"
 
 #include "net/cert/sct_status_flags.h"
 #include "net/ssl/ssl_info.h"

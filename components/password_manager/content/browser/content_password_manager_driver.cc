@@ -20,8 +20,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/ssl_status.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/shell/public/cpp/interface_provider.h"
 

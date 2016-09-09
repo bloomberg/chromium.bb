@@ -18,8 +18,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/ssl_status.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
