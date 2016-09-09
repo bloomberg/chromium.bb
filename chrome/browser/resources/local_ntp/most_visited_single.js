@@ -258,9 +258,12 @@ var showTiles = function() {
 
   var parent = document.querySelector('#most-visited');
 
-  // Mark old tile DIV for removal after the transition animation is done.
+  // Only fade in the new tiles if there were tiles before.
+  var fadeIn = false;
   var old = parent.querySelector('#mv-tiles');
   if (old) {
+    fadeIn = true;
+    // Mark old tile DIV for removal after the transition animation is done.
     old.removeAttribute('id');
     old.classList.add('mv-tiles-old');
     old.style.opacity = 0.0;
@@ -274,11 +277,12 @@ var showTiles = function() {
   // Add new tileset.
   cur.id = 'mv-tiles';
   parent.appendChild(cur);
-  // We want the CSS transition to trigger, so need to add to the DOM before
-  // setting the style.
-  setTimeout(function() {
-    cur.style.opacity = 1.0;
-  }, 0);
+  // getComputedStyle causes the initial style (opacity 0) to be applied, so
+  // that when we then set it to 1, that triggers the CSS transition.
+  if (fadeIn) {
+    window.getComputedStyle(cur).opacity;
+  }
+  cur.style.opacity = 1.0;
 
   // Make sure the tiles variable contain the next tileset we may use.
   tiles = document.createElement('div');
