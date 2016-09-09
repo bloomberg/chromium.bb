@@ -470,10 +470,11 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
   for sln in solutions:
-    # This is so we can loop back and try again if we need to wait for the
-    # git mirrors to update from SVN.
+    # Just in case we're hitting a different git server than the one from
+    # which the target revision was polled, we retry some.
     done = False
-    tries_left = 60
+    deadline = time.time() + 60  # One minute (5 tries with exp. backoff).
+    tries = 0
     while not done:
       name = sln['name']
       url = sln['url']
@@ -509,14 +510,18 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         done = True
       except SubprocessFailed as e:
         # Exited abnormally, theres probably something wrong.
-        # Lets wipe the checkout and try again.
-        tries_left -= 1
-        if tries_left > 0:
-          print 'Something failed: %s.' % str(e)
-          print 'waiting 5 seconds and trying again...'
-          time.sleep(5)
-        else:
+        print 'Something failed: %s.' % str(e)
+
+        if time.time() > deadline:
+          overrun = time.time() - deadline
+          print 'Ran %s seconds past deadline. Aborting.' % overrun
           raise
+
+        # Lets wipe the checkout and try again.
+        tries += 1
+        sleep_secs = 2**tries
+        print 'waiting %s seconds and trying again...' % sleep_secs
+        time.sleep(sleep_secs)
         remove(sln_dir)
 
     git('clean', '-dff', cwd=sln_dir)
