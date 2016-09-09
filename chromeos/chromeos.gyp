@@ -410,6 +410,7 @@
       'dbus/cras_audio_client_unittest.cc',
       'dbus/cros_disks_client_unittest.cc',
       'dbus/dbus_client_bundle_unittest.cc',
+      'dbus/fake_cryptohome_client_unittest.cc',
       'dbus/fake_easy_unlock_client_unittest.cc',
       'dbus/fake_power_manager_client_unittest.cc',
       'dbus/gsm_sms_client_unittest.cc',
@@ -495,6 +496,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
+        'attestation_proto',
         'cryptohome_proto',
         'power_manager_proto',
       ],
@@ -676,6 +678,20 @@
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/cryptohome',
         'proto_out_dir': 'chromeos/dbus/cryptohome',
+      },
+      'includes': ['../build/protoc.gypi'],
+    },
+    {
+      # GN version: //chromeos:cryptohome_attestation
+      # Protobuf compiler/generator for attestation related protocol buffers.
+      'target_name': 'attestation_proto',
+      'type': 'static_library',
+      'sources': [
+        'dbus/proto/attestation.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'dbus/proto',
+        'proto_out_dir': 'chromeos/cryptohome',
       },
       'includes': ['../build/protoc.gypi'],
     },

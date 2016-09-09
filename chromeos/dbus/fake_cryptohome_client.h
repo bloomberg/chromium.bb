@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -220,12 +222,18 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const ProtobufMethodCallback& callback);
 
   // Posts tasks which return fake results to the UI thread.
-  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,
-                               bool returns_data);
+  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback);
 
-  // This method is used to implement ReturnAsyncMethodResult.
-  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback,
-                                       bool returns_data);
+  // Posts tasks which return fake data to the UI thread.
+  void ReturnAsyncMethodData(const AsyncMethodCallback& callback,
+                             const std::string& data);
+
+  // This method is used to implement ReturnAsyncMethodResult without data.
+  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback);
+
+  // This method is used to implement ReturnAsyncMethodResult with data.
+  void ReturnAsyncMethodDataInternal(const AsyncMethodCallback& callback,
+                                     const std::string& data);
 
   bool service_is_available_;
   int async_call_id_;
