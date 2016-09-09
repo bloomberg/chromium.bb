@@ -778,6 +778,8 @@ public class CompositorViewHolder extends CoordinatorLayout
             }
         });
 
+        mLayerTitleCache.setTabModelSelector(mTabModelSelector);
+
         onContentChanged();
     }
 

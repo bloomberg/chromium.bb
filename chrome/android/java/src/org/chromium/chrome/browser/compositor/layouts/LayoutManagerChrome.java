@@ -543,20 +543,10 @@ public class LayoutManagerChrome
 
     @Override
     public void initLayoutTabFromHost(final int tabId) {
-        super.initLayoutTabFromHost(tabId);
-
-        if (getTabModelSelector() == null || getActiveLayout() == null) return;
-
-        TabModelSelector selector = getTabModelSelector();
-        Tab tab = selector.getTabById(tabId);
-        if (tab == null) return;
-
-        LayoutTab layoutTab = getExistingLayoutTab(tabId);
-        if (layoutTab == null) return;
-
-        if (mTitleCache != null && layoutTab.isTitleNeeded()) {
-            mTitleCache.getUpdatedTitle(tab, "");
+        if (mTitleCache != null) {
+            mTitleCache.remove(tabId);
         }
+        super.initLayoutTabFromHost(tabId);
     }
 
     /**

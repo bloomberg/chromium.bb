@@ -99,6 +99,12 @@ void LayerTitleCache::ClearExcept(JNIEnv* env,
 }
 
 DecorationTitle* LayerTitleCache::GetTitleLayer(int tab_id) {
+  if (!layer_cache_.Lookup(tab_id)) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_LayerTitleCache_buildUpdatedTitle(env, weak_java_title_cache_.get(env),
+        tab_id);
+  }
+
   return layer_cache_.Lookup(tab_id);
 }
 

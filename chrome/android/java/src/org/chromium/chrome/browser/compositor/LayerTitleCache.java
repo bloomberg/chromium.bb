@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
@@ -33,6 +34,8 @@ public class LayerTitleCache implements TitleCache {
     private static int sNextResourceId = 1;
 
     private final Context mContext;
+    private TabModelSelector mTabModelSelector;
+
     private final SparseArray<Title> mTitles = new SparseArray<Title>();
     private final int mFaviconSize;
 
@@ -83,9 +86,23 @@ public class LayerTitleCache implements TitleCache {
         mNativeLayerTitleCache = 0;
     }
 
+    public void setTabModelSelector(TabModelSelector tabModelSelector) {
+        mTabModelSelector = tabModelSelector;
+    }
+
     @CalledByNative
     private long getNativePtr() {
         return mNativeLayerTitleCache;
+    }
+
+    @CalledByNative
+    private void buildUpdatedTitle(int tabId) {
+        if (mTabModelSelector == null) return;
+
+        Tab tab = mTabModelSelector.getTabById(tabId);
+        if (tab == null) return;
+
+        getUpdatedTitle(tab, "");
     }
 
     @Override
