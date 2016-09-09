@@ -1284,7 +1284,7 @@ public:
         MetaRefresh = 1548,
         MetaSetCookieWhenCSPBlocksInlineScript = 1549,
         MetaRefreshWhenCSPBlocksInlineScript = 1550,
-        PanScrollingStart = 1551,
+        MiddleClickAutoscrollStart = 1551,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

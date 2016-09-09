@@ -210,6 +210,11 @@ void WebRuntimeFeatures::enablePagePopup(bool enable)
     RuntimeEnabledFeatures::setPagePopupEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMiddleClickAutoscroll(bool enable)
+{
+    RuntimeEnabledFeatures::setMiddleClickAutoscrollEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableParseHTMLOnMainThread(bool enable)
 {
     RuntimeEnabledFeatures::setParseHTMLOnMainThreadEnabled(enable);

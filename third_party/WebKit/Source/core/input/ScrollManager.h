@@ -41,7 +41,7 @@ public:
 
     void clear();
 
-    bool panScrollInProgress() const;
+    bool middleClickAutoscrollInProgress() const;
     AutoscrollController* autoscrollController() const;
     void stopAutoscroll();
 

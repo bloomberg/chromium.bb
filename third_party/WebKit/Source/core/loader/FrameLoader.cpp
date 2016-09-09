@@ -763,7 +763,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     KURL oldURL = m_frame->document()->url();
     bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
     if (hashChange) {
-        // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
+        // If we were in the autoscroll/middleClickAutoscroll mode we want to stop it before following the link to the anchor
         m_frame->eventHandler().stopAutoscroll();
         m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }

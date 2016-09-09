@@ -64,9 +64,9 @@ void ScrollManager::stopAutoscroll()
         controller->stopAutoscroll();
 }
 
-bool ScrollManager::panScrollInProgress() const
+bool ScrollManager::middleClickAutoscrollInProgress() const
 {
-    return autoscrollController() && autoscrollController()->panScrollInProgress();
+    return autoscrollController() && autoscrollController()->middleClickAutoscrollInProgress();
 }
 
 AutoscrollController* ScrollManager::autoscrollController() const

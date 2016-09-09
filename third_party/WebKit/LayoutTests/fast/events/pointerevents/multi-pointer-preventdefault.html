@@ -69,15 +69,15 @@ function testScenario(pointerType, isPrimary) {
 
   debug("- move mouse into target & press -");
   eventSender.mouseMoveTo(x2, y2);
-  eventSender.mouseDown(1);
+  eventSender.mouseDown(2);
 
   debug("- move primary pen into target & press -");
   eventSender.mouseMoveTo(x2+1, y2+1, [], "pen", 0);
-  eventSender.mouseDown(1, [], "pen", 0);
+  eventSender.mouseDown(2, [], "pen", 0);
 
   debug("- move non-primary pen into target & press -");
   eventSender.mouseMoveTo(x2+2, y2+2, [], "pen", 1);
-  eventSender.mouseDown(1, [], "pen", 1);
+  eventSender.mouseDown(2, [], "pen", 1);
 
   debug("- jiggle mouse in target -");
   eventSender.mouseMoveTo(x2+3, y2+3);
@@ -89,13 +89,13 @@ function testScenario(pointerType, isPrimary) {
   eventSender.mouseMoveTo(x2+4, y2+4, [], "pen", 0);
 
   debug("- release mouse -");
-  eventSender.mouseUp(1);
+  eventSender.mouseUp(2);
 
   debug("- release non-primary pen -");
-  eventSender.mouseUp(1, [], "pen", 1);
+  eventSender.mouseUp(2, [], "pen", 1);
 
   debug("- release primary pen -");
-  eventSender.mouseUp(1, [], "pen", 0);
+  eventSender.mouseUp(2, [], "pen", 0);
 
   debug("");
 }

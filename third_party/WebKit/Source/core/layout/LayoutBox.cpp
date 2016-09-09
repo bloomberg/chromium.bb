@@ -967,7 +967,7 @@ static inline IntSize adjustedScrollDelta(const IntSize& delta)
     return IntSize(adjustedScrollDelta(delta.width()), adjustedScrollDelta(delta.height()));
 }
 
-void LayoutBox::panScroll(const IntPoint& sourcePoint)
+void LayoutBox::middleClickAutoscroll(const IntPoint& sourcePoint)
 {
     LocalFrame* frame = this->frame();
     if (!frame)
@@ -984,9 +984,9 @@ void LayoutBox::panScroll(const IntPoint& sourcePoint)
 
     IntSize delta = lastKnownMousePosition - sourcePoint;
 
-    if (abs(delta.width()) <= AutoscrollController::noPanScrollRadius) // at the center we let the space for the icon
+    if (abs(delta.width()) <= AutoscrollController::noMiddleClickAutoscrollRadius) // at the center we let the space for the icon
         delta.setWidth(0);
-    if (abs(delta.height()) <= AutoscrollController::noPanScrollRadius)
+    if (abs(delta.height()) <= AutoscrollController::noMiddleClickAutoscrollRadius)
         delta.setHeight(0);
     scroll(ScrollByPixel, FloatSize(adjustedScrollDelta(delta)));
 }

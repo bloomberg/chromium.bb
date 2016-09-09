@@ -1,6 +1,6 @@
 var autoscrollInterval = 50;
 var middleButton = 1;
-var panScrollRadius = 15; // from FrameView::noPanScrollRadius
+var middleClickAutoscrollRadius = 15; // from FrameView::noPanScrollRadius
 
 window.jsTestIsAsync = true;
 
@@ -73,7 +73,7 @@ function testPanScroll(param)
     var startX = param.startX || scrollable.offsetLeft + 5;
     var startY = param.startY || scrollable.offsetTop + 5;
     var endX = param.endX || scrollable.offsetLeft + 5;
-    var endY = param.endY || scrollable.offsetTop + panScrollRadius + 6;
+    var endY = param.endY || scrollable.offsetTop + middleClickAutoscrollRadius + 6;
     eventSender.mouseMoveTo(startX, startY);
     eventSender.mouseDown(middleButton);
     if (param.clickOrDrag == 'click')

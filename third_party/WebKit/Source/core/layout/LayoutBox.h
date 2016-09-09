@@ -769,7 +769,7 @@ public:
     IntSize calculateAutoscrollDirection(const IntPoint& pointInRootFrame) const;
     static LayoutBox* findAutoscrollable(LayoutObject*);
     virtual void stopAutoscroll() { }
-    virtual void panScroll(const IntPoint&);
+    virtual void middleClickAutoscroll(const IntPoint&);
 
     DISABLE_CFI_PERF bool hasAutoVerticalScrollbar() const { return hasOverflowClip() && (style()->overflowY() == OverflowAuto || style()->overflowY() == OverflowPagedY || style()->overflowY() == OverflowOverlay); }
     DISABLE_CFI_PERF bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OverflowAuto || style()->overflowX() == OverflowOverlay); }

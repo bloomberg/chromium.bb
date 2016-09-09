@@ -97,10 +97,7 @@ public:
     void nodeWillBeRemoved(Node&);
 
     void updateSelectionForMouseDrag();
-
-#if OS(WIN)
-    void startPanScrolling(LayoutObject*);
-#endif
+    void startMiddleClickAutoscroll(LayoutObject*);
 
     // TODO(nzolghadr): Some of the APIs in this class only forward the action
     // to the corresponding Manager class. We need to investigate whether it is

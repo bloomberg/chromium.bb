@@ -44,42 +44,36 @@ enum AutoscrollType {
     NoAutoscroll,
     AutoscrollForDragAndDrop,
     AutoscrollForSelection,
-#if OS(WIN)
-    AutoscrollForPanCanStop,
-    AutoscrollForPan,
-#endif
+    AutoscrollForMiddleClickCanStop,
+    AutoscrollForMiddleClick,
 };
 
-// AutscrollController handels autoscroll and pan scroll for EventHandler.
+// AutscrollController handels autoscroll and middle click autoscroll for EventHandler.
 class CORE_EXPORT AutoscrollController final : public GarbageCollected<AutoscrollController> {
 public:
     static AutoscrollController* create(Page&);
     DECLARE_TRACE();
 
-    static const int noPanScrollRadius = 15;
+    static const int noMiddleClickAutoscrollRadius = 15;
 
     void animate(double monotonicFrameBeginTime);
     bool autoscrollInProgress() const;
     bool autoscrollInProgress(const LayoutBox*) const;
-    bool panScrollInProgress() const;
+    bool middleClickAutoscrollInProgress() const;
     void startAutoscrollForSelection(LayoutObject*);
     void stopAutoscroll();
     void stopAutoscrollIfNeeded(LayoutObject*);
     void updateAutoscrollLayoutObject();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
-#if OS(WIN)
-    void handleMouseReleaseForPanScrolling(LocalFrame*, const PlatformMouseEvent&);
-    void startPanScrolling(LayoutBox*, const IntPoint&);
-#endif
+    void handleMouseReleaseForMiddleClickAutoscroll(LocalFrame*, const PlatformMouseEvent&);
+    void startMiddleClickAutoscroll(LayoutBox*, const IntPoint&);
 
 private:
     explicit AutoscrollController(Page&);
 
     void startAutoscroll();
 
-#if OS(WIN)
-    void updatePanScrollState(FrameView*, const IntPoint& lastKnownMousePosition);
-#endif
+    void updateMiddleClickAutoscrollState(FrameView*, const IntPoint& lastKnownMousePosition);
 
     Member<Page> m_page;
     LayoutBox* m_autoscrollLayoutObject;
@@ -87,9 +81,7 @@ private:
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;
-#if OS(WIN)
-    IntPoint m_panScrollStartPos;
-#endif
+    IntPoint m_middleClickAutoscrollStartPos;
 };
 
 } // namespace blink

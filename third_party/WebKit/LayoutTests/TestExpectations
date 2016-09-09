@@ -242,8 +242,7 @@ crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure 
 crbug.com/636239 [ Mac10.10 Mac10.11 Retina ] media/video-zoom-controls.html [ Failure Pass ]
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
-crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
-crbug.com/548226 [ Win ] fast/events/pointerevents/multi-pointer-preventdefault.html [ Failure Pass ]
+crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]

@@ -85,16 +85,15 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     if (initialKeyEvent.windowsKeyCode == VK_CAPITAL)
         capsLockStateMayHaveChanged();
 
-#if OS(WIN)
-    if (m_scrollManager->panScrollInProgress()) {
-        // If a key is pressed while the panScroll is in progress then we want to stop
+    if (m_scrollManager->middleClickAutoscrollInProgress()) {
+        DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+        // If a key is pressed while the middleClickAutoscroll is in progress then we want to stop
         if (initialKeyEvent.type == WebInputEvent::KeyDown || initialKeyEvent.type == WebInputEvent::RawKeyDown)
             m_scrollManager->stopAutoscroll();
 
         // If we were in panscroll mode, we swallow the key event
         return WebInputEventResult::HandledSuppressed;
     }
-#endif
 
     // Check for cases where we are too early for events -- possible unmatched key up
     // from pressing return in the location bar.

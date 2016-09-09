@@ -44,17 +44,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Android has a different popup menu implementation.
 [ Android ] fast/forms/select-popup [ WontFix ]
 
-# Pan-scroll tests are Windows-specific.
-[ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-click-hyperlink.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-drag.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-event-fired.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-in-iframe.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-nested-divs.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-panIcon.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
-[ Linux Mac ] fast/events/panScroll-use-count.html [ WontFix ]
-
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ WontFix ]
 [ Mac ] fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ WontFix ]

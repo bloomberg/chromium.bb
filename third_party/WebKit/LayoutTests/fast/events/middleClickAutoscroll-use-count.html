@@ -20,16 +20,16 @@ test(function() {
     if (!window.eventSender)
         return;
     var middleButton = 1;
-    var panScrollRadius = 15;
-    var PanScrollingStart = 1551;
+    var middleClickAutoscrollRadius = 15;
+    var middleClickAutoscrollStart = 1551;
     var scrollable = document.getElementById("scrollable");
     var startX = scrollable.offsetLeft + 5;
     var startY = scrollable.offsetTop + 5;
     var endX = startX;
-    var endY = scrollable.offsetTop + panScrollRadius + 6;
+    var endY = scrollable.offsetTop + middleClickAutoscrollRadius + 6;
     eventSender.mouseMoveTo(startX, startY);
     eventSender.mouseDown(middleButton);
     eventSender.mouseMoveTo(endX, endY);
-    assert_true(internals.isUseCounted(document, PanScrollingStart));
+    assert_true(internals.isUseCounted(document, middleClickAutoscrollStart));
 })
 </script>

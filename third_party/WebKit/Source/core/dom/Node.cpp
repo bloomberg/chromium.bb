@@ -2072,8 +2072,9 @@ void Node::defaultEventHandler(Event* event)
             if (LocalFrame* frame = document().frame())
                 frame->eventHandler().defaultTextInputEventHandler(toTextEvent(event));
         }
-#if OS(WIN)
-    } else if (eventType == EventTypeNames::mousedown && event->isMouseEvent()) {
+    } else if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()
+        && eventType == EventTypeNames::mousedown
+        && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         if (mouseEvent->button() == static_cast<short>(WebPointerProperties::Button::Middle)) {
             if (enclosingLinkEventParentOrSelf())
@@ -2091,10 +2092,9 @@ void Node::defaultEventHandler(Event* event)
 
             if (layoutObject) {
                 if (LocalFrame* frame = document().frame())
-                    frame->eventHandler().startPanScrolling(layoutObject);
+                    frame->eventHandler().startMiddleClickAutoscroll(layoutObject);
             }
         }
-#endif
     } else if (event->type() == EventTypeNames::webkitEditableContentChanged) {
         // TODO(chongz): Remove after shipped.
         // New InputEvent are dispatched in Editor::appliedEditing, etc.

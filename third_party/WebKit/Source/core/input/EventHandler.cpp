@@ -381,7 +381,7 @@ WebInputEventResult EventHandler::handleMouseDraggedEvent(const MouseEventWithHi
 
     m_mouseDownMayStartDrag = false;
 
-    if (m_mouseDownMayStartAutoscroll && !m_scrollManager->panScrollInProgress()) {
+    if (m_mouseDownMayStartAutoscroll && !m_scrollManager->middleClickAutoscrollInProgress()) {
         if (AutoscrollController* controller = m_scrollManager->autoscrollController()) {
             controller->startAutoscrollForSelection(layoutObject);
             m_mouseDownMayStartAutoscroll = false;
@@ -407,20 +407,17 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const MouseEventWithHi
     return selectionController().handleMouseReleaseEvent(event, m_dragStartPos) ? WebInputEventResult::HandledSystem : WebInputEventResult::NotHandled;
 }
 
-#if OS(WIN)
-
-void EventHandler::startPanScrolling(LayoutObject* layoutObject)
+void EventHandler::startMiddleClickAutoscroll(LayoutObject* layoutObject)
 {
+    DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
     if (!layoutObject->isBox())
         return;
     AutoscrollController* controller = m_scrollManager->autoscrollController();
     if (!controller)
         return;
-    controller->startPanScrolling(toLayoutBox(layoutObject), lastKnownMousePosition());
+    controller->startMiddleClickAutoscroll(toLayoutBox(layoutObject), lastKnownMousePosition());
     invalidateClick();
 }
-
-#endif // OS(WIN)
 
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
 {
@@ -572,7 +569,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
     Page* page = m_frame->page();
     if (!page)
         return NoCursorChange;
-    if (m_scrollManager->panScrollInProgress())
+    if (m_scrollManager->middleClickAutoscrollInProgress())
         return NoCursorChange;
 
     Node* node = result.innerPossiblyPseudoNode();
@@ -802,18 +799,18 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
         return result;
     }
 
-#if OS(WIN)
-    // We store whether pan scrolling is in progress before calling stopAutoscroll()
-    // because it will set m_autoscrollType to NoAutoscroll on return.
-    bool isPanScrollInProgress = m_scrollManager->panScrollInProgress();
-    m_scrollManager->stopAutoscroll();
-    if (isPanScrollInProgress) {
-        // We invalidate the click when exiting pan scrolling so that we don't inadvertently navigate
-        // away from the current page (e.g. the click was on a hyperlink). See <rdar://problem/6095023>.
-        invalidateClick();
-        return WebInputEventResult::HandledSuppressed;
+    if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
+        // We store whether middle click autoscroll is in progress before calling stopAutoscroll()
+        // because it will set m_autoscrollType to NoAutoscroll on return.
+        bool isMiddleClickAutoscrollInProgress = m_scrollManager->middleClickAutoscrollInProgress();
+        m_scrollManager->stopAutoscroll();
+        if (isMiddleClickAutoscrollInProgress) {
+            // We invalidate the click when exiting middle click auto scroll so that we don't inadvertently navigate
+            // away from the current page (e.g. the click was on a hyperlink). See <rdar://problem/6095023>.
+            invalidateClick();
+            return WebInputEventResult::HandledSuppressed;
+        }
     }
-#endif
 
     m_clickCount = mouseEvent.clickCount();
     m_clickNode = mev.innerNode()->isTextNode() ?  FlatTreeTraversal::parent(*mev.innerNode()) : mev.innerNode();
@@ -1084,10 +1081,10 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     else
         gestureIndicator = wrapUnique(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
-#if OS(WIN)
-    if (Page* page = m_frame->page())
-        page->autoscrollController().handleMouseReleaseForPanScrolling(m_frame, mouseEvent);
-#endif
+    if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
+        if (Page* page = m_frame->page())
+            page->autoscrollController().handleMouseReleaseForMiddleClickAutoscroll(m_frame, mouseEvent);
+    }
 
     m_mousePressed = false;
     setLastKnownMousePosition(mouseEvent);
