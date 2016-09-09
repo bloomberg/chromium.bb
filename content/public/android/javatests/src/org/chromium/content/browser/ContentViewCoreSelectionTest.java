@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.input.ImeTestUtils;
@@ -56,6 +57,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextSelection"})
+    @RetryOnFailure
     public void testSelectionClearedAfterLossOfFocus() throws Throwable {
         requestFocusOnUiThread(true);
 
@@ -73,6 +75,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextSelection"})
+    @RetryOnFailure
     public void testSelectionPreservedAfterLossOfFocusIfRequested() throws Throwable {
         requestFocusOnUiThread(true);
 
@@ -113,6 +116,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextSelection"})
+    @RetryOnFailure
     public void testSelectionPreservedAfterReattached() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -228,6 +232,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testActionBarConfiguredCorrectlyForInput() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -239,6 +244,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testActionBarConfiguredCorrectlyForPassword() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
@@ -250,6 +256,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testActionBarConfiguredCorrectlyForPlainText() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -283,6 +290,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarInputCopy() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -294,6 +302,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarPasswordCopy() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -313,6 +322,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarTextAreaCopy() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -324,6 +334,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextSelection"})
+    @RetryOnFailure
     public void testSelectActionBarPlainTextCut() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
@@ -341,6 +352,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarInputCut() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -372,6 +384,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarTextAreaCut() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -387,6 +400,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextSelection"})
+    @RetryOnFailure
     public void testSelectActionBarPlainTextSelectAll() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -424,6 +438,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarTextAreaSelectAll() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -491,6 +506,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarInputPaste() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
 
@@ -544,6 +560,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarTextAreaPaste() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");

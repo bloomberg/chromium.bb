@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockOrientationObserver;
@@ -22,6 +23,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 /**
  * Tests for ScreenOrientationListener and its implementations.
  */
+@RetryOnFailure
 public class ScreenOrientationProviderTest extends ContentShellTestBase {
 
     // For some reasons build bots are not able to lock to 180 degrees. This

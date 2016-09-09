@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 /**
  * Test suite for geographical US address detection.
@@ -74,6 +75,7 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @RetryOnFailure
     public void testRealAddresses() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_real.html");

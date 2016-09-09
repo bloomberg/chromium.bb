@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockOrientationObserver;
@@ -177,6 +178,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"ScreenOrientation"})
+    @RetryOnFailure
     public void testVariousOrientationChanges() throws Exception {
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertTrue(checkOrientationForLock(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
@@ -203,6 +205,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"ScreenOrientation"})
+    @RetryOnFailure
     public void testFlipLandscape() throws Exception {
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertTrue(checkOrientationForLock(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));

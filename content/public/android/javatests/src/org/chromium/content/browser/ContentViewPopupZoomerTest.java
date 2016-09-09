@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Class which provides test coverage for Popup Zoomer.
  */
+@RetryOnFailure
 public class ContentViewPopupZoomerTest extends ContentShellTestBase {
     private static PopupZoomer findPopupZoomer(ViewGroup view) {
         assert view != null;

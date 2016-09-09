@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.common.ContentSwitches;
 
 /**
@@ -191,6 +192,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=FR")
+    @RetryOnFailure
     public void testLocalFRNumbers() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_local.html");

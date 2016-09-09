@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -116,6 +117,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     // of them gets removed.
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
+    @RetryOnFailure
     public void testRemovingTransientObjectHolders() throws Throwable {
         class Test {
             private Object mInner = new Object();
@@ -174,6 +176,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     @CommandLineFlags.Add("js-flags=--expose-gc")
+    @RetryOnFailure
     public void testHolderFrame() throws Throwable {
         class Test {
             WeakReference<Object> mWeakRefForInner;

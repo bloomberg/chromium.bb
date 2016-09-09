@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_shell.ShellMojoTestUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -117,6 +118,7 @@ public class InterfaceRegistryTest extends ContentShellTestBase {
      * Verifies that remote interface can be requested and works.
      */
     @SmallTest
+    @RetryOnFailure
     public void testGetInterface() {
         Pair<InterfaceRegistry, InterfaceProvider> registryAndProvider =
                 ShellMojoTestUtils.createInterfaceRegistryAndProvider(mNativeTestEnvironment);

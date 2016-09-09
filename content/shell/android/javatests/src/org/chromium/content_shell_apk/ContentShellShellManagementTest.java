@@ -7,6 +7,7 @@ package org.chromium.content_shell_apk;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_shell.Shell;
 
@@ -24,6 +25,7 @@ public class ContentShellShellManagementTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"Main"})
+    @RetryOnFailure
     public void testMultipleShellsLaunched() throws InterruptedException, ExecutionException {
         final ContentShellActivity activity = launchContentShellWithUrl(TEST_PAGE_1);
         assertEquals(TEST_PAGE_1, activity.getActiveShell().getContentViewCore()
