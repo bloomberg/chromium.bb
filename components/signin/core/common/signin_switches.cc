@@ -36,7 +36,7 @@ const char kExtensionsMultiAccount[] = "extensions-multi-account";
 const char kGoogleProfileInfo[] = "google-profile-info";
 
 const base::Feature kMaterialDesignUserManager {
-  "MaterialDesignUserManager", base::FEATURE_DISABLED_BY_DEFAULT
+  "MaterialDesignUserManager", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 // Enables or disables the material design desktop user menu.
