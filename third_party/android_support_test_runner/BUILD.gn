@@ -17,3 +17,7 @@ android_java_prebuilt("runner_java") {
 android_java_prebuilt("exposed_instrumentation_api_publish_java") {
   jar_path = "lib/exposed-instrumentation-api-publish-0.5-no-dep.jar"
 }
+
+android_aar_prebuilt("rules_java") {
+  aar_path = "lib/rules-0.5.aar"
+}

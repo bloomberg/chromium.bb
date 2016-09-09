@@ -7,10 +7,8 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-This static jar is part of Android Testing Support Library. It was needed for 
-Instrumentation Test Runner to be able to run Espresso test, in which the
-activity lifecycler monitoring provided by this jar file is needed by Espresso.
-IMPORTANT: There should only be one version of espresso library
-(crbug.com/622057)
+These static jars are part of Android Testing Support Library. They are needed
+for Android JUnit runner. IMPORTANT: There should only be one version of
+espresso library (crbug.com/622057)
 
 Local Modifications: None
