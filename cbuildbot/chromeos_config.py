@@ -2330,19 +2330,19 @@ def GetConfig():
   site_config.Add(
       'arm64-gcc-toolchain',
       _toolchain, _gcc_builder,
-      boards=['oak'],
+      boards=['elm'],
   )
 
   site_config.Add(
       'arm64-llvm-toolchain',
       _toolchain, _llvm_builder,
-      boards=['oak'],
+      boards=['elm'],
   )
 
   site_config.Add(
       'arm64-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
-      boards=['oak'],
+      boards=['elm'],
   )
 
   ### Master release config.

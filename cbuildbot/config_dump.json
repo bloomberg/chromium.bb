@@ -2405,7 +2405,7 @@
         "_template": "toolchain",
         "active_waterfall": "chromeos",
         "boards": [
-            "oak"
+            "elm"
         ],
         "description": "Full release build with next minor GCC toolchain revision",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
@@ -2514,7 +2514,7 @@
         "_template": "toolchain",
         "active_waterfall": "chromeos",
         "boards": [
-            "oak"
+            "elm"
         ],
         "description": "Full release build with LLVM (next) toolchain",
         "hw_tests": [
@@ -2539,7 +2539,7 @@
         "_template": "toolchain",
         "active_waterfall": "chromeos",
         "boards": [
-            "oak"
+            "elm"
         ],
         "description": "Full release build with LLVM toolchain",
         "hw_tests": [
