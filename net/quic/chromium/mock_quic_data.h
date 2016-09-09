@@ -31,7 +31,7 @@ class MockQuicData {
   // synchronously or asynchronously based on |mode|.
   void AddRead(IoMode mode, int rv);
 
-  // Adds an asynchronous write at the next sequence number which will write
+  // Adds a synchronous write at the next sequence number which will write
   // |packet|.
   void AddWrite(std::unique_ptr<QuicEncryptedPacket> packet);
 
