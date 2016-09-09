@@ -127,7 +127,7 @@ class PluginDataRemoverImpl::Context
     SignalDone();
   }
 
-  bool OffTheRecord() override { return false; }
+  bool Incognito() override { return false; }
 
   // PpapiPluginProcessHost::BrokerClient implementation.
   void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,

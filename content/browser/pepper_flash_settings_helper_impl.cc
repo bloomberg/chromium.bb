@@ -65,7 +65,7 @@ void PepperFlashSettingsHelperImpl::OnPpapiChannelOpened(
   Release();
 }
 
-bool PepperFlashSettingsHelperImpl::OffTheRecord() {
+bool PepperFlashSettingsHelperImpl::Incognito() {
   return false;
 }
 

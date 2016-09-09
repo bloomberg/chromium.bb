@@ -51,8 +51,8 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
         base::ProcessId plugin_pid,
         int plugin_child_id) = 0;
 
-    // Returns true if the current connection is off-the-record.
-    virtual bool OffTheRecord() = 0;
+    // Returns true if the current connection is incognito.
+    virtual bool Incognito() = 0;
 
    protected:
     virtual ~Client() {}
