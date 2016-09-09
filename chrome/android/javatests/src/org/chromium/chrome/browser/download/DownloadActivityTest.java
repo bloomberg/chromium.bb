@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.download.ui.DownloadItemView;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -217,43 +218,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         });
 
         // Select the first two items.
-        ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(1);
-        assertTrue(mostRecentHolder instanceof DownloadHistoryItemViewHolder);
-        final DownloadItemView firstItemView =
-                ((DownloadHistoryItemViewHolder) mostRecentHolder).getItemView();
-
-        ViewHolder nextMostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(2);
-        assertTrue(nextMostRecentHolder instanceof DownloadHistoryItemViewHolder);
-        final DownloadItemView secondItemView =
-                ((DownloadHistoryItemViewHolder) nextMostRecentHolder).getItemView();
-
-        assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
-        int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
-        assertEquals(View.VISIBLE, getActivity().findViewById(R.id.close_menu_id).getVisibility());
-        assertEquals(View.GONE,
-                getActivity().findViewById(R.id.selection_mode_number).getVisibility());
-        assertNull(getActivity().findViewById(R.id.selection_mode_share_menu_id));
-        assertNull(getActivity().findViewById(R.id.selection_mode_delete_menu_id));
-        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                firstItemView.performLongClick();
-                secondItemView.performLongClick();
-            }
-        });
-
-        // The toolbar should flip states to allow doing things with the selected items.
-        mAdapterObserver.onSelectionCallback.waitForCallback(callCount, 2);
-        assertNull(getActivity().findViewById(R.id.close_menu_id));
-        assertEquals(View.VISIBLE,
-                getActivity().findViewById(R.id.selection_mode_number).getVisibility());
-        assertEquals(View.VISIBLE,
-                getActivity().findViewById(R.id.selection_mode_share_menu_id).getVisibility());
-        assertEquals(View.VISIBLE,
-                getActivity().findViewById(R.id.selection_mode_delete_menu_id).getVisibility());
-        assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        toggleItemSelection(1);
+        toggleItemSelection(2);
 
         // Click the delete button, which should delete the items and reset the toolbar.
         assertEquals(11, mAdapter.getItemCount());
@@ -276,6 +242,126 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(8, mAdapter.getItemCount());
         assertEquals("0.00 GB used", mSpaceUsedDisplay.getText());
+    }
+
+    @MediumTest
+    public void testShareFiles() throws Exception {
+        // Adapter positions:
+        // 0 = date
+        // 1 = download item #6
+        // 2 = offline page #3
+        // 3 = date
+        // 4 = download item #3
+        // 5 = download item #4
+        // 6 = download item #5
+        // 7 = date
+        // 8 = download item #0
+        // 9 = download item #1
+        // 10 = download item #2
+
+        // Select an image, download item #6.
+        toggleItemSelection(1);
+        Intent shareIntent = mUi.createShareIntent();
+        assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
+        assertEquals("Incorrect intent mime type", "image/png", shareIntent.getType());
+        assertNotNull("Intent expected to have stream",
+                shareIntent.getExtras().get(Intent.EXTRA_STREAM));
+        assertNull("Intent not expected to have parcelable ArrayList",
+                shareIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM));
+
+        // Scroll to ensure the item at position 8 is visible.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mRecyclerView.scrollToPosition(8);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+
+        // Select another image, download item #0.
+        toggleItemSelection(8);
+        shareIntent = mUi.createShareIntent();
+        assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
+                shareIntent.getAction());
+        assertEquals("Incorrect intent mime type", "image/*", shareIntent.getType());
+        assertEquals("Intent expected to have parcelable ArrayList",
+                2, shareIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM).size());
+
+        // Scroll to ensure the item at position 5 is visible.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mRecyclerView.scrollToPosition(5);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+
+        // Select non-image item, download item #4.
+        toggleItemSelection(5);
+        shareIntent = mUi.createShareIntent();
+        assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
+                shareIntent.getAction());
+        assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
+        assertEquals("Intent expected to have parcelable ArrayList",
+                3, shareIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM).size());
+
+        // Scroll to ensure the item at position 2 is visible.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mRecyclerView.scrollToPosition(2);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+
+        // Select an offline page #3.
+        toggleItemSelection(2);
+        shareIntent = mUi.createShareIntent();
+        assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
+                shareIntent.getAction());
+        assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
+        assertEquals("Intent expected to have parcelable ArrayList",
+                3, shareIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM).size());
+        assertEquals("Intent expected to have plain text for offline page URL",
+                "https://thangs.com",
+                IntentUtils.safeGetStringExtra(shareIntent, Intent.EXTRA_TEXT));
+    }
+
+    @MediumTest
+    public void testToggleSelection() throws Exception {
+        // The selection toolbar should not be showing.
+        assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
+        assertEquals(View.VISIBLE, getActivity().findViewById(R.id.close_menu_id).getVisibility());
+        assertEquals(View.GONE,
+                getActivity().findViewById(R.id.selection_mode_number).getVisibility());
+        assertNull(getActivity().findViewById(R.id.selection_mode_share_menu_id));
+        assertNull(getActivity().findViewById(R.id.selection_mode_delete_menu_id));
+        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+
+        // Select an item.
+        toggleItemSelection(1);
+
+        // The toolbar should flip states to allow doing things with the selected items.
+        assertNull(getActivity().findViewById(R.id.close_menu_id));
+        assertEquals(View.VISIBLE,
+                getActivity().findViewById(R.id.selection_mode_number).getVisibility());
+        assertEquals(View.VISIBLE,
+                getActivity().findViewById(R.id.selection_mode_share_menu_id).getVisibility());
+        assertEquals(View.VISIBLE,
+                getActivity().findViewById(R.id.selection_mode_delete_menu_id).getVisibility());
+        assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+
+        // Deselect the same item.
+        toggleItemSelection(1);
+
+        // The toolbar should flip back.
+        assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
+        assertEquals(View.VISIBLE, getActivity().findViewById(R.id.close_menu_id).getVisibility());
+        assertEquals(View.GONE,
+                getActivity().findViewById(R.id.selection_mode_number).getVisibility());
+        assertNull(getActivity().findViewById(R.id.selection_mode_share_menu_id));
+        assertNull(getActivity().findViewById(R.id.selection_mode_delete_menu_id));
+        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
     }
 
     private DownloadActivity startDownloadActivity() throws Exception {
@@ -318,5 +404,21 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
             }
         });
         mAdapterObserver.onChangedCallback.waitForCallback(previousCount);
+    }
+
+    private void toggleItemSelection(int position) throws Exception {
+        int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
+        ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(position);
+        assertTrue(mostRecentHolder instanceof DownloadHistoryItemViewHolder);
+        final DownloadItemView itemView =
+                ((DownloadHistoryItemViewHolder) mostRecentHolder).getItemView();
+
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                itemView.performLongClick();
+            }
+        });
+        mAdapterObserver.onSelectionCallback.waitForCallback(callCount, 1);
     }
 }

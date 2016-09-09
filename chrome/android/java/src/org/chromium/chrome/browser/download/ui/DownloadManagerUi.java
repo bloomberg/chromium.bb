@@ -355,6 +355,23 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 mBackendProvider.getSelectionDelegate().getSelectedItems();
         assert selectedItems.size() > 0;
 
+        mActivity.startActivity(Intent.createChooser(createShareIntent(),
+                mActivity.getString(R.string.share_link_chooser_title)));
+
+        // TODO(twellington): ideally the intent chooser would be started with
+        //                    startActivityForResult() and the selection would only be cleared after
+        //                    receiving an OK response. See crbug.com/638916.
+        mBackendProvider.getSelectionDelegate().clearSelection();
+    }
+
+    /**
+     * @return An Intent to share the selected items.
+     */
+    @VisibleForTesting
+    public Intent createShareIntent() {
+        List<DownloadHistoryItemWrapper> selectedItems =
+                mBackendProvider.getSelectionDelegate().getSelectedItems();
+
         Intent shareIntent = new Intent();
         String intentAction;
         ArrayList<Uri> itemUris = new ArrayList<Uri>();
@@ -437,15 +454,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         shareIntent.setAction(intentAction);
         shareIntent.setType(intentMimeType);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mActivity.startActivity(Intent.createChooser(shareIntent,
-                mActivity.getString(R.string.share_link_chooser_title)));
-
-        // TODO(twellington): ideally the intent chooser would be started with
-        //                    startActivityForResult() and the selection would only be cleared after
-        //                    receiving an OK response. See crbug.com/638916.
-        mBackendProvider.getSelectionDelegate().clearSelection();
 
         recordShareHistograms(selectedItems.size(), selectedItemsFilterType);
+
+        return shareIntent;
     }
 
     private Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
