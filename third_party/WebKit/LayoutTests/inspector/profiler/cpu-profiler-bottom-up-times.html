@@ -22,8 +22,7 @@ function test()
                         "url": "a.js",
                         "lineNumber": 0
                     },
-                    "hitCount": 350,
-                    "children": [1, 2, 5]
+                    "hitCount": 350
                 },
                 {
                     "id": 1,
@@ -35,7 +34,7 @@ function test()
                         "lineNumber": 1
                     },
                     "hitCount": 1000,
-                    "children": []
+                    "parent": 0
                 },
                 {
                     "id": 2,
@@ -47,7 +46,7 @@ function test()
                         "lineNumber": 4642
                     },
                     "hitCount": 250,
-                    "children": [3]
+                    "parent": 0
                 },
                 {
                     "id": 3,
@@ -59,7 +58,7 @@ function test()
                         "lineNumber": 525
                     },
                     "hitCount": 100,
-                    "children": [4]
+                    "parent": 2
                 },
                 {
                     "id": 4,
@@ -71,7 +70,7 @@ function test()
                         "lineNumber": 425
                     },
                     "hitCount": 20,
-                    "children": []
+                    "parent": 3
                 },
                 {
                     "id": 5,
@@ -83,7 +82,7 @@ function test()
                         "lineNumber": 4662
                     },
                     "hitCount": 150,
-                    "children": [6]
+                    "parent": 0
                 },
                 {
                     "id": 6,
@@ -95,7 +94,7 @@ function test()
                         "lineNumber": 525
                     },
                     "hitCount": 100,
-                    "children": [7]
+                    "parent": 5
                 },
                 {
                     "id": 7,
@@ -107,7 +106,7 @@ function test()
                         "lineNumber": 425
                     },
                     "hitCount": 30,
-                    "children": []
+                    "parent": 6
                 }
             ],
             "startTime": 0,
