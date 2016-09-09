@@ -63,6 +63,10 @@ _default_flags = [
   'c++',
 ]
 
+_extension_flags = {
+  '.m': ['-x', 'objective-c'],
+  '.mm': ['-x', 'objective-c++'],
+}
 
 def PathExists(*args):
   return os.path.exists(os.path.join(*args))
@@ -348,6 +352,7 @@ def FlagsForFile(filename):
       'flags': (List of Strings) Command line flags.
       'do_cache': (Boolean) True if the result should be cached.
   """
+  ext = os.path.splitext(filename)[1]
   abs_filename = os.path.abspath(filename)
   chrome_root = FindChromeSrcFromFilename(abs_filename)
   clang_flags = GetClangOptionsFromNinjaForFilename(chrome_root, abs_filename)
@@ -357,7 +362,7 @@ def FlagsForFile(filename):
   # determine the flags again.
   should_cache_flags_for_file = bool(clang_flags)
 
-  final_flags = _default_flags + clang_flags
+  final_flags = _default_flags + _extension_flags.get(ext, []) + clang_flags
 
   return {
     'flags': final_flags,

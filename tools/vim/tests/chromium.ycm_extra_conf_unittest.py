@@ -53,6 +53,13 @@ def CreateFile(path,
     statinfo = os.stat(path)
     os.chmod(path, statinfo.st_mode | stat.S_IXUSR)
 
+def GetLastLangFlag(flags):
+  lastLang = None
+  for i, flag in enumerate(flags):
+      if flag =='-x':
+        lastLang = flags[i+1]
+  return lastLang
+
 class Chromium_ycmExtraConfTest(unittest.TestCase):
 
   def SetUpFakeChromeTreeBelowPath(self):
@@ -224,6 +231,18 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '/mac.sdk',
         '-I[OUT]/tag-default'
         ])
+
+  def testGetFlagsForFileForUnknownObjcFile(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'nonexistent.m'))
+    self.assertTrue(result)
+    self.assertEqual(GetLastLangFlag(result['flags']), 'objective-c')
+
+  def testGetFlagsForFileForUnknownObjcppFile(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'nonexistent.mm'))
+    self.assertTrue(result)
+    self.assertEqual(GetLastLangFlag(result['flags']), 'objective-c++')
 
   def testGetFlagsForFileForUnknownHeaderFile(self):
     result = self.ycm_extra_conf.FlagsForFile(
