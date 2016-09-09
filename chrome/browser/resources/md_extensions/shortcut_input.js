@@ -146,6 +146,16 @@ cr.define('extensions', function() {
       return this.shortcut || this.i18n('shortcutNotSet');
     },
 
+    /**
+     * @return {boolean} Whether the clear button is hidden.
+     * @private
+     */
+    computeClearHidden_: function() {
+      // We don't want to show the clear button if the input is currently
+      // capturing a new shortcut or if there is no shortcut to clear.
+      return this.capturing_ || !this.shortcut;
+    },
+
     /** @private */
     onClearTap_: function() {
       if (this.shortcut) {

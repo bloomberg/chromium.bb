@@ -26,6 +26,9 @@ cr.define('extension_shortcut_input_tests', function() {
         var field = input.$['input'];
         var fieldText = function() { return field.textContent.trim(); };
         expectEquals('Not set', fieldText());
+        var isClearVisible = extension_test_util.isVisible.bind(
+                                 null, input, '#clear', false);
+        expectFalse(isClearVisible());
 
         // Click the input. Capture should start.
         {
@@ -36,6 +39,7 @@ cr.define('extension_shortcut_input_tests', function() {
         }
         expectEquals('Type a shortcut', fieldText());
         expectTrue(input.capturing_);
+        expectFalse(isClearVisible());
 
         // Press ctrl.
         MockInteractions.keyDownOn(field, 17, ['ctrl']);
@@ -71,6 +75,7 @@ cr.define('extension_shortcut_input_tests', function() {
         expectEquals('Ctrl+A', fieldText());
         expectFalse(input.capturing_);
         expectEquals('Ctrl+A', input.shortcut);
+        expectTrue(isClearVisible());
 
         {
           // Test clearing the shortcut.
@@ -83,6 +88,7 @@ cr.define('extension_shortcut_input_tests', function() {
           updatedListener.verify();
         }
         expectEquals('', input.shortcut);
+        expectFalse(isClearVisible());
 
         MockInteractions.tap(field);
         {

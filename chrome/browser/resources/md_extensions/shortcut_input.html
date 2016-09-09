@@ -8,11 +8,17 @@
 
 <dom-module id="extensions-shortcut-input">
   <template>
+    <style>
+      [hidden] {
+        display: none !important;
+      }
+    </style>
     <div id="main">
       <span id="input" tabindex="0">
         [[computeText_(capturing_, shortcut, pendingShortcut_)]]
       </span>
-      <paper-icon-button id="clear" icon="clear" on-tap="onClearTap_">
+      <paper-icon-button id="clear" icon="clear" on-tap="onClearTap_"
+          hidden$="[[computeClearHidden_(capturing_, shortcut)]]">
       </paper-icon-button>
     </div>
   </template>
