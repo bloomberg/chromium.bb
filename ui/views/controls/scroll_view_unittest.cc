@@ -242,6 +242,23 @@ TEST(ScrollViewTest, ViewportSizedToFit) {
   EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
 }
 
+// Verifies the viewport and content is sized to fit the available space for
+// bounded scroll view.
+TEST(ScrollViewTest, BoundedViewportSizedToFit) {
+  ScrollView scroll_view;
+  View* contents = new View;
+  scroll_view.SetContents(contents);
+  scroll_view.ClipHeightTo(100, 200);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  scroll_view.SetBorder(Border::CreateSolidBorder(2, 0));
+  scroll_view.Layout();
+  EXPECT_EQ("2,2 96x96", contents->parent()->bounds().ToString());
+
+  // Make sure the width of |contents| is set properly not to overflow the
+  // viewport.
+  EXPECT_EQ(96, contents->width());
+}
+
 // Verifies the scrollbars are added as necessary.
 // If on Mac, test the non-overlay scrollbars.
 TEST(ScrollViewTest, ScrollBars) {

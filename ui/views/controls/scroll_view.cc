@@ -294,8 +294,9 @@ int ScrollView::GetHeightForWidth(int width) const {
 }
 
 void ScrollView::Layout() {
+  gfx::Rect available_rect = GetContentsBounds();
   if (is_bounded()) {
-    int content_width = width();
+    int content_width = available_rect.width();
     int content_height = contents()->GetHeightForWidth(content_width);
     if (content_height > height()) {
       content_width = std::max(content_width - GetScrollBarWidth(), 0);
@@ -313,7 +314,7 @@ void ScrollView::Layout() {
   // this default behavior, the inner view has to calculate the available space,
   // used ComputeScrollBarsVisibility() to use the same calculation that is done
   // here and sets its bound to fit within.
-  gfx::Rect viewport_bounds = GetContentsBounds();
+  gfx::Rect viewport_bounds = available_rect;
   const int contents_x = viewport_bounds.x();
   const int contents_y = viewport_bounds.y();
   if (viewport_bounds.IsEmpty()) {
@@ -591,6 +592,12 @@ void ScrollView::ComputeScrollBarsVisibility(const gfx::Size& vp_size,
                                              const gfx::Size& content_size,
                                              bool* horiz_is_shown,
                                              bool* vert_is_shown) const {
+  if (hide_horizontal_scrollbar_) {
+    *horiz_is_shown = false;
+    *vert_is_shown = content_size.height() > vp_size.height();
+    return;
+  }
+
   // Try to fit both ways first, then try vertical bar only, then horizontal
   // bar only, then defaults to both shown.
   if (content_size.width() <= vp_size.width() &&
@@ -607,9 +614,6 @@ void ScrollView::ComputeScrollBarsVisibility(const gfx::Size& vp_size,
     *horiz_is_shown = true;
     *vert_is_shown = true;
   }
-
-  if (hide_horizontal_scrollbar_)
-    *horiz_is_shown = false;
 }
 
 // Make sure that a single scrollbar is created and visible as needed
