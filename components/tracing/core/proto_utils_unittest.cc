@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
@@ -14,22 +15,65 @@ namespace v2 {
 namespace proto {
 namespace {
 
-template <typename T>
-bool CheckWriteVarInt(const char* expected, size_t length, T value) {
-  uint8_t buf[32];
-  uint8_t* res = WriteVarInt<T>(value, buf);
-  if (static_cast<size_t>(res - buf) != length)
-    return false;
-  return memcmp(expected, buf, length) == 0;
-}
+struct VarIntExpectation {
+  const char* encoded;
+  size_t encoded_size;
+  uint64_t int_value;
+};
 
-#define EXPECT_VARINT32_EQ(expected, expected_length, value) \
-  EXPECT_PRED3(CheckWriteVarInt<uint32_t>, expected, expected_length, value)
+const VarIntExpectation kVarIntExpectations[] = {
+    {"\x00", 1, 0},
+    {"\x01", 1, 0x1},
+    {"\x7f", 1, 0x7F},
+    {"\xFF\x01", 2, 0xFF},
+    {"\xFF\x7F", 2, 0x3FFF},
+    {"\x80\x80\x01", 3, 0x4000},
+    {"\xFF\xFF\x7F", 3, 0x1FFFFF},
+    {"\x80\x80\x80\x01", 4, 0x200000},
+    {"\xFF\xFF\xFF\x7F", 4, 0xFFFFFFF},
+    {"\x80\x80\x80\x80\x01", 5, 0x10000000},
+    {"\xFF\xFF\xFF\xFF\x0F", 5, 0xFFFFFFFF},
+    {"\x80\x80\x80\x80\x10", 5, 0x100000000},
+    {"\xFF\xFF\xFF\xFF\x7F", 5, 0x7FFFFFFFF},
+    {"\x80\x80\x80\x80\x80\x01", 6, 0x800000000},
+    {"\xFF\xFF\xFF\xFF\xFF\x7F", 6, 0x3FFFFFFFFFF},
+    {"\x80\x80\x80\x80\x80\x80\x01", 7, 0x40000000000},
+    {"\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 7, 0x1FFFFFFFFFFFF},
+    {"\x80\x80\x80\x80\x80\x80\x80\x01", 8, 0x2000000000000},
+    {"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 8, 0xFFFFFFFFFFFFFF},
+    {"\x80\x80\x80\x80\x80\x80\x80\x80\x01", 9, 0x100000000000000},
+    {"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 9, 0x7FFFFFFFFFFFFFFF},
+    {"\x80\x80\x80\x80\x80\x80\x80\x80\x80\x01", 10, 0x8000000000000000},
+    {"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01", 10, 0xFFFFFFFFFFFFFFFF},
+};
 
-#define EXPECT_VARINT64_EQ(expected, expected_length, value) \
-  EXPECT_PRED3(CheckWriteVarInt<uint64_t>, expected, expected_length, value)
+struct FieldExpectation {
+  const char* encoded;
+  size_t encoded_size;
+  uint32_t id;
+  FieldType type;
+  uint64_t int_value;
+};
 
-TEST(ProtoUtilsTest, Serialization) {
+const FieldExpectation kFieldExpectations[] = {
+    {"\x08\x00", 2, 1, kFieldTypeVarInt, 0},
+    {"\x08\x42", 2, 1, kFieldTypeVarInt, 0x42},
+    {"\xF8\x07\x42", 3, 127, kFieldTypeVarInt, 0x42},
+    {"\x90\x4D\xFF\xFF\xFF\xFF\x0F", 7, 1234, kFieldTypeVarInt, 0xFFFFFFFF},
+    {"\x7D\x42\x00\x00\x00", 5, 15, kFieldTypeFixed32, 0x42},
+    {"\x95\x4D\x78\x56\x34\x12", 6, 1234, kFieldTypeFixed32, 0x12345678},
+    {"\x79\x42\x00\x00\x00\x00\x00\x00\x00", 9, 15, kFieldTypeFixed64, 0x42},
+    {"\x91\x4D\x08\x07\x06\x05\x04\x03\x02\x01", 10, 1234, kFieldTypeFixed64,
+     0x0102030405060708},
+    {"\x0A\x00", 2, 1, kFieldTypeLengthDelimited, 0},
+    {"\x0A\x04|abc", 6, 1, kFieldTypeLengthDelimited, 4},
+    {"\x92\x4D\x04|abc", 7, 1234, kFieldTypeLengthDelimited, 4},
+    {"\x92\x4D\x83\x01|abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcd"
+     "efghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx",
+     135, 1234, kFieldTypeLengthDelimited, 131},
+};
+
+TEST(ProtoUtilsTest, FieldPreambleEncoding) {
   // According to C++ standard, right shift of negative value has
   // implementation-defined resulting value.
   if ((static_cast<int32_t>(0x80000000u) >> 31) != -1)
@@ -59,7 +103,9 @@ TEST(ProtoUtilsTest, Serialization) {
   EXPECT_EQ(0x020001u, MakeTagFixed<int64_t>(0x4000));
   EXPECT_EQ(0x020002u, MakeTagLengthDelimited(0x4000));
   EXPECT_EQ(0x020005u, MakeTagFixed<int32_t>(0x4000));
+}
 
+TEST(ProtoUtilsTest, ZigZagEncoding) {
   EXPECT_EQ(0u, ZigZagEncode(0));
   EXPECT_EQ(1u, ZigZagEncode(-1));
   EXPECT_EQ(2u, ZigZagEncode(1));
@@ -70,48 +116,25 @@ TEST(ProtoUtilsTest, Serialization) {
             ZigZagEncode(std::numeric_limits<int32_t>::min()));
   EXPECT_EQ(std::numeric_limits<uint64_t>::max(),
             ZigZagEncode(std::numeric_limits<int64_t>::min()));
+}
 
-  EXPECT_VARINT32_EQ("\x00", 1, 0);
-  EXPECT_VARINT32_EQ("\x00", 1, 0);
-  EXPECT_VARINT32_EQ("\x01", 1, 0x1);
-  EXPECT_VARINT32_EQ("\x7f", 1, 0x7F);
-  EXPECT_VARINT32_EQ("\xFF\x01", 2, 0xFF);
-  EXPECT_VARINT32_EQ("\xFF\x7F", 2, 0x3FFF);
-  EXPECT_VARINT32_EQ("\x80\x80\x01", 3, 0x4000);
-  EXPECT_VARINT32_EQ("\xFF\xFF\x7F", 3, 0x1FFFFF);
-  EXPECT_VARINT32_EQ("\x80\x80\x80\x01", 4, 0x200000);
-  EXPECT_VARINT32_EQ("\xFF\xFF\xFF\x7F", 4, 0xFFFFFFF);
-  EXPECT_VARINT32_EQ("\x80\x80\x80\x80\x01", 5, 0x10000000);
-  EXPECT_VARINT32_EQ("\xFF\xFF\xFF\xFF\x0F", 5, 0xFFFFFFFF);
+TEST(ProtoUtilsTest, VarIntEncoding) {
+  for (size_t i = 0; i < arraysize(kVarIntExpectations); ++i) {
+    const VarIntExpectation& exp = kVarIntExpectations[i];
+    uint8_t buf[32];
+    uint8_t* res = WriteVarInt<uint64_t>(exp.int_value, buf);
+    ASSERT_EQ(exp.encoded_size, static_cast<size_t>(res - buf));
+    ASSERT_EQ(0, memcmp(buf, exp.encoded, exp.encoded_size));
 
-  EXPECT_VARINT64_EQ("\x00", 1, 0);
-  EXPECT_VARINT64_EQ("\x01", 1, 0x1);
-  EXPECT_VARINT64_EQ("\x7f", 1, 0x7F);
-  EXPECT_VARINT64_EQ("\xFF\x01", 2, 0xFF);
-  EXPECT_VARINT64_EQ("\xFF\x7F", 2, 0x3FFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x01", 3, 0x4000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\x7F", 3, 0x1FFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x01", 4, 0x200000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\x7F", 4, 0xFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x01", 5, 0x10000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\x0F", 5, 0xFFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x10", 5, 0x100000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\x7F", 5, 0x7FFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x80\x01", 6, 0x800000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\x7F", 6, 0x3FFFFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x80\x80\x01", 7, 0x40000000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 7, 0x1FFFFFFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x80\x80\x80\x01", 8, 0x2000000000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 8, 0xFFFFFFFFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x80\x80\x80\x80\x01", 9,
-                     0x100000000000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 9,
-                     0x7FFFFFFFFFFFFFFF);
-  EXPECT_VARINT64_EQ("\x80\x80\x80\x80\x80\x80\x80\x80\x80\x01", 10,
-                     0x8000000000000000);
-  EXPECT_VARINT64_EQ("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01", 10,
-                     0xFFFFFFFFFFFFFFFF);
+    if (exp.int_value <= std::numeric_limits<uint32_t>::max()) {
+      uint8_t* res = WriteVarInt<uint32_t>(exp.int_value, buf);
+      ASSERT_EQ(exp.encoded_size, static_cast<size_t>(res - buf));
+      ASSERT_EQ(0, memcmp(buf, exp.encoded, exp.encoded_size));
+    }
+  }
+}
 
+TEST(ProtoUtilsTest, RedundantVarIntEncoding) {
   uint8_t buf[kMessageLengthFieldSize];
 
   WriteRedundantVarInt(0, buf);
@@ -129,6 +152,38 @@ TEST(ProtoUtilsTest, Serialization) {
   // Largest allowed length.
   WriteRedundantVarInt(0x0FFFFFFF, buf);
   EXPECT_EQ(0, memcmp("\xFF\xFF\xFF\x7F", buf, sizeof(buf)));
+}
+
+TEST(ProtoUtilsTest, VarIntDecoding) {
+  for (size_t i = 0; i < arraysize(kVarIntExpectations); ++i) {
+    const VarIntExpectation& exp = kVarIntExpectations[i];
+    uint64_t value = std::numeric_limits<uint64_t>::max();
+    const uint8_t* res = ParseVarInt(
+        reinterpret_cast<const uint8_t*>(exp.encoded),
+        reinterpret_cast<const uint8_t*>(exp.encoded + exp.encoded_size),
+        &value);
+    ASSERT_EQ(reinterpret_cast<const void*>(exp.encoded + exp.encoded_size),
+              reinterpret_cast<const void*>(res));
+    ASSERT_EQ(exp.int_value, value);
+  }
+}
+
+TEST(ProtoUtilsTest, FieldDecoding) {
+  for (size_t i = 0; i < arraysize(kFieldExpectations); ++i) {
+    const FieldExpectation& exp = kFieldExpectations[i];
+    FieldType field_type = kFieldTypeVarInt;
+    uint32_t field_id = std::numeric_limits<uint32_t>::max();
+    uint64_t field_intvalue = std::numeric_limits<uint64_t>::max();
+    const uint8_t* res = ParseField(
+        reinterpret_cast<const uint8_t*>(exp.encoded),
+        reinterpret_cast<const uint8_t*>(exp.encoded + exp.encoded_size),
+        &field_id, &field_type, &field_intvalue);
+    ASSERT_EQ(reinterpret_cast<const void*>(exp.encoded + exp.encoded_size),
+              reinterpret_cast<const void*>(res));
+    ASSERT_EQ(exp.id, field_id);
+    ASSERT_EQ(exp.type, field_type);
+    ASSERT_EQ(exp.int_value, field_intvalue);
+  }
 }
 
 }  // namespace

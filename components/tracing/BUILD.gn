@@ -16,6 +16,7 @@ component("tracing") {
     "common/process_metrics_memory_dump_provider.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
+    "core/proto_utils.cc",
     "core/proto_utils.h",
     "core/proto_zero_message.cc",
     "core/proto_zero_message.h",

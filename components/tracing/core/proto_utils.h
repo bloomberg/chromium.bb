@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "base/logging.h"
+#include "components/tracing/tracing_export.h"
 
 namespace tracing {
 namespace v2 {
@@ -17,7 +18,7 @@ namespace proto {
 
 // See https://developers.google.com/protocol-buffers/docs/encoding wire types.
 
-enum : uint32_t {
+enum FieldType : uint32_t {
   kFieldTypeVarInt = 0,
   kFieldTypeFixed64 = 1,
   kFieldTypeLengthDelimited = 2,
@@ -153,6 +154,26 @@ void StaticAssertSingleBytePreamble() {
   static_assert(field_id < 16,
                 "Proto field id too big to fit in a single byte preamble");
 };
+
+// Parses a VarInt from the encoded buffer [start, end). |end| is STL-style and
+// points one byte past the end of buffer.
+// The parsed int value is stored in the output arg |value|. Returns a pointer
+// to the next unconsumed byte (so start < retval <= end).
+TRACING_EXPORT const uint8_t* ParseVarInt(const uint8_t* start,
+                                          const uint8_t* end,
+                                          uint64_t* value);
+
+// Parses a protobuf field and computes its id, type and value.
+// Returns a pointer to the next unconsumed byte (|start| < retval <= end) that
+// is either the beginning of the next field or the end of the parent message.
+// In the case of a kFieldTypeLengthDelimited field, |field_intvalue| will store
+// the length of the payload (either a string or a nested message). In this
+// case, the start of the payload will be at (return value) - |field_intvalue|.
+TRACING_EXPORT const uint8_t* ParseField(const uint8_t* start,
+                                         const uint8_t* end,
+                                         uint32_t* field_id,
+                                         FieldType* field_type,
+                                         uint64_t* field_intvalue);
 
 }  // namespace proto
 }  // namespace v2
