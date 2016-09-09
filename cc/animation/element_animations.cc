@@ -135,7 +135,7 @@ void ElementAnimations::PushPropertiesTo(
     return;
   needs_push_properties_ = false;
 
-  if (!has_any_animation() && !element_animations_impl->has_any_animation())
+  if (!HasAnyAnimation() && !element_animations_impl->HasAnyAnimation())
     return;
   MarkAbortedAnimationsForDeletion(element_animations_impl.get());
   PurgeAnimationsMarkedForDeletion();
@@ -1208,6 +1208,10 @@ bool ElementAnimations::HasActiveAnimation() const {
       return true;
   }
   return false;
+}
+
+bool ElementAnimations::HasAnyAnimation() const {
+  return !animations_.empty();
 }
 
 bool ElementAnimations::IsPotentiallyAnimatingProperty(

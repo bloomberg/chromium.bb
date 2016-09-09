@@ -99,7 +99,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   bool HasActiveAnimation() const;
 
   // Returns true if there are any animations at all to process.
-  bool has_any_animation() const { return !animations_.empty(); }
+  bool HasAnyAnimation() const;
 
   // Returns true if there is an animation that is either currently animating
   // the given property or scheduled to animate this property in the future, and

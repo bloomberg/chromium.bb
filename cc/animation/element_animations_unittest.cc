@@ -518,8 +518,8 @@ TEST_F(ElementAnimationsTest, Activation) {
 
   animations->PushPropertiesTo(animations_impl.get());
   animations_impl->ActivateAnimations();
-  EXPECT_FALSE(animations->has_any_animation());
-  EXPECT_FALSE(animations_impl->has_any_animation());
+  EXPECT_FALSE(animations->HasAnyAnimation());
+  EXPECT_FALSE(animations_impl->HasAnyAnimation());
   EXPECT_EQ(0u, host->active_element_animations_for_testing().size());
   EXPECT_EQ(0u, host_impl->active_element_animations_for_testing().size());
 }
@@ -710,8 +710,8 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   // should have deleted the animation even though activation has not occurred,
   // since the animation was already waiting for deletion when
   // PushPropertiesTo was called.
-  EXPECT_FALSE(animations->has_any_animation());
-  EXPECT_FALSE(animations_impl->has_any_animation());
+  EXPECT_FALSE(animations->HasAnyAnimation());
+  EXPECT_FALSE(animations_impl->HasAnyAnimation());
 }
 
 // Tests that transitioning opacity from 0 to 1 works as expected.
@@ -3514,7 +3514,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   animations_impl->ActivateAnimations();
 
   // Activation should cause the animation to be deleted.
-  EXPECT_FALSE(animations_impl->has_any_animation());
+  EXPECT_FALSE(animations_impl->HasAnyAnimation());
 }
 
 // Tests that an animation that affects only active elements won't block

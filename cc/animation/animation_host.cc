@@ -509,7 +509,7 @@ bool AnimationHost::AnimationStartScale(ElementId element_id,
 
 bool AnimationHost::HasAnyAnimation(ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations ? element_animations->has_any_animation() : false;
+  return element_animations ? element_animations->HasAnyAnimation() : false;
 }
 
 bool AnimationHost::HasActiveAnimationForTesting(ElementId element_id) const {

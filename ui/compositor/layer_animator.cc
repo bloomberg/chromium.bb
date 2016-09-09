@@ -219,7 +219,7 @@ void LayerAnimator::RemoveThreadedAnimation(int animation_id) {
 }
 
 bool LayerAnimator::HasPendingThreadedAnimationsForTesting() const {
-  return animation_player_->has_pending_animations_for_testing();
+  return animation_player_->has_any_animation();
 }
 
 cc::AnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting() const {

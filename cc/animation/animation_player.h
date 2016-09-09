@@ -88,10 +88,8 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
                                double animation_start_time,
                                std::unique_ptr<AnimationCurve> curve);
 
-  // Whether this player has animations waiting to get sent to ElementAnimations
-  bool has_pending_animations_for_testing() const {
-    return !animations_.empty();
-  }
+  // Returns true if there are any animations at all to process.
+  bool has_any_animation() const { return !animations_.empty(); }
 
   bool needs_push_properties() const { return needs_push_properties_; }
   void SetNeedsPushProperties();
