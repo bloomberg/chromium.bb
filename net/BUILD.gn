@@ -2028,3 +2028,15 @@ fuzzer_test("net_url_request_fuzzer") {
   ]
   dict = "data/fuzzer_dictionaries/net_url_request_fuzzer.dict"
 }
+
+fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
+  sources = [
+    "http/http_auth_challenge_tokenizer_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
