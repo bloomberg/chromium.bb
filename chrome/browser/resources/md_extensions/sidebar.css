@@ -13,9 +13,7 @@
 }
 
 #section-menu {
-  --paper-menu-background-color: {
-    transparent;
-  }
+  --paper-menu-background-color: transparent;
   --paper-menu-selected-item: {
     background-color: transparent;
     color: rgb(66, 133, 244);
