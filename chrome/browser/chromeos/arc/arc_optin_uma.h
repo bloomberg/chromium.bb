@@ -75,6 +75,10 @@ enum class ProvisioningResult : int {
   // ARC instance is stopped during the sign in procedure.
   ARC_STOPPED = 16,
 
+  // ARC instance did not report sign in status within a reasonable amount of
+  // time.
+  OVERALL_SIGN_IN_TIMEOUT = 17,
+
   // The size of this enum; keep last.
   SIZE,
 };

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
@@ -64,6 +65,11 @@ ash::ShelfDelegate* g_shelf_delegate_for_testing = nullptr;
 // The Android management check is disabled by default, it's used only for
 // testing.
 bool g_enable_check_android_management_for_testing = false;
+
+// Maximum amount of time we'll wait for ARC to finish booting up. Once this
+// timeout expires, keep ARC running in case the user wants to file feedback,
+// but present the UI to try again.
+constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
 
 const char kStateNotInitialized[] = "NOT_INITIALIZED";
 const char kStateStopped[] = "STOPPED";
@@ -229,10 +235,7 @@ void ArcAuthService::OnInstanceReady() {
 
 void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
-  if (waiting_for_reply_) {
-    // Using SERVICE_UNAVAILABLE instead of UNKNOWN_ERROR, since the latter
-    // causes this code to not try to stop ARC, so it would retry without the
-    // user noticing.
+  if (arc_sign_in_timer_.IsRunning()) {
     OnSignInFailedInternal(ProvisioningResult::ARC_STOPPED);
   }
 
@@ -317,7 +320,7 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK_EQ(state_, State::ACTIVE);
   DCHECK(!sign_in_time_.is_null());
 
-  waiting_for_reply_ = false;
+  arc_sign_in_timer_.Stop();
 
   if (!IsOptInVerificationDisabled() &&
       !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
@@ -344,7 +347,7 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   DCHECK_EQ(state_, State::ACTIVE);
   DCHECK(!sign_in_time_.is_null());
 
-  waiting_for_reply_ = false;
+  arc_sign_in_timer_.Stop();
 
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
                            IsAccountManaged(profile_));
@@ -391,8 +394,13 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED ||
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
-      result == ProvisioningResult::UNKNOWN_ERROR)
+      // OVERALL_SIGN_IN_TIMEOUT might be an indication that ARC believes it is
+      // fully setup, but Chrome does not.
+      result == ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT ||
+      // Just to be safe, remove data if we don't know the cause.
+      result == ProvisioningResult::UNKNOWN_ERROR) {
     RemoveArcData();
+  }
 
   // We'll delay shutting down the bridge in this case to allow people to send
   // feedback.
@@ -596,6 +604,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 }
 
 void ArcAuthService::ShutdownBridge() {
+  arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
   auth_callback_.Reset();
   android_management_checker_.reset();
@@ -675,12 +684,20 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   }
 
   sign_in_time_ = base::Time::Now();
+  VLOG(1) << "Starting ARC for first sign in.";
 
   SetUIPage(UIPage::START_PROGRESS, base::string16());
   ShutdownBridge();
   auth_code_ = auth_code;
-  waiting_for_reply_ = true;
+  arc_sign_in_timer_.Start(FROM_HERE, kArcSignInTimeout,
+                           base::Bind(&ArcAuthService::OnArcSignInTimeout,
+                                      weak_ptr_factory_.GetWeakPtr()));
   StartArc();
+}
+
+void ArcAuthService::OnArcSignInTimeout() {
+  LOG(ERROR) << "Timed out waiting for first sign in.";
+  OnSignInFailedInternal(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT);
 }
 
 void ArcAuthService::StartLso() {

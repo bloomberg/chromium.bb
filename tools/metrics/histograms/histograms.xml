@@ -69765,6 +69765,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="14" label="Cloud provision flow was timed out"/>
   <int value="15" label="Cloud provision flow reporeted internal error"/>
   <int value="16" label="ARC instance is stopped before complete provisioning"/>
+  <int value="17" label="Overall sign in timeout"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix" type="int">
