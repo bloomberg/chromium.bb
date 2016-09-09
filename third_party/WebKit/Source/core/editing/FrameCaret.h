@@ -34,6 +34,8 @@ namespace blink {
 
 class SelectionEditor;
 
+enum class CaretVisibility { Visible, Hidden };
+
 class CORE_EXPORT FrameCaret final : public CaretBase {
 public:
     FrameCaret(LocalFrame*, const SelectionEditor&);
@@ -49,7 +51,7 @@ public:
     void stopCaretBlinkTimer();
     void startBlinkCaret();
 
-    void setCaretVisibility(CaretVisibility) override;
+    void setCaretVisibility(CaretVisibility);
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
     // If |forceInvalidation| is true the caret's previous and new rectangles
@@ -88,6 +90,7 @@ private:
     // caret when it moves.
     Member<Node> m_previousCaretNode;
     LayoutRect m_previousCaretRect;
+    CaretVisibility m_caretVisibility;
     CaretVisibility m_previousCaretVisibility;
     Timer<FrameCaret> m_caretBlinkTimer;
     bool m_caretRectDirty : 1;

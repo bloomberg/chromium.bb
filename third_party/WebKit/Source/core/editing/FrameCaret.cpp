@@ -43,6 +43,7 @@ namespace blink {
 FrameCaret::FrameCaret(LocalFrame* frame, const SelectionEditor& selectionEditor)
     : m_selectionEditor(&selectionEditor)
     , m_frame(frame)
+    , m_caretVisibility(CaretVisibility::Hidden)
     , m_previousCaretVisibility(CaretVisibility::Hidden)
     , m_caretBlinkTimer(this, &FrameCaret::caretBlinkTimerFired)
     , m_caretRectDirty(true)
@@ -119,10 +120,10 @@ void FrameCaret::startBlinkCaret()
 
 void FrameCaret::setCaretVisibility(CaretVisibility visibility)
 {
-    if (getCaretVisibility() == visibility)
+    if (m_caretVisibility == visibility)
         return;
 
-    CaretBase::setCaretVisibility(visibility);
+    m_caretVisibility = visibility;
 
     updateAppearance();
 }
@@ -169,7 +170,7 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation)
         && !m_caretBlinkTimer.isActive()
         && newNode == m_previousCaretNode
         && newRect == m_previousCaretRect
-        && getCaretVisibility() == m_previousCaretVisibility)
+        && m_caretVisibility == m_previousCaretVisibility)
         return;
 
     LayoutViewItem view = m_frame->document()->layoutViewItem();
@@ -179,7 +180,7 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation)
         invalidateLocalCaretRect(newNode, newRect);
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
-    m_previousCaretVisibility = getCaretVisibility();
+    m_previousCaretVisibility = m_caretVisibility;
 }
 
 IntRect FrameCaret::absoluteCaretBounds()
@@ -214,6 +215,9 @@ void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor)
 
 void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
+    if (m_caretVisibility == CaretVisibility::Hidden)
+        return;
+
     if (!(isActive() && m_shouldPaintCaret))
         return;
 
@@ -250,7 +254,7 @@ void FrameCaret::documentDetached()
 
 bool FrameCaret::shouldBlinkCaret() const
 {
-    if (!caretIsVisible() || !isActive())
+    if (m_caretVisibility != CaretVisibility::Visible || !isActive())
         return false;
 
     if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
@@ -269,7 +273,7 @@ bool FrameCaret::shouldBlinkCaret() const
 
 void FrameCaret::caretBlinkTimerFired(TimerBase*)
 {
-    DCHECK(caretIsVisible());
+    DCHECK_EQ(m_caretVisibility, CaretVisibility::Visible);
     if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
         return;
     m_shouldPaintCaret = !m_shouldPaintCaret;

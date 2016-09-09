@@ -42,11 +42,7 @@
 
 namespace blink {
 
-CaretBase::CaretBase(CaretVisibility visibility)
-    : m_caretVisibility(visibility)
-{
-}
-
+CaretBase::CaretBase() = default;
 CaretBase::~CaretBase() = default;
 
 DEFINE_TRACE(CaretBase)
@@ -193,9 +189,6 @@ void CaretBase::invalidateCaretRect(Node* node)
 
 void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoint& paintOffset, DisplayItem::Type displayItemType) const
 {
-    if (m_caretVisibility == CaretVisibility::Hidden)
-        return;
-
     if (DrawingRecorder::useCachedDrawingIfPossible(context, *this, displayItemType))
         return;
 
@@ -218,11 +211,6 @@ void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoi
     IntRect paintRect = pixelSnappedIntRect(drawingRect);
     DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret, paintRect);
     context.fillRect(paintRect, caretColor);
-}
-
-void CaretBase::setCaretVisibility(CaretVisibility visibility)
-{
-    m_caretVisibility = visibility;
 }
 
 String CaretBase::debugName() const

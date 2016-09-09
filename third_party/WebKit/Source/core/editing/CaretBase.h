@@ -42,12 +42,10 @@ class GraphicsContext;
 class LayoutBlock;
 class LayoutViewItem;
 
-enum class CaretVisibility { Visible, Hidden };
-
 class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(CaretBase);
 public:
-    explicit CaretBase(CaretVisibility = CaretVisibility::Hidden);
+    CaretBase();
     virtual ~CaretBase();
 
     void invalidateCaretRect(Node*);
@@ -64,10 +62,6 @@ public:
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
 
-    virtual void setCaretVisibility(CaretVisibility);
-    bool caretIsVisible() const { return m_caretVisibility == CaretVisibility::Visible; }
-    CaretVisibility getCaretVisibility() const { return m_caretVisibility; }
-
     static LayoutBlock* caretLayoutObject(Node*);
     void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
@@ -79,7 +73,6 @@ public:
 
 private:
     LayoutRect m_caretLocalRect; // caret rect in coords local to the layoutObject responsible for painting the caret
-    CaretVisibility m_caretVisibility;
     LayoutRect m_visualRect;
 };
 
