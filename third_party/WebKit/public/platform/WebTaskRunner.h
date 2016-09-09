@@ -40,6 +40,10 @@ public:
     // Takes ownership of |Task|. Can be called from any thread.
     virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) = 0;
 
+    // Schedule a task to be run after |delayMs| on the the associated WebThread.
+    // Can be called from any thread.
+    virtual void postDelayedTask(const WebTraceLocation&, const base::Closure&, double delayMs) = 0;
+
     // Returns a clone of the WebTaskRunner.
     virtual std::unique_ptr<WebTaskRunner> clone() = 0;
 
