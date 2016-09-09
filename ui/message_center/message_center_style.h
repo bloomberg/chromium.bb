@@ -32,7 +32,7 @@ const size_t kMaxVisiblePopupNotifications = 3;
 
 // DIP dimension; H size of the whole card.
 const int kNotificationWidth = 360;
-const int kMinScrollViewHeight = 100;
+const int kMinScrollViewHeight = 77;
 
 // Colors.
 const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
