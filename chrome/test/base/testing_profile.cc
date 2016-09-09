@@ -124,6 +124,11 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "components/offline_pages/stub_offline_page_model.h"
+#endif
+
 using base::Time;
 using bookmarks::BookmarkModel;
 using content::BrowserThread;
@@ -243,6 +248,13 @@ std::unique_ptr<KeyedService> BuildWebDataService(
       sync_start_util::GetFlareForSyncableService(context_path),
       &TestProfileErrorCallback));
 }
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+std::unique_ptr<KeyedService> BuildOfflinePageModel(
+    content::BrowserContext* context) {
+  return base::MakeUnique<offline_pages::StubOfflinePageModel>();
+}
+#endif
 
 }  // namespace
 
@@ -610,6 +622,10 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
+      this, BuildOfflinePageModel);
+#endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
   // This creates the BookmarkModel.

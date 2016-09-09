@@ -63,6 +63,7 @@ static_library("test_support") {
     ":offline_pages",
     ":switches",
     "//base",
+    "//components/keyed_service/core",
     "//testing/gtest",
     "//url",
   ]

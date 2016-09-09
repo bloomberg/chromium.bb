@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_model.h"
 
 namespace offline_pages {
@@ -16,7 +17,7 @@ namespace offline_pages {
 // Stub implementation of OfflinePageModel interface for testing. Besides using
 // as a stub for tests, it may also be subclassed to mock specific methods
 // needed for a set of tests.
-class StubOfflinePageModel : public OfflinePageModel {
+class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
  public:
   StubOfflinePageModel();
   ~StubOfflinePageModel() override;

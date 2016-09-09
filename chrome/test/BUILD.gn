@@ -140,6 +140,7 @@ static_library("test_support") {
       "//components/gcm_driver/crypto:test_support",
       "//components/guest_view/browser:test_support",
       "//components/infobars/core",
+      "//components/offline_pages:test_support",
       "//components/sessions:test_support",
       "//components/web_resource:test_support",
       "//content/public/child",
