@@ -613,6 +613,8 @@ target(link_target_type, "renderer") {
       "media/webrtc/peer_connection_remote_audio_source.h",
       "media/webrtc/processed_local_audio_source.cc",
       "media/webrtc/processed_local_audio_source.h",
+      "media/webrtc/rtc_stats.cc",
+      "media/webrtc/rtc_stats.h",
       "media/webrtc/stun_field_trial.cc",
       "media/webrtc/stun_field_trial.h",
       "media/webrtc/track_observer.cc",
@@ -691,6 +693,7 @@ target(link_target_type, "renderer") {
       "//third_party/webrtc/p2p:libstunprober",
       "//third_party/webrtc/p2p:rtc_p2p",
       "//third_party/webrtc/pc:rtc_pc",
+      "//third_party/webrtc/stats",
       "//third_party/webrtc/system_wrappers",
     ]
     if (rtc_use_h264) {
