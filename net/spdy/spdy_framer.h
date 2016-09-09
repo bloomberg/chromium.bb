@@ -105,6 +105,13 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called if an error is detected in the SpdySerializedFrame protocol.
   virtual void OnError(SpdyFramer* framer) = 0;
 
+  // Called when the common header for a frame is received. Validating the
+  // common header occurs in later processing.
+  virtual void OnCommonHeader(SpdyStreamId stream_id,
+                              size_t length,
+                              uint8_t type,
+                              uint8_t flags) {}
+
   // Called when a data frame header is received. The frame's data
   // payload will be provided via subsequent calls to
   // OnStreamFrameData().
