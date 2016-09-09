@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
+from telemetry import decorators
 
+
+@decorators.Disabled('win')  # http://crbug.com/642463
 class SearchGoogleStory(system_health_story.SystemHealthStory):
   NAME = 'search:portal:google'
   URL = 'https://www.google.co.uk/'
-  # Tap simulation doesn't fully work on Windows. http://crbug.com/634343
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
   _SEARCH_BOX_SELECTOR = 'input[aria-label="Search"]'
   _RESULT_SELECTOR = '.r > a[href*="wikipedia"]'

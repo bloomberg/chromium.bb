@@ -5,6 +5,8 @@
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
+from telemetry import decorators
+
 
 class _BrowsingStory(system_health_story.SystemHealthStory):
   """Abstract base class for browsing stories.
@@ -79,15 +81,15 @@ class _NewsBrowsingStory(_BrowsingStory):
         repeat_count=self.MAIN_PAGE_SCROLL_REPEAT)
 
 
+# TODO(ulan): Enable this story on mobile once it uses less memory and does not
+# crash with OOM.
+@decorators.Disabled('android')
 class CnnStory(_NewsBrowsingStory):
   """The second top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:cnn'
   URL = 'http://edition.cnn.com/'
   ITEM_SELECTOR = '.cd__content > h3 > a'
   ITEMS_TO_VISIT = 2
-  # TODO(ulan): Enable this story on mobile once it uses less memory and
-  # does not crash with OOM.
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class FacebookMobileStory(_NewsBrowsingStory):
@@ -151,14 +153,14 @@ class NytimesDesktopStory(_NewsBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+# Desktop qq.com opens a news item in a separate tab, for which the back button
+# does not work. Mobile qq.com is disabled due to crbug.com/627166.
+@decorators.Disabled('all')
 class QqMobileStory(_NewsBrowsingStory):
   NAME = 'browse:news:qq'
   URL = 'http://news.qq.com'
-  # Desktop qq.com opens a news item in a separate tab, for which the back
-  # button does not work.
-  # Mobile qq.com is disabled due to crbug.com/627166
   ITEM_SELECTOR = '.list .full a'
-  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
 class RedditDesktopStory(_NewsBrowsingStory):
@@ -280,7 +282,7 @@ class YouTubeDesktopStory(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
 
 
-class FacebookPhotosMediaStory(_MediaBrowsingStory):
+class FacebookPhotosMobileStory(_MediaBrowsingStory):
   NAME = 'browse:media:facebook_photos'
   URL = (
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')

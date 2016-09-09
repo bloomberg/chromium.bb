@@ -163,7 +163,7 @@ class LoadRedditMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
-class LoadSohuStory(_LoadingStory):
+class LoadSohuMobileStory(_LoadingStory):
   NAME = 'load:news:sohu'
   # Using "https://" leads to missing images and scripts on mobile (due to
   # mixed content).
@@ -389,12 +389,10 @@ class LoadMiniclipStory(_LoadingStory):
   NAME = 'load:games:miniclip'
   # Using "https://" causes "404 Not Found" during WPR recording.
   URL = 'http://www.miniclip.com/games/en/'
-  # Desktop only (requires Flash).
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
 
 
 class LoadAlphabettyStory(_LoadingStory):
   NAME = 'load:games:alphabetty'
   URL = 'https://king.com/play/alphabetty'
-  # Desktop only (requires Flash).
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
