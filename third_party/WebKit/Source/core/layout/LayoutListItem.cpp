@@ -299,7 +299,8 @@ bool LayoutListItem::updateMarkerLocation()
     ASSERT(m_marker);
 
     LayoutObject* markerParent = m_marker->parent();
-    LayoutObject* lineBoxParent = getParentOfFirstLineBox(this, m_marker);
+    // list-style-position:inside makes the ::marker pseudo an ordinary position:static element that should be attached to LayoutListItem block.
+    LayoutObject* lineBoxParent = m_marker->isInside() ? this : getParentOfFirstLineBox(this, m_marker);
     if (!lineBoxParent) {
         // If the marker is currently contained inside an anonymous box, then we
         // are the only item in that anonymous box (since no line box parent was

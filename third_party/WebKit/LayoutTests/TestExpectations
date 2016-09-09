@@ -535,6 +535,8 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-0
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-003.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
+crbug.com/468092 css2.1/20110323/list-style-position-005.htm [ NeedsRebaseline ]
+
 # Test sometimes flakes on most platforms
 crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Pass Failure ]
 
