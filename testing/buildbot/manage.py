@@ -149,6 +149,23 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'telemetry_perf_tests',
   'telemetry_perf_unittests',
   'telemetry_unittests',
+
+  # These tests are only run on WebRTC CI.
+  'audio_decoder_unittests',
+  'common_audio_unittests',
+  'common_video_unittests',
+  'modules_tests',
+  'modules_unittests',
+  'peerconnection_unittests',
+  'rtc_media_unittests',
+  'rtc_pc_unittests',
+  'rtc_unittests',
+  'system_wrappers_unittests',
+  'test_support_unittests',
+  'tools_unittests',
+  'video_engine_tests',
+  'voice_engine_unittests',
+  'xmllite_xmpp_unittests',
 }
 
 

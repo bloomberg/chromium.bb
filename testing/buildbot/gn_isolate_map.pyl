@@ -119,6 +119,10 @@
     "label": "//ash:ash_unittests",
     "type": "windowed_test_launcher",
   },
+  "audio_decoder_unittests": {
+    "label": "//webrtc/modules/audio_coding:audio_decoder_unittests",
+    "type": "console_test_launcher",
+  },
   "audio_unittests": {
     "label": "//media:audio_unittests",
     "type": "raw",
@@ -226,6 +230,14 @@
   "chromevox_tests": {
     "label": "//chrome/browser/resources/chromeos/chromevox:chromevox_tests",
     "type": "windowed_test_launcher",
+  },
+  "common_audio_unittests": {
+    "label": "//webrtc/common_audio:common_audio_unittests",
+    "type": "console_test_launcher",
+  },
+  "common_video_unittests": {
+    "label": "//webrtc/common_video:common_video_unittests",
+    "type": "console_test_launcher",
   },
   "components_browsertests": {
     "label": "//components:components_browsertests",
@@ -420,6 +432,14 @@
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
   },
+  "modules_tests": {
+    "label": "//webrtc/modules:modules_tests",
+    "type": "console_test_launcher",
+  },
+  "modules_unittests": {
+    "label": "//webrtc/modules:modules_unittests",
+    "type": "console_test_launcher",
+  },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
@@ -510,6 +530,10 @@
     "label": "//ui/ozone/gl:ozone_gl_unittests",
     "type": "console_test_launcher",
   },
+  "peerconnection_unittests": {
+    "label": "//webrtc/api:peerconnection_unittests",
+    "type": "console_test_launcher",
+  },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",
     "type": "console_test_launcher",
@@ -520,6 +544,18 @@
   },
   "remoting_unittests": {
     "label": "//remoting:remoting_unittests",
+    "type": "console_test_launcher",
+  },
+  "rtc_media_unittests": {
+    "label": "//webrtc/media:rtc_media_unittests",
+    "type": "console_test_launcher",
+  },
+  "rtc_pc_unittests": {
+    "label": "//webrtc/pc:rtc_pc_unittests",
+    "type": "console_test_launcher",
+  },
+  "rtc_unittests": {
+    "label": "//webrtc:rtc_unittests",
     "type": "console_test_launcher",
   },
   "sandbox_linux_unittests": {
@@ -558,6 +594,10 @@
   "sync_integration_tests": {
     "label": "//chrome/test:sync_integration_tests",
     "type": "windowed_test_launcher",
+  },
+  "system_wrappers_unittests": {
+    "label": "//webrtc/system_wrappers:system_wrappers_unittests",
+    "type": "console_test_launcher",
   },
   "tab_capture_end2end_tests": {
     "label": "//chrome/test:browser_tests",
@@ -618,6 +658,14 @@
       "../../",
     ],
   },
+  "test_support_unittests": {
+    "label": "//webrtc/test:test_support_unittests",
+    "type": "console_test_launcher",
+  },
+  "tools_unittests": {
+    "label": "//webrtc/tools:tools_unittests",
+    "type": "console_test_launcher",
+  },
   "mus_ime_unittests": {
     "label": "//services/ui/ime:mus_ime_unittests",
     "type": "windowed_test_launcher",
@@ -655,6 +703,10 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
+  "video_engine_tests": {
+    "label": "//webrtc:viceo_engine_tests",
+    "type": "console_test_launcher",
+  },
   "views_mus_interactive_ui_tests": {
     "label": "//ui/views/mus:views_mus_interactive_ui_tests",
     "type": "windowed_test_launcher",
@@ -666,6 +718,10 @@
   "views_unittests": {
     "label": "//ui/views:views_unittests",
     "type": "windowed_test_launcher",
+  },
+  "voice_engine_unittests": {
+    "label": "//webrtc/voice_engine:voice_engine_unittests",
+    "type": "console_test_launcher",
   },
   "webkit_unit_tests": {
     "label": "//third_party/WebKit/Source/web:webkit_unit_tests",
@@ -679,4 +735,8 @@
     "label": "//third_party/WebKit/Source/wtf:wtf_unittests",
     "type": "console_test_launcher",
   },
+  "xmllite_xmpp_unittests": {
+    "label": "//webrtc:xmllite_xmpp_unittests",
+    "type": "console_test_launcher",
+  }
 }
