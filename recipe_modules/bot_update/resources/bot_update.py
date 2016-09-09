@@ -622,23 +622,6 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
   except SubprocessFailed as e:
     raise PatchFailed(e.message, e.code, e.output)
 
-def check_flag(flag_file):
-  """Returns True if the flag file is present."""
-  return os.path.isfile(flag_file)
-
-
-def delete_flag(flag_file):
-  """Remove bot update flag."""
-  if os.path.isfile(flag_file):
-    os.remove(flag_file)
-
-
-def emit_flag(flag_file):
-  """Deposit a bot update flag on the system to tell gclient not to run."""
-  print 'Emitting flag file at %s' % flag_file
-  with open(flag_file, 'wb') as f:
-    f.write('Success!')
-
 
 def get_commit_position(git_path, revision='HEAD'):
   """Dumps the 'git' log for a specific revision and parses out the commit
@@ -850,14 +833,9 @@ def parse_args():
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
-  parse.add_option('-f', '--force', action='store_true',
-                   help='Bypass check to see if we want to be run. '
-                        'Should ONLY be used locally or by smart recipes.')
-  parse.add_option('--revision_mapping',
-                   help='{"path/to/repo/": "property_name"}')
   parse.add_option('--revision_mapping_file',
-                   help=('Same as revision_mapping, except its a path to a json'
-                         ' file containing that format.'))
+                   help=('Path to a json file of the form '
+                         '{"path/to/repo/": "property_name"}'))
   parse.add_option('--revision', action='append', default=[],
                    help='Revision to check out. Can be any form of git ref. '
                         'Can prepend root@<rev> to specify which repository, '
@@ -865,19 +843,9 @@ def parse_args():
                         'url. To specify Tip of Tree, set rev to HEAD. ')
   parse.add_option('--output_manifest', action='store_true',
                    help=('Add manifest json to the json output.'))
-  parse.add_option('--slave_name', default=socket.getfqdn().split('.')[0],
-                   help='Hostname of the current machine, '
-                   'used for determining whether or not to activate.')
-  parse.add_option('--build_dir', default=os.getcwd())
-  parse.add_option('--flag_file', default=path.join(os.getcwd(),
-                                                    'update.flag'))
-  parse.add_option('--shallow', action='store_true',
-                   help='Use shallow clones for cache repositories.')
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
-  parse.add_option('--bot_update_clobber', action='store_true', dest='clobber',
-                   help='(synonym for --clobber)')
-  parse.add_option('-o', '--output_json',
+  parse.add_option('--output_json',
                    help='Output JSON information into a specified file')
   parse.add_option('--no_shallow', action='store_true',
                    help='Bypass disk detection and never shallow clone. '
@@ -904,14 +872,11 @@ def parse_args():
     del options.with_branch_heads
 
   try:
-    if options.revision_mapping_file:
-      if options.revision_mapping:
-        print ('WARNING: Ignoring --revision_mapping: --revision_mapping_file '
-               'was set at the same time as --revision_mapping?')
-      with open(options.revision_mapping_file, 'r') as f:
-        options.revision_mapping = json.load(f)
-    elif options.revision_mapping:
-      options.revision_mapping = json.loads(options.revision_mapping)
+    if not options.revision_mapping_file:
+      parse.error('--revision_mapping_file is required')
+
+    with open(options.revision_mapping_file, 'r') as f:
+      options.revision_mapping = json.load(f)
   except Exception as e:
     print (
         'WARNING: Caught execption while parsing revision_mapping*: %s'
@@ -930,14 +895,10 @@ def parse_args():
 def prepare(options, git_slns, active):
   """Prepares the target folder before we checkout."""
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
-  # If we're active now, but the flag file doesn't exist (we weren't active
-  # last run) or vice versa, blow away all checkouts.
-  if options.clobber or (bool(active) != bool(check_flag(options.flag_file))):
+  if options.clobber:
     ensure_no_checkout(dir_names)
-  if options.output_json:
-    # Make sure we tell recipes that we didn't run if the script exits here.
-    emit_json(options.output_json, did_run=active)
-  emit_flag(options.flag_file)
+  # Make sure we tell recipes that we didn't run if the script exits here.
+  emit_json(options.output_json, did_run=active)
 
   # Do a shallow checkout if the disk is less than 100GB.
   total_disk_space, free_disk_space = get_total_disk_space()
@@ -950,9 +911,8 @@ def prepare(options, git_slns, active):
                                            percent_used)
   if not options.output_json:
     print '@@@STEP_TEXT@%s@@@' % step_text
-  if not options.shallow:
-    options.shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
-                       and not options.no_shallow)
+  shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
+             and not options.no_shallow)
 
   # The first solution is where the primary DEPS file resides.
   first_sln = dir_names[0]
@@ -961,10 +921,10 @@ def prepare(options, git_slns, active):
   print 'Revisions: %s' % options.revision
   revisions = parse_revisions(options.revision, first_sln)
   print 'Fetching Git checkout at %s@%s' % (first_sln, revisions[first_sln])
-  return revisions, step_text
+  return revisions, step_text, shallow
 
 
-def checkout(options, git_slns, specs, revisions, step_text):
+def checkout(options, git_slns, specs, revisions, step_text, shallow):
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   try:
@@ -994,7 +954,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
           apply_issue_key_file=options.apply_issue_key_file,
 
           # Finally, extra configurations such as shallowness of the clone.
-          shallow=options.shallow,
+          shallow=shallow,
           refs=options.refs,
           git_cache_dir=options.git_cache_dir,
           gerrit_reset=not options.gerrit_no_reset)
@@ -1073,10 +1033,6 @@ def main():
   # Get inputs.
   options, _ = parse_args()
 
-  # Always run. This option will be removed in a later CL, but for now make sure
-  # that bot_update is ALWAYS set to run, no matter what.
-  options.force = True
-
   # Check if this script should activate or not.
   active = True
 
@@ -1093,11 +1049,10 @@ def main():
 
   try:
     # Dun dun dun, the main part of bot_update.
-    revisions, step_text = prepare(options, git_slns, active)
-    checkout(options, git_slns, specs, revisions, step_text)
+    revisions, step_text, shallow = prepare(options, git_slns, active)
+    checkout(options, git_slns, specs, revisions, step_text, shallow)
 
   except PatchFailed as e:
-    emit_flag(options.flag_file)
     # Return a specific non-zero exit code for patch failure (because it is
     # a failure), but make it different than other failures to distinguish
     # between infra failures (independent from patch author), and patch
@@ -1108,12 +1063,6 @@ def main():
       return 87
     # Genuine patch problem.
     return 88
-  except Exception:
-    # Unexpected failure.
-    emit_flag(options.flag_file)
-    raise
-  else:
-    emit_flag(options.flag_file)
 
 
 if __name__ == '__main__':
