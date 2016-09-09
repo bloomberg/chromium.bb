@@ -671,7 +671,7 @@ void PaintController::checkUnderInvalidation()
     ++m_underInvalidationCheckingBegin;
 }
 
-String PaintController::displayItemListAsDebugString(const DisplayItemList& list) const
+String PaintController::displayItemListAsDebugString(const DisplayItemList& list, bool showPictures) const
 {
     StringBuilder stringBuilder;
     size_t i = 0;
@@ -696,6 +696,14 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
                 stringBuilder.append(", cacheIsValid: ");
                 stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
             } while (false);
+#ifndef NDEBUG
+            if (showPictures && displayItem.isDrawing()) {
+                if (const SkPicture* picture = static_cast<const DrawingDisplayItem&>(displayItem).picture()) {
+                    stringBuilder.append(", picture: ");
+                    stringBuilder.append(pictureAsDebugString(picture));
+                }
+            }
+#endif
         }
         if (list.hasVisualRect(i)) {
             IntRect visualRect = list.visualRect(i);
@@ -708,10 +716,10 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
     return stringBuilder.toString();
 }
 
-void PaintController::showDebugData() const
+void PaintController::showDebugDataInternal(bool showPictures) const
 {
-    WTFLogAlways("current display item list: [%s]\n", displayItemListAsDebugString(m_currentPaintArtifact.getDisplayItemList()).utf8().data());
-    WTFLogAlways("new display item list: [%s]\n", displayItemListAsDebugString(m_newDisplayItemList).utf8().data());
+    WTFLogAlways("current display item list: [%s]\n", displayItemListAsDebugString(m_currentPaintArtifact.getDisplayItemList(), showPictures).utf8().data());
+    WTFLogAlways("new display item list: [%s]\n", displayItemListAsDebugString(m_newDisplayItemList, showPictures).utf8().data());
 }
 
 } // namespace blink

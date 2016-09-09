@@ -150,7 +150,10 @@ public:
 
     void appendDebugDrawingAfterCommit(const DisplayItemClient&, sk_sp<SkPicture>, const LayoutSize& offsetFromLayoutObject);
 
-    void showDebugData() const;
+    void showDebugData() const { showDebugDataInternal(false); }
+#ifndef NDEBUG
+    void showDebugDataWithPictures() const { showDebugDataInternal(true); }
+#endif
 
 #if DCHECK_IS_ON()
     void assertDisplayItemClientsAreLive();
@@ -191,7 +194,8 @@ private:
     enum NewItemSource { FromCachedItem, FromCachedSubsequence, NewPainting };
     void processNewItem(DisplayItem&, NewItemSource);
 
-    String displayItemListAsDebugString(const DisplayItemList&) const;
+    void showDebugDataInternal(bool showPictures) const;
+    String displayItemListAsDebugString(const DisplayItemList&, bool showPictures) const;
 
     // Maps clients to indices of display items or chunks of each client.
     using IndicesByClientMap = HashMap<const DisplayItemClient*, Vector<size_t>>;
