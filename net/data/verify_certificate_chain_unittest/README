@@ -66,6 +66,5 @@ This PEM block describes the expected result from verifying the path.
 
 ERRORS:
 
-This PEM block is a newline separated list of errors that are expected to occur
-when validating this path. The error string should correspond with a
-CertErrorType.
+This PEM block is a pretty-printed textual dump of all the errors, as given by
+CertErrors::ToDebugString().

@@ -119,15 +119,6 @@ std::string SubjectFromTrustAnchor(const net::TrustAnchor* trust_anchor) {
   return SubjectToString(parsed_subject);
 }
 
-void PrintCertErrors(const net::CertErrors& errors) {
-  // TODO(crbug.com/634443): Include more detailed error information. Also this
-  // should likely be extracted to a common location and used by unit-tests and
-  // other debugging needs.
-  for (const auto& error : errors.errors()) {
-    std::cout << " " << error.type << "\n";
-  }
-}
-
 // Dumps a ResultPath to std::cout.
 void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
                      size_t index,
@@ -157,7 +148,7 @@ void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
   // Print the errors.
   if (!result_path->errors.errors().empty()) {
     std::cout << "Errors:\n";
-    PrintCertErrors(result_path->errors);
+    std::cout << result_path->errors.ToDebugString() << "\n";
   }
 }
 

@@ -115,6 +115,9 @@ class NET_EXPORT CertErrors {
 
   const std::vector<CertError>& errors() const { return errors_; }
 
+  // Dumps a textual representation of the errors for debugging purposes.
+  std::string ToDebugString() const;
+
  private:
   std::vector<CertError> errors_;
 

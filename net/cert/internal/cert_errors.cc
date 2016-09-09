@@ -54,6 +54,16 @@ void CertErrors::AddWith2DerParams(CertErrorType type,
   AddWithParam(type, base::MakeUnique<CertErrorParamsDer2>(der1, der2));
 }
 
+std::string CertErrors::ToDebugString() const {
+  std::string str;
+  for (const auto& error : errors_) {
+    if (!str.empty())
+      str += "\n";
+    str += error.type;
+  }
+  return str;
+}
+
 ScopedCertErrorsCertContext::ScopedCertErrorsCertContext(
     CertErrors* parent,
     const ParsedCertificate* cert,

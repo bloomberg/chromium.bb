@@ -453,6 +453,7 @@ def write_test_file(description, chain, trust_anchor, utc_time, verify_result,
   verify_result_string = 'SUCCESS' if verify_result else 'FAIL'
   test_data += '\n' + text_data_to_pem('VERIFY_RESULT', verify_result_string)
 
+  # TODO(eroman): Make the consumer pass errors as a string.
   if errors is not None:
     test_data += '\n' + text_data_to_pem('ERRORS', '\n'.join(errors))
 
