@@ -26,29 +26,6 @@ BROWSER_TEST_SUITES = [
 RUN_IN_SUB_THREAD_TEST_SUITES = ['net_unittests']
 
 
-_DEFAULT_ISOLATE_FILE_PATHS = {
-    'base_unittests': 'base/base_unittests.isolate',
-    'blink_heap_unittests':
-      'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
-    'blink_platform_unittests':
-      'third_party/WebKit/Source/platform/blink_platform_unittests.isolate',
-    'cc_perftests': 'cc/cc_perftests.isolate',
-    'components_browsertests': 'components/components_browsertests.isolate',
-    'components_unittests': 'components/components_unittests.isolate',
-    'content_browsertests': 'content/content_browsertests.isolate',
-    'content_unittests': 'content/content_unittests.isolate',
-    'media_perftests': 'media/media_perftests.isolate',
-    'media_unittests': 'media/media_unittests.isolate',
-    'midi_unittests': 'media/midi/midi_unittests.isolate',
-    'net_unittests': 'net/net_unittests.isolate',
-    'sql_unittests': 'sql/sql_unittests.isolate',
-    'ui_base_unittests': 'ui/base/ui_base_tests.isolate',
-    'unit_tests': 'chrome/unit_tests.isolate',
-    'webkit_unit_tests':
-      'third_party/WebKit/Source/web/WebKitUnitTests.isolate',
-}
-
-
 # Used for filtering large data deps at a finer grain than what's allowed in
 # isolate files since pushing deps to devices is expensive.
 # Wildcards are allowed.
@@ -249,12 +226,6 @@ class GtestTestInstance(test_instance.TestInstance):
         self._gtest_filter = ':'.join(l.strip() for l in f)
     else:
       self._gtest_filter = None
-
-    if not args.isolate_file_path:
-      default_isolate_file_path = _DEFAULT_ISOLATE_FILE_PATHS.get(self._suite)
-      if default_isolate_file_path:
-        args.isolate_file_path = os.path.join(
-            host_paths.DIR_SOURCE_ROOT, default_isolate_file_path)
 
     if (args.isolate_file_path and
         not isolator.IsIsolateEmpty(args.isolate_file_path)):
