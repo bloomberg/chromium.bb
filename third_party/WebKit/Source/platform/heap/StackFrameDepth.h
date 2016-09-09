@@ -22,6 +22,7 @@ namespace blink {
 class PLATFORM_EXPORT StackFrameDepth final {
     DISALLOW_NEW();
 public:
+    StackFrameDepth(): m_stackFrameLimit(kMinimumStackLimit) {}
     bool isSafeToRecurse()
     {
         // Asssume that the stack grows towards lower addresses, which
