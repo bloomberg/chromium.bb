@@ -150,9 +150,6 @@ crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
-# https://codereview.chromium.org/2323853002/
-crbug.com/643623 fast/backgrounds/background-svg-scaling-zoom.html [ NeedsRebaseline ]
-
 crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.https.html [ Skip ]
 
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
