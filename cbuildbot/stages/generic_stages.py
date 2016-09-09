@@ -206,7 +206,8 @@ class BuilderStage(object):
 
     fields = {'status': status,
               'name': self.name,
-              'build_config': self._run.config.name}
+              'build_config': self._run.config.name,
+              'important': self._run.config.important}
 
     metrics.SecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds, fields=fields)
