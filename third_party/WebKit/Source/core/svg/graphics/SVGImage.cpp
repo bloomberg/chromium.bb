@@ -251,7 +251,7 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
 
 sk_sp<SkImage> SVGImage::imageForCurrentFrame()
 {
-    return imageForCurrentFrameForContainer(KURL(), FloatSize(size()));
+    return imageForCurrentFrameForContainer(KURL(), size());
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize containerSize,
@@ -289,23 +289,19 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
     context.drawRect(dstRect, paint);
 }
 
-sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, const FloatSize& containerSize)
+sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, const IntSize& containerSize)
 {
     if (!m_page)
         return nullptr;
 
-    const FloatRect containerRect(FloatPoint(), containerSize);
+    const FloatRect containerRect((FloatPoint()), FloatSize(containerSize));
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(containerRect);
-    drawForContainer(canvas, SkPaint(), containerSize, 1, containerRect, containerRect, url);
+    drawForContainer(canvas, SkPaint(), containerRect.size(), 1, containerRect, containerRect, url);
 
-    const IntSize imageSize = roundedIntSize(containerSize);
-    const SkMatrix residualScale = SkMatrix::MakeScale(
-        static_cast<float>(imageSize.width()) / containerSize.width(),
-        static_cast<float>(imageSize.height()) / containerSize.height());
     return SkImage::MakeFromPicture(recorder.finishRecordingAsPicture(),
-        SkISize::Make(imageSize.width(), imageSize.height()), &residualScale, nullptr);
+        SkISize::Make(containerSize.width(), containerSize.height()), nullptr, nullptr);
 }
 
 static bool drawNeedsLayer(const SkPaint& paint)

@@ -53,7 +53,7 @@ void SVGImageForContainer::drawPattern(GraphicsContext& context, const FloatRect
 
 sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame()
 {
-    return m_image->imageForCurrentFrameForContainer(m_url, m_containerSize);
+    return m_image->imageForCurrentFrameForContainer(m_url, size());
 }
 
 } // namespace blink
