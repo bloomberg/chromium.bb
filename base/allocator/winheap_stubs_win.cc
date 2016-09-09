@@ -13,6 +13,8 @@
 #include <new.h>
 #include <windows.h>
 
+#include "base/bits.h"
+
 namespace base {
 namespace allocator {
 
@@ -49,6 +51,27 @@ void* WinHeapRealloc(void* ptr, size_t size) {
   if (size < kMaxWindowsAllocation)
     return HeapReAlloc(get_heap_handle(), 0, ptr, size);
   return nullptr;
+}
+
+size_t WinHeapGetSizeEstimate(void* ptr) {
+  if (!ptr)
+    return 0;
+
+  // Get the user size of the allocation.
+  size_t size = HeapSize(get_heap_handle(), 0, ptr);
+
+  // Account for the 8-byte HEAP_HEADER preceding the block.
+  size += 8;
+
+// Round up to the nearest allocation granularity, which is 8 for
+// 32 bit machines, and 16 for 64 bit machines.
+#if defined(ARCH_CPU_64_BITS)
+  const size_t kAllocationGranularity = 16;
+#else
+  const size_t kAllocationGranularity = 8;
+#endif
+
+  return base::bits::Align(size, kAllocationGranularity);
 }
 
 // Call the new handler, if one has been set.
