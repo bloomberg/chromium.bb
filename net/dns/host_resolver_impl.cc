@@ -1918,8 +1918,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   DCHECK(out_req);
 
   // Check that the caller supplied a valid hostname to resolve.
-  std::string labeled_hostname;
-  if (!DNSDomainFromDot(info.hostname(), &labeled_hostname))
+  if (!IsValidDNSDomain(info.hostname()))
     return ERR_NAME_NOT_RESOLVED;
 
   LogStartRequest(source_net_log, info);

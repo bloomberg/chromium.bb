@@ -48,22 +48,26 @@ TEST(DnsHostsTest, ParseHosts) {
       "256.0.0.0 cache3 # bogus IP should not clear parsed IP cache\n"
       "127.0.0.1 cache4 # should still be reused\n"
       "127.0.0.2 cache5\n"
+      "127.0.0.3 .foo # entries with leading dot are ignored\n"
+      "127.0.0.3 . # just a dot is ignored\n"
+      "127.0.0.4 bar. # trailing dot is allowed, for now\n"
       "gibberish";
 
   const ExpectedHostsEntry kEntries[] = {
-    { "localhost", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
-    { "localhost.localdomain", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
-    { "company", ADDRESS_FAMILY_IPV4, "1.0.0.1" },
-    { "localhost", ADDRESS_FAMILY_IPV6, "::1" },
-    { "ip6-localhost", ADDRESS_FAMILY_IPV6, "::1" },
-    { "ip6-loopback", ADDRESS_FAMILY_IPV6, "::1" },
-    { "ip6-localnet", ADDRESS_FAMILY_IPV6, "fe00::0" },
-    { "company", ADDRESS_FAMILY_IPV6, "2048::1" },
-    { "example", ADDRESS_FAMILY_IPV6, "2048::2" },
-    { "cache1", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
-    { "cache2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
-    { "cache4", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
-    { "cache5", ADDRESS_FAMILY_IPV4, "127.0.0.2" },
+      {"localhost", ADDRESS_FAMILY_IPV4, "127.0.0.1"},
+      {"localhost.localdomain", ADDRESS_FAMILY_IPV4, "127.0.0.1"},
+      {"company", ADDRESS_FAMILY_IPV4, "1.0.0.1"},
+      {"localhost", ADDRESS_FAMILY_IPV6, "::1"},
+      {"ip6-localhost", ADDRESS_FAMILY_IPV6, "::1"},
+      {"ip6-loopback", ADDRESS_FAMILY_IPV6, "::1"},
+      {"ip6-localnet", ADDRESS_FAMILY_IPV6, "fe00::0"},
+      {"company", ADDRESS_FAMILY_IPV6, "2048::1"},
+      {"example", ADDRESS_FAMILY_IPV6, "2048::2"},
+      {"cache1", ADDRESS_FAMILY_IPV4, "127.0.0.1"},
+      {"cache2", ADDRESS_FAMILY_IPV4, "127.0.0.1"},
+      {"cache4", ADDRESS_FAMILY_IPV4, "127.0.0.1"},
+      {"cache5", ADDRESS_FAMILY_IPV4, "127.0.0.2"},
+      {"bar.", ADDRESS_FAMILY_IPV4, "127.0.0.4"},
   };
 
   DnsHosts expected_hosts, actual_hosts;
