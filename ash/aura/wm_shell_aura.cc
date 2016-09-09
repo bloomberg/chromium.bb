@@ -75,9 +75,11 @@ void WmShellAura::Shutdown() {
   WmShell::Shutdown();
 }
 
-WmWindow* WmShellAura::NewContainerWindow() {
+WmWindow* WmShellAura::NewWindow(ui::wm::WindowType window_type,
+                                 ui::LayerType layer_type) {
   aura::Window* aura_window = new aura::Window(nullptr);
-  aura_window->Init(ui::LAYER_NOT_DRAWN);
+  aura_window->SetType(window_type);
+  aura_window->Init(layer_type);
   return WmWindowAura::Get(aura_window);
 }
 

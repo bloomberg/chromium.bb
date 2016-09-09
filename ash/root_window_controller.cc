@@ -394,7 +394,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
       modal_container->layout_manager());
 
-  if (modal_layout_manager->has_modal_background())
+  if (modal_layout_manager->has_window_dimmer())
     blocking_container = modal_container;
   else
     modal_container = nullptr;  // Don't check modal dialogs.
@@ -733,9 +733,9 @@ void RootWindowController::Init(RootWindowType root_window_type,
   InitTouchHuds();
 
   if (Shell::GetPrimaryRootWindowController()
-          ->GetSystemModalLayoutManager(NULL)
-          ->has_modal_background()) {
-    GetSystemModalLayoutManager(NULL)->CreateModalBackground();
+          ->GetSystemModalLayoutManager(nullptr)
+          ->has_window_dimmer()) {
+    GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
   }
 
   WmShell::Get()->AddShellObserver(this);

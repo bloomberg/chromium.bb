@@ -70,6 +70,11 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   static std::vector<WmWindow*> FromMusWindows(
       const std::vector<ui::Window*>& mus_windows);
 
+  void set_wm_window_type(ui::wm::WindowType type) {
+    wm_window_type_ = type;
+    is_wm_window_type_set_ = true;
+  }
+
   // Sets the widget associated with the window. The widget is used to query
   // state, such as min/max size. The widget is not owned by the WmWindowMus.
   void set_widget(views::Widget* widget, WidgetCreationType type) {
@@ -102,6 +107,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   bool IsContainer() const;
 
   // WmWindow:
+  void Destroy() override;
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
@@ -153,6 +159,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetLayoutManager(
       std::unique_ptr<WmLayoutManager> layout_manager) override;
   WmLayoutManager* GetLayoutManager() override;
+  void SetVisibilityChangesAnimated() override;
   void SetVisibilityAnimationType(int type) override;
   void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
   void SetVisibilityAnimationTransition(
@@ -285,6 +292,10 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
 
   // If true the minimum size is 0x0, default is minimum size comes from widget.
   bool use_empty_minimum_size_for_testing_ = false;
+
+  ui::wm::WindowType wm_window_type_ = ui::wm::WINDOW_TYPE_UNKNOWN;
+  // Set to true if set_window_type() is called.
+  bool is_wm_window_type_set_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };

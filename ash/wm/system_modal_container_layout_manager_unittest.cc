@@ -52,7 +52,7 @@ bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
        iter != containers.end(); ++iter) {
     has_modal_screen &= static_cast<SystemModalContainerLayoutManager*>(
                             (*iter)->layout_manager())
-                            ->has_modal_background();
+                            ->has_window_dimmer();
   }
   return has_modal_screen;
 }
@@ -775,19 +775,19 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
           modal_window.get());
 
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
-  EXPECT_FALSE(layout_manager->has_modal_background());
+  EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
   EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
-  EXPECT_TRUE(layout_manager->has_modal_background());
+  EXPECT_TRUE(layout_manager->has_window_dimmer());
 
   modal_window->Hide();
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
-  EXPECT_FALSE(layout_manager->has_modal_background());
+  EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
   EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
-  EXPECT_TRUE(layout_manager->has_modal_background());
+  EXPECT_TRUE(layout_manager->has_window_dimmer());
 }
 
 namespace {

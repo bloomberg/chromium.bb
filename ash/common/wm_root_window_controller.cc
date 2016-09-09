@@ -19,7 +19,8 @@ namespace {
 
 // Creates a new window for use as a container.
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
-  WmWindow* window = WmShell::Get()->NewContainerWindow();
+  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
+                                               ui::LAYER_NOT_DRAWN);
   window->SetShellWindowId(window_id);
   window->SetName(name);
   parent->AddChild(window);

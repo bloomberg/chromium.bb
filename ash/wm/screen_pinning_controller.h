@@ -13,8 +13,12 @@
 
 namespace ash {
 
+class WindowDimmer;
 class WindowTreeHostManager;
 class WmWindow;
+
+template <typename UserData>
+class WmWindowUserData;
 
 // Handles pinned state.
 class ScreenPinningController : public WindowTreeHostManager::Observer {
@@ -54,15 +58,11 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   // Called when a window stacking is changed in a system modal container.
   void OnSystemModalContainerWindowStackingChanged(WmWindow* window);
 
-  // Called when a dim window in the system modal container is destroying.
-  void OnDimWindowDestroying(WmWindow* window);
-
  private:
   class PinnedContainerWindowObserver;
   class PinnedContainerChildWindowObserver;
   class SystemModalContainerWindowObserver;
   class SystemModalContainerChildWindowObserver;
-  class DimWindowObserver;
 
   // Keeps the pinned window on top of the siblings.
   void KeepPinnedWindowOnTop();
@@ -70,19 +70,20 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   // Keeps the dim window at bottom of the container.
   void KeepDimWindowAtBottom(WmWindow* container);
 
+  // Creates a WindowDimmer for |container| and places it in |window_dimmers_|.
+  // Returns the window from WindowDimmer.
+  WmWindow* CreateWindowDimmer(WmWindow* container);
+
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // Pinned window should be on top in the parent window.
   WmWindow* pinned_window_ = nullptr;
 
-  // Dim background window just behind of the pinned window.
-  // Not owned. The parent has its ownership.
-  WmWindow* background_window_ = nullptr;
-
-  // In pinned mode, all displays other than the one where pinned_window_ is.
-  // Similar to background_window_, not owned.
-  std::vector<WmWindow*> dim_windows_;
+  // Owns the WindowDimmers. There is one WindowDimmer for the parent of
+  // |pinned_window_| and one for each display other than the display
+  // |pinned_window_| is on.
+  std::unique_ptr<WmWindowUserData<WindowDimmer>> window_dimmers_;
 
   // Set true only when restacking done by this controller.
   bool in_restacking_ = false;
@@ -101,7 +102,6 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
       system_modal_container_window_observer_;
   std::unique_ptr<SystemModalContainerChildWindowObserver>
       system_modal_container_child_window_observer_;
-  std::unique_ptr<DimWindowObserver> dim_window_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenPinningController);
 };

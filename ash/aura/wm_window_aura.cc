@@ -135,6 +135,11 @@ const aura::Window* WmWindowAura::GetAuraWindow(const WmWindow* wm_window) {
                    : nullptr;
 }
 
+void WmWindowAura::Destroy() {
+  delete window_;
+  // WARNING: this has been deleted.
+}
+
 const WmWindow* WmWindowAura::GetRootWindow() const {
   return Get(window_->GetRootWindow());
 }
@@ -384,6 +389,10 @@ WmLayoutManager* WmWindowAura::GetLayoutManager() {
   AuraLayoutManagerAdapter* adapter =
       static_cast<AuraLayoutManagerAdapter*>(window_->layout_manager());
   return adapter ? adapter->wm_layout_manager() : nullptr;
+}
+
+void WmWindowAura::SetVisibilityChangesAnimated() {
+  ::wm::SetWindowVisibilityChangesAnimated(window_);
 }
 
 void WmWindowAura::SetVisibilityAnimationType(int type) {

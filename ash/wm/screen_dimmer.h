@@ -5,6 +5,8 @@
 #ifndef ASH_WM_SCREEN_DIMMER_H_
 #define ASH_WM_SCREEN_DIMMER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "base/compiler_specific.h"
@@ -16,7 +18,14 @@ class Layer;
 }
 
 namespace ash {
-class DimWindow;
+namespace test {
+class ScreenDimmerTest;
+}
+
+class WindowDimmer;
+
+template <typename UserData>
+class WmWindowUserData;
 
 // ScreenDimmer displays a partially-opaque layer above everything
 // else in the given container window to darken the display.  It shouldn't be
@@ -25,7 +34,7 @@ class DimWindow;
 // briefly dim the screen (e.g. to indicate to the user that we're
 // about to suspend a machine that lacks an internal backlight that
 // can be adjusted).
-class ASH_EXPORT ScreenDimmer : ShellObserver {
+class ASH_EXPORT ScreenDimmer : public ShellObserver {
  public:
   // Creates a screen dimmer for the containers given by |container_id|.
   // It's owned by the container in the primary root window and will be
@@ -48,9 +57,11 @@ class ASH_EXPORT ScreenDimmer : ShellObserver {
   static ScreenDimmer* FindForTest(int container_id);
 
  private:
-  static aura::Window* FindContainer(int container_id);
+  friend class test::ScreenDimmerTest;
 
   explicit ScreenDimmer(int container_id);
+
+  static aura::Window* FindContainer(int container_id);
 
   // ShellObserver:
   void OnRootWindowAdded(WmWindow* root_window) override;
@@ -65,6 +76,9 @@ class ASH_EXPORT ScreenDimmer : ShellObserver {
   // Are we currently dimming the screen?
   bool is_dimming_;
   bool at_bottom_;
+
+  // Owns the WindowDimmers.
+  std::unique_ptr<WmWindowUserData<WindowDimmer>> window_dimmers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };

@@ -65,6 +65,8 @@ class ASH_EXPORT WmWindow {
 
   using Windows = std::vector<WmWindow*>;
 
+  virtual void Destroy() = 0;
+
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());
@@ -166,6 +168,9 @@ class ASH_EXPORT WmWindow {
       std::unique_ptr<WmLayoutManager> layout_manager) = 0;
   virtual WmLayoutManager* GetLayoutManager() = 0;
 
+  // See wm::SetWindowVisibilityChangesAnimated() for details on what this
+  // does.
+  virtual void SetVisibilityChangesAnimated() = 0;
   // |type| is WindowVisibilityAnimationType. Has to be an int to match aura.
   virtual void SetVisibilityAnimationType(int type) = 0;
   virtual void SetVisibilityAnimationDuration(base::TimeDelta delta) = 0;

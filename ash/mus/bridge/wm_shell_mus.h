@@ -62,7 +62,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   }
 
   // WmShell:
-  WmWindow* NewContainerWindow() override;
+  WmWindow* NewWindow(ui::wm::WindowType window_type,
+                      ui::LayerType layer_type) override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetCaptureWindow() override;

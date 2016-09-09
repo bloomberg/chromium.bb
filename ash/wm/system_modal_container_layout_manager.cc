@@ -6,11 +6,12 @@
 
 #include <cmath>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/dim_window.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -38,9 +39,7 @@ const int kCenterPixelDelta = 32;
 
 SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
-    : SnapToPixelLayoutManager(container),
-      container_(container),
-      modal_background_(nullptr) {}
+    : SnapToPixelLayoutManager(container), container_(container) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {}
 
@@ -53,8 +52,7 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
-  DCHECK(child == modal_background_ ||
-         child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+  DCHECK(child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
          child->type() == ui::wm::WINDOW_TYPE_POPUP);
   DCHECK(
       container_->id() != kShellWindowId_LockSystemModalContainer ||
@@ -108,15 +106,6 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
   }
 }
 
-void SystemModalContainerLayoutManager::OnWindowDestroying(
-    aura::Window* window) {
-  if (modal_background_ == window) {
-    if (keyboard::KeyboardController::GetInstance())
-      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    modal_background_ = nullptr;
-  }
-}
-
 void SystemModalContainerLayoutManager::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
@@ -155,28 +144,25 @@ bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
 }
 
 void SystemModalContainerLayoutManager::CreateModalBackground() {
-  if (!modal_background_) {
-    modal_background_ = new DimWindow(container_);
-    modal_background_->SetName(
+  if (!window_dimmer_) {
+    window_dimmer_ =
+        base::MakeUnique<WindowDimmer>(WmWindowAura::Get(container_));
+    window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // There isn't always a keyboard controller.
     if (keyboard::KeyboardController::GetInstance())
       keyboard::KeyboardController::GetInstance()->AddObserver(this);
   }
-  modal_background_->Show();
+  window_dimmer_->window()->Show();
 }
 
 void SystemModalContainerLayoutManager::DestroyModalBackground() {
-  // modal_background_ can be NULL when a root window is shutting down.
-  if (modal_background_) {
-    if (keyboard::KeyboardController::GetInstance())
-      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    modal_background_->Hide();
-    // Explicitly delete instead of using scoped_ptr as the owner of the
-    // window is its parent.
-    delete modal_background_;
-    modal_background_ = nullptr;
-  }
+  if (!window_dimmer_)
+    return;
+
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+  window_dimmer_.reset();
 }
 
 // static
@@ -189,7 +175,8 @@ bool SystemModalContainerLayoutManager::IsModalBackground(
   SystemModalContainerLayoutManager* layout_manager =
       static_cast<SystemModalContainerLayoutManager*>(
           window->parent()->layout_manager());
-  return layout_manager->modal_background_ == window;
+  return layout_manager->window_dimmer_ &&
+         layout_manager->window_dimmer_->window() == WmWindowAura::Get(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

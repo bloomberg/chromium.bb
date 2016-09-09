@@ -203,8 +203,13 @@ WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
-WmWindow* WmShellMus::NewContainerWindow() {
-  return WmWindowMus::Get(window_tree_client()->NewWindow());
+WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
+                                ui::LayerType layer_type) {
+  WmWindowMus* window = WmWindowMus::Get(window_tree_client()->NewWindow());
+  window->set_wm_window_type(window_type);
+  // TODO(sky): support layer_type.
+  NOTIMPLEMENTED();
+  return window;
 }
 
 WmWindow* WmShellMus::GetFocusedWindow() {

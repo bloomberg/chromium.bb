@@ -17,6 +17,8 @@
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_type.h"
+#include "ui/wm/public/window_types.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -164,9 +166,8 @@ class ASH_EXPORT WmShell {
     return window_selector_controller_.get();
   }
 
-  // Creates a new window used as a container of other windows. No painting is
-  // done to the created window.
-  virtual WmWindow* NewContainerWindow() = 0;
+  virtual WmWindow* NewWindow(ui::wm::WindowType window_type,
+                              ui::LayerType layer_type) = 0;
 
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;

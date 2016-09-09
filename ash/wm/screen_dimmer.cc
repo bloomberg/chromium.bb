@@ -4,9 +4,11 @@
 
 #include "ash/wm/screen_dimmer.h"
 
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_user_data.h"
 #include "ash/shell.h"
-#include "ash/wm/dim_window.h"
 #include "base/time/time.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -57,7 +59,8 @@ ScreenDimmer::ScreenDimmer(int container_id)
     : container_id_(container_id),
       target_opacity_(0.5f),
       is_dimming_(false),
-      at_bottom_(false) {
+      at_bottom_(false),
+      window_dimmers_(base::MakeUnique<WmWindowUserData<WindowDimmer>>()) {
   WmShell::Get()->AddShellObserver(this);
 }
 
@@ -90,23 +93,23 @@ void ScreenDimmer::OnRootWindowAdded(WmWindow* root_window) {
 }
 
 void ScreenDimmer::Update(bool should_dim) {
-  for (aura::Window* container : GetAllContainers(container_id_)) {
-    DimWindow* dim = DimWindow::Get(container);
+  for (aura::Window* aura_container : GetAllContainers(container_id_)) {
+    WmWindow* container = WmWindowAura::Get(aura_container);
+    WindowDimmer* window_dimmer = window_dimmers_->Get(container);
     if (should_dim) {
-      if (!dim) {
-        dim = new DimWindow(container);
-        dim->SetDimOpacity(target_opacity_);
+      if (!window_dimmer) {
+        window_dimmers_->Set(container,
+                             base::MakeUnique<WindowDimmer>(container));
+        window_dimmer = window_dimmers_->Get(container);
+        window_dimmer->SetDimOpacity(target_opacity_);
       }
       if (at_bottom_)
-        dim->parent()->StackChildAtBottom(dim);
+        container->StackChildAtBottom(window_dimmer->window());
       else
-        dim->parent()->StackChildAtTop(dim);
-      dim->Show();
-    } else {
-      if (dim) {
-        dim->Hide();
-        delete dim;
-      }
+        container->StackChildAtTop(window_dimmer->window());
+      window_dimmer->window()->Show();
+    } else if (window_dimmer) {
+      window_dimmers_->Set(container, nullptr);
     }
   }
 }

@@ -158,6 +158,11 @@ bool WmWindowMus::IsContainer() const {
   return GetShellWindowId() != kShellWindowId_Invalid;
 }
 
+void WmWindowMus::Destroy() {
+  window_->Destroy();
+  // WARNING: this has been deleted.
+}
+
 const WmWindow* WmWindowMus::GetRootWindow() const {
   return Get(window_->GetRoot());
 }
@@ -199,7 +204,11 @@ int WmWindowMus::GetShellWindowId() const {
 }
 
 ui::wm::WindowType WmWindowMus::GetType() const {
-  return GetWmWindowType(window_);
+  // If the WindowType was expicitly set, then it means |window_| was created
+  // by way of WmShellMus::NewWindow() and the type is locally defined. For
+  // windows created in other ways, say from the client, then we need to get
+  // the type from |window_| directly.
+  return is_wm_window_type_set_ ? wm_window_type_ : GetWmWindowType(window_);
 }
 
 bool WmWindowMus::IsBubble() {
@@ -451,6 +460,11 @@ void WmWindowMus::SetLayoutManager(
 WmLayoutManager* WmWindowMus::GetLayoutManager() {
   return layout_manager_adapter_ ? layout_manager_adapter_->layout_manager()
                                  : nullptr;
+}
+
+void WmWindowMus::SetVisibilityChangesAnimated() {
+  // TODO: need animation support: http://crbug.com/615087.
+  NOTIMPLEMENTED();
 }
 
 void WmWindowMus::SetVisibilityAnimationType(int type) {

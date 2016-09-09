@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/window_dimmer.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_user_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/dim_window.h"
-//#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
 
@@ -28,7 +30,10 @@ class ScreenDimmerTest : public AshTestBase {
   }
 
   aura::Window* GetDimWindow() {
-    return DimWindow::Get(Shell::GetPrimaryRootWindow());
+    WindowDimmer* window_dimmer =
+        dimmer_->window_dimmers_->Get(WmShell::Get()->GetPrimaryRootWindow());
+    return window_dimmer ? WmWindowAura::GetAuraWindow(window_dimmer->window())
+                         : nullptr;
   }
 
   ui::Layer* GetDimWindowLayer() {

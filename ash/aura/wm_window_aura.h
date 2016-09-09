@@ -46,6 +46,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   const aura::Window* aura_window() const { return window_; }
 
   // WmWindow:
+  void Destroy() override;
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
@@ -97,6 +98,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void SetLayoutManager(
       std::unique_ptr<WmLayoutManager> layout_manager) override;
   WmLayoutManager* GetLayoutManager() override;
+  void SetVisibilityChangesAnimated() override;
   void SetVisibilityAnimationType(int type) override;
   void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
   void SetVisibilityAnimationTransition(

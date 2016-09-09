@@ -5,6 +5,7 @@
 #ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 #define ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -23,7 +24,7 @@ class Rect;
 }
 
 namespace ash {
-class DimWindow;
+class WindowDimmer;
 
 // LayoutManager for the modal window container.
 // System modal windows which are centered on the screen will be kept centered
@@ -36,7 +37,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   explicit SystemModalContainerLayoutManager(aura::Window* container);
   ~SystemModalContainerLayoutManager() override;
 
-  bool has_modal_background() const { return modal_background_ != NULL; }
+  bool has_window_dimmer() const { return window_dimmer_ != nullptr; }
 
   // Overridden from SnapToPixelLayoutManager:
   void OnWindowResized() override;
@@ -49,7 +50,6 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
-  void OnWindowDestroying(aura::Window* window) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
@@ -97,9 +97,9 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // The container that owns the layout manager.
   aura::Window* container_;
 
-  // A window that dims the windows behind the modal window(s) being
-  // shown in |container_|.
-  DimWindow* modal_background_;
+  // WindowDimmer used to dim windows behind the modal window(s) being shown in
+  // |container_|.
+  std::unique_ptr<WindowDimmer> window_dimmer_;
 
   // A stack of modal windows. Only the topmost can receive events.
   std::vector<aura::Window*> modal_windows_;
