@@ -492,6 +492,8 @@ void WebFrameWidgetImpl::setFocus(bool enable)
     }
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::setComposition(
     const WebString& text,
     const WebVector<WebCompositionUnderline>& underlines,
@@ -545,6 +547,8 @@ bool WebFrameWidgetImpl::setComposition(
     return text.isEmpty() || inputMethodController.hasComposition();
 }
 
+// TODO(ekaramad):These methods are almost duplicated in WebViewImpl as well.
+// This code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::confirmComposition()
 {
     return confirmComposition(DoNotKeepSelection);
@@ -577,6 +581,8 @@ bool WebFrameWidgetImpl::confirmComposition(const WebString& text, ConfirmCompos
     return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 WebRange WebFrameWidgetImpl::compositionRange()
 {
     LocalFrame* focused = focusedLocalFrameAvailableForIme();
@@ -597,6 +603,8 @@ WebRange WebFrameWidgetImpl::compositionRange()
     return PlainTextRange::create(*editable, range);
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
 {
     WebTextInputInfo info;
@@ -658,6 +666,8 @@ WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
     return info;
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 WebTextInputType WebFrameWidgetImpl::textInputType()
 {
     LocalFrame* focusedFrame = focusedLocalFrameInWidget();
@@ -735,6 +745,8 @@ WebColor WebFrameWidgetImpl::backgroundColor() const
     return view->documentBackgroundColor().rgb();
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 {
     const LocalFrame* localFrame = focusedLocalFrameInWidget();
@@ -769,6 +781,8 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     return true;
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
 {
     const LocalFrame* frame = focusedLocalFrameInWidget();
@@ -783,6 +797,8 @@ bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start, WebText
     return true;
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::isSelectionAnchorFirst() const
 {
     if (const LocalFrame* frame = focusedLocalFrameInWidget())
@@ -790,6 +806,8 @@ bool WebFrameWidgetImpl::isSelectionAnchorFirst() const
     return false;
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 WebRange WebFrameWidgetImpl::caretOrSelectionRange()
 {
     LocalFrame* focused = focusedLocalFrameInWidget();
@@ -873,6 +891,8 @@ void WebFrameWidgetImpl::didLosePointerLock()
     page()->pointerLockController().didLosePointerLock();
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
 {
     WebRange range = compositionRange();
@@ -900,6 +920,8 @@ bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bound
     return true;
 }
 
+// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
+// code needs to be refactored  (http://crbug.com/629721).
 void WebFrameWidgetImpl::applyReplacementRange(const WebRange& range)
 {
     if (LocalFrame* frame = focusedLocalFrameInWidget()) {
