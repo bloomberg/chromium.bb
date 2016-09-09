@@ -37,7 +37,6 @@ DEFAULT_PARAMS = {
     'revision_mapping': {},
     'apply_issue_email_file': None,
     'apply_issue_key_file': None,
-    'buildspec': False,
     'gyp_env': None,
     'shallow': False,
     'runhooks': False,
@@ -189,14 +188,6 @@ class BotUpdateUnittests(unittest.TestCase):
     setattr(codecs, 'open', self.old_codecs_open)
 
   def testBasic(self):
-    bot_update.ensure_checkout(**self.params)
-    return self.call.records
-
-  def testBasicBuildspec(self):
-    self.params['buildspec'] = bot_update.BUILDSPEC_TYPE(
-        container='branches',
-        version='1.1.1.1'
-    )
     bot_update.ensure_checkout(**self.params)
     return self.call.records
 
