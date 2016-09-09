@@ -90,8 +90,6 @@ bool IsOrganic(const std::string& brand) {
   }
 #endif
 
-  // Changes to this list must be mirrored in
-  // chrome/tools/disable_outdated_build_detector/google_update_integration.cc.
   const char* const kBrands[] = {
       "CHCA", "CHCB", "CHCG", "CHCH", "CHCI", "CHCJ", "CHCK", "CHCL",
       "CHFO", "CHFT", "CHHS", "CHHM", "CHMA", "CHMB", "CHME", "CHMF",

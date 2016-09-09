@@ -117,7 +117,6 @@ if (is_win) {
     ]
 
     if (target_cpu == "x86") {
-      deps += [ "//chrome/tools/disable_outdated_build_detector" ]
       if (is_clang) {
         deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
       } else {
@@ -714,10 +713,6 @@ group("gn_only") {
 
   if (!is_android && !is_ios && !is_chromeos) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
-  }
-
-  if (is_win && target_cpu == "x86") {
-    deps += [ "//chrome/tools/disable_outdated_build_detector" ]
   }
 
   if (is_win || is_linux) {
