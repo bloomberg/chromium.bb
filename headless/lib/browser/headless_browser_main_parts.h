@@ -27,6 +27,8 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
 
+  bool devtools_http_handler_started_;
+
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserMainParts);
 };
 
