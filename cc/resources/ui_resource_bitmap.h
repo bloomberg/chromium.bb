@@ -11,6 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -36,6 +38,10 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceFormat GetFormat() const { return format_; }
   bool GetOpaque() const { return opaque_; }
   void SetOpaque(bool opaque) { opaque_ = opaque; }
+
+  // Draw the UIResourceBitmap onto the provided |canvas| using the style
+  // information specified by |paint|.
+  void DrawToCanvas(SkCanvas* canvas, SkPaint* paint);
 
   // User must ensure that |skbitmap| is immutable.  The SkBitmap Format should
   // be 32-bit RGBA or 8-bit ALPHA.

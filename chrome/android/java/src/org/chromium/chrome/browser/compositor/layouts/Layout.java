@@ -501,6 +501,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             mNextTabId = Tab.INVALID_TAB_ID;
         }
         mUpdateHost.doneHiding();
+        if (mRenderHost != null && mRenderHost.getResourceManager() != null) {
+            mRenderHost.getResourceManager().clearTintedResourceCache();
+        }
     }
 
     /**

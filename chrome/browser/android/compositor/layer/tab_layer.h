@@ -117,11 +117,8 @@ class TabLayer : public Layer {
 
  private:
   void SetTitle(DecorationTitle* title);
-  std::unique_ptr<cc::FilterOperations> createSolidColorFilter(int color);
 
   const bool incognito_;
-  bool toolbar_background_color_;
-  bool close_button_color_;
   ui::ResourceManager* resource_manager_;
   LayerTitleCache* layer_title_cache_;
 

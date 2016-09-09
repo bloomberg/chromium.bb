@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
@@ -48,6 +48,14 @@ void UIResourceBitmap::Create(sk_sp<SkPixelRef> pixel_ref,
 
   // Default values for secondary parameters.
   opaque_ = (format == ETC1);
+}
+
+void UIResourceBitmap::DrawToCanvas(SkCanvas* canvas, SkPaint* paint) {
+  SkBitmap bitmap;
+  bitmap.setInfo(pixel_ref_.get()->info(), pixel_ref_.get()->rowBytes());
+  bitmap.setPixelRef(pixel_ref_.get());
+  canvas->drawBitmap(bitmap, 0, 0, paint);
+  canvas->flush();
 }
 
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {

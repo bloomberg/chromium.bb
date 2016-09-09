@@ -167,6 +167,14 @@ public class ResourceManager implements ResourceLoaderCallback {
                 aperture.left, aperture.top, aperture.right, aperture.bottom);
     }
 
+    /**
+     * Clear the cache of tinted assets that the native manager holds.
+     */
+    public void clearTintedResourceCache() {
+        if (mNativeResourceManagerPtr == 0) return;
+        nativeClearTintedResourceCache(mNativeResourceManagerPtr);
+    }
+
     private void saveMetadataForLoadedResource(int resType, int resId, Resource resource) {
         SparseArray<LayoutResource> bucket = mLoadedResources.get(resType);
         if (bucket == null) {
@@ -226,5 +234,6 @@ public class ResourceManager implements ResourceLoaderCallback {
             int unscaledSpriteHeight, float scaledSpriteWidth, float scaledSpriteHeight);
     private native void nativeOnCrushedSpriteResourceReloaded(long nativeResourceManagerImpl,
             int bitmapResId, Bitmap bitmap);
+    private native void nativeClearTintedResourceCache(long nativeResourceManagerImpl);
 
 }

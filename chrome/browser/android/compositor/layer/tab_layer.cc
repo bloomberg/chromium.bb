@@ -153,8 +153,8 @@ void TabLayer::SetProperties(int id,
 
   // Grab required resources
   ui::ResourceManager::Resource* border_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     border_resource_id);
+      resource_manager_->GetStaticResourceWithTint(border_resource_id,
+                                                   toolbar_background_color);
   ui::ResourceManager::Resource* border_inner_shadow_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      border_inner_shadow_resource_id);
@@ -165,8 +165,8 @@ void TabLayer::SetProperties(int id,
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      contour_resource_id);
   ui::ResourceManager::Resource* close_btn_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     close_button_resource_id);
+      resource_manager_->GetStaticResourceWithTint(close_button_resource_id,
+                                                   close_button_color);
   ui::ResourceManager::Resource* back_logo_resource = nullptr;
 
   DecorationTitle* title_layer = nullptr;
@@ -478,12 +478,6 @@ void TabLayer::SetProperties(int id,
     front_border_->SetBounds(border_size);
     front_border_->SetOpacity(border_alpha);
     front_border_->SetNearestNeighbor(toolbar_visible);
-
-    if (toolbar_background_color != toolbar_background_color_) {
-      toolbar_background_color_ = toolbar_background_color;
-      front_border_->SetFilters(
-          *createSolidColorFilter(toolbar_background_color).get());
-    }
   }
 
   front_border_inner_shadow_->SetHideLayerAndSubtree(
@@ -522,13 +516,6 @@ void TabLayer::SetProperties(int id,
 
   close_button_->SetHideLayerAndSubtree(!close_btn_visible);
   if (close_btn_visible) {
-
-    if (close_button_color != close_button_color_) {
-      close_button_color_ = close_button_color;
-      close_button_->SetFilters(
-          *createSolidColorFilter(close_button_color).get());
-    }
-
     close_button_->SetPosition(close_button_position);
     close_button_->SetBounds(close_button_size);
     // Non-linear alpha looks better.
@@ -628,20 +615,6 @@ void TabLayer::SetProperties(int id,
   }
 }
 
-std::unique_ptr<cc::FilterOperations> TabLayer::createSolidColorFilter(
-    int color) {
-  std::unique_ptr<cc::FilterOperations> filters =
-      base::WrapUnique(new cc::FilterOperations());
-  SkScalar colorMatrix[] = {
-      SkColorGetR(color) / 255.0f, 0, 0, 0, 0,
-      0, SkColorGetG(color) / 255.0f, 0, 0, 0,
-      0, 0, SkColorGetB(color) / 255.0f, 0, 0,
-      0, 0, 0, 1, 0,
-  };
-  filters->Append(cc::FilterOperation::CreateColorMatrixFilter(colorMatrix));
-  return filters;
-}
-
 scoped_refptr<cc::Layer> TabLayer::layer() {
   return layer_;
 }
@@ -651,8 +624,6 @@ TabLayer::TabLayer(bool incognito,
                    LayerTitleCache* layer_title_cache,
                    TabContentManager* tab_content_manager)
     : incognito_(incognito),
-      toolbar_background_color_(0),
-      close_button_color_(0),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),
       layer_(cc::Layer::Create()),
