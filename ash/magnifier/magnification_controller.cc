@@ -9,7 +9,6 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/root_window_transformers.h"

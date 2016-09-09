@@ -4,7 +4,6 @@
 
 #include "ash/test/test_suite.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/test/ash_test_environment.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"

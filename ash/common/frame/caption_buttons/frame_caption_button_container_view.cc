@@ -7,7 +7,6 @@
 #include <cmath>
 #include <map>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button.h"
 #include "ash/common/frame/caption_buttons/frame_size_button.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"

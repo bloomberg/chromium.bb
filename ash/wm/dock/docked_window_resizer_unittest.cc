@@ -5,7 +5,6 @@
 #include "ash/common/wm/dock/docked_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"

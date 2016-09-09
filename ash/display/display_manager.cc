@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -32,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -103,7 +103,7 @@ void SetInternalManagedDisplayModeList(display::ManagedDisplayInfo* info) {
 void MaybeInitInternalDisplay(display::ManagedDisplayInfo* info) {
   int64_t id = info->id();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal)) {
+  if (command_line->HasSwitch(::switches::kUseFirstDisplayAsInternal)) {
     display::Display::SetInternalDisplayId(id);
     SetInternalManagedDisplayModeList(info);
   }
@@ -144,7 +144,7 @@ DisplayManager::DisplayManager(std::unique_ptr<display::Screen> screen)
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableUnifiedDesktop);
+      ::switches::kEnableUnifiedDesktop);
 #endif
 }
 
@@ -158,10 +158,10 @@ DisplayManager::~DisplayManager() {
 bool DisplayManager::InitFromCommandLine() {
   DisplayInfoList info_list;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshHostWindowBounds))
+  if (!command_line->HasSwitch(::switches::kHostWindowBounds))
     return false;
   const string size_str =
-      command_line->GetSwitchValueASCII(switches::kAshHostWindowBounds);
+      command_line->GetSwitchValueASCII(::switches::kHostWindowBounds);
   for (const std::string& part : base::SplitString(
            size_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     info_list.push_back(display::ManagedDisplayInfo::CreateFromSpec(part));
@@ -169,7 +169,7 @@ bool DisplayManager::InitFromCommandLine() {
   }
   MaybeInitInternalDisplay(&info_list[0]);
   if (info_list.size() > 1 &&
-      command_line->HasSwitch(switches::kAshEnableSoftwareMirroring)) {
+      command_line->HasSwitch(::switches::kEnableSoftwareMirroring)) {
     SetMultiDisplayMode(MIRRORING);
   }
   OnNativeDisplaysChanged(info_list);

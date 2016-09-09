@@ -887,7 +887,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)},
     {"ash-enable-unified-desktop", IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_NAME,
      IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableUnifiedDesktop)},
+     SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
     {"enable-easy-unlock-proximity-detection",
      IDS_FLAGS_EASY_UNLOCK_PROXIMITY_DETECTION_NAME,
      IDS_FLAGS_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION, kOsCrOS,

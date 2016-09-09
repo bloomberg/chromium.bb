@@ -4,7 +4,6 @@
 
 #include "ash/display/mirror_window_controller.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
@@ -21,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -41,9 +41,9 @@ class MirrorOnBootTest : public test::AshTestBase {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
+        ::switches::kHostWindowBounds, "1+1-300x300,1+301-300x300");
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableSoftwareMirroring);
+        ::switches::kEnableSoftwareMirroring);
     test::AshTestBase::SetUp();
   }
   void TearDown() override { test::AshTestBase::TearDown(); }

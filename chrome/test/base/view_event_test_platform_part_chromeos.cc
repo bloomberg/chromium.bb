@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -22,6 +21,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/display_switches.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -68,7 +68,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   init_params.context_factory = context_factory;
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ash::switches::kAshHostWindowBounds, "0+0-1280x800");
+      switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(init_params);
   ash::test::AshTestHelper::GetTestSessionStateDelegate()->
       SetActiveUserSessionStarted(true);

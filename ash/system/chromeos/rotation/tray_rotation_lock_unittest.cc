@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -20,6 +19,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/view.h"
@@ -98,7 +98,7 @@ void TrayRotationLockTest::SetUp() {
   // allows for DisplayManager to treat it as one. TrayRotationLock is only
   // visible on internal primary displays.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshUseFirstDisplayAsInternal);
+      ::switches::kUseFirstDisplayAsInternal);
   test::AshTestBase::SetUp();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
 }

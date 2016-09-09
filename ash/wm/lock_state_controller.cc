@@ -10,7 +10,6 @@
 
 #include "ash/cancel_mode.h"
 #include "ash/common/accessibility_delegate.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"

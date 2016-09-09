@@ -14,7 +14,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"

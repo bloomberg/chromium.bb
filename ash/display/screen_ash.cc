@@ -190,7 +190,6 @@ DisplayManager* ScreenAsh::CreateDisplayManager() {
 // static
 void ScreenAsh::CreateScreenForShutdown() {
   delete screen_for_shutdown;
-  // fix this up...
   screen_for_shutdown = new ScreenForShutdown(display::Screen::GetScreen());
   display::Screen::SetScreenInstance(screen_for_shutdown);
 }

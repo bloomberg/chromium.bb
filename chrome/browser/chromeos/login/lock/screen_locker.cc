@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"

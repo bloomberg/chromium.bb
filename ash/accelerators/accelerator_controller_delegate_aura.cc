@@ -12,7 +12,6 @@
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"

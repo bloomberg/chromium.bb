@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"

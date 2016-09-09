@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"

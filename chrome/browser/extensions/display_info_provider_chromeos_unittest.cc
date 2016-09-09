@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
@@ -21,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -38,7 +38,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshUseFirstDisplayAsInternal);
+        switches::kUseFirstDisplayAsInternal);
     ash::test::AshTestBase::SetUp();
   }
 

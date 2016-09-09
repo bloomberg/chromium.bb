@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"

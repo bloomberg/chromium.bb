@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"

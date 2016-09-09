@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"

@@ -96,7 +96,6 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(USE_ASH)
-#include "ash/common/ash_switches.h"  // nogncheck
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"  // nogncheck
 #include "extensions/browser/app_window/app_window_registry.h"  // nogncheck
 #endif

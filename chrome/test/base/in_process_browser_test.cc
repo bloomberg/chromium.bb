@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
-#include "ash/common/ash_switches.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -58,6 +57,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/display/display_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -216,10 +216,10 @@ void InProcessBrowserTest::SetUp() {
   base::CreateDirectory(log_dir);
   // Disable IME extension loading to avoid many browser tests failures.
   chromeos::input_method::DisableExtensionLoading();
-  if (!command_line->HasSwitch(ash::switches::kAshHostWindowBounds)) {
+  if (!command_line->HasSwitch(switches::kHostWindowBounds)) {
     // Adjusting window location & size so that the ash desktop window fits
     // inside the Xvfb'x defualt resolution.
-    command_line->AppendSwitchASCII(ash::switches::kAshHostWindowBounds,
+    command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
 #endif  // defined(OS_CHROMEOS)

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"

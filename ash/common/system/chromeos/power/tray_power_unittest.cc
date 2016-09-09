@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/ash_switches.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"

@@ -4,7 +4,6 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"

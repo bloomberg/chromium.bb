@@ -5,7 +5,6 @@
 #include "ash/common/system/status_area_widget_delegate.h"
 
 #include "ash/ash_export.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"

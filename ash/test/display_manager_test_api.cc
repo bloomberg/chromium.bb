@@ -7,7 +7,6 @@
 #include <cstdarg>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"

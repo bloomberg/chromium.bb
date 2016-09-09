@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/frame/header_view.h"

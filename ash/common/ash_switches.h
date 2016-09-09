@@ -38,10 +38,8 @@ ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_EXPORT extern const char kAshDisableStableOverviewOrder[];
 ASH_EXPORT extern const char kAshEnableStableOverviewOrder[];
-ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableTouchViewTesting[];
 ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
-ASH_EXPORT extern const char kAshHostWindowBounds[];
 ASH_EXPORT extern const char kAshMaterialDesign[];
 ASH_EXPORT extern const char kAshMaterialDesignDisabled[];
 ASH_EXPORT extern const char kAshMaterialDesignEnabled[];
@@ -49,7 +47,6 @@ ASH_EXPORT extern const char kAshMaterialDesignExperimental[];
 ASH_EXPORT extern const char kAshMaxWindowsToUseMaskInOverview[];
 ASH_EXPORT extern const char kAshMaxWindowsToUseShapeInOverview[];
 ASH_EXPORT extern const char kAshTouchHud[];
-ASH_EXPORT extern const char kAshUseFirstDisplayAsInternal[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 
 #if defined(OS_CHROMEOS)

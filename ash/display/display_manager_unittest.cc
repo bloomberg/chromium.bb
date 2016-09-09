@@ -5,7 +5,6 @@
 #include "ash/display/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
@@ -31,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -2203,8 +2203,8 @@ class FontTestHelper : public test::AshTestBase {
     gfx::ClearFontRenderParamsCacheForTest();
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (display_type == INTERNAL)
-      command_line->AppendSwitch(switches::kAshUseFirstDisplayAsInternal);
-    command_line->AppendSwitchASCII(switches::kAshHostWindowBounds,
+      command_line->AppendSwitch(::switches::kUseFirstDisplayAsInternal);
+    command_line->AppendSwitchASCII(::switches::kHostWindowBounds,
                                     StringPrintf("1000x800*%f", scale));
     SetUp();
   }

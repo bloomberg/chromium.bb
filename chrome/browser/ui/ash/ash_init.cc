@@ -7,7 +7,6 @@
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/wm_shell.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"

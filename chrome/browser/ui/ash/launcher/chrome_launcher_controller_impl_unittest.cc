@@ -100,6 +100,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -314,7 +315,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(ash::switches::kAshUseFirstDisplayAsInternal);
+    command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
     command_line->AppendSwitch(ash::switches::kAshEnableTouchViewTesting);
 
     app_list::AppListSyncableServiceFactory::SetUseInTesting();

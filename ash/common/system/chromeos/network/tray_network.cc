@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/network/tray_network.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"

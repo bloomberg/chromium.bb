@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/webview_test_helper.h"
@@ -158,7 +159,7 @@ ScreenOrientationControllerTest::CreateSecondaryWebContents() {
 
 void ScreenOrientationControllerTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshUseFirstDisplayAsInternal);
+      ::switches::kUseFirstDisplayAsInternal);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshEnableTouchViewTesting);
   test::AshTestBase::SetUp();

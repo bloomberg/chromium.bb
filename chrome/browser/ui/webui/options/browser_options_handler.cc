@@ -115,7 +115,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/accessibility_types.h"  // nogncheck
-#include "ash/common/ash_switches.h"  // nogncheck
 #include "ash/common/system/chromeos/devicetype_utils.h"  // nogncheck
 #include "ash/common/wallpaper/wallpaper_delegate.h"  // nogncheck
 #include "ash/shell.h"  // nogncheck

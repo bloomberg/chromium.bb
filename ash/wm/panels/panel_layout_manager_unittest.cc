@@ -5,7 +5,6 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_model.h"

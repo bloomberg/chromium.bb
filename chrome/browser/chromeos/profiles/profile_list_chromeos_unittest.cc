@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

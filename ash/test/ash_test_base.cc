@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -33,6 +32,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
@@ -124,8 +124,8 @@ void AshTestBase::SetUp() {
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshHostWindowBounds)) {
-    command_line->AppendSwitchASCII(switches::kAshHostWindowBounds,
+  if (!command_line->HasSwitch(::switches::kHostWindowBounds)) {
+    command_line->AppendSwitchASCII(::switches::kHostWindowBounds,
                                     "1+1-800x600");
   }
 #if defined(OS_WIN)
