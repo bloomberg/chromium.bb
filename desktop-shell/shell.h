@@ -122,6 +122,13 @@ struct shell_output {
 
 	struct weston_surface *background_surface;
 	struct wl_listener background_surface_listener;
+
+	struct {
+		struct weston_view *view;
+		struct weston_view_animation *animation;
+		enum fade_type type;
+		struct wl_event_source *startup_timer;
+	} fade;
 };
 
 struct weston_desktop;
@@ -191,13 +198,6 @@ struct desktop_shell {
 		struct wl_resource *binding;
 		struct wl_list surfaces;
 	} input_panel;
-
-	struct {
-		struct weston_view *view;
-		struct weston_view_animation *animation;
-		enum fade_type type;
-		struct wl_event_source *startup_timer;
-	} fade;
 
 	struct exposay exposay;
 
