@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
-/** The interface for editor fields that handle validation and display of errors. */
-interface Validatable {
+/** The interface for editor fields that handle validation, display errors, and can be updated. */
+interface EditorFieldView {
     /**
      * Updates the error display.
      *
@@ -18,4 +18,7 @@ interface Validatable {
 
     /** Scrolls to and focuses the field to bring user's attention to it. */
     void scrollToAndFocus();
+
+    /** Rereads the field value from the model, which may have been updated. */
+    void update();
 }

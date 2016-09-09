@@ -64,7 +64,7 @@ public class EditorView extends AlwaysDismissedDialog
     private final Handler mHandler;
     private final TextView.OnEditorActionListener mEditorActionListener;
     private final int mHalfRowMargin;
-    private final List<Validatable> mCheckableFields;
+    private final List<EditorFieldView> mFieldViews;
     private final List<EditText> mEditableTextFields;
     private final List<Spinner> mDropdownFields;
     private final InputFilter mCardNumberInputFilter;
@@ -109,7 +109,7 @@ public class EditorView extends AlwaysDismissedDialog
 
         mHalfRowMargin = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_large_spacing);
-        mCheckableFields = new ArrayList<>();
+        mFieldViews = new ArrayList<>();
         mEditableTextFields = new ArrayList<>();
         mDropdownFields = new ArrayList<>();
 
@@ -203,18 +203,18 @@ public class EditorView extends AlwaysDismissedDialog
      * @return Whether all fields contain valid information.
      */
     private boolean validateForm() {
-        final List<Validatable> invalidViews = getViewsWithInvalidInformation(true);
+        final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(true);
 
         // Iterate over all the fields to update what errors are displayed, which is necessary to
         // to clear existing errors on any newly valid fields.
-        for (int i = 0; i < mCheckableFields.size(); i++) {
-            Validatable fieldView = mCheckableFields.get(i);
+        for (int i = 0; i < mFieldViews.size(); i++) {
+            EditorFieldView fieldView = mFieldViews.get(i);
             fieldView.updateDisplayedError(invalidViews.contains(fieldView));
         }
 
         if (!invalidViews.isEmpty()) {
             // Make sure that focus is on an invalid field.
-            Validatable focusedField = getValidatable(getCurrentFocus());
+            EditorFieldView focusedField = getEditorTextField(getCurrentFocus());
             if (invalidViews.contains(focusedField)) {
                 // The focused field is invalid, but it may be scrolled off screen. Scroll to it.
                 focusedField.scrollToAndFocus();
@@ -229,12 +229,12 @@ public class EditorView extends AlwaysDismissedDialog
     }
 
     /** @return The validatable item for the given view. */
-    private Validatable getValidatable(View v) {
+    private EditorFieldView getEditorTextField(View v) {
         if (v instanceof TextView && v.getParent() != null
-                && v.getParent() instanceof EditorTextField) {
-            return (EditorTextField) v.getParent();
+                && v.getParent() instanceof EditorFieldView) {
+            return (EditorFieldView) v.getParent();
         } else if (v instanceof Spinner && v.getTag() != null) {
-            return (Validatable) v.getTag();
+            return (EditorFieldView) v.getTag();
         } else {
             return null;
         }
@@ -284,7 +284,7 @@ public class EditorView extends AlwaysDismissedDialog
         removeTextChangedListenersAndInputFilters();
         mDataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         mDataView.removeAllViews();
-        mCheckableFields.clear();
+        mFieldViews.clear();
         mEditableTextFields.clear();
         mDropdownFields.clear();
 
@@ -347,7 +347,7 @@ public class EditorView extends AlwaysDismissedDialog
             };
             EditorDropdownField dropdownView =
                     new EditorDropdownField(mContext, parent, fieldModel, prepareEditorRunnable);
-            mCheckableFields.add(dropdownView);
+            mFieldViews.add(dropdownView);
             mDropdownFields.add(dropdownView.getDropdown());
 
             childView = dropdownView.getLayout();
@@ -377,7 +377,7 @@ public class EditorView extends AlwaysDismissedDialog
 
             EditorTextField inputLayout = new EditorTextField(mContext, fieldModel,
                     mEditorActionListener, filter, formatter, mObserverForTest);
-            mCheckableFields.add(inputLayout);
+            mFieldViews.add(inputLayout);
 
             EditText input = inputLayout.getEditText();
             mEditableTextFields.add(input);
@@ -418,7 +418,7 @@ public class EditorView extends AlwaysDismissedDialog
         show();
 
         // Immediately focus the first invalid field to make it faster to edit.
-        final List<Validatable> invalidViews = getViewsWithInvalidInformation(false);
+        final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(false);
         if (!invalidViews.isEmpty()) {
             mHandler.post(new Runnable() {
                 @Override
@@ -427,6 +427,13 @@ public class EditorView extends AlwaysDismissedDialog
                     if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
                 }
             });
+        }
+    }
+
+    /** Rereads the values in the model to update the UI. */
+    public void update() {
+        for (int i = 0; i < mFieldViews.size(); i++) {
+            mFieldViews.get(i).update();
         }
     }
 
@@ -449,10 +456,10 @@ public class EditorView extends AlwaysDismissedDialog
         }
     }
 
-    private List<Validatable> getViewsWithInvalidInformation(boolean findAll) {
-        List<Validatable> invalidViews = new ArrayList<>();
-        for (int i = 0; i < mCheckableFields.size(); i++) {
-            Validatable fieldView = mCheckableFields.get(i);
+    private List<EditorFieldView> getViewsWithInvalidInformation(boolean findAll) {
+        List<EditorFieldView> invalidViews = new ArrayList<>();
+        for (int i = 0; i < mFieldViews.size(); i++) {
+            EditorFieldView fieldView = mFieldViews.get(i);
             if (!fieldView.isValid()) {
                 invalidViews.add(fieldView);
                 if (!findAll) break;

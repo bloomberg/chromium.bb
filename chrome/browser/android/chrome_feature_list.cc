@@ -48,6 +48,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
     &kReadItLaterInMenu,
+    &kScanCardsInWebPayments,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kSystemDownloadManager,
@@ -90,6 +91,9 @@ const base::Feature kPhysicalWebIgnoreOtherClientsFeature{
 
 const base::Feature kReadItLaterInMenu{"ReadItLaterInMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kScanCardsInWebPayments{"ScanCardsInWebPayments",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpecialLocaleFeature{"SpecialLocale",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

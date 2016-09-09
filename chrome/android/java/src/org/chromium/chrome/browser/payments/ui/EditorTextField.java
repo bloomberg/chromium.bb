@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
@@ -26,7 +27,8 @@ import javax.annotation.Nullable;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting
-public class EditorTextField extends CompatibilityTextInputLayout implements Validatable {
+public class EditorTextField extends CompatibilityTextInputLayout
+        implements EditorFieldView, View.OnClickListener {
     private EditorFieldModel mEditorFieldModel;
     private AutoCompleteTextView mInput;
     private boolean mHasFocusedAtLeastOnce;
@@ -51,6 +53,12 @@ public class EditorTextField extends CompatibilityTextInputLayout implements Val
         mInput.setText(fieldModel.getValue());
         mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(actionlistener);
+
+        if (fieldModel.getIconAction() != null) {
+            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    mInput, 0, 0, fieldModel.getActionIconResourceId(), 0);
+            mInput.setOnClickListener(this);
+        }
 
         // Validate the field when the user de-focuses it.
         mInput.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -143,6 +151,11 @@ public class EditorTextField extends CompatibilityTextInputLayout implements Val
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        mEditorFieldModel.getIconAction().run();
+    }
+
     /** @return The EditorFieldModel that the TextView represents. */
     public EditorFieldModel getFieldModel() {
         return mEditorFieldModel;
@@ -169,5 +182,10 @@ public class EditorTextField extends CompatibilityTextInputLayout implements Val
         if (parent != null) parent.requestChildFocus(this, this);
         requestFocus();
         sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+    }
+
+    @Override
+    public void update() {
+        mInput.setText(mEditorFieldModel.getValue());
     }
 }

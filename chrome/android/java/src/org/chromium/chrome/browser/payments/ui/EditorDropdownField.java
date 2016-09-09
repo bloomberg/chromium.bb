@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Helper class for creating a dropdown view with a label.
  */
-class EditorDropdownField implements Validatable {
+class EditorDropdownField implements EditorFieldView {
     private final EditorFieldModel mFieldModel;
     private final View mLayout;
     private final TextView mLabel;
@@ -53,12 +53,7 @@ class EditorDropdownField implements Validatable {
                 : mFieldModel.getLabel());
 
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
-        for (int j = 0; j < dropdownKeyValues.size(); j++) {
-            if (dropdownKeyValues.get(j).getKey().equals(mFieldModel.getValue())) {
-                mSelectedIndex = j;
-                break;
-            }
-        }
+        mSelectedIndex = getDropdownIndex(dropdownKeyValues, mFieldModel.getValue());
 
         ArrayAdapter<DropdownKeyValue> adapter = new ArrayAdapter<DropdownKeyValue>(
                 context, R.layout.multiline_spinner_item, dropdownKeyValues);
@@ -121,8 +116,21 @@ class EditorDropdownField implements Validatable {
     public void scrollToAndFocus() {
         ViewGroup parent = (ViewGroup) mDropdown.getParent();
         if (parent != null) parent.requestChildFocus(mDropdown, mDropdown);
-        // Open the dropdown to prompt user selection.
-        mDropdown.performClick();
         mDropdown.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+    }
+
+    @Override
+    public void update() {
+        mSelectedIndex =
+                getDropdownIndex(mFieldModel.getDropdownKeyValues(), mFieldModel.getValue());
+        mDropdown.setSelection(mSelectedIndex);
+    }
+
+    private static int getDropdownIndex(
+            List<DropdownKeyValue> dropdownKeyValues, CharSequence value) {
+        for (int i = 0; i < dropdownKeyValues.size(); i++) {
+            if (dropdownKeyValues.get(i).getKey().equals(value)) return i;
+        }
+        return 0;
     }
 }

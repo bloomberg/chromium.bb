@@ -105,7 +105,10 @@ public class EditorFieldModel {
     @Nullable private CharSequence mBottomLabel;
     @Nullable private CharSequence mValue;
     @Nullable private Callback<Pair<String, Runnable>> mDropdownCallback;
+    @Nullable private Runnable mIconAction;
     private int mLabelIconResourceId;
+    private int mActionIconResourceId;
+    private int mActionDescriptionForAccessibility;
     private boolean mIsChecked = false;
     private boolean mIsFullLine = true;
 
@@ -199,9 +202,9 @@ public class EditorFieldModel {
      * @param inputTypeHint The type of input. For example, INPUT_TYPE_HINT_PHONE.
      */
     public static EditorFieldModel createTextInput(int inputTypeHint) {
-        assert inputTypeHint >= INPUT_TYPE_HINT_MIN_INCLUSIVE;
-        assert inputTypeHint < INPUT_TYPE_HINT_MAX_TEXT_INPUT_EXCLUSIVE;
-        return new EditorFieldModel(inputTypeHint);
+        EditorFieldModel result = new EditorFieldModel(inputTypeHint);
+        assert result.isTextField();
+        return result;
     }
 
     /**
@@ -222,10 +225,9 @@ public class EditorFieldModel {
             @Nullable Set<CharSequence> suggestions, @Nullable EditorFieldValidator validator,
             @Nullable CharSequence requiredErrorMessage, @Nullable CharSequence invalidErrorMessage,
             @Nullable CharSequence value) {
-        assert inputTypeHint >= INPUT_TYPE_HINT_MIN_INCLUSIVE;
-        assert inputTypeHint < INPUT_TYPE_HINT_MAX_TEXT_INPUT_EXCLUSIVE;
         assert label != null;
         EditorFieldModel result = new EditorFieldModel(inputTypeHint);
+        assert result.isTextField();
         result.mSuggestions = suggestions == null ? null : new ArrayList<CharSequence>(suggestions);
         result.mValidator = validator;
         result.mInvalidErrorMessage = invalidErrorMessage;
@@ -235,10 +237,47 @@ public class EditorFieldModel {
         return result;
     }
 
+    /**
+     * Adds an icon to a text input field. The icon can be tapped to perform an action, e.g., launch
+     * a credit card scanner.
+     *
+     * @param icon        The drawable resource for the icon.
+     * @param description The string resource for the human readable description of the action.
+     * @param action      The callback to invoke when the icon is tapped.
+     */
+    public void addActionIcon(int icon, int description, Runnable action) {
+        assert isTextField();
+        mActionIconResourceId = icon;
+        mActionDescriptionForAccessibility = description;
+        mIconAction = action;
+    }
+
     private EditorFieldModel(int inputTypeHint) {
-        assert inputTypeHint >= INPUT_TYPE_HINT_MIN_INCLUSIVE;
-        assert inputTypeHint < INPUT_TYPE_HINT_MAX_EXCLUSIVE;
+        assert isTextField();
         mInputTypeHint = inputTypeHint;
+    }
+
+    /** @return The action icon resource identifier, for example, R.drawable.ocr_card. */
+    public int getActionIconResourceId() {
+        assert isTextField();
+        return mActionIconResourceId;
+    }
+
+    /** @return The string resource for the human readable description of the action. */
+    public int getActionDescriptionForAccessibility() {
+        assert isTextField();
+        return mActionDescriptionForAccessibility;
+    }
+
+    /** @return The action to invoke when the icon has been tapped. */
+    public Runnable getIconAction() {
+        assert isTextField();
+        return mIconAction;
+    }
+
+    private boolean isTextField() {
+        return mInputTypeHint >= INPUT_TYPE_HINT_MIN_INCLUSIVE
+                && mInputTypeHint < INPUT_TYPE_HINT_MAX_TEXT_INPUT_EXCLUSIVE;
     }
 
     /** @return The type of input, for example, INPUT_TYPE_HINT_PHONE. */
