@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
@@ -333,6 +334,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testFullNativeInstallPathwayFromId() throws Exception {
         runFullNativeInstallPathway(mNativeAppUrl, NATIVE_APP_BLANK_REFERRER);
     }
@@ -346,6 +348,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testBannerAppearsThenDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that requests a banner.
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
@@ -441,6 +444,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testBitmapFetchersCanOverlapWithoutCrashing() throws Exception {
         // Visit a site that requests a banner rapidly and repeatedly.
         for (int i = 1; i <= 10; i++) {
@@ -459,12 +463,14 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testWebAppBannerAppears() throws Exception {
         triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE);
     }
 
     @SmallTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testBannerFallsBackToShortName() throws Exception {
         triggerWebAppBanner(mTestServer.getURL(WEB_APP_SHORT_TITLE_PATH), WEB_APP_SHORT_TITLE);
     }

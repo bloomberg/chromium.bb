@@ -17,6 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -30,6 +31,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests AppMenu popup
  */
+@RetryOnFailure
 public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>poit.</html>");
 

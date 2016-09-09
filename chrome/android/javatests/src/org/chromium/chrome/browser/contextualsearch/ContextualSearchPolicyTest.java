@@ -8,6 +8,7 @@ import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testBestTargetLanguageFromMultiple() {
         ArrayList<String> list = new ArrayList<String>();
         list.add("br");
@@ -47,6 +49,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testBestTargetLanguageSkipsEnglish() {
         ArrayList<String> list = new ArrayList<String>();
         list.add("en");
@@ -56,6 +59,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testBestTargetLanguageUsesEnglishWhenOnlyChoice() {
         ArrayList<String> list = new ArrayList<String>();
         list.add("en");

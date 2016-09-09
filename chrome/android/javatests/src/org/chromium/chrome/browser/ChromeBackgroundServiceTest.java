@@ -14,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
@@ -125,12 +126,14 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"NTPSnippets"})
+    @RetryOnFailure
     public void testNTPSnippetsFetchWifiChargingNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, false, false, true, false);
     }
 
     @SmallTest
     @Feature({"NTPSnippets"})
+    @RetryOnFailure
     public void testNTPSnippetsFetchWifiNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, false, false, true, false);
     }
@@ -143,12 +146,14 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"NTPSnippets"})
+    @RetryOnFailure
     public void testNTPSnippetsRescheduleNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_RESCHEDULE, false, false, false, true);
     }
 
     @SmallTest
     @Feature({"NTPSnippets"})
+    @RetryOnFailure
     public void testNTPSnippetsFetchWifiChargingLaunchBrowserWhenInstanceDoesNotExist() {
         deleteSnippetsLauncherInstance();
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, true, false, true, false);

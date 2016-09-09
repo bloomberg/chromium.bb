@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.location.LocationUtils;
@@ -34,6 +35,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the BluetoothChooserDialog class.
  */
+@RetryOnFailure
 public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Works like the BluetoothChooserDialog class, but records calls to native methods instead of

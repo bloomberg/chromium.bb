@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
@@ -237,6 +238,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
     public void testTextTapFollowedByNonTextTap() {
         assertTrue(mPanelManager.getRequestPanelShowCount() == 0);
 

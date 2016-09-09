@@ -14,6 +14,7 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
@@ -35,6 +36,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the bookmark manager.
  */
+@RetryOnFailure
 public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public BookmarkTest() {

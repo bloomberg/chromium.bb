@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 
 /**
@@ -44,6 +45,7 @@ public class ContextualSearchRequestTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testHasFailed() {
         assertFalse(mRequest.getHasFailed());
         mRequest.setHasFailed();

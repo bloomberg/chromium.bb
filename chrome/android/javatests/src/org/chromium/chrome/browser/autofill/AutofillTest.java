@@ -12,6 +12,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests the Autofill's java code for creating the AutofillPopup object, opening and selecting
  * popups.
  */
+@RetryOnFailure
 public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private AutofillPopup mAutofillPopup;

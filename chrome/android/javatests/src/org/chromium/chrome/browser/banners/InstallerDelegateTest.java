@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -151,6 +152,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
      * Makes sure that the runnable isn't called until returning from start().
      */
     @SmallTest
+    @RetryOnFailure
     public void testRunnableRaceCondition() throws InterruptedException {
         mPackageManager.isInstalled = true;
         mTestDelegate.setTimingForTests(1, 5000);

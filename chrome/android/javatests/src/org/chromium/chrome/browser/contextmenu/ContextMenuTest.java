@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -79,6 +80,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser", "Main"})
+    @RetryOnFailure
     public void testCopyLinkURL() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testLink",
@@ -89,6 +91,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testCopyImageLinkCopiesLinkURL() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testImageLink",
@@ -99,6 +102,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testCopyLinkTextSimple() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testLink",
@@ -110,6 +114,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testCopyLinkTextComplex() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "copyLinkTextComplex",
@@ -121,6 +126,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testLongPressOnImage() throws InterruptedException, TimeoutException {
         checkOpenImageInNewTab(
                 "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
@@ -179,6 +185,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab, "testImage");
@@ -201,6 +208,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab, "testImage");
@@ -224,6 +232,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testCopyEmailAddress() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testEmail",
@@ -235,6 +244,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testSaveDataUrl()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, FILENAME_GIF);
@@ -249,6 +259,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
@@ -265,6 +276,7 @@ public class ContextMenuTest extends DownloadTestBase {
      */
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering()
             throws InterruptedException, TimeoutException {
         TabModel tabModel = getActivity().getCurrentTabModel();

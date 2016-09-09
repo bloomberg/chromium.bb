@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -46,6 +47,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
      */
     @MediumTest
     @Feature({"autofill-keyboard"})
+    @RetryOnFailure
     public void testShowAutofillPopupAndKeyboardimultaneously()
             throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"

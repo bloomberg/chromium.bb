@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.test.util.ApplicationData;
@@ -41,6 +42,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testAddAndEditProfiles() throws InterruptedException, ExecutionException,
             TimeoutException {
         AutofillProfile profile = new AutofillProfile(
@@ -77,6 +79,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testUpdateLanguageCodeInProfile() throws InterruptedException, ExecutionException,
             TimeoutException {
         AutofillProfile profile = new AutofillProfile(
@@ -108,6 +111,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testAddAndDeleteProfile() throws InterruptedException, ExecutionException,
             TimeoutException {
         String profileOneGUID = mHelper.setProfile(createTestProfile());
@@ -119,6 +123,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testAddAndEditCreditCards() throws InterruptedException, ExecutionException,
             TimeoutException {
         CreditCard card = new CreditCard(
@@ -152,6 +157,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testAddAndDeleteCreditCard() throws InterruptedException, ExecutionException,
             TimeoutException {
         CreditCard card = new CreditCard(
@@ -197,6 +203,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testMultilineStreetAddress() throws InterruptedException, ExecutionException,
             TimeoutException {
         final String streetAddress1 = "Chez Mireille COPEAU Appartment. 2\n"
@@ -362,6 +369,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testCreditCardsDeduping() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Create a local card and an identical server card.
@@ -387,6 +395,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testProfileUseStatsSettingAndGetting() throws InterruptedException,
             ExecutionException, TimeoutException {
         String guid = mHelper.setProfile(createTestProfile());
@@ -406,6 +415,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testCreditCardUseStatsSettingAndGetting() throws InterruptedException,
             ExecutionException, TimeoutException {
         String guid = mHelper.setCreditCard(
@@ -428,6 +438,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testRecordAndLogProfileUse() throws InterruptedException, ExecutionException,
             TimeoutException {
         String guid = mHelper.setProfile(createTestProfile());
@@ -453,6 +464,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testRecordAndLogCreditCardUse() throws InterruptedException, ExecutionException,
             TimeoutException {
         String guid = mHelper.setCreditCard(
@@ -482,6 +494,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testGetProfilesToSuggest_NoName() throws InterruptedException, ExecutionException,
             TimeoutException {
         mHelper.setProfile(createTestProfile());
@@ -493,6 +506,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
+    @RetryOnFailure
     public void testGetProfilesToSuggest_WithName() throws InterruptedException, ExecutionException,
             TimeoutException {
         mHelper.setProfile(createTestProfile());

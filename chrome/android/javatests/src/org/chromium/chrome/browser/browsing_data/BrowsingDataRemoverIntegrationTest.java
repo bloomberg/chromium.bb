@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -86,6 +87,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
      * BrowsingDataRemover::RemoveDataMask::REMOVE_WEBAPP_DATA instead of BrowsingDataType.COOKIES.
      */
     @MediumTest
+    @RetryOnFailure
     public void testUnregisteringWebapps() throws Exception {
         // Register three web apps.
         final HashMap<String, String> apps = new HashMap<String, String>();
