@@ -120,14 +120,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static GURL GetEffectiveURL(BrowserContext* browser_context,
                               const GURL& url);
 
-  // Returns true if pages loaded from |effective_url| ought to be handled only
-  // by a renderer process isolated from other sites. If --site-per-process is
-  // on the command line, this is true for all sites. In other site isolation
-  // modes, only a subset of sites will require dedicated processes.
-  //
-  // |effective_url| must be an effective URL.
+  // Returns true if pages loaded from |url| ought to be handled only by a
+  // renderer process isolated from other sites. If --site-per-process is on the
+  // command line, this is true for all sites. In other site isolation modes,
+  // only a subset of sites will require dedicated processes.
   static bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                              const GURL& effective_url);
+                                              const GURL& url);
 
  private:
   friend class BrowsingInstance;

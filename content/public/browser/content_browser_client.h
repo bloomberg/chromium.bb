@@ -191,17 +191,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url);
 
-  // Returns true if site isolation should be enabled for |effective_url|. This
-  // call allows the embedder to supplement the site isolation policy enforced
-  // by the content layer.
+  // Returns true if site isolation should be enabled for |effective_site_url|.
+  // This call allows the embedder to supplement the site isolation policy
+  // enforced by the content layer.
   //
   // Will only be called if both of the following happen:
   //   1. The embedder asked to be consulted, by returning true from
   //      ContentClient::IsSupplementarySiteIsolationModeEnabled().
-  //   2. The content layer didn't decide to isolate |effective_url| according
-  //      to its internal policy (e.g. because of --site-per-process).
+  //   2. The content layer didn't decide to isolate |effective_site_url|
+  //      according to its internal policy (e.g. because of --site-per-process).
   virtual bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                               const GURL& effective_url);
+                                               const GURL& effective_site_url);
 
   // Returns true unless the effective URL is part of a site that cannot live in
   // a process restricted to just that site.  This is only called if site

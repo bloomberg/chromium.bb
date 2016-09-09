@@ -34,7 +34,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                       const GURL& effective_url) override;
+                                       const GURL& effective_site_url) override;
   bool IsHandledURL(const GURL& url) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;

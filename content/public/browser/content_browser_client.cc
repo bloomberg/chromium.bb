@@ -50,7 +50,7 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
 
 bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
     BrowserContext* browser_context,
-    const GURL& effective_url) {
+    const GURL& effective_site_url) {
   return false;
 }
 

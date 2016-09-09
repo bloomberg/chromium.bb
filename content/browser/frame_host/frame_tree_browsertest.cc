@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -17,6 +18,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_frame_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -31,6 +33,17 @@
 
 namespace content {
 
+namespace {
+
+std::string GetOriginFromRenderer(FrameTreeNode* node) {
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      node, "window.domAutomationController.send(document.origin);", &origin));
+  return origin;
+}
+
+}  // namespace
+
 class FrameTreeBrowserTest : public ContentBrowserTest {
  public:
   FrameTreeBrowserTest() {}
@@ -39,15 +52,6 @@ class FrameTreeBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     SetupCrossSiteRedirector(embedded_test_server());
-  }
-
- protected:
-  std::string GetOriginFromRenderer(FrameTreeNode* node) {
-    std::string origin;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        node, "window.domAutomationController.send(document.origin);",
-        &origin));
-    return origin;
   }
 
  private:
@@ -689,6 +693,69 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   // Navigating to a data URL should set a unique origin.  This is represented
   // as "null" per RFC 6454.
   EXPECT_EQ(root->child_at(1)->current_origin().Serialize(), "null");
+}
+
+// FrameTreeBrowserTest variant where we isolate http://*.is, Iceland's top
+// level domain. This is an analogue to --isolate-extensions that we use inside
+// of content_browsertests, where extensions don't exist. Iceland, like an
+// extension process, is a special place with magical powers; we want to protect
+// it from outsiders.
+class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {
+ public:
+  IsolateIcelandFrameTreeBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kIsolateSitesForTesting, "*.is");
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    SetupCrossSiteRedirector(embedded_test_server());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolateIcelandFrameTreeBrowserTest);
+};
+
+// Regression test for https://crbug.com/644966
+IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
+                       ProcessSwitchForIsolatedBlob) {
+  // blink suppresses navigations to blob URLs of origins different from the
+  // frame initiating the navigation. We disable those checks for this test, to
+  // test what happens in a compromise scenario.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableWebSecurity);
+
+  // Set up an iframe.
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // The navigation targets an invalid blob url; that's intentional to trigger
+  // an error response. The response should commit in a process dedicated to
+  // http://b.is.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      "var iframe_element = document.getElementsByTagName('iframe')[0];"
+      "iframe_element.onload = () => {"
+      "    domAutomationController.send('done');"
+      "};"
+      "iframe_element.src = 'blob:http://b.is:2932/';",
+      &result));
+  WaitForLoadStop(contents);
+
+  // Make sure we did a process transfer back to "b.is".
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.is/",
+      FrameTreeVisualizer().DepictFrameTree(root));
 }
 
 }  // namespace content
