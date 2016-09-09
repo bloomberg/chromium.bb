@@ -97,6 +97,9 @@ const char kOverrideUseGLWithOSMesaForTests[] =
 // Disables specified comma separated GL Extensions if found.
 const char kDisableGLExtensions[] = "disable-gl-extensions";
 
+// Use EGL_KHR_swap_buffers_with_damage to implement PostSubBuffers
+const char kEnableSwapBuffersWithDamage[] = "enable-swap-buffers-with-damage";
+
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
@@ -112,9 +115,9 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kOverrideUseGLWithOSMesaForTests,
     kUseANGLE,
     kDisableDirectComposition,
+    kEnableSwapBuffersWithDamage,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);
 
 }  // namespace switches
-

@@ -2473,4 +2473,13 @@ void GLES2TraceImplementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
                                                    transform);
 }
 
+void GLES2TraceImplementation::SwapBuffersWithDamageCHROMIUM(GLint x,
+                                                             GLint y,
+                                                             GLint width,
+                                                             GLint height) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::SwapBuffersWithDamageCHROMIUM");
+  gl_->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

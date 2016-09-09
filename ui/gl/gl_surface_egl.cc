@@ -638,6 +638,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
       enable_fixed_size_angle_(false),
       surface_(NULL),
       supports_post_sub_buffer_(false),
+      supports_swap_buffer_with_damage_(false),
       flips_vertically_(false),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
@@ -729,6 +730,11 @@ bool NativeViewGLSurfaceEGL::Initialize(
         GetDisplay(), surface_, EGL_POST_SUB_BUFFER_SUPPORTED_NV, &surfaceVal);
     supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
   }
+
+  supports_swap_buffer_with_damage_ =
+      g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSwapBuffersWithDamage);
 
   if (sync_provider)
     vsync_provider_.reset(sync_provider.release());
@@ -869,6 +875,10 @@ EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }
 
+bool NativeViewGLSurfaceEGL::SupportsSwapBuffersWithDamage() {
+  return supports_swap_buffer_with_damage_;
+}
+
 bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
   return supports_post_sub_buffer_;
 }
@@ -879,6 +889,32 @@ bool NativeViewGLSurfaceEGL::FlipsVertically() const {
 
 bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
   return g_use_direct_composition;
+}
+
+gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(int x,
+                                                              int y,
+                                                              int width,
+                                                              int height) {
+  DCHECK(supports_swap_buffer_with_damage_);
+  UpdateSwapInterval();
+  if (!CommitAndClearPendingOverlays()) {
+    DVLOG(1) << "Failed to commit pending overlay planes.";
+    return gfx::SwapResult::SWAP_FAILED;
+  }
+  if (flips_vertically_) {
+    // With EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE the contents are rendered
+    // inverted, but the damage rectangle is still measured from the
+    // bottom left.
+    y = GetSize().height() - y - height;
+  }
+
+  EGLint damage_rect[4] = {x, y, width, height};
+  if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_, damage_rect, 1)) {
+    DVLOG(1) << "eglSwapBuffersWithDamageKHR failed with error "
+             << GetLastEGLErrorString();
+    return gfx::SwapResult::SWAP_FAILED;
+  }
+  return gfx::SwapResult::SWAP_ACK;
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,

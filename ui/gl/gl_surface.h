@@ -85,6 +85,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;
 
+  // Returns whether or not the surface supports SwapBuffersWithDamage
+  virtual bool SupportsSwapBuffersWithDamage();
+
   // Returns whether or not the surface supports PostSubBuffer.
   virtual bool SupportsPostSubBuffer();
 
@@ -105,6 +108,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // SwapBufferAck till that data is available. The callback should be run on
   // the calling thread (i.e. same thread SwapBuffersAsync is called)
   virtual void SwapBuffersAsync(const SwapCompletionCallback& callback);
+
+  // Swap buffers with damage rect.
+  virtual gfx::SwapResult SwapBuffersWithDamage(int x,
+                                                int y,
+                                                int width,
+                                                int height);
 
   // Copy part of the backbuffer to the frontbuffer.
   virtual gfx::SwapResult PostSubBuffer(int x, int y, int width, int height);
@@ -232,6 +241,10 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
   void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
+  gfx::SwapResult SwapBuffersWithDamage(int x,
+                                        int y,
+                                        int width,
+                                        int height) override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   void PostSubBufferAsync(int x,
                           int y,
@@ -241,6 +254,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   gfx::SwapResult CommitOverlayPlanes() override;
   void CommitOverlayPlanesAsync(
       const SwapCompletionCallback& callback) override;
+  bool SupportsSwapBuffersWithDamage() override;
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
   bool SupportsAsyncSwap() override;

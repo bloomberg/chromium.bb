@@ -23,6 +23,10 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
 
   // gl::GLSurface:
   gfx::SwapResult SwapBuffers() override;
+  gfx::SwapResult SwapBuffersWithDamage(int x,
+                                        int y,
+                                        int width,
+                                        int height) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;

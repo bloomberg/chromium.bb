@@ -3625,6 +3625,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'trace_level': 1,
   },
+  'SwapBuffersWithDamageCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'extension': True,
+  },
   'SwapInterval': {
     'impl_func': False,
     'decoder_func': 'DoSwapInterval',

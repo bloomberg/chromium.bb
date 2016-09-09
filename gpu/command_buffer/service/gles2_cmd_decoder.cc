@@ -2231,6 +2231,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
+  bool supports_swap_buffers_with_damage_;
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
 
@@ -2915,6 +2916,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
+      supports_swap_buffers_with_damage_(false),
       supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
       derivatives_explicitly_enabled_(false),
@@ -3418,6 +3420,8 @@ bool GLES2DecoderImpl::Initialize(
       !surface->IsOffscreen())
     supports_post_sub_buffer_ = false;
 
+  supports_swap_buffers_with_damage_ = surface->SupportsSwapBuffersWithDamage();
+
   supports_commit_overlay_planes_ = surface->SupportsCommitOverlayPlanes();
 
   supports_async_swap_ = surface->SupportsAsyncSwap();
@@ -3566,6 +3570,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 #endif
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
+  caps.swap_buffers_with_damage = supports_swap_buffers_with_damage_;
   caps.commit_overlay_planes = supports_commit_overlay_planes_;
   caps.image = true;
   caps.surfaceless = surfaceless_;
@@ -10922,6 +10927,37 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
       NOTREACHED();
       break;
   }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSwapBuffersWithDamageCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM*>(
+          cmd_data);
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::SwapBuffersWithDamageCHROMIUM");
+  { TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame"); }
+  if (!supports_swap_buffers_with_damage_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSwapBuffersWithDamageCHROMIUM",
+                       "command not supported by surface");
+    return error::kNoError;
+  }
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
+                                     &is_tracing);
+  if (is_tracing) {
+    bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+    ScopedFramebufferBinder binder(this, GetBackbufferServiceId());
+    gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
+        is_offscreen ? offscreen_size_ : surface_->GetSize());
+  }
+
+  ClearScheduleCALayerState();
+
+  FinishSwapBuffers(
+      surface_->SwapBuffersWithDamage(c.x, c.y, c.width, c.height));
+
   return error::kNoError;
 }
 

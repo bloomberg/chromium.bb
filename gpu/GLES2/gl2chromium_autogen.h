@@ -379,5 +379,7 @@
 #define glGetFragDataIndexEXT GLES2_GET_FUN(GetFragDataIndexEXT)
 #define glUniformMatrix4fvStreamTextureMatrixCHROMIUM \
   GLES2_GET_FUN(UniformMatrix4fvStreamTextureMatrixCHROMIUM)
+#define glSwapBuffersWithDamageCHROMIUM \
+  GLES2_GET_FUN(SwapBuffersWithDamageCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

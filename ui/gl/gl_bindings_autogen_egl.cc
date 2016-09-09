@@ -109,6 +109,7 @@ void DriverEGL::InitializeStaticBindings() {
       GetGLProcAddress("eglSurfaceAttrib"));
   fn.eglSwapBuffersFn =
       reinterpret_cast<eglSwapBuffersProc>(GetGLProcAddress("eglSwapBuffers"));
+  fn.eglSwapBuffersWithDamageKHRFn = 0;
   fn.eglSwapIntervalFn = reinterpret_cast<eglSwapIntervalProc>(
       GetGLProcAddress("eglSwapInterval"));
   fn.eglTerminateFn =
@@ -172,6 +173,8 @@ void DriverEGL::InitializeExtensionBindings() {
   ext.b_EGL_KHR_stream_consumer_gltexture =
       extensions.find("EGL_KHR_stream_consumer_gltexture ") !=
       std::string::npos;
+  ext.b_EGL_KHR_swap_buffers_with_damage =
+      extensions.find("EGL_KHR_swap_buffers_with_damage ") != std::string::npos;
   ext.b_EGL_KHR_wait_sync =
       extensions.find("EGL_KHR_wait_sync ") != std::string::npos;
   ext.b_EGL_NV_post_sub_buffer =
@@ -293,6 +296,13 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglStreamPostD3DTextureNV12ANGLEFn =
         reinterpret_cast<eglStreamPostD3DTextureNV12ANGLEProc>(
             GetGLProcAddress("eglStreamPostD3DTextureNV12ANGLE"));
+  }
+
+  debug_fn.eglSwapBuffersWithDamageKHRFn = 0;
+  if (ext.b_EGL_KHR_swap_buffers_with_damage) {
+    fn.eglSwapBuffersWithDamageKHRFn =
+        reinterpret_cast<eglSwapBuffersWithDamageKHRProc>(
+            GetGLProcAddress("eglSwapBuffersWithDamageKHR"));
   }
 
   debug_fn.eglWaitSyncKHRFn = 0;
@@ -970,6 +980,21 @@ static EGLBoolean GL_BINDING_CALL Debug_eglSwapBuffers(EGLDisplay dpy,
   return result;
 }
 
+static EGLBoolean GL_BINDING_CALL
+Debug_eglSwapBuffersWithDamageKHR(EGLDisplay dpy,
+                                  EGLSurface surface,
+                                  EGLint* rects,
+                                  EGLint n_rects) {
+  GL_SERVICE_LOG("eglSwapBuffersWithDamageKHR"
+                 << "(" << dpy << ", " << surface << ", "
+                 << static_cast<const void*>(rects) << ", " << n_rects << ")");
+  DCHECK(g_driver_egl.debug_fn.eglSwapBuffersWithDamageKHRFn != nullptr);
+  EGLBoolean result = g_driver_egl.debug_fn.eglSwapBuffersWithDamageKHRFn(
+      dpy, surface, rects, n_rects);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 static EGLBoolean GL_BINDING_CALL Debug_eglSwapInterval(EGLDisplay dpy,
                                                         EGLint interval) {
   GL_SERVICE_LOG("eglSwapInterval"
@@ -1244,6 +1269,10 @@ void DriverEGL::InitializeDebugBindings() {
   if (!debug_fn.eglSwapBuffersFn) {
     debug_fn.eglSwapBuffersFn = fn.eglSwapBuffersFn;
     fn.eglSwapBuffersFn = Debug_eglSwapBuffers;
+  }
+  if (!debug_fn.eglSwapBuffersWithDamageKHRFn) {
+    debug_fn.eglSwapBuffersWithDamageKHRFn = fn.eglSwapBuffersWithDamageKHRFn;
+    fn.eglSwapBuffersWithDamageKHRFn = Debug_eglSwapBuffersWithDamageKHR;
   }
   if (!debug_fn.eglSwapIntervalFn) {
     debug_fn.eglSwapIntervalFn = fn.eglSwapIntervalFn;
@@ -1587,6 +1616,14 @@ EGLBoolean EGLApiBase::eglSurfaceAttribFn(EGLDisplay dpy,
 
 EGLBoolean EGLApiBase::eglSwapBuffersFn(EGLDisplay dpy, EGLSurface surface) {
   return driver_->fn.eglSwapBuffersFn(dpy, surface);
+}
+
+EGLBoolean EGLApiBase::eglSwapBuffersWithDamageKHRFn(EGLDisplay dpy,
+                                                     EGLSurface surface,
+                                                     EGLint* rects,
+                                                     EGLint n_rects) {
+  return driver_->fn.eglSwapBuffersWithDamageKHRFn(dpy, surface, rects,
+                                                   n_rects);
 }
 
 EGLBoolean EGLApiBase::eglSwapIntervalFn(EGLDisplay dpy, EGLint interval) {
@@ -1986,6 +2023,15 @@ EGLBoolean TraceEGLApi::eglSurfaceAttribFn(EGLDisplay dpy,
 EGLBoolean TraceEGLApi::eglSwapBuffersFn(EGLDisplay dpy, EGLSurface surface) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglSwapBuffers")
   return egl_api_->eglSwapBuffersFn(dpy, surface);
+}
+
+EGLBoolean TraceEGLApi::eglSwapBuffersWithDamageKHRFn(EGLDisplay dpy,
+                                                      EGLSurface surface,
+                                                      EGLint* rects,
+                                                      EGLint n_rects) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglSwapBuffersWithDamageKHR")
+  return egl_api_->eglSwapBuffersWithDamageKHRFn(dpy, surface, rects, n_rects);
 }
 
 EGLBoolean TraceEGLApi::eglSwapIntervalFn(EGLDisplay dpy, EGLint interval) {

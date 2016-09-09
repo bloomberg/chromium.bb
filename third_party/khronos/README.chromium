@@ -37,6 +37,7 @@ EGL/eglext.h
  - Added EGL_ARM_implicit_external_sync extension tokens
  - Added format modifier for EGL_EXT_image_dma_buf_import extension
  - Added support for EGL_EXT_image_flush_external extension
+ - Added support for EGL_KHR_swap_buffers_with_damage
 KHR/khrplatform.h
  - Modified KHRONOS_APICALL
 DEPS

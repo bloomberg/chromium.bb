@@ -1606,6 +1606,10 @@ EGL_FUNCTIONS = [
   'names': ['eglSwapBuffers'],
   'arguments': 'EGLDisplay dpy, EGLSurface surface', },
 { 'return_type': 'EGLBoolean',
+  'names': ['eglSwapBuffersWithDamageKHR'],
+  'arguments':
+      'EGLDisplay dpy, EGLSurface surface, EGLint* rects, EGLint n_rects', },
+{ 'return_type': 'EGLBoolean',
   'names': ['eglSwapInterval'],
   'arguments': 'EGLDisplay dpy, EGLint interval', },
 { 'return_type': 'EGLBoolean',

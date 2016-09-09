@@ -25,6 +25,18 @@ gfx::SwapResult GLSurfaceCast::SwapBuffers() {
   return result;
 }
 
+gfx::SwapResult GLSurfaceCast::SwapBuffersWithDamage(int x,
+                                                     int y,
+                                                     int width,
+                                                     int height) {
+  gfx::SwapResult result =
+      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(x, y, width, height);
+  if (result == gfx::SwapResult::SWAP_ACK)
+    parent_->OnSwapBuffers();
+
+  return result;
+}
+
 bool GLSurfaceCast::Resize(const gfx::Size& size,
                            float scale_factor,
                            bool has_alpha) {

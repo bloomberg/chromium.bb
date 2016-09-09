@@ -1698,6 +1698,12 @@ GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
   gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       location, transpose, transform);
 }
+void GL_APIENTRY GLES2SwapBuffersWithDamageCHROMIUM(GLint x,
+                                                    GLint y,
+                                                    GLint width,
+                                                    GLint height) {
+  gles2::GetGLContext()->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+}
 
 namespace gles2 {
 
@@ -2988,6 +2994,10 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glUniformMatrix4fvStreamTextureMatrixCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glUniformMatrix4fvStreamTextureMatrixCHROMIUM),
+    },
+    {
+        "glSwapBuffersWithDamageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSwapBuffersWithDamageCHROMIUM),
     },
     {
         NULL, NULL,

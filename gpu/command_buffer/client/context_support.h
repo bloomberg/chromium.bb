@@ -36,6 +36,7 @@ class ContextSupport {
       bool aggressively_free_resources) = 0;
 
   virtual void Swap() = 0;
+  virtual void SwapWithDamage(const gfx::Rect& damage) = 0;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) = 0;
   virtual void CommitOverlayPlanes() = 0;
 

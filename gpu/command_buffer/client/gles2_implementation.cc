@@ -1450,6 +1450,27 @@ void GLES2Implementation::SwapBuffers() {
   }
 }
 
+void GLES2Implementation::SwapBuffersWithDamageCHROMIUM(GLint x,
+                                                        GLint y,
+                                                        GLint width,
+                                                        GLint height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSwapBuffersWithDamageCHROMIUM("
+                     << x << ", " << y << ", " << width << ", " << height
+                     << ")");
+  TRACE_EVENT2("gpu", "GLES2::SwapBuffersWithDamageCHROMIUM", "width", width,
+               "height", height);
+
+  // Same flow control as GLES2Implementation::SwapBuffers (see comments there).
+  swap_buffers_tokens_.push(helper_->InsertToken());
+  helper_->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+  helper_->CommandBufferHelper::Flush();
+  if (swap_buffers_tokens_.size() > kMaxSwapBuffers + 1) {
+    helper_->WaitForToken(swap_buffers_tokens_.front());
+    swap_buffers_tokens_.pop();
+  }
+}
+
 void GLES2Implementation::SwapInterval(int interval) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSwapInterval("
@@ -4743,6 +4764,11 @@ GLenum GLES2Implementation::GetGraphicsResetStatusKHR() {
 
 void GLES2Implementation::Swap() {
   SwapBuffers();
+}
+
+void GLES2Implementation::SwapWithDamage(const gfx::Rect& damage) {
+  SwapBuffersWithDamageCHROMIUM(damage.x(), damage.y(), damage.width(),
+                                damage.height());
 }
 
 void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {

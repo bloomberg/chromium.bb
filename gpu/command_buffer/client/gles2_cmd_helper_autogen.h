@@ -3146,4 +3146,15 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
   }
 }
 
+void SwapBuffersWithDamageCHROMIUM(GLint x,
+                                   GLint y,
+                                   GLint width,
+                                   GLint height) {
+  gles2::cmds::SwapBuffersWithDamageCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SwapBuffersWithDamageCHROMIUM>();
+  if (c) {
+    c->Init(x, y, width, height);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

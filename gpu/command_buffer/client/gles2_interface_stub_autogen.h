@@ -854,4 +854,8 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
     const GLfloat* transform) override;
+void SwapBuffersWithDamageCHROMIUM(GLint x,
+                                   GLint y,
+                                   GLint width,
+                                   GLint height) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_

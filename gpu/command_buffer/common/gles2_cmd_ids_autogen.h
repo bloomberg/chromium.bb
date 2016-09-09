@@ -325,7 +325,8 @@
   OP(BindFragDataLocationIndexedEXTBucket)                 /* 566 */ \
   OP(BindFragDataLocationEXTBucket)                        /* 567 */ \
   OP(GetFragDataIndexEXT)                                  /* 568 */ \
-  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 569 */
+  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 569 */ \
+  OP(SwapBuffersWithDamageCHROMIUM)                        /* 570 */
 
 enum CommandId {
   kOneBeforeStartPoint =

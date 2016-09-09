@@ -15451,4 +15451,49 @@ static_assert(offsetof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate,
               "offset of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
               "transpose should be 8");
 
+struct SwapBuffersWithDamageCHROMIUM {
+  typedef SwapBuffersWithDamageCHROMIUM ValueType;
+  static const CommandId kCmdId = kSwapBuffersWithDamageCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _x, GLint _y, GLint _width, GLint _height) {
+    SetHeader();
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd, GLint _x, GLint _y, GLint _width, GLint _height) {
+    static_cast<ValueType*>(cmd)->Init(_x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(SwapBuffersWithDamageCHROMIUM) == 20,
+              "size of SwapBuffersWithDamageCHROMIUM should be 20");
+static_assert(offsetof(SwapBuffersWithDamageCHROMIUM, header) == 0,
+              "offset of SwapBuffersWithDamageCHROMIUM header should be 0");
+static_assert(offsetof(SwapBuffersWithDamageCHROMIUM, x) == 4,
+              "offset of SwapBuffersWithDamageCHROMIUM x should be 4");
+static_assert(offsetof(SwapBuffersWithDamageCHROMIUM, y) == 8,
+              "offset of SwapBuffersWithDamageCHROMIUM y should be 8");
+static_assert(offsetof(SwapBuffersWithDamageCHROMIUM, width) == 12,
+              "offset of SwapBuffersWithDamageCHROMIUM width should be 12");
+static_assert(offsetof(SwapBuffersWithDamageCHROMIUM, height) == 16,
+              "offset of SwapBuffersWithDamageCHROMIUM height should be 16");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

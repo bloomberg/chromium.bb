@@ -158,6 +158,10 @@ EGLBoolean eglSurfaceAttribFn(EGLDisplay dpy,
                               EGLint attribute,
                               EGLint value) override;
 EGLBoolean eglSwapBuffersFn(EGLDisplay dpy, EGLSurface surface) override;
+EGLBoolean eglSwapBuffersWithDamageKHRFn(EGLDisplay dpy,
+                                         EGLSurface surface,
+                                         EGLint* rects,
+                                         EGLint n_rects) override;
 EGLBoolean eglSwapIntervalFn(EGLDisplay dpy, EGLint interval) override;
 EGLBoolean eglTerminateFn(EGLDisplay dpy) override;
 EGLBoolean eglWaitClientFn(void) override;

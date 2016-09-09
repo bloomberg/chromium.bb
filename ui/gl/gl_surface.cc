@@ -51,6 +51,10 @@ bool GLSurface::DeferDraws() {
   return false;
 }
 
+bool GLSurface::SupportsSwapBuffersWithDamage() {
+  return false;
+}
+
 bool GLSurface::SupportsPostSubBuffer() {
   return false;
 }
@@ -69,6 +73,13 @@ unsigned int GLSurface::GetBackingFramebufferObject() {
 
 void GLSurface::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   NOTREACHED();
+}
+
+gfx::SwapResult GLSurface::SwapBuffersWithDamage(int x,
+                                                 int y,
+                                                 int width,
+                                                 int height) {
+  return gfx::SwapResult::SWAP_FAILED;
 }
 
 gfx::SwapResult GLSurface::PostSubBuffer(int x, int y, int width, int height) {
@@ -225,6 +236,13 @@ void GLSurfaceAdapter::SwapBuffersAsync(
   surface_->SwapBuffersAsync(callback);
 }
 
+gfx::SwapResult GLSurfaceAdapter::SwapBuffersWithDamage(int x,
+                                                        int y,
+                                                        int width,
+                                                        int height) {
+  return surface_->SwapBuffersWithDamage(x, y, width, height);
+}
+
 gfx::SwapResult GLSurfaceAdapter::PostSubBuffer(int x,
                                                 int y,
                                                 int width,
@@ -248,6 +266,10 @@ gfx::SwapResult GLSurfaceAdapter::CommitOverlayPlanes() {
 void GLSurfaceAdapter::CommitOverlayPlanesAsync(
     const SwapCompletionCallback& callback) {
   surface_->CommitOverlayPlanesAsync(callback);
+}
+
+bool GLSurfaceAdapter::SupportsSwapBuffersWithDamage() {
+  return surface_->SupportsSwapBuffersWithDamage();
 }
 
 bool GLSurfaceAdapter::SupportsPostSubBuffer() {

@@ -880,4 +880,8 @@ virtual void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
     const GLfloat* transform) = 0;
+virtual void SwapBuffersWithDamageCHROMIUM(GLint x,
+                                           GLint y,
+                                           GLint width,
+                                           GLint height) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

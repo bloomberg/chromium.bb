@@ -63,6 +63,8 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
 void TestContextSupport::Swap() {
 }
 
+void TestContextSupport::SwapWithDamage(const gfx::Rect& damage) {}
+
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
 }
 

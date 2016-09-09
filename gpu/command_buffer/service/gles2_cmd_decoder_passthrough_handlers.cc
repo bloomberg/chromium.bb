@@ -1459,6 +1459,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTranslatedShaderSourceANGLE(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleSwapBuffersWithDamageCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM*>(
+          cmd_data);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLint width = static_cast<GLint>(c.width);
+  GLint height = static_cast<GLint>(c.height);
+  error::Error error = DoSwapBuffersWithDamageCHROMIUM(x, y, width, height);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandlePostSubBufferCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

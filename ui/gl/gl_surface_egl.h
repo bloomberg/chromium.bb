@@ -96,7 +96,12 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   EGLSurface GetHandle() override;
+  bool SupportsSwapBuffersWithDamage() override;
   bool SupportsPostSubBuffer() override;
+  gfx::SwapResult SwapBuffersWithDamage(int x,
+                                        int y,
+                                        int width,
+                                        int height) override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   bool SupportsCommitOverlayPlanes() override;
   gfx::SwapResult CommitOverlayPlanes() override;
@@ -133,6 +138,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
+  bool supports_swap_buffer_with_damage_;
   bool flips_vertically_;
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;

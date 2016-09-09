@@ -1155,4 +1155,8 @@ void GLES2InterfaceStub::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint /* location */,
     GLboolean /* transpose */,
     const GLfloat* /* transform */) {}
+void GLES2InterfaceStub::SwapBuffersWithDamageCHROMIUM(GLint /* x */,
+                                                       GLint /* y */,
+                                                       GLint /* width */,
+                                                       GLint /* height */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

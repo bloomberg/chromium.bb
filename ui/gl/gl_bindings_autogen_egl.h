@@ -192,6 +192,11 @@ typedef EGLBoolean(GL_BINDING_CALL* eglSurfaceAttribProc)(EGLDisplay dpy,
                                                           EGLint value);
 typedef EGLBoolean(GL_BINDING_CALL* eglSwapBuffersProc)(EGLDisplay dpy,
                                                         EGLSurface surface);
+typedef EGLBoolean(GL_BINDING_CALL* eglSwapBuffersWithDamageKHRProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint* rects,
+    EGLint n_rects);
 typedef EGLBoolean(GL_BINDING_CALL* eglSwapIntervalProc)(EGLDisplay dpy,
                                                          EGLint interval);
 typedef EGLBoolean(GL_BINDING_CALL* eglTerminateProc)(EGLDisplay dpy);
@@ -217,6 +222,7 @@ struct ExtensionsEGL {
   bool b_EGL_KHR_reusable_sync;
   bool b_EGL_KHR_stream;
   bool b_EGL_KHR_stream_consumer_gltexture;
+  bool b_EGL_KHR_swap_buffers_with_damage;
   bool b_EGL_KHR_wait_sync;
   bool b_EGL_NV_post_sub_buffer;
   bool b_EGL_NV_stream_consumer_gltexture_yuv;
@@ -278,6 +284,7 @@ struct ProcsEGL {
   eglStreamPostD3DTextureNV12ANGLEProc eglStreamPostD3DTextureNV12ANGLEFn;
   eglSurfaceAttribProc eglSurfaceAttribFn;
   eglSwapBuffersProc eglSwapBuffersFn;
+  eglSwapBuffersWithDamageKHRProc eglSwapBuffersWithDamageKHRFn;
   eglSwapIntervalProc eglSwapIntervalFn;
   eglTerminateProc eglTerminateFn;
   eglWaitClientProc eglWaitClientFn;
@@ -445,6 +452,10 @@ class GL_EXPORT EGLApi {
                                         EGLint attribute,
                                         EGLint value) = 0;
   virtual EGLBoolean eglSwapBuffersFn(EGLDisplay dpy, EGLSurface surface) = 0;
+  virtual EGLBoolean eglSwapBuffersWithDamageKHRFn(EGLDisplay dpy,
+                                                   EGLSurface surface,
+                                                   EGLint* rects,
+                                                   EGLint n_rects) = 0;
   virtual EGLBoolean eglSwapIntervalFn(EGLDisplay dpy, EGLint interval) = 0;
   virtual EGLBoolean eglTerminateFn(EGLDisplay dpy) = 0;
   virtual EGLBoolean eglWaitClientFn(void) = 0;
@@ -522,6 +533,8 @@ class GL_EXPORT EGLApi {
   ::gl::g_current_egl_context->eglStreamPostD3DTextureNV12ANGLEFn
 #define eglSurfaceAttrib ::gl::g_current_egl_context->eglSurfaceAttribFn
 #define eglSwapBuffers ::gl::g_current_egl_context->eglSwapBuffersFn
+#define eglSwapBuffersWithDamageKHR \
+  ::gl::g_current_egl_context->eglSwapBuffersWithDamageKHRFn
 #define eglSwapInterval ::gl::g_current_egl_context->eglSwapIntervalFn
 #define eglTerminate ::gl::g_current_egl_context->eglTerminateFn
 #define eglWaitClient ::gl::g_current_egl_context->eglWaitClientFn

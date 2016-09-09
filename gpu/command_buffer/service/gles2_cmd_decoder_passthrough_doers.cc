@@ -1707,6 +1707,14 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithDamageCHROMIUM(
+    GLint x,
+    GLint y,
+    GLint width,
+    GLint height) {
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     GLint x,
     GLint y,
