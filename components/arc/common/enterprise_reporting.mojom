@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 module arc.mojom;
 
 // Enumerates the states that management can be in for a user.
@@ -25,8 +25,12 @@ interface EnterpriseReportingHost {
   ReportManagementState@0(ManagementState state);
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface EnterpriseReportingInstance {
   // Establishes full-duplex communication with the host.
   Init@0(EnterpriseReportingHost host_ptr);
+
+  // Requests that a JSON status blob be generated and passed to the
+  // host.
+  [MinVersion=1] GetStatus@1() => (string status, string droid_guard_info);
 };
