@@ -80681,6 +80681,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1549" label="MetaSetCookieWhenCSPBlocksInlineScript"/>
   <int value="1550" label="MetaRefreshWhenCSPBlocksInlineScript"/>
   <int value="1551" label="MiddleClickAutoscrollStart"/>
+  <int value="1552" label="ClipCssOfFixedPositionElement"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

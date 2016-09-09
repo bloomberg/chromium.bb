@@ -501,6 +501,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
             if (needsToClip(paintingInfo, clipRectForFragment)) {
                 if (m_paintLayer.layoutObject()->isPositioned() && clipRectForFragment.isClippedByClipCss())
                     UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipCssOfPositionedElement);
+                if (m_paintLayer.layoutObject()->isFixedPositioned())
+                    UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipCssOfFixedPositionElement);
                 clipRecorder.emplace(context, *parentLayer->layoutObject(), DisplayItem::kClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
             }
         }
