@@ -1632,40 +1632,6 @@ bool HttpNetworkTransaction::ForWebSocketHandshake() const {
          request_->url.SchemeIsWSOrWSS();
 }
 
-#define STATE_CASE(s) \
-  case s: \
-    description = base::StringPrintf("%s (0x%08X)", #s, s); \
-    break
-
-std::string HttpNetworkTransaction::DescribeState(State state) {
-  std::string description;
-  switch (state) {
-    STATE_CASE(STATE_NOTIFY_BEFORE_CREATE_STREAM);
-    STATE_CASE(STATE_CREATE_STREAM);
-    STATE_CASE(STATE_CREATE_STREAM_COMPLETE);
-    STATE_CASE(STATE_INIT_REQUEST_BODY);
-    STATE_CASE(STATE_INIT_REQUEST_BODY_COMPLETE);
-    STATE_CASE(STATE_BUILD_REQUEST);
-    STATE_CASE(STATE_BUILD_REQUEST_COMPLETE);
-    STATE_CASE(STATE_SEND_REQUEST);
-    STATE_CASE(STATE_SEND_REQUEST_COMPLETE);
-    STATE_CASE(STATE_READ_HEADERS);
-    STATE_CASE(STATE_READ_HEADERS_COMPLETE);
-    STATE_CASE(STATE_READ_BODY);
-    STATE_CASE(STATE_READ_BODY_COMPLETE);
-    STATE_CASE(STATE_DRAIN_BODY_FOR_AUTH_RESTART);
-    STATE_CASE(STATE_DRAIN_BODY_FOR_AUTH_RESTART_COMPLETE);
-    STATE_CASE(STATE_NONE);
-    default:
-      description = base::StringPrintf("Unknown state 0x%08X (%u)", state,
-                                       state);
-      break;
-  }
-  return description;
-}
-
-#undef STATE_CASE
-
 void HttpNetworkTransaction::CopyConnectionAttemptsFromStreamRequest() {
   DCHECK(stream_request_);
 

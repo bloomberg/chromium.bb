@@ -294,9 +294,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Returns true if this transaction is for a WebSocket handshake
   bool ForWebSocketHandshake() const;
 
-  // Debug helper.
-  static std::string DescribeState(State state);
-
   void SetStream(HttpStream* stream);
 
   void CopyConnectionAttemptsFromStreamRequest();
