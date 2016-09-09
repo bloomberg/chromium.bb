@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.95",
+  "version": "8.96",
   "entries": [
     {
       "id": 1,
@@ -69,18 +69,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "needs_offscreen_buffer_workaround"
-      ]
-    },
-    {
-      "id": 16,
-      "description": "EXT_occlusion_query appears to be buggy with Intel GPUs on Linux",
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x8086",
-      "disabled_extensions": [
-        "GL_ARB_occlusion_query2",
-        "GL_ARB_occlusion_query"
       ]
     },
     {
