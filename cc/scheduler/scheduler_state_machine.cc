@@ -365,6 +365,9 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 
+  if (wait_for_ready_to_draw_)
+    return false;
+
   // Only handle forced redraws due to timeouts on the regular deadline.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
