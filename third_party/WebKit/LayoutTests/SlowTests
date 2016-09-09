@@ -177,11 +177,11 @@ crbug.com/453312 html5lib/generated/run-tests20-data.html [ Slow ]
 crbug.com/453312 html5lib/generated/run-webkit01-data.html [ Slow ]
 crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
 
-crbug.com/577381 [ Linux Debug ] imported/wpt/encoding/api-invalid-label.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_tests10.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_tests21.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_domjs-unsafe.html [ Slow ]
+crbug.com/577381 imported/wpt/encoding/api-invalid-label.html [ Slow ]
+crbug.com/577381 imported/wpt/html/syntax/parsing/html5lib_tests10.html [ Slow ]
+crbug.com/577381 imported/wpt/html/syntax/parsing/html5lib_tests21.html [ Slow ]
+crbug.com/577381 imported/wpt/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
+crbug.com/577381 imported/wpt/html/syntax/parsing/html5lib_domjs-unsafe.html [ Slow ]
 
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_entities01.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_template.html [ Slow ]
@@ -189,6 +189,7 @@ crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests1.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests16.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests2.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests20.html [ Slow ]
 
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
