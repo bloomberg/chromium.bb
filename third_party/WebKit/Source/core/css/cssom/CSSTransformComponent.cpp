@@ -15,6 +15,9 @@ namespace blink {
 
 CSSTransformComponent* CSSTransformComponent::fromCSSValue(const CSSValue& value)
 {
+    if (!value.isFunctionValue())
+        return nullptr;
+
     const CSSFunctionValue& functionValue = toCSSFunctionValue(value);
     switch (functionValue.functionType()) {
     case CSSValueMatrix:
