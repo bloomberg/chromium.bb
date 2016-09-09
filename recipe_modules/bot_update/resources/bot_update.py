@@ -32,56 +32,15 @@ import os.path as path
 BUF_SIZE = 256
 
 
-# TODO(luqui): This is a horrible hack to identify build_internal when build
-# is a recipe dependency.  bot_update should not be depending on internal,
-# rather the arrow should go the other way (or just be destroyed).
-def check_dir(name, dirs, default=None):
-  for d in dirs:
-    d = path.abspath(d)
-    if path.basename(d) == name and path.isdir(d):
-      return d
-  return default
-
-
 # Define a bunch of directory paths.
 # Relative to the current working directory.
 CURRENT_DIR = path.abspath(os.getcwd())
 BUILDER_DIR = path.dirname(CURRENT_DIR)
-SLAVE_DIR = path.dirname(BUILDER_DIR)
 
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
-SCRIPTS_DIR = check_dir(
-    'scripts', [
-        path.dirname(THIS_DIR),
-        path.join(SLAVE_DIR, '..', 'scripts'),
-        path.join(THIS_DIR,  # resources
-                  '..',      # bot_update
-                  '..',      # recipe_modules
-                  '..',      # depot_tools
-                  '..',      # .recipe_deps
-                  '..',      # slave
-                  '..',      # scripts
-                  '..',      # build_internal
-                  '..',      # ROOT_DIR
-                  'build',
-                  'scripts'),
-        path.join(SLAVE_DIR, '..', 'build', 'scripts'),
-    ], default=path.dirname(THIS_DIR))
-BUILD_DIR = path.dirname(SCRIPTS_DIR)
-ROOT_DIR = path.dirname(BUILD_DIR)
 
 DEPOT_TOOLS_DIR = path.abspath(path.join(THIS_DIR, '..', '..', '..'))
-
-BUILD_INTERNAL_DIR = check_dir(
-    'build_internal', [
-        path.join(ROOT_DIR, 'build_internal'),
-        path.join(ROOT_DIR,      # .recipe_deps
-                  path.pardir,   # slave
-                  path.pardir,   # scripts
-                  path.pardir),  # build_internal
-    ])
-
 
 CHROMIUM_GIT_HOST = 'https://chromium.googlesource.com'
 CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
@@ -121,36 +80,10 @@ cache_dir = r%(cache_dir)s
 """
 
 
-internal_data = {}
-if BUILD_INTERNAL_DIR:
-  local_vars = {}
-  try:
-    execfile(os.path.join(
-        BUILD_INTERNAL_DIR, 'scripts', 'slave', 'bot_update_cfg.py'),
-        local_vars)
-  except Exception:
-    # Same as if BUILD_INTERNAL_DIR didn't exist in the first place.
-    print 'Warning: unable to read internal configuration file.'
-    print 'If this is an internal bot, this step may be erroneously inactive.'
-  internal_data = local_vars
-
-
-
 # How many times to try before giving up.
 ATTEMPTS = 5
 
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
-
-# Find the patch tool.
-if sys.platform.startswith('win'):
-  if not BUILD_INTERNAL_DIR:
-    print 'Warning: could not find patch tool because there is no '
-    print 'build_internal present.'
-    PATCH_TOOL = None
-  else:
-    PATCH_TOOL = path.join(BUILD_INTERNAL_DIR, 'tools', 'patch.EXE')
-else:
-  PATCH_TOOL = '/usr/bin/patch'
 
 # If there is less than 100GB of disk space on the system, then we do
 # a shallow checkout.
@@ -412,12 +345,6 @@ def gclient_sync(with_branch_heads, shallow):
       return json.load(f)
   finally:
     os.remove(gclient_output_file)
-
-
-def gclient_runhooks(gyp_envs):
-  gclient_bin = 'gclient.bat' if sys.platform.startswith('win') else 'gclient'
-  env = dict([env_var.split('=', 1) for env_var in gyp_envs])
-  call(gclient_bin, 'runhooks', env=env)
 
 
 def gclient_revinfo():
@@ -781,11 +708,10 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    patch_root, issue, patchset, rietveld_server,
-                    gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
-                    revision_mapping, apply_issue_email_file,
-                    apply_issue_key_file, gyp_env, shallow, runhooks,
-                    refs, git_cache_dir, gerrit_reset):
+                    patch_root, issue, patchset, rietveld_server, gerrit_repo,
+                    gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
+                    apply_issue_email_file, apply_issue_key_file, shallow, refs,
+                    git_cache_dir, gerrit_reset):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -942,8 +868,6 @@ def parse_args():
                                                     'update.flag'))
   parse.add_option('--shallow', action='store_true',
                    help='Use shallow clones for cache repositories.')
-  parse.add_option('--gyp_env', action='append', default=[],
-                   help='Environment variables to pass into gclient runhooks.')
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
   parse.add_option('--bot_update_clobber', action='store_true', dest='clobber',
@@ -953,19 +877,19 @@ def parse_args():
   parse.add_option('--no_shallow', action='store_true',
                    help='Bypass disk detection and never shallow clone. '
                         'Does not override the --shallow flag')
-  parse.add_option('--no_runhooks', action='store_true',
-                   help='Do not run hooks on official builder.')
   parse.add_option('--refs', action='append',
                    help='Also fetch this refspec for the main solution(s). '
                         'Eg. +refs/branch-heads/*')
   parse.add_option('--with_branch_heads', action='store_true',
                     help='Always pass --with_branch_heads to gclient.  This '
                           'does the same thing as --refs +refs/branch-heads/*')
-  parse.add_option('--git-cache-dir', default=path.join(SLAVE_DIR, 'cache_dir'),
-                   help='Path to git cache directory.')
+  parse.add_option('--git-cache-dir', help='Path to git cache directory.')
 
 
   options, args = parse.parse_args()
+
+  if not options.git_cache_dir:
+    parse.error('--git-cache-dir is required')
 
   if not options.refs:
     options.refs = []
@@ -1064,10 +988,6 @@ def checkout(options, git_slns, specs, revisions, step_text):
           apply_issue_email_file=options.apply_issue_email_file,
           apply_issue_key_file=options.apply_issue_key_file,
 
-          # For official builders.
-          gyp_env=options.gyp_env,
-          runhooks=not options.no_runhooks,
-
           # Finally, extra configurations such as shallowness of the clone.
           shallow=options.shallow,
           refs=options.refs,
@@ -1137,11 +1057,7 @@ def print_debug_info():
   debug_params = {
     'CURRENT_DIR': CURRENT_DIR,
     'BUILDER_DIR': BUILDER_DIR,
-    'SLAVE_DIR': SLAVE_DIR,
     'THIS_DIR': THIS_DIR,
-    'SCRIPTS_DIR': SCRIPTS_DIR,
-    'BUILD_DIR': BUILD_DIR,
-    'ROOT_DIR': ROOT_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
   }
   for k, v in sorted(debug_params.iteritems()):
