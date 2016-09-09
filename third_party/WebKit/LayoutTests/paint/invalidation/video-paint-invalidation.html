@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="resources/text-based-repaint.js"></script>
+<video id="video" controls></video>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+var video = document.getElementById("video");
+var done = false;
+var listener = document.addEventListener("canplaythrough", function() {
+    if (done)
+        return;
+    done = true;
+    video.currentTime = video.duration;
+    runRepaintTest();
+}, true);
+
+function repaintTest() {
+    video.play();
+}
+
+video.src = "../../media/content/test-25fps.ogv";
+</script>
