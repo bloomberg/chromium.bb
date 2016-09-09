@@ -505,14 +505,11 @@ process_in_files("make_core_generated_svg_element_type_helpers") {
 
 # make_event_factory -----------------------------------------------------------
 
-process_in_files("make_core_generated_event_factory") {
-  script = "../build/scripts/make_event_factory.py"
-
+make_event_factory("make_core_generated_event_factory") {
   in_files = [
     "$blink_core_output_dir/EventInterfaces.in",
     "events/EventAliases.in",
   ]
-  other_inputs = make_event_factory_files
   outputs = [
     "$blink_core_output_dir/Event.cpp",
     "$blink_core_output_dir/EventHeaders.h",

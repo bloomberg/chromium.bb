@@ -6,19 +6,16 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 
-visibility = [ "//third_party/WebKit/*" ]
-
-# GYP version: Source/bindings/modules/generated.gyp:bindings_modules_generated
 group("bindings_modules_generated") {
+  visibility = [ "//third_party/WebKit/*" ]
   public_deps = [
-    ":bindings_modules_generated_event_modules_factory",
-    ":bindings_modules_generated_event_modules_names",
-    ":bindings_modules_generated_event_target_modules_names",
+    ":event_modules",
+    ":event_modules_names",
+    ":event_target_modules_names",
     ":modules_bindings_generated_event_interfaces",
   ]
 }
 
-# GYP version: event_interfaces action in bindings_modules_generated
 generate_event_interfaces("modules_bindings_generated_event_interfaces") {
   sources = [
     "//third_party/WebKit/Source/modules/app_banner/BeforeInstallPromptEvent.idl",
@@ -65,32 +62,28 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
   suffix = "Modules"
 }
 
-# GYP version: EventModulesFactory action in bindings_modules_generated
-make_event_factory("bindings_modules_generated_event_modules_factory") {
+make_event_factory("event_modules") {
+  visibility = [ ":*" ]
   in_files = [ "$root_gen_dir/blink/EventModulesInterfaces.in" ]
   outputs = [
     "$blink_modules_output_dir/EventModules.cpp",
     "$blink_modules_output_dir/EventModulesHeaders.h",
   ]
-  deps = [
-    "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces",
-  ]
+  deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
 }
 
-# GYP version: EventModulesNames action in bindings_modules_generated
-make_names("bindings_modules_generated_event_modules_names") {
+make_names("event_modules_names") {
+  visibility = [ ":*" ]
   in_files = [ "$root_gen_dir/blink/EventModulesInterfaces.in" ]
   outputs = [
     "$blink_modules_output_dir/EventModulesNames.cpp",
     "$blink_modules_output_dir/EventModulesNames.h",
   ]
-  deps = [
-    "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces",
-  ]
+  deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
 }
 
-# GYP version: EventTargetModulesNames action in bindings_modules_generated
-make_names("bindings_modules_generated_event_target_modules_names") {
+make_names("event_target_modules_names") {
+  visibility = [ ":*" ]
   in_files = [ "../../modules/EventTargetModulesFactory.in" ]
   outputs = [
     "$blink_modules_output_dir/EventTargetModulesNames.cpp",
@@ -121,7 +114,6 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   ]
 }
 
-# GYP version: Source/bindings/modules/generated.gyp:interfaces_info
 action("interfaces_info") {
   script = "$bindings_scripts_dir/compute_interfaces_info_overall.py"
 
@@ -151,7 +143,6 @@ action("interfaces_info") {
   ]
 }
 
-# GYP version: Source/bindings/modules/generated.gyp:modules_global_objects
 compute_global_objects("modules_global_objects") {
   sources = modules_idl_files
   sources_generated = [ "$bindings_core_output_dir/GlobalObjectsCore.pickle" ]
@@ -161,7 +152,6 @@ compute_global_objects("modules_global_objects") {
   ]
 }
 
-# GYP version: Source/bindings/modules/generated.gyp:modules_core_global_constructors_idls
 generate_global_constructors("modules_core_global_constructors_idls") {
   sources = core_idl_files + core_idl_with_modules_dependency_files
   global_objects_file =
@@ -174,7 +164,6 @@ generate_global_constructors("modules_core_global_constructors_idls") {
   ]
 }
 
-# GYP version: Source/bindings/modules/generated.gyp:modules_global_constructors_idls
 generate_global_constructors("modules_global_constructors_idls") {
   sources = modules_idl_files
   global_objects_file =
@@ -184,5 +173,30 @@ generate_global_constructors("modules_global_constructors_idls") {
   output_dir = blink_modules_output_dir
   deps = [
     ":modules_global_objects",
+  ]
+}
+
+# Compile the sources produced above. This will get linked into "modules".
+source_set("generated") {
+  visibility = [ "//third_party/WebKit/Source/modules" ]
+
+  sources = get_target_outputs(":event_modules") +
+            get_target_outputs(":event_modules_names") +
+            get_target_outputs(":event_target_modules_names")
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source/modules:modules_implementation",
+    "//third_party/WebKit/Source:non_test_config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    ":event_modules",
+    ":event_modules_names",
+    ":event_target_modules_names",
+    "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/Source/wtf",
+    "//v8",
   ]
 }

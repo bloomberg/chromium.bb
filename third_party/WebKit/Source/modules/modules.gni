@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# DON'T INCLUDE modules_idl_files.gni FROM HERE.
+#
+# This file is shared with all modules' BUILD files which shouldn't need access
+# to the huge and slow lists of sources. If sharing is necessary, make a
+# separate .gni.
 import("//third_party/WebKit/Source/config.gni")
 
 _gypi = exec_script(
@@ -13,25 +18,7 @@ _gypi = exec_script(
         ],
         "scope",
         [ "modules.gypi" ])
-
-# interfaces that inherit from Event
-generated_modules_files =
-    get_path_info(_gypi.generated_modules_files, "abspath")
-
-generated_modules_dictionary_files =
-    get_path_info(_gypi.generated_modules_dictionary_files, "abspath")
-
-# Remove GYP variables from the list (need to do this before rebasing).
-_tmp_modules_files = _gypi.modules_files
-_tmp_modules_files -= [
-  "<@(extra_blink_module_files)",
-  "<@(generated_modules_dictionary_files)",
-  "<@(generated_modules_files)",
-]
-modules_files = get_path_info(_tmp_modules_files, "abspath")
-
-# Account for GYP var expansion.
-modules_files += generated_modules_files + generated_modules_dictionary_files
+modules_files = get_path_info(_gypi.modules_files, "abspath")
 
 # Defines a part of blink modules. This is either a source set or a static
 # library with defaults for commonly-used values.
