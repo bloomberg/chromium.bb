@@ -211,6 +211,7 @@ class AutomationWebContentsObserver
       params.update = event.update;
       params.location_offset =
           web_contents()->GetContainerBounds().OffsetFromOrigin();
+      params.event_from = event.event_from;
 
       AutomationEventRouter* router = AutomationEventRouter::GetInstance();
       router->DispatchAccessibilityEvent(params);

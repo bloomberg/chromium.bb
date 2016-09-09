@@ -28,7 +28,8 @@ TabsAutomationHandler = function(tabRoot) {
   // When the root is focused, simulate what happens on a load complete.
   if (tabRoot.state.focused) {
     this.onLoadComplete(
-        new chrome.automation.AutomationEvent(EventType.loadComplete, tabRoot));
+        new chrome.automation.AutomationEvent(EventType.loadComplete, tabRoot,
+                                              'page'));
   }
 };
 
@@ -44,7 +45,7 @@ TabsAutomationHandler.prototype = {
   onLoadComplete: function(evt) {
     var focused = evt.target.find({state: {focused: true}}) || evt.target;
     this.onFocus(new chrome.automation.AutomationEvent(
-        EventType.focus, focused));
+        EventType.focus, focused, evt.eventFrom));
   }
 };
 

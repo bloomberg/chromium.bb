@@ -309,6 +309,9 @@
     // The type of the event.
     EventType type;
 
+    // The source of this event.
+    DOMString eventFrom;
+
     // Stops this event from further processing except for any remaining
     // listeners on $(ref:AutomationEvent.target).
     static void stopPropagation();

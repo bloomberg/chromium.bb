@@ -117,6 +117,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
 
   // ID of the node that the event applies to.
   IPC_STRUCT_MEMBER(int, id)
+
+  // The source of this event.
+  IPC_STRUCT_MEMBER(ui::AXEventFrom, event_from)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityLocationChangeParams)

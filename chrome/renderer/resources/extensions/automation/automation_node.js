@@ -409,14 +409,14 @@ AutomationNodeImpl.prototype = {
              attributes: this.attributes };
   },
 
-  dispatchEvent: function(eventType) {
+  dispatchEvent: function(eventType, eventFrom) {
     var path = [];
     var parent = this.parent;
     while (parent) {
       $Array.push(path, parent);
       parent = parent.parent;
     }
-    var event = new AutomationEvent(eventType, this.wrapper);
+    var event = new AutomationEvent(eventType, this.wrapper, eventFrom);
 
     // Dispatch the event through the propagation path in three phases:
     // - capturing: starting from the root and going down to the target's parent
@@ -963,7 +963,7 @@ AutomationRootNodeImpl.prototype = {
   },
 
   destroy: function() {
-    this.dispatchEvent(schema.EventType.destroyed);
+    this.dispatchEvent(schema.EventType.destroyed, 'none');
     for (var id in this.axNodeDataCache_)
       this.remove(id);
     this.detach();
@@ -977,7 +977,8 @@ AutomationRootNodeImpl.prototype = {
     var targetNode = this.get(eventParams.targetID);
     if (targetNode) {
       var targetNodeImpl = privates(targetNode).impl;
-      targetNodeImpl.dispatchEvent(eventParams.eventType);
+      targetNodeImpl.dispatchEvent(
+          eventParams.eventType, eventParams.eventFrom);
     } else {
       logging.WARNING('Got ' + eventParams.eventType +
                       ' event on unknown node: ' + eventParams.targetID +

@@ -504,6 +504,12 @@
     related_element
   };
 
+  enum AXEventFrom {
+    user,
+    page,
+    action
+  };
+
   // Touch gestures on Chrome OS.
   enum AXGesture {
     click,

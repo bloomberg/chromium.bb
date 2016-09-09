@@ -4,13 +4,12 @@
 
 var utils = require('utils');
 
-function AutomationEventImpl(type, target) {
+function AutomationEventImpl(type, target, eventFrom) {
   this.propagationStopped = false;
-
-  // TODO(aboxhall): make these read-only properties
   this.type = type;
   this.target = target;
   this.eventPhase = Event.NONE;
+  this.eventFrom = eventFrom;
 }
 
 AutomationEventImpl.prototype = {
@@ -31,6 +30,7 @@ utils.expose(AutomationEvent, AutomationEventImpl, {
     'type',
     'target',
     'eventPhase',
+    'eventFrom',
   ],
 });
 

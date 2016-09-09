@@ -1815,6 +1815,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       detail.event_type = param.event_type;
       detail.id = param.id;
       detail.ax_tree_id = GetAXTreeID();
+      detail.event_from = param.event_from;
       if (param.update.has_tree_data) {
         detail.update.has_tree_data = true;
         ax_content_tree_data_ = param.update.tree_data;

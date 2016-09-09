@@ -25,6 +25,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/accessibility/ax_node.h"
 
@@ -78,6 +79,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       reset_token_(0),
+      during_action_(false),
       weak_factory_(this) {
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
@@ -107,6 +109,7 @@ RenderAccessibilityImpl::~RenderAccessibilityImpl() {
 
 bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
+  during_action_ = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_DoDefaultAction, OnDoDefaultAction)
@@ -125,6 +128,7 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  during_action_ = false;
   return handled;
 }
 
@@ -210,6 +214,13 @@ void RenderAccessibilityImpl::HandleAXEvent(
   AccessibilityHostMsg_EventParams acc_event;
   acc_event.id = obj.axID();
   acc_event.event_type = event;
+
+  if (blink::WebUserGestureIndicator::isProcessingUserGesture())
+    acc_event.event_from = ui::AX_EVENT_FROM_USER;
+  else if (during_action_)
+    acc_event.event_from = ui::AX_EVENT_FROM_ACTION;
+  else
+    acc_event.event_from = ui::AX_EVENT_FROM_PAGE;
 
   // Discard duplicate accessibility events.
   for (uint32_t i = 0; i < pending_events_.size(); ++i) {
@@ -324,6 +335,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     AccessibilityHostMsg_EventParams event_msg;
     event_msg.event_type = event.event_type;
     event_msg.id = event.id;
+    event_msg.event_from = event.event_from;
     if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
       LOG(ERROR) << "Failed to serialize one accessibility event.";
       continue;

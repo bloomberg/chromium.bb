@@ -32,6 +32,7 @@ DesktopAutomationHandler = function(node) {
   /**
    * The object that speaks changes to an editable text field.
    * @type {editing.TextEditHandler}
+   * @private
    */
   this.textEditHandler_ = null;
 
@@ -72,7 +73,8 @@ DesktopAutomationHandler = function(node) {
 
       if (focus) {
         this.onFocus(
-            new chrome.automation.AutomationEvent(EventType.focus, focus));
+            new chrome.automation.AutomationEvent(
+                EventType.focus, focus, 'page'));
       }
     }).bind(this));
   }.bind(this));
@@ -83,6 +85,12 @@ DesktopAutomationHandler = function(node) {
  * @const {number}
  */
 DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 500;
+
+/**
+ * Controls announcement of non-user-initiated events.
+ * @type {boolean}
+ */
+DesktopAutomationHandler.announceActions = false;
 
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
@@ -116,6 +124,10 @@ DesktopAutomationHandler.prototype = {
     if (prevRange &&
         evt.type == 'focus' &&
         ChromeVoxState.instance.currentRange.equals(prevRange))
+      return;
+
+    // Decide whether to announce this event.
+    if (!DesktopAutomationHandler.announceActions && evt.eventFrom == 'action')
       return;
 
     var output = new Output();
@@ -187,7 +199,7 @@ DesktopAutomationHandler.prototype = {
     if (!evt.target.activeDescendant || !evt.target.state.focused)
       return;
     this.onEventDefault(new chrome.automation.AutomationEvent(
-        EventType.focus, evt.target.activeDescendant));
+        EventType.focus, evt.target.activeDescendant, evt.eventFrom));
   },
 
   /**
@@ -220,7 +232,7 @@ DesktopAutomationHandler.prototype = {
 
     this.onEventIfInRange(
         new chrome.automation.AutomationEvent(
-            EventType.checkedStateChanged, evt.target));
+            EventType.checkedStateChanged, evt.target, evt.eventFrom));
   },
 
   /**
@@ -245,8 +257,8 @@ DesktopAutomationHandler.prototype = {
     if (node.root.role == RoleType.desktop)
       Output.flushNextSpeechUtterance();
 
-    this.onEventDefault(
-        new chrome.automation.AutomationEvent(EventType.focus, node));
+    this.onEventDefault(new chrome.automation.AutomationEvent(
+        EventType.focus, node, evt.eventFrom));
   },
 
   /**

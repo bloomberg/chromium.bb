@@ -27,6 +27,7 @@ struct CONTENT_EXPORT AXEventNotificationDetails {
   ui::AXEvent event_type;
   int id;
   int ax_tree_id;
+  ui::AXEventFrom event_from;
 };
 
 // Use this object in conjunction with the

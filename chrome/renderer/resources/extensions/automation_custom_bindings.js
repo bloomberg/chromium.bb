@@ -216,10 +216,13 @@ automationInternal.onChildTreeID.addListener(function(treeID,
 
       privates(root).impl.setHostNode(node);
 
-      if (root.docLoaded)
-        privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
+      if (root.docLoaded) {
+        privates(root).impl.dispatchEvent(
+            schema.EventType.loadComplete, 'page');
+      }
 
-      privates(node).impl.dispatchEvent(schema.EventType.childrenChanged);
+      privates(node).impl.dispatchEvent(
+          schema.EventType.childrenChanged, 'none');
     });
 
     automationInternal.enableFrame(childTreeID);

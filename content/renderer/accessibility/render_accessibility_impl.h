@@ -168,6 +168,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // We need to return this token in the next IPC.
   int reset_token_;
 
+  // Whether we are processing a client-initiated action.
+  bool during_action_;
+
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;
 

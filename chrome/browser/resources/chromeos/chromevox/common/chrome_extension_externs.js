@@ -287,8 +287,9 @@ chrome.automation.FindParams;
  * @constructor
  * @param {chrome.automation.EventType} type
  * @param {chrome.automation.AutomationNode} node
+ * @param {string} eventFrom
  */
-chrome.automation.AutomationEvent = function(type, node) {};
+chrome.automation.AutomationEvent = function(type, node, eventFrom) {};
 
 /**
  * @type {!chrome.automation.AutomationNode}
@@ -299,6 +300,11 @@ chrome.automation.AutomationEvent.prototype.target;
  * @type {!chrome.automation.EventType}
  */
 chrome.automation.AutomationEvent.prototype.type;
+
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationEvent.prototype.eventFrom;
 
 chrome.automation.AutomationEvent.prototype.stopPropagation = function() {};
 

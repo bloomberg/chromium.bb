@@ -1124,6 +1124,8 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
                     v8::Integer::New(GetIsolate(), params.id));
   event_params->Set(CreateV8String(isolate, "eventType"),
                     CreateV8String(isolate, ToString(params.event_type)));
+  event_params->Set(CreateV8String(isolate, "eventFrom"),
+                    CreateV8String(isolate, ToString(params.event_from)));
   args->Set(0U, event_params);
   context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
 }
