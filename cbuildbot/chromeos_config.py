@@ -3099,56 +3099,59 @@ def _GetConfig(site_config, ge_build_config):
 
   _AddPayloadConfigs()
 
-  def _SetupWaterfalls():
-    for name, c in site_config.iteritems():
-      if not c.get('active_waterfall'):
-        c['active_waterfall'] = GetDefaultWaterfall(c)
 
-    # Apply manual configs, not used for release branches.
-    if not IS_RELEASE_BRANCH:
-      for waterfall, names in _waterfall_config_map.iteritems():
-        for name in names:
-          site_config[name]['active_waterfall'] = waterfall
+def InsertHwTestsOverrideDefaults(build):
+  """Insert default hw_tests values for a given build.
 
-  _SetupWaterfalls()
+  Also updates child builds.
 
-  def _InsertHwTestsOverrideDefaults(build):
-    """Insert default hw_tests values for a given build.
+  Args:
+    build: BuildConfig instance to modify in place.
+  """
+  for child in build['child_configs']:
+    InsertHwTestsOverrideDefaults(child)
 
-    Also updates child builds.
+  if build['hw_tests_override'] is not None:
+    # Explicitly set, no need to insert defaults.
+    return
 
-    Args:
-      build: BuildConfig instance to modify in place.
-    """
-    for child in build['child_configs']:
-      _InsertHwTestsOverrideDefaults(child)
+  if not build['hw_tests']:
+    build['hw_tests_override'] = HWTestList.DefaultList(
+        num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+        file_bugs=False)
+  else:
+    # Copy over base tests.
+    build['hw_tests_override'] = [copy.copy(x) for x in build['hw_tests']]
 
-    if build['hw_tests_override'] is not None:
-      # Explicitly set, no need to insert defaults.
-      return
+    # Adjust for manual test environment.
+    for hw_config in build['hw_tests_override']:
+      hw_config.num = constants.HWTEST_TRYBOT_NUM
+      hw_config.pool = constants.HWTEST_TRYBOT_POOL
+      hw_config.file_bugs = False
+      hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
 
-    if not build['hw_tests']:
-      build['hw_tests_override'] = HWTestList.DefaultList(
-          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False)
-    else:
-      # Copy over base tests.
-      build['hw_tests_override'] = [copy.copy(x) for x in build['hw_tests']]
+  # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
+  build['hw_tests_override'] = [
+      hw_config for hw_config in build['hw_tests_override']
+      if hw_config.suite != constants.HWTEST_AU_SUITE]
 
-      # Adjust for manual test environment.
-      for hw_config in build['hw_tests_override']:
-        hw_config.num = constants.HWTEST_TRYBOT_NUM
-        hw_config.pool = constants.HWTEST_TRYBOT_POOL
-        hw_config.file_bugs = False
-        hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
 
-    # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
-    build['hw_tests_override'] = [
-        hw_config for hw_config in build['hw_tests_override']
-        if hw_config.suite != constants.HWTEST_AU_SUITE]
+def InsertWaterfallDefaults(site_config):
+  """Method with un-refactored build configs/templates.
 
-  for build in site_config.itervalues():
-    _InsertHwTestsOverrideDefaults(build)
+  Args:
+    site_config: config_lib.SiteConfig containing builds to have their
+                 waterfall values updated.
+  """
+  for name, c in site_config.iteritems():
+    if not c.get('active_waterfall'):
+      c['active_waterfall'] = GetDefaultWaterfall(c)
+
+  # Apply manual configs, not used for release branches.
+  if not IS_RELEASE_BRANCH:
+    for waterfall, names in _waterfall_config_map.iteritems():
+      for name in names:
+        site_config[name]['active_waterfall'] = waterfall
 
 
 @factory.CachedFunctionCall
@@ -3169,5 +3172,12 @@ def GetConfig():
 
   # Fill in templates and build configurations.
   _GetConfig(site_config, ge_build_config)
+
+  # Insert default HwTests for tryjobs.
+  for build in site_config.itervalues():
+    InsertHwTestsOverrideDefaults(build)
+
+  # Assign waterfalls to builders that don't have them yet.
+  InsertWaterfallDefaults(site_config)
 
   return site_config

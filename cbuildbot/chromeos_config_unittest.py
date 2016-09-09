@@ -788,8 +788,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     all_build_names = set(self.all_configs.iterkeys())
     redundant = set()
     seen = set()
-    waterfall_iter = chromeos_config._waterfall_config_map.iteritems()
-    for waterfall, names in waterfall_iter:
+    for waterfall, names in chromeos_config._waterfall_config_map.iteritems():
       for build_name in names:
         # Every build in the configuration map must be valid.
         self.assertTrue(build_name in all_build_names,
