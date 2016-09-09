@@ -66,6 +66,11 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeUI() override {
+    InitParams default_params;
+    InitializeUI(default_params);
+  }
+
+  void InitializeUI(const InitParams& args) override {
     connection_.reset(new WaylandConnection);
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
@@ -78,10 +83,24 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeGPU() override {
-    // Don't reinitialize the surface factory in case InitializeUI was called
-    // previously in the same process.
-    if (!surface_factory_)
+    InitParams default_params;
+    InitializeGPU(default_params);
+  }
+
+  void InitializeGPU(const InitParams& args) override {
+    // TODO(fwang): args.single_process parameter should be checked here; make
+    // sure callers pass in the proper value. Once it happens, the check whether
+    // surface factory was set in the same process by a previous InitializeUI
+    // call becomes unneeded.
+    if (!surface_factory_) {
+      // TODO(fwang): Separate processes can not share a Wayland connection
+      // and so the current implementations of GLOzoneEGLWayland and
+      // WaylandCanvasSurface may only work when UI and GPU live in the same
+      // process. GetSurfaceFactoryOzone() must be non-null so a dummy instance
+      // of WaylandSurfaceFactory is needed to make the GPU initialization
+      // gracefully fail.
       surface_factory_.reset(new WaylandSurfaceFactory(nullptr));
+    }
   }
 
  private:

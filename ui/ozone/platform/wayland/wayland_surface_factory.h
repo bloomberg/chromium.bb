@@ -20,14 +20,8 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
   ~WaylandSurfaceFactory() override;
 
   // SurfaceFactoryOzone:
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gl::GLImplementation implementation,
-      gfx::AcceleratedWidget widget) override;
-  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
-      gl::GLImplementation implementation,
-      const gfx::Size& size) override;
-  intptr_t GetNativeDisplay() override;
-  bool LoadEGLGLES2Bindings() override;
+  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
@@ -43,6 +37,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   WaylandConnection* connection_;
+  std::unique_ptr<GLOzone> egl_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactory);
 };

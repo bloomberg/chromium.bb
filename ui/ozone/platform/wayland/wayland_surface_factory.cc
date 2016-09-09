@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
@@ -126,20 +127,33 @@ WaylandCanvasSurface::CreateVSyncProvider() {
   return nullptr;
 }
 
-WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
-    : connection_(connection) {}
+namespace {
 
-WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
+class GLOzoneEGLWayland : public GLOzoneEGL {
+ public:
+  GLOzoneEGLWayland(WaylandConnection* connection) : connection_(connection) {}
+  ~GLOzoneEGLWayland() override {}
 
-scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateViewGLSurface(
-    gl::GLImplementation implementation,
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget widget) override;
+
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      const gfx::Size& size) override;
+
+ protected:
+  intptr_t GetNativeDisplay() override;
+  bool LoadGLES2Bindings() override;
+
+ private:
+  WaylandConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
+};
+
+scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
-  }
-
 #if defined(USE_WAYLAND_EGL)
+  DCHECK(connection_);
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
   // The wl_egl_window needs to be created before the GLSurface so it can be
@@ -153,14 +167,8 @@ scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateViewGLSurface(
 #endif
 }
 
-scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateOffscreenGLSurface(
-    gl::GLImplementation implementation,
+scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
     const gfx::Size& size) {
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
-  }
-
 #if defined(USE_WAYLAND_EGL)
   return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
 #else
@@ -168,14 +176,12 @@ scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateOffscreenGLSurface(
 #endif
 }
 
-intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
+intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
   return reinterpret_cast<intptr_t>(connection_->display());
 }
 
-bool WaylandSurfaceFactory::LoadEGLGLES2Bindings() {
+bool GLOzoneEGLWayland::LoadGLES2Bindings() {
 #if defined(USE_WAYLAND_EGL)
-  if (!connection_)
-    return false;
   setenv("EGL_PLATFORM", "wayland", 0);
   return LoadDefaultEGLGLES2Bindings();
 #else
@@ -183,11 +189,40 @@ bool WaylandSurfaceFactory::LoadEGLGLES2Bindings() {
 #endif
 }
 
+}  // namespace
+
+WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
+    : connection_(connection) {
+  if (connection_)
+    egl_implementation_.reset(new GLOzoneEGLWayland(connection_));
+}
+
+WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
+
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
+  if (!connection_)
+    return nullptr;
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
   return base::MakeUnique<WaylandCanvasSurface>(connection_, window);
+}
+
+std::vector<gl::GLImplementation>
+WaylandSurfaceFactory::GetAllowedGLImplementations() {
+  std::vector<gl::GLImplementation> impls;
+  impls.push_back(gl::kGLImplementationEGLGLES2);
+  return impls;
+}
+
+GLOzone* WaylandSurfaceFactory::GetGLOzone(
+    gl::GLImplementation implementation) {
+  switch (implementation) {
+    case gl::kGLImplementationEGLGLES2:
+      return egl_implementation_.get();
+    default:
+      return nullptr;
+  }
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
