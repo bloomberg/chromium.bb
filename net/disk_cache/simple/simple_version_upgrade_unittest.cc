@@ -47,7 +47,7 @@ bool WriteFakeIndexFileV5(const base::FilePath& cache_path) {
 TEST(SimpleVersionUpgradeTest, FailsToMigrateBackwards) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
-  const base::FilePath cache_path = cache_dir.path();
+  const base::FilePath cache_path = cache_dir.GetPath();
 
   disk_cache::FakeIndexData data;
   data.version = 100500;
@@ -58,13 +58,13 @@ TEST(SimpleVersionUpgradeTest, FailsToMigrateBackwards) {
   ASSERT_EQ(static_cast<int>(sizeof(data)),
             base::WriteFile(file_name, reinterpret_cast<const char*>(&data),
                             sizeof(data)));
-  EXPECT_FALSE(disk_cache::UpgradeSimpleCacheOnDisk(cache_dir.path()));
+  EXPECT_FALSE(disk_cache::UpgradeSimpleCacheOnDisk(cache_dir.GetPath()));
 }
 
 TEST(SimpleVersionUpgradeTest, FakeIndexVersionGetsUpdated) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
-  const base::FilePath cache_path = cache_dir.path();
+  const base::FilePath cache_path = cache_dir.GetPath();
 
   WriteFakeIndexFileV5(cache_path);
   const std::string file_contents("incorrectly serialized data");
@@ -91,7 +91,7 @@ TEST(SimpleVersionUpgradeTest, FakeIndexVersionGetsUpdated) {
 TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
-  const base::FilePath cache_path = cache_dir.path();
+  const base::FilePath cache_path = cache_dir.GetPath();
 
   WriteFakeIndexFileV5(cache_path);
   const std::string file_contents("incorrectly serialized data");

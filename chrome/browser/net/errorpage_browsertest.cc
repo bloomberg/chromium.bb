@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   GURL non_existent_file_url =
-      net::FilePathToFileURL(temp_dir.path().AppendASCII("marmoset"));
+      net::FilePathToFileURL(temp_dir.GetPath().AppendASCII("marmoset"));
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), non_existent_file_url, 1);

@@ -68,7 +68,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(cookie_filename), client_task_runner(),
+        temp_dir_.GetPath().Append(cookie_filename), client_task_runner(),
         background_task_runner(), false, NULL);
     std::vector<CanonicalCookie*> cookies;
     Load();
@@ -96,7 +96,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     pool_owner_.reset(new base::SequencedWorkerPoolOwner(1, "pool"));
 
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(cookie_filename), client_task_runner(),
+        temp_dir_.GetPath().Append(cookie_filename), client_task_runner(),
         background_task_runner(), false, NULL);
   }
 

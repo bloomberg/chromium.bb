@@ -595,15 +595,9 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
 
   net::TestCompletionCallback cb;
   std::unique_ptr<disk_cache::Backend> extra_cache;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          net::CACHE_BACKEND_DEFAULT,
-                                          store.path(),
-                                          0,
-                                          false,
-                                          base::ThreadTaskRunnerHandle::Get(),
-                                          NULL,
-                                          &extra_cache,
-                                          cb.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, store.GetPath(), 0, false,
+      base::ThreadTaskRunnerHandle::Get(), NULL, &extra_cache, cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   ASSERT_TRUE(extra_cache.get() != NULL);
 
@@ -3230,25 +3224,13 @@ TEST_F(DiskCacheTest, MultipleInstances) {
   const int kNumberOfCaches = 2;
   std::unique_ptr<disk_cache::Backend> cache[kNumberOfCaches];
 
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          net::CACHE_BACKEND_DEFAULT,
-                                          store1.path(),
-                                          0,
-                                          false,
-                                          cache_thread.task_runner(),
-                                          NULL,
-                                          &cache[0],
-                                          cb.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, store1.GetPath(), 0, false,
+      cache_thread.task_runner(), NULL, &cache[0], cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
-  rv = disk_cache::CreateCacheBackend(net::MEDIA_CACHE,
-                                      net::CACHE_BACKEND_DEFAULT,
-                                      store2.path(),
-                                      0,
-                                      false,
-                                      cache_thread.task_runner(),
-                                      NULL,
-                                      &cache[1],
-                                      cb.callback());
+  rv = disk_cache::CreateCacheBackend(
+      net::MEDIA_CACHE, net::CACHE_BACKEND_DEFAULT, store2.GetPath(), 0, false,
+      cache_thread.task_runner(), NULL, &cache[1], cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
 
   ASSERT_TRUE(cache[0].get() != NULL && cache[1].get() != NULL);

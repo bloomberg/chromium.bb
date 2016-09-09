@@ -15,7 +15,7 @@ class CacheUtilTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    cache_dir_ = tmp_dir_.path().Append(FILE_PATH_LITERAL("Cache"));
+    cache_dir_ = tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("Cache"));
     file1_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL("file01")));
     file2_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL(".file02")));
     dir1_ = base::FilePath(cache_dir_.Append(FILE_PATH_LITERAL("dir01")));
@@ -31,7 +31,7 @@ class CacheUtilTest : public PlatformTest {
     fp = base::OpenFile(file3_, "w");
     ASSERT_TRUE(fp != NULL);
     base::CloseFile(fp);
-    dest_dir_ = tmp_dir_.path().Append(FILE_PATH_LITERAL("old_Cache_001"));
+    dest_dir_ = tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("old_Cache_001"));
     dest_file1_ = base::FilePath(dest_dir_.Append(FILE_PATH_LITERAL("file01")));
     dest_file2_ =
         base::FilePath(dest_dir_.Append(FILE_PATH_LITERAL(".file02")));

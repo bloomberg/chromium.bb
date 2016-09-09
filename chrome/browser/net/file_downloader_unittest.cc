@@ -30,7 +30,7 @@ class FileDownloaderTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    path_ = dir_.path().AppendASCII(kFilename);
+    path_ = dir_.GetPath().AppendASCII(kFilename);
     ASSERT_FALSE(base::PathExists(path_));
   }
 

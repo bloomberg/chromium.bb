@@ -109,11 +109,11 @@ TEST_F(URLRequestFileDirTest, ListCompletionOnNoPending) {
   // It is necessary to pass an existing directory to UrlRequest object,
   // but it will be deleted for testing purpose after request is started.
   ASSERT_TRUE(directory.CreateUniqueTempDir());
-  TestJobFactory factory(directory.path());
+  TestJobFactory factory(directory.GetPath());
   context_.set_job_factory(&factory);
   std::unique_ptr<URLRequest> request(context_.CreateRequest(
       FilePathToFileURL(
-          directory.path().AppendASCII("this_path_does_not_exist")),
+          directory.GetPath().AppendASCII("this_path_does_not_exist")),
       DEFAULT_PRIORITY, &delegate_));
 
   request->Start();
@@ -139,9 +139,9 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileSync) {
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   base::FilePath path;
-  base::CreateTemporaryFileInDir(directory.path(), &path);
+  base::CreateTemporaryFileInDir(directory.GetPath(), &path);
 
-  TestJobFactory factory(directory.path());
+  TestJobFactory factory(directory.GetPath());
   context_.set_job_factory(&factory);
 
   std::unique_ptr<URLRequest> request(context_.CreateRequest(
@@ -164,7 +164,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileSync) {
   ASSERT_GT(bytes_read, 0);
   ASSERT_LE(bytes_read, kBufferSize);
   std::string data(buffer_->data(), bytes_read);
-  EXPECT_TRUE(data.find(directory.path().BaseName().MaybeAsASCII()) !=
+  EXPECT_TRUE(data.find(directory.GetPath().BaseName().MaybeAsASCII()) !=
               std::string::npos);
   EXPECT_TRUE(data.find(path.BaseName().MaybeAsASCII()) != std::string::npos);
 }
@@ -174,9 +174,9 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileAsync) {
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   base::FilePath path;
-  base::CreateTemporaryFileInDir(directory.path(), &path);
+  base::CreateTemporaryFileInDir(directory.GetPath(), &path);
 
-  TestJobFactory factory(directory.path());
+  TestJobFactory factory(directory.GetPath());
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
@@ -190,7 +190,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileAsync) {
   ASSERT_GT(delegate.bytes_received(), 0);
   ASSERT_LE(delegate.bytes_received(), kBufferSize);
   EXPECT_TRUE(delegate.data_received().find(
-                  directory.path().BaseName().MaybeAsASCII()) !=
+                  directory.GetPath().BaseName().MaybeAsASCII()) !=
               std::string::npos);
   EXPECT_TRUE(delegate.data_received().find(path.BaseName().MaybeAsASCII()) !=
               std::string::npos);
@@ -201,14 +201,14 @@ TEST_F(URLRequestFileDirTest, DirectoryWithAFileAndSubdirectory) {
   ASSERT_TRUE(directory.CreateUniqueTempDir());
 
   base::FilePath sub_dir;
-  CreateTemporaryDirInDir(directory.path(),
+  CreateTemporaryDirInDir(directory.GetPath(),
                           FILE_PATH_LITERAL("CreateNewSubDirectoryInDirectory"),
                           &sub_dir);
 
   base::FilePath path;
-  base::CreateTemporaryFileInDir(directory.path(), &path);
+  base::CreateTemporaryFileInDir(directory.GetPath(), &path);
 
-  TestJobFactory factory(directory.path());
+  TestJobFactory factory(directory.GetPath());
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
@@ -222,7 +222,7 @@ TEST_F(URLRequestFileDirTest, DirectoryWithAFileAndSubdirectory) {
   ASSERT_GT(delegate.bytes_received(), 0);
   ASSERT_LE(delegate.bytes_received(), kBufferSize);
   EXPECT_TRUE(delegate.data_received().find(
-                  directory.path().BaseName().MaybeAsASCII()) !=
+                  directory.GetPath().BaseName().MaybeAsASCII()) !=
               std::string::npos);
   EXPECT_TRUE(delegate.data_received().find(
                   sub_dir.BaseName().MaybeAsASCII()) != std::string::npos);
@@ -234,12 +234,12 @@ TEST_F(URLRequestFileDirTest, EmptyDirectory) {
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
 
-  TestJobFactory factory(directory.path());
+  TestJobFactory factory(directory.GetPath());
   context_.set_job_factory(&factory);
 
   TestDelegate delegate;
   std::unique_ptr<URLRequest> request(context_.CreateRequest(
-      FilePathToFileURL(directory.path()), DEFAULT_PRIORITY, &delegate));
+      FilePathToFileURL(directory.GetPath()), DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());
 
@@ -248,7 +248,7 @@ TEST_F(URLRequestFileDirTest, EmptyDirectory) {
   ASSERT_GT(delegate.bytes_received(), 0);
   ASSERT_LE(delegate.bytes_received(), kBufferSize);
   EXPECT_TRUE(delegate.data_received().find(
-                  directory.path().BaseName().MaybeAsASCII()) !=
+                  directory.GetPath().BaseName().MaybeAsASCII()) !=
               std::string::npos);
 }
 

@@ -188,7 +188,7 @@ void URLRequestFileJobEventsTest::RunRequest(
     const Range* range) {
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
-  base::FilePath path = directory.path().Append(FILE_PATH_LITERAL("test"));
+  base::FilePath path = directory.GetPath().Append(FILE_PATH_LITERAL("test"));
   if (!file_extension.empty())
     path = path.AddExtension(file_extension);
   ASSERT_TRUE(CreateFileWithContent(raw_content, path));

@@ -35,8 +35,8 @@ class UploadFileElementReaderTest : public PlatformTest {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
-                                               &temp_file_path_));
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file_path_));
     ASSERT_EQ(
         static_cast<int>(bytes_.size()),
         base::WriteFile(temp_file_path_, &bytes_[0], bytes_.size()));

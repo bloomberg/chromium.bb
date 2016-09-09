@@ -30,7 +30,7 @@ class WriteToFileNetLogObserverTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    log_path_ = temp_dir_.path().AppendASCII("NetLogFile");
+    log_path_ = temp_dir_.GetPath().AppendASCII("NetLogFile");
   }
 
  protected:

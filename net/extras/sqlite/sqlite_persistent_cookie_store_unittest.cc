@@ -144,7 +144,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
       cookie_crypto_delegate_.reset(new CookieCryptor());
 
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(kCookieFilename), client_task_runner(),
+        temp_dir_.GetPath().Append(kCookieFilename), client_task_runner(),
         background_task_runner(), restore_old_session_cookies,
         cookie_crypto_delegate_.get());
   }
@@ -192,7 +192,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   std::string ReadRawDBContents() {
     std::string contents;
-    if (!base::ReadFileToString(temp_dir_.path().Append(kCookieFilename),
+    if (!base::ReadFileToString(temp_dir_.GetPath().Append(kCookieFilename),
                                 &contents))
       return std::string();
     return contents;
@@ -234,7 +234,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   // Now corrupt the meta table.
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(temp_dir_.path().Append(kCookieFilename)));
+    ASSERT_TRUE(db.Open(temp_dir_.GetPath().Append(kCookieFilename)));
     sql::MetaTable meta_table_;
     meta_table_.Init(&db, 1, 1);
     ASSERT_TRUE(db.Execute("DELETE FROM meta"));
@@ -318,7 +318,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // Load the store a second time. Before the store finishes loading, add a
   // transient cookie and flush it to disk.
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
+      temp_dir_.GetPath().Append(kCookieFilename), client_task_runner(),
       background_task_runner(), false, nullptr);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
@@ -353,7 +353,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // store should contain exactly 4 cookies: the 3 persistent, and "c.com",
   // which was added during the second cookie store load.
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
+      temp_dir_.GetPath().Append(kCookieFilename), client_task_runner(),
       background_task_runner(), true, nullptr);
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)));
@@ -377,7 +377,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   DestroyStore();
 
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
+      temp_dir_.GetPath().Append(kCookieFilename), client_task_runner(),
       background_task_runner(), false, nullptr);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
@@ -432,7 +432,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   InitializeStore(false, false);
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
-  base::FilePath path = temp_dir_.path().Append(kCookieFilename);
+  base::FilePath path = temp_dir_.GetPath().Append(kCookieFilename);
   base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(path, &info));
   int64_t base_size = info.size;
@@ -726,7 +726,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   sql::Connection db;
   sql::Statement smt;
   int resultcount = 0;
-  ASSERT_TRUE(db.Open(temp_dir_.path().Append(kCookieFilename)));
+  ASSERT_TRUE(db.Open(temp_dir_.GetPath().Append(kCookieFilename)));
   smt.Assign(db.GetCachedStatement(SQL_FROM_HERE,
                                    "SELECT * "
                                    "FROM cookies "

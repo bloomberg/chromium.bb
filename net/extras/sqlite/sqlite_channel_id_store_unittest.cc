@@ -104,7 +104,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteChannelIDStore(
-        temp_dir_.path().Append(kTestChannelIDFilename),
+        temp_dir_.GetPath().Append(kTestChannelIDFilename),
         base::ThreadTaskRunnerHandle::Get());
     std::vector<std::unique_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     Load(&channel_ids);
@@ -134,9 +134,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  store_ =
-      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::ThreadTaskRunnerHandle::Get());
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.GetPath().Append(kTestChannelIDFilename),
+      base::ThreadTaskRunnerHandle::Get());
 
   // Reload and test for persistence
   Load(&channel_ids);
@@ -164,9 +164,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   channel_ids.clear();
-  store_ =
-      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::ThreadTaskRunnerHandle::Get());
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.GetPath().Append(kTestChannelIDFilename),
+      base::ThreadTaskRunnerHandle::Get());
 
   // Reload and check if the keypair has been removed.
   Load(&channel_ids);
@@ -190,9 +190,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  store_ =
-      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::ThreadTaskRunnerHandle::Get());
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.GetPath().Append(kTestChannelIDFilename),
+      base::ThreadTaskRunnerHandle::Get());
 
   // Reload and test for persistence
   Load(&channel_ids);
@@ -208,9 +208,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   channel_ids.clear();
-  store_ =
-      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
-                               base::ThreadTaskRunnerHandle::Get());
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.GetPath().Append(kTestChannelIDFilename),
+      base::ThreadTaskRunnerHandle::Get());
 
   // Reload and check that only foo.com persisted in store.
   Load(&channel_ids);
@@ -226,7 +226,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  base::FilePath v1_db_path(temp_dir_.path().AppendASCII("v1db"));
+  base::FilePath v1_db_path(temp_dir_.GetPath().AppendASCII("v1db"));
 
   std::string key_data;
   std::string cert_data;
@@ -294,7 +294,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  base::FilePath v2_db_path(temp_dir_.path().AppendASCII("v2db"));
+  base::FilePath v2_db_path(temp_dir_.GetPath().AppendASCII("v2db"));
 
   std::string key_data;
   std::string cert_data;
@@ -370,7 +370,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  base::FilePath v3_db_path(temp_dir_.path().AppendASCII("v3db"));
+  base::FilePath v3_db_path(temp_dir_.GetPath().AppendASCII("v3db"));
 
   std::string key_data;
   std::string cert_data;
@@ -448,7 +448,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  base::FilePath v4_db_path(temp_dir_.path().AppendASCII("v4db"));
+  base::FilePath v4_db_path(temp_dir_.GetPath().AppendASCII("v4db"));
 
   std::string key_data;
   std::string cert_data;

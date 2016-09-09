@@ -48,7 +48,7 @@ class UnixDomainServerSocketTest : public testing::Test {
  protected:
   UnixDomainServerSocketTest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    socket_path_ = temp_dir_.path().Append(kSocketFilename).value();
+    socket_path_ = temp_dir_.GetPath().Append(kSocketFilename).value();
   }
 
   base::ScopedTempDir temp_dir_;

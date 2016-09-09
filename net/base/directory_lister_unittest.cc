@@ -143,7 +143,7 @@ class DirectoryListerTest : public PlatformTest {
     // directory.
     std::list<std::pair<base::FilePath, int> > directories;
     ASSERT_TRUE(temp_root_dir_.CreateUniqueTempDir());
-    directories.push_back(std::make_pair(temp_root_dir_.path(), 0));
+    directories.push_back(std::make_pair(temp_root_dir_.GetPath(), 0));
     while (!directories.empty()) {
       std::pair<base::FilePath, int> dir_data = directories.front();
       directories.pop_front();
@@ -154,7 +154,7 @@ class DirectoryListerTest : public PlatformTest {
                         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
         ASSERT_TRUE(file.IsValid());
         ++total_created_file_system_objects_in_temp_root_dir_;
-        if (dir_data.first == temp_root_dir_.path())
+        if (dir_data.first == temp_root_dir_.GetPath())
           ++created_file_system_objects_in_temp_root_dir_;
       }
       if (dir_data.second < kMaxDepth - 1) {
@@ -163,7 +163,7 @@ class DirectoryListerTest : public PlatformTest {
           base::FilePath dir_path = dir_data.first.AppendASCII(dir_name);
           ASSERT_TRUE(base::CreateDirectory(dir_path));
           ++total_created_file_system_objects_in_temp_root_dir_;
-          if (dir_data.first == temp_root_dir_.path())
+          if (dir_data.first == temp_root_dir_.GetPath())
             ++created_file_system_objects_in_temp_root_dir_;
           directories.push_back(std::make_pair(dir_path, dir_data.second + 1));
         }
@@ -172,9 +172,7 @@ class DirectoryListerTest : public PlatformTest {
     PlatformTest::SetUp();
   }
 
-  const base::FilePath& root_path() const {
-    return temp_root_dir_.path();
-  }
+  const base::FilePath& root_path() const { return temp_root_dir_.GetPath(); }
 
   int expected_list_length_recursive() const {
     // List should include everything but the top level directory, and does not
@@ -223,7 +221,7 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
   ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
-  DirectoryLister lister(tempDir.path(), &delegate);
+  DirectoryLister lister(tempDir.GetPath(), &delegate);
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
@@ -275,7 +273,7 @@ TEST_F(DirectoryListerTest, CancelOnLastElementTest) {
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
   ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
-  DirectoryLister lister(tempDir.path(), &delegate);
+  DirectoryLister lister(tempDir.GetPath(), &delegate);
   delegate.set_cancel_lister_on_list_file(true);
   delegate.Run(&lister);
 
@@ -290,7 +288,7 @@ TEST_F(DirectoryListerTest, NoSuchDirTest) {
 
   ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(
-      tempDir.path().AppendASCII("this_path_does_not_exist"), &delegate);
+      tempDir.GetPath().AppendASCII("this_path_does_not_exist"), &delegate);
   delegate.Run(&lister);
 
   EXPECT_THAT(delegate.error(), IsError(ERR_FILE_NOT_FOUND));

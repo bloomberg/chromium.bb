@@ -50,7 +50,7 @@ class BoundedFileNetLogObserverTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    log_path_ = temp_dir_.path();
+    log_path_ = temp_dir_.GetPath();
     file_thread_.reset(new base::Thread("NetLog File Thread"));
     file_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));

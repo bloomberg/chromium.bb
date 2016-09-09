@@ -1029,7 +1029,7 @@ TEST_F(URLRequestTest, AllowFileURLs) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath test_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &test_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &test_file));
   std::string test_data("monkey");
   base::WriteFile(test_file, test_data.data(), test_data.size());
   GURL test_file_url = FilePathToFileURL(test_file);
