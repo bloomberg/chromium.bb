@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * Long term, this should be merged with @FlakyTest. But @FlakyTest means
  * has specific meaning that is currently different from RetryOnFailure.
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RetryOnFailure {
     String message() default "";
