@@ -532,11 +532,12 @@ bool LayoutGrid::isEmptyAutoRepeatTrack(GridTrackSizingDirection direction, size
 LayoutUnit LayoutGrid::gridGapForDirection(GridTrackSizingDirection direction, SizingOperation sizingOperation) const
 {
     LayoutUnit availableSize;
-    if (sizingOperation == TrackSizing)
+    const Length& gap = direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap();
+    if (sizingOperation == TrackSizing && gap.isPercent())
         availableSize = direction == ForColumns ? availableLogicalWidth() : availableLogicalHeightForPercentageComputation();
 
     // TODO(rego): Maybe we could cache the computed percentage as a performance improvement.
-    return valueForLength(direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap(), availableSize);
+    return valueForLength(gap, availableSize);
 }
 
 LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t startLine, size_t span, SizingOperation sizingOperation) const
