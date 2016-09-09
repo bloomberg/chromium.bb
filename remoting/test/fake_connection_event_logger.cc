@@ -119,6 +119,7 @@ int64_t NoBarrierAtomicInt64::operator*() const {
 
 class MessageCounter {
  public:
+  MessageCounter(const char* name, const char* unit);
   explicit MessageCounter(const char* name);
 
   int message_count() const { return *count_; }
@@ -129,10 +130,12 @@ class MessageCounter {
   double SizePerSecond() const;
   double AverageMessageSize() const;
   void LogMessage(const ::google::protobuf::MessageLite& message);
-  void DisplayStatistics(std::ostream& os);
+  void LogMessage(int size);
+  virtual void DisplayStatistics(std::ostream& os);
 
  private:
-  std::string name_;
+  const std::string name_;
+  const std::string unit_;
   NoBarrierAtomicInt32 count_;
   NoBarrierAtomicInt64 size_;
   int last_size_ = 0;
@@ -142,11 +145,15 @@ class MessageCounter {
   DISALLOW_COPY_AND_ASSIGN(MessageCounter);
 };
 
-MessageCounter::MessageCounter(const char* name)
+MessageCounter::MessageCounter(const char* name, const char* unit)
     : name_(name),
+      unit_(unit),
       count_(),
       size_(),
       start_time_(base::Time::Now()) {}
+
+MessageCounter::MessageCounter(const char* name)
+    : MessageCounter(name, "bytes") {}
 
 double MessageCounter::DurationSeconds() const {
   return (base::Time::Now() - start_time_).InSecondsF();
@@ -165,27 +172,21 @@ double MessageCounter::AverageMessageSize() const {
 
 void MessageCounter::LogMessage(
     const ::google::protobuf::MessageLite& message) {
+  LogMessage(message.ByteSize());
+}
+
+void MessageCounter::LogMessage(int size) {
   count_++;
-  last_size_ = message.ByteSize();
-  size_ += message.ByteSize();
+  last_size_ = size;
+  size_ += size;
 }
 
 void MessageCounter::DisplayStatistics(std::ostream& os) {
-  os << name_
-     << ": "
-     << message_size()
-     << " bytes in "
-     << message_count()
-     << " packages, last package "
-     << last_message_size()
-     << " bytes, "
-     << AverageMessageSize()
-     << " bytes/package, "
-     << MessagesPerSecond()
-     << " packages/sec, "
-     << SizePerSecond()
-     << " bytes/sec"
-     << std::endl;
+  os << name_ << ": " << message_size() << " " << unit_ << " in "
+     << message_count() << " packages, last package " << last_message_size()
+     << " " << unit_ << ", " << AverageMessageSize() << " " << unit_
+     << "/package, " << MessagesPerSecond() << " packages/sec, "
+     << SizePerSecond() << " " << unit_ << "/sec" << std::endl;
 }
 
 }  // namespace
@@ -267,17 +268,33 @@ class FakeConnectionEventLogger::CounterVideoStub
  public:
   CounterVideoStub(protocol::FakeConnectionToClient* connection);
 
+  void DisplayStatistics(std::ostream& os) override;
+
  private:
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override;
 
   protocol::FakeConnectionToClient* connection_ = nullptr;
+  MessageCounter video_data_;
+  MessageCounter capture_time_;
+  MessageCounter encode_time_;
 };
 
 FakeConnectionEventLogger::CounterVideoStub::CounterVideoStub(
     protocol::FakeConnectionToClient* connection)
     : MessageCounter("video"),
-      connection_(connection) {}
+      connection_(connection),
+      video_data_("video-data"),
+      capture_time_("capture-time", "ms"),
+      encode_time_("encode-time", "ms") {}
+
+void FakeConnectionEventLogger::CounterVideoStub::DisplayStatistics(
+    std::ostream& os) {
+  MessageCounter::DisplayStatistics(os);
+  video_data_.DisplayStatistics(os);
+  capture_time_.DisplayStatistics(os);
+  encode_time_.DisplayStatistics(os);
+}
 
 void FakeConnectionEventLogger::CounterVideoStub::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> video_packet,
@@ -291,6 +308,9 @@ void FakeConnectionEventLogger::CounterVideoStub::ProcessVideoPacket(
       connection_->video_feedback_stub()->ProcessVideoAck(std::move(ack));
     }
     LogMessage(*video_packet);
+    video_data_.LogMessage(video_packet->data().size());
+    capture_time_.LogMessage(video_packet->capture_time_ms());
+    encode_time_.LogMessage(video_packet->encode_time_ms());
   }
   done.Run();
 }
