@@ -27,7 +27,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '280106'
+CLANG_REVISION = '280836'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -333,7 +333,7 @@ def AddGnuWinToPath():
     return
 
   gnuwin_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gnuwin')
-  GNUWIN_VERSION = '4'
+  GNUWIN_VERSION = '5'
   GNUWIN_STAMP = os.path.join(gnuwin_dir, 'stamp')
   if ReadStampFile(GNUWIN_STAMP) == GNUWIN_VERSION:
     print 'GNU Win tools already up to date.'
@@ -754,21 +754,20 @@ def UpdateClang(args):
 
   if args.with_android:
     make_toolchain = os.path.join(
-        ANDROID_NDK_DIR, 'build', 'tools', 'make-standalone-toolchain.sh')
+        ANDROID_NDK_DIR, 'build', 'tools', 'make_standalone_toolchain.py')
     for target_arch in ['aarch64', 'arm', 'i686']:
       # Make standalone Android toolchain for target_arch.
       toolchain_dir = os.path.join(
           LLVM_BUILD_DIR, 'android-toolchain-' + target_arch)
       RunCommand([
           make_toolchain,
-          '--platform=android-' + ('21' if target_arch == 'aarch64' else '19'),
-          '--install-dir="%s"' % toolchain_dir,
-          '--system=linux-x86_64',
+          '--api=' + ('21' if target_arch == 'aarch64' else '19'),
+          '--install-dir=%s' % toolchain_dir,
           '--stl=stlport',
-          '--toolchain=' + {
-              'aarch64': 'aarch64-linux-android-4.9',
-              'arm': 'arm-linux-androideabi-4.9',
-              'i686': 'x86-4.9',
+          '--arch=' + {
+              'aarch64': 'arm64',
+              'arm': 'arm',
+              'i686': 'x86',
           }[target_arch]])
       # Android NDK r9d copies a broken unwind.h into the toolchain, see
       # http://crbug.com/357890
