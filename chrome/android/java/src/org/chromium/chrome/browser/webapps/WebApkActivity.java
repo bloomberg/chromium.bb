@@ -61,6 +61,9 @@ public class WebApkActivity extends WebappActivity {
                         public void onWebappDataStorageRetrieved(
                                 WebappDataStorage storage) {
                             storage.updateFromShortcutIntent(getIntent());
+                            // Initialize the update related timestamps to the registration time.
+                            storage.updateTimeOfLastCheckForUpdatedWebManifest();
+                            storage.updateTimeOfLastWebApkUpdateRequestCompletion();
                         }
                     });
             return;
