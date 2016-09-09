@@ -143,6 +143,11 @@ component("midi") {
       "midi_manager_winrt.cc",
       "midi_manager_winrt.h",
     ]
+
+    # This library is included in base in static builds.
+    if (is_component_build) {
+      libs += [ "cfgmgr32.lib" ]
+    }
   }
 
   if (use_alsa && use_udev) {

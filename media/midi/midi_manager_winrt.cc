@@ -16,9 +16,12 @@ struct __declspec(uuid("905a0fef-bc53-11df-8c49-001e4fc686da"))
 }
 }
 
+#include <initguid.h>  // Required by <devpkey.h>
+
+#include <cfgmgr32.h>
 #include <comdef.h>
+#include <devpkey.h>
 #include <robuffer.h>
-#include <setupapi.h>
 #include <windows.devices.enumeration.h>
 #include <windows.devices.midi.h>
 #include <wrl/event.h>
@@ -263,28 +266,53 @@ bool IsMicrosoftSynthesizer(IDeviceInformation* info) {
   return result != FALSE;
 }
 
-class ScopedDeviceInfoListTraits {
- public:
-  static HDEVINFO InvalidValue() { return INVALID_HANDLE_VALUE; }
+void GetDevPropString(DEVINST handle,
+                      const DEVPROPKEY* devprop_key,
+                      std::string* out) {
+  DEVPROPTYPE devprop_type;
+  unsigned long buffer_size = 0;
 
-  static void Free(HDEVINFO devinfo_set) {
-    SetupDiDestroyDeviceInfoList(devinfo_set);
+  // Retrieve |buffer_size| and allocate buffer later for receiving data.
+  CONFIGRET cr = CM_Get_DevNode_Property(handle, devprop_key, &devprop_type,
+                                         nullptr, &buffer_size, 0);
+  if (cr != CR_BUFFER_SMALL) {
+    // Here we print error codes in hex instead of using PrintHr() with
+    // HRESULT_FROM_WIN32() and CM_MapCrToWin32Err(), since only a minor set of
+    // CONFIGRET values are mapped to Win32 errors. Same for following VLOG()s.
+    VLOG(1) << "CM_Get_DevNode_Property failed: CONFIGRET 0x" << std::hex << cr;
+    return;
   }
-};
+  if (devprop_type != DEVPROP_TYPE_STRING) {
+    VLOG(1) << "CM_Get_DevNode_Property returns wrong data type, "
+            << "expected DEVPROP_TYPE_STRING";
+    return;
+  }
 
-using ScopedDeviceInfoList =
-    base::ScopedGeneric<HDEVINFO, ScopedDeviceInfoListTraits>;
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+
+  // Receive property data.
+  cr = CM_Get_DevNode_Property(handle, devprop_key, &devprop_type, buffer.get(),
+                               &buffer_size, 0);
+  if (cr != CR_SUCCESS)
+    VLOG(1) << "CM_Get_DevNode_Property failed: CONFIGRET 0x" << std::hex << cr;
+  else
+    *out = base::WideToUTF8(reinterpret_cast<base::char16*>(buffer.get()));
+}
 
 // Retrieves manufacturer (provider) and version information of underlying
-// device driver using Setup API, given device (interface) ID provided by WinRT.
-// |out_manufacturer| and |out_driver_version| won't be modified if retrieval
-// fails. Note that SetupDiBuildDriverInfoList() would block for a few hundred
-// milliseconds so consider calling this function in an asynchronous manner.
+// device driver through PnP Configuration Manager, given device (interface) ID
+// provided by WinRT. |out_manufacturer| and |out_driver_version| won't be
+// modified if retrieval fails.
 //
 // Device instance ID is extracted from device (interface) ID provided by WinRT
 // APIs, for example from the following interface ID:
 // \\?\SWD#MMDEVAPI#MIDII_60F39FCA.P_0002#{504be32c-ccf6-4d2c-b73f-6f8b3747e22b}
 // we extract the device instance ID: SWD\MMDEVAPI\MIDII_60F39FCA.P_0002
+//
+// However the extracted device instance ID represent a "software device"
+// provided by Microsoft, which is an interface on top of the hardware for each
+// input/output port. Therefore we further locate its parent device, which is
+// the actual hardware device, for driver information.
 void GetDriverInfoFromDeviceId(const std::string& dev_id,
                                std::string* out_manufacturer,
                                std::string* out_driver_version) {
@@ -292,53 +320,25 @@ void GetDriverInfoFromDeviceId(const std::string& dev_id,
       base::UTF8ToWide(dev_id.substr(4, dev_id.size() - 43));
   base::ReplaceChars(dev_instance_id, L"#", L"\\", &dev_instance_id);
 
-  ScopedDeviceInfoList devinfo_list(
-      SetupDiCreateDeviceInfoList(nullptr, nullptr));
-  if (!devinfo_list.is_valid()) {
-    VLOG(1) << "SetupDiCreateDeviceInfoList failed: "
-            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+  DEVINST dev_instance_handle;
+  CONFIGRET cr = CM_Locate_DevNode(&dev_instance_handle, &dev_instance_id[0],
+                                   CM_LOCATE_DEVNODE_NORMAL);
+  if (cr != CR_SUCCESS) {
+    VLOG(1) << "CM_Locate_DevNode failed: CONFIGRET 0x" << std::hex << cr;
     return;
   }
 
-  SP_DEVINFO_DATA devinfo_data = {0};
-  devinfo_data.cbSize = sizeof(SP_DEVINFO_DATA);
-  SP_DRVINFO_DATA drvinfo_data = {0};
-  drvinfo_data.cbSize = sizeof(SP_DRVINFO_DATA);
-
-  if (!SetupDiOpenDeviceInfo(devinfo_list.get(), dev_instance_id.c_str(),
-                             nullptr, 0, &devinfo_data)) {
-    VLOG(1) << "SetupDiOpenDeviceInfo failed: "
-            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+  DEVINST parent_handle;
+  cr = CM_Get_Parent(&parent_handle, dev_instance_handle, 0);
+  if (cr != CR_SUCCESS) {
+    VLOG(1) << "CM_Get_Parent failed: CONFIGRET 0x" << std::hex << cr;
     return;
   }
 
-  if (!SetupDiBuildDriverInfoList(devinfo_list.get(), &devinfo_data,
-                                  SPDIT_COMPATDRIVER)) {
-    VLOG(1) << "SetupDiBuildDriverInfoList failed: "
-            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
-    return;
-  }
-
-  // Assume only one entry in driver info list.
-  if (SetupDiEnumDriverInfo(devinfo_list.get(), &devinfo_data,
-                            SPDIT_COMPATDRIVER, 0, &drvinfo_data)) {
-    *out_manufacturer = base::WideToUTF8(drvinfo_data.ProviderName);
-
-    std::stringstream ss;
-    ss << (drvinfo_data.DriverVersion >> 48) << "."
-       << (drvinfo_data.DriverVersion >> 32 & 0xffff) << "."
-       << (drvinfo_data.DriverVersion >> 16 & 0xffff) << "."
-       << (drvinfo_data.DriverVersion & 0xffff);
-    *out_driver_version = ss.str();
-  } else {
-    VLOG(1) << "SetupDiEnumDriverInfo failed: "
-            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
-  }
-
-  if (!SetupDiDestroyDriverInfoList(devinfo_list.get(), &devinfo_data,
-                                    SPDIT_COMPATDRIVER))
-    VLOG(1) << "SetupDiDestroyDriverInfoList failed: "
-            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+  GetDevPropString(parent_handle, &DEVPKEY_Device_DriverProvider,
+                   out_manufacturer);
+  GetDevPropString(parent_handle, &DEVPKEY_Device_DriverVersion,
+                   out_driver_version);
 }
 
 // Tokens with value = 0 are considered invalid (as in <wrl/event.h>).
