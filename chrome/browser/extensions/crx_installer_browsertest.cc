@@ -345,6 +345,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, BlockedFileTypes) {
+  const Extension* extension =
+      InstallExtension(test_data_dir_.AppendASCII("blocked_file_types.crx"), 1);
+  EXPECT_TRUE(base::PathExists(extension->path().AppendASCII("test.html")));
+  EXPECT_TRUE(base::PathExists(extension->path().AppendASCII("test.nexe")));
+  EXPECT_FALSE(base::PathExists(extension->path().AppendASCII("test1.EXE")));
+  EXPECT_FALSE(base::PathExists(extension->path().AppendASCII("test2.exe")));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   if (!FeatureSwitch::easy_off_store_install()->IsEnabled())
     return;

@@ -81,7 +81,11 @@ void UtilityHandler::OnParseUpdateManifest(const std::string& xml) {
 
 void UtilityHandler::OnUnzipToDir(const base::FilePath& zip_path,
                                   const base::FilePath& dir) {
-  if (!zip::Unzip(zip_path, dir)) {
+  const base::Callback<bool(const base::FilePath&)>& filter_cb =
+      base::Bind(&Unpacker::ShouldExtractFile);
+  // TODO(crbug.com/645263): This silently ignores blocked file types.
+  //                         Add install warnings.
+  if (!zip::UnzipWithFilterCallback(zip_path, dir, filter_cb)) {
     Send(new ExtensionUtilityHostMsg_UnzipToDir_Failed(
         std::string(kExtensionHandlerUnzipError)));
   } else {

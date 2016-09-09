@@ -196,4 +196,38 @@ TEST_F(UnpackerTest, ImageDecodingError) {
       << unpacker_->error_message() << "\"";
 }
 
+base::FilePath CreateEmptyTestFile(const base::FilePath& test_dir,
+                                   const base::FilePath& file_path) {
+  base::FilePath test_file(test_dir.Append(file_path));
+  base::FilePath temp_file;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(test_dir, &temp_file));
+  EXPECT_TRUE(base::Move(temp_file, test_file));
+  return test_file;
+}
+
+TEST_F(UnpackerTest, BlockedFileTypes) {
+  const struct {
+    const base::FilePath::CharType* input;
+    bool expected;
+  } cases[] = {
+      {FILE_PATH_LITERAL("foo"), true},
+      {FILE_PATH_LITERAL("foo.nexe"), true},
+      {FILE_PATH_LITERAL("foo.dll"), true},
+      {FILE_PATH_LITERAL("foo.jpg.exe"), false},
+      {FILE_PATH_LITERAL("foo.exe"), false},
+      {FILE_PATH_LITERAL("foo.EXE"), false},
+  };
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    base::FilePath input(cases[i].input);
+    base::FilePath test_file(CreateEmptyTestFile(temp_dir.path(), input));
+    bool observed = Unpacker::ShouldExtractFile(test_file);
+    EXPECT_EQ(cases[i].expected, observed) << "i: " << i
+                                           << ", input: " << test_file.value();
+  }
+}
+
 }  // namespace extensions

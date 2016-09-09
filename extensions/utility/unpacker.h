@@ -34,6 +34,9 @@ class Unpacker {
            int creation_flags);
   ~Unpacker();
 
+  // Returns true if the given base::FilePath should be unzipped.
+  static bool ShouldExtractFile(const base::FilePath& file_path);
+
   // Runs the processing steps for the extension. On success, this returns true
   // and the decoded images will be in a file at
   // |working_dir|/kDecodedImagesFilename and the decoded messages will be in a

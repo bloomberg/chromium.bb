@@ -115,6 +115,12 @@ Unpacker::Unpacker(const base::FilePath& working_dir,
 Unpacker::~Unpacker() {
 }
 
+// static
+bool Unpacker::ShouldExtractFile(const base::FilePath& file_path) {
+  return !base::FilePath::CompareEqualIgnoreCase(file_path.FinalExtension(),
+                                                 FILE_PATH_LITERAL(".exe"));
+}
+
 std::unique_ptr<base::DictionaryValue> Unpacker::ReadManifest() {
   base::FilePath manifest_path = extension_dir_.Append(kManifestFilename);
   if (!base::PathExists(manifest_path)) {
