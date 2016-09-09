@@ -25,10 +25,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_network_session.h"  // TODO(ricea): Remove
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_transaction_factory.h"  // TODO(ricea): Remove
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/url_request/url_request_context.h"  // TODO(ricea): Remove
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
@@ -327,6 +330,14 @@ WebSocketChannel::WebSocketChannel(
       initial_frame_forwarded_(false) {}
 
 WebSocketChannel::~WebSocketChannel() {
+  // TODO(ricea): Remove this by October 2016. See bug 641013.
+  if (stream_) {
+    HttpTransactionFactory* http_transaction_factory =
+        url_request_context_->http_transaction_factory();
+    if (http_transaction_factory)
+      http_transaction_factory->GetSession()->DecrementActiveWebSockets();
+  }
+
   // The stream may hold a pointer to read_frames_, and so it needs to be
   // destroyed first.
   stream_.reset();
@@ -597,6 +608,12 @@ void WebSocketChannel::OnConnectSuccess(
   DCHECK_EQ(CONNECTING, state_);
 
   stream_ = std::move(stream);
+
+  // TODO(ricea): Remove this before October 2016.
+  HttpTransactionFactory* http_transaction_factory =
+      url_request_context_->http_transaction_factory();
+  if (http_transaction_factory)
+    http_transaction_factory->GetSession()->IncrementActiveWebSockets();
 
   SetState(CONNECTED);
 
