@@ -876,10 +876,7 @@ void WebFrameWidgetImpl::didLosePointerLock()
 bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
 {
     WebRange range = compositionRange();
-    if (range.isNull())
-        return false;
-
-    if (range.length() == 0)
+    if (range.isEmpty())
         return false;
 
     LocalFrame* frame = focusedLocalFrameInWidget();

@@ -53,6 +53,7 @@ public:
     int length() const { return m_end - m_start; }
 
     bool isNull() const { return m_start == -1 && m_end == -1; }
+    bool isEmpty() const { return m_start == m_end; }
 
 #if BLINK_IMPLEMENTATION
     WebRange(const EphemeralRange&);
