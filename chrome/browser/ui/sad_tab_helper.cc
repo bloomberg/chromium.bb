@@ -41,10 +41,7 @@ SadTabHelper::SadTabHelper(content::WebContents* web_contents)
 }
 
 void SadTabHelper::RenderViewReady() {
-  if (sad_tab_) {
-    sad_tab_->Close();
-    sad_tab_.reset();
-  }
+  sad_tab_.reset();
 }
 
 void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
@@ -64,5 +61,4 @@ void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
 void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   sad_tab_.reset(chrome::SadTab::Create(
       web_contents(), SadTabKindFromTerminationStatus(status)));
-  sad_tab_->Show();
 }

@@ -8,6 +8,7 @@
 #include "components/grit/components_scaled_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #import "ui/base/cocoa/nscolor_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -30,8 +31,9 @@ const CGFloat kTabMargin = 13;
 const CGFloat kMaxTopMargin = 130;
 
 NSTextField* MakeLabelTextField(NSRect frame) {
+  // Not a scoped_nsobject for easy property access.
   NSTextField* ret = [[[NSTextField alloc] initWithFrame:frame] autorelease];
-  ret.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
+  ret.autoresizingMask = NSViewWidthSizable;
   ret.editable = NO;
   ret.drawsBackground = NO;
   ret.bezeled = NO;
@@ -54,17 +56,16 @@ NSTextField* MakeLabelTextField(NSRect frame) {
 
 @implementation SadTabView {
   NSView* container_;
-  NSImageView* icon_;
-  NSTextField* title_;
   NSTextField* message_;
   HyperlinkTextView* help_;
   NSButton* button_;
+  chrome::SadTab* sadTab_;
 }
 
-@synthesize delegate = delegate_;
-
-- (instancetype)initWithFrame:(NSRect)frame {
+- (instancetype)initWithFrame:(NSRect)frame sadTab:(chrome::SadTab*)sadTab {
   if ((self = [super initWithFrame:frame])) {
+    sadTab_ = sadTab;
+
     self.wantsLayer = YES;
     self.layer.backgroundColor =
         [NSColor colorWithCalibratedWhite:245.0f / 255.0f alpha:1.0].cr_CGColor;
@@ -73,49 +74,83 @@ NSTextField* MakeLabelTextField(NSRect frame) {
     NSImage* iconImage = ResourceBundle::GetSharedInstance()
                              .GetNativeImageNamed(IDR_CRASH_SAD_TAB)
                              .ToNSImage();
-    icon_ = [[NSImageView new] autorelease];
-    icon_.image = iconImage;
-    icon_.frameSize = iconImage.size;
-    icon_.autoresizingMask = NSViewMaxXMargin | NSViewMaxYMargin;
-    [container_ addSubview:icon_];
+    NSImageView* icon = [[NSImageView new] autorelease];
+    icon.image = iconImage;
+    icon.frameSize = iconImage.size;
+    [container_ addSubview:icon];
 
-    CGFloat width = self.bounds.size.width;
-    title_ = MakeLabelTextField(
-        NSMakeRect(0, NSMaxY(icon_.frame) + kIconTitleSpacing, width, 0));
-    title_.font = [NSFont systemFontOfSize:24];
-    title_.textColor =
+    NSTextField* title = MakeLabelTextField(
+        NSMakeRect(0, NSMaxY(icon.frame) + kIconTitleSpacing, 0, 0));
+    title.font = [NSFont systemFontOfSize:24];
+    title.textColor =
         [NSColor colorWithCalibratedWhite:38.0f / 255.0f alpha:1.0];
-    [title_ sizeToFit];
-    [container_ addSubview:title_];
 
-    message_ =
-        MakeLabelTextField(NSMakeRect(0, NSMaxY(title_.frame), width, 0));
-    base::mac::ObjCCast<NSCell>(message_.cell).wraps = YES;
-    message_.font = [NSFont systemFontOfSize:14];
-    message_.textColor =
+    NSMutableParagraphStyle* titleStyle =
+        [[NSMutableParagraphStyle new] autorelease];
+    titleStyle.lineSpacing = 6;
+    title.attributedStringValue = [[[NSAttributedString alloc]
+        initWithString:l10n_util::GetNSString(sadTab->GetTitle())
+            attributes:@{NSParagraphStyleAttributeName : titleStyle}]
+        autorelease];
+
+    [title sizeToFit];
+    [container_ addSubview:title];
+
+    NSFont* messageFont = [NSFont systemFontOfSize:14];
+    NSColor* messageColor =
         [NSColor colorWithCalibratedWhite:81.0f / 255.0f alpha:1.0];
+
+    message_ = MakeLabelTextField(NSMakeRect(0, NSMaxY(title.frame), 0, 0));
+    message_.frameOrigin =
+        NSMakePoint(0, NSMaxY(title.frame) + kTitleMessageSpacing);
+    base::mac::ObjCCast<NSCell>(message_.cell).wraps = YES;
+    message_.font = messageFont;
+    message_.textColor = messageColor;
+    message_.stringValue = l10n_util::GetNSString(sadTab->GetMessage());
     [container_ addSubview:message_];
 
+    NSString* helpLinkTitle =
+        l10n_util::GetNSString(sadTab->GetHelpLinkTitle());
     help_ = [[[HyperlinkTextView alloc]
         initWithFrame:NSMakeRect(0, 0, 1, message_.font.pointSize + 4)]
         autorelease];
     help_.delegate = self;
-    help_.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
+    help_.autoresizingMask = NSViewWidthSizable;
     help_.textContainer.lineFragmentPadding = 2;  // To align with message_.
+    [help_ setMessage:helpLinkTitle
+             withFont:messageFont
+         messageColor:messageColor];
+    [help_ addLinkRange:NSMakeRange(0, helpLinkTitle.length)
+                withURL:@(sadTab->GetHelpLinkURL())
+              linkColor:messageColor];
+    [help_ sizeToFit];
     [container_ addSubview:help_];
 
     button_ = [[BlueLabelButton new] autorelease];
     button_.target = self;
     button_.action = @selector(buttonClicked);
+    button_.title = l10n_util::GetNSString(sadTab->GetButtonTitle());
+    [button_ sizeToFit];
     [container_ addSubview:button_];
 
     [self addSubview:container_];
+    [self resizeSubviewsWithOldSize:self.bounds.size];
   }
   return self;
 }
 
+- (BOOL)isOpaque {
+  return YES;
+}
+
 - (BOOL)isFlipped {
   return YES;
+}
+
+- (void)updateLayer {
+  // Currently, updateLayer is only called once. If that changes, a DCHECK in
+  // SadTab::RecordFirstPaint will pipe up and we should add a guard here.
+  sadTab_->RecordFirstPaint();
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
@@ -131,8 +166,6 @@ NSTextField* MakeLabelTextField(NSRect frame) {
   // |message_| can wrap to variable number of lines.
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
 
-  message_.frameOrigin =
-      NSMakePoint(0, NSMaxY(title_.frame) + kTitleMessageSpacing);
   help_.frameOrigin =
       NSMakePoint(0, NSMaxY(message_.frame) + kMessageLinkSpacing);
 
@@ -151,45 +184,22 @@ NSTextField* MakeLabelTextField(NSRect frame) {
                         size.height - containerSize.height - kTabMargin)));
 }
 
-- (void)setTitle:(int)title {
-  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle new] autorelease];
-  style.lineSpacing = 6;
-
-  title_.attributedStringValue = [[[NSAttributedString alloc]
-      initWithString:l10n_util::GetNSString(title)
-          attributes:@{NSParagraphStyleAttributeName : style}] autorelease];
-}
-
-- (void)setMessage:(int)message {
-  message_.stringValue = l10n_util::GetNSString(message);
-}
-
-- (void)setButtonTitle:(int)buttonTitle {
-  button_.title = l10n_util::GetNSString(buttonTitle);
-  [button_ sizeToFit];
-}
-
-- (void)setHelpLinkTitle:(int)helpLinkTitle URL:(NSString*)url {
-  NSString* title = l10n_util::GetNSString(helpLinkTitle);
-  [help_ setMessage:title
-           withFont:message_.font
-       messageColor:message_.textColor];
-  [help_ addLinkRange:NSMakeRange(0, title.length)
-              withURL:url
-            linkColor:message_.textColor];
-  [help_ sizeToFit];
-}
-
 - (void)buttonClicked {
-  [delegate_ sadTabViewButtonClicked:self];
+  sadTab_->PerformAction(chrome::SadTab::Action::BUTTON);
 }
 
 // Called when someone clicks on the embedded link.
 - (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  [delegate_ sadTabView:self helpLinkClickedWithURL:(NSString*)link];
+  sadTab_->PerformAction(chrome::SadTab::Action::HELP_LINK);
   return YES;
+}
+
+- (NSRange)textView:(NSTextView*)textView
+    willChangeSelectionFromCharacterRange:(NSRange)oldSelectedCharRange
+                         toCharacterRange:(NSRange)newSelectedCharRange {
+  return NSMakeRange(0, 0);
 }
 
 @end

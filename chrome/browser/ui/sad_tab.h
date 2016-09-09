@@ -17,6 +17,11 @@ namespace chrome {
 // Cross-platform interface to show the Sad tab UI.
 class SadTab {
  public:
+  enum class Action {
+    BUTTON,
+    HELP_LINK,
+  };
+
   // Factory function to create the platform specific implementations.
   static SadTab* Create(content::WebContents* web_contents, SadTabKind kind);
 
@@ -25,11 +30,32 @@ class SadTab {
 
   virtual ~SadTab() {}
 
-  // Shows the Sad tab.
-  virtual void Show() = 0;
+  // These functions return resource string IDs for UI text. They may be
+  // different for each sad tab. (Right now, the first sad tab in a session
+  // suggests reloading and subsequent ones suggest sending feedback.)
+  int GetTitle();
+  int GetMessage();
+  int GetButtonTitle();
+  int GetHelpLinkTitle();
 
-  // Closes the Sad tab.
-  virtual void Close() = 0;
+  // Returns the target of the "Learn more" link. Use it for the context menu
+  // and to show the URL on hover, but call PerformAction() for regular clicks.
+  const char* GetHelpLinkURL();
+
+  // Virtual for testing.
+  virtual void RecordFirstPaint();
+  virtual void PerformAction(Action);
+
+ protected:
+  SadTab(content::WebContents* web_contents, SadTabKind kind);
+
+ private:
+  content::WebContents* web_contents_;
+  SadTabKind kind_;
+  bool show_feedback_button_;
+  bool recorded_paint_;
+
+  DISALLOW_COPY_AND_ASSIGN(SadTab);
 };
 
 }  // namespace chrome

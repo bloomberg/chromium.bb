@@ -7,25 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "ui/base/cocoa/controls/hyperlink_text_view.h"
-
-@class SadTabView;
-
-@protocol SadTabViewDelegate
-- (void)sadTabViewButtonClicked:(SadTabView*)sadTabView;
-- (void)sadTabView:(SadTabView*)sadTabView
-    helpLinkClickedWithURL:(NSString*)url;
-@end
+#include "chrome/browser/ui/sad_tab.h"
 
 // A view that displays the "sad tab" (aka crash page).
 @interface SadTabView : NSView
 
-@property(nonatomic, assign) id<SadTabViewDelegate> delegate;
-
-- (void)setTitle:(int)title;
-- (void)setMessage:(int)message;
-- (void)setButtonTitle:(int)buttonTitle;
-- (void)setHelpLinkTitle:(int)helpLinkTitle URL:(NSString*)url;
+- (instancetype)initWithFrame:(NSRect)frame sadTab:(chrome::SadTab*)sadTab;
 
 @end
 

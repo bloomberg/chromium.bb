@@ -61773,6 +61773,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tabs.SadTab.Feedback.Event" enum="SadTabEvent">
+  <owner>sdy@chromium.org</owner>
+  <summary>
+    Counts of events from the style of sad tab which has a feedback button as
+    its primary action. Currently, events include being displayed (actually
+    visible in a window), and the actions a user can take on the page.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.SadTab.KillCreated" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -61843,6 +61852,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     example, a user who ran out of memory in 3 tabs will record a count in the 1
     bin, 2 bin, and 3 bin.  Thus each bin N is the number of sessions where
     users experienced N or more oom events.  Compare to Tabs.SadTab.OomCreated.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.Reload.Event" enum="SadTabEvent">
+  <owner>sdy@chromium.org</owner>
+  <summary>
+    Counts of events from the style of sad tab which has a reload button as its
+    primary action. Compare to Tabs.SadTab.Feedback.Event.
   </summary>
 </histogram>
 
@@ -92832,6 +92849,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="RunningMode" type="int">
   <int value="0" label="Document Mode"/>
   <int value="1" label="Tabbed Mode"/>
+</enum>
+
+<enum name="SadTabEvent" type="int">
+  <int value="0" label="Displayed"/>
+  <int value="1" label="Button clicked"/>
+  <int value="2" label="Learn more clicked"/>
 </enum>
 
 <enum name="SadTabKind" type="int">
