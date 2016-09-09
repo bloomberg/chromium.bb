@@ -108,6 +108,11 @@ class GpuProcessTransportFactory
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_client_id_ = 1u;
 
+#if defined(OS_WIN)
+  // Used by output surface, stored in PerCompositorData.
+  std::unique_ptr<OutputDeviceBacking> software_backing_;
+#endif
+
   // Depends on SurfaceManager.
   typedef std::map<ui::Compositor*, std::unique_ptr<PerCompositorData>>
       PerCompositorDataMap;
@@ -125,9 +130,6 @@ class GpuProcessTransportFactory
 
   gpu::GpuChannelEstablishFactory* gpu_channel_factory_ = nullptr;
 
-#if defined(OS_WIN)
-  std::unique_ptr<OutputDeviceBacking> software_backing_;
-#endif
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
