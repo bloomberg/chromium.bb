@@ -6,7 +6,7 @@
 <script>
 
 share_test((t, mock) => {
-  mock.pushShareResult('384957', '[object Object]', null);
+  mock.pushShareResult('384957', '[object Object]', '', null);
   return callWithKeyDown(() => navigator.share({title: 384957, text: {}}));
 }, 'share of types other than string (expect implicitly converted to string)');
 

@@ -6,10 +6,10 @@
 <script>
 
 share_test((t, mock) => {
-  mock.pushShareResult('the title', 'the message', 'error from browser');
+  mock.pushShareResult('the title', 'the message', 'data:the url', 'error from browser');
   return callWithKeyDown(() => promise_rejects(
       t, new DOMException('error from browser', 'AbortError'),
-      navigator.share({title: 'the title', text: 'the message'})));
+      navigator.share({title: 'the title', text: 'the message', url: 'data:the url'})));
 }, 'share with browser-side error');
 
 </script>
