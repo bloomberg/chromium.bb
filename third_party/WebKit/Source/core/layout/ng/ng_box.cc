@@ -132,8 +132,9 @@ void NGBox::PositionUpdated() {
 bool NGBox::CanUseNewLayout() {
   if (!layout_box_)
     return true;
-  if (layout_box_->isLayoutBlockFlow() && !layout_box_->childrenInline())
-    return true;
-  return false;
+  if (!layout_box_->isLayoutBlockFlow())
+    return false;
+  const LayoutBlockFlow* block_flow = toLayoutBlockFlow(layout_box_);
+  return !block_flow->childrenInline() || !block_flow->firstChild();
 }
 }  // namespace blink
