@@ -850,7 +850,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // at a time which is smaller than the duration. This makes webkit never
   // know that the playback has finished. To solve this, we set the
   // current time to media duration when OnPlaybackComplete() get called.
-  interpolator_.SetBounds(duration_, duration_);
+  interpolator_.SetBounds(duration_, duration_, default_tick_clock_.NowTicks());
   client_->timeChanged();
 
   // If the loop attribute is set, timeChanged() will update the current time
@@ -887,7 +887,8 @@ void WebMediaPlayerAndroid::OnSeekComplete(
     seek(pending_seek_time_.InSecondsF());
     return;
   }
-  interpolator_.SetBounds(current_time, current_time);
+  interpolator_.SetBounds(current_time, current_time,
+                          default_tick_clock_.NowTicks());
 
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
@@ -981,8 +982,10 @@ void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
     return;
 
   // Compensate the current_timestamp with the IPC latency.
+  base::TimeTicks now_ticks = default_tick_clock_.NowTicks();
   base::TimeDelta lower_bound =
-      base::TimeTicks::Now() - current_time_ticks + current_timestamp;
+      now_ticks - current_time_ticks + current_timestamp;
+
   base::TimeDelta upper_bound = lower_bound;
   // We should get another time update in about |kTimeUpdateInterval|
   // milliseconds.
@@ -996,7 +999,7 @@ void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
       std::max(lower_bound, base::TimeDelta::FromSecondsD(currentTime()));
   if (lower_bound > upper_bound)
     upper_bound = lower_bound;
-  interpolator_.SetBounds(lower_bound, upper_bound);
+  interpolator_.SetBounds(lower_bound, upper_bound, now_ticks);
 }
 
 void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(

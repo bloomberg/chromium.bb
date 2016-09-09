@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/elapsed_timer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
@@ -36,12 +37,21 @@ using ::testing::StrictMock;
 
 namespace media {
 
+namespace {
 const int64_t kStartPlayingTimeInMs = 100;
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 
-ACTION_P2(SetError, renderer_client, error) {
-  renderer_client->OnError(error);
+ACTION_P2(GetMediaTime, start_time, elapsed_timer) {
+  return start_time + elapsed_timer->Elapsed();
 }
+
+void WaitFor(base::TimeDelta duration) {
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), duration);
+  run_loop.Run();
+}
+}  // namespace
 
 class MojoRendererTest : public ::testing::Test {
  public:
@@ -326,15 +336,37 @@ TEST_F(MojoRendererTest, GetMediaTime) {
   Initialize();
   EXPECT_EQ(base::TimeDelta(), mojo_renderer_->GetMediaTime());
 
-  Play();
+  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(500);
+  const base::TimeDelta kStartTime =
+      base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs);
 
-  // Time is updated periodically with a short delay.
-  const base::TimeDelta kUpdatedTime = base::TimeDelta::FromMilliseconds(500);
+  // Media time should not advance since playback rate is 0.
+  EXPECT_CALL(*mock_renderer_, SetPlaybackRate(0));
+  EXPECT_CALL(*mock_renderer_, StartPlayingFrom(kStartTime));
   EXPECT_CALL(*mock_renderer_, GetMediaTime())
-      .WillRepeatedly(Return(kUpdatedTime));
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kUpdatedTime, mojo_renderer_->GetMediaTime());
+      .WillRepeatedly(Return(kStartTime));
+  mojo_renderer_->SetPlaybackRate(0);
+  mojo_renderer_->StartPlayingFrom(kStartTime);
+  WaitFor(kSleepTime);
+  EXPECT_EQ(kStartTime, mojo_renderer_->GetMediaTime());
+
+  // Media time should now advance since playback rate is > 0.
+  std::unique_ptr<base::ElapsedTimer> elapsed_timer(new base::ElapsedTimer);
+  EXPECT_CALL(*mock_renderer_, SetPlaybackRate(1.0));
+  EXPECT_CALL(*mock_renderer_, GetMediaTime())
+      .WillRepeatedly(GetMediaTime(kStartTime, elapsed_timer.get()));
+  mojo_renderer_->SetPlaybackRate(1.0);
+  WaitFor(kSleepTime);
+  EXPECT_GT(mojo_renderer_->GetMediaTime(), kStartTime);
+
+  // Flushing should pause media-time updates.
+  EXPECT_CALL(*mock_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  Flush();
+  base::TimeDelta pause_time = mojo_renderer_->GetMediaTime();
+  EXPECT_GT(pause_time, kStartTime);
+  WaitFor(kSleepTime);
+  EXPECT_EQ(pause_time, mojo_renderer_->GetMediaTime());
+  Destroy();
 }
 
 TEST_F(MojoRendererTest, OnEnded) {
@@ -371,6 +403,7 @@ TEST_F(MojoRendererTest, Destroy_PendingFlush) {
 
 TEST_F(MojoRendererTest, Destroy_PendingSetCdm) {
   Initialize();
+
   EXPECT_CALL(*mock_renderer_, Flush(_)).WillRepeatedly(RunClosure<0>());
   EXPECT_CALL(*this, OnFlushed());
   mojo_renderer_->Flush(

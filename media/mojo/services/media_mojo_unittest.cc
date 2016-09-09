@@ -43,8 +43,10 @@ class MockRendererClient : public mojom::RendererClient {
   ~MockRendererClient() override {}
 
   // mojom::RendererClient implementation.
-  MOCK_METHOD2(OnTimeUpdate,
-               void(base::TimeDelta time, base::TimeDelta max_time));
+  MOCK_METHOD3(OnTimeUpdate,
+               void(base::TimeDelta time,
+                    base::TimeDelta max_time,
+                    base::TimeTicks capture_time));
   MOCK_METHOD1(OnBufferingStateChange, void(mojom::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());

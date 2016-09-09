@@ -46,13 +46,14 @@ void TimeDeltaInterpolator::SetPlaybackRate(double playback_rate) {
 }
 
 void TimeDeltaInterpolator::SetBounds(base::TimeDelta lower_bound,
-                                      base::TimeDelta upper_bound) {
+                                      base::TimeDelta upper_bound,
+                                      base::TimeTicks capture_time) {
   DCHECK(lower_bound <= upper_bound);
   DCHECK(lower_bound != kNoTimestamp);
 
   lower_bound_ = std::max(base::TimeDelta(), lower_bound);
   upper_bound_ = std::max(base::TimeDelta(), upper_bound);
-  reference_ = tick_clock_->NowTicks();
+  reference_ = capture_time;
 }
 
 void TimeDeltaInterpolator::SetUpperBound(base::TimeDelta upper_bound) {

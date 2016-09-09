@@ -105,7 +105,7 @@ void MediaSourcePlayer::ScheduleSeekEventAndStopDecoding(
 
   pending_seek_ = false;
 
-  interpolator_.SetBounds(seek_time, seek_time);
+  interpolator_.SetBounds(seek_time, seek_time, default_tick_clock_.NowTicks());
 
   if (audio_decoder_job_->is_decoding())
     audio_decoder_job_->StopDecode();
@@ -367,7 +367,8 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
     DCHECK(seek_time >= GetCurrentTime());
     DVLOG(1) << __FUNCTION__ << " : setting clock to actual browser seek time: "
              << seek_time.InSecondsF();
-    interpolator_.SetBounds(seek_time, seek_time);
+    interpolator_.SetBounds(seek_time, seek_time,
+                            default_tick_clock_.NowTicks());
     audio_decoder_job_->SetBaseTimestamp(seek_time);
   } else {
     DCHECK(actual_browser_seek_time == kNoTimestamp);
@@ -394,11 +395,10 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
 void MediaSourcePlayer::UpdateTimestamps(
     base::TimeDelta current_presentation_timestamp,
     base::TimeDelta max_presentation_timestamp) {
+  base::TimeTicks now_ticks = default_tick_clock_.NowTicks();
   interpolator_.SetBounds(current_presentation_timestamp,
-                          max_presentation_timestamp);
-  manager()->OnTimeUpdate(player_id(),
-                          GetCurrentTime(),
-                          base::TimeTicks::Now());
+                          max_presentation_timestamp, now_ticks);
+  manager()->OnTimeUpdate(player_id(), GetCurrentTime(), now_ticks);
 }
 
 void MediaSourcePlayer::ProcessPendingEvents() {

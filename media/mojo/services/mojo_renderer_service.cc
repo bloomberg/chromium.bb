@@ -29,6 +29,7 @@ MojoRendererService::MojoRendererService(
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
+      playback_rate_(0),
       audio_sink_(std::move(audio_sink)),
       video_sink_(std::move(video_sink)),
       renderer_(std::move(renderer)),
@@ -87,6 +88,7 @@ void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
 void MojoRendererService::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__ << ": " << playback_rate;
   DCHECK(state_ == STATE_PLAYING || state_ == STATE_ERROR);
+  playback_rate_ = playback_rate;
   renderer_->SetPlaybackRate(playback_rate);
 }
 
@@ -188,26 +190,32 @@ void MojoRendererService::OnRendererInitializeDone(
 }
 
 void MojoRendererService::UpdateMediaTime(bool force) {
-  base::TimeDelta media_time = renderer_->GetMediaTime();
+  const base::TimeDelta media_time = renderer_->GetMediaTime();
   if (!force && media_time == last_media_time_)
     return;
 
-  client_->OnTimeUpdate(media_time, media_time);
+  base::TimeDelta max_time = media_time;
+  // Allow some slop to account for delays in scheduling time update tasks.
+  if (time_update_timer_.IsRunning() && (playback_rate_ > 0))
+    max_time += base::TimeDelta::FromMilliseconds(2 * kTimeUpdateIntervalMs);
+
+  client_->OnTimeUpdate(media_time, max_time, base::TimeTicks::Now());
   last_media_time_ = media_time;
 }
 
 void MojoRendererService::CancelPeriodicMediaTimeUpdates() {
   DVLOG(2) << __FUNCTION__;
-  UpdateMediaTime(false);
+
   time_update_timer_.Stop();
+  UpdateMediaTime(false);
 }
 
 void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
   DVLOG(2) << __FUNCTION__;
+
   UpdateMediaTime(true);
   time_update_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kTimeUpdateIntervalMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeUpdateIntervalMs),
       base::Bind(&MojoRendererService::UpdateMediaTime, weak_this_, false));
 }
 

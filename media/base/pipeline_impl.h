@@ -170,6 +170,10 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // Current duration as reported by Demuxer.
   base::TimeDelta duration_;
 
+  // Set by GetMediaTime(), used to prevent the current media time value as
+  // reported to JavaScript from going backwards in time.
+  mutable base::TimeDelta last_media_time_;
+
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PipelineImpl> weak_factory_;
 

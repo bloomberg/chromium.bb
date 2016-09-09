@@ -87,8 +87,9 @@ class MEDIA_MOJO_EXPORT MojoRendererService
                                 PipelineStatus status);
 
   // Periodically polls the media time from the renderer and notifies the client
-  // if the media time has changed since the last update.  If |force| is true,
-  // the client is notified even if the time is unchanged.
+  // if the media time has changed since the last update.
+  // If |force| is true, the client is notified even if the time is unchanged.
+  // If |range| is true, an interpolation time range is reported.
   void UpdateMediaTime(bool force);
   void CancelPeriodicMediaTimeUpdates();
   void SchedulePeriodicMediaTimeUpdates();
@@ -106,6 +107,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 
   State state_;
+  double playback_rate_;
 
   std::unique_ptr<DemuxerStreamProvider> stream_provider_;
 

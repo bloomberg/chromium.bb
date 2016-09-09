@@ -902,6 +902,7 @@ void PipelineImpl::Start(Demuxer* demuxer,
   DCHECK(seek_cb_.is_null());
   client_ = client;
   seek_cb_ = seek_cb;
+  last_media_time_ = base::TimeDelta();
 
   std::unique_ptr<TextRenderer> text_renderer;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -983,6 +984,7 @@ void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   DCHECK(seek_cb_.is_null());
   seek_cb_ = seek_cb;
+  last_media_time_ = base::TimeDelta();
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RendererWrapper::Seek,
                             base::Unretained(renderer_wrapper_.get()), time));
@@ -1012,6 +1014,7 @@ void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
   DCHECK(IsRunning());
   DCHECK(seek_cb_.is_null());
   seek_cb_ = seek_cb;
+  last_media_time_ = base::TimeDelta();
 
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RendererWrapper::Resume,
@@ -1064,7 +1067,24 @@ void PipelineImpl::SetVolume(float volume) {
 
 base::TimeDelta PipelineImpl::GetMediaTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return renderer_wrapper_->GetMediaTime();
+
+  base::TimeDelta media_time = renderer_wrapper_->GetMediaTime();
+
+  // Clamp current media time to the last reported value, this prevents higher
+  // level clients from seeing time go backwards based on inaccurate or spurious
+  // delay values reported to the AudioClock.
+  //
+  // It is expected that such events are transient and will be recovered as
+  // rendering continues over time.
+  if (media_time < last_media_time_) {
+    DVLOG(2) << __func__ << ": actual=" << media_time
+             << " clamped=" << last_media_time_;
+    return last_media_time_;
+  }
+
+  DVLOG(3) << __FUNCTION__ << ": " << media_time.InMilliseconds() << " ms";
+  last_media_time_ = media_time;
+  return last_media_time_;
 }
 
 Ranges<base::TimeDelta> PipelineImpl::GetBufferedTimeRanges() const {

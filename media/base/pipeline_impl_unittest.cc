@@ -806,6 +806,26 @@ TEST_F(PipelineImplTest, PositiveStartTime) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(PipelineImplTest, GetMediaTime) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  SetDemuxerExpectations(&streams);
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  // Pipeline should report the same media time returned by the renderer.
+  base::TimeDelta kMediaTime = base::TimeDelta::FromSeconds(2);
+  EXPECT_CALL(*renderer_, GetMediaTime()).WillRepeatedly(Return(kMediaTime));
+  EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
+
+  // Media time should not go backwards even if the renderer returns an
+  // errorneous value. PipelineImpl should clamp it to last reported value.
+  EXPECT_CALL(*renderer_, GetMediaTime())
+      .WillRepeatedly(Return(base::TimeDelta::FromSeconds(1)));
+  EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
+}
+
 class PipelineTeardownTest : public PipelineImplTest {
  public:
   enum TeardownState {

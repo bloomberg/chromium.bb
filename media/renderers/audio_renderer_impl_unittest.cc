@@ -693,17 +693,10 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
   // delayed OS callback. The value should be clamped to whats been rendered.
   timestamp_helper.AddFrames(frames_to_consume.value);
   tick_clock_->Advance(kConsumptionDuration * 2);
-  const base::TimeDelta last_media_time = CurrentMediaTime();
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_media_time);
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 
-  // Consume some more audio data, but provide a delay value which is at odds
-  // with the amount of time advanced so far; this would normally cause the
-  // media time to go backwards relative to its last value.
-  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, 1));
-
-  // Current time should never go backwards even for irregular OS callbacks and
-  // those with odd / wrong delay values.
-  EXPECT_EQ(last_media_time, CurrentMediaTime());
+  // Consume some more audio data.
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
 
   // Stop ticking, the media time should be clamped to what's been rendered.
   StopTicking();

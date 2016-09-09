@@ -43,9 +43,11 @@ interface RendererClient {
   // calls to OnTimeUpdate().
   // |max_time| is typically the media timestamp of the last audio frame
   //     buffered by the audio hardware.
+  // |capture_time| is monotonic clock time at which the times were captured.
   // |max_time| must be greater or equal to |time|.
   OnTimeUpdate(mojo.common.mojom.TimeDelta time,
-               mojo.common.mojom.TimeDelta max_time);
+               mojo.common.mojom.TimeDelta max_time,
+               mojo.common.mojom.TimeTicks capture_time);
 
   // Called to report buffering state changes, see media_types.mojom.
   OnBufferingStateChange(BufferingState state);
