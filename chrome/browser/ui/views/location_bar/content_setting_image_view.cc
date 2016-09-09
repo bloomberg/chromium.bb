@@ -147,6 +147,12 @@ void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
+bool ContentSettingImageView::GetTooltipText(const gfx::Point& p,
+                                             base::string16* tooltip) const {
+  *tooltip = content_setting_image_model_->get_tooltip();
+  return !tooltip->empty();
+}
+
 void ContentSettingImageView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   if (ui::MaterialDesignController::IsModeMaterial())
@@ -286,5 +292,4 @@ void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
 
 void ContentSettingImageView::UpdateImage() {
   SetImage(content_setting_image_model_->GetIcon(GetTextColor()).AsImageSkia());
-  image()->SetTooltipText(content_setting_image_model_->get_tooltip());
 }
