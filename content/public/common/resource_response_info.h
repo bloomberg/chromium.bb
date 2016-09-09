@@ -170,6 +170,11 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // the renderer process set report_raw_headers to true.
   int ssl_connection_status;
 
+  // The key exchange group used by the SSL connection or zero if unknown or not
+  // applicable. Only present if the renderer process set report_raw_headers to
+  // true.
+  uint16_t ssl_key_exchange_group;
+
   // List of Signed Certificate Timestamps (SCTs) and their corresponding
   // validation status. Only present if the renderer process set
   // report_raw_headers to true.

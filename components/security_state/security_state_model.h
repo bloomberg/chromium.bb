@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_H_
 #define COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
@@ -116,6 +118,9 @@ class SecurityStateModel {
     // Information about the SSL connection, such as protocol and
     // ciphersuite. See ssl_connection_flags.h in net.
     int connection_status;
+    // The ID of the (EC)DH group used by the key exchange. The value is zero if
+    // unknown (older cache entries may not store the value) or not applicable.
+    uint16_t key_exchange_group;
     // A mask that indicates which of the protocol version,
     // key exchange, or cipher for the connection is considered
     // obsolete. See net::ObsoleteSSLMask for specific mask values.
@@ -147,6 +152,9 @@ class SecurityStateModel {
     scoped_refptr<net::X509Certificate> certificate;
     net::CertStatus cert_status;
     int connection_status;
+    // The ID of the (EC)DH group used by the key exchange. The value is zero if
+    // unknown (older cache entries may not store the value) or not applicable.
+    uint16_t key_exchange_group;
     int security_bits;
     // The verification statuses of the Signed Certificate
     // Timestamps (if any) that the server provided.

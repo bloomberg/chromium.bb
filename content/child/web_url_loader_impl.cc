@@ -4,6 +4,7 @@
 
 #include "content/child/web_url_loader_impl.h"
 
+#include <openssl/ssl.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -247,6 +248,16 @@ void SetSecurityStyleAndDetails(const GURL& url,
     mac = "";
   }
 
+  const char* key_exchange_group = "";
+  if (info.ssl_key_exchange_group != 0) {
+    // Historically the field was named 'curve' rather than 'group'.
+    key_exchange_group = SSL_get_curve_name(info.ssl_key_exchange_group);
+    if (!key_exchange_group) {
+      NOTREACHED();
+      key_exchange_group = "";
+    }
+  }
+
   SecurityStyle security_style = GetSecurityStyleForResource(
       url, true, info.cert_status);
 
@@ -304,6 +315,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
+      WebString::fromUTF8(key_exchange_group),
       WebString::fromUTF8(cipher), WebString::fromUTF8(mac),
       WebString::fromUTF8(subject),
       web_san,

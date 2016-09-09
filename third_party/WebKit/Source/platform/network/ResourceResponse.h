@@ -108,6 +108,8 @@ public:
         // All strings are human-readable values.
         String protocol;
         String keyExchange;
+        // keyExchangeGroup is the empty string if not applicable for the connection's key exchange.
+        String keyExchangeGroup;
         String cipher;
         // mac is the empty string when the connection cipher suite does not
         // have a separate MAC value (i.e. if the cipher suite is AEAD).
@@ -216,7 +218,7 @@ public:
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
     const SecurityDetails* getSecurityDetails() const { return &m_securityDetails; }
-    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList);
+    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& keyExchangeGroup, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList);
 
     long long appCacheID() const { return m_appCacheID; }
     void setAppCacheID(long long id) { m_appCacheID = id; }

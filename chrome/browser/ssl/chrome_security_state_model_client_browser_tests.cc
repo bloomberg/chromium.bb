@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
+#include <openssl/ssl.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -182,9 +184,17 @@ void CheckSecureExplanations(
   EXPECT_TRUE(is_aead);
   EXPECT_EQ(NULL, mac);  // The default secure cipher does not have a MAC.
 
+  base::string16 key_exchange_name = base::ASCIIToUTF16(key_exchange);
+  if (security_info.key_exchange_group != 0) {
+    key_exchange_name = l10n_util::GetStringFUTF16(
+        IDS_SSL_KEY_EXCHANGE_WITH_GROUP, key_exchange_name,
+        base::ASCIIToUTF16(
+            SSL_get_curve_name(security_info.key_exchange_group)));
+  }
+
   std::vector<base::string16> description_replacements;
   description_replacements.push_back(base::ASCIIToUTF16(protocol));
-  description_replacements.push_back(base::ASCIIToUTF16(key_exchange));
+  description_replacements.push_back(key_exchange_name);
   description_replacements.push_back(base::ASCIIToUTF16(cipher));
   base::string16 secure_description = l10n_util::GetStringFUTF16(
       IDS_STRONG_SSL_DESCRIPTION, description_replacements, nullptr);

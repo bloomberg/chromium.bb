@@ -97,6 +97,7 @@ public:
     struct WebSecurityDetails {
         WebSecurityDetails(const WebString& protocol,
             const WebString& keyExchange,
+            const WebString& keyExchangeGroup,
             const WebString& cipher,
             const WebString& mac,
             const WebString& subjectName,
@@ -108,6 +109,7 @@ public:
             const SignedCertificateTimestampList& sctList)
             : protocol(protocol)
             , keyExchange(keyExchange)
+            , keyExchangeGroup(keyExchangeGroup)
             , cipher(cipher)
             , mac(mac)
             , subjectName(subjectName)
@@ -122,6 +124,8 @@ public:
         // All strings are human-readable values.
         WebString protocol;
         WebString keyExchange;
+        // keyExchangeGroup is the empty string if not applicable for the connection's key exchange.
+        WebString keyExchangeGroup;
         WebString cipher;
         // mac is the empty string when the connection cipher suite does not
         // have a separate MAC value (i.e. if the cipher suite is AEAD).

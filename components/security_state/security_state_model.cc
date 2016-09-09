@@ -206,6 +206,7 @@ void SecurityInfoForRequest(
       visible_security_state.ran_content_with_cert_errors);
   security_info->security_bits = visible_security_state.security_bits;
   security_info->connection_status = visible_security_state.connection_status;
+  security_info->key_exchange_group = visible_security_state.key_exchange_group;
   security_info->cert_status = visible_security_state.cert_status;
   security_info->scheme_is_cryptographic =
       visible_security_state.url.SchemeIsCryptographic();
@@ -244,6 +245,7 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       cert_status(0),
       security_bits(-1),
       connection_status(0),
+      key_exchange_group(0),
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false) {}
 
@@ -289,6 +291,7 @@ SecurityStateModel::VisibleSecurityState::VisibleSecurityState()
       connection_info_initialized(false),
       cert_status(0),
       connection_status(0),
+      key_exchange_group(0),
       security_bits(-1),
       displayed_mixed_content(false),
       ran_mixed_content(false),
@@ -306,6 +309,7 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
           !!certificate == !!other.certificate &&
           (certificate ? certificate->Equals(other.certificate.get()) : true) &&
           connection_status == other.connection_status &&
+          key_exchange_group == other.key_exchange_group &&
           security_bits == other.security_bits &&
           sct_verify_statuses == other.sct_verify_statuses &&
           displayed_mixed_content == other.displayed_mixed_content &&

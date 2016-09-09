@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
 #define CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "content/common/content_export.h"
@@ -55,7 +57,7 @@ struct CONTENT_EXPORT SSLStatus {
                true) &&
            cert_status == status.cert_status &&
            security_bits == status.security_bits &&
-           key_exchange_info == status.key_exchange_info &&
+           key_exchange_group == status.key_exchange_group &&
            connection_status == status.connection_status &&
            content_status == status.content_status &&
            sct_statuses == status.sct_statuses &&
@@ -66,7 +68,7 @@ struct CONTENT_EXPORT SSLStatus {
   scoped_refptr<net::X509Certificate> certificate;
   net::CertStatus cert_status;
   int security_bits;
-  int key_exchange_info;
+  uint16_t key_exchange_group;
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;

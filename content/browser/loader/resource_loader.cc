@@ -114,6 +114,8 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
       response->head.cert_status = request->ssl_info().cert_status;
       response->head.ssl_connection_status =
           request->ssl_info().connection_status;
+      response->head.ssl_key_exchange_group =
+          request->ssl_info().GetKeyExchangeGroup();
       response->head.signed_certificate_timestamps =
           request->ssl_info().signed_certificate_timestamps;
       std::string encoded;

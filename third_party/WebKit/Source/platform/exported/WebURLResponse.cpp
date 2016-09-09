@@ -334,6 +334,7 @@ void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDet
     m_resourceResponse->setSecurityDetails(
         webSecurityDetails.protocol,
         webSecurityDetails.keyExchange,
+        webSecurityDetails.keyExchangeGroup,
         webSecurityDetails.cipher,
         webSecurityDetails.mac,
         webSecurityDetails.subjectName,

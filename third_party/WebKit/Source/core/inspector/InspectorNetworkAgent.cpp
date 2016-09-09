@@ -452,6 +452,8 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
             .setCertificateId(0) // Keep this in protocol for compatability.
             .setSignedCertificateTimestampList(std::move(signedCertificateTimestampList))
             .build();
+        if (responseSecurityDetails->keyExchangeGroup.length() > 0)
+            securityDetails->setKeyExchangeGroup(responseSecurityDetails->keyExchangeGroup);
         if (responseSecurityDetails->mac.length() > 0)
             securityDetails->setMac(responseSecurityDetails->mac);
 

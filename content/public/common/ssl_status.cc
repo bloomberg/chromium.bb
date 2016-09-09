@@ -13,7 +13,7 @@ SSLStatus::SSLStatus()
     : security_style(SECURITY_STYLE_UNKNOWN),
       cert_status(0),
       security_bits(-1),
-      key_exchange_info(0),
+      key_exchange_group(0),
       connection_status(0),
       content_status(NORMAL_CONTENT),
       pkp_bypassed(false) {}
@@ -25,7 +25,7 @@ SSLStatus::SSLStatus(SecurityStyle security_style,
       certificate(certificate),
       cert_status(ssl_info.cert_status),
       security_bits(ssl_info.security_bits),
-      key_exchange_info(ssl_info.key_exchange_info),
+      key_exchange_group(ssl_info.GetKeyExchangeGroup()),
       connection_status(ssl_info.connection_status),
       content_status(NORMAL_CONTENT),
       pkp_bypassed(ssl_info.pkp_bypassed) {

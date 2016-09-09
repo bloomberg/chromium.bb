@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
+#include <openssl/ssl.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -91,8 +93,8 @@ void AddConnectionExplanation(
 
   // Avoid showing TLS details when we couldn't even establish a TLS connection
   // (e.g. for net errors) or if there was no real connection (some tests). We
-  // check the |certificate| to see if there was a connection.
-  if (!security_info.certificate || security_info.connection_status == 0) {
+  // check the |connection_status| to see if there was a connection.
+  if (security_info.connection_status == 0) {
     return;
   }
 
@@ -115,6 +117,19 @@ void AddConnectionExplanation(
                     : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
                                                  base::ASCIIToUTF16(cipher),
                                                  base::ASCIIToUTF16(mac));
+
+  // Include the key exchange group (previously known as curve) if specified.
+  //
+  // TODO(davidben): When TLS 1.3's new negotiation is implemented, omit the
+  // "key exchange" if empty and only display the group, which is the true key
+  // exchange. See https://crbug.com/639495.
+  if (security_info.key_exchange_group != 0) {
+    key_exchange_name = l10n_util::GetStringFUTF16(
+        IDS_SSL_KEY_EXCHANGE_WITH_GROUP, key_exchange_name,
+        base::ASCIIToUTF16(
+            SSL_get_curve_name(security_info.key_exchange_group)));
+  }
+
   if (security_info.obsolete_ssl_status == net::OBSOLETE_SSL_NONE) {
     security_style_explanations->secure_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -359,6 +374,7 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->certificate = ssl.certificate;
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;
+  state->key_exchange_group = ssl.key_exchange_group;
   state->security_bits = ssl.security_bits;
   state->pkp_bypassed = ssl.pkp_bypassed;
   state->sct_verify_statuses.clear();

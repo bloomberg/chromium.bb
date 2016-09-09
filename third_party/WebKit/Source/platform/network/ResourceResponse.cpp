@@ -168,6 +168,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_securityDetails.protocol = data->m_securityDetails.protocol;
     m_securityDetails.cipher = data->m_securityDetails.cipher;
     m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
+    m_securityDetails.keyExchangeGroup = data->m_securityDetails.keyExchangeGroup;
     m_securityDetails.mac = data->m_securityDetails.mac;
     m_securityDetails.subjectName = data->m_securityDetails.subjectName;
     m_securityDetails.sanList = data->m_securityDetails.sanList;
@@ -225,6 +226,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_securityDetails.protocol = m_securityDetails.protocol.isolatedCopy();
     data->m_securityDetails.cipher = m_securityDetails.cipher.isolatedCopy();
     data->m_securityDetails.keyExchange = m_securityDetails.keyExchange.isolatedCopy();
+    data->m_securityDetails.keyExchangeGroup = m_securityDetails.keyExchangeGroup.isolatedCopy();
     data->m_securityDetails.mac = m_securityDetails.mac.isolatedCopy();
     data->m_securityDetails.subjectName = m_securityDetails.subjectName.isolatedCopy();
     data->m_securityDetails.sanList = isolatedCopy(m_securityDetails.sanList);
@@ -388,10 +390,11 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList)
+void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& keyExchangeGroup, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList)
 {
     m_securityDetails.protocol = protocol;
     m_securityDetails.keyExchange = keyExchange;
+    m_securityDetails.keyExchangeGroup = keyExchangeGroup;
     m_securityDetails.cipher = cipher;
     m_securityDetails.mac = mac;
     m_securityDetails.subjectName = subjectName;
