@@ -299,7 +299,7 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
 
 void CompositedLayerMapping::updateBackgroundPaintsOntoScrollingContentsLayer()
 {
-    bool shouldPaintOntoScrollingContentsLayer = shouldPaintBackgroundOntoScrollingContentsLayer();
+    bool shouldPaintOntoScrollingContentsLayer = m_owningLayer.shouldPaintBackgroundOntoScrollingContentsLayer();
     if (shouldPaintOntoScrollingContentsLayer != backgroundPaintsOntoScrollingContentsLayer()) {
         m_backgroundPaintsOntoScrollingContentsLayer = shouldPaintOntoScrollingContentsLayer;
         // If the background is no longer painted onto the scrolling contents
@@ -2582,14 +2582,6 @@ bool CompositedLayerMapping::invalidateLayerIfNoPrecedingEntry(size_t indexToCle
         return true;
     }
     return false;
-}
-
-bool CompositedLayerMapping::shouldPaintBackgroundOntoScrollingContentsLayer() const
-{
-    return !m_owningLayer.isRootLayer()
-        && m_owningLayer.scrollsOverflow()
-        && m_owningLayer.layoutObject()->style()->hasEntirelyLocalBackground()
-        && !m_owningLayer.stackingNode()->hasNegativeZOrderList();
 }
 
 bool CompositedLayerMapping::updateSquashingLayerAssignment(PaintLayer* squashedLayer, size_t nextSquashedLayerIndex)

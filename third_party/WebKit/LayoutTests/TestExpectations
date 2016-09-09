@@ -48,6 +48,10 @@ crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-re
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
+# TODO(schenney) Move to NeverFixTests
+crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
+crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
+
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -16,6 +16,12 @@ public:
     PaintLayerScrollableAreaTest()
         : RenderingTest(SingleChildFrameLoaderClient::create())
     { }
+
+    bool shouldPaintBackgroundOntoScrollingContentsLayer(const char* elementId)
+    {
+        PaintLayer* paintLayer = toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
+        return paintLayer->shouldPaintBackgroundOntoScrollingContentsLayer();
+    }
 
 private:
     void SetUp() override

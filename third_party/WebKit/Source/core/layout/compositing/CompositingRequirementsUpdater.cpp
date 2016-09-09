@@ -236,18 +236,14 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         if (layer->isRootLayer() && compositor->rootShouldAlwaysComposite())
             reasonsToComposite |= CompositingReasonRoot;
 
+        // Add CompositingReasonOverflowScrollingTouch for layers that do not already have it but need it.
+        // Note that m_compositingReasonFinder.directReasons(layer) already includes CompositingReasonOverflowScrollingTouch for
+        // anything that has layer->needsCompositedScrolling() true. That is, for cases where we explicitly decide not to have LCD
+        // text or cases where the layer will still support LCD text even if the layer is composited.
         if (reasonsToComposite && layer->scrollsOverflow() && !layer->needsCompositedScrolling()) {
-            // We will only set needsCompositedScrolling if we don't care about
-            // the LCD text hit, we may be able to switch to the compositor
-            // driven path if we're alread composited for other reasons and are
-            // therefore using grayscale AA.
-            //
-            // FIXME: it should also be possible to promote if the layer can
-            // still use LCD text when promoted, but detecting when the
-            // compositor can do this is tricky. Currently, the layer must be
-            // both opaque and may only have an integer translation as its
-            // transform. Both opacity and screen space transform are inherited
-            // properties, so this cannot be determined from local information.
+            // We can get here for a scroller that will be composited for some other reason and hence will already
+            // use grayscale AA text. We recheck for needsCompositedScrolling ignoring LCD to correctly add the
+            // CompositingReasonOverflowScrollingTouch reason to layers that can support it with grayscale AA text.
             layer->getScrollableArea()->updateNeedsCompositedScrolling(PaintLayerScrollableArea::IgnoreLCDText);
             if (layer->needsCompositedScrolling())
                 reasonsToComposite |= CompositingReasonOverflowScrollingTouch;
@@ -283,8 +279,11 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         for (size_t i = 0; i < unclippedDescendantsToRemove.size(); i++)
             unclippedDescendants.remove(unclippedDescendantsToRemove.at(unclippedDescendantsToRemove.size() - i - 1));
 
-        if (reasonsToComposite & CompositingReasonOutOfFlowClipping)
+        if (layer->clipParent()) {
+            // TODO(schenney): We only need to promote when the clipParent is not a descendant of the ancestor scroller,
+            // which we do not check for here. Hence we might be promoting needlessly.
             unclippedDescendants.append(layer);
+        }
     }
 
     const IntRect& absBounds = layer->clippedAbsoluteBoundingBox();

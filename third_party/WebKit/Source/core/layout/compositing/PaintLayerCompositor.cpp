@@ -158,7 +158,7 @@ void PaintLayerCompositor::updateAcceleratedCompositingSettings()
 
 bool PaintLayerCompositor::preferCompositingToLCDTextEnabled() const
 {
-    return m_compositingReasonFinder.hasOverflowScrollTrigger();
+    return m_layoutView.document().settings()->preferCompositingToLCDTextEnabled();
 }
 
 static LayoutVideo* findFullscreenVideoLayoutObject(Document& document)

@@ -33,11 +33,6 @@ void CompositingReasonFinder::updateTriggers()
     }
 }
 
-bool CompositingReasonFinder::hasOverflowScrollTrigger() const
-{
-    return m_compositingTriggers & OverflowScrollTrigger;
-}
-
 bool CompositingReasonFinder::isMainFrame() const
 {
     return m_layoutView.document().isInMainFrame();
@@ -142,16 +137,11 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     CompositingReasons directReasons = CompositingReasonNone;
     LayoutObject* layoutObject = layer->layoutObject();
 
-    if (hasOverflowScrollTrigger()) {
-        if (layer->clipParent())
-            directReasons |= CompositingReasonOutOfFlowClipping;
-
-        if (layer->needsCompositedScrolling())
-            directReasons |= CompositingReasonOverflowScrollingTouch;
-    }
+    if (layer->needsCompositedScrolling())
+        directReasons |= CompositingReasonOverflowScrollingTouch;
 
     // Composite |layer| if it is inside of an ancestor scrolling layer, but that
-    // scrolling layer is not not on the stacking context ancestor chain of |layer|.
+    // scrolling layer is not on the stacking context ancestor chain of |layer|.
     // See the definition of the scrollParent property in Layer for more detail.
     if (const PaintLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
         if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())

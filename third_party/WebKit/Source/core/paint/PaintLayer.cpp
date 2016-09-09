@@ -2356,6 +2356,14 @@ GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const
     }
 }
 
+bool PaintLayer::shouldPaintBackgroundOntoScrollingContentsLayer() const
+{
+    return !isRootLayer()
+        && scrollsOverflow()
+        && layoutObject()->style()->hasEntirelyLocalBackground()
+        && !stackingNode()->hasNegativeZOrderList();
+}
+
 void PaintLayer::ensureCompositedLayerMapping()
 {
     if (m_rareData && m_rareData->compositedLayerMapping)
@@ -2463,7 +2471,7 @@ bool PaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localR
     PaintLayerStackingNodeReverseIterator reverseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
     while (PaintLayerStackingNode* child = reverseIterator.next()) {
         const PaintLayer* childLayer = child->layer();
-        // Stop at composited paint boundaries.
+        // Stop at composited paint boundaries and non-self-painting layers.
         if (childLayer->isPaintInvalidationContainer())
             continue;
 

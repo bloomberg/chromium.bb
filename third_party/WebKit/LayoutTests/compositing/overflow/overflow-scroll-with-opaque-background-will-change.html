@@ -1,9 +1,6 @@
 <script>
 if (window.testRunner)
-    testRunner.dumpAsText();
-
-if (window.internals)
-    internals.runtimeFlags.compositeOpaqueScrollersEnabled = true;
+    window.testRunner.dumpAsText();
 
 function hasOpaqueCompositedScrollingContentsLayer(layer) {
     if (layer.name == "Scrolling Contents Layer")
@@ -27,7 +24,7 @@ onload = function() {
         result += "Pass.\n";
     else
         result += "Fail.\n";
-    testRunner.setCustomTextOutput(result);
+    window.testRunner.setCustomTextOutput(result);
 }
 </script>
 <style>
@@ -37,6 +34,7 @@ onload = function() {
     overflow: scroll;
     width: 200px;
     height: 200px;
+    will-change: transform;
 }
 .spacer {
     height: 300px;

@@ -1493,11 +1493,12 @@ static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode 
     if (node && node->isElementNode() && (toElement(node)->compositorMutableProperties() & (CompositorMutableProperty::kScrollTop | CompositorMutableProperty::kScrollLeft)))
         return true;
 
-    // TODO(schenney) The color test alone is inadequate. When https://codereview.chromium.org/2196583002 lands
-    // we should use PaintLayer::shouldPaintBackgroundOntoForeground() because we will not still get
-    // LCD text unless the conditions there are met. It also unifies logic for scrolling compositing decisions.
+    // TODO(schenney): LCD Text also requires integer scroll offsets for the layer. While we
+    // use integer scroll offsets locally when !layer->compositor()->preferCompositingToLCDTextEnabled(),
+    // we do not check offsets accumulated from the root (including translates). crbug.com/644833
     bool backgroundSupportsLCDText = RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled()
-        && !layer->layoutObject()->style()->visitedDependentColor(CSSPropertyBackgroundColor).hasAlpha();
+        && layer->shouldPaintBackgroundOntoScrollingContentsLayer()
+        && layer->backgroundIsKnownToBeOpaqueInRect(toLayoutBox(layer->layoutObject())->paddingBoxRect());
     if (mode == PaintLayerScrollableArea::ConsiderLCDText
         && !layer->compositor()->preferCompositingToLCDTextEnabled()
         && !backgroundSupportsLCDText)
