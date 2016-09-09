@@ -99,6 +99,10 @@ http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ 
 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 http/tests/security/xss-DENIED-window-open-parent.html [ Failure ]
 
+# https://crbug.com/645641 - test_runner.cc(1863) Check failed:
+# layout_test_runtime_flags_.have_top_loading_frame()
+imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 fast/frames/cached-frame-counter.html [ Timeout ]
 fast/frames/frame-limit.html [ Timeout ]
@@ -132,7 +136,6 @@ imported/wpt/html/syntax/parsing/html5lib_tests15.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests16.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests17.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests18.html [ Failure ]
-imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests2.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests20.html [ Failure ]
 imported/wpt/html/syntax/parsing/html5lib_tests21.html [ Failure ]
