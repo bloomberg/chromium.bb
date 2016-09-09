@@ -493,7 +493,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
   if (switches::IsMaterialDesignUserManager() &&
-      profiles::AreAllProfilesLocked()) {
+      profiles::AreAllNonChildNonSupervisedProfilesLocked()) {
     web_ui()->CallJavascriptFunctionUnsafe(
         "cr.webUIListenerCallback",
         base::StringValue("show-error-dialog"),
@@ -531,7 +531,8 @@ void UserManagerScreenHandler::HandleAreAllProfilesLocked(
   AllowJavascript();
   ResolveJavascriptCallback(
       base::StringValue(webui_callback_id),
-      base::FundamentalValue(profiles::AreAllProfilesLocked()));
+      base::FundamentalValue(
+          profiles::AreAllNonChildNonSupervisedProfilesLocked()));
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {

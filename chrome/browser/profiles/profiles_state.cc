@@ -256,8 +256,8 @@ void SetLastUsedProfile(const std::string& profile_dir) {
   local_state->SetString(prefs::kProfileLastUsed, profile_dir);
 }
 
-bool AreAllProfilesLocked() {
-  bool all_profiles_locked = true;
+bool AreAllNonChildNonSupervisedProfilesLocked() {
+  bool at_least_one_regular_profile_present = false;
 
   std::vector<ProfileAttributesEntry*> entries =
       g_browser_process->profile_manager()->GetProfileAttributesStorage().
@@ -266,14 +266,15 @@ bool AreAllProfilesLocked() {
     if (entry->IsOmitted())
       continue;
 
-    // Supervised and Child profiles cannot be locked.
-    if (!entry->IsSigninRequired() &&
-        !entry->IsChild() &&
-        !entry->IsLegacySupervised()) {
-      return false;
+    // Only consider non-child and non-supervised profiles.
+    if (!entry->IsChild() && !entry->IsLegacySupervised()) {
+      at_least_one_regular_profile_present = true;
+
+      if (!entry->IsSigninRequired())
+        return false;
     }
   }
-  return all_profiles_locked;
+  return at_least_one_regular_profile_present;
 }
 
 }  // namespace profiles
