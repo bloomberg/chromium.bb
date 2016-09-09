@@ -81,6 +81,8 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
 
   int allocation_size_;
 
+  bool first_chunk_read_ = false;
+
   bool did_defer_;
 
   bool has_checked_for_sufficient_resources_;

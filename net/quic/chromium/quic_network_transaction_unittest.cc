@@ -60,6 +60,9 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -2530,8 +2533,8 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   mock_quic_data.AddWrite(ConstructClientAckPacket(3, 4, 3, 1));
   mock_quic_data.AddRead(ConstructServerDataPacket(
       5, kServerDataStreamId1, false, true, 0, "and hello!"));
-  mock_quic_data.AddWrite(
-      ConstructClientAckAndRstPacket(4, 4, QUIC_RST_ACKNOWLEDGEMENT, 5, 5, 1));
+  mock_quic_data.AddWrite(ConstructClientAckAndRstPacket(
+      4, kServerDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 5, 5, 1));
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2608,6 +2611,163 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   request_.upload_data_stream = &upload_data;
 
   SendRequestAndExpectQuicResponse("hello!");
+}
+
+class QuicURLRequestContext : public URLRequestContext {
+ public:
+  QuicURLRequestContext(std::unique_ptr<HttpNetworkSession> session,
+                        MockClientSocketFactory* socket_factory)
+      : storage_(this) {
+    socket_factory_ = socket_factory;
+    storage_.set_host_resolver(
+        std::unique_ptr<HostResolver>(new MockHostResolver));
+    storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
+    storage_.set_transport_security_state(
+        base::WrapUnique(new TransportSecurityState));
+    storage_.set_proxy_service(ProxyService::CreateDirect());
+    storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
+    storage_.set_http_auth_handler_factory(
+        HttpAuthHandlerFactory::CreateDefault(host_resolver()));
+    storage_.set_http_server_properties(
+        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+    storage_.set_job_factory(base::WrapUnique(new URLRequestJobFactoryImpl()));
+    storage_.set_http_network_session(std::move(session));
+    storage_.set_http_transaction_factory(base::WrapUnique(
+        new HttpCache(storage_.http_network_session(),
+                      HttpCache::DefaultBackend::InMemory(0), false)));
+  }
+
+  ~QuicURLRequestContext() override { AssertNoURLRequests(); }
+
+  MockClientSocketFactory& socket_factory() { return *socket_factory_; }
+
+ private:
+  MockClientSocketFactory* socket_factory_;
+  URLRequestContextStorage storage_;
+};
+
+TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true, std::move(headers)));
+
+  QuicStreamOffset expected_raw_header_response_size = 0;
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &expected_raw_header_response_size));
+
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, kClientDataStreamId1, false, true, 0, "Main Resource Data"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 1));
+
+  mock_quic_data.AddRead(ASYNC, 0);  // EOF
+
+  CreateSession();
+
+  TestDelegate delegate;
+  QuicURLRequestContext quic_url_request_context(std::move(session_),
+                                                 &socket_factory_);
+
+  mock_quic_data.AddSocketDataToFactory(
+      &quic_url_request_context.socket_factory());
+  TestNetworkDelegate network_delegate;
+  quic_url_request_context.set_network_delegate(&network_delegate);
+
+  std::unique_ptr<URLRequest> request(quic_url_request_context.CreateRequest(
+      GURL("https://mail.example.org/"), DEFAULT_PRIORITY, &delegate));
+  quic_url_request_context.socket_factory().AddSSLSocketDataProvider(
+      &ssl_data_);
+
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_LT(0, request->GetTotalSentBytes());
+  EXPECT_LT(0, request->GetTotalReceivedBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_sent(),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_received(),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
+            request->raw_header_size());
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true, std::move(headers)));
+
+  QuicStreamOffset server_header_offset = 0;
+  QuicStreamOffset expected_raw_header_response_size = 0;
+
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      1, kClientDataStreamId1, kServerDataStreamId1, false,
+      GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_header_offset,
+      &server_maker_));
+
+  expected_raw_header_response_size = server_header_offset;
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  expected_raw_header_response_size =
+      server_header_offset - expected_raw_header_response_size;
+
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 2, 1, 1));
+
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, kServerDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      4, kServerDataStreamId1, false, true, 0, "Pushed Resource Data"));
+
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 4, 3, 1));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      5, kClientDataStreamId1, false, true, 0, "Main Resource Data"));
+
+  mock_quic_data.AddRead(ConstructServerConnectionClosePacket(6));
+
+  CreateSession();
+
+  TestDelegate delegate;
+  QuicURLRequestContext quic_url_request_context(std::move(session_),
+                                                 &socket_factory_);
+
+  mock_quic_data.AddSocketDataToFactory(
+      &quic_url_request_context.socket_factory());
+  TestNetworkDelegate network_delegate;
+  quic_url_request_context.set_network_delegate(&network_delegate);
+
+  std::unique_ptr<URLRequest> request(quic_url_request_context.CreateRequest(
+      GURL("https://mail.example.org/"), DEFAULT_PRIORITY, &delegate));
+  quic_url_request_context.socket_factory().AddSSLSocketDataProvider(
+      &ssl_data_);
+
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_LT(0, request->GetTotalSentBytes());
+  EXPECT_LT(0, request->GetTotalReceivedBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_sent(),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_received(),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
+            request->raw_header_size());
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
 class QuicNetworkTransactionWithDestinationTest

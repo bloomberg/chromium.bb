@@ -644,10 +644,13 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // or after the response headers are received.
   void GetConnectionAttempts(ConnectionAttempts* out) const;
 
+  // Gets the over the wire raw header size of the response after https
+  // encryption, 0 for cached responses.
+  int raw_header_size() const { return raw_header_size_; }
+
   // Returns the error status of the request.
   // Do not use! Going to be protected!
   const URLRequestStatus& status() const { return status_; }
-
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -851,6 +854,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // The proxy server used for this request, if any.
   HostPortPair proxy_server_;
+
+  // The raw header size of the response.
+  int raw_header_size_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

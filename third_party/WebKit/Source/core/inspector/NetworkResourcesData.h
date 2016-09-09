@@ -128,6 +128,9 @@ public:
         BlobDataHandle* downloadedFileBlob() const { return m_downloadedFileBlob.get(); }
         void setDownloadedFileBlob(PassRefPtr<BlobDataHandle> blob) { m_downloadedFileBlob = blob; }
 
+        int rawHeaderSize() const { return m_rawHeaderSize; }
+        void setRawHeaderSize(int size) { m_rawHeaderSize = size; }
+
         Vector<AtomicString> certificate() { return m_certificate; }
         void setCertificate(const Vector<AtomicString>& certificate) { m_certificate = certificate; }
 
@@ -154,6 +157,7 @@ public:
 
         String m_mimeType;
         String m_textEncodingName;
+        int m_rawHeaderSize;
 
         RefPtr<SharedBuffer> m_buffer;
         WeakMember<Resource> m_cachedResource;

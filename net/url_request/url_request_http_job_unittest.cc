@@ -268,6 +268,131 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestRawHeaderSizeSuccessfullRequest) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+
+  const std::string& response_header =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 12\r\n\r\n";
+  const std::string& content_data = "Test Content";
+
+  MockRead reads[] = {MockRead(response_header.c_str()),
+                      MockRead(content_data.c_str()),
+                      MockRead(net::SYNCHRONOUS, net::OK)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(static_cast<int>(content_data.size()),
+            request->received_response_content_length());
+  EXPECT_EQ(static_cast<int>(response_header.size()),
+            request->raw_header_size());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestRawHeaderSizeSuccessfull100ContinueRequest) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+
+  const std::string& continue_header = "HTTP/1.1 100 Continue\r\n\r\n";
+  const std::string& response_header =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 12\r\n\r\n";
+  const std::string& content_data = "Test Content";
+
+  MockRead reads[] = {
+      MockRead(continue_header.c_str()), MockRead(response_header.c_str()),
+      MockRead(content_data.c_str()), MockRead(net::SYNCHRONOUS, net::OK)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(static_cast<int>(content_data.size()),
+            request->received_response_content_length());
+  EXPECT_EQ(static_cast<int>(continue_header.size() + response_header.size()),
+            request->raw_header_size());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestRawHeaderSizeFailureTruncatedHeaders) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.0 200 OK\r\n"
+                               "Content-Len"),
+                      MockRead(net::SYNCHRONOUS, net::OK)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+
+  delegate.set_cancel_in_response_started(true);
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ERR_ABORTED, request->status().error());
+  EXPECT_EQ(0, request->received_response_content_length());
+  EXPECT_EQ(28, request->raw_header_size());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestRawHeaderSizeSuccessfullContinuiousRead) {
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  const std::string& header_data =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 12\r\n\r\n";
+  const std::string& content_data = "Test Content";
+  std::string single_read_content = header_data;
+  single_read_content.append(content_data);
+  MockRead reads[] = {MockRead(single_read_content.c_str())};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(net::OK, request->status().error());
+  EXPECT_EQ(static_cast<int>(content_data.size()),
+            request->received_response_content_length());
+  EXPECT_EQ(static_cast<int>(header_data.size()), request->raw_header_size());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
        TestNetworkBytesRedirectedRequest) {
   MockWrite redirect_writes[] = {
       MockWrite("GET / HTTP/1.1\r\n"
@@ -303,7 +428,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_EQ(OK, request->status().error());
   EXPECT_EQ(12, request->received_response_content_length());
   // Should not include the redirect.
   EXPECT_EQ(CountWriteBytes(final_writes, arraysize(final_writes)),

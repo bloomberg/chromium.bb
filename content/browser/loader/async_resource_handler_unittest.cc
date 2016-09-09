@@ -255,7 +255,7 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
-  EXPECT_EQ(4157, encoded_data_length);
+  EXPECT_EQ(4096, encoded_data_length);
   int encoded_body_length = std::get<4>(params);
   EXPECT_EQ(4096, encoded_body_length);
 }
@@ -278,7 +278,7 @@ TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
   ResourceMsg_InlinedDataChunkReceived::Read(messages[1].get(), &params);
 
   int encoded_data_length = std::get<2>(params);
-  EXPECT_EQ(66, encoded_data_length);
+  EXPECT_EQ(8, encoded_data_length);
   int encoded_body_length = std::get<3>(params);
   EXPECT_EQ(8, encoded_body_length);
 }
@@ -293,7 +293,7 @@ TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
-  EXPECT_EQ(32830, encoded_data_length);
+  EXPECT_EQ(32768, encoded_data_length);
   int encoded_body_length = std::get<4>(params);
   EXPECT_EQ(32768, encoded_body_length);
 

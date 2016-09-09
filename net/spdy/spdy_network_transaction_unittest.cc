@@ -2106,6 +2106,128 @@ TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   helper.VerifyDataConsumed();
 }
 
+TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0),
+  };
+
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+
+  SpdySerializedFrame response_body_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "should not include", 18, true));
+
+  MockRead response_headers(CreateMockRead(resp, 1));
+  MockRead reads[] = {
+      response_headers, CreateMockRead(response_body_frame, 2),
+      MockRead(ASYNC, 0, 0, 3)  // EOF
+  };
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate delegate;
+  SpdyURLRequestContext spdy_url_request_context;
+  TestNetworkDelegate network_delegate;
+  spdy_url_request_context.set_network_delegate(&network_delegate);
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+
+  std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
+      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate));
+  spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
+  spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
+
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_LT(0, request->GetTotalSentBytes());
+  EXPECT_LT(0, request->GetTotalReceivedBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_sent(),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_received(),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(response_headers.data_len, request->raw_header_size());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+}
+
+TEST_F(SpdyNetworkTransactionTest,
+       TestRawHeaderSizeSuccessfullPushHeadersFirst) {
+  SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  headers["user-agent"] = "";
+  headers["accept-encoding"] = "gzip, deflate";
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0),
+  };
+
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame response_body_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "should not include", 18, true));
+
+  SpdyHeaderBlock push_headers;
+  spdy_util_.AddUrlToHeaderBlock(std::string(kDefaultUrl) + "b.dat",
+                                 &push_headers);
+
+  SpdySerializedFrame push_init_frame(
+      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 2, 1));
+
+  SpdySerializedFrame push_headers_frame(
+      spdy_util_.ConstructSpdyPushHeaders(2, nullptr, 0));
+
+  SpdySerializedFrame push_body_frame(spdy_util_.ConstructSpdyDataFrame(
+      2, "should not include either", 25, false));
+
+  MockRead push_init_read(CreateMockRead(push_init_frame, 1));
+  MockRead response_headers(CreateMockRead(resp, 4));
+  // raw_header_size() will contain the size of the push promise frame
+  // initialization.
+  int expected_response_headers_size =
+      response_headers.data_len + push_init_read.data_len;
+
+  MockRead reads[] = {
+      push_init_read,
+      CreateMockRead(push_headers_frame, 2),
+      CreateMockRead(push_body_frame, 3),
+      response_headers,
+      CreateMockRead(response_body_frame, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate delegate;
+  SpdyURLRequestContext spdy_url_request_context;
+  TestNetworkDelegate network_delegate;
+  spdy_url_request_context.set_network_delegate(&network_delegate);
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+
+  std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
+      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate));
+  spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
+  spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
+
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_LT(0, request->GetTotalSentBytes());
+  EXPECT_LT(0, request->GetTotalReceivedBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_sent(),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(network_delegate.total_network_bytes_received(),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(expected_response_headers_size, request->raw_header_size());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+}
+
 // Send a spdy request to www.example.org that gets redirected to www.foo.com.
 TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
@@ -2166,7 +2288,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
+    EXPECT_EQ(OK, r->status().error());
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
   }
@@ -2252,7 +2374,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d2.response_started_count());
     EXPECT_FALSE(d2.received_data_before_response());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, r2->status().status());
+    EXPECT_EQ(OK, r2->status().error());
     std::string contents2("hello!");
     EXPECT_EQ(contents2, d2.data_received());
   }

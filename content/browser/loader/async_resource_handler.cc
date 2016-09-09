@@ -350,6 +350,7 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   }
 
   NetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->raw_header_size();
 
   const HostZoomMapImpl* host_zoom_map =
       static_cast<const HostZoomMapImpl*>(info->filter()->GetHostZoomMap());
@@ -442,7 +443,11 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
     return false;
 
   int encoded_data_length = CalculateEncodedDataLengthToReport();
+  if (!first_chunk_read_)
+    encoded_data_length -= request()->raw_header_size();
+
   int encoded_body_length = CalculateEncodedBodyLengthToReport();
+  first_chunk_read_ = true;
 
   // Return early if InliningHelper handled the received data.
   if (inlining_helper_->SendInlinedDataIfApplicable(

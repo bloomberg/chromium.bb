@@ -76,6 +76,7 @@ NetworkResourcesData::ResourceData::ResourceData(NetworkResourcesData* networkRe
     , m_isContentEvicted(false)
     , m_type(InspectorPageAgent::OtherResource)
     , m_httpStatusCode(0)
+    , m_rawHeaderSize(0)
     , m_cachedResource(nullptr)
 {
 }
@@ -200,6 +201,7 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
     resourceData->setMimeType(response.mimeType());
     resourceData->setTextEncodingName(response.textEncodingName());
     resourceData->setHTTPStatusCode(response.httpStatusCode());
+    resourceData->setRawHeaderSize(response.resourceLoadInfo() ? response.resourceLoadInfo()->encodedDataLength : 0);
 
     String filePath = response.downloadedFilePath();
     if (!filePath.isEmpty()) {

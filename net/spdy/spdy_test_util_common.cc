@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/http_cache.h"
@@ -403,6 +404,43 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   return params;
 }
 
+class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
+ public:
+  AllowAnyCertCTPolicyEnforcer(){};
+  ~AllowAnyCertCTPolicyEnforcer() override = default;
+
+  ct::CertPolicyCompliance DoesConformToCertPolicy(
+      X509Certificate* cert,
+      const SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  }
+
+  ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+      X509Certificate* cert,
+      const ct::EVCertsWhitelist* ev_whitelist,
+      const SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
+  }
+};
+
+class IgnoresCTVerifier : public net::CTVerifier {
+ public:
+  IgnoresCTVerifier() = default;
+  ~IgnoresCTVerifier() override = default;
+
+  int Verify(net::X509Certificate* cert,
+             const std::string& stapled_ocsp_response,
+             const std::string& sct_list_from_tls_extension,
+             net::ct::CTVerifyResult* result,
+             const net::BoundNetLog& net_log) override {
+    return net::OK;
+  }
+
+  void SetObserver(Observer* observer) override {}
+};
+
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_host_resolver(
       std::unique_ptr<HostResolver>(new MockHostResolver));
@@ -410,6 +448,10 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_transport_security_state(
       base::WrapUnique(new TransportSecurityState));
   storage_.set_proxy_service(ProxyService::CreateDirect());
+  storage_.set_ct_policy_enforcer(
+      base::WrapUnique(new AllowAnyCertCTPolicyEnforcer()));
+  storage_.set_cert_transparency_verifier(
+      base::WrapUnique(new IgnoresCTVerifier()));
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver()));
@@ -422,6 +464,8 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   params.cert_verifier = cert_verifier();
   params.transport_security_state = transport_security_state();
   params.proxy_service = proxy_service();
+  params.ct_policy_enforcer = ct_policy_enforcer();
+  params.cert_transparency_verifier = cert_transparency_verifier();
   params.ssl_config_service = ssl_config_service();
   params.http_auth_handler_factory = http_auth_handler_factory();
   params.enable_spdy_ping_based_connection_checking = false;
