@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
@@ -66,10 +67,14 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
-  // TODO(devlin): This file is littered with sync IPCs. Yuck.
-  renderframe->Send(new ExtensionHostMsg_OpenChannelToExtension(
-      renderframe->GetRoutingID(), info, channel_name, include_tls_channel_id,
-      &port_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.GetPortIdSyncTime.Extension");
+    // TODO(devlin): This file is littered with sync IPCs. Yuck.
+    renderframe->Send(new ExtensionHostMsg_OpenChannelToExtension(
+        renderframe->GetRoutingID(), info, channel_name, include_tls_channel_id,
+        &port_id));
+  }
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
@@ -90,8 +95,12 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
   std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
   int port_id = -1;
-  render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-      render_frame->GetRoutingID(), native_app_name, &port_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.GetPortIdSyncTime.NativeApp");
+    render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+        render_frame->GetRoutingID(), native_app_name, &port_id));
+  }
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

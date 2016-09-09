@@ -15858,6 +15858,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The manifest version of each loaded extension.</summary>
 </histogram>
 
+<histogram name="Extensions.Messaging.GetPortIdSyncTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of synchronous time taken for the renderer to request an
+    extension message port id from the browser when a new channel is first
+    opened by an extension.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.NetworkDelay" units="ms">
   <owner>battre@chromium.org</owner>
   <summary>Time that network requests were blocked due to extensions.</summary>
@@ -16564,6 +16573,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during StorageFrontend::Init.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SyncGetMessageBundle" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of synchronous time spent retrieving an extension's message
+    bundle (the collection of its i18n resources) from the browser.
   </summary>
 </histogram>
 
@@ -100603,6 +100620,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Over10ms" label="Execution took over 10ms (glacial)."/>
   <affected-histogram name="Extensions.Functions.FailedTime"/>
   <affected-histogram name="Extensions.Functions.SucceededTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionMessagingPortType" separator=".">
+  <suffix name="Extension" label="A port opened to an extension context."/>
+  <suffix name="NativeApp" label="A port opened to a native application."/>
+  <suffix name="Tab" label="A port opened to a tab context."/>
+  <affected-histogram name="Extensions.Messaging.GetPortIdSyncTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionsDatabaseOpen" separator=".">

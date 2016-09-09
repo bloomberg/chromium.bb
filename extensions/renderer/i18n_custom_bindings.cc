@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -201,8 +202,11 @@ void I18NCustomBindings::GetL10nMessage(
 
     L10nMessagesMap messages;
     // A sync call to load message catalogs for current extension.
-    render_frame->Send(
-        new ExtensionHostMsg_GetMessageBundle(extension_id, &messages));
+    {
+      SCOPED_UMA_HISTOGRAM_TIMER("Extensions.SyncGetMessageBundle");
+      render_frame->Send(
+          new ExtensionHostMsg_GetMessageBundle(extension_id, &messages));
+    }
 
     // Save messages we got.
     ExtensionToL10nMessagesMap& l10n_messages_map =

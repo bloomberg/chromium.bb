@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
@@ -48,9 +49,12 @@ void TabsCustomBindings::OpenChannelToTab(
   std::string extension_id = *v8::String::Utf8Value(args[2]);
   std::string channel_name = *v8::String::Utf8Value(args[3]);
   int port_id = -1;
-  render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
-      render_frame->GetRoutingID(), info, extension_id, channel_name,
-      &port_id));
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.GetPortIdSyncTime.Tab");
+    render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
+        render_frame->GetRoutingID(), info, extension_id, channel_name,
+        &port_id));
+  }
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
