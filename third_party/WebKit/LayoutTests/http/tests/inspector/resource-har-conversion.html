@@ -16,7 +16,12 @@ function doXHR()
 
 var test = function()
 {
-    InspectorTest.reloadPage(step1);
+    InspectorTest.NetworkAgent.setCacheDisabled(true, reloadPage);
+
+    function reloadPage()
+    {
+        InspectorTest.reloadPage(step1);
+    }
 
     function step1()
     {

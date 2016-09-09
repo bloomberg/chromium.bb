@@ -405,7 +405,12 @@ void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalBypassC
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.fromMaybe("");
     m_v8Session->setSkipAllPauses(true);
     m_reloading = true;
-    m_inspectedFrames->root()->reload(optionalBypassCache.fromMaybe(false) ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, ClientRedirectPolicy::NotClientRedirect);
+    FrameLoadType reloadType = FrameLoadTypeReload;
+    if (optionalBypassCache.fromMaybe(false))
+        reloadType = FrameLoadTypeReloadBypassingCache;
+    else if (RuntimeEnabledFeatures::reloadwithoutSubResourceCacheRevalidationEnabled())
+        reloadType = FrameLoadTypeReloadMainResource;
+    m_inspectedFrames->root()->reload(reloadType, ClientRedirectPolicy::NotClientRedirect);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)

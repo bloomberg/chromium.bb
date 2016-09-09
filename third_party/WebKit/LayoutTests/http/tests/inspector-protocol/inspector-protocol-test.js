@@ -113,6 +113,11 @@ function navigateProtocolTest(url)
     window.location.replace(url);
 }
 
+function prepareForReload()
+{
+    window.location += "#" + reloadParam + lastFrontendEvalId;
+}
+
 function openInspector()
 {
     var scriptTags = document.getElementsByTagName("script");

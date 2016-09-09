@@ -1,0 +1,6 @@
+Tests that reloads when coming from protocol still use memory cache.
+
+Page reloaded.
+Request Will be Sent for blank.js
+Served From Cache for blank.js
+

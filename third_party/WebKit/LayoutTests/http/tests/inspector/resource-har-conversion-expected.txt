@@ -29,6 +29,7 @@ Page reloaded.
                 _transferSize : <number>
                 bodySize : <number>
                 content : {
+                    compression : <number>
                     mimeType : "text/html"
                     size : <number>
                 }
@@ -38,8 +39,8 @@ Page reloaded.
                 headersSize : <number>
                 httpVersion : "HTTP/1.1"
                 redirectURL : ""
-                status : 304
-                statusText : "Not Modified"
+                status : 200
+                statusText : "OK"
             }
             serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
@@ -94,6 +95,7 @@ Page reloaded.
                 _transferSize : <number>
                 bodySize : <number>
                 content : {
+                    compression : <number>
                     mimeType : "application/x-javascript"
                     size : <number>
                 }
@@ -132,8 +134,8 @@ Page reloaded.
                 headersSize : <number>
                 httpVersion : "HTTP/1.1"
                 redirectURL : ""
-                status : 304
-                statusText : "Not Modified"
+                status : 200
+                statusText : "OK"
             }
             serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
@@ -161,6 +163,7 @@ Page reloaded.
                 _transferSize : <number>
                 bodySize : <number>
                 content : {
+                    compression : <number>
                     mimeType : "application/x-javascript"
                     size : <number>
                 }
@@ -170,8 +173,8 @@ Page reloaded.
                 headersSize : <number>
                 httpVersion : "HTTP/1.1"
                 redirectURL : ""
-                status : 304
-                statusText : "Not Modified"
+                status : 200
+                statusText : "OK"
             }
             serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
