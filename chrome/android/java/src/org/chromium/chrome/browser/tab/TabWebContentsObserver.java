@@ -164,6 +164,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     @Override
     public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
             String description, String failingUrl, boolean wasIgnoredByHandler) {
+        mTab.updateThemeColorIfNeeded(true);
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
             observers.next().onDidFailLoad(mTab, isProvisionalLoad, isMainFrame, errorCode,
