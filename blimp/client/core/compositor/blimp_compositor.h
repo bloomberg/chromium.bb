@@ -180,10 +180,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   std::unique_ptr<cc::LayerTreeHostInterface> host_;
 
-  // Whether or not |host_| should be visible.  This is stored in case |host_|
-  // is null when SetVisible() is called.
-  bool host_should_be_visible_;
-
   // The SurfaceFactory is bound to the lifetime of the BlimpOutputSurface. When
   // detached, the surface factory will be destroyed.
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

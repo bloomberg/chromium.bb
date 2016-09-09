@@ -80,23 +80,6 @@ class BlimpCompositorTest : public testing::Test {
 
   ~BlimpCompositorTest() override {}
 
-  void SendInitializeMessage() {
-    std::unique_ptr<cc::proto::CompositorMessage> message;
-    message.reset(new cc::proto::CompositorMessage);
-    cc::proto::CompositorMessageToImpl* to_impl = message->mutable_to_impl();
-    to_impl->set_message_type(
-        cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL);
-    compositor_->OnCompositorMessageReceived(std::move(message));
-  }
-
-  void SendShutdownMessage() {
-    std::unique_ptr<cc::proto::CompositorMessage> message;
-    message.reset(new cc::proto::CompositorMessage);
-    cc::proto::CompositorMessageToImpl* to_impl = message->mutable_to_impl();
-    to_impl->set_message_type(cc::proto::CompositorMessageToImpl::CLOSE_IMPL);
-    compositor_->OnCompositorMessageReceived(std::move(message));
-  }
-
   int render_widget_id_;
   std::unique_ptr<base::MessageLoop> loop_;
   MockBlimpCompositorClient compositor_client_;
@@ -106,33 +89,14 @@ class BlimpCompositorTest : public testing::Test {
 };
 
 TEST_F(BlimpCompositorTest, ToggleVisibilityWithHost) {
-  // Make the compositor visible when we don't have a host.
   compositor_->SetVisible(true);
-  SendInitializeMessage();
 
   // Check that the visibility is set correctly on the host.
-  EXPECT_NE(compositor_->host(), nullptr);
   EXPECT_TRUE(compositor_->host()->IsVisible());
 
   // Make the compositor invisible. This should make the |host_| invisible.
   compositor_->SetVisible(false);
   EXPECT_FALSE(compositor_->host()->IsVisible());
-
-  SendShutdownMessage();
-  EXPECT_EQ(compositor_->host(), nullptr);
-}
-
-TEST_F(BlimpCompositorTest, DestroyAndRecreateHost) {
-  // Create the host and make it visible.
-  SendInitializeMessage();
-  compositor_->SetVisible(true);
-
-  // Destroy this host and recreate a new one. Make sure that the visibility is
-  // set correctly on this host.
-  SendShutdownMessage();
-  SendInitializeMessage();
-  EXPECT_NE(compositor_->host(), nullptr);
-  EXPECT_TRUE(compositor_->host()->IsVisible());
 }
 
 TEST_F(BlimpCompositorTest, MessagesHaveCorrectId) {

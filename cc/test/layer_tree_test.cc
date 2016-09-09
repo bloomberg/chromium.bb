@@ -462,8 +462,7 @@ class LayerTreeTestDelegatingOutputSurfaceClient
 };
 
 LayerTreeTest::LayerTreeTest()
-    : remote_proto_channel_bridge_(this),
-      image_serialization_processor_(
+    : image_serialization_processor_(
           base::WrapUnique(new FakeImageSerializationProcessor)),
       delegating_output_surface_client_(
           new LayerTreeTestDelegatingOutputSurfaceClient(this)),
@@ -640,6 +639,15 @@ void LayerTreeTest::DoBeginTest() {
         base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
         image_serialization_processor_.get());
     DCHECK(remote_proto_channel_bridge_.channel_main.HasReceiver());
+
+    LayerTreeSettings settings = settings_;
+    settings.abort_commit_before_output_surface_creation = false;
+    remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
+        this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
+        nullptr, nullptr, task_graph_runner_.get(), settings,
+        base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(),
+        nullptr, image_serialization_processor_.get());
+    DCHECK(remote_proto_channel_bridge_.channel_impl.HasReceiver());
   } else {
     layer_tree_host_ = LayerTreeHostForTesting::Create(
         this, mode_, client_.get(), nullptr, shared_bitmap_manager_.get(),
@@ -886,37 +894,8 @@ void LayerTreeTest::DestroyLayerTreeHost() {
 
   DCHECK(!remote_proto_channel_bridge_.channel_main.HasReceiver());
 
-  // Destroying the LayerTreeHost should destroy the remote client
-  // LayerTreeHost.
-  DCHECK(!remote_client_layer_tree_host_);
-}
-
-void LayerTreeTest::DestroyRemoteClientHost() {
-  DCHECK(IsRemoteTest());
-  DCHECK(remote_client_layer_tree_host_);
-
   remote_client_layer_tree_host_ = nullptr;
   DCHECK(!remote_proto_channel_bridge_.channel_impl.HasReceiver());
-}
-
-void LayerTreeTest::CreateRemoteClientHost(
-    const proto::CompositorMessageToImpl& proto) {
-  DCHECK(IsRemoteTest());
-  DCHECK(!remote_client_layer_tree_host_);
-  DCHECK(impl_thread_);
-  DCHECK(proto.message_type() ==
-         proto::CompositorMessageToImpl::INITIALIZE_IMPL);
-
-  LayerTreeSettings settings = settings_;
-  settings.abort_commit_before_output_surface_creation = false;
-  remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
-      this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
-      nullptr, nullptr, task_graph_runner_.get(), settings,
-      base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(), nullptr,
-      image_serialization_processor_.get());
-
-  DCHECK(remote_proto_channel_bridge_.channel_impl.HasReceiver());
-  DCHECK(task_runner_provider()->HasImplThread());
 }
 
 TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {

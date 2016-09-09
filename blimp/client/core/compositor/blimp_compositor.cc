@@ -63,7 +63,6 @@ BlimpCompositor::BlimpCompositor(
     : render_widget_id_(render_widget_id),
       client_(client),
       compositor_dependencies_(compositor_dependencies),
-      host_should_be_visible_(false),
       output_surface_(nullptr),
       output_surface_request_pending_(false),
       layer_(cc::Layer::Create()),
@@ -75,22 +74,19 @@ BlimpCompositor::BlimpCompositor(
       GetEmbedderDeps()->AllocateSurfaceClientId());
   GetEmbedderDeps()->GetSurfaceManager()->RegisterSurfaceClientId(
       surface_id_allocator_->client_id());
+  CreateLayerTreeHost();
 }
 
 BlimpCompositor::~BlimpCompositor() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (host_)
-    DestroyLayerTreeHost();
-
+  DestroyLayerTreeHost();
   GetEmbedderDeps()->GetSurfaceManager()->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
-  host_should_be_visible_ = visible;
-  if (host_)
-    host_->SetVisible(host_should_be_visible_);
+  host_->SetVisible(visible);
 }
 
 bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
@@ -135,18 +131,6 @@ void BlimpCompositor::OnCompositorMessageReceived(
   switch (to_impl_proto.message_type()) {
     case cc::proto::CompositorMessageToImpl::UNKNOWN:
       NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
-      break;
-    case cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL:
-      DCHECK(!host_);
-
-      // Create the remote client LayerTreeHost for the compositor.
-      CreateLayerTreeHost();
-      break;
-    case cc::proto::CompositorMessageToImpl::CLOSE_IMPL:
-      DCHECK(host_);
-
-      // Destroy the remote client LayerTreeHost for the compositor.
-      DestroyLayerTreeHost();
       break;
     default:
       // We should have a receiver if we're getting compositor messages that
@@ -293,7 +277,6 @@ void BlimpCompositor::CreateLayerTreeHost() {
 
   host_ = cc::LayerTreeHost::CreateRemoteClient(
       this /* remote_proto_channel */, compositor_task_runner, &params);
-  host_->SetVisible(host_should_be_visible_);
 
   DCHECK(!input_manager_);
   input_manager_ = BlimpInputManager::Create(

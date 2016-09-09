@@ -112,15 +112,6 @@ class TestHooks : public AnimationDelegate {
   }
 
   virtual void RequestNewOutputSurface() = 0;
-
-  // Used to notify the test to create the Remote client LayerTreeHost on
-  // receiving a CompositorMessageToImpl of type INITIALIZE_IMPL.
-  virtual void CreateRemoteClientHost(
-      const proto::CompositorMessageToImpl& proto) {}
-
-  // Used to notify the test to destroy the Remote client LayerTreeHost on
-  // receiving a CompositorMessageToImpl of type CLOSE_IMPL.
-  virtual void DestroyRemoteClientHost() {}
 };
 
 }  // namespace cc

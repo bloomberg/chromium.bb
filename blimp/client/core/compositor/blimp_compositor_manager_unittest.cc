@@ -5,6 +5,7 @@
 #include "blimp/client/core/compositor/blimp_compositor_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/support/compositor/mock_compositor_dependencies.h"
@@ -112,6 +113,7 @@ class BlimpCompositorManagerTest : public testing::Test {
         compositor_manager_.get());
   }
 
+  base::MessageLoop loop_;
   std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
   std::unique_ptr<BlimpCompositorManagerForTesting> compositor_manager_;
   BlobImageSerializationProcessor blob_image_serialization_processor_;

@@ -46,25 +46,6 @@ message CompositorMessageToImpl {
     // see crbug/559338.
     UNKNOWN = 0;
 
-    // Client Initialization: When the remote server starts up it sends a
-    // CompositorMessageToImpl of type INITIALIZE_IMPL to the client. This
-    // message should be processed by the embedder of the client compositor to
-    // create the Remote Client LayerTreeHost. The compositor protocol
-    // guarantees that this will be the first message sent to the client. No
-    // messages can be sent from the client before the server is started.
-    INITIALIZE_IMPL = 1;
-
-    // Client Shutdown: When the remote server is shutting down it sends a
-    // CompositorMessageToImpl of type CLOSE_IMPL to the client. The message
-    // should be processed by the embedder of the client compositor to destroy
-    // the Remote Client LayerTreeHost. This is guaranteed to be the last
-    // message sent to the client. No messages can be sent from the client after
-    // the server has been shutdown.
-    CLOSE_IMPL = 2;
-
-    // Informs the client that a fling animation on the server has stopped.
-    MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL = 3;
-
     // Sent to the client to request a commit. The client will respond with
     // CompositorMessageToMain of type BEGIN_MAIN_FRAME.
     SET_NEEDS_COMMIT = 4;

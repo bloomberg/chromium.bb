@@ -75,12 +75,7 @@ void RemoteChannelMain::InitializeMutatorOnImpl(
 }
 
 void RemoteChannelMain::MainThreadHasStoppedFlingingOnImpl() {
-  proto::CompositorMessage proto;
-  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
-  to_impl_proto->set_message_type(
-      proto::CompositorMessageToImpl::MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL);
-
-  SendMessageProto(proto);
+  NOTIMPLEMENTED();
 }
 
 void RemoteChannelMain::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {}
@@ -229,25 +224,13 @@ void RemoteChannelMain::SynchronouslyInitializeImpl(
   TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyInitializeImpl");
   DCHECK(!initialized_);
 
-  proto::CompositorMessage proto;
-  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
-  to_impl_proto->set_message_type(
-      proto::CompositorMessageToImpl::INITIALIZE_IMPL);
-
-  VLOG(1) << "Sending initialize message to client";
-  SendMessageProto(proto);
   initialized_ = true;
 }
 
 void RemoteChannelMain::SynchronouslyCloseImpl() {
   TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyCloseImpl");
   DCHECK(initialized_);
-  proto::CompositorMessage proto;
-  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
-  to_impl_proto->set_message_type(proto::CompositorMessageToImpl::CLOSE_IMPL);
 
-  VLOG(1) << "Sending close message to client.";
-  SendMessageProto(proto);
   initialized_ = false;
 }
 

@@ -35,9 +35,8 @@ bool FakeRemoteProtoChannel::HasReceiver() const {
 }
 
 FakeRemoteProtoChannelMain::FakeRemoteProtoChannelMain(
-    RemoteProtoChannelBridge* bridge,
-    TestHooks* test_hooks)
-    : FakeRemoteProtoChannel(bridge), test_hooks_(test_hooks) {}
+    RemoteProtoChannelBridge* bridge)
+    : FakeRemoteProtoChannel(bridge) {}
 
 void FakeRemoteProtoChannelMain::SendCompositorProto(
     const proto::CompositorMessage& proto) {
@@ -48,12 +47,6 @@ void FakeRemoteProtoChannelMain::SendCompositorProto(
   proto::CompositorMessageToImpl to_impl_proto = proto.to_impl();
   switch (to_impl_proto.message_type()) {
     case proto::CompositorMessageToImpl::UNKNOWN:
-      return;
-    case proto::CompositorMessageToImpl::INITIALIZE_IMPL:
-      test_hooks_->CreateRemoteClientHost(to_impl_proto);
-      return;
-    case proto::CompositorMessageToImpl::CLOSE_IMPL:
-      test_hooks_->DestroyRemoteClientHost();
       return;
     default:
       bridge_->channel_impl.OnProtoReceived(
@@ -71,8 +64,8 @@ void FakeRemoteProtoChannelImpl::SendCompositorProto(
       base::MakeUnique<proto::CompositorMessage>(proto));
 }
 
-RemoteProtoChannelBridge::RemoteProtoChannelBridge(TestHooks* test_hooks)
-    : channel_main(this, test_hooks), channel_impl(this) {}
+RemoteProtoChannelBridge::RemoteProtoChannelBridge()
+    : channel_main(this), channel_impl(this) {}
 
 RemoteProtoChannelBridge::~RemoteProtoChannelBridge() {}
 

@@ -36,13 +36,9 @@ class FakeRemoteProtoChannel : public RemoteProtoChannel {
 
 class FakeRemoteProtoChannelMain : public FakeRemoteProtoChannel {
  public:
-  FakeRemoteProtoChannelMain(RemoteProtoChannelBridge* bridge,
-                             TestHooks* test_hooks);
+  explicit FakeRemoteProtoChannelMain(RemoteProtoChannelBridge* bridge);
 
   void SendCompositorProto(const proto::CompositorMessage& proto) override;
-
- private:
-  TestHooks* test_hooks_;
 };
 
 class FakeRemoteProtoChannelImpl : public FakeRemoteProtoChannel {
@@ -54,7 +50,7 @@ class FakeRemoteProtoChannelImpl : public FakeRemoteProtoChannel {
 
 class RemoteProtoChannelBridge {
  public:
-  explicit RemoteProtoChannelBridge(TestHooks* test_hooks);
+  RemoteProtoChannelBridge();
   ~RemoteProtoChannelBridge();
 
   FakeRemoteProtoChannelMain channel_main;

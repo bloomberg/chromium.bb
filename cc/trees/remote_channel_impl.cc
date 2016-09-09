@@ -74,18 +74,6 @@ void RemoteChannelImpl::HandleProto(
     case proto::CompositorMessageToImpl::UNKNOWN:
       NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
       break;
-    case proto::CompositorMessageToImpl::INITIALIZE_IMPL:
-      NOTREACHED() << "Should be handled by the embedder";
-      break;
-    case proto::CompositorMessageToImpl::CLOSE_IMPL:
-      NOTREACHED() << "Should be handled by the embedder";
-      break;
-    case proto::CompositorMessageToImpl::
-        MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL:
-      ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&ProxyImpl::MainThreadHasStoppedFlingingOnImpl,
-                                proxy_impl_weak_ptr_));
-      break;
     case proto::CompositorMessageToImpl::SET_NEEDS_COMMIT:
       VLOG(1) << "Received commit request from the engine.";
       ImplThreadTaskRunner()->PostTask(

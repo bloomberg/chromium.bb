@@ -154,10 +154,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
 
   void DestroyLayerTreeHost();
-  void DestroyRemoteClientHost() override;
-
-  void CreateRemoteClientHost(
-      const proto::CompositorMessageToImpl& proto) override;
 
   // By default, output surface recreation is synchronous.
   void RequestNewOutputSurface() override;
