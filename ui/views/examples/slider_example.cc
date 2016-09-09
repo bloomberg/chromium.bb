@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
@@ -24,7 +25,8 @@ SliderExample::~SliderExample() {
 
 void SliderExample::CreateExampleView(View* container) {
   label_ = new Label();
-  slider_ = new Slider(this);
+  // Create a material design slider in this example.
+  slider_ = Slider::CreateSlider(true /** is_material_design **/, this);
 
   slider_->SetValue(0.5);
 

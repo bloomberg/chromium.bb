@@ -21,26 +21,13 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/controls/slider.h"
+#include "ui/views/controls/md_slider.h"
+#include "ui/views/controls/non_md_slider.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 const int kSlideValueChangeDurationMS = 150;
-
-const int kBarImagesActive[] = {
-    IDR_SLIDER_ACTIVE_LEFT,
-    IDR_SLIDER_ACTIVE_CENTER,
-    IDR_SLIDER_PRESSED_CENTER,
-    IDR_SLIDER_PRESSED_RIGHT,
-};
-
-const int kBarImagesDisabled[] = {
-    IDR_SLIDER_DISABLED_LEFT,
-    IDR_SLIDER_DISABLED_CENTER,
-    IDR_SLIDER_DISABLED_CENTER,
-    IDR_SLIDER_DISABLED_RIGHT,
-};
 
 // The image chunks.
 enum BorderElements {
@@ -56,6 +43,14 @@ namespace views {
 // static
 const char Slider::kViewClassName[] = "Slider";
 
+// static
+Slider* Slider::CreateSlider(bool is_material_design,
+                             SliderListener* listener) {
+  if (is_material_design)
+    return new MdSlider(listener);
+  return new NonMdSlider(listener);
+}
+
 Slider::Slider(SliderListener* listener)
     : listener_(listener),
       value_(0.f),
@@ -64,17 +59,13 @@ Slider::Slider(SliderListener* listener)
       value_is_valid_(false),
       accessibility_events_enabled_(true),
       focus_border_color_(0),
-      initial_button_offset_(0),
-      bar_active_images_(kBarImagesActive),
-      bar_disabled_images_(kBarImagesDisabled) {
+      initial_button_offset_(0) {
   EnableCanvasFlippingForRTLUI(true);
 #if defined(OS_MACOSX)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
-
-  UpdateState(true);
 }
 
 Slider::~Slider() {
@@ -123,40 +114,27 @@ void Slider::PrepareForMove(const int new_x) {
   float value = move_animation_.get() && move_animation_->is_animating() ?
         animating_value_ : value_;
 
-  const int thumb_x = value * (content.width() - thumb_->width());
+  const int thumb_width = GetThumbWidth();
+  const int thumb_x = value * (content.width() - thumb_width);
   const int candidate_x = (base::i18n::IsRTL() ?
       width() - (new_x - inset.left()) :
       new_x - inset.left()) - thumb_x;
-  if (candidate_x >= 0 && candidate_x < thumb_->width())
+  if (candidate_x >= 0 && candidate_x < thumb_width)
     initial_button_offset_ = candidate_x;
   else
-    initial_button_offset_ = thumb_->width() / 2;
+    initial_button_offset_ = thumb_width / 2;
 }
 
 void Slider::MoveButtonTo(const gfx::Point& point) {
-  gfx::Insets inset = GetInsets();
+  const gfx::Insets inset = GetInsets();
+  const int thumb_width = GetThumbWidth();
   // Calculate the value.
   int amount = base::i18n::IsRTL()
                    ? width() - inset.left() - point.x() - initial_button_offset_
                    : point.x() - inset.left() - initial_button_offset_;
   SetValueInternal(
-      static_cast<float>(amount) / (width() - inset.width() - thumb_->width()),
+      static_cast<float>(amount) / (width() - inset.width() - thumb_width),
       VALUE_CHANGED_BY_USER);
-}
-
-void Slider::UpdateState(bool control_on) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (control_on) {
-    thumb_ = rb.GetImageNamed(IDR_SLIDER_ACTIVE_THUMB).ToImageSkia();
-    for (int i = 0; i < 4; ++i)
-      images_[i] = rb.GetImageNamed(bar_active_images_[i]).ToImageSkia();
-  } else {
-    thumb_ = rb.GetImageNamed(IDR_SLIDER_DISABLED_THUMB).ToImageSkia();
-    for (int i = 0; i < 4; ++i)
-      images_[i] = rb.GetImageNamed(bar_disabled_images_[i]).ToImageSkia();
-  }
-  bar_height_ = images_[LEFT]->height();
-  SchedulePaint();
 }
 
 void Slider::SetAccessibleName(const base::string16& name) {
@@ -189,38 +167,13 @@ gfx::Size Slider::GetPreferredSize() const {
 
 void Slider::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
-  gfx::Rect content = GetContentsBounds();
-  float value = move_animation_.get() && move_animation_->is_animating() ?
-      animating_value_ : value_;
-  // Paint slider bar with image resources.
-
-  // Inset the slider bar a little bit, so that the left or the right end of
-  // the slider bar will not be exposed under the thumb button when the thumb
-  // button slides to the left most or right most position.
-  const int kBarInsetX = 2;
-  int bar_width = content.width() - kBarInsetX * 2;
-  int bar_cy = content.height() / 2 - bar_height_ / 2;
-
-  int w = content.width() - thumb_->width();
-  int full = value * w;
-  int middle = std::max(full, images_[LEFT]->width());
-
-  canvas->Save();
-  canvas->Translate(gfx::Vector2d(kBarInsetX, bar_cy));
-  canvas->DrawImageInt(*images_[LEFT], 0, 0);
-  canvas->DrawImageInt(*images_[RIGHT], bar_width - images_[RIGHT]->width(), 0);
-  canvas->TileImageInt(*images_[CENTER_LEFT], images_[LEFT]->width(), 0,
-                       middle - images_[LEFT]->width(), bar_height_);
-  canvas->TileImageInt(*images_[CENTER_RIGHT], middle, 0,
-                       bar_width - middle - images_[RIGHT]->width(),
-                       bar_height_);
-  canvas->Restore();
-
-  // Paint slider thumb.
-  int button_cx = content.x() + full;
-  int thumb_y = content.height() / 2 - thumb_->height() / 2;
-  canvas->DrawImageInt(*thumb_, button_cx, thumb_y);
   OnPaintFocus(canvas);
+}
+
+float Slider::GetAnimatingValue() const{
+  return move_animation_.get() && move_animation_->is_animating()
+             ? animating_value_
+             : value_;
 }
 
 bool Slider::OnMousePressed(const ui::MouseEvent& event) {

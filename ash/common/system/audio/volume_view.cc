@@ -26,6 +26,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 
@@ -139,16 +140,23 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   icon_->SetBorder(views::Border::CreateEmptyBorder(
       0, kTrayPopupPaddingHorizontal, 0, kExtraPaddingBetweenIconAndSlider));
   AddChildView(icon_);
+  slider_ = views::Slider::CreateSlider(
+      ash::MaterialDesignController::IsSystemTrayMenuMaterial(), this);
 
-  slider_ = new views::Slider(this);
+  if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    slider_->SetBorder(views::Border::CreateEmptyBorder(
+        gfx::Insets(0, kTrayPopupSliderPaddingMD) + slider_->GetInsets()));
+  } else {
+    slider_->SetBorder(views::Border::CreateEmptyBorder(
+        0, 0, 0, kTrayPopupPaddingBetweenItems));
+  }
+
   slider_->set_focus_border_color(kFocusBorderColor);
   slider_->SetValue(
       static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
   slider_->SetAccessibleName(
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
           IDS_ASH_STATUS_TRAY_VOLUME));
-  slider_->SetBorder(
-      views::Border::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildView(slider_);
   box_layout->SetFlexForView(slider_, 1);
 
@@ -212,10 +220,11 @@ void VolumeView::SetVolumeLevel(float percent) {
 void VolumeView::UpdateDeviceTypeAndMore() {
   bool show_more = is_default_view_ && TrayAudio::ShowAudioDeviceMenu() &&
                    audio_delegate_->HasAlternativeSources();
-  slider_->SetBorder(views::Border::CreateEmptyBorder(
-      0, 0, 0, show_more ? kTrayPopupPaddingBetweenItems
-                         : kSliderRightPaddingToVolumeViewEdge));
-
+  if (!ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    slider_->SetBorder(views::Border::CreateEmptyBorder(
+        0, 0, 0, show_more ? kTrayPopupPaddingBetweenItems
+                           : kSliderRightPaddingToVolumeViewEdge));
+  }
   if (!show_more) {
     more_region_->SetVisible(false);
     return;

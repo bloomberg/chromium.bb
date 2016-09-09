@@ -51,7 +51,10 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit Slider(SliderListener* listener);
+  // Based on the bool |is_material_design|, either a md version or a non-md
+  // version of the slider will be created.
+  static Slider* CreateSlider(bool is_material_design,
+                              SliderListener* listener);
   ~Slider() override;
 
   float value() const { return value_; }
@@ -66,7 +69,18 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void set_focus_border_color(SkColor color) { focus_border_color_ = color; }
 
   // Update UI based on control on/off state.
-  void UpdateState(bool control_on);
+  virtual void UpdateState(bool control_on) = 0;
+
+ protected:
+  explicit Slider(SliderListener* listener);
+
+  // Returns the current position of the thumb on the slider.
+  float GetAnimatingValue() const;
+
+  virtual int GetThumbWidth() = 0;
+
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   friend class test::SliderTestApi;
@@ -89,10 +103,9 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Notify the listener_, if not NULL, that dragging ended.
   void OnSliderDragEnded();
 
-  // views::View overrides:
+  // views::View:
   const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -101,10 +114,10 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnFocus() override;
   void OnBlur() override;
 
-  // ui::EventHandler overrides:
+  // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // gfx::AnimationDelegate overrides:
+  // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   void set_listener(SliderListener* listener) {
@@ -126,12 +139,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Relative position of the mouse cursor (or the touch point) on the slider's
   // button.
   int initial_button_offset_;
-
-  const int* bar_active_images_;
-  const int* bar_disabled_images_;
-  const gfx::ImageSkia* thumb_;
-  const gfx::ImageSkia* images_[4];
-  int bar_height_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

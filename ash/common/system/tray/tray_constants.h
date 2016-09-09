@@ -47,6 +47,10 @@ extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupTextSpacingVertical;
 extern const int kTrayPopupUserCardVerticalPadding;
 
+// Padding used to adjust the slider position in volume row and brightness
+// row horizontally.
+extern const int kTrayPopupSliderPaddingMD;
+
 extern const int kTrayPopupDetailsIconWidth;
 extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;

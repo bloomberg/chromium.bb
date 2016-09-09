@@ -19,6 +19,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/slider_test_api.h"
+#include "ui/views/test/test_slider.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -182,7 +183,7 @@ SliderTest::~SliderTest() {
 void SliderTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
-  slider_ = new Slider(NULL);
+  slider_ = new TestSlider(nullptr);
   View* view = slider_;
   gfx::Size size = view->GetPreferredSize();
   view->SetSize(size);
@@ -287,10 +288,8 @@ TEST_F(HorizontalSliderTest, SliderValueForScrollGesture) {
   // Scroll above the maximum.
   slider()->SetValue(0.5);
   event_generator()->GestureScrollSequence(
-    gfx::Point(0.5 * max_x(), 0.5 * max_y()),
-    gfx::Point(max_x(), max_y()),
-    base::TimeDelta::FromMilliseconds(10),
-    5 /* steps */);
+      gfx::Point(0.5 * max_x(), 0.5 * max_y()), gfx::Point(max_x(), max_y()),
+      base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
   EXPECT_EQ(1, slider()->value());
 
   // Scroll somewhere in the middle.

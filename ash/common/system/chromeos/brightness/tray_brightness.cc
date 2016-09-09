@@ -27,6 +27,7 @@
 #include "ui/display/display.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -110,8 +111,12 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
         rb.GetImageNamed(IDR_AURA_UBER_TRAY_BRIGHTNESS).ToImageSkia());
   }
   AddChildView(icon);
-
-  slider_ = new views::Slider(this);
+  slider_ = views::Slider::CreateSlider(
+      ash::MaterialDesignController::IsSystemTrayMenuMaterial(), this);
+  if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    slider_->SetBorder(views::Border::CreateEmptyBorder(
+        gfx::Insets(0, kTrayPopupSliderPaddingMD) + slider_->GetInsets()));
+  }
   slider_->set_focus_border_color(kFocusBorderColor);
   slider_->SetValue(static_cast<float>(initial_percent / 100.0));
   slider_->SetAccessibleName(
