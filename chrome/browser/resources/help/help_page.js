@@ -197,10 +197,12 @@ cr.define('help', function() {
 
       var logo = $('product-logo');
       logo.onclick = function(e) {
-        logo.classList.remove('spin');
-        // Force a style recalc that cancels the animation specified by "spin".
-        getComputedStyle(logo).getPropertyValue('animation-name');
-        logo.classList.add('spin');
+        logo.animate({
+          transform: ['none', 'rotate(-10turn)'],
+        }, /** @type {!KeyframeEffectOptions} */({
+          duration: 500,
+          easing: 'cubic-bezier(1, 0, 0, 1)',
+        }));
       };
 
       // Attempt to update.

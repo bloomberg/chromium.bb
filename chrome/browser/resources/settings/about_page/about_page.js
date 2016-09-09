@@ -281,11 +281,12 @@ Polymer({
 
   /** @private */
   onProductLogoTap_: function() {
-    var logo = this.$['product-logo'];
-    logo.classList.remove('spin');
-    // Force a style recalc that cancels the animation specified by "spin".
-    getComputedStyle(logo).getPropertyValue('animation-name');
-    logo.classList.add('spin');
+    this.$['product-logo'].animate({
+      transform: ['none', 'rotate(-10turn)'],
+    }, {
+      duration: 500,
+      easing: 'cubic-bezier(1, 0, 0, 1)',
+    });
   },
 
 <if expr="_google_chrome">
