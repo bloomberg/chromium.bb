@@ -15,6 +15,7 @@ source_set("media") {
   deps = [
     "//base",
     "//chromecast/media/base",
+    "//chromecast/media/cdm",
     "//chromecast/public:public",
     "//media",
   ]
