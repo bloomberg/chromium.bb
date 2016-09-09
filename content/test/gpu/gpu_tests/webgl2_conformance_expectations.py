@@ -377,7 +377,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
         ['mac', 'amd'], bug=644360)
-    self.Flaky('conformance2/textures/misc/tex-mipmap-levels.html',
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac', 'amd'], bug=644360)
 
     # Mac Pro with AMD GPU
@@ -545,6 +545,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
 
     # Linux Intel without ANGLE only
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
