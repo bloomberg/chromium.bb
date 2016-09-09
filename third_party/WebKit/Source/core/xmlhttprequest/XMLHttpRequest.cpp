@@ -94,7 +94,7 @@ public:
     }
     ~ScopedEventDispatchProtect()
     {
-        ASSERT(*m_level > 0);
+        DCHECK_GT(*m_level, 0);
         --*m_level;
     }
 
@@ -171,7 +171,7 @@ public:
     void didStartLoading() override {}
     void didReceiveDataForClient(const char* data, unsigned length) override
     {
-        ASSERT(length <= INT_MAX);
+        DCHECK_LE(length, static_cast<unsigned>(INT_MAX));
         m_xhr->didReceiveData(data, length);
     }
     void didFinishLoading() override
@@ -254,7 +254,7 @@ XMLHttpRequest::~XMLHttpRequest()
 
 Document* XMLHttpRequest::document() const
 {
-    ASSERT(getExecutionContext()->isDocument());
+    DCHECK(getExecutionContext()->isDocument());
     return toDocument(getExecutionContext());
 }
 
@@ -281,7 +281,7 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& exceptionState)
 
 ScriptString XMLHttpRequest::responseJSONSource()
 {
-    ASSERT(m_responseTypeCode == ResponseTypeJSON);
+    DCHECK_EQ(m_responseTypeCode, ResponseTypeJSON);
 
     if (m_error || m_state != kDone)
         return ScriptString();
@@ -339,7 +339,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
 
 Blob* XMLHttpRequest::responseBlob()
 {
-    ASSERT(m_responseTypeCode == ResponseTypeBlob);
+    DCHECK_EQ(m_responseTypeCode, ResponseTypeBlob);
 
     // We always return null before kDone.
     if (m_error || m_state != kDone)
@@ -347,7 +347,7 @@ Blob* XMLHttpRequest::responseBlob()
 
     if (!m_responseBlob) {
         if (m_downloadingToFile) {
-            ASSERT(!m_binaryResponseBuilder);
+            DCHECK(!m_binaryResponseBuilder);
 
             // When responseType is set to "blob", we redirect the downloaded
             // data to a file-handle directly in the browser process. We get
@@ -372,7 +372,7 @@ Blob* XMLHttpRequest::responseBlob()
 
 DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 {
-    ASSERT(m_responseTypeCode == ResponseTypeArrayBuffer);
+    DCHECK_EQ(m_responseTypeCode, ResponseTypeArrayBuffer);
 
     if (m_error || m_state != kDone)
         return nullptr;
@@ -398,7 +398,7 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 
 Stream* XMLHttpRequest::responseLegacyStream()
 {
-    ASSERT(m_responseTypeCode == ResponseTypeLegacyStream);
+    DCHECK_EQ(m_responseTypeCode, ResponseTypeLegacyStream);
 
     if (m_error || (m_state != kLoading && m_state != kDone))
         return nullptr;
@@ -458,7 +458,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
         else
             return;
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -630,7 +630,7 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
 
     m_async = async;
 
-    ASSERT(!m_loader);
+    DCHECK(!m_loader);
 
     // Check previous state to avoid dispatching readyState event
     // when calling open several times in a row.
@@ -695,7 +695,7 @@ void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrSt
         return;
     }
 
-    ASSERT(body.isString());
+    DCHECK(body.isString());
     send(body.getAsString(), exceptionState);
 }
 
@@ -708,7 +708,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
 {
     NETWORK_DVLOG(1) << this << " send() Document " << static_cast<void*>(document);
 
-    ASSERT(document);
+    DCHECK(document);
 
     if (!initSend(exceptionState))
         return;
@@ -780,7 +780,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
             else if (!file->fileSystemURL().isEmpty())
                 httpBody->appendFileSystemURL(file->fileSystemURL());
             else
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
         } else {
             httpBody->appendBlob(body->uuid(), body->blobDataHandle());
         }
@@ -875,7 +875,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
         return;
     }
 
-    ASSERT(getExecutionContext());
+    DCHECK(getExecutionContext());
     ExecutionContext& executionContext = *this->getExecutionContext();
 
     // The presence of upload event listeners forces us to use preflighting because POSTing to an URL that does not
@@ -910,8 +910,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 
     if (httpBody) {
-        ASSERT(m_method != HTTPNames::GET);
-        ASSERT(m_method != HTTPNames::HEAD);
+        DCHECK_NE(m_method, HTTPNames::GET);
+        DCHECK_NE(m_method, HTTPNames::HEAD);
         request.setHTTPBody(std::move(httpBody));
     }
 
@@ -946,7 +946,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
         if (m_upload)
             request.setReportUploadProgress(true);
 
-        ASSERT(!m_loader);
+        DCHECK(!m_loader);
         m_loader = ThreadableLoader::create(executionContext, this, options, resourceLoaderOptions);
         m_loader->start(request);
 
@@ -991,7 +991,7 @@ void XMLHttpRequest::abort()
     // nested method invocations at some point.
     if (m_async) {
         if ((m_state == kOpened && sendFlag) || m_state == kHeadersReceived || m_state == kLoading) {
-            ASSERT(!m_loader);
+            DCHECK(!m_loader);
             handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
         }
     }
@@ -1138,7 +1138,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
     InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this, m_method, m_url);
 
     if (!m_async) {
-        ASSERT(exceptionCode);
+        DCHECK(exceptionCode);
         m_state = kDone;
         m_exceptionCode = exceptionCode;
         return;
@@ -1148,7 +1148,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
     // progress event is flushed + a readystatechange is dispatched.
     // No new progress events dispatched; as required, that happens at
     // the end here.
-    ASSERT(m_error);
+    DCHECK(m_error);
     changeState(kDone);
 
     if (!m_uploadComplete) {
@@ -1410,7 +1410,7 @@ void XMLHttpRequest::didFinishLoadingInternal()
         // complete document just after the |DocumentParser::finish()| call.
         // Wait for the parser to call us back in |notifyParserStopped| to progress state.
         m_responseDocumentParser->finish();
-        ASSERT(m_responseDocument);
+        DCHECK(m_responseDocument);
         return;
     }
 
@@ -1449,7 +1449,7 @@ void XMLHttpRequest::didFailLoadingFromBlob()
 
 PassRefPtr<BlobDataHandle> XMLHttpRequest::createBlobDataHandleFromResponse()
 {
-    ASSERT(m_downloadingToFile);
+    DCHECK(m_downloadingToFile);
     std::unique_ptr<BlobData> blobData = BlobData::create();
     String filePath = m_response.downloadedFilePath();
     // If we errored out or got no data, we return an empty handle.
@@ -1468,9 +1468,9 @@ void XMLHttpRequest::notifyParserStopped()
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     // This should only be called when response document is parsed asynchronously.
-    ASSERT(m_responseDocumentParser);
-    ASSERT(!m_responseDocumentParser->isParsing());
-    ASSERT(!m_responseLegacyStream);
+    DCHECK(m_responseDocumentParser);
+    DCHECK(!m_responseDocumentParser->isParsing());
+    DCHECK(!m_responseLegacyStream);
 
     // Do nothing if we are called from |internalAbort()|.
     if (m_error)
@@ -1532,7 +1532,8 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
 
 void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT_UNUSED(handle, !handle);
+    ALLOW_UNUSED_LOCAL(handle);
+    DCHECK(!handle);
     NETWORK_DVLOG(1) << this << " didReceiveResponse(" << identifier << ")";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
@@ -1549,7 +1550,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
 void XMLHttpRequest::parseDocumentChunk(const char* data, unsigned len)
 {
     if (!m_responseDocumentParser) {
-        ASSERT(!m_responseDocument);
+        DCHECK(!m_responseDocument);
         initResponseDocument();
         if (!m_responseDocument)
             return;
@@ -1557,7 +1558,7 @@ void XMLHttpRequest::parseDocumentChunk(const char* data, unsigned len)
         m_responseDocumentParser = m_responseDocument->implicitOpen(AllowAsynchronousParsing);
         m_responseDocumentParser->addClient(this);
     }
-    ASSERT(m_responseDocumentParser);
+    DCHECK(m_responseDocumentParser);
 
     if (m_responseDocumentParser->needsDecoder())
         m_responseDocumentParser->setDecoder(createDecoder());
@@ -1643,7 +1644,7 @@ void XMLHttpRequest::didDownloadData(int dataLength)
     if (m_error)
         return;
 
-    ASSERT(m_downloadingToFile);
+    DCHECK(m_downloadingToFile);
 
     if (m_state < kHeadersReceived)
         changeState(kHeadersReceived);
@@ -1707,7 +1708,7 @@ bool XMLHttpRequest::hasPendingActivity() const
 
 void XMLHttpRequest::contextDestroyed()
 {
-    ASSERT(!m_loader);
+    DCHECK(!m_loader);
     ActiveDOMObject::contextDestroyed();
 }
 

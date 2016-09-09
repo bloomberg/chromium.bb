@@ -60,7 +60,7 @@ void XMLHttpRequestUpload::dispatchProgressEvent(unsigned long long bytesSent, u
 
 void XMLHttpRequestUpload::dispatchEventAndLoadEnd(const AtomicString& type, bool lengthComputable, unsigned long long bytesSent, unsigned long long total)
 {
-    ASSERT(type == EventTypeNames::load || type == EventTypeNames::abort || type == EventTypeNames::error || type == EventTypeNames::timeout);
+    DCHECK(type == EventTypeNames::load || type == EventTypeNames::abort || type == EventTypeNames::error || type == EventTypeNames::timeout);
     InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), m_xmlHttpRequest, m_xmlHttpRequest->isAsync());
     dispatchEvent(ProgressEvent::create(type, lengthComputable, bytesSent, total));
     dispatchEvent(ProgressEvent::create(EventTypeNames::loadend, lengthComputable, bytesSent, total));

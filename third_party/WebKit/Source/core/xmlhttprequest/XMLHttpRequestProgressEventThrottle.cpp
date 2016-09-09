@@ -67,7 +67,7 @@ void XMLHttpRequestProgressEventThrottle::DeferredEvent::clear()
 
 Event* XMLHttpRequestProgressEventThrottle::DeferredEvent::take()
 {
-    ASSERT(m_isSet);
+    DCHECK(m_isSet);
 
     Event* event = ProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
     clear();
@@ -79,7 +79,7 @@ XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttp
     , m_target(target)
     , m_hasDispatchedProgressProgressEvent(false)
 {
-    ASSERT(target);
+    DCHECK(target);
 }
 
 XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle()
