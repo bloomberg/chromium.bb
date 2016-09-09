@@ -457,9 +457,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
   void DelegatedFrameHostOnLostCompositorResources() override;
-  void DelegatedFrameHostUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
   bool IsAutoResizeEnabled() const override;
 

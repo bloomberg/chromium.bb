@@ -31,9 +31,6 @@ class BrowserCompositorMacClient {
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
   virtual void BrowserCompositorMacOnLostCompositorResources() = 0;
-  virtual void BrowserCompositorMacUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) = 0;
   virtual void BrowserCompositorMacSendBeginFrame(
       const cc::BeginFrameArgs& args) = 0;
 };
@@ -114,9 +111,6 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
   void DelegatedFrameHostOnLostCompositorResources() override;
-  void DelegatedFrameHostUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
   bool IsAutoResizeEnabled() const override;
 

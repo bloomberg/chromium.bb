@@ -446,12 +446,6 @@ void BrowserCompositorMac::DelegatedFrameHostOnLostCompositorResources() {
   client_->BrowserCompositorMacOnLostCompositorResources();
 }
 
-void BrowserCompositorMac::DelegatedFrameHostUpdateVSyncParameters(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
-  client_->BrowserCompositorMacUpdateVSyncParameters(timebase, interval);
-}
-
 void BrowserCompositorMac::SetBeginFrameSource(cc::BeginFrameSource* source) {
   if (begin_frame_source_ && needs_begin_frames_)
     begin_frame_source_->RemoveObserver(this);

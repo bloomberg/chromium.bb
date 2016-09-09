@@ -1333,11 +1333,6 @@ void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {
     view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
-void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                 base::TimeDelta interval) {
-  Send(new ViewMsg_UpdateVSyncParameters(GetRoutingID(), timebase, interval));
-}
-
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   if (!renderer_initialized_)

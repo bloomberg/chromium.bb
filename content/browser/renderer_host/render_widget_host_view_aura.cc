@@ -2920,12 +2920,6 @@ void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {
   host_->ScheduleComposite();
 }
 
-void RenderWidgetHostViewAura::DelegatedFrameHostUpdateVSyncParameters(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
-  host_->UpdateVSyncParameters(timebase, interval);
-}
-
 void RenderWidgetHostViewAura::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
   bool needs_begin_frames = host_->needs_begin_frames();

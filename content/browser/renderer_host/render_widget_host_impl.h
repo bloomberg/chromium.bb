@@ -415,10 +415,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
-  // Tells the RenderWidget about the latest vsync parameters.
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
-
   // Called by the view in response to OnSwapCompositorFrame.
   static void SendReclaimCompositorResources(
       int32_t route_id,

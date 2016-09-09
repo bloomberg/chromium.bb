@@ -74,9 +74,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       const cc::ReturnedResourceArray& resources) = 0;
   virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
 
-  virtual void DelegatedFrameHostUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) = 0;
   virtual void SetBeginFrameSource(cc::BeginFrameSource* source) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
 };

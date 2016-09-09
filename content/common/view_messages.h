@@ -531,11 +531,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_LockMouse_ACK,
 // Tells the render side that the mouse has been unlocked.
 IPC_MESSAGE_ROUTED0(ViewMsg_MouseLockLost)
 
-// Sent by the browser when the parameters for vsync alignment have changed.
-IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVSyncParameters,
-                    base::TimeTicks /* timebase */,
-                    base::TimeDelta /* interval */)
-
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

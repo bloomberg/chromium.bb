@@ -451,9 +451,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
   void BrowserCompositorMacOnLostCompositorResources() override;
-  void BrowserCompositorMacUpdateVSyncParameters(
-      const base::TimeTicks& timebase,
-      const base::TimeDelta& interval) override;
   void BrowserCompositorMacSendBeginFrame(
       const cc::BeginFrameArgs& args) override;
 
@@ -488,8 +485,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // IPC message handlers.
   void OnGetRenderedTextCompleted(const std::string& text);
 
-  // Send updated vsync parameters to the renderer.
-  void SendVSyncParametersToRenderer();
+  // Send updated vsync parameters to the top level display.
+  void UpdateDisplayVSyncParameters();
 
   // Dispatches a TTS session.
   void SpeakText(const std::string& text);

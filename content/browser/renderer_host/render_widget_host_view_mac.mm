@@ -412,12 +412,6 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {
   render_widget_host_->ScheduleComposite();
 }
 
-void RenderWidgetHostViewMac::BrowserCompositorMacUpdateVSyncParameters(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
-  render_widget_host_->UpdateVSyncParameters(timebase, interval);
-}
-
 void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
   render_widget_host_->Send(
@@ -688,7 +682,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   }
 }
 
-void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
+void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
   if (!render_widget_host_ || !display_link_.get())
     return;
 
@@ -1317,7 +1311,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(uint32_t output_surface_id,
   if (frame.delegated_frame_data) {
     browser_compositor_->SwapCompositorFrame(output_surface_id,
                                              std::move(frame));
-    SendVSyncParametersToRenderer();
+    UpdateDisplayVSyncParameters();
   } else {
     DLOG(ERROR) << "Received unexpected frame type.";
     bad_message::ReceivedBadMessage(render_widget_host_->GetProcess(),
