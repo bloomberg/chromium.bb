@@ -717,13 +717,6 @@ _waterfall_config_map = {
 }
 
 
-ge_build_config = config_lib.LoadGEBuildConfigFromFile()
-builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
-    ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
-_all_release_builder_boards = builder_to_boards_dict[
-    config_lib.CONFIG_TEMPLATE_RELEASE]
-
-
 def SiteParameters():
   """Create the site parameters for this site.
 
@@ -875,12 +868,13 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def _GetConfig(site_config):
+def _GetConfig(site_config, ge_build_config):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs..
+                 and configs.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
   default_hw_tests_override = config_lib.BuildConfig(
       hw_tests_override=HWTestList.DefaultList(
@@ -1240,6 +1234,13 @@ def _GetConfig(site_config):
 
   # A base config for each board.
   _base_configs = dict()
+
+  # Map GE data into a friendly format.
+  builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
+      ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
+
+  _all_release_builder_boards = builder_to_boards_dict[
+      config_lib.CONFIG_TEMPLATE_RELEASE]
 
   def _CreateBaseConfigs():
     for board in _all_boards | _all_release_builder_boards:
@@ -3160,11 +3161,13 @@ def GetConfig():
   site_params = SiteParameters()
   defaults = DefaultSettings(site_params)
 
+  ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
 
   # Fill in templates and build configurations.
-  _GetConfig(site_config)
+  _GetConfig(site_config, ge_build_config)
 
   return site_config
