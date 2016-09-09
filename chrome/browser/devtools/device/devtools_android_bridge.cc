@@ -18,6 +18,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -400,10 +401,10 @@ DevToolsAndroidBridge::AgentHostDelegate::GetOrCreateAgentHost(
   if (it != bridge->host_delegates_.end())
     return it->second->agent_host_;
 
-  std::unique_ptr<AgentHostDelegate> delegate(new AgentHostDelegate(
-      bridge, browser_id, local_id, target_path, type, value));
+  AgentHostDelegate* delegate = new AgentHostDelegate(
+      bridge, browser_id, local_id, target_path, type, value);
   scoped_refptr<content::DevToolsAgentHost> result =
-      content::DevToolsAgentHost::Forward(local_id, std::move(delegate));
+      content::DevToolsAgentHost::Forward(local_id, base::WrapUnique(delegate));
   delegate->agent_host_ = result.get();
   return result;
 }
