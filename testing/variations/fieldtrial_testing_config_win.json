@@ -187,6 +187,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MediaFoundationH264Encoding": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "MojoChannel": [
         {
             "group_name": "Enabled"
