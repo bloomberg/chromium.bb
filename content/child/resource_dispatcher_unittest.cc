@@ -637,8 +637,8 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
   NotifyRequestComplete(id, strlen(kTestPageContents));
 
   EXPECT_TRUE(peer_context.received_response);
-  // Request should have been cancelled.
-  ConsumeCancelRequest(id);
+  // Request should have been cancelled with no additional messages.
+  EXPECT_EQ(0u, queued_messages());
   EXPECT_TRUE(peer_context.cancelled);
 
   // Any future messages related to the request should be ignored.

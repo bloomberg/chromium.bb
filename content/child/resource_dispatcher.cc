@@ -488,9 +488,10 @@ void ResourceDispatcher::Cancel(int request_id) {
       should_dump = false;
     }
   }
-  // Cancel the request, and clean it up so the bridge will receive no more
-  // messages.
-  message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
+  // Cancel the request if it didn't complete, and clean it up so the bridge
+  // will receive no more messages.
+  if (info.completion_time.is_null())
+    message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
   RemovePendingRequest(request_id);
 }
 

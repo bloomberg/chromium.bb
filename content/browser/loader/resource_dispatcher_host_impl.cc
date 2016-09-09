@@ -1762,13 +1762,13 @@ void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
     return;
 
   ResourceLoader* loader = GetLoader(child_id, request_id);
-  if (!loader) {
-    // We probably want to remove this warning eventually, but I wanted to be
-    // able to notice when this happens during initial development since it
-    // should be rare and may indicate a bug.
-    DVLOG(1) << "Canceling a request that wasn't found";
+
+  // It is possible that the request has been completed and removed from the
+  // loader queue but the client has not processed the request completed message
+  // before issuing a cancel. This happens frequently for beacons which are
+  // canceled in the response received handler.
+  if (!loader)
     return;
-  }
 
   loader->CancelRequest(true);
 }
