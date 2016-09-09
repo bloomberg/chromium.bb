@@ -41,7 +41,7 @@ Element* DocumentFullscreen::fullscreenElement(Document& document)
 
 void DocumentFullscreen::exitFullscreen(Document& document)
 {
-    Fullscreen::from(document).exitFullscreen();
+    Fullscreen::exitFullscreen(document);
 }
 
 Element* DocumentFullscreen::currentFullScreenElement(Document& document)

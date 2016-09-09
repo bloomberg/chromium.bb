@@ -170,7 +170,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
             // TODO: Need a proper VR compositor, but for the moment on mobile
             // we'll just make the canvas fullscreen so that VrShell can pick it
             // up through the standard (high latency) compositing path.
-            Fullscreen::from(m_layer.source()->document()).requestFullscreen(*m_layer.source(), Fullscreen::UnprefixedRequest);
+            Fullscreen::requestFullscreen(*m_layer.source(), Fullscreen::UnprefixedRequest);
 
             m_isPresenting = true;
 

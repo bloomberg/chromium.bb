@@ -3294,14 +3294,14 @@ void HTMLMediaElement::enterFullscreen()
 {
     BLINK_MEDIA_LOG << "enterFullscreen(" << (void*)this << ")";
 
-    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*this, Fullscreen::PrefixedRequest);
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
     BLINK_MEDIA_LOG << "exitFullscreen(" << (void*)this << ")";
 
-    Fullscreen::from(document()).exitFullscreen();
+    Fullscreen::exitFullscreen(document());
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

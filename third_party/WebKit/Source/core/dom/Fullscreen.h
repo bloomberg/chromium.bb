@@ -69,10 +69,10 @@ public:
     // |forCrossProcessDescendant| is used in OOPIF scenarios and is set to
     // true when fullscreen is requested for an out-of-process descendant
     // element.
-    void requestFullscreen(Element&, RequestType, bool forCrossProcessDescendant = false);
+    static void requestFullscreen(Element&, RequestType, bool forCrossProcessDescendant = false);
 
     static void fullyExitFullscreen(Document&);
-    void exitFullscreen();
+    static void exitFullscreen(Document&);
 
     static bool fullscreenEnabled(Document&);
     // TODO(foolip): The fullscreen element stack is modified synchronously in

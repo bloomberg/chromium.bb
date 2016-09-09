@@ -6437,7 +6437,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize)
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
-    Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
     EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
@@ -6470,7 +6470,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
-    Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -6507,7 +6507,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame)
 
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-    Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -6542,7 +6542,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenSubframe)
     Document* document = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame()->firstChild())->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
-    Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
 
@@ -6582,7 +6582,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport)
 
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-    Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
     EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
@@ -6616,7 +6616,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
     LayoutViewItem layoutViewItem = webViewHelper.webView()->mainFrameImpl()->frameView()->layoutViewItem();
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-    Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
     EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
@@ -6673,7 +6673,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
     {
         Document* document = webViewImpl->mainFrameImpl()->frame()->document();
         UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-        Fullscreen::from(*document).requestFullscreen(*document->body(), Fullscreen::PrefixedRequest);
+        Fullscreen::requestFullscreen(*document->body(), Fullscreen::PrefixedRequest);
     }
 
     webViewImpl->didEnterFullscreen();
@@ -6738,7 +6738,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation)
     Document* document =
         webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-    Fullscreen::from(*document).requestFullscreen(
+    Fullscreen::requestFullscreen(
         *document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullscreen();
     webViewImpl->updateAllLifecyclePhases();
