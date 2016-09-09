@@ -23,6 +23,12 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
+blink::WebGestureEvent DummyGestureScrollUpdate() {
+  blink::WebGestureEvent dummy_gesture_scroll_update;
+  dummy_gesture_scroll_update.type = blink::WebInputEvent::GestureScrollUpdate;
+  return dummy_gesture_scroll_update;
+}
+
 }  // anonymous namespace
 
 namespace content {
@@ -252,7 +258,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
 
         if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
           SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                               blink::WebGestureEvent());
+                               DummyGestureScrollUpdate());
           CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
         }
       }
@@ -497,7 +503,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
         touchscreen_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           blink::WebGestureEvent());
+                           DummyGestureScrollUpdate());
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -535,7 +541,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
         touchpad_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           blink::WebGestureEvent());
+                           DummyGestureScrollUpdate());
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
