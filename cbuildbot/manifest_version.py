@@ -943,11 +943,11 @@ class BuildSpecsManager(object):
 
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:
-        last_error = ('Failed to update the status for %s with the '
-                      'following error %s' % (self.build_names[0],
-                                              e.message))
+        last_error = ('Failed to update the status for %s during remote'
+                      ' command: %s' % (self.build_names[0],
+                                        e.message))
         logging.error(last_error)
-        logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
+        logging.error('Retrying to update the status:  Retry %d/%d', index + 1,
                       retries)
       else:
         # Upload status to Google Storage as well.

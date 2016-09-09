@@ -615,7 +615,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
         logging.log(debug_level, '(stderr):\n%s', cmd_result.error)
 
     if not error_code_ok and proc.returncode:
-      msg = 'cwd=%s' % cwd
+      msg = 'cmd=%s' % cmd
+      if cwd:
+        msg += ', cwd=%s' % cwd
       if extra_env:
         msg += ', extra env=%s' % extra_env
       if error_message:
