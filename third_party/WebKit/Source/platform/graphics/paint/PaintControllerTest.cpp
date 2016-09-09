@@ -268,9 +268,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrder)
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         EXPECT_EQ(1u, getPaintController().paintChunks().size());
-        // TODO(wangxianzhu): In real world we invalidate clients with reordered display items.
-        // Need to support raster invalidation for recordered display items without invalidating clients.
-        EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre());
+        EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(100, 100, 50, 200))); // Bounds of |second|.
     }
 }
 
@@ -332,6 +331,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation)
         EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
             FloatRect(100, 100, 100, 100), // Old bounds of |first|.
             FloatRect(100, 100, 100, 100))); // New bounds of |first|.
+        // No need to invalidate raster of |second| because the client (|first|) which swapped order
+        // with it has been invalidated.
     }
 }
 
@@ -699,7 +700,69 @@ TEST_P(PaintControllerTest, CachedDisplayItems)
     EXPECT_FALSE(getPaintController().clientCacheIsValid(second));
 }
 
-TEST_P(PaintControllerTest, ComplexUpdateSwapOrder)
+TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren)
+{
+    FakeDisplayItemClient container1("container1", LayoutRect(100, 100, 100, 100));
+    FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+    FakeDisplayItemClient container2("container2", LayoutRect(100, 200, 100, 100));
+    FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+    GraphicsContext context(getPaintController());
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        getPaintController().updateCurrentPaintChunkProperties(&m_rootPaintChunkId, PaintChunkProperties());
+
+    drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
+    drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
+    drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
+    drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
+        TestDisplayItem(container1, backgroundDrawingType),
+        TestDisplayItem(content1, backgroundDrawingType),
+        TestDisplayItem(content1, foregroundDrawingType),
+        TestDisplayItem(container1, foregroundDrawingType),
+        TestDisplayItem(container2, backgroundDrawingType),
+        TestDisplayItem(content2, backgroundDrawingType),
+        TestDisplayItem(content2, foregroundDrawingType),
+        TestDisplayItem(container2, foregroundDrawingType));
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        getPaintController().updateCurrentPaintChunkProperties(&m_rootPaintChunkId, PaintChunkProperties());
+
+    // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2,
+    drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
+    drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
+    drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
+    drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
+    drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
+        TestDisplayItem(container2, backgroundDrawingType),
+        TestDisplayItem(content2, backgroundDrawingType),
+        TestDisplayItem(content2, foregroundDrawingType),
+        TestDisplayItem(container2, foregroundDrawingType),
+        TestDisplayItem(container1, backgroundDrawingType),
+        TestDisplayItem(content1, backgroundDrawingType),
+        TestDisplayItem(content1, foregroundDrawingType),
+        TestDisplayItem(container1, foregroundDrawingType));
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        EXPECT_EQ(1u, getPaintController().paintChunks().size());
+        EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(100, 200, 100, 100), // Bounds of |container2| which was moved behind |container1|.
+            FloatRect(100, 200, 50, 200))); // Bounds of |content2| which was moved along with |container2|.
+    }
+}
+
+TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation)
 {
     FakeDisplayItemClient container1("container1", LayoutRect(100, 100, 100, 100));
     FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
@@ -733,6 +796,7 @@ TEST_P(PaintControllerTest, ComplexUpdateSwapOrder)
         getPaintController().updateCurrentPaintChunkProperties(&m_rootPaintChunkId, PaintChunkProperties());
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
+    // and container1 is invalidated.
     container1.setDisplayItemsUncached();
     drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
@@ -756,11 +820,11 @@ TEST_P(PaintControllerTest, ComplexUpdateSwapOrder)
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         EXPECT_EQ(1u, getPaintController().paintChunks().size());
-        // TODO(wangxianzhu): In real world we invalidate clients with reordered display items.
-        // Need to support raster invalidation for recordered display items without invalidating clients.
         EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
             FloatRect(100, 100, 100, 100), // Old bounds of |container1|.
-            FloatRect(100, 100, 100, 100))); // New bounds of |container1|.
+            FloatRect(100, 100, 100, 100), // New bounds of |container1|.
+            FloatRect(100, 200, 100, 100), // Bounds of |container2| which was moved behind |container1|.
+            FloatRect(100, 200, 50, 200))); // Bounds of |content2| which was moved along with |container2|.
     }
 }
 
@@ -894,6 +958,94 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder)
         // Swapping order of chunks should not invalidate anything.
         EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre());
         EXPECT_THAT(getPaintController().paintChunks()[1].rasterInvalidationRects, UnorderedElementsAre());
+    }
+}
+
+TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks)
+{
+    FakeDisplayItemClient container1("container1", LayoutRect(100, 100, 100, 100));
+    FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+    FakeDisplayItemClient container2("container2", LayoutRect(100, 200, 100, 100));
+    FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+    GraphicsContext context(getPaintController());
+
+    PaintChunkProperties container1Properties;
+    PaintChunkProperties container2Properties;
+
+    {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            PaintChunk::Id id(container1, backgroundDrawingType);
+            container1Properties.effect = EffectPaintPropertyNode::create(nullptr, 0.5);
+            getPaintController().updateCurrentPaintChunkProperties(&id, container1Properties);
+        }
+        drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+        drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    }
+    {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            PaintChunk::Id id(container2, backgroundDrawingType);
+            container2Properties.effect = EffectPaintPropertyNode::create(nullptr, 0.5);
+            getPaintController().updateCurrentPaintChunkProperties(&id, container2Properties);
+        }
+        drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
+        drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
+    }
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
+        TestDisplayItem(container1, backgroundDrawingType),
+        TestDisplayItem(content1, backgroundDrawingType),
+        TestDisplayItem(container2, backgroundDrawingType),
+        TestDisplayItem(content2, backgroundDrawingType));
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        EXPECT_EQ(2u, getPaintController().paintChunks().size());
+        EXPECT_EQ(PaintChunk::Id(container1, backgroundDrawingType), getPaintController().paintChunks()[0].id);
+        EXPECT_EQ(PaintChunk::Id(container2, backgroundDrawingType), getPaintController().paintChunks()[1].id);
+        EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(LayoutRect::infiniteIntRect())));
+        EXPECT_THAT(getPaintController().paintChunks()[1].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(LayoutRect::infiniteIntRect())));
+    }
+
+    // Move content2 into container1, without invalidation.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        PaintChunk::Id id(container1, backgroundDrawingType);
+        getPaintController().updateCurrentPaintChunkProperties(&id, container1Properties);
+    }
+    drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        PaintChunk::Id id(container2, backgroundDrawingType);
+        getPaintController().updateCurrentPaintChunkProperties(&id, container2Properties);
+    }
+    drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
+
+    EXPECT_EQ(4, numCachedNewItems());
+#ifndef NDEBUG
+    EXPECT_EQ(3, numSequentialMatches());
+    EXPECT_EQ(1, numOutOfOrderMatches());
+    EXPECT_EQ(1, numIndexedItems());
+#endif
+
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
+        TestDisplayItem(container1, backgroundDrawingType),
+        TestDisplayItem(content1, backgroundDrawingType),
+        TestDisplayItem(content2, backgroundDrawingType),
+        TestDisplayItem(container2, backgroundDrawingType));
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        EXPECT_EQ(2u, getPaintController().paintChunks().size());
+        EXPECT_EQ(PaintChunk::Id(container1, backgroundDrawingType), getPaintController().paintChunks()[0].id);
+        EXPECT_EQ(PaintChunk::Id(container2, backgroundDrawingType), getPaintController().paintChunks()[1].id);
+        // |content2| is invalidated raster on both the old chunk and the new chunk.
+        EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(100, 200, 50, 200)));
+        EXPECT_THAT(getPaintController().paintChunks()[1].rasterInvalidationRects, UnorderedElementsAre(
+            FloatRect(100, 200, 50, 200)));
     }
 }
 

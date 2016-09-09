@@ -39,6 +39,13 @@ public:
     size_t lastChunkIndex() const { return m_chunks.isEmpty() ? kNotFound : m_chunks.size() - 1; }
     PaintChunk& lastChunk() { return m_chunks.last(); }
 
+    PaintChunk& findChunkByDisplayItemIndex(size_t index)
+    {
+        auto chunk = findChunkInVectorByDisplayItemIndex(m_chunks, index);
+        DCHECK(chunk != m_chunks.end());
+        return *chunk;
+    }
+
     void clear();
 
     // Releases the generated paint chunk list and resets the state of this

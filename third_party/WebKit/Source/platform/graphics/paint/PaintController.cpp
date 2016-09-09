@@ -8,6 +8,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
@@ -49,7 +50,7 @@ bool PaintController::useCachedDrawingIfPossible(const DisplayItemClient& client
     ++m_numCachedNewItems;
     ensureNewDisplayItemListInitialCapacity();
     if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-        processNewItem(m_newDisplayItemList.appendByMoving(m_currentPaintArtifact.getDisplayItemList()[cachedItem]), FromCachedItem);
+        processNewItem(moveItemFromCurrentListToNewList(cachedItem));
 
     m_nextItemToMatch = cachedItem + 1;
     // Items before m_nextItemToMatch have been copied so we don't need to index them.
@@ -154,7 +155,7 @@ const DisplayItem* PaintController::lastDisplayItem(unsigned offset)
     return nullptr;
 }
 
-void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource newItemSource)
+void PaintController::processNewItem(DisplayItem& displayItem)
 {
     DCHECK(!m_constructionDisabled);
 
@@ -181,21 +182,15 @@ void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource new
     }
 #endif
 
-    if (isSkippingCache()) {
-        DCHECK(newItemSource == NewPainting);
+    if (isSkippingCache())
         displayItem.setSkippedCache();
-    }
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        if (newItemSource != FromCachedSubsequence)
-            m_currentChunkIsFromCachedSubsequence = false;
-
         size_t lastChunkIndex = m_newPaintChunks.lastChunkIndex();
         if (m_newPaintChunks.incrementDisplayItemIndex(displayItem)) {
             DCHECK(lastChunkIndex != m_newPaintChunks.lastChunkIndex());
             if (lastChunkIndex != kNotFound)
                 generateChunkRasterInvalidationRects(m_newPaintChunks.paintChunkAt(lastChunkIndex));
-            m_currentChunkIsFromCachedSubsequence = true;
         }
     }
 
@@ -211,8 +206,8 @@ void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource new
     if (index != kNotFound) {
 #ifndef NDEBUG
         showDebugData();
-        WTFLogAlways("DisplayItem %s has duplicated id with previous %s (index=%d)\n",
-            displayItem.asDebugString().utf8().data(), m_newDisplayItemList[index].asDebugString().utf8().data(), static_cast<int>(index));
+        WTFLogAlways("DisplayItem %s has duplicated id with previous %s (index=%zu)\n",
+            displayItem.asDebugString().utf8().data(), m_newDisplayItemList[index].asDebugString().utf8().data(), index);
 #endif
         NOTREACHED();
     }
@@ -221,6 +216,13 @@ void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource new
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
         checkUnderInvalidation();
+}
+
+DisplayItem& PaintController::moveItemFromCurrentListToNewList(size_t index)
+{
+    m_itemsMovedIntoNewList.resize(m_currentPaintArtifact.getDisplayItemList().size());
+    m_itemsMovedIntoNewList[index] = m_newDisplayItemList.size();
+    return m_newDisplayItemList.appendByMoving(m_currentPaintArtifact.getDisplayItemList()[index]);
 }
 
 void PaintController::updateCurrentPaintChunkProperties(const PaintChunk::Id* id, const PaintChunkProperties& newProperties)
@@ -260,7 +262,9 @@ size_t PaintController::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     const Vector<size_t>& indices = it->value;
     for (size_t index : indices) {
         const DisplayItem& existingItem = list[index];
-        DCHECK(!existingItem.hasValidClient() || existingItem.client() == id.client);
+        if (!existingItem.hasValidClient())
+            continue;
+        DCHECK(existingItem.client() == id.client);
         if (id == existingItem.getId())
             return index;
     }
@@ -352,6 +356,7 @@ size_t PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& i
 // but mark the begin and end of the subsequence for under-invalidation checking.
 void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
 {
+    AutoReset<size_t> subsequenceBeginIndex(&m_currentCachedSubsequenceBeginIndexInNewList, m_newDisplayItemList.size());
     DisplayItem* cachedItem = &m_currentPaintArtifact.getDisplayItemList()[cachedItemIndex];
     DCHECK(cachedItem->getType() == DisplayItem::kSubsequence);
 
@@ -365,6 +370,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
     Vector<PaintChunk>::const_iterator cachedChunk;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         cachedChunk = m_currentPaintArtifact.findChunkByDisplayItemIndex(cachedItemIndex);
+        DCHECK(cachedChunk != m_currentPaintArtifact.paintChunks().end());
         updateCurrentPaintChunkProperties(cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
     } else {
         // This is to avoid compilation error about uninitialized variable on Windows.
@@ -381,9 +387,10 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
         if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && cachedItemIndex == cachedChunk->endIndex) {
                 ++cachedChunk;
+                DCHECK(cachedChunk != m_currentPaintArtifact.paintChunks().end());
                 updateCurrentPaintChunkProperties(cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
             }
-            processNewItem(m_newDisplayItemList.appendByMoving(*cachedItem), FromCachedSubsequence);
+            processNewItem(moveItemFromCurrentListToNewList(cachedItemIndex));
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 DCHECK((!m_newPaintChunks.lastChunk().id && !cachedChunk->id) || m_newPaintChunks.lastChunk().matches(*cachedChunk));
         }
@@ -467,6 +474,7 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     resetCurrentListIndices();
     m_outOfOrderItemIndices.clear();
     m_outOfOrderChunkIndices.clear();
+    m_itemsMovedIntoNewList.clear();
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         for (const auto& chunk : m_currentPaintArtifact.paintChunks()) {
@@ -527,7 +535,7 @@ void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& dis
 void PaintController::generateChunkRasterInvalidationRects(PaintChunk& newChunk)
 {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    if (m_currentChunkIsFromCachedSubsequence)
+    if (newChunk.beginIndex >= m_currentCachedSubsequenceBeginIndexInNewList)
         return;
 
     if (!newChunk.id) {
@@ -574,33 +582,44 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(Pain
 {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    // TODO(wangxianzhu): Support raster invalidation for reordered display items without invalidating
-    // display item clients. Currently we invalidate display item clients ensuring raster invalidation.
     // TODO(wangxianzhu): Handle PaintInvalidationIncremental.
     // TODO(wangxianzhu): Optimize paint offset change.
 
-    // Maps from each client to the index of the first drawing-content display item of the client.
-    HashMap<const DisplayItemClient*, size_t> oldChunkClients;
-    for (size_t i = oldChunk.beginIndex; i < oldChunk.endIndex; ++i) {
-        const DisplayItem& oldItem = m_currentPaintArtifact.getDisplayItemList()[i];
-        // oldItem.hasValidClient() indicates that the item has not been copied as a cached item into
-        // m_newDislayItemList, so the item either disappeared or changed, and needs raster invalidation.
-        if (oldItem.hasValidClient() && oldItem.drawsContent() && oldChunkClients.add(&oldItem.client(), i).isNewEntry)
-            newChunk.rasterInvalidationRects.append(m_currentPaintArtifact.getDisplayItemList().visualRect(i));
+    HashSet<const DisplayItemClient*> invalidatedClientsInOldChunk;
+    size_t highestMovedToIndex = 0;
+    for (size_t oldIndex = oldChunk.beginIndex; oldIndex < oldChunk.endIndex; ++oldIndex) {
+        const DisplayItem& oldItem = m_currentPaintArtifact.getDisplayItemList()[oldIndex];
+        const DisplayItemClient* clientToInvalidate = nullptr;
+        if (!oldItem.hasValidClient()) {
+            size_t movedToIndex = m_itemsMovedIntoNewList[oldIndex];
+            if (m_newDisplayItemList[movedToIndex].drawsContent()) {
+                if (movedToIndex < newChunk.beginIndex || movedToIndex >= newChunk.endIndex) {
+                    // The item has been moved into another chunk, so need to invalidate it in the old chunk.
+                    clientToInvalidate = &m_newDisplayItemList[movedToIndex].client();
+                    // And invalidate in the new chunk into which the item was moved.
+                    PaintChunk& movedToChunk = m_newPaintChunks.findChunkByDisplayItemIndex(movedToIndex);
+                    movedToChunk.rasterInvalidationRects.append(clientToInvalidate->visualRect());
+                } else if (movedToIndex < highestMovedToIndex) {
+                    // The item has been moved behind other cached items, so need to invalidate the area
+                    // that is probably exposed by the item moved earlier.
+                    clientToInvalidate = &m_newDisplayItemList[movedToIndex].client();
+                } else {
+                    highestMovedToIndex = movedToIndex;
+                }
+            }
+        } else if (oldItem.drawsContent()) {
+            clientToInvalidate = &oldItem.client();
+        }
+        if (clientToInvalidate && invalidatedClientsInOldChunk.add(clientToInvalidate).isNewEntry) {
+            newChunk.rasterInvalidationRects.append(m_currentPaintArtifact.getDisplayItemList().visualRect(oldIndex));
+        }
     }
 
-    HashSet<const DisplayItemClient*> newChunkClients;
-    for (size_t i = newChunk.beginIndex; i < newChunk.endIndex; ++i) {
-        const DisplayItem& newItem = m_newDisplayItemList[i];
-        if (newItem.drawsContent()) {
-            if (!clientCacheIsValid(newItem.client())) {
-                if (newChunkClients.add(&newItem.client()).isNewEntry)
-                    newChunk.rasterInvalidationRects.append(newItem.client().visualRect());
-            } else {
-                // The cached item was moved from the old chunk which should not contain any item of the client now.
-                DCHECK(!oldChunkClients.contains(&newItem.client()));
-            }
-        }
+    HashSet<const DisplayItemClient*> invalidatedClientsInNewChunk;
+    for (size_t newIndex = newChunk.beginIndex; newIndex < newChunk.endIndex; ++newIndex) {
+        const DisplayItem& newItem = m_newDisplayItemList[newIndex];
+        if (newItem.drawsContent() && !clientCacheIsValid(newItem.client()) && invalidatedClientsInNewChunk.add(&newItem.client()).isNewEntry)
+            newChunk.rasterInvalidationRects.append(newItem.client().visualRect());
     }
 }
 
@@ -666,7 +685,7 @@ void PaintController::checkUnderInvalidation()
     // This is to align with the non-under-invalidation-checking path to empty the original cached slot,
     // leaving only disappeared or invalidated display items in the old list after painting.
     m_newDisplayItemList.removeLast();
-    m_newDisplayItemList.appendByMoving(*oldItem);
+    moveItemFromCurrentListToNewList(oldItemIndex);
 
     ++m_underInvalidationCheckingBegin;
 }
@@ -679,7 +698,7 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
         const DisplayItem& displayItem = *it;
         if (i)
             stringBuilder.append(",\n");
-        stringBuilder.append(String::format("{index: %d, ", (int)i));
+        stringBuilder.append(String::format("{index: %zu, ", i));
 #ifndef NDEBUG
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
 #else

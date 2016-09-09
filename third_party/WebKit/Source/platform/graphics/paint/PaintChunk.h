@@ -10,6 +10,7 @@
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Allocator.h"
 #include "wtf/Optional.h"
+#include "wtf/Vector.h"
 #include <iosfwd>
 
 namespace blink {
@@ -99,6 +100,23 @@ inline bool operator==(const PaintChunk& a, const PaintChunk& b)
 inline bool operator!=(const PaintChunk& a, const PaintChunk& b)
 {
     return !(a == b);
+}
+
+inline bool chunkLessThanIndex(const PaintChunk& chunk, size_t index)
+{
+    return chunk.endIndex <= index;
+}
+
+inline Vector<PaintChunk>::iterator findChunkInVectorByDisplayItemIndex(Vector<PaintChunk>& chunks, size_t index)
+{
+    auto chunk = std::lower_bound(chunks.begin(), chunks.end(), index, chunkLessThanIndex);
+    DCHECK(chunk == chunks.end() || (index >= chunk->beginIndex && index < chunk->endIndex));
+    return chunk;
+}
+
+inline Vector<PaintChunk>::const_iterator findChunkInVectorByDisplayItemIndex(const Vector<PaintChunk>& chunks, size_t index)
+{
+    return findChunkInVectorByDisplayItemIndex(const_cast<Vector<PaintChunk>&>(chunks), index);
 }
 
 // Redeclared here to avoid ODR issues.

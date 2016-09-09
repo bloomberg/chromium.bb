@@ -49,7 +49,7 @@ public:
     Vector<PaintChunk>& paintChunks() { return m_paintChunks; }
     const Vector<PaintChunk>& paintChunks() const { return m_paintChunks; }
 
-    Vector<PaintChunk>::const_iterator findChunkByDisplayItemIndex(size_t) const;
+    Vector<PaintChunk>::const_iterator findChunkByDisplayItemIndex(size_t index) const { return findChunkInVectorByDisplayItemIndex(m_paintChunks, index); }
 
     bool isSuitableForGpuRasterization() const { return m_isSuitableForGpuRasterization; }
 

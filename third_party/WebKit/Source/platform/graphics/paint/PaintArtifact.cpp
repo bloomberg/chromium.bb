@@ -77,20 +77,6 @@ PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source)
     return *this;
 }
 
-static bool compareChunkAndIndex(const PaintChunk& chunk, size_t index)
-{
-    return chunk.endIndex <= index;
-}
-
-Vector<PaintChunk>::const_iterator PaintArtifact::findChunkByDisplayItemIndex(size_t index) const
-{
-    auto chunkIt = std::lower_bound(m_paintChunks.begin(), m_paintChunks.end(), index, compareChunkAndIndex);
-    DCHECK(chunkIt != m_paintChunks.end());
-    DCHECK(index >= chunkIt->beginIndex);
-    DCHECK(index < chunkIt->endIndex);
-    return chunkIt;
-}
-
 void PaintArtifact::reset()
 {
     m_displayItemList.clear();

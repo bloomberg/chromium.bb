@@ -79,7 +79,7 @@ public:
 
         ensureNewDisplayItemListInitialCapacity();
         DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(std::forward<Args>(args)...);
-        processNewItem(displayItem, NewPainting);
+        processNewItem(displayItem);
     }
 
     // Creates and appends an ending display item to pair with a preceding
@@ -168,7 +168,7 @@ protected:
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
-        , m_currentChunkIsFromCachedSubsequence(true)
+        , m_currentCachedSubsequenceBeginIndexInNewList(kNotFound)
 #ifndef NDEBUG
         , m_numSequentialMatches(0)
         , m_numOutOfOrderMatches(0)
@@ -191,8 +191,8 @@ private:
     }
 
     // Set new item state (cache skipping, etc) for a new item.
-    enum NewItemSource { FromCachedItem, FromCachedSubsequence, NewPainting };
-    void processNewItem(DisplayItem&, NewItemSource);
+    void processNewItem(DisplayItem&);
+    DisplayItem& moveItemFromCurrentListToNewList(size_t);
 
     void showDebugDataInternal(bool showPictures) const;
     String displayItemListAsDebugString(const DisplayItemList&, bool showPictures) const;
@@ -214,6 +214,8 @@ private:
 
     void generateChunkRasterInvalidationRects(PaintChunk& newChunk);
     void generateChunkRasterInvalidationRectsComparingOldChunk(PaintChunk& newChunk, const PaintChunk& oldChunk);
+    void generateChunkRasterInvalidationRectsForReorderedItems(PaintChunk& newChunk, const PaintChunk& oldChunk,
+        Vector<size_t>::const_iterator, Vector<size_t>::const_iterator, Vector<size_t>::const_iterator, Vector<size_t>::const_iterator);
 
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).
@@ -228,6 +230,11 @@ private:
     // Data being used to build the next paint artifact.
     DisplayItemList m_newDisplayItemList;
     PaintChunker m_newPaintChunks;
+
+    // Stores indices into m_newDisplayItemList for display items that have been moved from
+    // m_currentPaintArtifact.getDisplayItemList(), indexed by the positions of the display
+    // items before move. The values are undefined for display items that are not moved.
+    Vector<size_t> m_itemsMovedIntoNewList;
 
     // Allow display item construction to be disabled to isolate the costs of construction
     // in performance metrics.
@@ -264,7 +271,7 @@ private:
     // - chunks are matched not only for requests of cached display items, but also non-cached display items.
     IndicesByClientMap m_outOfOrderChunkIndices;
 
-    bool m_currentChunkIsFromCachedSubsequence;
+    size_t m_currentCachedSubsequenceBeginIndexInNewList;
     size_t m_nextChunkToMatch;
 
     DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;

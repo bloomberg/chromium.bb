@@ -1422,33 +1422,45 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsFullLayout();
     }
 
-    // If transform changed, and the layer does not paint into its own separate backing, then we need to invalidate paints.
-    if (diff.transformChanged()) {
-        // Text nodes share style with their parents but transforms don't apply to them,
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        // Text nodes share style with their parents but the checked styles don't apply to them,
         // hence the !isText() check.
-        if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsPaintInvalidationSubtree();
-    }
+        if (!isText()
+            && (diff.transformChanged() || diff.opacityChanged() || diff.zIndexChanged() || diff.filterChanged() || diff.backdropFilterChanged())) {
+            // We don't need to invalidate paint of objects on SPv2 when only paint property or
+            // paint order change. Mark the painting layer needing repaint for changed paint
+            // property or paint order. Raster invalidation will be issued if needed during paint.
+            ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
+        }
+    } else {
+        // If transform changed, and the layer does not paint into its own separate backing, then we need to invalidate paints.
+        if (diff.transformChanged()) {
+            // Text nodes share style with their parents but transforms don't apply to them,
+            // hence the !isText() check.
+            if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
+                diff.setNeedsPaintInvalidationSubtree();
+        }
 
-    // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
-    // ignoring text nodes)
-    if (diff.opacityChanged() || diff.zIndexChanged()) {
-        if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsPaintInvalidationSubtree();
-    }
+        // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
+        // ignoring text nodes)
+        if (diff.opacityChanged() || diff.zIndexChanged()) {
+            if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
+                diff.setNeedsPaintInvalidationSubtree();
+        }
 
-    // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
-    if (diff.filterChanged() && hasLayer()) {
-        PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
-        if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
-            diff.setNeedsPaintInvalidationSubtree();
-    }
+        // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
+        if (diff.filterChanged() && hasLayer()) {
+            PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
+            if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
+                diff.setNeedsPaintInvalidationSubtree();
+        }
 
-    // If backdrop filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
-    if (diff.backdropFilterChanged() && hasLayer()) {
-        PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
-        if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithBackdropFilters())
-            diff.setNeedsPaintInvalidationSubtree();
+        // If backdrop filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
+        if (diff.backdropFilterChanged() && hasLayer()) {
+            PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
+            if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithBackdropFilters())
+                diff.setNeedsPaintInvalidationSubtree();
+        }
     }
 
     // Optimization: for decoration/color property changes, invalidation is only needed if we have style or text affected by these properties.
