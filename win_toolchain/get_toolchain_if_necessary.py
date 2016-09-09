@@ -210,11 +210,6 @@ def SaveTimestampsAndHash(root, sha1):
 def HaveSrcInternalAccess():
   """Checks whether access to src-internal is available."""
   with open(os.devnull, 'w') as nul:
-    if subprocess.call(
-        ['svn', 'ls', '--non-interactive',
-         'svn://svn.chromium.org/chrome-internal/trunk/src-internal/'],
-        shell=True, stdin=nul, stdout=nul, stderr=nul) == 0:
-      return True
     return subprocess.call(
         ['git', '-c', 'core.askpass=true', 'remote', 'show',
          'https://chrome-internal.googlesource.com/chrome/src-internal/'],
