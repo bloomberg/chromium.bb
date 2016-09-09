@@ -293,18 +293,19 @@ public class InfoBarContainer extends SwipableOverlayView {
     /**
      * @return True if the container has any InfoBars.
      */
+    @CalledByNative
     public boolean hasInfoBars() {
         return !mInfoBars.isEmpty();
     }
 
     /**
-     * @return True if the next infobar added to this container will be visible, false otherwise.
+     * @return Pointer to the native InfoBarAndroid object which is currently at the top of the
+     *         infobar stack, or 0 if there are no infobars.
      */
     @CalledByNative
-    public boolean nextInfoBarWillBeVisible() {
-        if (hasInfoBars()) return false;
-
-        return willBeVisible();
+    private long getTopNativeInfoBarPtr() {
+        if (!hasInfoBars()) return 0;
+        return mInfoBars.get(0).getNativeInfoBarPtr();
     }
 
     /**

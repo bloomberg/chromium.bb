@@ -136,6 +136,10 @@ public abstract class InfoBar implements InfoBarView {
         return false;
     }
 
+    long getNativeInfoBarPtr() {
+        return mNativeInfoBarPtr;
+    }
+
     void setInfoBarContainer(InfoBarContainer container) {
         mContainer = container;
     }

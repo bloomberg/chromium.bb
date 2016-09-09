@@ -19433,8 +19433,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dominickn@chromium.org</owner>
   <summary>
     Records how many times a particular infobar was displayed in a hidden state
-    due to at least one other infobar existing or because it was auto-hidden.
-    Only recorded on Android.
+    due to at least one other infobar existing. If there are no existing
+    infobars, but the user scrolls at the exact moment a new infobar is added,
+    the infobar may be hidden, but not recorded in this metric. Reliably
+    triggering and detecting this combination is tricky so it isn't done. Only
+    recorded on Android.
+  </summary>
+</histogram>
+
+<histogram name="InfoBar.Shown.Hiding" enum="InfoBarIdentifier">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records how many times a particular infobar was visible and hiding a new
+    infobar behind it. Only recorded on Android.
   </summary>
 </histogram>
 
@@ -19443,8 +19455,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dominickn@chromium.org</owner>
   <summary>
     Records how many times a particular infobar was displayed in a visible state
-    due to no other infobars existing and no auto-hiding. Only recorded on
-    Android.
+    due to no other infobars existing. If there are no existing infobars, but
+    the user scrolls at the exact moment a new infobar is added, the infobar may
+    be hidden, but recorded here as visible. Reliably triggering and detecting
+    this combination is tricky so it isn't done. Only recorded on Android.
   </summary>
 </histogram>
 

@@ -99,9 +99,6 @@ public abstract class SwipableOverlayView extends FrameLayout {
     // The ContentViewCore to which the overlay is added.
     private ContentViewCore mContentViewCore;
 
-    // True if the View is visible, false otherwise.
-    private boolean mWillBeVisible;
-
     /**
      * Creates a SwipableOverlayView.
      * @param context Context for acquiring resources.
@@ -114,7 +111,6 @@ public abstract class SwipableOverlayView extends FrameLayout {
         mLayoutChangeListener = createLayoutChangeListener();
         mAnimatorListener = createAnimatorListener();
         mInterpolator = new DecelerateInterpolator(1.0f);
-        mWillBeVisible = true;
 
         // We make this view 'draw' to provide a placeholder for its animations.
         setWillNotDraw(false);
@@ -139,13 +135,6 @@ public abstract class SwipableOverlayView extends FrameLayout {
      */
     protected ContentViewCore getContentViewCore() {
         return mContentViewCore;
-    }
-
-    /**
-     * @return true if this View is or will shortly be visible, false otherwise.
-     */
-    protected boolean willBeVisible() {
-        return mWillBeVisible;
     }
 
     protected void addToParentView(TabContentViewParent parentView) {
@@ -321,7 +310,6 @@ public abstract class SwipableOverlayView extends FrameLayout {
         float yDifference = Math.abs(translationY - getTranslationY()) / mTotalHeight;
         long duration = Math.max(0, (long) (ANIMATION_DURATION_MS * yDifference));
 
-        mWillBeVisible = visible;
         mCurrentAnimation = ObjectAnimator.ofFloat(this, View.TRANSLATION_Y, translationY);
         mCurrentAnimation.setDuration(duration);
         mCurrentAnimation.addListener(mAnimatorListener);

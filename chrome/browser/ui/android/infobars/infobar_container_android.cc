@@ -64,12 +64,20 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  if (Java_InfoBarContainer_nextInfoBarWillBeVisible(
+  if (Java_InfoBarContainer_hasInfoBars(
           env, weak_java_infobar_container_.get(env))) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Visible",
-                                android_bar->delegate()->GetIdentifier());
-  } else {
     UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Hidden",
+                                android_bar->delegate()->GetIdentifier());
+    uintptr_t native_ptr = Java_InfoBarContainer_getTopNativeInfoBarPtr(
+        env, weak_java_infobar_container_.get(env));
+    if (native_ptr) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Hiding",
+                                  reinterpret_cast<InfoBarAndroid*>(native_ptr)
+                                      ->delegate()
+                                      ->GetIdentifier());
+    }
+  } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Visible",
                                 android_bar->delegate()->GetIdentifier());
   }
 
