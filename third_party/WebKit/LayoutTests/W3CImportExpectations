@@ -446,6 +446,7 @@ imported/wpt/html/semantics/text-level-semantics/the-a-element/a-stringifier.htm
 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
+imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
 imported/wpt/dom/nodes/Document-createElement-namespace.html [ Skip ]
 imported/wpt/dom/nodes/Element-getElementsByTagName-change-document-HTMLNess.html [ Skip ]
 imported/wpt/dom/nodes/Node-isEqualNode-xhtml.xhtml [ Skip ]
