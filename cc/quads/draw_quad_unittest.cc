@@ -946,7 +946,8 @@ TEST(DrawQuadTest, LargestQuadType) {
         largest = std::max(largest, sizeof(StreamVideoDrawQuad));
         break;
       case DrawQuad::YUV_VIDEO_CONTENT:
-        largest = std::max(largest, sizeof(YUVVideoDrawQuad));
+        largest = std::max(largest,
+                           sizeof(YUVVideoDrawQuad) + sizeof(gfx::ColorSpace));
         break;
       case DrawQuad::INVALID:
         break;

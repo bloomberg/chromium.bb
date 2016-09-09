@@ -19,7 +19,8 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 namespace {
-const size_t kLargestDrawQuadSize = sizeof(cc::YUVVideoDrawQuad);
+const size_t kLargestDrawQuadSize =
+    sizeof(cc::YUVVideoDrawQuad) + sizeof(gfx::ColorSpace);
 }  // namespace
 
 namespace cc {
