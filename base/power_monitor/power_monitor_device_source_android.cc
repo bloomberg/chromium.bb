@@ -23,13 +23,9 @@ void OnBatteryChargingChanged(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   ProcessPowerEventHelper(PowerMonitorSource::POWER_STATE_EVENT);
 }
 
-void OnMainActivityResumed(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  ProcessPowerEventHelper(PowerMonitorSource::RESUME_EVENT);
-}
-
-void OnMainActivitySuspended(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  ProcessPowerEventHelper(PowerMonitorSource::SUSPEND_EVENT);
-}
+// Note: Android does not have the concept of suspend / resume as it's known by
+// other platforms. Thus we do not send Suspend/Resume notifications. See
+// http://crbug.com/644515
 
 }  // namespace android
 

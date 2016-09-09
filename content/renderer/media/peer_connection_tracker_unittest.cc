@@ -88,12 +88,7 @@ TEST(PeerConnectionTrackerTest, OnSuspend) {
   tracker.OverrideSendTargetForTesting(&target_thread);
   EXPECT_CALL(target_thread, OnAddPeerConnection(_));
   tracker.RegisterPeerConnection(&pc_handler, config, constraints, nullptr);
-// Back to the test.
-#if defined(OS_ANDROID)
-  EXPECT_CALL(pc_handler, CloseClientPeerConnection()).Times(0);
-#else
   EXPECT_CALL(pc_handler, CloseClientPeerConnection());
-#endif
   std::unique_ptr<IPC::Message> message(new PeerConnectionTracker_OnSuspend());
   tracker.OnControlMessageReceived(*message.get());
 }

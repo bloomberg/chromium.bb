@@ -19,8 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
  * Integrates native PowerMonitor with the java side.
  */
 @JNINamespace("base::android")
-public class PowerMonitor implements ApplicationStatus.ApplicationStateListener {
-    private static final long SUSPEND_DELAY_MS = 1 * 60 * 1000;  // 1 minute.
+public class PowerMonitor  {
     private static class LazyHolder {
         private static final PowerMonitor INSTANCE = new PowerMonitor();
     }
@@ -28,17 +27,6 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
 
     private boolean mIsBatteryPower;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-
-    // Asynchronous task used to fire the "paused" event to the native side 1 minute after the main
-    // activity transitioned to the "paused" state. This event is not sent immediately because it
-    // would be too aggressive. An Android activity can be in the "paused" state quite often. This
-    // can happen when a dialog window shows up for instance.
-    private static final Runnable sSuspendTask = new Runnable() {
-        @Override
-        public void run() {
-            nativeOnMainActivitySuspended();
-        }
-    };
 
     public static void createForTests(Context context) {
         // Applications will create this once the JNI side has been fully wired up both sides. For
@@ -56,7 +44,6 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
         context = context.getApplicationContext();
         if (sInstance == null) {
             sInstance = LazyHolder.INSTANCE;
-            ApplicationStatus.registerApplicationStateListener(sInstance);
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatusIntent = context.registerReceiver(null, ifilter);
             if (batteryStatusIntent != null) onBatteryChargingChanged(batteryStatusIntent);
@@ -79,23 +66,10 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
         nativeOnBatteryChargingChanged();
     }
 
-    @Override
-    public void onApplicationStateChange(int newState) {
-        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            // Remove the callback from the message loop in case it hasn't been executed yet.
-            mHandler.removeCallbacks(sSuspendTask);
-            nativeOnMainActivityResumed();
-        } else if (newState == ApplicationState.HAS_PAUSED_ACTIVITIES) {
-            mHandler.postDelayed(sSuspendTask, SUSPEND_DELAY_MS);
-        }
-    }
-
     @CalledByNative
     private static boolean isBatteryPower() {
         return sInstance.mIsBatteryPower;
     }
 
     private static native void nativeOnBatteryChargingChanged();
-    private static native void nativeOnMainActivitySuspended();
-    private static native void nativeOnMainActivityResumed();
 }

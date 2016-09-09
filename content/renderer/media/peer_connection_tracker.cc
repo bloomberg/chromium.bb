@@ -381,15 +381,10 @@ RenderThread* PeerConnectionTracker::SendTarget() {
 
 void PeerConnectionTracker::OnSuspend() {
   DCHECK(main_thread_.CalledOnValidThread());
-// On Android 'Suspend' means more of the activity state. So it's better to
-// keep the webrtc call session when user is doing something else or screen
-// is off.
-#if !defined(OS_ANDROID)
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
   }
-#endif
 }
 
 void PeerConnectionTracker::OnStartEventLog(int peer_connection_id,

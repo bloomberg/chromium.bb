@@ -63,11 +63,6 @@ AudioRendererImpl::AudioRendererImpl(
   audio_buffer_stream_->set_config_change_observer(base::Bind(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 
-// Suspend and resume work differently on Android and are handled at a higher
-// level than here. OnSuspend() notifications will be delivered a few seconds
-// after an application is backgrounded, even if it should still be playing.
-// See http://crbug.com/623066 for more details.
-#if !defined(OS_ANDROID)
   // Tests may not have a power monitor.
   base::PowerMonitor* monitor = base::PowerMonitor::Get();
   if (!monitor)
@@ -85,7 +80,7 @@ AudioRendererImpl::AudioRendererImpl(
                            base::Bind(&base::PowerMonitor::AddObserver,
                                       base::Unretained(monitor), this));
   }
-#endif
+
   // Do not add anything below this line since the above actions are only safe
   // as the last lines of the constructor.
 }
@@ -93,10 +88,8 @@ AudioRendererImpl::AudioRendererImpl(
 AudioRendererImpl::~AudioRendererImpl() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-#if !defined(OS_ANDROID)
   if (base::PowerMonitor::Get())
     base::PowerMonitor::Get()->RemoveObserver(this);
-#endif
 
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.
