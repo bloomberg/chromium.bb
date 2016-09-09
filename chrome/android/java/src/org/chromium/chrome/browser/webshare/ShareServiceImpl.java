@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.mojom.url.mojom.Url;
 import org.chromium.mojom.webshare.ShareService;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -33,7 +34,7 @@ public class ShareServiceImpl implements ShareService {
     public void onConnectionError(MojoException e) {}
 
     @Override
-    public void share(String title, String text, final ShareResponse callback) {
+    public void share(String title, String text, Url url, final ShareResponse callback) {
         if (mActivity == null) {
             callback.call("Share failed");
             return;
@@ -49,7 +50,7 @@ public class ShareServiceImpl implements ShareService {
             }
         };
 
-        ShareHelper.share(false, false, mActivity, title, text, null, null, null, innerCallback);
+        ShareHelper.share(false, false, mActivity, title, text, url.url, null, null, innerCallback);
     }
 
     @Nullable

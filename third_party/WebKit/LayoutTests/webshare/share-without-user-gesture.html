@@ -8,7 +8,7 @@
 share_test((t, mock) => {
   return promise_rejects(
       t, new DOMException('Must be handling a user gesture to perform a share request.', 'SecurityError'),
-      navigator.share({title: 'the title', text: 'the message'}));
+      navigator.share({title: 'the title', text: 'the message', url: 'data:the url'}));
 }, 'share without a user gesture');
 
 </script>
