@@ -19,7 +19,7 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
+#include "base/win/scoped_com_initializer.h"
 #include "ui/base/win/atl_module.h"
 #endif
 
@@ -36,15 +36,8 @@ void AuraShellTestSuite::Initialize() {
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
 #if defined(OS_WIN)
-  base::win::Version version = base::win::GetVersion();
-  // Although Ash officially is only supported for users on Win7+, we still run
-  // ash_unittests on Vista builders, so we still need to initialize COM.
-  if (version >= base::win::VERSION_VISTA &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceAshToDesktop)) {
-    com_initializer_.reset(new base::win::ScopedCOMInitializer());
-    ui::win::CreateATLModuleIfNeeded();
-  }
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
+  ui::win::CreateATLModuleIfNeeded();
 #endif
 
   gfx::RegisterPathProvider();

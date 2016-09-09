@@ -149,11 +149,6 @@ void AshTestBase::SetUp() {
   gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
   gesture_config->set_long_press_time_in_ms(1000);
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
-
-#if defined(OS_WIN)
-  if (!command_line->HasSwitch(switches::kForceAshToDesktop))
-    WindowPositioner::SetMaximizeFirstWindow(true);
-#endif
 }
 
 void AshTestBase::TearDown() {
