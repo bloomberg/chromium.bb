@@ -101,11 +101,8 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState, const ShareData& s
     m_clients.add(client);
     ScriptPromise promise = resolver->promise();
 
-    m_service->Share(
-        shareData.hasTitle() ? shareData.title() : emptyString(),
-        shareData.hasText() ? shareData.text() : emptyString(),
-        doc->completeURL(shareData.url()),
-        convertToBaseCallback(WTF::bind(&ShareClientImpl::callback, wrapPersistent(client))));
+    // TODO(sammc): Use shareData.url().
+    m_service->Share(shareData.hasTitle() ? shareData.title() : emptyString(), shareData.hasText() ? shareData.text() : emptyString(), convertToBaseCallback(WTF::bind(&ShareClientImpl::callback, wrapPersistent(client))));
 
     return promise;
 }

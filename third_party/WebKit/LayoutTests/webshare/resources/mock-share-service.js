@@ -28,7 +28,7 @@ let mockShareService = loadMojoModules(
       this.router_.setIncomingReceiver(this);
     }
 
-    share(title, text, url) {
+    share(title, text) {
       let callback = null;
       let result = new Promise(resolve => {callback = resolve;});
 
@@ -37,12 +37,11 @@ let mockShareService = loadMojoModules(
         return result;
       }
 
-      let [expectedTitle, expectedText, expectedUrl, error] =
-          this.shareResultQueue_.shift();
+      let expectedTitle, expectedText, error;
+      [expectedTitle, expectedText, error] = this.shareResultQueue_.shift();
       try {
         assert_equals(title, expectedTitle);
         assert_equals(text, expectedText);
-        assert_equals(url.url, expectedUrl);
       } catch (e) {
         this.reject_(e);
         return result;
@@ -52,9 +51,8 @@ let mockShareService = loadMojoModules(
       return result;
     }
 
-    pushShareResult(expectedTitle, expectedText, expectedUrl, result) {
-      this.shareResultQueue_.push(
-          [expectedTitle, expectedText, expectedUrl, result]);
+    pushShareResult(expectedTitle, expectedText, result) {
+      this.shareResultQueue_.push([expectedTitle, expectedText, result]);
     }
   }
   return new MockShareService(mojo.frameInterfaces);

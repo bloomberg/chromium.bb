@@ -5,50 +5,15 @@
 <script src="resources/mock-share-service.js"></script>
 <script>
 
-function getAbsoluteUrl(url) {
-  return new URL(url, location).toString();
-}
-
 share_test((t, mock) => {
-  let url = 'https://www.example.com/some/path?some_query#some_fragment';
-  mock.pushShareResult('the title', 'the message', getAbsoluteUrl(url), null);
+  mock.pushShareResult('the title', 'the message', null);
   return callWithKeyDown(() => navigator.share(
-        {title: 'the title', text: 'the message', url: url}));
+        {title: 'the title', text: 'the message', url: 'the URL'}));
 }, 'successful share');
 
 share_test((t, mock) => {
-  mock.pushShareResult('', '', '', null);
+  mock.pushShareResult('', '', null);
   return callWithKeyDown(() => navigator.share({}));
 }, 'successful share with empty ShareData');
-
-share_test((t, mock) => {
-  let url = '//www.example.com/some/path?some_query#some_fragment';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), null);
-  return callWithKeyDown(() => navigator.share({url: url}));
-}, 'successful share with URL without a scheme');
-
-share_test((t, mock) => {
-  let url =  '/some/path?some_query#some_fragment';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), null);
-  return callWithKeyDown(() => navigator.share({url: url}));
-}, 'successful share with a path-only URL');
-
-share_test((t, mock) => {
-  let url = 'foo';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), null);
-  return callWithKeyDown(() => navigator.share({url: url}));
-}, 'successful share with a relative URL');
-
-share_test((t, mock) => {
-  let url = '';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), null);
-  return callWithKeyDown(() => navigator.share({url: url}));
-}, 'successful share with an empty URL');
-
-share_test((t, mock) => {
-  let url = 'data:foo';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), null);
-  return callWithKeyDown(() => navigator.share({url: url}));
-}, 'successful share with a data URL');
 
 </script>
