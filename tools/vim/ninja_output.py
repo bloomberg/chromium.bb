@@ -37,9 +37,8 @@ def GetNinjaOutputDirectory(chrome_root):
   if not output_dirs:
     for f in os.listdir(chrome_root):
       if re.match(r'out(\b|_)', f):
-        out = os.path.realpath(os.path.join(chrome_root, f))
-        if os.path.isdir(out):
-          output_dirs.append(os.path.relpath(out, start = chrome_root))
+        if os.path.isdir(os.path.join(chrome_root, f)):
+          output_dirs.append(f)
 
   def generate_paths():
     for out_dir in output_dirs:
