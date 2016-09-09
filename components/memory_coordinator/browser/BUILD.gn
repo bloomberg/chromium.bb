@@ -8,7 +8,10 @@ component("browser") {
   sources = [
     "memory_coordinator.cc",
     "memory_coordinator.h",
+    "memory_monitor.cc",
     "memory_monitor.h",
+    "memory_monitor_linux.cc",
+    "memory_monitor_linux.h",
     "memory_monitor_win.cc",
     "memory_monitor_win.h",
   ]
@@ -30,7 +33,10 @@ source_set("unit_tests") {
 
   sources = [
     "memory_coordinator_unittest.cc",
+    "memory_monitor_linux_unittest.cc",
     "memory_monitor_win_unittest.cc",
+    "test_memory_monitor.cc",
+    "test_memory_monitor.h",
   ]
 
   deps = [

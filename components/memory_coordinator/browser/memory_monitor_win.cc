@@ -15,25 +15,9 @@ namespace {
 
 const int kKBperMB = 1024;
 
-// A default implementation of MemoryMonitorWinDelegate. Used by default by
-// MemoryMonitorWin.
-class MemoryMonitorWinDelegateImpl : public MemoryMonitorWinDelegate {
- public:
-  MemoryMonitorWinDelegateImpl() {}
-  ~MemoryMonitorWinDelegateImpl() override {}
-
-  // GetSystemMemoryInfoDelegate:
-  void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) override {
-    base::GetSystemMemoryInfo(mem_info);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorWinDelegateImpl);
-};
-
 // A global static instance of the default delegate. Used by default by
 // MemoryMonitorWin.
-MemoryMonitorWinDelegateImpl g_memory_monitor_win_delegate;
+MemoryMonitorDelegate g_memory_monitor_win_delegate;
 
 }  // namespace
 
@@ -53,10 +37,9 @@ const int MemoryMonitorWin::kSmallMemoryTargetFreeMB = 200;
 // available memory, paging until that is the case.
 const int MemoryMonitorWin::kLargeMemoryTargetFreeMB = 400;
 
-MemoryMonitorWin::MemoryMonitorWin(MemoryMonitorWinDelegate* delegate,
+MemoryMonitorWin::MemoryMonitorWin(MemoryMonitorDelegate* delegate,
                                    int target_free_mb)
-    : delegate_(delegate), target_free_mb_(target_free_mb) {
-}
+    : delegate_(delegate), target_free_mb_(target_free_mb) {}
 
 int MemoryMonitorWin::GetFreeMemoryUntilCriticalMB() {
   base::SystemMemoryInfoKB mem_info = {};
@@ -68,13 +51,13 @@ int MemoryMonitorWin::GetFreeMemoryUntilCriticalMB() {
 
 // static
 std::unique_ptr<MemoryMonitorWin> MemoryMonitorWin::Create(
-    MemoryMonitorWinDelegate* delegate) {
+    MemoryMonitorDelegate* delegate) {
   return std::unique_ptr<MemoryMonitorWin>(new MemoryMonitorWin(
       delegate, GetTargetFreeMB(delegate)));
 }
 
 // static
-bool MemoryMonitorWin::IsLargeMemory(MemoryMonitorWinDelegate* delegate) {
+bool MemoryMonitorWin::IsLargeMemory(MemoryMonitorDelegate* delegate) {
   base::SystemMemoryInfoKB mem_info = {};
   delegate->GetSystemMemoryInfo(&mem_info);
   return (mem_info.total / kKBperMB) >=
@@ -82,7 +65,7 @@ bool MemoryMonitorWin::IsLargeMemory(MemoryMonitorWinDelegate* delegate) {
 }
 
 // static
-int MemoryMonitorWin::GetTargetFreeMB(MemoryMonitorWinDelegate* delegate) {
+int MemoryMonitorWin::GetTargetFreeMB(MemoryMonitorDelegate* delegate) {
   if (IsLargeMemory(delegate))
     return MemoryMonitorWin::kLargeMemoryTargetFreeMB;
   return MemoryMonitorWin::kSmallMemoryTargetFreeMB;

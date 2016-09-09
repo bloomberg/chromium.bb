@@ -14,8 +14,6 @@ struct SystemMemoryInfoKB;
 
 namespace memory_coordinator {
 
-class MemoryMonitorWinDelegate;
-
 // A memory monitor for the Windows platform. After much experimentation this
 // class uses a very simple heuristic to anticipate paging (critical memory
 // pressure). When the amount of memory available dips below a provided
@@ -28,7 +26,7 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitorWin : public MemoryMonitor {
   static const int kSmallMemoryTargetFreeMB;
   static const int kLargeMemoryTargetFreeMB;
 
-  MemoryMonitorWin(MemoryMonitorWinDelegate* delegate, int target_free_mb);
+  MemoryMonitorWin(MemoryMonitorDelegate* delegate, int target_free_mb);
   ~MemoryMonitorWin() override {}
 
   // MemoryMonitor:
@@ -40,40 +38,26 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitorWin : public MemoryMonitor {
   // Factory function. Automatically sizes |target_free_mb| based on the
   // system.
   static std::unique_ptr<MemoryMonitorWin> Create(
-      MemoryMonitorWinDelegate* delegate);
+      MemoryMonitorDelegate* delegate);
 
  protected:
   // Determines if the system is in large memory mode. Exposed so that this
   // function can be tested.
-  static bool IsLargeMemory(MemoryMonitorWinDelegate* delegate);
+  static bool IsLargeMemory(MemoryMonitorDelegate* delegate);
 
   // Determines the default target free MB value. Exposed so that this function
   // can be tested.
-  static int GetTargetFreeMB(MemoryMonitorWinDelegate* delegate);
+  static int GetTargetFreeMB(MemoryMonitorDelegate* delegate);
 
  private:
   // The delegate to be used for retrieving system memory information. Used as a
   // testing seam.
-  MemoryMonitorWinDelegate* delegate_;
+  MemoryMonitorDelegate* delegate_;
 
   // The amount of memory that the memory manager (MM) attempts to keep in a
   // free state. When less than this amount of physical memory is free, it is
   // assumed that the MM will start paging things out.
   int target_free_mb_;
-};
-
-// A delegate that wraps functions used by MemoryMonitorWin. Used as a testing
-// seam.
-class MEMORY_COORDINATOR_EXPORT MemoryMonitorWinDelegate {
- public:
-  MemoryMonitorWinDelegate() {}
-  virtual ~MemoryMonitorWinDelegate() {}
-
-  // Returns system memory information.
-  virtual void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorWinDelegate);
 };
 
 }  // namespace memory_coordinator

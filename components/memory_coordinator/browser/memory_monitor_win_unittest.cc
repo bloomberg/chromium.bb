@@ -4,7 +4,7 @@
 
 #include "components/memory_coordinator/browser/memory_monitor_win.h"
 
-#include "base/process/process_metrics.h"
+#include "components/memory_coordinator/browser/test_memory_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace memory_coordinator {
@@ -12,35 +12,15 @@ namespace memory_coordinator {
 namespace {
 
 // A delegate that allows mocking the various inputs to MemoryMonitorWin.
-class TestMemoryMonitorWinDelegate : public MemoryMonitorWinDelegate {
+class TestMemoryMonitorWinDelegate : public TestMemoryMonitorDelegate {
  public:
-  TestMemoryMonitorWinDelegate() : calls_(0) {
-    mem_info_ = {};
-  }
-
-  ~TestMemoryMonitorWinDelegate() override {}
-
-  // GetSystemMemoryInfoDelegate:
-  void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) override {
-    *mem_info = mem_info_;
-    ++calls_;
-  }
-
-  size_t calls() const { return calls_; }
-  void ResetCalls() { calls_ = 0; }
-
-  void SetTotalMemoryKB(int total_memory_kb) {
-    mem_info_.total = total_memory_kb;
-  }
+  TestMemoryMonitorWinDelegate() {}
 
   void SetFreeMemoryKB(int free_memory_kb) {
     mem_info_.free = free_memory_kb;
   }
 
  private:
-  size_t calls_;
-  base::SystemMemoryInfoKB mem_info_;
-
   DISALLOW_COPY_AND_ASSIGN(TestMemoryMonitorWinDelegate);
 };
 

@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "components/memory_coordinator/common/memory_coordinator_export.h"
 
+namespace base {
+struct SystemMemoryInfoKB;
+}
+
 namespace memory_coordinator {
 
 // A simple class that monitors the amount of free memory available on a system.
@@ -32,6 +36,22 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitor {
 
 // Factory function for creating a monitor for the current platform.
 MEMORY_COORDINATOR_EXPORT std::unique_ptr<MemoryMonitor> CreateMemoryMonitor();
+
+
+// A class for fetching system information used by a memory monitor. This can
+// be subclassed for testing or if a particular MemoryMonitor implementation
+// needs additional functionality.
+class MEMORY_COORDINATOR_EXPORT MemoryMonitorDelegate {
+ public:
+  MemoryMonitorDelegate() {}
+  virtual ~MemoryMonitorDelegate();
+
+  // Returns system memory information.
+  virtual void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorDelegate);
+};
 
 }  // namespace memory_coordinator
 
