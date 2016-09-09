@@ -150,24 +150,24 @@ TEST(LinkLoaderTest, Preload)
             hrefURL,
             dummyPageHolder->document(),
             NetworkHintsMock());
-        ASSERT(dummyPageHolder->document().fetcher());
+        ASSERT_TRUE(dummyPageHolder->document().fetcher());
         HeapListHashSet<Member<Resource>>* preloads = dummyPageHolder->document().fetcher()->preloads();
         if (testCase.expectingLoad) {
             if (!preloads)
                 fprintf(stderr, "Unexpected result %s %s %s\n", testCase.href, testCase.as, testCase.type);
-            ASSERT_NE(nullptr, preloads);
+            EXPECT_TRUE(preloads);
         } else {
-            ASSERT_EQ(nullptr, preloads);
+            EXPECT_FALSE(preloads);
         }
         if (preloads) {
             if (testCase.priority == ResourceLoadPriorityUnresolved) {
-                ASSERT_EQ((unsigned)0, preloads->size());
+                EXPECT_EQ(0u, preloads->size());
             } else {
-                ASSERT_EQ((unsigned)1, preloads->size());
+                EXPECT_EQ(1u, preloads->size());
                 if (preloads->size() > 0) {
                     Resource* resource = preloads->begin().get()->get();
-                    ASSERT_EQ(testCase.priority, resource->resourceRequest().priority());
-                    ASSERT_EQ(testCase.context, resource->resourceRequest().requestContext());
+                    EXPECT_EQ(testCase.priority, resource->resourceRequest().priority());
+                    EXPECT_EQ(testCase.context, resource->resourceRequest().requestContext());
                 }
             }
             dummyPageHolder->document().fetcher()->clearPreloads();
@@ -206,8 +206,8 @@ TEST(LinkLoaderTest, DNSPrefetch)
             hrefURL,
             dummyPageHolder->document(),
             networkHints);
-        ASSERT_FALSE(networkHints.didPreconnect());
-        ASSERT_EQ(testCase.shouldLoad, networkHints.didDnsPrefetch());
+        EXPECT_FALSE(networkHints.didPreconnect());
+        EXPECT_EQ(testCase.shouldLoad, networkHints.didDnsPrefetch());
     }
 }
 
@@ -241,9 +241,9 @@ TEST(LinkLoaderTest, Preconnect)
             hrefURL,
             dummyPageHolder->document(),
             networkHints);
-        ASSERT_EQ(testCase.shouldLoad, networkHints.didPreconnect());
-        ASSERT_EQ(testCase.isHTTPS, networkHints.isHTTPS());
-        ASSERT_EQ(testCase.isCrossOrigin, networkHints.isCrossOrigin());
+        EXPECT_EQ(testCase.shouldLoad, networkHints.didPreconnect());
+        EXPECT_EQ(testCase.isHTTPS, networkHints.isHTTPS());
+        EXPECT_EQ(testCase.isCrossOrigin, networkHints.isCrossOrigin());
     }
 }
 

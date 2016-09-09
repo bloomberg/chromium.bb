@@ -108,9 +108,9 @@ TEST_F(MemoryCacheTest, CapacityAccounting)
     const size_t minDeadCapacity = sizeMax / 16;
     const size_t maxDeadCapacity = sizeMax / 8;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
-    ASSERT_EQ(totalCapacity, memoryCache()->capacity());
-    ASSERT_EQ(minDeadCapacity, memoryCache()->minDeadCapacity());
-    ASSERT_EQ(maxDeadCapacity, memoryCache()->maxDeadCapacity());
+    EXPECT_EQ(totalCapacity, memoryCache()->capacity());
+    EXPECT_EQ(minDeadCapacity, memoryCache()->minDeadCapacity());
+    EXPECT_EQ(maxDeadCapacity, memoryCache()->maxDeadCapacity());
 }
 
 TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
@@ -126,19 +126,19 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
         FakeResource::create(ResourceRequest("http://test/resource"), Resource::Raw);
     cachedResource->fakeEncodedSize(resourceSize1);
 
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
     memoryCache()->add(cachedResource);
-    ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(cachedResource->size(), memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 
     Persistent<MockResourceClient> client = new MockResourceClient(cachedResource);
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(cachedResource->size(), memoryCache()->liveSize());
 
     cachedResource->fakeEncodedSize(resourceSize2);
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(cachedResource->size(), memoryCache()->liveSize());
 }
 
 // Verifies that dead resources that exceed dead resource capacity are evicted
@@ -158,23 +158,23 @@ static void TestDeadResourceEviction(Resource* resource1, Resource* resource2)
 
     // The resource size has to be nonzero for this test to be meaningful, but
     // we do not rely on it having any particular value.
-    ASSERT_GT(resource1->size(), 0u);
-    ASSERT_GT(resource2->size(), 0u);
+    EXPECT_GT(resource1->size(), 0u);
+    EXPECT_GT(resource2->size(), 0u);
 
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 
     memoryCache()->add(resource1);
-    ASSERT_EQ(resource1->size(), memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(resource1->size(), memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 
     memoryCache()->add(resource2);
-    ASSERT_EQ(resource1->size() + resource2->size(), memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(resource1->size() + resource2->size(), memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 
     memoryCache()->prune();
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 }
 
 TEST_F(MemoryCacheTest, DeadResourceEviction_Basic)
@@ -200,30 +200,30 @@ static void runTask1(Resource* live, Resource* dead)
 {
     // The resource size has to be nonzero for this test to be meaningful, but
     // we do not rely on it having any particular value.
-    ASSERT_GT(live->size(), 0u);
-    ASSERT_GT(dead->size(), 0u);
+    EXPECT_GT(live->size(), 0u);
+    EXPECT_GT(dead->size(), 0u);
 
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 
     memoryCache()->add(dead);
     memoryCache()->add(live);
     memoryCache()->updateDecodedResource(live, UpdateForPropertyChange);
-    ASSERT_EQ(dead->size(), memoryCache()->deadSize());
-    ASSERT_EQ(live->size(), memoryCache()->liveSize());
-    ASSERT_GT(live->decodedSize(), 0u);
+    EXPECT_EQ(dead->size(), memoryCache()->deadSize());
+    EXPECT_EQ(live->size(), memoryCache()->liveSize());
+    EXPECT_GT(live->decodedSize(), 0u);
 
     memoryCache()->prune(); // Dead resources are pruned immediately
-    ASSERT_EQ(dead->size(), memoryCache()->deadSize());
-    ASSERT_EQ(live->size(), memoryCache()->liveSize());
-    ASSERT_GT(live->decodedSize(), 0u);
+    EXPECT_EQ(dead->size(), memoryCache()->deadSize());
+    EXPECT_EQ(live->size(), memoryCache()->liveSize());
+    EXPECT_GT(live->decodedSize(), 0u);
 }
 
 static void runTask2(unsigned liveSizeWithoutDecode)
 {
     // Next task: now, the live resource was evicted.
-    ASSERT_EQ(0u, memoryCache()->deadSize());
-    ASSERT_EQ(liveSizeWithoutDecode, memoryCache()->liveSize());
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(liveSizeWithoutDecode, memoryCache()->liveSize());
 }
 
 static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Resource* cachedLiveResource)
@@ -307,30 +307,30 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
     // Call prune. There is nothing to prune, but this will initialize
     // the prune timestamp, allowing future prunes to be deferred.
     memoryCache()->prune();
-    ASSERT_GT(resource1->decodedSize(), 0u);
-    ASSERT_GT(resource2->decodedSize(), 0u);
-    ASSERT_EQ(memoryCache()->deadSize(), 0u);
-    ASSERT_EQ(memoryCache()->liveSize(), resource1->size() + resource2->size());
+    EXPECT_GT(resource1->decodedSize(), 0u);
+    EXPECT_GT(resource2->decodedSize(), 0u);
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(resource1->size() + resource2->size(), memoryCache()->liveSize());
 
     // Removing the client from resource1 should result in all resources
     // remaining in cache since the prune is deferred.
     client1->removeAsClient();
-    ASSERT_GT(resource1->decodedSize(), 0u);
-    ASSERT_GT(resource2->decodedSize(), 0u);
-    ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
-    ASSERT_EQ(memoryCache()->liveSize(), resource2->size());
-    ASSERT_TRUE(memoryCache()->contains(resource1));
-    ASSERT_TRUE(memoryCache()->contains(resource2));
+    EXPECT_GT(resource1->decodedSize(), 0u);
+    EXPECT_GT(resource2->decodedSize(), 0u);
+    EXPECT_EQ(resource1->size(), memoryCache()->deadSize());
+    EXPECT_EQ(resource2->size(), memoryCache()->liveSize());
+    EXPECT_TRUE(memoryCache()->contains(resource1));
+    EXPECT_TRUE(memoryCache()->contains(resource2));
 
     // Removing the client from resource2 should result in immediate
     // eviction of resource2 because we are over the prune deferral limit.
     client2->removeAsClient();
-    ASSERT_GT(resource1->decodedSize(), 0u);
-    ASSERT_GT(resource2->decodedSize(), 0u);
-    ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
-    ASSERT_EQ(memoryCache()->liveSize(), 0u);
-    ASSERT_TRUE(memoryCache()->contains(resource1));
-    ASSERT_FALSE(memoryCache()->contains(resource2));
+    EXPECT_GT(resource1->decodedSize(), 0u);
+    EXPECT_GT(resource2->decodedSize(), 0u);
+    EXPECT_EQ(resource1->size(), memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
+    EXPECT_TRUE(memoryCache()->contains(resource1));
+    EXPECT_FALSE(memoryCache()->contains(resource2));
 }
 
 TEST_F(MemoryCacheTest, ClientRemoval_Basic)
@@ -430,7 +430,7 @@ TEST_F(MemoryCacheTest, FragmentIdentifier)
     const KURL url1 = KURL(ParsedURLString, "http://test/resource#foo");
     FakeResource* resource = FakeResource::create(ResourceRequest(url1), Resource::Raw);
     memoryCache()->add(resource);
-    ASSERT_TRUE(memoryCache()->contains(resource));
+    EXPECT_TRUE(memoryCache()->contains(resource));
 
     EXPECT_EQ(resource, memoryCache()->resourceForURL(url1));
 
@@ -449,12 +449,12 @@ TEST_F(MemoryCacheTest, MakeLiveAndDead)
     const size_t liveSize = memoryCache()->liveSize();
 
     memoryCache()->makeLive(resource);
-    ASSERT_EQ(deadSize, memoryCache()->deadSize() + resource->size());
-    ASSERT_EQ(liveSize, memoryCache()->liveSize() - resource->size());
+    EXPECT_EQ(deadSize, memoryCache()->deadSize() + resource->size());
+    EXPECT_EQ(liveSize, memoryCache()->liveSize() - resource->size());
 
     memoryCache()->makeDead(resource);
-    ASSERT_EQ(deadSize, memoryCache()->deadSize());
-    ASSERT_EQ(liveSize, memoryCache()->liveSize());
+    EXPECT_EQ(deadSize, memoryCache()->deadSize());
+    EXPECT_EQ(liveSize, memoryCache()->liveSize());
 }
 
 TEST_F(MemoryCacheTest, RemoveURLFromCache)
@@ -462,7 +462,7 @@ TEST_F(MemoryCacheTest, RemoveURLFromCache)
     const KURL url1 = KURL(ParsedURLString, "http://test/resource1");
     FakeResource* resource1 = FakeResource::create(ResourceRequest(url1), Resource::Raw);
     memoryCache()->add(resource1);
-    ASSERT_TRUE(memoryCache()->contains(resource1));
+    EXPECT_TRUE(memoryCache()->contains(resource1));
 
     memoryCache()->removeURLFromCache(url1);
     EXPECT_FALSE(memoryCache()->contains(resource1));
@@ -470,7 +470,7 @@ TEST_F(MemoryCacheTest, RemoveURLFromCache)
     const KURL url2 = KURL(ParsedURLString, "http://test/resource2#foo");
     FakeResource* resource2 = FakeResource::create(ResourceRequest(url2), Resource::Raw);
     memoryCache()->add(resource2);
-    ASSERT_TRUE(memoryCache()->contains(resource2));
+    EXPECT_TRUE(memoryCache()->contains(resource2));
 
     memoryCache()->removeURLFromCache(url2);
     EXPECT_FALSE(memoryCache()->contains(resource2));

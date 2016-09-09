@@ -121,8 +121,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
     Resource* resource = fetcher->requestResource(fetchRequest, TestResourceFactory());
-    EXPECT_EQ(resource, static_cast<Resource*>(nullptr));
-    EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(nullptr));
+    EXPECT_FALSE(resource);
+    EXPECT_FALSE(memoryCache()->resourceForURL(secureURL));
 
     // Start by calling startLoad() directly, rather than via requestResource().
     // This shouldn't crash.
@@ -237,7 +237,7 @@ public:
 
     void notifyFinished(Resource* resource) override
     {
-        ASSERT_EQ(m_resource, resource);
+        EXPECT_EQ(m_resource, resource);
         ResourceFetcherTestMockFetchContext* context = ResourceFetcherTestMockFetchContext::create();
         context->setCachePolicy(CachePolicyRevalidate);
         ResourceFetcher* fetcher2 = ResourceFetcher::create(context);

@@ -186,7 +186,7 @@ protected:
 
         fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
 
-        EXPECT_STREQ(expectedURL.getString().utf8().data(), fetchRequest.resourceRequest().url().getString().utf8().data());
+        EXPECT_EQ(expectedURL.getString(), fetchRequest.resourceRequest().url().getString());
         EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
         EXPECT_EQ(expectedURL.host(), fetchRequest.resourceRequest().url().host());
         EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
@@ -204,13 +204,13 @@ protected:
 
         fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
 
-        EXPECT_STREQ(shouldPrefer ? "1" : "",
-            fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests).utf8().data());
+        EXPECT_EQ(shouldPrefer ? String("1") : String(),
+            fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests));
 
         // Calling upgradeInsecureRequest more than once shouldn't affect the header.
         if (shouldPrefer) {
             fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
-            EXPECT_STREQ("1", fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests).utf8().data());
+            EXPECT_EQ("1", fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests));
         }
     }
 
@@ -337,8 +337,8 @@ protected:
         }
         fetchContext->addClientHintsIfNecessary(fetchRequest);
 
-        EXPECT_STREQ(isPresent ? headerValue : "",
-            fetchRequest.resourceRequest().httpHeaderField(headerName).utf8().data());
+        EXPECT_EQ(isPresent ? String(headerValue) : String(),
+            fetchRequest.resourceRequest().httpHeaderField(headerName));
     }
 };
 
@@ -492,7 +492,7 @@ TEST_F(FrameFetchContextTest, PopulateRequestData)
         // Compare the populated |requestorOrigin| against |test.serializedOrigin|
         fetchContext->populateRequestData(request);
         if (strlen(test.serializedOrigin) == 0)
-            EXPECT_EQ(nullptr, request.requestorOrigin().get());
+            EXPECT_FALSE(request.requestorOrigin().get());
         else
             EXPECT_EQ(String(test.serializedOrigin), request.requestorOrigin()->toString());
 
@@ -523,19 +523,19 @@ TEST_F(FrameFetchContextTest, EnableDataSaver)
     settings->setDataSaverEnabled(true);
     ResourceRequest resourceRequest("http://www.example.com");
     fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
-    EXPECT_STREQ("on", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+    EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
 
     // Subsequent call to addAdditionalRequestHeaders should not append to the
     // save-data header.
     fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
-    EXPECT_STREQ("on", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+    EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
 }
 
 TEST_F(FrameFetchContextTest, DisabledDataSaver)
 {
     ResourceRequest resourceRequest("http://www.example.com");
     fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
-    EXPECT_STREQ("", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+    EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 }
 
 // Tests that when a resource with certificate errors is loaded from the
@@ -590,11 +590,11 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)
         SCOPED_TRACE(test.url);
         ResourceRequest mainRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
-        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, mainRequest.isExternalRequest());
 
         ResourceRequest subRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
-        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, subRequest.isExternalRequest());
     }
 }
 
@@ -638,11 +638,11 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
         SCOPED_TRACE(test.url);
         ResourceRequest mainRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
-        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, mainRequest.isExternalRequest());
 
         ResourceRequest subRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
-        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, subRequest.isExternalRequest());
     }
 }
 
@@ -685,11 +685,11 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument)
     for (const auto& test : cases) {
         ResourceRequest mainRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(mainRequest, FetchMainResource);
-        EXPECT_EQ(mainRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, mainRequest.isExternalRequest());
 
         ResourceRequest subRequest(test.url);
         fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
-        EXPECT_EQ(subRequest.isExternalRequest(), test.isExternalExpectation);
+        EXPECT_EQ(test.isExternalExpectation, subRequest.isExternalRequest());
     }
 }
 

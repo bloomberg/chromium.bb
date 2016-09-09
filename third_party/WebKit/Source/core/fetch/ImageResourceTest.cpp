@@ -198,10 +198,10 @@ TEST(ImageResourceTest, MultipartImage)
     ResourceResponse multipartResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String());
     multipartResponse.setMultipartBoundary("boundary", strlen("boundary"));
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(multipartResponse), nullptr);
-    ASSERT_FALSE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client->imageChangedCount(), 0);
-    ASSERT_FALSE(client->notifyFinishedCalled());
+    EXPECT_FALSE(cachedImage->resourceBuffer());
+    EXPECT_FALSE(cachedImage->hasImage());
+    EXPECT_EQ(0, client->imageChangedCount());
+    EXPECT_FALSE(client->notifyFinishedCalled());
     EXPECT_EQ("multipart/x-mixed-replace", cachedImage->response().mimeType());
 
     const char firstPart[] =
@@ -209,43 +209,43 @@ TEST(ImageResourceTest, MultipartImage)
         "Content-Type: image/svg+xml\n\n";
     cachedImage->appendData(firstPart, strlen(firstPart));
     // Send the response for the first real part. No image or data buffer is created.
-    ASSERT_FALSE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client->imageChangedCount(), 0);
-    ASSERT_FALSE(client->notifyFinishedCalled());
+    EXPECT_FALSE(cachedImage->resourceBuffer());
+    EXPECT_FALSE(cachedImage->hasImage());
+    EXPECT_EQ(0, client->imageChangedCount());
+    EXPECT_FALSE(client->notifyFinishedCalled());
     EXPECT_EQ("image/svg+xml", cachedImage->response().mimeType());
 
     const char secondPart[] = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>\n";
     // The first bytes arrive. The data buffer is created, but no image is created.
     cachedImage->appendData(secondPart, strlen(secondPart));
-    ASSERT_TRUE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client->imageChangedCount(), 0);
-    ASSERT_FALSE(client->notifyFinishedCalled());
+    EXPECT_TRUE(cachedImage->resourceBuffer());
+    EXPECT_FALSE(cachedImage->hasImage());
+    EXPECT_EQ(0, client->imageChangedCount());
+    EXPECT_FALSE(client->notifyFinishedCalled());
 
     // Add a client to check an assertion error doesn't happen
     // (crbug.com/630983).
     Persistent<MockImageResourceClient> client2 = new MockImageResourceClient(cachedImage);
-    ASSERT_EQ(client2->imageChangedCount(), 0);
-    ASSERT_FALSE(client2->notifyFinishedCalled());
+    EXPECT_EQ(0, client2->imageChangedCount());
+    EXPECT_FALSE(client2->notifyFinishedCalled());
 
     const char thirdPart[] = "--boundary";
     cachedImage->appendData(thirdPart, strlen(thirdPart));
     ASSERT_TRUE(cachedImage->resourceBuffer());
-    ASSERT_EQ(cachedImage->resourceBuffer()->size(), strlen(secondPart) - 1);
+    EXPECT_EQ(strlen(secondPart) - 1, cachedImage->resourceBuffer()->size());
 
     // This part finishes. The image is created, callbacks are sent, and the data buffer is cleared.
     cachedImage->loader()->didFinishLoading(nullptr, 0.0, 0);
-    ASSERT_TRUE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->errorOccurred());
+    EXPECT_TRUE(cachedImage->resourceBuffer());
+    EXPECT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_EQ(cachedImage->getImage()->width(), 1);
-    ASSERT_EQ(cachedImage->getImage()->height(), 1);
-    ASSERT_EQ(client->imageChangedCount(), 1);
-    ASSERT_TRUE(client->notifyFinishedCalled());
-    ASSERT_EQ(client2->imageChangedCount(), 1);
-    ASSERT_TRUE(client2->notifyFinishedCalled());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_EQ(1, cachedImage->getImage()->width());
+    EXPECT_EQ(1, cachedImage->getImage()->height());
+    EXPECT_EQ(1, client->imageChangedCount());
+    EXPECT_TRUE(client->notifyFinishedCalled());
+    EXPECT_EQ(1, client2->imageChangedCount());
+    EXPECT_TRUE(client2->notifyFinishedCalled());
 }
 
 TEST(ImageResourceTest, CancelOnDetach)
@@ -268,12 +268,12 @@ TEST(ImageResourceTest, CancelOnDetach)
     // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
     client->removeAsClient();
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
-    EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
+    EXPECT_TRUE(memoryCache()->resourceForURL(testURL));
 
     // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
     blink::testing::runPendingTasks();
     EXPECT_EQ(Resource::LoadError, cachedImage->getStatus());
-    EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
+    EXPECT_FALSE(memoryCache()->resourceForURL(testURL));
 
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 }
@@ -292,23 +292,23 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()), nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
     cachedImage->finish();
-    ASSERT_FALSE(cachedImage->errorOccurred());
+    EXPECT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_TRUE(client->notifyFinishedCalled());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_TRUE(client->notifyFinishedCalled());
 
     // The prune comes when the ImageResource still has clients. The image should not be deleted.
     cachedImage->prune();
-    ASSERT_TRUE(cachedImage->isAlive());
+    EXPECT_TRUE(cachedImage->isAlive());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
 
     // The ImageResource no longer has clients. The decoded image data should be
     // deleted by prune.
     client->removeAsClient();
     cachedImage->prune();
-    ASSERT_FALSE(cachedImage->isAlive());
-    ASSERT_TRUE(cachedImage->hasImage());
+    EXPECT_FALSE(cachedImage->isAlive());
+    EXPECT_TRUE(cachedImage->hasImage());
     // TODO(hajimehoshi): Should check cachedImage doesn't have decoded image
     // data.
 }
@@ -325,12 +325,12 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()), nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
     cachedImage->finish();
-    ASSERT_FALSE(cachedImage->errorOccurred());
+    EXPECT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_EQ(client->imageChangedCount(), 2);
-    ASSERT_TRUE(client->notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_EQ(2, client->imageChangedCount());
+    EXPECT_TRUE(client->notifyFinishedCalled());
+    EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFi)
@@ -353,30 +353,30 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     cachedImage->responseReceived(resourceResponse, nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
     cachedImage->finish();
-    ASSERT_FALSE(cachedImage->errorOccurred());
+    EXPECT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_EQ(client->imageChangedCount(), 2);
-    ASSERT_TRUE(client->notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_EQ(2, client->imageChangedCount());
+    EXPECT_TRUE(client->notifyFinishedCalled());
+    EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
     EXPECT_EQ(1, cachedImage->getImage()->width());
     EXPECT_EQ(1, cachedImage->getImage()->height());
 
     cachedImage->reloadIfLoFi(fetcher);
-    ASSERT_FALSE(cachedImage->errorOccurred());
-    ASSERT_FALSE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client->imageChangedCount(), 3);
+    EXPECT_FALSE(cachedImage->errorOccurred());
+    EXPECT_FALSE(cachedImage->resourceBuffer());
+    EXPECT_FALSE(cachedImage->hasImage());
+    EXPECT_EQ(3, client->imageChangedCount());
 
     Vector<unsigned char> jpeg2 = jpegImage2();
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(resourceResponse), nullptr);
     cachedImage->loader()->didReceiveData(nullptr, reinterpret_cast<const char*>(jpeg2.data()), jpeg2.size(), jpeg2.size(), jpeg2.size());
     cachedImage->loader()->didFinishLoading(nullptr, 0.0, jpeg2.size());
-    ASSERT_FALSE(cachedImage->errorOccurred());
+    EXPECT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_TRUE(client->notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
+    EXPECT_FALSE(cachedImage->getImage()->isNull());
+    EXPECT_TRUE(client->notifyFinishedCalled());
+    EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
     EXPECT_EQ(50, cachedImage->getImage()->width());
     EXPECT_EQ(50, cachedImage->getImage()->height());
 }

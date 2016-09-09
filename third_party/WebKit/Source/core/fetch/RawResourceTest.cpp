@@ -54,7 +54,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ResourceRequest pngRequest;
     pngRequest.setHTTPAccept("image/png");
 
-    ASSERT_FALSE(jpegResource->canReuse(pngRequest));
+    EXPECT_FALSE(jpegResource->canReuse(pngRequest));
 }
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>, public RawResourceClient {
@@ -156,7 +156,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     EXPECT_FALSE(resource->isCacheValidator());
     EXPECT_EQ(200, resource->response().httpStatusCode());
     EXPECT_EQ(4u, resource->resourceBuffer()->size());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
+    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")));
     memoryCache()->remove(resource);
 
     resource->removeClient(client);
@@ -185,8 +185,8 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     resource->responseReceived(revalidatingResponse, nullptr);
     EXPECT_FALSE(resource->isCacheValidator());
     EXPECT_EQ(200, resource->response().httpStatusCode());
-    EXPECT_EQ(nullptr, resource->resourceBuffer());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
+    EXPECT_FALSE(resource->resourceBuffer());
+    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")));
     memoryCache()->remove(resource);
 
     resource->removeClient(client);
@@ -308,7 +308,7 @@ TEST(RawResourceTest, RedirectDuringRevalidation)
     EXPECT_FALSE(resource->isCacheValidator());
     EXPECT_EQ(200, resource->response().httpStatusCode());
     EXPECT_EQ(3u, resource->resourceBuffer()->size());
-    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "https://example.com/1")), resource);
+    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "https://example.com/1")));
 
     EXPECT_TRUE(client->called());
     EXPECT_EQ(1, client->numberOfRedirectsReceived());
