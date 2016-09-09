@@ -8,7 +8,9 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
+#include "chrome/grit/generated_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 using bookmarks::kBookmarkBarMenuCornerRadius;
@@ -19,6 +21,12 @@ namespace {
 const CGFloat kMDFolderWindowBackgroundColor = 237. / 255.;
 
 }  // namespace
+
+@interface BookmarkBarFolderWindow (Accessibility)
+
+- (NSString*)accessibilityTitle;
+
+@end
 
 @implementation BookmarkBarFolderWindow
 
@@ -46,6 +54,12 @@ const CGFloat kMDFolderWindowBackgroundColor = 237. / 255.;
 
 // Override of keyDown as the NSWindow default implementation beeps.
 - (void)keyDown:(NSEvent *)theEvent {
+}
+
+// If the menu doesn't have a separate accessibleTitle, it will get announced as
+// its normal window title, which is "BmbPopUpWindow".
+- (NSString*)accessibilityTitle {
+  return l10n_util::GetNSString(IDS_ACCNAME_BOOKMARKS_MENU);
 }
 
 @end
