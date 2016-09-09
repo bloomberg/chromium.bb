@@ -155,7 +155,7 @@ class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Implements the cookies.getAllCookieStores() extension function.
-class CookiesGetAllCookieStoresFunction : public ChromeSyncExtensionFunction {
+class CookiesGetAllCookieStoresFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAllCookieStores",
                              COOKIES_GETALLCOOKIESTORES)
@@ -164,7 +164,7 @@ class CookiesGetAllCookieStoresFunction : public ChromeSyncExtensionFunction {
   ~CookiesGetAllCookieStoresFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class CookiesAPI : public BrowserContextKeyedAPI, public EventRouter::Observer {

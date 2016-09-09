@@ -240,13 +240,14 @@ DesktopCaptureCancelChooseDesktopMediaFunctionBase::
 DesktopCaptureCancelChooseDesktopMediaFunctionBase::
     ~DesktopCaptureCancelChooseDesktopMediaFunctionBase() {}
 
-bool DesktopCaptureCancelChooseDesktopMediaFunctionBase::RunSync() {
+ExtensionFunction::ResponseAction
+DesktopCaptureCancelChooseDesktopMediaFunctionBase::Run() {
   int request_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
       render_frame_host()->GetProcess()->GetID(), request_id);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DesktopCaptureRequestsRegistry::DesktopCaptureRequestsRegistry() {}

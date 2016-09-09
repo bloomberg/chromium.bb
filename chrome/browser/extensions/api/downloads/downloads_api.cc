@@ -44,6 +44,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/platform_util.h"
@@ -250,7 +251,7 @@ std::string TimeToISO8601(const base::Time& t) {
 
 std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
     DownloadItem* download_item,
-    Profile* profile) {
+    content::BrowserContext* browser_context) {
   base::DictionaryValue* json = new base::DictionaryValue();
   json->SetBoolean(kExistsKey, !download_item->GetFileExternallyRemoved());
   json->SetInteger(kIdKey, download_item->GetId());
@@ -272,7 +273,7 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetString(kStartTimeKey, TimeToISO8601(download_item->GetStartTime()));
   json->SetDouble(kBytesReceivedKey, download_item->GetReceivedBytes());
   json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
-  json->SetBoolean(kIncognitoKey, profile->IsOffTheRecord());
+  json->SetBoolean(kIncognitoKey, browser_context->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetString(kErrorKey,
                     content::DownloadInterruptReasonToString(
@@ -297,7 +298,7 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
     // language. This won't work if the extension was uninstalled, so the name
     // might be the wrong language.
     const Extension* extension =
-        ExtensionRegistry::Get(profile)
+        ExtensionRegistry::Get(browser_context)
             ->GetExtensionById(by_ext->id(), ExtensionRegistry::EVERYTHING);
     if (extension)
       json->SetString(kByExtensionNameKey, extension->name());
@@ -412,11 +413,11 @@ bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {
 // the off-record DownloadManager if one exists and is requested via
 // |include_incognito|. This should work regardless of whether |profile| is
 // original or incognito.
-void GetManagers(
-    Profile* profile,
-    bool include_incognito,
-    DownloadManager** manager,
-    DownloadManager** incognito_manager) {
+void GetManagers(content::BrowserContext* context,
+                 bool include_incognito,
+                 DownloadManager** manager,
+                 DownloadManager** incognito_manager) {
+  Profile* profile = Profile::FromBrowserContext(context);
   *manager = BrowserContext::GetDownloadManager(profile->GetOriginalProfile());
   if (profile->HasOffTheRecordProfile() &&
       (include_incognito ||
@@ -428,10 +429,12 @@ void GetManagers(
   }
 }
 
-DownloadItem* GetDownload(Profile* profile, bool include_incognito, int id) {
+DownloadItem* GetDownload(content::BrowserContext* context,
+                          bool include_incognito,
+                          int id) {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(profile, include_incognito, &manager, &incognito_manager);
+  GetManagers(context, include_incognito, &manager, &incognito_manager);
   DownloadItem* download_item = manager->GetDownload(id);
   if (!download_item && incognito_manager)
     download_item = incognito_manager->GetDownload(id);
@@ -1076,13 +1079,14 @@ DownloadsSearchFunction::DownloadsSearchFunction() {}
 
 DownloadsSearchFunction::~DownloadsSearchFunction() {}
 
-bool DownloadsSearchFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
   std::unique_ptr<downloads::Search::Params> params(
       downloads::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
+  GetManagers(browser_context(), include_incognito(), &manager,
+              &incognito_manager);
   ExtensionDownloadsEventRouter* router =
       DownloadServiceFactory::GetForBrowserContext(
           manager->GetBrowserContext())->GetExtensionEventRouter();
@@ -1094,13 +1098,10 @@ bool DownloadsSearchFunction::RunSync() {
     incognito_router->CheckForHistoryFilesRemoval();
   }
   DownloadQuery::DownloadVector results;
-  RunDownloadQuery(params->query,
-                   manager,
-                   incognito_manager,
-                   &error_,
-                   &results);
-  if (!error_.empty())
-    return false;
+  std::string error;
+  RunDownloadQuery(params->query, manager, incognito_manager, &error, &results);
+  if (!error.empty())
+    return RespondNow(Error(error));
 
   std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
@@ -1109,105 +1110,106 @@ bool DownloadsSearchFunction::RunSync() {
     uint32_t download_id = download_item->GetId();
     bool off_record = ((incognito_manager != NULL) &&
                        (incognito_manager->GetDownload(download_id) != NULL));
-    std::unique_ptr<base::DictionaryValue> json_item(DownloadItemToJSON(
-        *it, off_record ? GetProfile()->GetOffTheRecordProfile()
-                        : GetProfile()->GetOriginalProfile()));
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    std::unique_ptr<base::DictionaryValue> json_item(
+        DownloadItemToJSON(*it, off_record ? profile->GetOffTheRecordProfile()
+                                           : profile->GetOriginalProfile()));
     json_results->Append(std::move(json_item));
   }
-  SetResult(std::move(json_results));
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
-  return true;
+  return RespondNow(OneArgument(std::move(json_results)));
 }
 
 DownloadsPauseFunction::DownloadsPauseFunction() {}
 
 DownloadsPauseFunction::~DownloadsPauseFunction() {}
 
-bool DownloadsPauseFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsPauseFunction::Run() {
   std::unique_ptr<downloads::Pause::Params> params(
       downloads::Pause::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
-  if (InvalidId(download_item, &error_) ||
+      GetDownload(browser_context(), include_incognito(), params->download_id);
+  std::string error;
+  if (InvalidId(download_item, &error) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
-            errors::kNotInProgress, &error_))
-    return false;
+            errors::kNotInProgress, &error)) {
+    return RespondNow(Error(error));
+  }
   // If the item is already paused, this is a no-op and the operation will
   // silently succeed.
   download_item->Pause();
   RecordApiFunctions(DOWNLOADS_FUNCTION_PAUSE);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsResumeFunction::DownloadsResumeFunction() {}
 
 DownloadsResumeFunction::~DownloadsResumeFunction() {}
 
-bool DownloadsResumeFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsResumeFunction::Run() {
   std::unique_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
-  if (InvalidId(download_item, &error_) ||
+      GetDownload(browser_context(), include_incognito(), params->download_id);
+  std::string error;
+  if (InvalidId(download_item, &error) ||
       Fault(download_item->IsPaused() && !download_item->CanResume(),
-            errors::kNotResumable, &error_))
-    return false;
+            errors::kNotResumable, &error)) {
+    return RespondNow(Error(error));
+  }
   // Note that if the item isn't paused, this will be a no-op, and the extension
   // call will seem successful.
   download_item->Resume();
   RecordApiFunctions(DOWNLOADS_FUNCTION_RESUME);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsCancelFunction::DownloadsCancelFunction() {}
 
 DownloadsCancelFunction::~DownloadsCancelFunction() {}
 
-bool DownloadsCancelFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsCancelFunction::Run() {
   std::unique_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
+      GetDownload(browser_context(), include_incognito(), params->download_id);
   if (download_item &&
       (download_item->GetState() == DownloadItem::IN_PROGRESS))
     download_item->Cancel(true);
   // |download_item| can be NULL if the download ID was invalid or if the
   // download is not currently active.  Either way, it's not a failure.
   RecordApiFunctions(DOWNLOADS_FUNCTION_CANCEL);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsEraseFunction::DownloadsEraseFunction() {}
 
 DownloadsEraseFunction::~DownloadsEraseFunction() {}
 
-bool DownloadsEraseFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsEraseFunction::Run() {
   std::unique_ptr<downloads::Erase::Params> params(
       downloads::Erase::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
+  GetManagers(browser_context(), include_incognito(), &manager,
+              &incognito_manager);
   DownloadQuery::DownloadVector results;
-  RunDownloadQuery(params->query,
-                   manager,
-                   incognito_manager,
-                   &error_,
-                   &results);
-  if (!error_.empty())
-    return false;
+  std::string error;
+  RunDownloadQuery(params->query, manager, incognito_manager, &error, &results);
+  if (!error.empty())
+    return RespondNow(Error(error));
   std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
     json_results->AppendInteger(static_cast<int>((*it)->GetId()));
     (*it)->Remove();
   }
-  SetResult(std::move(json_results));
   RecordApiFunctions(DOWNLOADS_FUNCTION_ERASE);
-  return true;
+  return RespondNow(OneArgument(std::move(json_results)));
 }
 
 DownloadsRemoveFileFunction::DownloadsRemoveFileFunction() {
@@ -1221,7 +1223,7 @@ bool DownloadsRemoveFileFunction::RunAsync() {
       downloads::RemoveFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
+      GetDownload(browser_context(), include_incognito(), params->download_id);
   if (InvalidId(download_item, &error_) ||
       Fault((download_item->GetState() != DownloadItem::COMPLETE),
             errors::kNotComplete, &error_) ||
@@ -1259,7 +1261,7 @@ bool DownloadsAcceptDangerFunction::RunAsync() {
 
 void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), download_id);
+      GetDownload(browser_context(), include_incognito(), download_id);
   content::WebContents* web_contents = dispatcher()->GetVisibleWebContents();
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
@@ -1301,7 +1303,7 @@ void DownloadsAcceptDangerFunction::DangerPromptCallback(
     int download_id, DownloadDangerPrompt::Action action) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), download_id);
+      GetDownload(browser_context(), include_incognito(), download_id);
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             errors::kNotInProgress, &error_))
@@ -1323,74 +1325,79 @@ DownloadsShowFunction::DownloadsShowFunction() {}
 
 DownloadsShowFunction::~DownloadsShowFunction() {}
 
-bool DownloadsShowFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsShowFunction::Run() {
   std::unique_ptr<downloads::Show::Params> params(
       downloads::Show::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
-  if (InvalidId(download_item, &error_))
-    return false;
+      GetDownload(browser_context(), include_incognito(), params->download_id);
+  std::string error;
+  if (InvalidId(download_item, &error))
+    return RespondNow(Error(error));
   download_item->ShowDownloadInShell();
   RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsShowDefaultFolderFunction::DownloadsShowDefaultFolderFunction() {}
 
 DownloadsShowDefaultFolderFunction::~DownloadsShowDefaultFolderFunction() {}
 
-bool DownloadsShowDefaultFolderFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsShowDefaultFolderFunction::Run() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
+  GetManagers(browser_context(), include_incognito(), &manager,
+              &incognito_manager);
   platform_util::OpenItem(
-      GetProfile(), DownloadPrefs::FromDownloadManager(manager)->DownloadPath(),
+      Profile::FromBrowserContext(browser_context()),
+      DownloadPrefs::FromDownloadManager(manager)->DownloadPath(),
       platform_util::OPEN_FOLDER, platform_util::OpenOperationCallback());
   RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW_DEFAULT_FOLDER);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsOpenFunction::DownloadsOpenFunction() {}
 
 DownloadsOpenFunction::~DownloadsOpenFunction() {}
 
-bool DownloadsOpenFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsOpenFunction::Run() {
   std::unique_ptr<downloads::Open::Params> params(
       downloads::Open::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
-  if (InvalidId(download_item, &error_) ||
-      Fault(!user_gesture(), errors::kUserGesture, &error_) ||
+      GetDownload(browser_context(), include_incognito(), params->download_id);
+  std::string error;
+  if (InvalidId(download_item, &error) ||
+      Fault(!user_gesture(), errors::kUserGesture, &error) ||
       Fault(download_item->GetState() != DownloadItem::COMPLETE,
-            errors::kNotComplete,
-            &error_) ||
+            errors::kNotComplete, &error) ||
       Fault(!extension()->permissions_data()->HasAPIPermission(
                 APIPermission::kDownloadsOpen),
-            errors::kOpenPermission,
-            &error_))
-    return false;
+            errors::kOpenPermission, &error)) {
+    return RespondNow(Error(error));
+  }
   download_item->OpenDownload();
   RecordApiFunctions(DOWNLOADS_FUNCTION_OPEN);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsDragFunction::DownloadsDragFunction() {}
 
 DownloadsDragFunction::~DownloadsDragFunction() {}
 
-bool DownloadsDragFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsDragFunction::Run() {
   std::unique_ptr<downloads::Drag::Params> params(
       downloads::Drag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
+      GetDownload(browser_context(), include_incognito(), params->download_id);
   content::WebContents* web_contents =
       dispatcher()->GetVisibleWebContents();
-  if (InvalidId(download_item, &error_) ||
-      Fault(!web_contents, errors::kInvisibleContext, &error_))
-    return false;
+  std::string error;
+  if (InvalidId(download_item, &error) ||
+      Fault(!web_contents, errors::kInvisibleContext, &error)) {
+    return RespondNow(Error(error));
+  }
   RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       download_item->GetTargetFilePath(), IconLoader::NORMAL);
@@ -1401,27 +1408,28 @@ bool DownloadsDragFunction::RunSync() {
         base::MessageLoop::current());
     DragDownloadItem(download_item, icon, view);
   }
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsSetShelfEnabledFunction::DownloadsSetShelfEnabledFunction() {}
 
 DownloadsSetShelfEnabledFunction::~DownloadsSetShelfEnabledFunction() {}
 
-bool DownloadsSetShelfEnabledFunction::RunSync() {
+ExtensionFunction::ResponseAction DownloadsSetShelfEnabledFunction::Run() {
   std::unique_ptr<downloads::SetShelfEnabled::Params> params(
       downloads::SetShelfEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  // TODO(devlin): Solve this with the feature system.
   if (!extension()->permissions_data()->HasAPIPermission(
           APIPermission::kDownloadsShelf)) {
-    error_ = download_extension_errors::kShelfPermission;
-    return false;
+    return RespondNow(Error(download_extension_errors::kShelfPermission));
   }
 
   RecordApiFunctions(DOWNLOADS_FUNCTION_SET_SHELF_ENABLED);
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
+  GetManagers(browser_context(), include_incognito(), &manager,
+              &incognito_manager);
   DownloadService* service = NULL;
   DownloadService* incognito_service = NULL;
   if (manager) {
@@ -1455,11 +1463,10 @@ bool DownloadsSetShelfEnabledFunction::RunSync() {
   if (params->enabled &&
       ((manager && !service->IsShelfEnabled()) ||
        (incognito_manager && !incognito_service->IsShelfEnabled()))) {
-    error_ = download_extension_errors::kShelfDisabled;
-    return false;
+    return RespondNow(Error(download_extension_errors::kShelfDisabled));
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()
@@ -1484,7 +1491,7 @@ bool DownloadsGetFileIconFunction::RunAsync() {
   if (options && options->size.get())
     icon_size = *options->size;
   DownloadItem* download_item =
-      GetDownload(GetProfile(), include_incognito(), params->download_id);
+      GetDownload(browser_context(), include_incognito(), params->download_id);
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetTargetFilePath().empty(),
             errors::kEmptyFile, &error_))

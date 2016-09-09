@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MODULE_MODULE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MODULE_MODULE_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 class ExtensionPrefs;
@@ -16,7 +16,7 @@ std::string GetUpdateURLData(const ExtensionPrefs* prefs,
                              const std::string& extension_id);
 }  // namespace extension
 
-class ExtensionSetUpdateUrlDataFunction : public ChromeSyncExtensionFunction {
+class ExtensionSetUpdateUrlDataFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.setUpdateUrlData",
                              EXTENSION_SETUPDATEURLDATA)
@@ -25,11 +25,11 @@ class ExtensionSetUpdateUrlDataFunction : public ChromeSyncExtensionFunction {
   ~ExtensionSetUpdateUrlDataFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ExtensionIsAllowedIncognitoAccessFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.isAllowedIncognitoAccess",
                              EXTENSION_ISALLOWEDINCOGNITOACCESS)
@@ -38,11 +38,11 @@ class ExtensionIsAllowedIncognitoAccessFunction
   ~ExtensionIsAllowedIncognitoAccessFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ExtensionIsAllowedFileSchemeAccessFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.isAllowedFileSchemeAccess",
                              EXTENSION_ISALLOWEDFILESCHEMEACCESS)
@@ -51,7 +51,7 @@ class ExtensionIsAllowedFileSchemeAccessFunction
   ~ExtensionIsAllowedFileSchemeAccessFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

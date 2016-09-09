@@ -77,7 +77,7 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
 };
 
 class DesktopCaptureCancelChooseDesktopMediaFunctionBase
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DesktopCaptureCancelChooseDesktopMediaFunctionBase();
 
@@ -86,7 +86,7 @@ class DesktopCaptureCancelChooseDesktopMediaFunctionBase
 
  private:
   // ExtensionFunction overrides.
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class DesktopCaptureRequestsRegistry {

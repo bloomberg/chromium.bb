@@ -168,6 +168,13 @@ class ExtensionFunction
     ~ScopedUserGestureForTests();
   };
 
+  // A string used in the case of an unknown error being detected.
+  // DON'T USE THIS. It's only here during conversion to flag cases where errors
+  // aren't already set.
+  // TODO(devlin): Remove this if/when all functions are updated to return real
+  // errors.
+  static const char* kUnknownErrorDoNotUse;
+
   // Called before Run() in order to perform a common verification check so that
   // APIs subclassing this don't have to roll their own RunSafe() variants.
   // If this returns false, then Run() is never called, and the function

@@ -225,6 +225,9 @@ void UserGestureForTests::DecrementCount() {
 bool ExtensionFunction::ignore_all_did_respond_for_testing_do_not_use = false;
 
 // static
+const char* ExtensionFunction::kUnknownErrorDoNotUse = "Unknown error.";
+
+// static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();
 }

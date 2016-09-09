@@ -111,11 +111,11 @@ class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };
 
-class DownloadsSearchFunction : public ChromeSyncExtensionFunction {
+class DownloadsSearchFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.search", DOWNLOADS_SEARCH)
   DownloadsSearchFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsSearchFunction() override;
@@ -124,11 +124,11 @@ class DownloadsSearchFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
 };
 
-class DownloadsPauseFunction : public ChromeSyncExtensionFunction {
+class DownloadsPauseFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.pause", DOWNLOADS_PAUSE)
   DownloadsPauseFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsPauseFunction() override;
@@ -137,11 +137,11 @@ class DownloadsPauseFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsPauseFunction);
 };
 
-class DownloadsResumeFunction : public ChromeSyncExtensionFunction {
+class DownloadsResumeFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.resume", DOWNLOADS_RESUME)
   DownloadsResumeFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsResumeFunction() override;
@@ -150,11 +150,11 @@ class DownloadsResumeFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsResumeFunction);
 };
 
-class DownloadsCancelFunction : public ChromeSyncExtensionFunction {
+class DownloadsCancelFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.cancel", DOWNLOADS_CANCEL)
   DownloadsCancelFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsCancelFunction() override;
@@ -163,11 +163,11 @@ class DownloadsCancelFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
-class DownloadsEraseFunction : public ChromeSyncExtensionFunction {
+class DownloadsEraseFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.erase", DOWNLOADS_ERASE)
   DownloadsEraseFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsEraseFunction() override;
@@ -215,11 +215,11 @@ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 
-class DownloadsShowFunction : public ChromeSyncExtensionFunction {
+class DownloadsShowFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsShowFunction() override;
@@ -228,12 +228,12 @@ class DownloadsShowFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsShowDefaultFolderFunction : public ChromeSyncExtensionFunction {
+class DownloadsShowDefaultFolderFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
   DownloadsShowDefaultFolderFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsShowDefaultFolderFunction() override;
@@ -242,11 +242,11 @@ class DownloadsShowDefaultFolderFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowDefaultFolderFunction);
 };
 
-class DownloadsOpenFunction : public ChromeSyncExtensionFunction {
+class DownloadsOpenFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.open", DOWNLOADS_OPEN)
   DownloadsOpenFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsOpenFunction() override;
@@ -255,12 +255,12 @@ class DownloadsOpenFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
 };
 
-class DownloadsSetShelfEnabledFunction : public ChromeSyncExtensionFunction {
+class DownloadsSetShelfEnabledFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.setShelfEnabled",
                              DOWNLOADS_SETSHELFENABLED)
   DownloadsSetShelfEnabledFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsSetShelfEnabledFunction() override;
@@ -269,11 +269,11 @@ class DownloadsSetShelfEnabledFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsDragFunction : public ChromeSyncExtensionFunction {
+class DownloadsDragFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsDragFunction() override;
