@@ -369,7 +369,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // PlzNavigate: frame navigations to extensions have already been checked in
   // the ExtensionNavigationThrottle.
   if (info->GetChildID() == -1 &&
-      content::IsResourceTypeFrame(info->GetResourceType()) &&
+      info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       content::IsBrowserSideNavigationEnabled()) {
     return true;
   }
