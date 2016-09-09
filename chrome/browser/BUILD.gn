@@ -78,8 +78,6 @@ split_static_library("browser") {
     "autofill/personal_data_manager_factory.h",
     "autofill/risk_util.cc",
     "autofill/risk_util.h",
-    "autofill/validation_rules_storage_factory.cc",
-    "autofill/validation_rules_storage_factory.h",
     "background_sync/background_sync_controller_factory.cc",
     "background_sync/background_sync_controller_factory.h",
     "background_sync/background_sync_controller_impl.cc",
@@ -385,6 +383,8 @@ split_static_library("browser") {
     "global_keyboard_shortcuts_mac.mm",
     "google/chrome_google_url_tracker_client.cc",
     "google/chrome_google_url_tracker_client.h",
+    "google/did_run_updater_win.cc",
+    "google/did_run_updater_win.h",
     "google/google_brand.cc",
     "google/google_brand.h",
     "google/google_brand_chromeos.cc",
@@ -394,6 +394,8 @@ split_static_library("browser") {
     "google/google_update_win.h",
     "google/google_url_tracker_factory.cc",
     "google/google_url_tracker_factory.h",
+    "gpu/gpu_driver_info_manager_android.cc",
+    "gpu/gpu_driver_info_manager_android.h",
     "gpu/gpu_feature_checker.cc",
     "gpu/gpu_feature_checker.h",
     "gpu/gpu_mode_manager.cc",
@@ -401,6 +403,8 @@ split_static_library("browser") {
     "gpu/gpu_profile_cache.h",
     "gpu/three_d_api_observer.cc",
     "gpu/three_d_api_observer.h",
+    "hang_monitor/hang_crash_dump_win.cc",
+    "hang_monitor/hang_crash_dump_win.h",
     "history/chrome_history_backend_client.cc",
     "history/chrome_history_backend_client.h",
     "history/chrome_history_client.cc",
@@ -522,13 +526,22 @@ split_static_library("browser") {
     "media/webrtc/native_desktop_media_list.h",
     "media/webrtc/permission_bubble_media_access_handler.cc",
     "media/webrtc/permission_bubble_media_access_handler.h",
+
+    # TODO(brettw) should this go with the webrtc sources?
+    "media/webrtc/webrtc_log_list.cc",
+    "media/webrtc/webrtc_log_list.h",
     "media/webrtc/window_icon_util.h",
+    "media/webrtc/window_icon_util_chromeos.cc",
+    "media/webrtc/window_icon_util_mac.mm",
+    "media/webrtc/window_icon_util_win.cc",
     "memory_details.cc",
     "memory_details.h",
     "memory_details_android.cc",
     "memory_details_linux.cc",
     "memory_details_mac.cc",
     "memory_details_win.cc",
+    "metrics/antivirus_metrics_provider_win.cc",
+    "metrics/antivirus_metrics_provider_win.h",
     "metrics/chrome_browser_main_extra_parts_metrics.cc",
     "metrics/chrome_browser_main_extra_parts_metrics.h",
     "metrics/chrome_browser_main_extra_parts_metrics_mac.mm",
@@ -689,6 +702,10 @@ split_static_library("browser") {
     "password_manager/chrome_password_manager_client.h",
     "password_manager/password_manager_setting_migrator_service_factory.cc",
     "password_manager/password_manager_setting_migrator_service_factory.h",
+    "password_manager/password_manager_util_mac.h",
+    "password_manager/password_manager_util_mac.mm",
+    "password_manager/password_manager_util_win.cc",
+    "password_manager/password_manager_util_win.h",
     "password_manager/password_store_factory.cc",
     "password_manager/password_store_factory.h",
     "password_manager/password_store_mac.cc",
@@ -698,8 +715,6 @@ split_static_library("browser") {
     "password_manager/password_store_proxy_mac.h",
     "password_manager/password_store_win.cc",
     "password_manager/password_store_win.h",
-    "password_manager/password_store_x.cc",
-    "password_manager/password_store_x.h",
     "password_manager/simple_password_store_mac.cc",
     "password_manager/simple_password_store_mac.h",
     "performance_monitor/performance_monitor.cc",
@@ -1032,8 +1047,6 @@ split_static_library("browser") {
     "signin/chrome_signin_client_factory.h",
     "signin/chrome_signin_helper.cc",
     "signin/chrome_signin_helper.h",
-    "signin/chrome_signin_status_metrics_provider_delegate.cc",
-    "signin/chrome_signin_status_metrics_provider_delegate.h",
     "signin/gaia_cookie_manager_service_factory.cc",
     "signin/gaia_cookie_manager_service_factory.h",
     "signin/investigator_dependency_provider.cc",
@@ -1130,6 +1143,8 @@ split_static_library("browser") {
     "task_manager/web_contents_tags.h",
     "task_profiler/task_profiler_data_serializer.cc",
     "task_profiler/task_profiler_data_serializer.h",
+    "themes/theme_service_win.cc",
+    "themes/theme_service_win.h",
     "thumbnails/content_analysis.cc",
     "thumbnails/content_analysis.h",
     "thumbnails/content_based_thumbnailing_algorithm.cc",
@@ -1178,10 +1193,6 @@ split_static_library("browser") {
     "usb/web_usb_permission_provider.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
-
-    # TODO(brettw) should this go with the webrtc sources?
-    "media/webrtc/webrtc_log_list.cc",
-    "media/webrtc/webrtc_log_list.h",
     "win/app_icon.cc",
     "win/app_icon.h",
     "win/browser_util.cc",
@@ -1429,45 +1440,6 @@ split_static_library("browser") {
     defines += [ "USE_CRAS" ]
   }
 
-  if (android_java_ui) {
-    sources += [
-      "history/android/android_history_provider_service.cc",
-      "history/android/android_history_provider_service.h",
-      "history/android/android_provider_backend.cc",
-      "history/android/android_provider_backend.h",
-      "history/android/bookmark_model_sql_handler.cc",
-      "history/android/bookmark_model_sql_handler.h",
-      "history/android/sqlite_cursor.cc",
-      "history/android/sqlite_cursor.h",
-      "permissions/grouped_permission_infobar_delegate.cc",
-      "permissions/grouped_permission_infobar_delegate.h",
-      "permissions/permission_update_infobar_delegate_android.cc",
-      "permissions/permission_update_infobar_delegate_android.h",
-      "search_engines/template_url_service_android.cc",
-      "search_engines/template_url_service_android.h",
-      "ssl/security_state_model_android.cc",
-      "ssl/security_state_model_android.h",
-      "sync/glue/synced_tab_delegate_android.cc",
-      "sync/glue/synced_tab_delegate_android.h",
-      "sync/glue/synced_window_delegate_android.cc",
-      "sync/glue/synced_window_delegate_android.h",
-      "sync/glue/synced_window_delegates_getter_android.cc",
-      "sync/glue/synced_window_delegates_getter_android.h",
-      "sync/profile_sync_service_android.cc",
-      "sync/profile_sync_service_android.h",
-      "sync/sync_sessions_metrics_android.cc",
-      "sync/sync_sessions_metrics_android.h",
-    ]
-    if (enable_supervised_users) {
-      sources += [
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
-        "supervised_user/child_accounts/child_account_service_android.cc",
-        "supervised_user/child_accounts/child_account_service_android.h",
-      ]
-    }
-  }
-
   if (toolkit_views) {
     deps += [ "//ui/views" ]
   }
@@ -1502,27 +1474,10 @@ split_static_library("browser") {
       "recovery/recovery_install_global_error_factory.cc",
       "recovery/recovery_install_global_error_factory.h",
     ]
-  }
-  if (!is_win && !is_mac) {
+  } else {
     sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
   }
-  if (!is_android && !is_chromeos) {
-    sources += [
-      "net/disk_cache_dir_policy_handler.cc",
-      "net/disk_cache_dir_policy_handler.h",
-    ]
-  }
-  if (is_mac) {
-    sources += [
-      "media/webrtc/window_icon_util_mac.mm",
-      "password_manager/password_manager_util_mac.h",
-      "password_manager/password_manager_util_mac.mm",
-    ]
-    deps += [
-      "//chrome/app_shim",
-      "//chrome/browser/apps/app_shim",
-    ]
-  }
+
   if (enable_extensions) {
     sources += [
       "accessibility/accessibility_extension_api.cc",
@@ -2120,11 +2075,12 @@ split_static_library("browser") {
       "download/notification/download_notification.h",
       "download/notification/download_notification_manager.cc",
       "download/notification/download_notification_manager.h",
-      "media/protected_media_identifier_permission_context.cc",
-      "media/protected_media_identifier_permission_context.h",
-      "media/webrtc/window_icon_util_chromeos.cc",
       "metrics/chromeos_metrics_provider.cc",
       "metrics/chromeos_metrics_provider.h",
+      "metrics/leak_detector/leak_detector_controller.cc",
+      "metrics/leak_detector/leak_detector_controller.h",
+      "metrics/leak_detector/leak_detector_remote_controller.cc",
+      "metrics/leak_detector/leak_detector_remote_controller.h",
       "metrics/perf/cpu_identity.cc",
       "metrics/perf/cpu_identity.h",
       "metrics/perf/perf_output.cc",
@@ -2142,6 +2098,10 @@ split_static_library("browser") {
       "renderer_host/pepper/pepper_platform_verification_message_filter.h",
     ]
     deps += [ "//chrome/browser/chromeos" ]
+    public_deps += [
+      "//components/metrics/leak_detector:interfaces",
+      "//components/metrics/leak_detector:leak_detector",
+    ]
   } else {  # Non-ChromeOS.
     sources += [
       "policy/cloud/user_cloud_policy_manager_factory.cc",
@@ -2150,32 +2110,15 @@ split_static_library("browser") {
       "policy/cloud/user_policy_signin_service_base.h",
       "policy/cloud/user_policy_signin_service_factory.cc",
       "policy/cloud/user_policy_signin_service_factory.h",
-    ]
-  }
-
-  if (is_chromeos) {
-    sources -= [
       "signin/chrome_signin_status_metrics_provider_delegate.cc",
       "signin/chrome_signin_status_metrics_provider_delegate.h",
-    ]
-  }
-
-  if (is_chromeos) {
-    sources += [
-      "metrics/leak_detector/leak_detector_controller.cc",
-      "metrics/leak_detector/leak_detector_controller.h",
-      "metrics/leak_detector/leak_detector_remote_controller.cc",
-      "metrics/leak_detector/leak_detector_remote_controller.h",
-    ]
-    public_deps += [
-      "//components/metrics/leak_detector:interfaces",
-      "//components/metrics/leak_detector:leak_detector",
     ]
   }
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }
+
   if (use_gnome_keyring) {
     sources += [
       "password_manager/native_backend_gnome_x.cc",
@@ -2183,14 +2126,7 @@ split_static_library("browser") {
     ]
     configs += [ "//components/os_crypt:gnome_keyring" ]
   }
-  if (is_desktop_linux) {
-    sources += [
-      "password_manager/native_backend_libsecret.cc",
-      "password_manager/native_backend_libsecret.h",
-    ]
-    defines += [ "USE_LIBSECRET" ]
-    deps += [ "//third_party/libsecret" ]
-  }
+
   if (use_aura) {
     # Cross-platform Aura files.
     sources += [
@@ -2244,9 +2180,9 @@ split_static_library("browser") {
     sources += [
       "chrome_browser_main_extra_parts_x11.cc",
       "chrome_browser_main_extra_parts_x11.h",
+      "password_manager/password_store_x.cc",
+      "password_manager/password_store_x.h",
     ]
-  } else {
-    sources -= [ "password_manager/password_store_x.cc" ]
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [ "//chrome/browser/ui/libgtk2ui" ]
@@ -2508,6 +2444,8 @@ split_static_library("browser") {
       "metrics/desktop_engagement/desktop_engagement_observer.h",
       "metrics/desktop_engagement/desktop_engagement_service.cc",
       "metrics/desktop_engagement/desktop_engagement_service.h",
+      "net/disk_cache_dir_policy_handler.cc",
+      "net/disk_cache_dir_policy_handler.h",
       "platform_util.cc",
       "policy/cloud/user_policy_signin_service.cc",
       "policy/cloud/user_policy_signin_service.h",
@@ -2540,6 +2478,11 @@ split_static_library("browser") {
       "upgrade_detector_impl.cc",
       "upgrade_detector_impl.h",
     ]
+  } else {
+    sources += [
+      "media/protected_media_identifier_permission_context.cc",
+      "media/protected_media_identifier_permission_context.h",
+    ]
   }
 
   if (is_android) {
@@ -2549,11 +2492,29 @@ split_static_library("browser") {
       "policy/cloud/user_policy_signin_service_mobile.cc",
       "policy/cloud/user_policy_signin_service_mobile.h",
     ]
+    deps += [
+      "//components/cdm/browser",
+      "//components/resources:components_resources",
+      "//third_party/android_opengl/etc1",
+      "//third_party/android_tools:cpu_features",
+      "//third_party/libaddressinput:util",
+    ]
+
+    deps -= [
+      "//components/storage_monitor",
+      "//third_party/libaddressinput",
+    ]
+    if (use_seccomp_bpf) {
+      defines += [ "USE_SECCOMP_BPF" ]
+      deps += [ "//sandbox/linux:seccomp_bpf" ]
+    }
   } else {
     # Non-Android.
     sources += [
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
+      "autofill/validation_rules_storage_factory.cc",
+      "autofill/validation_rules_storage_factory.h",
       "background/background_contents.cc",
       "background/background_contents.h",
       "banners/app_banner_infobar_delegate_desktop.cc",
@@ -2853,15 +2814,6 @@ split_static_library("browser") {
     sources += [
       "search/local_files_ntp_source.cc",
       "search/local_files_ntp_source.h",
-    ]
-  }
-
-  if (is_android) {
-    sources += [
-      "gpu/gpu_driver_info_manager_android.cc",
-      "gpu/gpu_driver_info_manager_android.h",
-      "media/protected_media_identifier_permission_context.cc",
-      "media/protected_media_identifier_permission_context.h",
     ]
   }
 
@@ -3240,6 +3192,14 @@ split_static_library("browser") {
       "download/download_request_infobar_delegate_android.h",
       "geolocation/geolocation_infobar_delegate_android.cc",
       "geolocation/geolocation_infobar_delegate_android.h",
+      "history/android/android_history_provider_service.cc",
+      "history/android/android_history_provider_service.h",
+      "history/android/android_provider_backend.cc",
+      "history/android/android_provider_backend.h",
+      "history/android/bookmark_model_sql_handler.cc",
+      "history/android/bookmark_model_sql_handler.h",
+      "history/android/sqlite_cursor.cc",
+      "history/android/sqlite_cursor.h",
       "invalidation/invalidation_service_factory_android.cc",
       "invalidation/invalidation_service_factory_android.h",
       "lifetime/application_lifetime_android.cc",
@@ -3286,8 +3246,12 @@ split_static_library("browser") {
       "password_manager/save_password_infobar_delegate_android.h",
       "password_manager/update_password_infobar_delegate_android.cc",
       "password_manager/update_password_infobar_delegate_android.h",
+      "permissions/grouped_permission_infobar_delegate.cc",
+      "permissions/grouped_permission_infobar_delegate.h",
       "permissions/permission_queue_controller.cc",
       "permissions/permission_queue_controller.h",
+      "permissions/permission_update_infobar_delegate_android.cc",
+      "permissions/permission_update_infobar_delegate_android.h",
       "platform_util_android.cc",
       "precache/precache_manager_factory.cc",
       "precache/precache_manager_factory.h",
@@ -3299,9 +3263,23 @@ split_static_library("browser") {
       "profiles/profile_android.h",
       "search/contextual_search_policy_handler_android.cc",
       "search/contextual_search_policy_handler_android.h",
+      "search_engines/template_url_service_android.cc",
+      "search_engines/template_url_service_android.h",
       "signin/oauth2_token_service_delegate_android.cc",
       "signin/oauth2_token_service_delegate_android.h",
+      "ssl/security_state_model_android.cc",
+      "ssl/security_state_model_android.h",
       "ssl/ssl_add_certificate_android.cc",
+      "sync/glue/synced_tab_delegate_android.cc",
+      "sync/glue/synced_tab_delegate_android.h",
+      "sync/glue/synced_window_delegate_android.cc",
+      "sync/glue/synced_window_delegate_android.h",
+      "sync/glue/synced_window_delegates_getter_android.cc",
+      "sync/glue/synced_window_delegates_getter_android.h",
+      "sync/profile_sync_service_android.cc",
+      "sync/profile_sync_service_android.h",
+      "sync/sync_sessions_metrics_android.cc",
+      "sync/sync_sessions_metrics_android.h",
     ]
     deps += [
       ":client_discourse_context_proto",
@@ -3317,6 +3295,14 @@ split_static_library("browser") {
       "//components/web_contents_delegate_android",
       "//third_party/smhasher:murmurhash2",
     ]
+    if (enable_supervised_users) {
+      sources += [
+        "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
+        "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
+        "supervised_user/child_accounts/child_account_service_android.cc",
+        "supervised_user/child_accounts/child_account_service_android.h",
+      ]
+    }
   }
 
   if (enable_vr_shell && android_java_ui) {
@@ -3325,28 +3311,10 @@ split_static_library("browser") {
     configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
   }
 
-  if (is_android) {
-    deps += [
-      "//components/cdm/browser",
-      "//components/resources:components_resources",
-      "//third_party/android_opengl/etc1",
-      "//third_party/android_tools:cpu_features",
-      "//third_party/libaddressinput:util",
-    ]
-
-    deps -= [
-      "//components/storage_monitor",
-      "//third_party/libaddressinput",
-    ]
-
-    if (use_seccomp_bpf) {
-      defines += [ "USE_SECCOMP_BPF" ]
-      deps += [ "//sandbox/linux:seccomp_bpf" ]
-    }
-  }
-
   if (is_mac) {
     deps += [
+      "//chrome/app_shim",
+      "//chrome/browser/apps/app_shim",
       "//third_party/google_toolbox_for_mac",
       "//third_party/mozilla",
     ]
@@ -3374,17 +3342,6 @@ split_static_library("browser") {
       "first_run/try_chrome_dialog_view.cc",
       "first_run/try_chrome_dialog_view.h",
       "first_run/upgrade_util.cc",
-      "google/did_run_updater_win.cc",
-      "google/did_run_updater_win.h",
-      "hang_monitor/hang_crash_dump_win.cc",
-      "hang_monitor/hang_crash_dump_win.h",
-      "media/webrtc/window_icon_util_win.cc",
-      "metrics/antivirus_metrics_provider_win.cc",
-      "metrics/antivirus_metrics_provider_win.h",
-      "password_manager/password_manager_util_win.cc",
-      "password_manager/password_manager_util_win.h",
-      "themes/theme_service_win.cc",
-      "themes/theme_service_win.h",
     ]
     public_deps += [
       "//ui/views",
@@ -3463,6 +3420,8 @@ split_static_library("browser") {
       "media/webrtc/window_icon_util_x11.cc",
       "password_manager/native_backend_kwallet_x.cc",
       "password_manager/native_backend_kwallet_x.h",
+      "password_manager/native_backend_libsecret.cc",
+      "password_manager/native_backend_libsecret.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
@@ -3471,7 +3430,10 @@ split_static_library("browser") {
       "themes/theme_service_aurax11.h",
       "web_applications/web_app_linux.cc",
     ]
+    defines += [ "USE_LIBSECRET" ]
+    deps += [ "//third_party/libsecret" ]
   }
+
   if (enable_plugin_installation) {
     sources += [
       "plugins/plugin_installer.cc",
@@ -3482,9 +3444,11 @@ split_static_library("browser") {
       "plugins/plugins_resource_service.h",
     ]
   }
+
   if (enable_app_list) {
     deps += [ "//ui/app_list" ]
   }
+
   if (enable_supervised_users) {
     sources += [
       "content_settings/content_settings_supervised_provider.cc",
@@ -3661,12 +3625,7 @@ split_static_library("browser") {
       "printing/cloud_print/privet_traffic_detector.h",
     ]
   }
-  if (is_android) {
-    sources -= [
-      "autofill/validation_rules_storage_factory.cc",
-      "autofill/validation_rules_storage_factory.h",
-    ]
-  }
+
   if (enable_media_router) {
     deps += [ "//chrome/browser/media/router" ]
   }
