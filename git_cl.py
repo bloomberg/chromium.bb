@@ -2620,6 +2620,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if reviewers:
       refspec_opts.extend('r=' + email.strip() for email in reviewers)
 
+    if options.private:
+      refspec_opts.append('draft')
+
     refspec_suffix = ''
     if refspec_opts:
       refspec_suffix = '%' + ','.join(refspec_opts)
