@@ -13,6 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
 namespace cc {
 class Layer;
@@ -24,7 +25,8 @@ namespace android {
 
 class ContextualSearchLayer;
 
-class ContextualSearchSceneLayer : public SceneLayer {
+class ContextualSearchSceneLayer : public SceneLayer,
+    public chrome::BitmapFetcherDelegate {
  public:
   ContextualSearchSceneLayer(JNIEnv* env, jobject jobj);
   ~ContextualSearchSceneLayer() override;
@@ -80,13 +82,22 @@ class ContextualSearchSceneLayer : public SceneLayer {
       jfloat search_bar_shadow_opacity,
       jboolean search_provider_icon_sprite_visible,
       jfloat search_provider_icon_sprite_completion_percentage,
+      jboolean thumbnail_visible,
+      jint thumbnail_size,
+      jstring j_thumbnail_url,
       jfloat arrow_icon_opacity,
       jfloat arrow_icon_rotation,
       jfloat close_icon_opacity,
       jboolean progress_bar_visible,
       jfloat progress_bar_height,
       jfloat progress_bar_opacity,
-      jint progress_bar_completion);
+      jint progress_bar_completion,
+      jobject j_profile);
+
+  // Inherited from BitmapFetcherDelegate
+  void OnFetchComplete(
+      const GURL& url,
+      const SkBitmap* bitmap) override;
 
   void SetContentTree(
       JNIEnv* env,
@@ -98,7 +109,13 @@ class ContextualSearchSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jobj);
 
  private:
+  void FetchThumbnail(jobject j_profile);
+
+  JNIEnv* env_;
+  base::android::ScopedJavaGlobalRef<jobject> object_;
   float base_page_brightness_;
+  std::string thumbnail_url_;
+  std::unique_ptr<chrome::BitmapFetcher> fetcher_;
 
   scoped_refptr<ContextualSearchLayer> contextual_search_layer_;
   scoped_refptr<cc::Layer> content_container_;

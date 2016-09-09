@@ -31,8 +31,6 @@ public class ContextualSearchFieldTrial {
     private static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
 
     private static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
-    private static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS =
-            "disable_extra_search_bar_animations";
     private static final String ENABLE_BLACKLIST = "enable_blacklist";
 
     // Translation.  All these members are private, except for usage by testing.
@@ -75,6 +73,9 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
 
+    // UI integration with Now on Tap data.
+    private static final String NOW_ON_TAP_BAR_INTEGRATION = "now_on_tap_bar_integration";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -96,6 +97,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
     private static Integer sSuppressionTaps;
+    private static Boolean sIsNowOnTapBarIntegrationEnabled;
 
     /**
      * Don't instantiate.
@@ -189,13 +191,6 @@ public class ContextualSearchFieldTrial {
             sIsPeekPromoEnabled = getBooleanParam(PEEK_PROMO_ENABLED);
         }
         return sIsPeekPromoEnabled.booleanValue();
-    }
-
-    /**
-     * @return Whether extra search bar animations are disabled.
-     */
-    static boolean areExtraSearchBarAnimationsDisabled() {
-        return getBooleanParam(DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS);
     }
 
     /**
@@ -372,6 +367,13 @@ public class ContextualSearchFieldTrial {
             sSuppressionTaps = getIntParamValueOrDefault(SUPPRESSION_TAPS, 0);
         }
         return sSuppressionTaps.intValue();
+    }
+
+    static boolean isNowOnTapBarIntegrationEnabled() {
+        if (sIsNowOnTapBarIntegrationEnabled == null) {
+            sIsNowOnTapBarIntegrationEnabled = getBooleanParam(NOW_ON_TAP_BAR_INTEGRATION);
+        }
+        return sIsNowOnTapBarIntegrationEnabled;
     }
 
     // --------------------------------------------------------------------------------------------

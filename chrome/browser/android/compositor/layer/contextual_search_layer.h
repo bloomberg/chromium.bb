@@ -75,6 +75,8 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_shadow_opacity,
                      bool search_provider_icon_sprite_visible,
                      float search_provider_icon_sprite_completion_percentage,
+                     bool thumbnail_visible,
+                     int thumbnail_size,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      float close_icon_opacity,
@@ -82,6 +84,8 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float progress_bar_height,
                      float progress_bar_opacity,
                      int progress_bar_completion);
+
+  void SetThumbnail(const SkBitmap* thumbnail);
 
  protected:
   explicit ContextualSearchLayer(ui::ResourceManager* resource_manager);
@@ -92,9 +96,12 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   bool search_provider_icon_sprite_visible_;
   int search_provider_icon_sprite_metadata_resource_id_;
   float search_provider_icon_sprite_completion_percentage_;
+  bool thumbnail_visible_;
+  int thumbnail_size_;
 
   scoped_refptr<cc::UIResourceLayer> search_context_;
   scoped_refptr<CrushedSpriteLayer> search_provider_icon_sprite_;
+  scoped_refptr<cc::UIResourceLayer> thumbnail_layer_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;
   scoped_refptr<cc::UIResourceLayer> search_promo_;
   scoped_refptr<cc::SolidColorLayer> search_promo_container_;

@@ -39,25 +39,35 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 }
 
 scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
-  // Search Provider Icon Sprite (Animated)
+  scoped_refptr<cc::Layer> icon = nullptr;
+
+  // Thumbnail.
+  if (thumbnail_visible_) {
+    if (thumbnail_layer_->parent() != layer_)
+          layer_->AddChild(thumbnail_layer_);
+
+    icon = thumbnail_layer_;
+  } else if (thumbnail_layer_->parent()) {
+    thumbnail_layer_->RemoveFromParent();
+  }
+
+  // Search Provider Icon Sprite (Animated).
   if (search_provider_icon_sprite_visible_) {
-    if (search_provider_icon_sprite_->layer()->parent() != layer_) {
+    if (search_provider_icon_sprite_->layer()->parent() != layer_)
       layer_->AddChild(search_provider_icon_sprite_->layer().get());
-    }
+
     search_provider_icon_sprite_->DrawSpriteFrame(
         resource_manager_,
         panel_icon_resource_id_,
         search_provider_icon_sprite_metadata_resource_id_,
         search_provider_icon_sprite_completion_percentage_);
-  } else {
-    if (search_provider_icon_sprite_->layer().get() &&
-        search_provider_icon_sprite_->layer()->parent()) {
-      search_provider_icon_sprite_->layer()->RemoveFromParent();
-    }
-    return nullptr;
+    icon = search_provider_icon_sprite_->layer();
+  } else if (search_provider_icon_sprite_->layer().get() &&
+      search_provider_icon_sprite_->layer()->parent()) {
+    search_provider_icon_sprite_->layer()->RemoveFromParent();
   }
 
-  return search_provider_icon_sprite_->layer();
+  return icon;
 }
 
 void ContextualSearchLayer::SetProperties(
@@ -102,6 +112,8 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_shadow_opacity,
     bool search_provider_icon_sprite_visible,
     float search_provider_icon_sprite_completion_percentage,
+    bool thumbnail_visible,
+    int thumbnail_size,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -115,6 +127,9 @@ void ContextualSearchLayer::SetProperties(
       search_provider_icon_sprite_metadata_resource_id;
   search_provider_icon_sprite_completion_percentage_ =
       search_provider_icon_sprite_completion_percentage;
+
+  thumbnail_visible_ = thumbnail_visible;
+  thumbnail_size_ = thumbnail_size;
 
   // Grabs the dynamic Search Context resource.
   ui::ResourceManager::Resource* search_context_resource =
@@ -455,11 +470,87 @@ void ContextualSearchLayer::SetProperties(
   }
 }
 
+void ContextualSearchLayer::SetThumbnail(const SkBitmap* thumbnail) {
+  // Determine the scaled thumbnail width and height. If both the height and
+  // width of |thumbnail| are larger than |thumbnail_size_|, the thumbnail will
+  // be scaled down by a call to Layer::SetBounds() below.
+  int min_dimension = std::min(thumbnail->width(), thumbnail->height());
+  int scaled_thumbnail_width = thumbnail->width();
+  int scaled_thumbnail_height = thumbnail->height();
+  if (min_dimension > thumbnail_size_) {
+    scaled_thumbnail_width =
+        scaled_thumbnail_width * thumbnail_size_ / min_dimension;
+    scaled_thumbnail_height =
+        scaled_thumbnail_height * thumbnail_size_ / min_dimension;
+  }
+
+  // Determine the UV transform coordinates. This will crop the thumbnail.
+  // (0, 0) is the default top left corner. (1, 1) is the default bottom
+  // right corner.
+  float top_left_x = 0;
+  float top_left_y = 0;
+  float bottom_right_x = 1;
+  float bottom_right_y = 1;
+
+  if (scaled_thumbnail_width > thumbnail_size_) {
+    // Crop an even amount on the left and right sides of the thumbnail.
+    float top_left_x_px = (scaled_thumbnail_width - thumbnail_size_) / 2.f;
+    float bottom_right_x_px = top_left_x_px + thumbnail_size_;
+
+    top_left_x = top_left_x_px / scaled_thumbnail_width;
+    bottom_right_x = bottom_right_x_px / scaled_thumbnail_width;
+  } else if (scaled_thumbnail_height > thumbnail_size_) {
+    // Crop an even amount on the top and bottom of the thumbnail.
+    float top_left_y_px = (scaled_thumbnail_height - thumbnail_size_) / 2.f;
+    float bottom_right_y_px = top_left_y_px + thumbnail_size_;
+
+    top_left_y = top_left_y_px / scaled_thumbnail_height;
+    bottom_right_y = bottom_right_y_px / scaled_thumbnail_height;
+  }
+
+  // If the original |thumbnail| height or width is smaller than
+  // |thumbnail_size_| determine the x, y offset needed to center
+  // the thumbnail.
+  float x_pos = 0;
+  float y_pos = 0;
+
+  if (scaled_thumbnail_width < thumbnail_size_) {
+    x_pos = (thumbnail_size_ - scaled_thumbnail_width) / 2.f;
+  }
+
+  if (scaled_thumbnail_height < thumbnail_size_) {
+    y_pos = (thumbnail_size_ - scaled_thumbnail_height) / 2.f;
+  }
+
+  // Determine the layer bounds. This will down scale the thumbnail if
+  // necessary and ensure it is displayed at |thumbnail_size_|. If
+  // either the original |thumbnail| height or width is smaller than
+  // |thumbnail_size_|, the thumbnail will not be scaled.
+  int layer_width = std::min(thumbnail_size_, scaled_thumbnail_width);
+  int layer_height = std::min(thumbnail_size_, scaled_thumbnail_height);
+
+  // UIResourceLayer requires an immutable copy of the input |thumbnail|.
+  SkBitmap thumbnail_copy;
+  if (thumbnail->isImmutable()) {
+    thumbnail_copy = *thumbnail;
+  } else {
+    thumbnail->copyTo(&thumbnail_copy);
+    thumbnail_copy.setImmutable();
+  }
+
+  thumbnail_layer_->SetBitmap(thumbnail_copy);
+  thumbnail_layer_->SetBounds(gfx::Size(layer_width, layer_height));
+  thumbnail_layer_->SetPosition(gfx::PointF(x_pos, y_pos));
+  thumbnail_layer_->SetUV(gfx::PointF(top_left_x, top_left_y),
+                          gfx::PointF(bottom_right_x, bottom_right_y));
+}
+
 ContextualSearchLayer::ContextualSearchLayer(
     ui::ResourceManager* resource_manager)
     : OverlayPanelLayer(resource_manager),
       search_context_(cc::UIResourceLayer::Create()),
       search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
+      thumbnail_layer_(cc::UIResourceLayer::Create()),
       arrow_icon_(cc::UIResourceLayer::Create()),
       search_promo_(cc::UIResourceLayer::Create()),
       search_promo_container_(cc::SolidColorLayer::Create()),
@@ -502,6 +593,9 @@ ContextualSearchLayer::ContextualSearchLayer(
   // Progress Bar
   progress_bar_->SetIsDrawable(true);
   progress_bar_->SetFillCenter(true);
+
+  // Thumbnail
+  thumbnail_layer_->SetIsDrawable(true);
 }
 
 ContextualSearchLayer::~ContextualSearchLayer() {

@@ -6,11 +6,16 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchSceneLayer_jni.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -23,6 +28,8 @@ namespace android {
 ContextualSearchSceneLayer::ContextualSearchSceneLayer(JNIEnv* env,
                                                        jobject jobj)
     : SceneLayer(env, jobj),
+      env_(env),
+      object_(env, jobj),
       base_page_brightness_(1.0f),
       content_container_(cc::Layer::Create()) {
   // Responsible for moving the base page without modifying the layer itself.
@@ -94,13 +101,26 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat search_bar_shadow_opacity,
     jboolean search_provider_icon_sprite_visible,
     jfloat search_provider_icon_sprite_completion_percentage,
+    jboolean thumbnail_visible,
+    jint thumbnail_size,
+    jstring j_thumbnail_url,
     jfloat arrow_icon_opacity,
     jfloat arrow_icon_rotation,
     jfloat close_icon_opacity,
     jboolean progress_bar_visible,
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
-    jint progress_bar_completion) {
+    jint progress_bar_completion,
+    jobject j_profile) {
+
+  // Load the thumbnail if necessary.
+  std::string thumbnail_url =
+      base::android::ConvertJavaStringToUTF8(env, j_thumbnail_url);
+  if (thumbnail_url.compare(thumbnail_url_) != 0) {
+    thumbnail_url_ = thumbnail_url;
+    FetchThumbnail(j_profile);
+  }
+
   // NOTE(pedrosimonetti): The WebContents might not exist at this time if
   // the Contextual Search Result has not been requested yet. In this case,
   // we'll pass NULL to Contextual Search's Layer Tree.
@@ -166,6 +186,8 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_bar_shadow_opacity,
       search_provider_icon_sprite_visible,
       search_provider_icon_sprite_completion_percentage,
+      thumbnail_visible,
+      thumbnail_size,
       arrow_icon_opacity,
       arrow_icon_rotation,
       close_icon_opacity,
@@ -176,6 +198,32 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);
+}
+
+void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
+  if (thumbnail_url_.compare("") == 0) return;
+
+  GURL* gurl = new GURL(thumbnail_url_);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  fetcher_.reset(new chrome::BitmapFetcher(*gurl, this));
+  fetcher_->Init(
+      profile->GetRequestContext(),
+      std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::LOAD_NORMAL);
+  fetcher_->Start();
+}
+
+void ContextualSearchSceneLayer::OnFetchComplete(const GURL& url,
+                                                 const SkBitmap* bitmap) {
+  bool success = bitmap != NULL && !bitmap->drawsNothing();
+  Java_ContextualSearchSceneLayer_onThumbnailFetched(env_,
+                                                     object_.obj(),
+                                                     success);
+
+  if (success) contextual_search_layer_->SetThumbnail(bitmap);
+
+  fetcher_.reset(nullptr);
 }
 
 void ContextualSearchSceneLayer::SetContentTree(

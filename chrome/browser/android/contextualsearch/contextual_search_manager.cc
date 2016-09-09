@@ -139,12 +139,17 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
   base::android::ScopedJavaLocalRef<jstring> j_context_language =
       base::android::ConvertUTF8ToJavaString(
           env, resolved_search_term.context_language.c_str());
+  base::android::ScopedJavaLocalRef<jstring> j_thumbnail_url =
+      base::android::ConvertUTF8ToJavaString(
+          env,
+          resolved_search_term.thumbnail_url.c_str());
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
       env, java_manager_, resolved_search_term.is_invalid,
       resolved_search_term.response_code, j_search_term, j_display_text,
       j_alternate_term, j_mid, resolved_search_term.prevent_preload,
       resolved_search_term.selection_start_adjust,
-      resolved_search_term.selection_end_adjust, j_context_language);
+      resolved_search_term.selection_end_adjust, j_context_language,
+      j_thumbnail_url);
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(

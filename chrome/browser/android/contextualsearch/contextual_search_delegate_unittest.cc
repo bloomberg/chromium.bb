@@ -505,15 +505,18 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   int mention_start;
   int mention_end;
   std::string context_language;
+  std::string thumbnail_url;
   delegate_->DecodeSearchTermFromJsonResponse(
       json_with_escape, &search_term, &display_text, &alternate_term,
-      &mid, &prevent_preload, &mention_start, &mention_end, &context_language);
+      &mid, &prevent_preload, &mention_start, &mention_end, &context_language,
+      &thumbnail_url);
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
   EXPECT_EQ("barack obama", alternate_term);
   EXPECT_EQ("/m/02mjmr", mid);
   EXPECT_EQ("", prevent_preload);
   EXPECT_EQ("", context_language);
+  EXPECT_EQ("", thumbnail_url);
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {

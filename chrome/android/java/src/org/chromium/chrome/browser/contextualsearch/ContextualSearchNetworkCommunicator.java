@@ -36,11 +36,12 @@ public interface ContextualSearchNetworkCommunicator {
      * @param selectionEndAdjust The end offset adjustment of the selection to use to highlight
      *        the search term.
      * @param contextLanguage The language of the context, or the empty string if unknown.
+     * @param thumbnailUrl The URL of the thumbnail to display in our UX.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage);
+            String contextLanguage, String thumbnailUrl);
 
     // --------------------------------------------------------------------------------------------
     // These are non-network actions that need to be stubbed out for testing.
