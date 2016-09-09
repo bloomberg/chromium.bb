@@ -10,7 +10,6 @@ ios_app_bundle("crnet_consumer") {
   deps = [
     "//base",
     "//ios/crnet:crnet_framework+link",
-    "//ios/crnet:crnet_sources",
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).

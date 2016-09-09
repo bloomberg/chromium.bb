@@ -15,9 +15,11 @@ test("crnet_test") {
   deps = [
     "//base",
     "//base:i18n",
-    "//ios/crnet:crnet_sources",
+    "//ios/crnet:crnet_framework+link",
     "//ios/third_party/gcdwebserver",
     "//net:test_support",
     "//third_party/icu",
   ]
+
+  bundle_deps = [ "//ios/crnet:crnet_framework+bundle" ]
 }
