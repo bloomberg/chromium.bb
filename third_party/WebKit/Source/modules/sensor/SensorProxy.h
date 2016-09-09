@@ -49,6 +49,9 @@ public:
     void addConfiguration(device::mojom::blink::SensorConfigurationPtr, std::unique_ptr<Function<void(bool)>>);
     void removeConfiguration(device::mojom::blink::SensorConfigurationPtr, std::unique_ptr<Function<void(bool)>>);
 
+    void suspend();
+    void resume();
+
     device::mojom::blink::SensorType type() const { return m_type; }
     device::mojom::blink::ReportingMode reportingMode() const { return m_mode; }
 
@@ -95,6 +98,7 @@ private:
     mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
     mojo::ScopedSharedBufferMapping m_sharedBuffer;
     Reading m_reading;
+    bool m_suspended;
 };
 
 } // namespace blink

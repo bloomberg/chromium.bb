@@ -160,7 +160,8 @@ void Sensor::onStartRequestCompleted(bool result)
     DCHECK(m_configuration);
     DCHECK(m_sensorProxy);
     auto pollCallback = WTF::bind(&Sensor::pollForData, wrapWeakPersistent(this));
-    m_polling = SensorPollingStrategy::create(m_configuration->frequency, std::move(pollCallback), m_sensorProxy->reportingMode());
+    DCHECK_GT(m_configuration->frequency, 0);
+    m_polling = SensorPollingStrategy::create(1 / m_configuration->frequency, std::move(pollCallback), m_sensorProxy->reportingMode());
     updateState(Sensor::SensorState::ACTIVE);
 }
 
@@ -179,6 +180,15 @@ void Sensor::onStopRequestCompleted(bool result)
 void Sensor::pageVisibilityChanged()
 {
     updatePollingStatus();
+
+    if (!m_sensorProxy || !m_sensorProxy->isInitialized())
+        return;
+
+    if (page()->visibilityState() != PageVisibilityStateVisible) {
+        m_sensorProxy->suspend();
+    } else {
+        m_sensorProxy->resume();
+    }
 }
 
 void Sensor::startListening()

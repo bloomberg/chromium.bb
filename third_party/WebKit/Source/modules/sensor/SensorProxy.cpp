@@ -19,6 +19,7 @@ SensorProxy::SensorProxy(SensorType sensorType, SensorProviderProxy* provider)
     , m_clientBinding(this)
     , m_state(SensorProxy::Uninitialized)
     , m_reading()
+    , m_suspended(false)
 {
 }
 
@@ -74,6 +75,26 @@ void SensorProxy::removeConfiguration(SensorConfigurationPtr configuration, std:
 {
     DCHECK(isInitialized());
     m_sensor->RemoveConfiguration(std::move(configuration), convertToBaseCallback(std::move(callback)));
+}
+
+void SensorProxy::suspend()
+{
+    DCHECK(isInitialized());
+    if (m_suspended)
+        return;
+
+    m_sensor->Suspend();
+    m_suspended = true;
+}
+
+void SensorProxy::resume()
+{
+    DCHECK(isInitialized());
+    if (!m_suspended)
+        return;
+
+    m_sensor->Resume();
+    m_suspended = false;
 }
 
 void SensorProxy::updateInternalReading()
