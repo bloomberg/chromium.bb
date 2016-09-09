@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/shell.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -72,6 +75,12 @@ arc::mojom::AppInstance* GetAppInstance(int required_version,
   }
 
   return app_instance;
+}
+
+void PrioritizeArcInstanceCallback(bool success) {
+  VLOG(2) << "Finished prioritizing the instance: result=" << success;
+  if (!success)
+    LOG(ERROR) << "Failed to prioritize ARC";
 }
 
 // Find a proper size and position for a given rectangle on the screen.
@@ -252,6 +261,16 @@ bool LaunchApp(content::BrowserContext* context,
       if (chrome_controller) {
         chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
             app_id);
+
+        // On some boards, ARC is booted with a restricted set of resources by
+        // default to avoid slowing down Chrome's user session restoration.
+        // However, the restriction should be lifted once the user explicitly
+        // tries to launch an ARC app.
+        VLOG(2) << "Prioritizing the instance";
+        chromeos::SessionManagerClient* session_manager_client =
+            chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+        session_manager_client->PrioritizeArcInstance(
+            base::Bind(PrioritizeArcInstanceCallback));
       }
     }
     prefs->SetLastLaunchTime(app_id, base::Time::Now());

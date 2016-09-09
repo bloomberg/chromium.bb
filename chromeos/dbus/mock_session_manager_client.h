@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_MOCK_SESSION_MANAGER_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -63,6 +64,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(StartArcInstance,
                void(const cryptohome::Identification&, const ArcCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
+  MOCK_METHOD1(PrioritizeArcInstance, void(const ArcCallback&));
   MOCK_METHOD1(GetArcStartTime, void(const GetArcStartTimeCallback&));
   MOCK_METHOD2(RemoveArcData,
                void(const cryptohome::Identification&, const ArcCallback&));

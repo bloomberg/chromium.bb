@@ -232,6 +232,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // reached).
   virtual void StopArcInstance(const ArcCallback& callback) = 0;
 
+  // Prioritizes the ARC instance by removing cgroups restrictions that
+  // session_manager applies to the instance by default. Upon completion,
+  // invokes |callback| with the result; true on success, false on failure.
+  // Calling this multiple times is okay. Such calls except the first one
+  // will be ignored.
+  virtual void PrioritizeArcInstance(const ArcCallback& callback) = 0;
+
   // Asynchronously retrieves the timestamp which ARC instance is invoked or
   // returns false if there is no ARC instance or ARC is not available.
   virtual void GetArcStartTime(const GetArcStartTimeCallback& callback) = 0;
