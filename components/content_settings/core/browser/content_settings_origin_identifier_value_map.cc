@@ -37,7 +37,7 @@ class RuleIteratorImpl : public RuleIterator {
   bool HasNext() const override { return (current_rule_ != rule_end_); }
 
   Rule Next() override {
-    DCHECK(current_rule_ != rule_end_);
+    DCHECK(HasNext());
     DCHECK(current_rule_->second.get());
     Rule to_return(current_rule_->first.primary_pattern,
                    current_rule_->first.secondary_pattern,
@@ -97,16 +97,15 @@ std::unique_ptr<RuleIterator> OriginIdentifierValueMap::GetRuleIterator(
     auto_lock.reset(new base::AutoLock(*lock));
   EntryMap::const_iterator it = entries_.find(key);
   if (it == entries_.end())
-    return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
+    return nullptr;
   return std::unique_ptr<RuleIterator>(new RuleIteratorImpl(
       it->second.begin(), it->second.end(), auto_lock.release()));
 }
 
 size_t OriginIdentifierValueMap::size() const {
   size_t size = 0;
-  EntryMap::const_iterator it;
-  for (it = entries_.begin(); it != entries_.end(); ++it)
-    size += it->second.size();
+  for (const auto& entry : entries_)
+    size += entry.second.size();
   return size;
 }
 
@@ -122,19 +121,18 @@ base::Value* OriginIdentifierValueMap::GetValue(
   EntryMapKey key(content_type, resource_identifier);
   EntryMap::const_iterator it = entries_.find(key);
   if (it == entries_.end())
-      return NULL;
+    return nullptr;
 
   // Iterate the entries in until a match is found. Since the rules are stored
   // in the order of decreasing precedence, the most specific match is found
   // first.
-  Rules::const_iterator entry;
-  for (entry = it->second.begin(); entry != it->second.end(); ++entry) {
-    if (entry->first.primary_pattern.Matches(primary_url) &&
-        entry->first.secondary_pattern.Matches(secondary_url)) {
-      return entry->second.get();
+  for (const auto& entry : it->second) {
+    if (entry.first.primary_pattern.Matches(primary_url) &&
+        entry.first.secondary_pattern.Matches(secondary_url)) {
+      return entry.second.get();
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void OriginIdentifierValueMap::SetValue(

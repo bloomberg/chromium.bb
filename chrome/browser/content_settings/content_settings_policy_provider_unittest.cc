@@ -41,11 +41,9 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
-  Rules rules;
-
   std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
-  EXPECT_FALSE(rule_iterator->HasNext());
+  EXPECT_FALSE(rule_iterator);
 
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
@@ -53,6 +51,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   rule_iterator = provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                            std::string(), false);
+  ASSERT_TRUE(rule_iterator);
   EXPECT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());

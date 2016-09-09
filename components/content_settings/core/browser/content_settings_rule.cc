@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+
+#include <utility>
+
+#include "base/logging.h"
 
 namespace content_settings {
 
@@ -25,17 +28,6 @@ Rule::~Rule() {}
 
 RuleIterator::~RuleIterator() {}
 
-EmptyRuleIterator::~EmptyRuleIterator() {}
-
-bool EmptyRuleIterator::HasNext() const {
-  return false;
-}
-
-Rule EmptyRuleIterator::Next() {
-  NOTREACHED();
-  return Rule();
-}
-
 ConcatenationIterator::ConcatenationIterator(
     std::vector<std::unique_ptr<RuleIterator>> iterators,
     base::AutoLock* auto_lock)
@@ -52,7 +44,7 @@ ConcatenationIterator::ConcatenationIterator(
 ConcatenationIterator::~ConcatenationIterator() {}
 
 bool ConcatenationIterator::HasNext() const {
-  return (!iterators_.empty());
+  return !iterators_.empty();
 }
 
 Rule ConcatenationIterator::Next() {

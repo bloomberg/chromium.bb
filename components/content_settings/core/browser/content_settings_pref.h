@@ -51,6 +51,7 @@ class ContentSettingsPref {
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
+  // Returns nullptr to indicate the RuleIterator is empty.
   std::unique_ptr<RuleIterator> GetRuleIterator(
       const ResourceIdentifier& resource_identifier,
       bool incognito) const;

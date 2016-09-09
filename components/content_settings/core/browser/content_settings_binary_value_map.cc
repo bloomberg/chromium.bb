@@ -16,14 +16,13 @@ namespace {
 
 class RuleIteratorBinary : public RuleIterator {
  public:
-  explicit RuleIteratorBinary(bool is_enabled,
-                              std::unique_ptr<base::AutoLock> auto_lock)
+  RuleIteratorBinary(bool is_enabled, std::unique_ptr<base::AutoLock> auto_lock)
       : is_done_(is_enabled), auto_lock_(std::move(auto_lock)) {}
 
   bool HasNext() const override { return !is_done_; }
 
   Rule Next() override {
-    DCHECK(!is_done_);
+    DCHECK(HasNext());
     is_done_ = true;
     return Rule(ContentSettingsPattern::Wildcard(),
                 ContentSettingsPattern::Wildcard(),
@@ -45,11 +44,10 @@ std::unique_ptr<RuleIterator> BinaryValueMap::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::AutoLock> auto_lock) const {
-  if (resource_identifier.empty()) {
-    return std::unique_ptr<RuleIterator>(new RuleIteratorBinary(
-        IsContentSettingEnabled(content_type), std::move(auto_lock)));
-  }
-  return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
+  if (!resource_identifier.empty())
+    return nullptr;
+  return std::unique_ptr<RuleIterator>(new RuleIteratorBinary(
+      IsContentSettingEnabled(content_type), std::move(auto_lock)));
 }
 
 void BinaryValueMap::SetContentSettingDisabled(ContentSettingsType content_type,
@@ -60,9 +58,7 @@ void BinaryValueMap::SetContentSettingDisabled(ContentSettingsType content_type,
 bool BinaryValueMap::IsContentSettingEnabled(
     ContentSettingsType content_type) const {
   auto it = is_enabled_.find(content_type);
-  if (it == is_enabled_.end())
-    return true;
-  return it->second;
+  return it == is_enabled_.end() || it->second;
 }
 
 }  // namespace content_settings

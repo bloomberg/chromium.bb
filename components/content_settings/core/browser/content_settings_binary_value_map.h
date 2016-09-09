@@ -26,6 +26,7 @@ class BinaryValueMap {
   BinaryValueMap();
   ~BinaryValueMap();
 
+  // Returns nullptr to indicate the RuleIterator is empty.
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,

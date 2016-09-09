@@ -39,13 +39,6 @@ class RuleIterator {
   virtual Rule Next() = 0;
 };
 
-class EmptyRuleIterator : public RuleIterator {
- public:
-  ~EmptyRuleIterator() override;
-  bool HasNext() const override;
-  Rule Next() override;
-};
-
 class ConcatenationIterator : public RuleIterator {
  public:
   // ConcatenationIterator takes ownership of the pointers in the |iterators|

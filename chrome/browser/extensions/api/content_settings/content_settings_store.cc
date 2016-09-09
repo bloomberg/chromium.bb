@@ -11,6 +11,7 @@
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -62,34 +63,38 @@ std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
   std::vector<std::unique_ptr<RuleIterator>> iterators;
   // Iterate the extensions based on install time (last installed extensions
   // first).
-  ExtensionEntryMap::const_reverse_iterator entry;
+  ExtensionEntryMap::const_reverse_iterator entry_it;
 
   // The individual |RuleIterators| shouldn't lock; pass |lock_| to the
   // |ConcatenationIterator| in a locked state.
   std::unique_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
 
-  for (entry = entries_.rbegin(); entry != entries_.rend(); ++entry) {
-    if (!entry->second->enabled)
+  for (entry_it = entries_.rbegin(); entry_it != entries_.rend(); ++entry_it) {
+    auto* entry = entry_it->second;
+    if (!entry->enabled)
       continue;
 
+    std::unique_ptr<RuleIterator> rule_it;
     if (incognito) {
-      iterators.push_back(
-          entry->second->incognito_session_only_settings.GetRuleIterator(
-              type,
-              identifier,
-              NULL));
-      iterators.push_back(
-          entry->second->incognito_persistent_settings.GetRuleIterator(
-              type,
-              identifier,
-              NULL));
+      rule_it = entry->incognito_session_only_settings.GetRuleIterator(
+          type, identifier, nullptr);
+      if (rule_it)
+        iterators.push_back(std::move(rule_it));
+      rule_it = entry->incognito_persistent_settings.GetRuleIterator(
+          type, identifier, nullptr);
+      if (rule_it)
+        iterators.push_back(std::move(rule_it));
     } else {
-      iterators.push_back(
-          entry->second->settings.GetRuleIterator(type, identifier, NULL));
+      rule_it = entry->settings.GetRuleIterator(type, identifier, nullptr);
+      if (rule_it)
+        iterators.push_back(std::move(rule_it));
     }
   }
-  return std::unique_ptr<RuleIterator>(
-      new ConcatenationIterator(std::move(iterators), auto_lock.release()));
+  if (iterators.empty())
+    return nullptr;
+
+  return base::MakeUnique<ConcatenationIterator>(std::move(iterators),
+                                                 auto_lock.release());
 }
 
 void ContentSettingsStore::SetExtensionContentSetting(
@@ -251,13 +256,17 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
   base::AutoLock lock(lock_);
   const OriginIdentifierValueMap* map = GetValueMap(extension_id, scope);
   if (!map)
-    return NULL;
+    return nullptr;
+
   base::ListValue* settings = new base::ListValue();
-  OriginIdentifierValueMap::EntryMap::const_iterator it;
-  for (it = map->begin(); it != map->end(); ++it) {
-    std::unique_ptr<RuleIterator> rule_iterator(map->GetRuleIterator(
-        it->first.content_type, it->first.resource_identifier,
-        NULL));  // We already hold the lock.
+  for (const auto& it : *map) {
+    const auto& key = it.first;
+    std::unique_ptr<RuleIterator> rule_iterator(
+        map->GetRuleIterator(key.content_type, key.resource_identifier,
+                             nullptr));  // We already hold the lock.
+    if (!rule_iterator)
+      continue;
+
     while (rule_iterator->HasNext()) {
       const Rule& rule = rule_iterator->Next();
       std::unique_ptr<base::DictionaryValue> setting_dict(
@@ -268,9 +277,9 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
                               rule.secondary_pattern.ToString());
       setting_dict->SetString(
           keys::kContentSettingsTypeKey,
-          helpers::ContentSettingsTypeToString(it->first.content_type));
+          helpers::ContentSettingsTypeToString(key.content_type));
       setting_dict->SetString(keys::kResourceIdentifierKey,
-                              it->first.resource_identifier);
+                              key.resource_identifier);
       ContentSetting content_setting = ValueToContentSetting(rule.value.get());
       DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
 

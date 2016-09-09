@@ -74,6 +74,7 @@ class OriginIdentifierValueMap {
   // |OriginIdentifierValueMap| (also |GetRuleIterator|) before the iterator
   // has been destroyed. If |lock| is non-NULL, the returned |RuleIterator|
   // locks it and releases it when it is destroyed.
+  // Returns nullptr to indicate the RuleIterator is empty.
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,

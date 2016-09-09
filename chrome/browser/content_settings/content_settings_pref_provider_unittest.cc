@@ -419,7 +419,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
   {
     std::unique_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_COOKIES, std::string(), true));
-    EXPECT_FALSE(it->HasNext());
+    EXPECT_FALSE(it);
   }
 
   // Create an incognito provider and set a setting.

@@ -55,10 +55,10 @@ class DefaultRuleIterator : public RuleIterator {
       value_.reset(value->DeepCopy());
   }
 
-  bool HasNext() const override { return value_.get() != NULL; }
+  bool HasNext() const override { return !!value_; }
 
   Rule Next() override {
-    DCHECK(value_.get());
+    DCHECK(HasNext());
     return Rule(ContentSettingsPattern::Wildcard(),
                 ContentSettingsPattern::Wildcard(),
                 value_.release());
@@ -232,17 +232,18 @@ std::unique_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
     bool incognito) const {
   // The default provider never has incognito-specific settings.
   if (incognito)
-    return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
+    return nullptr;
 
   base::AutoLock lock(lock_);
-  if (resource_identifier.empty()) {
-    auto it(default_settings_.find(content_type));
-    if (it != default_settings_.end())
-      return std::unique_ptr<RuleIterator>(
-          new DefaultRuleIterator(it->second.get()));
+  if (!resource_identifier.empty())
+    return nullptr;
+
+  auto it = default_settings_.find(content_type);
+  if (it == default_settings_.end()) {
     NOTREACHED();
+    return nullptr;
   }
-  return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
+  return base::MakeUnique<DefaultRuleIterator>(it->second.get());
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(
@@ -271,8 +272,8 @@ void DefaultProvider::ReadDefaultSettings() {
 
 bool DefaultProvider::IsValueEmptyOrDefault(ContentSettingsType content_type,
                                             base::Value* value) {
-  if (!value) return true;
-  return ValueToContentSetting(value) == GetDefaultValue(content_type);
+  return !value ||
+         ValueToContentSetting(value) == GetDefaultValue(content_type);
 }
 
 void DefaultProvider::ChangeSetting(ContentSettingsType content_type,

@@ -174,8 +174,9 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
 TEST(OriginIdentifierValueMapTest, IterateEmpty) {
   content_settings::OriginIdentifierValueMap map;
   std::unique_ptr<content_settings::RuleIterator> rule_iterator(
-      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, std::string(), NULL));
-  EXPECT_FALSE(rule_iterator->HasNext());
+      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                          nullptr));
+  EXPECT_FALSE(rule_iterator);
 }
 
 TEST(OriginIdentifierValueMapTest, IterateNonempty) {

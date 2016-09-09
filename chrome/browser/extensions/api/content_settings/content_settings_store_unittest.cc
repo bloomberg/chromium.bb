@@ -60,21 +60,23 @@ ContentSetting GetContentSettingFromStore(
       store->GetRuleIterator(content_type, resource_identifier, incognito));
   std::unique_ptr<base::Value> setting(
       content_settings::TestUtils::GetContentSettingValueAndPatterns(
-          rule_iterator.get(), primary_url, secondary_url, NULL, NULL));
+          rule_iterator.get(), primary_url, secondary_url, nullptr, nullptr));
   return content_settings::ValueToContentSetting(setting.get());
 }
 
-void GetSettingsForOneTypeFromStore(
+std::vector<content_settings::Rule> GetSettingsForOneTypeFromStore(
     const ContentSettingsStore* store,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
-    bool incognito,
-    std::vector<content_settings::Rule>* rules) {
-  rules->clear();
+    bool incognito) {
+  std::vector<content_settings::Rule> rules;
   std::unique_ptr<content_settings::RuleIterator> rule_iterator(
       store->GetRuleIterator(content_type, resource_identifier, incognito));
-  while (rule_iterator->HasNext())
-    rules->push_back(rule_iterator->Next());
+  if (rule_iterator) {
+    while (rule_iterator->HasNext())
+      rules.push_back(rule_iterator->Next());
+  }
+  return rules;
 }
 
 }  // namespace
@@ -194,10 +196,9 @@ TEST_F(ContentSettingsStoreTest, RegisterUnregister) {
 }
 
 TEST_F(ContentSettingsStoreTest, GetAllSettings) {
-  bool incognito = false;
-  std::vector<content_settings::Rule> rules;
-  GetSettingsForOneTypeFromStore(
-      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito, &rules);
+  const bool incognito = false;
+  std::vector<content_settings::Rule> rules = GetSettingsForOneTypeFromStore(
+      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito);
   ASSERT_EQ(0u, rules.size());
 
   // Register first extension.
@@ -213,8 +214,8 @@ TEST_F(ContentSettingsStoreTest, GetAllSettings) {
                                       CONTENT_SETTING_ALLOW,
                                       kExtensionPrefsScopeRegular);
 
-  GetSettingsForOneTypeFromStore(
-      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito, &rules);
+  rules = GetSettingsForOneTypeFromStore(store(), CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), incognito);
   ASSERT_EQ(1u, rules.size());
   CheckRule(rules[0], pattern, pattern, CONTENT_SETTING_ALLOW);
 
@@ -231,8 +232,8 @@ TEST_F(ContentSettingsStoreTest, GetAllSettings) {
                                       CONTENT_SETTING_BLOCK,
                                       kExtensionPrefsScopeRegular);
 
-  GetSettingsForOneTypeFromStore(
-      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito, &rules);
+  rules = GetSettingsForOneTypeFromStore(store(), CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), incognito);
   ASSERT_EQ(2u, rules.size());
   // Rules appear in the reverse installation order of the extensions.
   CheckRule(rules[0], pattern_2, pattern_2, CONTENT_SETTING_BLOCK);
@@ -241,16 +242,16 @@ TEST_F(ContentSettingsStoreTest, GetAllSettings) {
   // Disable first extension.
   store()->SetExtensionState(ext_id, false);
 
-  GetSettingsForOneTypeFromStore(
-      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito, &rules);
+  rules = GetSettingsForOneTypeFromStore(store(), CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), incognito);
   ASSERT_EQ(1u, rules.size());
   CheckRule(rules[0], pattern_2, pattern_2, CONTENT_SETTING_BLOCK);
 
   // Uninstall second extension.
   store()->UnregisterExtension(ext_id_2);
 
-  GetSettingsForOneTypeFromStore(
-      store(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(), incognito, &rules);
+  rules = GetSettingsForOneTypeFromStore(store(), CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), incognito);
   ASSERT_EQ(0u, rules.size());
 }
 
