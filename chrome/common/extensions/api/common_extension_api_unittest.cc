@@ -663,15 +663,6 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
   }
 }
 
-static void GetDictionaryFromList(const base::DictionaryValue* schema,
-                                  const std::string& list_name,
-                                  const int list_index,
-                                  const base::DictionaryValue** out) {
-  const base::ListValue* list;
-  EXPECT_TRUE(schema->GetList(list_name, &list));
-  EXPECT_TRUE(list->GetDictionary(list_index, out));
-}
-
 static const base::DictionaryValue* GetDictChecked(
     const base::DictionaryValue* dict,
     const std::string& key) {
