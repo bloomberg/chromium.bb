@@ -47082,6 +47082,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ProxyOverriddenBubble.ExtensionCount" units="Extensions">
+  <obsolete>
+    Deprecated 9/2016. Never added to histograms.xml and value is always 1.
+  </obsolete>
+  <summary>
+    The number of extensions overriding the proxy, triggering the proxy override
+    extension warning bubble.
+  </summary>
+</histogram>
+
+<histogram name="ProxyOverriddenBubble.UserSelection"
+    units="ExtensionBubbleAction">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The action taken by the user when the &quot;proxy overridden&quot; extension
+    warning bubble is shown. Logged immediately after the action is taken.
+  </summary>
+</histogram>
+
 <histogram name="PushMessaging.BackgroundBudget">
   <owner>harkness@chromium.org</owner>
   <summary>

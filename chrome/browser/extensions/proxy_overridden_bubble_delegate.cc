@@ -133,7 +133,6 @@ bool ProxyOverriddenBubbleDelegate::ShouldLimitToEnabledExtensions() const {
 }
 
 void ProxyOverriddenBubbleDelegate::LogExtensionCount(size_t count) {
-  UMA_HISTOGRAM_COUNTS_100("ProxyOverriddenBubble.ExtensionCount", count);
 }
 
 void ProxyOverriddenBubbleDelegate::LogAction(
