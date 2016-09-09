@@ -31,7 +31,7 @@ std::vector<std::unique_ptr<APIPermissionInfo>>
 ChromeAPIPermissions::GetAllPermissions() const {
   // WARNING: If you are modifying a permission message in this list, be sure to
   // add the corresponding permission message rule to
-  // ChromePermissionMessageProvider::GetCoalescedPermissionMessages as well.
+  // ChromePermissionMessageProvider::GetPermissionMessages as well.
   APIPermissionInfo::InitInfo permissions_to_register[] = {
       // Register permissions for all extension types.
       {APIPermission::kBackground, "background"},

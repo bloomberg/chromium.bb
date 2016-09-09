@@ -23,7 +23,7 @@ namespace extensions {
 // extension's permissions. The class exposes set operations for combining and
 // manipulating the permissions.
 // TODO(sashab): PermissionIDSet should be called PermissionSet. Once
-// PermissionMessageProvider::GetCoalescedPermissionMessages() is the only
+// PermissionMessageProvider::GetPermissionMessages() is the only
 // method used for generating permission messages, find the other users of this
 // class and deprecate or rename it as appropriate.
 class PermissionSet {
