@@ -23,6 +23,8 @@ namespace blimp {
 namespace client {
 namespace {
 
+const int kDummyBlimpContentsId = 0;
+
 class MockRenderWidgetFeature : public RenderWidgetFeature {
  public:
   MOCK_METHOD3(SendCompositorMessage,
@@ -55,10 +57,12 @@ class MockBlimpCompositor : public BlimpCompositor {
 class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
  public:
   explicit BlimpCompositorManagerForTesting(
+      int blimp_contents_id,
       RenderWidgetFeature* render_widget_feature,
       BlimpCompositorDependencies* compositor_dependencies)
-      : BlimpCompositorManager(render_widget_feature, compositor_dependencies) {
-  }
+      : BlimpCompositorManager(blimp_contents_id,
+                               render_widget_feature,
+                               compositor_dependencies) {}
 
   using BlimpCompositorManager::GetCompositor;
 
@@ -81,7 +85,8 @@ class BlimpCompositorManagerTest : public testing::Test {
         base::MakeUnique<MockCompositorDependencies>());
 
     compositor_manager_ = base::MakeUnique<BlimpCompositorManagerForTesting>(
-        &render_widget_feature_, compositor_dependencies_.get());
+        kDummyBlimpContentsId, &render_widget_feature_,
+        compositor_dependencies_.get());
   }
 
   void TearDown() override {

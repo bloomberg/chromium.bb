@@ -72,11 +72,9 @@ class BlimpWindowTreeHost;
 class EngineNetworkComponents;
 class Tab;
 
-class BlimpEngineSession
-    : public BlimpMessageProcessor,
-      public content::WebContentsDelegate,
-      public ui::InputMethodObserver,
-      public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
+class BlimpEngineSession : public BlimpMessageProcessor,
+                           public content::WebContentsDelegate,
+                           public ui::InputMethodObserver {
  public:
   using GetPortCallback = base::Callback<void(uint16_t)>;
 
@@ -123,15 +121,6 @@ class BlimpEngineSession
   // Resizes screen to |size| in pixels, and updates its device pixel ratio to
   // |device_pixel_ratio|.
   void HandleResize(float device_pixel_ratio, const gfx::Size& size);
-
-  // RenderWidgetMessage handler methods.
-  // RenderWidgetMessageDelegate implementation.
-  void OnWebGestureEvent(
-      content::RenderWidgetHost* render_widget_host,
-      std::unique_ptr<blink::WebGestureEvent> event) override;
-  void OnCompositorMessageReceived(
-      content::RenderWidgetHost* render_widget_host,
-      const std::vector<uint8_t>& message) override;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(

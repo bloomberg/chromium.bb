@@ -19,6 +19,7 @@
 
 namespace blimp {
 namespace {
+constexpr int kDummyBlimpContentsId = 0;
 constexpr int kPointer1Id = 0;
 constexpr int kPointer2Id = 1;
 constexpr int kZoomOffsetMultiplier = 4;
@@ -45,7 +46,8 @@ BlimpDisplayManager::BlimpDisplayManager(
   compositor_->SetSize(platform_window_->GetBounds().size());
 
   compositor_manager_ = base::MakeUnique<BlimpCompositorManager>(
-      render_widget_feature, compositor_dependencies_.get());
+      kDummyBlimpContentsId, render_widget_feature,
+      compositor_dependencies_.get());
 
   compositor_->SetContentLayer(compositor_manager_->layer());
 

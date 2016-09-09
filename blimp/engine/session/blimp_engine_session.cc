@@ -67,7 +67,6 @@ namespace blimp {
 namespace engine {
 namespace {
 
-const int kDummyTabId = 0;
 const float kDefaultScaleFactor = 1.f;
 const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
@@ -236,7 +235,6 @@ BlimpEngineSession::BlimpEngineSession(
   screen_->UpdateDisplayScaleAndSize(
       kDefaultScaleFactor,
       gfx::Size(kDefaultDisplayWidth, kDefaultDisplayHeight));
-  render_widget_feature_.SetDelegate(kDummyTabId, this);
 
   std::unique_ptr<HeliumBlobSenderDelegate> helium_blob_delegate(
       new HeliumBlobSenderDelegate);
@@ -252,8 +250,6 @@ BlimpEngineSession::BlimpEngineSession(
 }
 
 BlimpEngineSession::~BlimpEngineSession() {
-  render_widget_feature_.RemoveDelegate(kDummyTabId);
-
   window_tree_host_->GetInputMethod()->RemoveObserver(this);
 
   // Ensure that all tabs are torn down first, since teardown will
@@ -385,22 +381,6 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
   }
 }
 
-void BlimpEngineSession::OnWebGestureEvent(
-    content::RenderWidgetHost* render_widget_host,
-    std::unique_ptr<blink::WebGestureEvent> event) {
-  TRACE_EVENT1("blimp", "BlimpEngineSession::OnWebGestureEvent", "type",
-               event->type);
-  render_widget_host->ForwardGestureEvent(*event);
-}
-
-void BlimpEngineSession::OnCompositorMessageReceived(
-    content::RenderWidgetHost* render_widget_host,
-    const std::vector<uint8_t>& message) {
-  TRACE_EVENT0("blimp", "BlimpEngineSession::OnCompositorMessageReceived");
-
-  render_widget_host->HandleCompositorProto(message);
-}
-
 void BlimpEngineSession::OnTextInputTypeChanged(
     const ui::TextInputClient* client) {}
 
@@ -428,7 +408,7 @@ void BlimpEngineSession::OnTextInputStateChanged(
   // OnShowImeIfNeeded is used instead to send show IME request to client.
   if (type == ui::TEXT_INPUT_TYPE_NONE)
     render_widget_feature_.SendHideImeRequest(
-        kDummyTabId,
+        tab_->tab_id(),
         tab_->web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost());
 }
 
@@ -443,7 +423,7 @@ void BlimpEngineSession::OnShowImeIfNeeded() {
     return;
 
   render_widget_feature_.SendShowImeRequest(
-      kDummyTabId,
+      tab_->tab_id(),
       tab_->web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
       window_tree_host_->GetInputMethod()->GetTextInputClient());
 }
@@ -560,8 +540,11 @@ void BlimpEngineSession::ForwardCompositorProto(
     content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& proto) {
   TRACE_EVENT0("blimp", "BlimpEngineSession::ForwardCompositorProto");
-  render_widget_feature_.SendCompositorMessage(kDummyTabId, render_widget_host,
-                                               proto);
+  if (!tab_) {
+    return;
+  }
+  render_widget_feature_.SendCompositorMessage(tab_->tab_id(),
+                                               render_widget_host, proto);
 }
 
 void BlimpEngineSession::NavigationStateChanged(

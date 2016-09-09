@@ -62,6 +62,10 @@ class BlimpContentsManager {
   void EraseObserverFromMap(int id);
   base::WeakPtr<BlimpContentsManager> GetWeakPtr();
 
+  // The ID to use whenever a new BlimpContentsImpl is created. Incremented
+  // after each use.
+  int next_blimp_contents_id_ = 0;
+
   // BlimpContentsManager owns the BlimpContentsDeletionObserver for the
   // contents it creates, with the content id being the key to help manage the
   // lifetime of the observers.

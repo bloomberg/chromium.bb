@@ -42,10 +42,14 @@ Tab::Tab(std::unique_ptr<content::WebContents> web_contents,
   // that to override user agent string from BlimpContentRendererClient.
   web_contents_->SetUserAgentOverride(GetBlimpEngineUserAgent());
 
+  render_widget_feature_->SetDelegate(tab_id_, this);
+
   Observe(web_contents_.get());
 }
 
-Tab::~Tab() {}
+Tab::~Tab() {
+  render_widget_feature_->RemoveDelegate(tab_id_);
+}
 
 void Tab::Resize(float device_pixel_ratio, const gfx::Size& size_in_dips) {
   DVLOG(1) << "Resize to " << size_in_dips.ToString() << ", "
@@ -152,6 +156,20 @@ void Tab::SendPageLoadStatusUpdate(PageLoadStatus load_status) {
 
   navigation_message_sender_->ProcessMessage(std::move(message),
                                              net::CompletionCallback());
+}
+
+void Tab::OnWebGestureEvent(content::RenderWidgetHost* render_widget_host,
+                            std::unique_ptr<blink::WebGestureEvent> event) {
+  TRACE_EVENT1("blimp", "Tab::OnWebGestureEvent", "type", event->type);
+  render_widget_host->ForwardGestureEvent(*event);
+}
+
+void Tab::OnCompositorMessageReceived(
+    content::RenderWidgetHost* render_widget_host,
+    const std::vector<uint8_t>& message) {
+  TRACE_EVENT0("blimp", "Tab::OnCompositorMessageReceived");
+
+  render_widget_host->HandleCompositorProto(message);
 }
 
 }  // namespace engine

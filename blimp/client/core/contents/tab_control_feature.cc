@@ -43,6 +43,7 @@ void TabControlFeature::CreateTab(int tab_id) {
   TabControlMessage* tab_control;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&tab_control);
   tab_control->mutable_create_tab();
+  message->set_target_tab_id(tab_id);
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }
@@ -51,6 +52,7 @@ void TabControlFeature::CloseTab(int tab_id) {
   TabControlMessage* tab_control;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&tab_control);
   tab_control->mutable_close_tab();
+  message->set_target_tab_id(tab_id);
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }

@@ -16,6 +16,7 @@ namespace blimp {
 namespace client {
 namespace {
 
+const int kDummyBlimpContentsId = 0;
 const GURL kExampleURL = GURL("https://www.example.com/");
 
 class MockBlimpNavigationControllerDelegate
@@ -36,7 +37,8 @@ TEST(BlimpNavigationControllerImplTest, BackForwardNavigation) {
 
   testing::StrictMock<MockBlimpNavigationControllerDelegate> delegate;
   testing::StrictMock<FakeNavigationFeature> feature;
-  BlimpNavigationControllerImpl navigation_controller(&delegate, &feature);
+  BlimpNavigationControllerImpl navigation_controller(kDummyBlimpContentsId,
+                                                      &delegate, &feature);
   feature.SetDelegate(1, &navigation_controller);
 
   EXPECT_CALL(delegate, OnNavigationStateChanged());
@@ -62,7 +64,8 @@ TEST(BlimpNavigationControllerImplTest, Loading) {
 
   testing::StrictMock<MockBlimpNavigationControllerDelegate> delegate;
   testing::StrictMock<FakeNavigationFeature> feature;
-  BlimpNavigationControllerImpl navigation_controller(&delegate, &feature);
+  BlimpNavigationControllerImpl navigation_controller(kDummyBlimpContentsId,
+                                                      &delegate, &feature);
   feature.SetDelegate(1, &navigation_controller);
 
   EXPECT_CALL(delegate, OnNavigationStateChanged());

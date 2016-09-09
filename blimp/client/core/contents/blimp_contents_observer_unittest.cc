@@ -19,7 +19,7 @@
 #endif  // defined(OS_ANDROID)
 
 namespace {
-const int kDummyTabId = 0;
+const int kDummyBlimpContentsId = 0;
 }
 
 namespace blimp {
@@ -60,7 +60,7 @@ TEST_F(BlimpContentsObserverTest, ObserverDies) {
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl contents(kDummyTabId, window_, &compositor_deps,
+  BlimpContentsImpl contents(kDummyBlimpContentsId, window_, &compositor_deps,
                              &ime_feature, nullptr, &render_widget_feature,
                              nullptr);
 
@@ -81,8 +81,8 @@ TEST_F(BlimpContentsObserverTest, ContentsDies) {
       base::MakeUnique<MockCompositorDependencies>());
   std::unique_ptr<BlimpContentsImpl> contents =
       base::MakeUnique<BlimpContentsImpl>(
-          kDummyTabId, window_, &compositor_deps, &ime_feature, nullptr,
-          &render_widget_feature, nullptr);
+          kDummyBlimpContentsId, window_, &compositor_deps, &ime_feature,
+          nullptr, &render_widget_feature, nullptr);
   observer.reset(new TestBlimpContentsObserver(contents.get()));
   EXPECT_CALL(*observer, OnContentsDestroyed()).Times(1);
   EXPECT_EQ(observer->blimp_contents(), contents.get());

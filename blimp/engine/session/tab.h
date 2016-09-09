@@ -6,6 +6,7 @@
 #define BLIMP_ENGINE_SESSION_TAB_H_
 
 #include "base/macros.h"
+#include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/engine/session/page_load_tracker.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -25,7 +26,9 @@ class EngineRenderWidgetFeature;
 
 // Owns WebContents, handles operations such as navigation requests in the tab,
 // and has one-to-one mapping to a client tab.
-class Tab : public content::WebContentsObserver, public PageLoadTrackerClient {
+class Tab : public content::WebContentsObserver,
+            public PageLoadTrackerClient,
+            public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
   // Caller ensures |render_widget_feature| and |navigation_message_sender|
   // outlives this object.
@@ -56,6 +59,15 @@ class Tab : public content::WebContentsObserver, public PageLoadTrackerClient {
 
   // PageLoadTrackerClient implementation.
   void SendPageLoadStatusUpdate(PageLoadStatus load_status) override;
+
+  // RenderWidgetMessage handler methods.
+  // RenderWidgetMessageDelegate implementation.
+  void OnWebGestureEvent(
+      content::RenderWidgetHost* render_widget_host,
+      std::unique_ptr<blink::WebGestureEvent> event) override;
+  void OnCompositorMessageReceived(
+      content::RenderWidgetHost* render_widget_host,
+      const std::vector<uint8_t>& message) override;
 
  private:
   // content::WebContentsObserver implementation.

@@ -6,35 +6,33 @@
 
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 
-namespace {
-// TODO(shaktisahu): NavigationFeature currently needs a tab_id. Remove this
-// later when it is fully integrated with BlimpClientContext.
-const int kDummyTabId = 0;
-}  // namespace
-
 namespace blimp {
 namespace client {
 
 BlimpNavigationControllerImpl::BlimpNavigationControllerImpl(
+    int blimp_contents_id,
     BlimpNavigationControllerDelegate* delegate,
     NavigationFeature* feature)
-    : navigation_feature_(feature), delegate_(delegate) {
+    : blimp_contents_id_(blimp_contents_id),
+      navigation_feature_(feature),
+      delegate_(delegate) {
   if (navigation_feature_)
-    navigation_feature_->SetDelegate(kDummyTabId, this);
+    navigation_feature_->SetDelegate(blimp_contents_id_, this);
 }
 
 BlimpNavigationControllerImpl::~BlimpNavigationControllerImpl() {
   if (navigation_feature_)
-    navigation_feature_->RemoveDelegate(kDummyTabId);
+    navigation_feature_->RemoveDelegate(blimp_contents_id_);
 }
 
 void BlimpNavigationControllerImpl::LoadURL(const GURL& url) {
   current_url_ = url;
-  navigation_feature_->NavigateToUrlText(kDummyTabId, current_url_.spec());
+  navigation_feature_->NavigateToUrlText(blimp_contents_id_,
+                                         current_url_.spec());
 }
 
 void BlimpNavigationControllerImpl::Reload() {
-  navigation_feature_->Reload(kDummyTabId);
+  navigation_feature_->Reload(blimp_contents_id_);
 }
 
 bool BlimpNavigationControllerImpl::CanGoBack() const {
@@ -48,11 +46,11 @@ bool BlimpNavigationControllerImpl::CanGoForward() const {
 }
 
 void BlimpNavigationControllerImpl::GoBack() {
-  navigation_feature_->GoBack(kDummyTabId);
+  navigation_feature_->GoBack(blimp_contents_id_);
 }
 
 void BlimpNavigationControllerImpl::GoForward() {
-  navigation_feature_->GoForward(kDummyTabId);
+  navigation_feature_->GoForward(blimp_contents_id_);
 }
 
 const GURL& BlimpNavigationControllerImpl::GetURL() {

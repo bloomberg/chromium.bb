@@ -14,10 +14,6 @@
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
-namespace {
-const int kDummyTabId = 0;
-}
-
 namespace blimp {
 namespace client {
 
@@ -102,10 +98,7 @@ BlimpContentsImpl* BlimpContentsManager::GetBlimpContents(int id) {
 }
 
 int BlimpContentsManager::CreateBlimpContentsId() {
-  // TODO(mlliu): currently, Blimp only supports a single tab, so returning a
-  // dummy tab id. Need to return real case id when Blimp supports multiple
-  // tabs.
-  return kDummyTabId;
+  return next_blimp_contents_id_++;
 }
 
 void BlimpContentsManager::EraseObserverFromMap(int id) {

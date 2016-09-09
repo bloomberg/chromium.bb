@@ -11,14 +11,12 @@
 namespace blimp {
 namespace client {
 
-namespace {
-const int kDummyTabId = 0;
-}  // namespace
-
 BlimpCompositorManager::BlimpCompositorManager(
+    int blimp_contents_id,
     RenderWidgetFeature* render_widget_feature,
     BlimpCompositorDependencies* compositor_dependencies)
-    : render_widget_feature_(render_widget_feature),
+    : blimp_contents_id_(blimp_contents_id),
+      render_widget_feature_(render_widget_feature),
       visible_(false),
       layer_(cc::Layer::Create()),
       active_compositor_(nullptr),
@@ -26,11 +24,11 @@ BlimpCompositorManager::BlimpCompositorManager(
   DCHECK(render_widget_feature_);
   DCHECK(compositor_dependencies_);
 
-  render_widget_feature_->SetDelegate(kDummyTabId, this);
+  render_widget_feature_->SetDelegate(blimp_contents_id_, this);
 }
 
 BlimpCompositorManager::~BlimpCompositorManager() {
-  render_widget_feature_->RemoveDelegate(kDummyTabId);
+  render_widget_feature_->RemoveDelegate(blimp_contents_id_);
 }
 
 void BlimpCompositorManager::SetVisible(bool visible) {
@@ -106,15 +104,15 @@ void BlimpCompositorManager::OnCompositorMessageReceived(
 void BlimpCompositorManager::SendWebGestureEvent(
     int render_widget_id,
     const blink::WebGestureEvent& gesture_event) {
-  render_widget_feature_->SendWebGestureEvent(kDummyTabId, render_widget_id,
-                                              gesture_event);
+  render_widget_feature_->SendWebGestureEvent(blimp_contents_id_,
+                                              render_widget_id, gesture_event);
 }
 
 void BlimpCompositorManager::SendCompositorMessage(
     int render_widget_id,
     const cc::proto::CompositorMessage& message) {
-  render_widget_feature_->SendCompositorMessage(kDummyTabId, render_widget_id,
-                                                message);
+  render_widget_feature_->SendCompositorMessage(blimp_contents_id_,
+                                                render_widget_id, message);
 }
 
 BlimpCompositor* BlimpCompositorManager::GetCompositor(int render_widget_id) {

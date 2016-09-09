@@ -59,6 +59,7 @@ public class EmptyBackgroundViewTablet extends FrameLayout {
             @Override
             public void onClick(View v) {
                 if (mTabCreator == null) return;
+                mTabModelSelector.getModel(false).commitAllTabClosures();
                 mTabCreator.launchNTP();
             }
         });

@@ -94,7 +94,13 @@ void NavigationFeature::ProcessMessage(
   const NavigationMessage& navigation_message = message->navigation();
 
   NavigationFeatureDelegate* delegate = FindDelegate(tab_id);
-  DCHECK(delegate) << "NavigationFeatureDelegate not found for tab " << tab_id;
+  if (!delegate) {
+    VLOG(1) << "NavigationFeatureDelegate not found for " << tab_id
+            << ". Ignoring.";
+    callback.Run(net::OK);
+    return;
+  }
+
   switch (navigation_message.type()) {
     case NavigationMessage::NAVIGATION_STATE_CHANGED: {
       const NavigationStateChangeMessage& details =

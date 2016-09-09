@@ -19,6 +19,10 @@
 
 using base::android::JavaParamRef;
 
+namespace {
+const int kDummyBlimpContentsId = 0;
+}  // namespace
+
 namespace blimp {
 namespace client {
 namespace app {
@@ -68,7 +72,8 @@ BlimpView::BlimpView(JNIEnv* env,
       &BlimpView::OnSwapBuffersCompleted, weak_ptr_factory_.GetWeakPtr()));
 
   compositor_manager_ = base::MakeUnique<BlimpCompositorManager>(
-      render_widget_feature, compositor_dependencies_.get());
+      kDummyBlimpContentsId, render_widget_feature,
+      compositor_dependencies_.get());
   compositor_->SetContentLayer(compositor_manager_->layer());
 
   java_obj_.Reset(env, jobj);

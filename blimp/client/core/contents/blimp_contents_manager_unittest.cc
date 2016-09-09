@@ -24,7 +24,7 @@
 using testing::_;
 
 namespace {
-const int kDummyTabId = 0;
+const int kDummyBlimpContentsId = 0;
 }
 
 namespace blimp {
@@ -93,7 +93,7 @@ TEST_F(BlimpContentsManagerTest, GetNonExistingBlimpContents) {
                                               &tab_control_feature);
 
   BlimpContentsImpl* existing_contents =
-      blimp_contents_manager.GetBlimpContents(kDummyTabId);
+      blimp_contents_manager.GetBlimpContents(kDummyBlimpContentsId);
   EXPECT_EQ(nullptr, existing_contents);
 }
 

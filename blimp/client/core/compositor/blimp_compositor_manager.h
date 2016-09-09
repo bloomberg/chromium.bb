@@ -28,6 +28,7 @@ class BlimpCompositorManager
       public BlimpCompositorClient {
  public:
   explicit BlimpCompositorManager(
+      int blimp_contents_id,
       RenderWidgetFeature* render_widget_feature,
       BlimpCompositorDependencies* compositor_dependencies);
   ~BlimpCompositorManager() override;
@@ -66,6 +67,8 @@ class BlimpCompositorManager
   void SendCompositorMessage(
       int render_widget_id,
       const cc::proto::CompositorMessage& message) override;
+
+  int blimp_contents_id_;
 
   // The bridge to the network layer that does the proto/RenderWidget id work.
   // BlimpCompositorManager does not own this and it is expected to outlive this

@@ -33,8 +33,8 @@ BlimpContentsImpl::BlimpContentsImpl(
     NavigationFeature* navigation_feature,
     RenderWidgetFeature* render_widget_feature,
     TabControlFeature* tab_control_feature)
-    : navigation_controller_(this, navigation_feature),
-      compositor_manager_(render_widget_feature, compositor_deps),
+    : navigation_controller_(id, this, navigation_feature),
+      compositor_manager_(id, render_widget_feature, compositor_deps),
       id_(id),
       ime_feature_(ime_feature),
       window_(window),

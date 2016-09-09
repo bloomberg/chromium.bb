@@ -27,7 +27,7 @@ namespace {
 
 const char kExampleURL[] = "https://www.example.com/";
 const char kOtherExampleURL[] = "https://www.otherexample.com/";
-const int kDummyTabId = 0;
+const int kDummyBlimpContentsId = 0;
 
 class MockBlimpContentsObserver : public BlimpContentsObserver {
  public:
@@ -75,9 +75,9 @@ TEST_F(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl blimp_contents(kDummyTabId, window_, &compositor_deps,
-                                   &ime_feature, &navigation_feature,
-                                   &render_widget_feature, nullptr);
+  BlimpContentsImpl blimp_contents(
+      kDummyBlimpContentsId, window_, &compositor_deps, &ime_feature,
+      &navigation_feature, &render_widget_feature, nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
@@ -114,7 +114,7 @@ TEST_F(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
   BlimpContentsImpl blimp_contents(
-      kDummyTabId, window_, &compositor_deps, &ime_feature, nullptr,
+      kDummyBlimpContentsId, window_, &compositor_deps, &ime_feature, nullptr,
       &render_widget_feature, &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature,

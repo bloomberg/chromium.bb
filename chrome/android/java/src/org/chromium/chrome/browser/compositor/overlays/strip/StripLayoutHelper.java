@@ -806,6 +806,7 @@ public class StripLayoutHelper {
         resetResizeTimeout(false);
 
         if (mNewTabButton.click(x, y) && mModel != null) {
+            if (!mModel.isIncognito()) mModel.commitAllTabClosures();
             mTabCreator.launchNTP();
             return;
         }
@@ -852,6 +853,7 @@ public class StripLayoutHelper {
         mInteractingTab = null;
         mReorderState = REORDER_SCROLL_NONE;
         if (mNewTabButton.onUpOrCancel() && mModel != null) {
+            if (!mModel.isIncognito()) mModel.commitAllTabClosures();
             mTabCreator.launchNTP();
         }
     }

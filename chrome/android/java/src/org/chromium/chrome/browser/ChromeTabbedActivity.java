@@ -513,6 +513,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             OnClickListener newTabClickHandler = new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    getTabModelSelector().getModel(false).commitAllTabClosures();
                     // This assumes that the keyboard can not be seen at the same time as the
                     // newtab button on the toolbar.
                     getCurrentTabCreator().launchNTP();
@@ -1057,11 +1058,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (id == R.id.move_to_other_window_menu_id) {
             if (currentTab != null) moveTabToOtherWindow(currentTab);
         } else if (id == R.id.new_tab_menu_id) {
+            getTabModelSelector().getModel(false).commitAllTabClosures();
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
             getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+                getTabModelSelector().getModel(false).commitAllTabClosures();
                 // This action must be recorded before opening the incognito tab since UMA actions
                 // are dropped when an incognito tab is open.
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
