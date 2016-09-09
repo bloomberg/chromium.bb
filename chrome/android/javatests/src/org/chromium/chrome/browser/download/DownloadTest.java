@@ -12,6 +12,7 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -74,6 +75,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testHttpGetDownload() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "get.html"));
         waitForFocus();
@@ -90,6 +92,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testDangerousDownload() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "dangerous.html"));
         waitForFocus();
@@ -107,6 +110,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testDangerousDownloadCancel() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "dangerous.html"));
         waitForFocus();
@@ -136,6 +140,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testHttpPostDownload() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();
@@ -176,6 +181,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testDuplicateHttpPostDownload_Overwrite() throws Exception {
         // Snackbar overlaps the infobar which is clicked in this test.
         getActivity().getSnackbarManager().disableForTesting();
@@ -401,6 +407,7 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
+    @RetryOnFailure
     public void testUrlEscaping() throws Exception {
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "urlescaping.html"));
         waitForFocus();

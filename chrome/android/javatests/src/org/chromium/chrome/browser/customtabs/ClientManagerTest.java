@@ -9,6 +9,7 @@ import android.os.Process;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /** Tests for ClientManager. */
@@ -84,6 +85,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testPredictionOutcomeSuccess() {
         assertTrue(mClientManager.newSession(mSession, mUid, null));
         assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));

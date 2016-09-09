@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -31,6 +32,7 @@ import javax.annotation.Nullable;
 /**
  * Test for {@link FeedbackCollector}.
  */
+@RetryOnFailure
 public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int CONNECTIVITY_TASK_TIMEOUT_MS = 10;
 

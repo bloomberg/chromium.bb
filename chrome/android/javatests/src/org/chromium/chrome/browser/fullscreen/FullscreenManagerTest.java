@@ -22,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 //  (http://crbug/642336) import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -49,6 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Test suite for verifying the behavior of various fullscreen actions.
  */
+@RetryOnFailure
 public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     private static final String LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE =

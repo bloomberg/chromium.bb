@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -219,12 +220,14 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromTimer() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE), false, false, true);
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromTimerInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PARENT_FRAME_PAGE), false,
@@ -232,6 +235,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_PAGE), true, true, true);
@@ -245,12 +249,14 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromXHRCallback() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PAGE), true, true, true);
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromXHRCallbackInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PARENT_FRAME_PAGE), true,
@@ -258,6 +264,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromXHRCallbackAndShortTimeout() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE),
@@ -265,6 +272,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationFromXHRCallbackAndLongTimeout() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE),
@@ -272,6 +280,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationWithFallbackURL()
             throws InterruptedException, UnsupportedEncodingException {
         String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);
@@ -283,6 +292,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNavigationWithFallbackURLInSubFrame()
             throws InterruptedException, UnsupportedEncodingException {
         // The replace_text parameters for NAVIGATION_WITH_FALLBACK_URL_PAGE, which is loaded in
@@ -316,6 +326,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testRedirectionFromIntent() throws InterruptedException {
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));

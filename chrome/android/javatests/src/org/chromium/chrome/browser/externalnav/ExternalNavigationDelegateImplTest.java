@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
@@ -31,6 +32,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_NoResolveInfo() {
         String packageName = "";
         List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
@@ -39,6 +41,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_NoPathOrAuthority() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -49,6 +52,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithPath() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -60,6 +64,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithAuthority() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
@@ -71,6 +76,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithTargetPackage_Matching() {
         String packageName = "com.android.chrome";
         ResolveInfo info = new ResolveInfo();
@@ -84,6 +90,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testIsPackageSpecializedHandler_WithTargetPackage_NotMatching() {
         String packageName = "com.android.chrome";
         ResolveInfo info = new ResolveInfo();
@@ -98,6 +105,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
 
     @SmallTest
     @CommandLineFlags.Add({"disable-features=SystemDownloadManager"})
+    @RetryOnFailure
     public void testIsDownload_noSystemDownloadManager() throws Exception {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 getActivity().getActivityTab());

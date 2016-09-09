@@ -12,6 +12,7 @@ import android.util.JsonReader;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
@@ -149,6 +150,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @MediumTest
     @Feature({"History"})
+    @RetryOnFailure
     public void testSearchHistory() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
@@ -218,6 +220,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @LargeTest
     @Feature({"History"})
+    @RetryOnFailure
     public void testClearBrowsingData() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));

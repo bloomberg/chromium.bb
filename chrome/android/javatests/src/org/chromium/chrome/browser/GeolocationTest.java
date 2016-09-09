@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -37,6 +38,7 @@ import java.util.concurrent.Callable;
  * - Global location is enabled.
  * - Google location is enabled.
  */
+@RetryOnFailure
 public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String LOCATION_PROVIDER_MOCK = "locationProviderMock";
     private static final double LATITUDE = 51.01;

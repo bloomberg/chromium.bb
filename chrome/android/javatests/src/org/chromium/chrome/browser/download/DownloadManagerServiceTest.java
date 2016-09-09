@@ -20,6 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
@@ -335,6 +336,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     @MediumTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testAllDownloadProgressIsCalledForSlowUpdates() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
@@ -456,6 +458,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     @MediumTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testMultipleDownloadProgress() {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(

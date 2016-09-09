@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -21,6 +22,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for launching Chrome.
  */
+@RetryOnFailure
 public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private Context mContext;
