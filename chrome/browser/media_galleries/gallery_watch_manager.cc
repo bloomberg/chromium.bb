@@ -29,7 +29,7 @@ using content::BrowserThread;
 namespace {
 
 // Don't send a notification more than once per 3 seconds (chosen arbitrarily).
-const int kMinNotificiationDelayInSeconds = 3;
+const int kMinNotificationDelayInSeconds = 3;
 
 class ShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
@@ -416,12 +416,12 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
   base::TimeDelta time_since_last_notify =
       base::Time::Now() - notification_info->second.last_notify_time;
   if (time_since_last_notify <
-      base::TimeDelta::FromSeconds(kMinNotificiationDelayInSeconds)) {
+      base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds)) {
     if (!notification_info->second.delayed_notification_pending) {
       notification_info->second.delayed_notification_pending = true;
       base::TimeDelta delay_to_next_valid_time =
           notification_info->second.last_notify_time +
-          base::TimeDelta::FromSeconds(kMinNotificiationDelayInSeconds) -
+          base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds) -
           base::Time::Now();
       BrowserThread::PostDelayedTask(
           BrowserThread::UI,

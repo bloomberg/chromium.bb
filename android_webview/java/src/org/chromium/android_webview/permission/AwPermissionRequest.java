@@ -30,7 +30,7 @@ public class AwPermissionRequest {
     // This should be same as corresponding definition in PermissionRequest.
     // We duplicate definition because it is used in Android L and afterwards, but is only
     // defined in M.
-    // TODO(michaelbai) : Replace "android.webkit.resoruce.MIDI_SYSEX" with
+    // TODO(michaelbai) : Replace "android.webkit.resource.MIDI_SYSEX" with
     // PermissionRequest.RESOURCE_MIDI_SYSEX once Android M SDK is used.
     public static final String RESOURCE_MIDI_SYSEX = "android.webkit.resource.MIDI_SYSEX";
 

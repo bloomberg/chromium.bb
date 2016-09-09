@@ -121,7 +121,7 @@ def ParseExpectation(expectation_string):
 
 
 def ExtractTestConfigs(sourcefile_path, suite_name):
-  """Parses the soruce file for test configurations.
+  """Parses the source file for test configurations.
 
   Each no-compile test in the file is separated by an ifdef macro.  We scan
   the source file with the NCTEST_CONFIG_RE to find all ifdefs that look like

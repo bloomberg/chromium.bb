@@ -148,7 +148,7 @@ base::trace_event::MemoryAllocatorDump* target_mad =
 // When creating an edge, you can assign an importance to this edge. If all
 // edges have the same importance, the size of the allocation will be split
 // between all sources which create a dump for the allocation. If one
-// edge has higher importance than the others, its soruce will be assigned the
+// edge has higher importance than the others, its source will be assigned the
 // full size of the allocation.
 const int kImportance = 1;
 process_memory_dump->AddOwnershipEdge(

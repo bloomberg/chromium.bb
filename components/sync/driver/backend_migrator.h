@@ -67,7 +67,7 @@ class BackendMigrator {
   State state() const;
 
   // Called from ProfileSyncService to notify us of configure done.
-  // Note: We receive these notificiations only when our state is not IDLE.
+  // Note: We receive these notifications only when our state is not IDLE.
   void OnConfigureDone(
       const sync_driver::DataTypeManager::ConfigureResult& result);
 

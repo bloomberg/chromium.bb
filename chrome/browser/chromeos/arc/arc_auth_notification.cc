@@ -26,7 +26,7 @@ namespace {
 
 // Ids of the notification shown on first run.
 const char kNotifierId[] = "arc_auth";
-const char kDisplaySoruce[] = "arc_auth_source";
+const char kDisplaySource[] = "arc_auth_source";
 const char kFirstRunNotificationId[] = "arc_auth/first_run";
 
 class ArcAuthNotificationDelegate
@@ -107,7 +107,7 @@ void ArcAuthNotification::Show(Profile* profile) {
           l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_MESSAGE,
                                      ash::GetChromeOSDeviceName()),
           resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
-          base::UTF8ToUTF16(kDisplaySoruce), GURL(), notifier_id, data,
+          base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id, data,
           new ArcAuthNotificationDelegate()));
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));

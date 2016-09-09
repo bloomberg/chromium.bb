@@ -57,7 +57,7 @@ template("_extension_repack_one_locale") {
   }
 }
 
-# Pack all resoruces for an application extension for all locales.
+# Pack all resources for an application extension for all locales.
 #
 # Arguments:
 #
