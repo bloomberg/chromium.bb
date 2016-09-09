@@ -24,6 +24,8 @@ struct local_dma_buf_sync {
 
 #define LOCAL_DMA_BUF_SYNC_READ (1 << 0)
 #define LOCAL_DMA_BUF_SYNC_WRITE (2 << 0)
+#define LOCAL_DMA_BUF_SYNC_RW \
+  (LOCAL_DMA_BUF_SYNC_READ | LOCAL_DMA_BUF_SYNC_WRITE)
 #define LOCAL_DMA_BUF_SYNC_START (0 << 2)
 #define LOCAL_DMA_BUF_SYNC_END (1 << 2)
 
@@ -39,7 +41,7 @@ namespace {
 void PrimeSyncStart(int dmabuf_fd) {
   struct local_dma_buf_sync sync_start = {0};
 
-  sync_start.flags = LOCAL_DMA_BUF_SYNC_START | LOCAL_DMA_BUF_SYNC_READ;
+  sync_start.flags = LOCAL_DMA_BUF_SYNC_START | LOCAL_DMA_BUF_SYNC_RW;
   if (drmIoctl(dmabuf_fd, LOCAL_DMA_BUF_IOCTL_SYNC, &sync_start))
     PLOG(ERROR) << "Failed DMA_BUF_SYNC_START";
 }
@@ -47,7 +49,7 @@ void PrimeSyncStart(int dmabuf_fd) {
 void PrimeSyncEnd(int dmabuf_fd) {
   struct local_dma_buf_sync sync_end = {0};
 
-  sync_end.flags = LOCAL_DMA_BUF_SYNC_END | LOCAL_DMA_BUF_SYNC_WRITE;
+  sync_end.flags = LOCAL_DMA_BUF_SYNC_END | LOCAL_DMA_BUF_SYNC_RW;
   if (drmIoctl(dmabuf_fd, LOCAL_DMA_BUF_IOCTL_SYNC, &sync_end))
     PLOG(ERROR) << "Failed DMA_BUF_SYNC_END";
 }
