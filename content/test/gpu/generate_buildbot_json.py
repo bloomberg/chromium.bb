@@ -88,7 +88,7 @@ WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.10'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Release',
@@ -100,7 +100,7 @@ WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.10'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Debug',
@@ -376,7 +376,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.10'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Release',
@@ -388,7 +388,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.10'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Debug',
@@ -400,12 +400,29 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.11'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Release',
       # This bot is a one-off for testing purposes.
       'swarming': False,
+      'os_type': 'mac',
+    },
+    'Mac GPU ASAN Release': {
+      # This bot spawns jobs on multiple GPU types.
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.10'
+        },
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
       'os_type': 'mac',
     },
     'Linux Release (NVIDIA)': {
@@ -651,7 +668,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.10'
+          'os': 'Mac'
         },
       ],
       'build_config': 'Release',

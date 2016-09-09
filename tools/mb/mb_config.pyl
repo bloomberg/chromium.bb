@@ -330,6 +330,8 @@
       'Mac 10.10 Retina Debug (AMD)': 'none',
       'Mac 10.10 Retina Release (AMD)': 'none',
       'Mac 10.11 Retina Release (AMD)': 'none',
+      'Mac GPU ASAN Release':
+        'swarming_gpu_fyi_tests_gn_release_trybot_asan',
       'Mac Retina Debug': 'none',
       'Mac Retina Release': 'none',
       'Win7 Debug (ATI)': 'none',
@@ -1795,18 +1797,20 @@
     ],
 
     'swarming_gpu_fyi_tests_chromeos_gn_release_trybot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'release_trybot', 'angle_deqp_tests', 'chromeos',
+      'swarming_gpu_fyi_tests_gn', 'release_trybot', 'chromeos',
     ],
 
     'swarming_gpu_fyi_tests_gn_debug_trybot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'debug_trybot', 'angle_deqp_tests',
+      'swarming_gpu_fyi_tests_gn', 'debug_trybot',
     ],
 
     'swarming_gpu_fyi_tests_gn_release_trybot': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'release_trybot', 'angle_deqp_tests',
+      'swarming_gpu_fyi_tests_gn', 'release_trybot',
+    ],
+
+    'swarming_gpu_fyi_tests_gn_release_trybot_asan': [
+      'swarming_gpu_fyi_tests_gn', 'release_trybot',
+      'asan', 'full_symbols', 'disable_nacl',
     ],
 
     'swarming_gpu_fyi_tests_win_clang_debug_bot': [
@@ -1815,23 +1819,19 @@
     ],
 
     'swarming_gpu_tests_deqp_gles_gn_debug_trybot_x64': [
-      'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gn', 'debug_trybot', 'x64',
+      'swarming_gpu_fyi_tests_gn', 'debug_trybot', 'x64',
     ],
 
     'swarming_gpu_tests_deqp_gles_gn_debug_trybot_x86': [
-      'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gn', 'debug_trybot', 'x86',
+      'swarming_gpu_fyi_tests_gn', 'debug_trybot', 'x86',
     ],
 
     'swarming_gpu_tests_deqp_gles_gn_release_trybot_x64': [
-      'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gn', 'release_trybot', 'x64',
+      'swarming_gpu_fyi_tests_gn', 'release_trybot', 'x64',
     ],
 
     'swarming_gpu_tests_deqp_gles_gn_release_trybot_x86': [
-      'swarming', 'gpu_tests', 'angle_deqp_tests',
-      'internal_gles2_conform_tests', 'gn', 'release_trybot', 'x86',
+      'swarming_gpu_fyi_tests_gn', 'release_trybot', 'x86',
     ],
 
     'swarming_gpu_tests_gn_debug_trybot': [
@@ -2422,6 +2422,11 @@
     'swarming': {
       'gn_args': '',
       'gyp_defines': 'test_isolation_mode=prepare',
+    },
+
+    'swarming_gpu_fyi_tests_gn': {
+      'mixins': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
+                 'angle_deqp_tests'],
     },
 
     # TODO(dpranke): Remove the symbolized config after the bots are  gone.
