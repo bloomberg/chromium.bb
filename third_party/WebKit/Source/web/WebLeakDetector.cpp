@@ -36,6 +36,7 @@
 #include "core/inspector/InstanceCounters.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 #include "platform/Timer.h"
 #include "public/web/WebFrame.h"
 #include "web/WebLocalFrameImpl.h"
@@ -105,6 +106,7 @@ void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame)
 void WebLeakDetectorImpl::collectGarbageAndReport()
 {
     V8GCController::collectAllGarbageForTesting(V8PerIsolateData::mainThreadIsolate());
+    AbstractAnimationWorkletThread::collectAllGarbage();
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Task queue may contain delayed object destruction tasks.
@@ -122,6 +124,7 @@ void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*)
     // The third GC is necessary for cleaning up Document after worker object died.
 
     V8GCController::collectAllGarbageForTesting(V8PerIsolateData::mainThreadIsolate());
+    AbstractAnimationWorkletThread::collectAllGarbage();
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Inspect counters on the next event loop.

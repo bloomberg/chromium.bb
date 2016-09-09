@@ -29,6 +29,8 @@ public:
 
     bool shouldAttachThreadDebugger() const override { return false; }
 
+    static void collectAllGarbage();
+
     static void ensureSharedBackingThread();
     static void createSharedBackingThreadForTest();
 

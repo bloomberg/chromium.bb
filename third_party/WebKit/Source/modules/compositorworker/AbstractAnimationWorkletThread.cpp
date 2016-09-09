@@ -24,10 +24,10 @@ namespace {
 // case.
 class BackingThreadHolder {
 public:
-    static BackingThreadHolder& instance()
+    static BackingThreadHolder* instance()
     {
         MutexLocker locker(holderInstanceMutex());
-        return *s_instance;
+        return s_instance;
     }
 
     static void ensureInstance()
@@ -112,7 +112,24 @@ AbstractAnimationWorkletThread::~AbstractAnimationWorkletThread()
 
 WorkerBackingThread& AbstractAnimationWorkletThread::workerBackingThread()
 {
-    return *BackingThreadHolder::instance().thread();
+    return *BackingThreadHolder::instance()->thread();
+}
+
+void collectAllGarbageOnThread(WaitableEvent* doneEvent)
+{
+    blink::ThreadState::current()->collectAllGarbage();
+    doneEvent->signal();
+}
+
+void AbstractAnimationWorkletThread::collectAllGarbage()
+{
+    DCHECK(isMainThread());
+    WaitableEvent doneEvent;
+    BackingThreadHolder* instance = BackingThreadHolder::instance();
+    if (!instance)
+        return;
+    instance->thread()->backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&collectAllGarbageOnThread, crossThreadUnretained(&doneEvent)));
+    doneEvent.wait();
 }
 
 void AbstractAnimationWorkletThread::ensureSharedBackingThread()
