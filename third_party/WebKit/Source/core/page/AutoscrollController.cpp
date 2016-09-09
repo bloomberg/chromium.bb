@@ -177,6 +177,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
         m_autoscrollType = AutoscrollForDragAndDrop;
         m_autoscrollLayoutObject = scrollable;
         m_dragAndDropAutoscrollStartTime = eventTime;
+        UseCounter::count(m_page->mainFrame(), UseCounter::DragAndDropScrollStart);
         startAutoscroll();
     } else if (m_autoscrollLayoutObject != scrollable) {
         m_dragAndDropAutoscrollStartTime = eventTime;
