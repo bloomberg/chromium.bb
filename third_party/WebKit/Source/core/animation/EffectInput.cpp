@@ -137,7 +137,7 @@ bool exhaustDictionaryIterator(DictionaryIterator& iterator, ExecutionContext* e
 
 } // namespace
 
-// Spec: http://w3c.github.io/web-animations/#processing-a-frames-argument
+// Spec: http://w3c.github.io/web-animations/#processing-a-keyframes-argument
 EffectModel* EffectInput::convert(Element* element, const DictionarySequenceOrDictionary& effectInput, ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
     if (effectInput.isNull() || !element)
