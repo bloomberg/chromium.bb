@@ -428,6 +428,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_max_server_configs_stored_in_properties;
   network_session_params.quic_delay_tcp_race =
       http_network_session_params_.quic_delay_tcp_race;
+  network_session_params.quic_max_number_of_lossy_connections =
+      http_network_session_params_.quic_max_number_of_lossy_connections;
+  network_session_params.quic_packet_loss_threshold =
+      http_network_session_params_.quic_packet_loss_threshold;
   network_session_params.quic_idle_connection_timeout_seconds =
       http_network_session_params_.quic_idle_connection_timeout_seconds;
   network_session_params.quic_connection_options =

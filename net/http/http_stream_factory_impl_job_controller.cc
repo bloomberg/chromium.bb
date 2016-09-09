@@ -909,7 +909,8 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       continue;
     }
 
-    if (session_->quic_stream_factory()->IsQuicDisabled())
+    if (session_->quic_stream_factory()->IsQuicDisabled(
+            alternative_service.port))
       continue;
 
     if (!original_url.SchemeIs("https"))
@@ -997,9 +998,11 @@ bool HttpStreamFactoryImpl::JobController::
   }
 
   if (alternative_proxy_server->is_quic()) {
-    // Check that QUIC is enabled globally, and it is not disabled.
+    // Check that QUIC is enabled globally, and it is not disabled on
+    // the specified port.
     if (!session_->params().enable_quic ||
-        session_->quic_stream_factory()->IsQuicDisabled()) {
+        session_->quic_stream_factory()->IsQuicDisabled(
+            alternative_proxy_server->host_port_pair().port())) {
       return false;
     }
   }

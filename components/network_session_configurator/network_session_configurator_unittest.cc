@@ -74,6 +74,8 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_disable_disk_cache);
   EXPECT_FALSE(params_.quic_prefer_aes);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
+  EXPECT_EQ(0, params_.quic_max_number_of_lossy_connections);
+  EXPECT_EQ(1.0f, params_.quic_packet_loss_threshold);
   EXPECT_TRUE(params_.quic_delay_tcp_race);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
@@ -383,6 +385,30 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMaxNumberOfLossyConnectionsFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_number_of_lossy_connections"] = "5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(5, params_.quic_max_number_of_lossy_connections);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicPacketLossThresholdFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["packet_loss_threshold"] = "0.5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(0.5f, params_.quic_packet_loss_threshold);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicReceiveBufferSize) {

@@ -774,6 +774,7 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithContext) {
   const int kDummyParam = 75;
   std::unique_ptr<HttpNetworkSession::Params> params(
       new HttpNetworkSession::Params);
+  params->quic_max_number_of_lossy_connections = kDummyParam;
   params->quic_idle_connection_timeout_seconds = kDummyParam;
   context.set_http_network_session_params(std::move(params));
   context.Init();
@@ -803,11 +804,15 @@ TEST_F(BoundedFileNetLogObserverTest, GeneratesValidJSONWithContext) {
   ASSERT_TRUE(dict->GetDictionary("tabInfo", &tab_info));
   ASSERT_TRUE(tab_info->GetDictionary("quicInfo", &quic_info));
   base::Value* timeout_value = nullptr;
-  int timeout;
+  base::Value* lossy_value = nullptr;
+  int timeout, lossy;
   ASSERT_TRUE(
       quic_info->Get("idle_connection_timeout_seconds", &timeout_value));
   ASSERT_TRUE(timeout_value->GetAsInteger(&timeout));
   ASSERT_EQ(timeout, kDummyParam);
+  ASSERT_TRUE(quic_info->Get("max_number_of_lossy_connections", &lossy_value));
+  ASSERT_TRUE(lossy_value->GetAsInteger(&lossy));
+  ASSERT_EQ(lossy, kDummyParam);
 }
 
 TEST_F(BoundedFileNetLogObserverTest,

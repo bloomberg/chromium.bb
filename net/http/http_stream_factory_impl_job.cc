@@ -865,7 +865,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       replacements.ClearRef();
       url = url.ReplaceComponents(replacements);
 
-      if (session_->quic_stream_factory()->IsQuicDisabled())
+      // If QUIC is disabled on the destination port, return error.
+      if (session_->quic_stream_factory()->IsQuicDisabled(destination.port()))
         return ERR_QUIC_PROTOCOL_ERROR;
     } else {
       DCHECK(using_ssl_);
@@ -994,10 +995,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (proxy_info_.is_quic() && using_quic_) {
-    // Mark QUIC proxy as bad if QUIC got disabled.
+    // Mark QUIC proxy as bad if QUIC got disabled on the destination port.
     // Underlying QUIC layer would have closed the connection.
     HostPortPair destination = proxy_info_.proxy_server().host_port_pair();
-    if (session_->quic_stream_factory()->IsQuicDisabled()) {
+    if (session_->quic_stream_factory()->IsQuicDisabled(destination.port())) {
       using_quic_ = false;
       return ReconsiderProxyAfterError(ERR_QUIC_PROTOCOL_ERROR);
     }
