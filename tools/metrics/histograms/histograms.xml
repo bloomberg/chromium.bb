@@ -80751,6 +80751,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1550" label="MetaRefreshWhenCSPBlocksInlineScript"/>
   <int value="1551" label="MiddleClickAutoscrollStart"/>
   <int value="1552" label="ClipCssOfFixedPositionElement"/>
+  <int value="1553" label="RTCPeerConnectionCreateOfferOptionsOfferToReceive"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

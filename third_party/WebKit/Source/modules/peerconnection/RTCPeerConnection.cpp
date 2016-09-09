@@ -500,6 +500,10 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, const RTC
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     RTCSessionDescriptionRequest* request = RTCSessionDescriptionRequestPromiseImpl::create(this, resolver);
+    if (options.hasOfferToReceiveAudio() || options.hasOfferToReceiveVideo()) {
+        ExecutionContext* context = scriptState->getExecutionContext();
+        UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferOptionsOfferToReceive);
+    }
     m_peerHandler->createOffer(request, convertToWebRTCOfferOptions(options));
     return promise;
 }
