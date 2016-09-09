@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -114,7 +115,7 @@ void MashRunner::RunMain() {
       service_.get(),
       background_shell.CreateServiceRequest("exe:chrome_mash")));
   service_->connector()->Connect("mojo:mash_session");
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void MashRunner::RunChild() {
@@ -130,7 +131,7 @@ void MashRunner::StartChildApp(
   service_.reset(new mash::MashPackagedService);
   service_->set_context(base::MakeUnique<shell::ServiceContext>(
       service_.get(), std::move(service_request)));
-  message_loop.Run();
+  base::RunLoop().Run();
 }
 
 int MashMain() {

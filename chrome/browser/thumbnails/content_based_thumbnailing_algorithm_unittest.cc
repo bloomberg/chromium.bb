@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/thumbnails/content_based_thumbnailing_algorithm.h"
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,7 +157,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, CreateRetargetedThumbnail) {
       context,
       base::Bind(&ConsumerCallbackCatcher::UiThreadCallback,
                  base::Unretained(&catcher)));
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(catcher.called_back());
   EXPECT_TRUE(catcher.score().good_clipping);
   EXPECT_FALSE(catcher.captured_bitmap().empty());

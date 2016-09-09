@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -100,9 +101,7 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
       HostID(),
       true /* listen_for_extension_system_loaded */);
   loader.StartLoad();
-  message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(shared_memory_ != NULL);
 }

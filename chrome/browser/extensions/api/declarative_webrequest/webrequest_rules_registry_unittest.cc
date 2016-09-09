@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -93,7 +94,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
   void TearDown() override {
     // Make sure that deletion traits of all registries are executed.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Returns a rule that roughly matches http://*.example.com and

@@ -25,6 +25,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
@@ -712,6 +713,6 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
         base::Bind(&AppShimController::Init, base::Unretained(&controller)));
   }
 
-  main_message_loop.Run();
+  base::RunLoop().Run();
   return 0;
 }

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -84,7 +85,7 @@ void ShortcutsProviderExtensionTest::SetUp() {
 void ShortcutsProviderExtensionTest::TearDown() {
   // Run all pending tasks or else some threads hold on to the message loop
   // and prevent it from being deleted.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   profile_.DestroyHistoryService();
   provider_ = NULL;
 }

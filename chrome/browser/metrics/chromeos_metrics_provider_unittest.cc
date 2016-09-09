@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -128,7 +129,7 @@ class TestChromeOSMetricsProvider : public ChromeOSMetricsProvider {
     InitTaskGetBluetoothAdapter(
         base::Bind(&TestChromeOSMetricsProvider::GetBluetoothAdapterCallback,
                    base::Unretained(this)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
   void GetBluetoothAdapterCallback() {
     ASSERT_TRUE(base::MessageLoop::current()->is_running());

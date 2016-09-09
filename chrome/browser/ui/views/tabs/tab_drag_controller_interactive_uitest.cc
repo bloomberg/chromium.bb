@@ -2236,7 +2236,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
   void QuitWhenNotDragging() {
     DCHECK(TabDragController::IsActive());
     test::QuitWhenNotDraggingImpl();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:

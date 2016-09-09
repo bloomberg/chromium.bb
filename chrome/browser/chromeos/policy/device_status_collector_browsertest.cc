@@ -334,7 +334,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     DiskMountManager::Shutdown();
   }
@@ -474,7 +474,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         chromeos::kAccountsPrefDeviceLocalAccountAutoLoginId,
         auto_launch_app_account.account_id);
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(required_platform_version,
               manager->GetAutoLaunchAppRequiredPlatformVersion());
@@ -742,7 +742,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
     ui::IDLE_STATE_ACTIVE,
     ui::IDLE_STATE_ACTIVE,
   };
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   status_collector_->Simulate(test_states, 2);
@@ -869,7 +869,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   SetMockPositionToReturnNext(valid_fix);
   settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, false);
   // Allow the new pref to propagate to the status collector.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
   CheckThatNoLocationIsReported();
 
@@ -878,7 +878,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   SetMockPositionToReturnNext(invalid_fix);
   settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, true);
   // Allow the new pref to propagate to the status collector.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckThatALocationErrorIsReported();
 }
 
@@ -952,7 +952,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
                          base::Bind(&GetEmptyCPUTempInfo));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   GetDeviceStatus();
   EXPECT_EQ(expected_mount_points.size(),
@@ -986,7 +986,7 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
                           DeviceStatusCollector::kMaxResourceUsageSamples + 1);
        ++i) {
     status_collector_->RefreshSampleResourceUsage();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   GetDeviceStatus();
   EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples),
@@ -1005,7 +1005,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
                          base::Bind(&GetEmptyCPUTempInfo));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   GetDeviceStatus();
   ASSERT_EQ(1, device_status_.cpu_utilization_pct().size());
   EXPECT_EQ(100, device_status_.cpu_utilization_pct(0));
@@ -1013,7 +1013,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Now sample CPU usage again (active usage counters will not increase
   // so should show 0% cpu usage).
   status_collector_->RefreshSampleResourceUsage();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   GetDeviceStatus();
   ASSERT_EQ(2, device_status_.cpu_utilization_pct().size());
   EXPECT_EQ(0, device_status_.cpu_utilization_pct(1));
@@ -1024,7 +1024,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
        i < static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples);
        ++i) {
     status_collector_->RefreshSampleResourceUsage();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   GetDeviceStatus();
 
@@ -1056,7 +1056,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
                          base::Bind(&GetFakeCPUTempInfo, expected_temp_info));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   GetDeviceStatus();
   EXPECT_EQ(expected_temp_info.size(),

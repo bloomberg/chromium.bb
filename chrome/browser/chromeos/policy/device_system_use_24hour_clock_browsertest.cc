@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -55,13 +55,13 @@ class SystemUse24HourClockPolicyTest
 
  protected:
   void RefreshPolicyAndWaitDeviceSettingsUpdated() {
+    base::RunLoop run_loop;
     std::unique_ptr<CrosSettings::ObserverSubscription> observer =
         CrosSettings::Get()->AddSettingsObserver(
-            kSystemUse24HourClock,
-            base::MessageLoop::current()->QuitWhenIdleClosure());
+            kSystemUse24HourClock, run_loop.QuitWhenIdleClosure());
 
     RefreshDevicePolicy();
-    base::MessageLoop::current()->Run();
+    run_loop.Run();
   }
 
   static bool GetSystemTrayDelegateShouldUse24HourClock() {

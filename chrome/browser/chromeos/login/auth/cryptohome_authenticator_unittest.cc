@@ -538,7 +538,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveGuestLogin) {
   EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveGuestLoginButFail) {
@@ -551,7 +551,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveGuestLoginButFail) {
   EXPECT_CALL(*mock_caller_, AsyncMountGuest(_)).Times(1).RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
@@ -580,7 +580,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveResyncFail) {
@@ -598,7 +598,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveResyncFail) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveRequestOldPassword) {
@@ -638,7 +638,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveDataRecoverButFail) {
@@ -658,7 +658,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecoverButFail) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, ResolveNoMountToFailedMount) {
@@ -749,7 +749,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveUnlock) {
       .RetiresOnSaturation();
 
   auth_->AuthenticateToUnlock(user_context_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveLoginWithPreHashedPassword) {

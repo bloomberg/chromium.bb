@@ -167,7 +167,7 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
   ui_controls::SendMouseMoveNotifyWhenDone(
       chrome_icon.x(), chrome_icon.y(),
       base::Bind(&WindowSizerContextMenuTest::Step1, release_point));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace

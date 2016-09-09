@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -82,7 +83,7 @@ class DownloadManagerServiceTest : public testing::Test {
     EXPECT_FALSE(success_);
     service_->OnHistoryQueryComplete();
     while (!finished_)
-      message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   }
 
  protected:
