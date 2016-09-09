@@ -794,7 +794,7 @@
       'android_compile_x64_dbg': 'android_gn_debug_trybot_x64',
       'android_compile_x86_dbg': 'android_gn_debug_trybot_x86',
       'android_coverage': 'android_gn_debug_trybot_java_coverage',
-      'android_cronet_builder': 'android_cronet_gn_release_trybot_arm_no_neon',
+      'android_cronet': 'android_cronet_gn_release_trybot_arm_no_neon',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android_cronet_tester': 'android_cronet_gn_debug_static_bot_arm_no_neon',
