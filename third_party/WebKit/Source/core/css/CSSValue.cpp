@@ -62,14 +62,14 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "wtf/SizeAssertions.h"
 
 namespace blink {
 
 struct SameSizeAsCSSValue : public GarbageCollectedFinalized<SameSizeAsCSSValue> {
     uint32_t bitfields;
 };
-
-static_assert(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), "CSSValue should stay small");
+ASSERT_SIZE(CSSValue, SameSizeAsCSSValue);
 
 bool CSSValue::isImplicitInitialValue() const
 {

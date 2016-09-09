@@ -110,6 +110,7 @@ component("wtf") {
     "RefPtr.h",
     "RetainPtr.h",
     "SaturatedArithmetic.h",
+    "SizeAssertions.h",
     "SizeLimits.cpp",
     "SpinLock.cpp",
     "SpinLock.h",
