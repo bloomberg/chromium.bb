@@ -100,18 +100,11 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
   """BuildConfig tests."""
 
   def setUp(self):
-    self.fooConfig = config_lib.BuildConfig(name='foo', value=1)
-    self.barConfig = config_lib.BuildConfig(name='bar', value=2)
+    self.fooConfig = config_lib.BuildConfig(name='foo', foo=1)
+    self.barConfig = config_lib.BuildConfig(name='bar', bar=2)
     self.deepConfig = config_lib.BuildConfig(
-        name='deep', nested=[1, 2, 3], value=3,
+        name='deep', nested=[1, 2, 3], deep=3,
         child_configs=[self.fooConfig, self.barConfig])
-
-    self.config = {
-        'foo': self.fooConfig,
-        'bar': self.barConfig,
-        'deep': self.deepConfig,
-    }
-
 
   def testMockSiteConfig(self):
     """Make sure Mock generator fucntion doesn't crash."""
@@ -127,27 +120,65 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
 
     self.assertRaises(AttributeError, getattr, self.fooConfig, 'foobar')
 
+  def testApplyEmpty(self):
+    orig = self.fooConfig.deepcopy()
+
+    # Do nothing.
+    self.fooConfig.apply()
+    self.assertEqual(self.fooConfig, orig)
+
+  def testApplyValues(self):
+    # Apply simple values..
+    self.fooConfig.apply(a=1, b=2)
+    self.assertEqual(self.fooConfig, dict(name='foo', foo=1, a=1, b=2))
+
+  def testApplyBuildConfig(self):
+    # Apply a BuildConfig.
+    self.fooConfig.apply(self.barConfig)
+    self.assertEqual(self.fooConfig, dict(name='bar', foo=1, bar=2))
+
+  def testApplyMixed(self):
+    # Apply simple values..
+    config = config_lib.BuildConfig()
+    config.apply(self.fooConfig, self.barConfig, a=1, b=2, bar=3)
+    self.assertEqual(config, dict(name='bar', foo=1, bar=3, a=1, b=2))
+
+  def testDeriveMixed(self):
+    config = config_lib.BuildConfig()
+    result = config.derive(self.fooConfig, self.barConfig, a=1, b=2, bar=3)
+
+    self.assertIsNot(config, result)
+    self.assertEqual(config, dict())
+    self.assertEqual(result, dict(name='bar', foo=1, bar=3, a=1, b=2))
+
   def testDeleteKey(self):
-    base_config = config_lib.BuildConfig(foo='bar')
-    inherited_config = base_config.derive(
-        foo=config_lib.BuildConfig.delete_key())
-    self.assertTrue('foo' in base_config)
-    self.assertFalse('foo' in inherited_config)
+    base = config_lib.BuildConfig(foo='bar')
+
+    # We should be able to add to the override as an argument value.
+    override = config_lib.BuildConfig(foo=config_lib.BuildConfig.delete_key())
+    self.assertIn('foo', override)
+
+    # But remove it from base as a config value.
+    base.apply(override)
+    self.assertFalse('foo' in base)
 
   def testDeleteKeys(self):
     base_config = config_lib.BuildConfig(foo='bar', baz='bak')
-    inherited_config_1 = base_config.derive(qzr='flp')
-    inherited_config_2 = inherited_config_1.derive(
-        config_lib.BuildConfig.delete_keys(base_config))
-    self.assertEqual(inherited_config_2, {'qzr': 'flp'})
+    test_config = base_config.derive(qzr='flp')
+    test_config.apply(config_lib.BuildConfig.delete_keys(base_config))
+    self.assertEqual(test_config, {'qzr': 'flp'})
 
   def testCallableOverrides(self):
     append_foo = lambda x: x + 'foo' if x else 'foo'
-    base_config = config_lib.BuildConfig()
-    inherited_config_1 = base_config.derive(foo=append_foo)
-    inherited_config_2 = inherited_config_1.derive(foo=append_foo)
-    self.assertEqual(inherited_config_1, {'foo': 'foo'})
-    self.assertEqual(inherited_config_2, {'foo': 'foofoo'})
+    base = config_lib.BuildConfig()
+    override = config_lib.BuildConfig(foo=append_foo)
+    self.assertIn('foo', override)
+
+    base.apply(override)
+    self.assertEqual(base, {'foo': 'foo'})
+
+    base.apply(override)
+    self.assertEqual(base, {'foo': 'foofoo'})
 
   def AssertDeepCopy(self, obj1, obj2, obj3):
     """Assert that |obj3| is a deep copy of |obj1|.

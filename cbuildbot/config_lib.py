@@ -210,33 +210,52 @@ class BuildConfig(dict):
     function is called a lot during setup of the config objects so optimizing it
     makes a big difference. (It saves seconds off the load time of this module!)
     """
-    new_config = BuildConfig(self)
-    for k, v in self.iteritems():
-      # type(v) is faster than isinstance.
-      if type(v) is list:
-        new_config[k] = v[:]
+    result = BuildConfig(self)
 
-    if new_config.get('child_configs'):
-      new_config['child_configs'] = [
-          x.deepcopy() for x in new_config['child_configs']]
+    # Here is where we handle all values that need deepcopy instead of shallow.
+    for k, v in result.iteritems():
+      if v is not None:
+        if k == 'child_configs':
+          result[k] = [x.deepcopy() for x in v]
+        elif k in ('vm_tests', 'vm_tests_override',
+                   'hw_tests', 'hw_tests_override'):
+          result[k] = [copy.copy(x) for x in v]
+        # type(v) is faster than isinstance.
+        elif type(v) is list:
+          result[k] = v[:]
 
-    if new_config.get('vm_tests'):
-      new_config['vm_tests'] = [copy.copy(x) for x in new_config['vm_tests']]
+    return result
 
-    if new_config.get('vm_tests_override'):
-      new_config['vm_tests_override'] = [
-          copy.copy(x) for x in new_config['vm_tests_override']
-      ]
+  def apply(self, *args, **kwargs):
+    """Apply changes to this BuildConfig.
 
-    if new_config.get('hw_tests'):
-      new_config['hw_tests'] = [copy.copy(x) for x in new_config['hw_tests']]
+    Note: If an override is callable, it will be called and passed the prior
+    value for the given key (or None) to compute the new value.
 
-    if new_config.get('hw_tests_override'):
-      new_config['hw_tests_override'] = [
-          copy.copy(x) for x in new_config['hw_tests_override']
-      ]
+    Args:
+      args: Dictionaries or templates to update this config with.
+      kwargs: Settings to inject; see _settings for valid values.
 
-    return new_config
+    Returns:
+      self after changes are applied.
+    """
+    inherits = list(args)
+    inherits.append(kwargs)
+
+    for update_config in inherits:
+      for k, v in update_config.iteritems():
+        if callable(v):
+          self[k] = v(self.get(k))
+        else:
+          self[k] = v
+
+      keys_to_delete = [k for k in self if
+                        self[k] is self._delete_key_sentinel]
+
+      for k in keys_to_delete:
+        self.pop(k)
+
+    return self
 
   def derive(self, *args, **kwargs):
     """Create a new config derived from this one.
@@ -251,24 +270,7 @@ class BuildConfig(dict):
     Returns:
       A new _config instance.
     """
-    inherits = list(args)
-    inherits.append(kwargs)
-    new_config = self.deepcopy()
-
-    for update_config in inherits:
-      for k, v in update_config.iteritems():
-        if callable(v):
-          new_config[k] = v(new_config.get(k))
-        else:
-          new_config[k] = v
-
-      keys_to_delete = [k for k in new_config if
-                        new_config[k] is self._delete_key_sentinel]
-
-      for k in keys_to_delete:
-        new_config.pop(k, None)
-
-    return new_config
+    return self.deepcopy().apply(*args, **kwargs)
 
 
 class VMTestConfig(object):
