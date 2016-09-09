@@ -448,7 +448,7 @@ component("skia") {
     sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
   }
 
-  if ((is_android || is_win) && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
@@ -634,7 +634,7 @@ source_set("skia_opts") {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
 
-  if ((is_android || is_win) && !is_debug) {
+  if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
