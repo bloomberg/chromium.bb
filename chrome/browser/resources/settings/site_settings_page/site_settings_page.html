@@ -159,6 +159,14 @@
         <div id="handlers" class="secondary"></div>
       </div>
     </div>
+    <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.ZOOM_LEVELS)]]"></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.ZOOM_LEVELS)]]
+      </div>
+    </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.USB_DEVICES]]"
         on-tap="onTapCategory">
       <iron-icon icon="[[computeIconForContentCategory(

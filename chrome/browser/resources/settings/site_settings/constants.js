@@ -28,6 +28,7 @@ cr.define('settings', function() {
     KEYGEN: 'keygen',
     BACKGROUND_SYNC: 'background-sync',
     USB_DEVICES: 'usb-chooser-data',
+    ZOOM_LEVELS: 'zoom-levels',
   };
 
   /**

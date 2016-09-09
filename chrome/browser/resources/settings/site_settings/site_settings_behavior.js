@@ -71,6 +71,8 @@ var SiteSettingsBehaviorImpl = {
         return 'unsandboxed-plugins';
       case settings.ContentSettingsTypes.USB_DEVICES:
         return 'usb-devices';
+      case settings.ContentSettingsTypes.ZOOM_LEVELS:
+        return 'zoom-levels';
       default:
         return '';
     }
@@ -114,6 +116,8 @@ var SiteSettingsBehaviorImpl = {
         return settings.Route.SITE_SETTINGS_UNSANDBOXED_PLUGINS;
       case settings.ContentSettingsTypes.USB_DEVICES:
         return settings.Route.SITE_SETTINGS_USB_DEVICES;
+      case settings.ContentSettingsTypes.ZOOM_LEVELS:
+        return settings.Route.SITE_SETTINGS_ZOOM_LEVELS;
     }
     assertNotReached();
   },
@@ -160,6 +164,8 @@ var SiteSettingsBehaviorImpl = {
         return 'cr:extension';
       case settings.ContentSettingsTypes.USB_DEVICES:
         return 'settings:usb';
+      case settings.ContentSettingsTypes.ZOOM_LEVELS:
+        return 'settings:zoom-in';
       default:
         assertNotReached('Invalid category: ' + category);
         return '';
@@ -208,6 +214,8 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsUnsandboxedPlugins');
       case settings.ContentSettingsTypes.USB_DEVICES:
         return loadTimeData.getString('siteSettingsUsbDevices');
+      case settings.ContentSettingsTypes.ZOOM_LEVELS:
+        return loadTimeData.getString('siteSettingsZoomLevels');
       default:
         assertNotReached('Invalid category: ' + category);
         return '';
@@ -327,7 +335,7 @@ var SiteSettingsBehaviorImpl = {
                 'siteSettingsUnsandboxedPluginsAskRecommended') :
             loadTimeData.getString('siteSettingsUnsandboxedPluginsAsk');
       default:
-        assertNotReached();
+        assertNotReached('Invalid category: ' + category);
         return '';
     }
   },

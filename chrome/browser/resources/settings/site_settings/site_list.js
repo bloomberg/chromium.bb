@@ -281,9 +281,10 @@ Polymer({
       if (settings.ContentSettingsTypes[type] ==
           settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
           settings.ContentSettingsTypes[type] ==
-          settings.ContentSettingsTypes.USB_DEVICES) {
-        // Protocol handlers and USB devices don't have data stored the way all
-        // the other categories do.
+          settings.ContentSettingsTypes.USB_DEVICES ||
+          settings.ContentSettingsTypes[type] ==
+          settings.ContentSettingsTypes.ZOOM_LEVELS) {
+        // Some categories store their data in a custom way.
         continue;
       }
 

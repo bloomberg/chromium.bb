@@ -144,7 +144,8 @@ cr.define('site_settings_category', function() {
           // Test category text ids and descriptions for those categories that
           // have those.
           if (category != settings.ContentSettingsTypes.FULLSCREEN &&
-              category != settings.ContentSettingsTypes.USB_DEVICES) {
+              category != settings.ContentSettingsTypes.USB_DEVICES &&
+              category != settings.ContentSettingsTypes.ZOOM_LEVELS) {
             assertNotEquals('', testElement.computeCategoryTextId(category));
 
             assertNotEquals('', testElement.computeCategoryDesc(

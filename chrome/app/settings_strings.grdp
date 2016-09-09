@@ -1563,6 +1563,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN" desc="Label for the fullscreen site settings.">
     Fullscreen
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS" desc="Label for the Zoom levels category in site settings.">
+    Zoom levels
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES" desc="Label for the cookies option description site settings.">
     Sites can save and read cookie data
   </message>
@@ -1760,6 +1763,9 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED" desc="A label for a site rule that specifies an embedded origin and only applies to the current incognito session.">
     Current incognito session (<ph name="EMBEDDING">$1<ex>embedded on google.com</ex></ph>)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NO_ZOOMED_SITES" desc="A label explaining that no sites have a configured zoom in/out value.">
+    No sites have been zoomed in or out.
   </message>
 
   <!-- Sync / People Page -->

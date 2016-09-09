@@ -148,6 +148,37 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(expected_incognito, incognito);
   }
 
+  void ValidateZoom(const std::string& expected_host,
+      const std::string& expected_zoom, size_t expected_total_calls) {
+    EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ("onZoomLevelsChanged", callback_id);
+
+    const base::ListValue* exceptions;
+    ASSERT_TRUE(data.arg2()->GetAsList(&exceptions));
+    if (expected_host.empty()) {
+      EXPECT_EQ(0U, exceptions->GetSize());
+    } else {
+      EXPECT_EQ(1U, exceptions->GetSize());
+
+      const base::DictionaryValue* exception;
+      ASSERT_TRUE(exceptions->GetDictionary(0, &exception));
+
+      std::string host;
+      ASSERT_TRUE(exception->GetString("origin", &host));
+      ASSERT_EQ(expected_host, host);
+
+      std::string zoom;
+      ASSERT_TRUE(exception->GetString("zoom", &zoom));
+      ASSERT_EQ(expected_zoom, zoom);
+    }
+  }
+
   void CreateIncognitoProfile() {
     incognito_profile_ = TestingProfile::Builder().BuildIncognito(&profile_);
   }
@@ -251,6 +282,28 @@ TEST_F(SiteSettingsHandlerTest, Incognito) {
 
   DestroyIncognitoProfile();
   ValidateIncognitoExists(false, 3U);
+}
+
+TEST_F(SiteSettingsHandlerTest, ZoomLevels) {
+  std::string host("http://www.google.com");
+  double zoom_level = 1.1;
+
+  content::HostZoomMap* host_zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(profile());
+  host_zoom_map->SetZoomLevelForHost(host, zoom_level);
+  ValidateZoom(host, "122%", 1U);
+
+  base::ListValue args;
+  handler()->HandleFetchZoomLevels(&args);
+  ValidateZoom(host, "122%", 2U);
+
+  args.AppendString("http://www.google.com");
+  handler()->HandleRemoveZoomLevel(&args);
+  ValidateZoom("", "", 3U);
+
+  double default_level = host_zoom_map->GetDefaultZoomLevel();
+  double level = host_zoom_map->GetZoomLevelForHostAndScheme("http", host);
+  EXPECT_EQ(default_level, level);
 }
 
 }  // namespace settings

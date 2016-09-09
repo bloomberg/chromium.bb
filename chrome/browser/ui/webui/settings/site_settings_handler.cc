@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
@@ -18,16 +19,20 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/page_zoom.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace settings {
@@ -36,6 +41,7 @@ namespace {
 
 const char kAppName[] = "appName";
 const char kAppId[] = "appId";
+const char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
 extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
@@ -158,6 +164,14 @@ void SiteSettingsHandler::RegisterMessages() {
       "updateIncognitoStatus",
       base::Bind(&SiteSettingsHandler::HandleUpdateIncognitoStatus,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "fetchZoomLevels",
+      base::Bind(&SiteSettingsHandler::HandleFetchZoomLevels,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeZoomLevel",
+      base::Bind(&SiteSettingsHandler::HandleRemoveZoomLevel,
+                 base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -175,11 +189,22 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::NotificationService::AllSources());
+
+  // Here we only subscribe to the HostZoomMap for the default storage partition
+  // since we don't allow the user to manage the zoom levels for apps.
+  // We're only interested in zoom-levels that are persisted, since the user
+  // is given the opportunity to view/delete these in the content-settings page.
+  host_zoom_map_subscription_ =
+      content::HostZoomMap::GetDefaultForBrowserContext(profile_)
+          ->AddZoomLevelChangedCallback(
+              base::Bind(&SiteSettingsHandler::OnZoomLevelChanged,
+                         base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
   notification_registrar_.RemoveAll();
+  host_zoom_map_subscription_.reset();
 }
 
 void SiteSettingsHandler::OnGetUsageInfo(
@@ -263,6 +288,11 @@ void SiteSettingsHandler::Observe(
       break;
     }
   }
+}
+
+void SiteSettingsHandler::OnZoomLevelChanged(
+    const content::HostZoomMap::ZoomLevelChange& change) {
+  SendZoomLevels();
 }
 
 void SiteSettingsHandler::HandleFetchUsageTotal(
@@ -526,6 +556,94 @@ void SiteSettingsHandler::SendIncognitoStatus(
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("onIncognitoStatusChanged"),
                          base::FundamentalValue(incognito_enabled));
+}
+
+void SiteSettingsHandler::HandleFetchZoomLevels(const base::ListValue* args) {
+  AllowJavascript();
+  SendZoomLevels();
+}
+
+void SiteSettingsHandler::SendZoomLevels() {
+  if (!IsJavascriptAllowed())
+    return;
+
+  base::ListValue zoom_levels_exceptions;
+
+  content::HostZoomMap* host_zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(profile_);
+  content::HostZoomMap::ZoomLevelVector zoom_levels(
+      host_zoom_map->GetAllZoomLevels());
+
+  // Sort ZoomLevelChanges by host and scheme
+  // (a.com < http://a.com < https://a.com < b.com).
+  std::sort(zoom_levels.begin(), zoom_levels.end(),
+            [](const content::HostZoomMap::ZoomLevelChange& a,
+               const content::HostZoomMap::ZoomLevelChange& b) {
+              return a.host == b.host ? a.scheme < b.scheme : a.host < b.host;
+            });
+
+  for (content::HostZoomMap::ZoomLevelVector::const_iterator i =
+           zoom_levels.begin();
+       i != zoom_levels.end();
+       ++i) {
+    std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
+    switch (i->mode) {
+      case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
+        std::string host = i->host;
+        if (host == content::kUnreachableWebDataURL) {
+          host =
+              l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
+        }
+        exception->SetString(site_settings::kOrigin, host);
+        break;
+      }
+      case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
+        // These are not stored in preferences and get cleared on next browser
+        // start. Therefore, we don't care for them.
+        continue;
+      case content::HostZoomMap::PAGE_SCALE_IS_ONE_CHANGED:
+        continue;
+      case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
+        NOTREACHED();
+    }
+
+    std::string setting_string =
+        content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
+    DCHECK(!setting_string.empty());
+
+    exception->SetString(site_settings::kSetting, setting_string);
+
+    // Calculate the zoom percent from the factor. Round up to the nearest whole
+    // number.
+    int zoom_percent = static_cast<int>(
+        content::ZoomLevelToZoomFactor(i->zoom_level) * 100 + 0.5);
+    exception->SetString(kZoom, base::FormatPercent(zoom_percent));
+    exception->SetString(
+        site_settings::kSource, site_settings::kPreferencesSource);
+    // Append the new entry to the list and map.
+    zoom_levels_exceptions.Append(std::move(exception));
+  }
+
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("onZoomLevelsChanged"),
+                         zoom_levels_exceptions);
+}
+
+void SiteSettingsHandler::HandleRemoveZoomLevel(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+
+  std::string origin;
+  CHECK(args->GetString(0, &origin));
+
+  if (origin ==
+          l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL)) {
+    origin = content::kUnreachableWebDataURL;
+  }
+
+  content::HostZoomMap* host_zoom_map;
+  host_zoom_map = content::HostZoomMap::GetDefaultForBrowserContext(profile_);
+  double default_level = host_zoom_map->GetDefaultZoomLevel();
+  host_zoom_map->SetZoomLevelForHost(origin, default_level);
 }
 
 }  // namespace settings

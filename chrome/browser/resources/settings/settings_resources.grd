@@ -907,6 +907,12 @@
       <structure name="IDR_SETTINGS_WEBSITE_USAGE_PRIVATE_API_JS"
                  file="site_settings/website_usage_private_api.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_ZOOM_LEVELS_HTML"
+                 file="site_settings/zoom_levels.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_ZOOM_LEVELS_JS"
+                 file="site_settings/zoom_levels.js"
+                 type="chrome_html" />
       <if expr="chromeos">
         <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_DIALOG_HTML"
                    file="bluetooth_page/bluetooth_device_dialog.html"

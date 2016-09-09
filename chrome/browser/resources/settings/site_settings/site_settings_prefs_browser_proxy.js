@@ -66,6 +66,14 @@ var UsbDeviceDetails;
  */
 var UsbDeviceEntry;
 
+/**
+ * @typedef {{origin: string,
+ *            setting: string,
+ *            source: string,
+ *            zoom: string}}
+ */
+var ZoomLevelEntry;
+
 cr.define('settings', function() {
   /** @interface */
   function SiteSettingsPrefsBrowserProxy() {}
@@ -216,6 +224,18 @@ cr.define('settings', function() {
      * profile exists). Returns the results via onIncognitoStatusChanged.
      */
     updateIncognitoStatus: function() {},
+
+    /**
+     * Fetches the currently defined zoom levels for sites. Returns the results
+     * via onZoomLevelsChanged.
+     */
+    fetchZoomLevels: function() {},
+
+    /**
+     * Removes a zoom levels for a given host.
+     * @param {string} host The host to remove zoom levels for.
+     */
+    removeZoomLevel: function(host) {},
   };
 
   /**
@@ -325,6 +345,16 @@ cr.define('settings', function() {
     /** @override */
     updateIncognitoStatus: function() {
       chrome.send('updateIncognitoStatus');
+    },
+
+    /** @override */
+    fetchZoomLevels: function() {
+      chrome.send('fetchZoomLevels');
+    },
+
+    /** @override */
+    removeZoomLevel: function(host) {
+      chrome.send('removeZoomLevel', [host]);
     },
   };
 

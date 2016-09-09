@@ -158,6 +158,7 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_UNSANDBOXED_PLUGINS =
       r.SITE_SETTINGS.createChild('unsandboxedPlugins');
   r.SITE_SETTINGS_USB_DEVICES = r.SITE_SETTINGS.createChild('usbDevices');
+  r.SITE_SETTINGS_ZOOM_LEVELS = r.SITE_SETTINGS.createChild('zoomLevels');
 
 <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

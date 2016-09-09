@@ -50,8 +50,10 @@ var prefsEmpty = {
  */
 var TestSiteSettingsPrefsBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
+    'fetchZoomLevels',
     'getDefaultValueForContentType',
     'getExceptionList',
+    'removeZoomLevel',
     'resetCategoryPermissionForOrigin',
     'setCategoryPermissionForOrigin',
     'setDefaultValueForContentType',
@@ -59,10 +61,11 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
 
   /** @private {!SiteSettingsPref} */
   this.prefs_ = prefsEmpty;
+
+  /** @private {!Array<ZoomLevelEntry>} */
+  this.zoomList_ = [];
 };
 
-// TODO(finnur): Modify the tests so that most of the code this class implements
-//     can be ripped out.
 TestSiteSettingsPrefsBrowserProxy.prototype = {
   __proto__: settings.TestBrowserProxy.prototype,
 
@@ -80,6 +83,14 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
           settings.ContentSettingsTypes[type],
           '');
     }
+  },
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param !Array<ZoomLevelEntry> list The zoom list to set.
+   */
+  setZoomList: function(list) {
+    this.zoomList_ = list;
   },
 
   /** @override */
@@ -184,5 +195,16 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     this.methodCalled('setCategoryPermissionForOrigin',
         [primaryPattern, secondaryPattern, contentType, value]);
     return Promise.resolve();
+  },
+
+  /** @override */
+  fetchZoomLevels: function() {
+    cr.webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
+    this.methodCalled('fetchZoomLevels');
+  },
+
+  /** @override */
+  removeZoomLevel: function(host) {
+    this.methodCalled('removeZoomLevel', [host]);
   },
 };
