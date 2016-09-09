@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_usage/tab_id_annotator.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
@@ -501,6 +502,9 @@ void IOThread::Init() {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
 #endif
+
+  globals_->data_use_ascriber =
+      base::MakeUnique<data_use_measurement::ChromeDataUseAscriber>();
 
   globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator(
       std::unique_ptr<data_usage::DataUseAnnotator>(
