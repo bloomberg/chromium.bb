@@ -497,42 +497,6 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
     }
 }
 
-static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
-{
-    // This list of attributes is from
-    // https://html.spec.whatwg.org/#case-sensitivity-of-selectors
-    HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
-
-    const QualifiedName* caseInsensitiveAttributes[] = {
-        &accept_charsetAttr, &acceptAttr, &alignAttr, &alinkAttr, &axisAttr,
-        &bgcolorAttr,
-        &charsetAttr, &checkedAttr, &clearAttr, &codetypeAttr, &colorAttr, &compactAttr,
-        &declareAttr, &deferAttr, &dirAttr, &directionAttr, &disabledAttr,
-        &enctypeAttr,
-        &faceAttr, &frameAttr,
-        &hreflangAttr, &http_equivAttr,
-        &langAttr, &languageAttr, &linkAttr,
-        &mediaAttr, &methodAttr, &multipleAttr,
-        &nohrefAttr, &noresizeAttr, &noshadeAttr, &nowrapAttr,
-        &readonlyAttr, &relAttr, &revAttr, &rulesAttr,
-        &scopeAttr, &scrollingAttr, &selectedAttr, &shapeAttr,
-        &targetAttr, &textAttr, &typeAttr,
-        &valignAttr, &valuetypeAttr, &vlinkAttr };
-
-    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
-    for (const QualifiedName* attr : caseInsensitiveAttributes)
-        attrSet->add(attr->localName().impl());
-
-    return attrSet;
-}
-
-static bool isHtmlCaseSensitiveAttribute(const QualifiedName& attributeName)
-{
-    static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
-    bool isPossibleHTMLAttr = !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
-    return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
-}
-
 static bool anyAttributeMatches(Element& element, CSSSelector::MatchType match, const CSSSelector& selector)
 {
     const QualifiedName& selectorAttr = selector.attribute();
@@ -559,10 +523,10 @@ static bool anyAttributeMatches(Element& element, CSSSelector::MatchType match, 
             continue;
         }
 
-        // https://html.spec.whatwg.org/#case-sensitivity-of-selectors
-        // TODO(foolip): The spec says "HTML element in an HTML document", but
-        // this applies to any element in an HTML document.
-        bool legacyCaseInsensitive = element.document().isHTMLDocument() && !isHtmlCaseSensitiveAttribute(selectorAttr);
+        // Legacy dictates that values of some attributes should be compared in
+        // a case-insensitive manner regardless of whether the case insensitive
+        // flag is set or not.
+        bool legacyCaseInsensitive = element.document().isHTMLDocument() && !HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
 
         // If case-insensitive, re-check, and count if result differs.
         // See http://code.google.com/p/chromium/issues/detail?id=327060
