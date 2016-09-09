@@ -98,6 +98,11 @@ http/tests/inspector/extensions-useragent.html [ Timeout ]
 # https://crbug.com/623265 - cross-site navigation in main page breaks test.
 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 
+# http://crbug.com/644997 - framebusting changes broke several test expectations.
+http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Timeout ]
+http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+http/tests/security/xss-DENIED-window-open-parent.html [ Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 fast/frames/cached-frame-counter.html [ Timeout ]
 fast/frames/frame-limit.html [ Timeout ]
