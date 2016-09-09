@@ -46141,6 +46141,56 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Previews.ContentLength" units="KB">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The actual data used for a page load using a preview optimization.
+  </summary>
+</histogram>
+
+<histogram name="Previews.DataInflation" units="KB">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The estimated amount that the content was inflated for a page load using a
+    previews optimization. Recorded when a page load using a previews
+    optimization inflates the data used.
+  </summary>
+</histogram>
+
+<histogram name="Previews.DataInflationPercent" units="%">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The estimated percent of data used that a page load would have otherwise
+    cost for a page load using a previews optimization. Recorded when a page
+    load using a previews optimization inflates the data used.
+  </summary>
+</histogram>
+
+<histogram name="Previews.DataSavings" units="KB">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The estimated data savings for a page load using a previews optimization.
+    Recorded when a page load using a previews optimization reduces the data
+    used.
+  </summary>
+</histogram>
+
+<histogram name="Previews.DataSavingsPercent" units="%">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The estimated percent of data savings for a page load using a previews
+    optimization. Recorded when a page load using a previews optimization
+    reduces the data used.
+  </summary>
+</histogram>
+
+<histogram name="Previews.OriginalContentLength" units="KB">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    The estimated content length of a page load using a preview optimization.
+  </summary>
+</histogram>
+
 <histogram name="PrinterService.PrinterServiceEvent"
     enum="PrinterServiceEventType">
   <owner>vitalybuka@chromium.org</owner>
@@ -100085,6 +100135,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Fallback" label="Fallback data reduction proxy"/>
   <affected-histogram
       name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataSaverEnabled" separator=".">
+  <suffix name="DataSaverEnabled" label="Data Saver is enabled"/>
+  <suffix name="DataSaverDisabled" label="Data Saver is disabled"/>
+  <affected-histogram name="Previews.ContentLength"/>
+  <affected-histogram name="Previews.DataInflation"/>
+  <affected-histogram name="Previews.DataInflationPercent"/>
+  <affected-histogram name="Previews.DataSavings"/>
+  <affected-histogram name="Previews.DataSavingsPercent"/>
+  <affected-histogram name="Previews.OriginalContentLength"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataUsageReportSubmissionBytes" separator=".">
