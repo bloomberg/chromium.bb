@@ -42,8 +42,49 @@ TEST(NGConstraintSpaceTest, WritingMode) {
   EXPECT_EQ(FragmentNone, vert_space->BlockFragmentationType());
 }
 
-TEST(NGConstraintSpaceTest, LayoutOpportunities) {
-  // TODO(eae): Implement in followup change.
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
+
+  bool for_inline_or_bfc = true;
+  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+
+  const NGConstraintSpace* firstOpportunity = iterator->Next();
+  EXPECT_NE(nullptr, firstOpportunity);
+  EXPECT_EQ(LayoutUnit(600), firstOpportunity->Size().inline_size);
+  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
+
+  const NGConstraintSpace* secondOpportunity = iterator->Next();
+  EXPECT_EQ(nullptr, secondOpportunity);
+}
+
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesOneExclusion) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+
+  // Add a 100x100 exclusion in the top right corner.
+  physical_space->AddExclusion(NGExclusion(LayoutUnit(0), LayoutUnit(600),
+                                           LayoutUnit(100), LayoutUnit(500)));
+
+  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
+  bool for_inline_or_bfc = true;
+  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+
+  // First opportunity should be to the left of the exclusion.
+  const NGConstraintSpace* firstOpportunity = iterator->Next();
+  EXPECT_NE(nullptr, firstOpportunity);
+  EXPECT_EQ(LayoutUnit(0), firstOpportunity->Offset().inline_offset);
+  EXPECT_EQ(LayoutUnit(0), firstOpportunity->Offset().block_offset);
+  EXPECT_EQ(LayoutUnit(500), firstOpportunity->Size().inline_size);
+  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
+
+  const NGConstraintSpace* secondOpportunity = iterator->Next();
+  EXPECT_EQ(nullptr, secondOpportunity);
 }
 
 }  // namespace

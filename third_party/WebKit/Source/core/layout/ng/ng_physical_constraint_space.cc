@@ -40,16 +40,16 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
       height_direction_fragmentation_type_(
           other.height_direction_fragmentation_type_) {}
 
-void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion,
+void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion exclusion,
                                              unsigned options) {
-  // TODO(layout-ng): Implement.
+  exclusions_.append(exclusion);
 }
 
-const DoublyLinkedList<const NGExclusion>*
-NGPhysicalConstraintSpace::Exclusions(unsigned options) const {
+const Vector<NGExclusion>& NGPhysicalConstraintSpace::Exclusions(
+    unsigned options) const {
   // TODO(layout-ng): Filter based on options? Perhaps layout Opportunities
   // should filter instead?
-  return &exclusions_;
+  return exclusions_;
 }
 
 }  // namespace blink

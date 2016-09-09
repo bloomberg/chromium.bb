@@ -11,6 +11,7 @@
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -98,7 +99,7 @@ class CORE_EXPORT NGConstraintSpace final
   // size, or add an exclusion.
   void Subtract(const NGFragment*);
 
-  NGLayoutOpportunityIterator LayoutOpportunities(
+  NGLayoutOpportunityIterator* LayoutOpportunities(
       unsigned clear = NGClearNone,
       bool for_inline_or_bfc = false);
 
@@ -119,22 +120,38 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned writing_mode_ : 3;
 };
 
-class CORE_EXPORT NGLayoutOpportunityIterator final {
+class CORE_EXPORT NGLayoutOpportunityIterator final
+    : public GarbageCollectedFinalized<NGLayoutOpportunityIterator> {
  public:
   NGLayoutOpportunityIterator(NGConstraintSpace* space,
                               unsigned clear,
-                              bool for_inline_or_bfc)
-      : constraint_space_(space),
-        clear_(clear),
-        for_inline_or_bfc_(for_inline_or_bfc) {}
+                              bool for_inline_or_bfc);
   ~NGLayoutOpportunityIterator() {}
 
   NGConstraintSpace* Next();
 
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(constraint_space_);
+    visitor->trace(current_opportunities_);
+  }
+
  private:
-  Persistent<NGConstraintSpace> constraint_space_;
+  void computeForExclusion(unsigned index);
+  LayoutUnit heightForOpportunity(LayoutUnit left,
+                                  LayoutUnit top,
+                                  LayoutUnit right,
+                                  LayoutUnit bottom);
+  void addLayoutOpportunity(LayoutUnit left,
+                            LayoutUnit top,
+                            LayoutUnit right,
+                            LayoutUnit bottom);
+
+  Member<NGConstraintSpace> constraint_space_;
   unsigned clear_;
   bool for_inline_or_bfc_;
+  Vector<NGExclusion> filtered_exclusions_;
+  HeapVector<Member<NGConstraintSpace>> current_opportunities_;
+  unsigned current_exclusion_idx_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

@@ -8,7 +8,8 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
-#include "wtf/DoublyLinkedList.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -26,17 +27,35 @@ enum NGFragmentationType {
   FragmentRegion
 };
 
-class NGExclusion {
- public:
-  NGExclusion();
-  ~NGExclusion() {}
+struct NGExclusion {
+  NGExclusion(LayoutUnit top,
+              LayoutUnit right,
+              LayoutUnit bottom,
+              LayoutUnit left) {
+    rect.location.left = left;
+    rect.location.top = top;
+    rect.size.width = right - left;
+    rect.size.height = bottom - top;
+  }
+  LayoutUnit Top() const { return rect.location.top; }
+  LayoutUnit Right() const { return rect.size.width + rect.location.left; }
+  LayoutUnit Bottom() const { return rect.size.height + rect.location.top; }
+  LayoutUnit Left() const { return rect.location.left; }
+  String toString() const {
+    return String::format(
+        "Exclusion: %0.2f, %0.2f, size: %0.2f, %0.2f (right %0.2f)",
+        rect.location.left.toFloat(), rect.location.top.toFloat(),
+        rect.size.width.toFloat(), rect.size.height.toFloat(),
+        Right().toFloat());
+  }
+  NGPhysicalRect rect;
 };
 
 // The NGPhysicalConstraintSpace contains the underlying data for the
 // NGConstraintSpace. It is not meant to be used directly as all members are in
 // the physical coordinate space. Instead NGConstraintSpace should be used.
 class CORE_EXPORT NGPhysicalConstraintSpace final
-    : public GarbageCollected<NGPhysicalConstraintSpace> {
+    : public GarbageCollectedFinalized<NGPhysicalConstraintSpace> {
  public:
   NGPhysicalConstraintSpace();
   NGPhysicalConstraintSpace(NGPhysicalSize);
@@ -45,8 +64,7 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   NGPhysicalSize ContainerSize() const { return container_size_; }
 
   void AddExclusion(const NGExclusion, unsigned options = 0);
-  const DoublyLinkedList<const NGExclusion>* Exclusions(
-      unsigned options = 0) const;
+  const Vector<NGExclusion>& Exclusions(unsigned options = 0) const;
 
   DEFINE_INLINE_TRACE() {}
 
@@ -62,7 +80,7 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   unsigned width_direction_fragmentation_type_ : 2;
   unsigned height_direction_fragmentation_type_ : 2;
 
-  DoublyLinkedList<const NGExclusion> exclusions_;
+  Vector<NGExclusion> exclusions_;
 };
 
 }  // namespace blink
