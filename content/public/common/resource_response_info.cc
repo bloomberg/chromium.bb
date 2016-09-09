@@ -28,7 +28,8 @@ ResourceResponseInfo::ResourceResponseInfo()
       is_using_lofi(false),
       effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cert_status(0),
-      ssl_connection_status(0) {}
+      ssl_connection_status(0),
+      ssl_key_exchange_group(0) {}
 
 ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
     default;
