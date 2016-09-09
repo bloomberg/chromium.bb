@@ -36,6 +36,8 @@ target(link_target_type, "ipc_service_sources") {
     "gpu_command_buffer_stub.cc",
     "gpu_command_buffer_stub.h",
     "gpu_config.h",
+    "gpu_init.cc",
+    "gpu_init.h",
     "gpu_memory_buffer_factory.cc",
     "gpu_memory_buffer_factory.h",
     "gpu_memory_manager.cc",
@@ -47,6 +49,8 @@ target(link_target_type, "ipc_service_sources") {
     "image_transport_surface.h",
     "pass_through_image_transport_surface.cc",
     "pass_through_image_transport_surface.h",
+    "switches.cc",
+    "switches.h",
   ]
   configs += [ "//gpu:gpu_implementation" ]
   public_deps = [
@@ -61,6 +65,7 @@ target(link_target_type, "ipc_service_sources") {
     "//url",
   ]
   deps = [
+    "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",

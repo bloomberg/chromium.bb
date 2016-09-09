@@ -130,7 +130,7 @@ class GpuChildThread : public ChildThreadImpl,
 
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.
-  bool dead_on_arrival_;
+  const bool dead_on_arrival_;
   base::Time process_start_time_;
   scoped_refptr<gpu::GpuWatchdogThread> watchdog_thread_;
 

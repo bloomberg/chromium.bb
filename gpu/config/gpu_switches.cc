@@ -6,14 +6,26 @@
 
 namespace switches {
 
-// Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
-const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
-
 // Passes active gpu vendor id from browser process to GPU process.
 const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
 
 // Passes active gpu device id from browser process to GPU process.
 const char kGpuActiveDeviceID[] = "gpu-active-device-id";
+
+// Passes gpu device_id from browser process to GPU process.
+const char kGpuDeviceID[] = "gpu-device-id";
+
+// Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
+const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
+
+// Passes gpu driver_vendor from browser process to GPU process.
+const char kGpuDriverVendor[] = "gpu-driver-vendor";
+
+// Passes gpu driver_version from browser process to GPU process.
+const char kGpuDriverVersion[] = "gpu-driver-version";
+
+// Passes gpu driver_date from browser process to GPU process.
+const char kGpuDriverDate[] = "gpu-driver-date";
 
 // Passes secondary gpu vendor ids from browser process to GPU process.
 const char kGpuSecondaryVendorIDs[] = "gpu-secondary-vendor-ids";
@@ -51,5 +63,8 @@ const char kGpuTestingGLRenderer[] = "gpu-testing-gl-renderer";
 
 // Override gl version from the GpuInfoCollector.
 const char kGpuTestingGLVersion[] = "gpu-testing-gl-version";
+
+// Passes gpu vendor_id from browser process to GPU process.
+const char kGpuVendorID[] = "gpu-vendor-id";
 
 }  // namespace switches
