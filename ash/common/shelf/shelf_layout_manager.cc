@@ -1019,7 +1019,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
   // In Chrome OS Material Design, when shelf is hidden during auto hide state,
   // target bounds are also hidden. So the window can extend to the edge of
   // screen.
-  if (ash::MaterialDesignController::IsShelfMaterial() ||
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial() ||
       invisible_auto_hide_shelf_) {
     return (state.visibility_state == SHELF_AUTO_HIDE &&
             state.auto_hide_state == SHELF_AUTO_HIDE_SHOWN)

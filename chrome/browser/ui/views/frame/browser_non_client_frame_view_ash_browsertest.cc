@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   // as full screen, i.e., no light bar and having an origin of (0,0). In
   // non-MD, immersive browser will show a 3 dp light bar on the top.
   revealed_lock.reset();
-  if (ash::MaterialDesignController::IsShelfMaterial()) {
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial()) {
     EXPECT_FALSE(frame_view->ShouldPaint());
     EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
     EXPECT_EQ(0, frame_view->header_painter_->GetHeaderHeightForPainting());

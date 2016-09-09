@@ -182,7 +182,7 @@ class ShelfDragCallback {
     // does not apply); whereas auto hidden shelf has a visible height of 3 in
     // non-MD.
     WmShelf* shelf = test::AshTestBase::GetPrimaryShelf();
-    if (!ash::MaterialDesignController::IsShelfMaterial() ||
+    if (!ash::MaterialDesignController::IsImmersiveModeMaterial() ||
         shelf->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
       EXPECT_GE(shelf_bounds.height(),
                 auto_hidden_shelf_widget_bounds_.height());
@@ -531,7 +531,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
 
   // Shelf hints are removed in immersive full screen mode in MD; and some shelf
   // hints are shown in non-MD mode.
-  if (ash::MaterialDesignController::IsShelfMaterial())
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial())
     EXPECT_EQ(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
   else
     EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
@@ -571,16 +571,25 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
-  // Switch from invisible to visible autodhide.
+  // Switch from invisible to visible autohide.
   wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
       ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
   layout_manager->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_TRUE(widget->IsFullscreen());
-  EXPECT_NE(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
-            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
-  // Switch from invisible to visible autodhide.
+  // Auto hidden shelf has a visible height of 0 in MD (where this inequality
+  // does not apply); whereas auto hidden shelf has a visible height of 3 in
+  // non-MD.
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial()) {
+    EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+              display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+  } else {
+    EXPECT_NE(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+              display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+  }
+
+  // Switch from visible to invisible autohide.
   wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
       ash::wm::WindowState::SHELF_AUTO_HIDE_INVISIBLE);
   layout_manager->UpdateVisibilityState();

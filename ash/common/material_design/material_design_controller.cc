@@ -68,6 +68,11 @@ bool MaterialDesignController::IsShelfMaterial() {
 }
 
 // static
+bool MaterialDesignController::IsImmersiveModeMaterial() {
+  return IsMaterial();
+}
+
+// static
 bool MaterialDesignController::IsSystemTrayMenuMaterial() {
   return MaterialDesignController::IsMaterialExperimental();
 }

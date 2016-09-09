@@ -202,7 +202,7 @@ void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
 // remove all code related to immersive mode hints (here, in TabStrip and
 // BrowserNonClientFrameViewAsh::OnPaint()). See crbug.com/614453.
 bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
-  if (ash::MaterialDesignController::IsShelfMaterial())
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial())
     return false;
 
   bool has_tabstrip = browser_view_->IsBrowserTypeNormal();
