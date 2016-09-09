@@ -35,8 +35,8 @@ void OverlayJsRenderFrameObserver::RegisterMojoInterface() {
 
 void OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService(
     mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request) {
-  new OverlayPageNotifierServiceImpl(weak_factory_.GetWeakPtr(),
-                                     std::move(request));
+  // This is strongly bound to and owned by the pipe.
+  new OverlayPageNotifierServiceImpl(this, std::move(request));
 }
 
 void OverlayJsRenderFrameObserver::SetIsContextualSearchOverlay() {
@@ -53,19 +53,12 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
   // If no message about the Contextual Search overlay was received at this
   // point, there will not be one; remove the OverlayPageNotifierService
   // from the registry.
-  DestroyOverlayPageNotifierService();
-}
-
-void OverlayJsRenderFrameObserver::DestroyOverlayPageNotifierService() {
-  if (render_frame()) {
-    render_frame()
-        ->GetInterfaceRegistry()
-        ->RemoveInterface<mojom::OverlayPageNotifierService>();
-  }
+  render_frame()
+      ->GetInterfaceRegistry()
+      ->RemoveInterface<mojom::OverlayPageNotifierService>();
 }
 
 void OverlayJsRenderFrameObserver::OnDestruct() {
-  DestroyOverlayPageNotifierService();
   delete this;
 }
 
