@@ -282,11 +282,11 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
     const std::vector<uint8_t>& sample_encryption_data =
         traf.sample_encryption.sample_encryption_data;
     std::unique_ptr<BufferReader> sample_encryption_reader;
-    uint32_t sample_encrytion_entries_count = 0;
+    uint32_t sample_encryption_entries_count = 0;
     if (!sample_encryption_data.empty()) {
       sample_encryption_reader.reset(new BufferReader(
           sample_encryption_data.data(), sample_encryption_data.size()));
-      RCHECK(sample_encryption_reader->Read4(&sample_encrytion_entries_count));
+      RCHECK(sample_encryption_reader->Read4(&sample_encryption_entries_count));
     }
 
     // Process edit list to remove CTS offset introduced in the presence of
@@ -310,7 +310,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
     bool is_sample_to_group_valid = sample_to_group_itr.IsValid();
 
     int64_t run_start_dts = traf.decode_time.decode_time;
-    int sample_count_sum = 0;
+    uint64_t sample_count_sum = 0;
     for (size_t j = 0; j < traf.runs.size(); j++) {
       const TrackFragmentRun& trun = traf.runs[j];
       TrackRunInfo tri;
@@ -342,7 +342,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       }
 
       // Initialize aux_info variables only if no sample encryption entries.
-      if (sample_encrytion_entries_count == 0 &&
+      if (sample_encryption_entries_count == 0 &&
           traf.auxiliary_offset.offsets.size() > j) {
         // Collect information from the auxiliary_offset entry with the same
         // index in the 'saiz' container as the current run's index in the
@@ -402,8 +402,8 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           RCHECK(GetSampleEncryptionInfoEntry(tri, index));
         is_sample_to_group_valid = sample_to_group_itr.Advance();
       }
-      if (sample_encrytion_entries_count > 0) {
-        RCHECK(sample_encrytion_entries_count >=
+      if (sample_encryption_entries_count > 0) {
+        RCHECK(sample_encryption_entries_count >=
                sample_count_sum + trun.sample_count);
         tri.sample_encryption_entries.resize(trun.sample_count);
         for (size_t k = 0; k < trun.sample_count; k++) {
