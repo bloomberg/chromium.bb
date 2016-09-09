@@ -377,7 +377,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_PIN_KEYBOARD_HINT_TEXT_PIN);
   builder->Add("pinKeyboardPlaceholderPinPassword",
                IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD);
-  builder->Add("pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR);
   builder->Add("signingIn", IDS_LOGIN_POD_SIGNING_IN);
   builder->Add("podMenuButtonAccessibleName",
                IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);

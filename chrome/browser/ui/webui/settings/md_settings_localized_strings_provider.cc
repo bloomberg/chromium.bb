@@ -948,7 +948,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN},
     {"pinKeyboardPlaceholderPinPassword",
      IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD},
-    {"pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR},
     {"changePictureTitle", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE},
     {"changePicturePageDescription", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT},
     {"takePhoto", IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO},

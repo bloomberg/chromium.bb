@@ -714,8 +714,6 @@ cr.define('login', function() {
       this.addEventListener('mousedown', this.handlePodMouseDown_.bind(this));
 
       if (this.pinKeyboard) {
-        this.pinKeyboard.addEventListener('submit',
-            this.handlePinSubmitted_.bind(this));
         this.pinKeyboard.addEventListener('pin-change',
             this.handlePinChanged_.bind(this));
       }
@@ -757,6 +755,7 @@ cr.define('login', function() {
           this.handlePasswordKeyPress_.bind(this));
       this.passwordElement.addEventListener('input',
           this.handleInputChanged_.bind(this));
+
       this.submitButton.addEventListener('click',
           this.handleSubmitButtonClick_.bind(this));
 
@@ -1159,6 +1158,10 @@ cr.define('login', function() {
 
       // Set the focus to the input element after showing/hiding pin keyboard.
       this.mainInput.focus();
+
+      // Change the password placeholder based on pin keyboard visibility.
+      this.passwordElement.placeholder = loadTimeData.getString(visible ?
+          'pinKeyboardPlaceholderPinPassword' : 'passwordHint');
     },
 
     isPinShown: function() {
@@ -1847,23 +1850,32 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles click event on submit button on the pin keyboard.
-     * @param {Event} e Click event.
+     * Called when the input of the password element changes. Updates the submit
+     * button color and state and hides the error popup bubble.
      */
-    handlePinSubmitted_: function(e) {
-      if (this.parentNode.isFocused(this))
-        this.parentNode.setActivatedPod(this);
+    updateInput_: function() {
+      this.submitButton.disabled = this.passwordElement.value.length <= 0;
+      this.showError = false;
+      $('bubble').hide();
     },
 
+    /**
+     * Handles pin change event from the pin keyboard.
+     * @param {Event} e Pin change event.
+     */
     handlePinChanged_: function(e) {
       this.passwordElement.value = e.detail.pin;
+      this.updateInput_();
     },
 
+    /**
+     * Handles input event on the password element.
+     * @param {Event} e Input event.
+     */
     handleInputChanged_: function(e) {
       if (this.pinKeyboard)
         this.pinKeyboard.value = this.passwordElement.value;
-      this.submitButton.disabled = this.passwordElement.value.length <= 0;
-      this.showError = false;
+      this.updateInput_();
     },
 
     /**

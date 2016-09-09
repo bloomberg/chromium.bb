@@ -22,6 +22,24 @@
  *                  value="{{pinValue}}">
  *    </pin-keyboard>
  */
+
+(function() {
+
+/**
+ * Once auto backspace starts, the time between individual backspaces.
+ * @type {number}
+ * @const
+ */
+var REPEAT_BACKSPACE_DELAY_MS = 150;
+
+/**
+ * How long the backspace button must be held down before auto backspace
+ * starts.
+ * @type {number}
+ * @const
+ */
+var INITIAL_BACKSPACE_DELAY_MS = 500;
+
 Polymer({
   is: 'pin-keyboard',
 
@@ -53,6 +71,24 @@ Polymer({
       notify: true,
       value: '',
       observer: 'onPinValueChange_'
+    },
+
+    /**
+     * The intervalID used for the backspace button set/clear interval.
+     * @private
+     */
+    repeatBackspaceIntervalId_: {
+      type: Number,
+      value: 0
+    },
+
+    /**
+     * The timeoutID used for the auto backspace.
+     * @private
+     */
+    startAutoBackspaceId_: {
+      type: Number,
+      value: 0
     }
   },
 
@@ -97,10 +133,60 @@ Polymer({
 
   /**
    * Called when the user wants to erase the last character of the entered
-   *  PIN value.
+   * PIN value.
+   * @private
    */
   onPinClear_: function() {
     this.value = this.value.substring(0, this.value.length - 1);
+  },
+
+  /**
+   * Called when the user presses or touches the backspace button. Starts a
+   * timer which starts an interval to repeatedly backspace the pin value until
+   * the interval is cleared.
+   * @param {Event} event The event object.
+   * @private
+   */
+  onBackspacePointerDown_: function(event) {
+    this.startAutoBackspaceId_ = setTimeout(function() {
+        this.repeatBackspaceIntervalId_ = setInterval(
+            this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
+    }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
+  },
+
+  /**
+   * Helper function which clears the timer / interval ids and resets them.
+   * @private
+   */
+  clearAndReset_: function() {
+    clearInterval(this.repeatBackspaceIntervalId_);
+    this.repeatBackspaceIntervalId_ = 0;
+    clearTimeout(this.startAutoBackspaceId_);
+    this.startAutoBackspaceId_ = 0;
+  },
+
+  /**
+   * Called when the user exits the backspace button. Stops the interval
+   * callback.
+   * @param {Event} event The event object.
+   * @private
+   */
+  onBackspacePointerOut_: function(event) {
+    this.clearAndReset_();
+  },
+
+  /**
+   * Called when the user unpresses or untouches the backspace button. Stops the
+   * interval callback and fires a backspace event if there is no interval
+   * running.
+   * @param {Event} event The event object.
+   * @private
+   */
+  onBackspacePointerUp_: function(event) {
+    // If an interval has started, do not fire event on pointer up.
+    if (!this.repeatBackspaceIntervalId_)
+      this.onPinClear_();
+    this.clearAndReset_();
   },
 
   /** Called when a key event is pressed while the input element has focus. */
@@ -143,6 +229,11 @@ Polymer({
    * @private
    */
   onKeyPress_: function(event) {
+    // If the active element is the input element, the input element itself will
+    // handle the keypresses, so we do not handle them here.
+    if (this.shadowRoot.activeElement == this.inputElement)
+      return;
+
     var code = event.keyCode;
 
     // Enter pressed.
@@ -201,3 +292,4 @@ Polymer({
     return (document.dir == 'rtl') && !Number.isInteger(+password);
   },
 });
+})();

@@ -216,7 +216,10 @@
           </paper-button>
           <paper-icon-button class="digit-button backspace-button"
                              disabled="[[!hasInput_(value)]]"
-                             on-tap="onPinClear_" icon="pin-keyboard:backspace">
+                             icon="pin-keyboard:backspace"
+                             on-pointerdown="onBackspacePointerDown_"
+                             on-pointerout="onBackspacePointerOut_"
+                             on-pointerup="onBackspacePointerUp_">
           </paper-icon-button>
         </div>
       </div>

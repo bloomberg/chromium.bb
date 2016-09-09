@@ -13211,9 +13211,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           <message name="IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD" desc="Text to display in the pin field for user pod when no pin has been entered, and passwords are allowed.">
             Pin or password
           </message>
-          <message name="IDS_PIN_KEYBOARD_CLEAR" desc="Text to display text of button on pin keyboard which deletes last character.">
-            Clear
-          </message>
           <message name="IDS_PIN_KEYBOARD_ERROR_MESSAGE" desc="Text to display the error message on the pin keyboard if the user has entered a wrong password or pin.">
             Pin or password incorrect.
           </message>

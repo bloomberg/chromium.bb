@@ -484,7 +484,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "mouseSpeed", IDS_OPTIONS_SETTINGS_MOUSE_SPEED_DESCRIPTION },
     { "noPointingDevices", IDS_OPTIONS_NO_POINTING_DEVICES },
     { "confirm", IDS_CONFIRM },
-    { "pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR },
     { "configurePinChoosePinTitle",
       IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE },
     { "configurePinConfirmPinTitle",
