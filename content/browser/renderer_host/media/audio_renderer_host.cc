@@ -117,7 +117,6 @@ void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
                               base::TimeDelta::FromMilliseconds(5000), 50);
 }
 
-#if DCHECK_IS_ON()
 // Check that the routing ID references a valid RenderFrameHost, and run
 // |callback| on the IO thread with true if the ID is valid.
 void ValidateRenderFrameId(int render_process_id,
@@ -129,7 +128,6 @@ void ValidateRenderFrameId(int render_process_id,
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, frame_exists));
 }
-#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -231,9 +229,7 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       media_stream_manager_(media_stream_manager),
       num_playing_streams_(0),
       salt_(salt),
-#if DCHECK_IS_ON()
       validate_render_frame_id_function_(&ValidateRenderFrameId),
-#endif  // DCHECK_IS_ON()
       max_simultaneous_streams_(0) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
@@ -355,6 +351,16 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
   Send(new AudioMsg_NotifyStreamCreated(
       entry->stream_id(), foreign_memory_handle, socket_descriptor,
       entry->shared_memory()->requested_size()));
+}
+
+void AudioRendererHost::DidValidateRenderFrame(int stream_id, bool is_valid) {
+ DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+ if (!is_valid) {
+   DLOG(WARNING) << "Render frame for stream (id=" << stream_id
+                 << ") no longer exists.";
+   ReportErrorAndClose(stream_id);
+ }
 }
 
 void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
@@ -573,48 +579,34 @@ void AudioRendererHost::OnCreateStream(int stream_id,
     authorizations_.erase(auth_data);
   }
 
-#if DCHECK_IS_ON()
-  // When DCHECKs are turned on, hop over to the UI thread to validate the
-  // |render_frame_id|, then continue stream creation on the IO thread. See
-  // comment at top of DoCreateStream() for further details.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(validate_render_frame_id_function_, render_process_id_,
-                 render_frame_id,
-                 base::Bind(&AudioRendererHost::DoCreateStream, this, stream_id,
-                            render_frame_id, params, device_unique_id)));
-#else
-  DoCreateStream(stream_id, render_frame_id, params, device_unique_id,
-                 render_frame_id > 0);
-#endif  // DCHECK_IS_ON()
-}
-
-void AudioRendererHost::DoCreateStream(int stream_id,
-                                       int render_frame_id,
-                                       const media::AudioParameters& params,
-                                       const std::string& device_unique_id,
-                                       bool render_frame_id_is_valid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   // Fail early if either of two sanity-checks fail:
   //   1. There should not yet exist an AudioEntry for the given |stream_id|
   //      since the renderer may not create two streams with the same ID.
-  //   2. The render frame ID was either invalid or the render frame host it
-  //      references has shutdown before the request could be fulfilled (race
-  //      condition). Renderers must *always* specify a valid render frame ID
-  //      for each audio output they create, as several browser-level features
-  //      depend on this (e.g., OOM manager, UI audio indicator, muting, audio
-  //      capture).
+  //   2. An out-of-range render frame ID was provided. Renderers must *always*
+  //      specify a valid render frame ID for each audio output they create, as
+  //      several browser-level features depend on this (e.g., OOM manager, UI
+  //      audio indicator, muting, audio capture).
   // Note: media::AudioParameters is validated in the deserializer, so there is
   // no need to check that here.
   if (LookupById(stream_id)) {
     SendErrorMessage(stream_id);
     return;
   }
-  if (!render_frame_id_is_valid) {
+  if (render_frame_id <= 0) {
     SendErrorMessage(stream_id);
     return;
   }
+
+  // Post a task to the UI thread to check that the |render_frame_id| references
+  // a valid render frame. This validation is important for all the reasons
+  // stated in the comments above. This does not block stream creation, but will
+  // force-close the stream later if validation fails.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(validate_render_frame_id_function_, render_process_id_,
+                 render_frame_id,
+                 base::Bind(&AudioRendererHost::DidValidateRenderFrame, this,
+                            stream_id)));
 
   // Create the shared memory and share with the renderer process.
   uint32_t shared_memory_size = sizeof(media::AudioOutputBufferParameters) +

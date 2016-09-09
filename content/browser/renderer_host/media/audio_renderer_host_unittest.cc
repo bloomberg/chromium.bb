@@ -29,6 +29,7 @@
 
 using ::testing::_;
 using ::testing::Assign;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::NotNull;
 
@@ -44,7 +45,6 @@ const char kBadDeviceId[] =
     "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1";
 const char kInvalidDeviceId[] = "invalid-device-id";
 
-#if DCHECK_IS_ON()
 void ValidateRenderFrameId(int render_process_id,
                            int render_frame_id,
                            const base::Callback<void(bool)>& callback) {
@@ -54,7 +54,6 @@ void ValidateRenderFrameId(int render_process_id,
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, frame_exists));
 }
-#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -87,9 +86,7 @@ class MockAudioRendererHost : public AudioRendererHost {
                           media_stream_manager,
                           salt),
         shared_memory_length_(0) {
-#if DCHECK_IS_ON()
     set_render_frame_id_validate_function_for_testing(&ValidateRenderFrameId);
-#endif  // DCHECK_IS_ON()
   }
 
   // A list of mock methods.
@@ -284,26 +281,25 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void CreateWithInvalidRenderFrameId() {
-    // Because the render frame is invalid, the host should only reply with a
-    // stream error message.
+    // When creating a stream with an invalid render frame ID, the host will
+    // reply with a stream error message.
     EXPECT_CALL(*host_, OnStreamError(kStreamId));
 
-    // When DCHECKs are on, provide a seemingly-valid render frame ID; and it
-    // should be rejected when AudioRendererHost calls
-    // ValidateRenderFrameId(). When DCHECKs are off, AudioRendererHost won't
-    // call the validation function, but can still reject a render frame ID when
-    // it is obviously bogus.
-#if DCHECK_IS_ON()
-    const int kInvalidRenderFrameId = kRenderFrameId + 1;
-#else
-    const int kInvalidRenderFrameId = MSG_ROUTING_NONE;
-#endif  // DCHECK_IS_ON()
+    // However, validation does not block stream creation, so these method calls
+    // might be made:
+    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _)).Times(AtLeast(0));
+    EXPECT_CALL(mirroring_manager_, AddDiverter(_, _, _)).Times(AtLeast(0));
+    EXPECT_CALL(mirroring_manager_, RemoveDiverter(_)).Times(AtLeast(0));
 
+    // Provide a seemingly-valid render frame ID; and it should be rejected when
+    // AudioRendererHost calls ValidateRenderFrameId().
+    const int kInvalidRenderFrameId = kRenderFrameId + 1;
     const media::AudioParameters params(
         media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate, 16,
         media::AudioParameters::kAudioCDSampleRate / 10);
     host_->OnCreateStream(kStreamId, kInvalidRenderFrameId, params);
+    base::RunLoop().RunUntilIdle();
   }
 
   void Close() {

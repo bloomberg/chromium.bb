@@ -188,18 +188,14 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                             bool device_found,
                             const AudioOutputDeviceInfo& device_info);
 
-  // Start the actual creation of an audio stream, after the device
-  // authorization process is complete.
-  void DoCreateStream(int stream_id,
-                      int render_frame_id,
-                      const media::AudioParameters& params,
-                      const std::string& device_unique_id,
-                      bool render_frame_id_is_valid);
-
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode and send the
   // NotifyStreamCreated message to the peer.
   void DoCompleteCreation(int stream_id);
+
+  // Called after the |render_frame_id| provided to OnCreateStream() was
+  // validated. When |is_valid| is false, this calls ReportErrorAndClose().
+  void DidValidateRenderFrame(int stream_id, bool is_valid);
 
   // Send playing/paused status to the renderer.
   void DoNotifyStreamStateChanged(int stream_id, bool is_playing);
@@ -245,14 +241,12 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // |stream_id| has started.
   bool IsAuthorizationStarted(int stream_id);
 
-#if DCHECK_IS_ON()
   // Called from AudioRendererHostTest to override the function that checks for
   // the existence of the RenderFrameHost at stream creation time.
   void set_render_frame_id_validate_function_for_testing(
       ValidateRenderFrameIdFunction function) {
     validate_render_frame_id_function_ = function;
   }
-#endif  // DCHECK_IS_ON()
 
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
@@ -280,12 +274,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // The second element contains the unique ID of the authorized device.
   std::map<int, std::pair<bool, std::string>> authorizations_;
 
-#if DCHECK_IS_ON()
-  // When DCHECKs are turned on, AudioRendererHost will call this function on
-  // the UI thread to validate render frame IDs. A default is set by the
+  // At stream creation time, AudioRendererHost will call this function on the
+  // UI thread to validate render frame IDs. A default is set by the
   // constructor, but this can be overridden by unit tests.
   ValidateRenderFrameIdFunction validate_render_frame_id_function_;
-#endif  // DCHECK_IS_ON()
 
   // The maximum number of simultaneous streams during the lifetime of this
   // host. Reported as UMA stat at shutdown.
