@@ -60,6 +60,7 @@ TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
       base::android::SDK_VERSION_KITKAT) {
     expected_failures.insert("BQ");
     expected_failures.insert("SS");
+    expected_failures.insert("XK");
   }
 #endif
   const std::vector<std::string>& country_codes =
