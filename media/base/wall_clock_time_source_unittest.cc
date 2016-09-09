@@ -89,6 +89,10 @@ TEST_F(WallClockTimeSourceTest, SetMediaTime) {
   SetMediaTimeInSeconds(10);
   EXPECT_EQ(10, CurrentMediaTimeInSeconds());
   EXPECT_TRUE(IsTimeStopped());
+  std::vector<base::TimeTicks> wall_clock_times;
+  time_source_.GetWallClockTimes(std::vector<base::TimeDelta>(),
+                                 &wall_clock_times);
+  EXPECT_EQ(base::TimeTicks(), wall_clock_times[0]);
 }
 
 TEST_F(WallClockTimeSourceTest, SetPlaybackRate) {
@@ -163,6 +167,14 @@ TEST_F(WallClockTimeSourceTest, EmptyMediaTimestampsReturnMediaWallClockTime) {
       std::vector<base::TimeDelta>(), &wall_clock_times);
   EXPECT_FALSE(is_time_moving);
   EXPECT_EQ(tick_clock_->NowTicks(), wall_clock_times[0]);
+
+  // Setting media time should clear reference time.
+  SetMediaTimeInSeconds(5);
+  wall_clock_times.clear();
+  is_time_moving = time_source_.GetWallClockTimes(
+      std::vector<base::TimeDelta>(), &wall_clock_times);
+  EXPECT_FALSE(is_time_moving);
+  EXPECT_EQ(base::TimeTicks(), wall_clock_times[0]);
 }
 
 }  // namespace media

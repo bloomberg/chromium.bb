@@ -50,6 +50,7 @@ void WallClockTimeSource::SetMediaTime(base::TimeDelta time) {
   base::AutoLock auto_lock(lock_);
   CHECK(!ticking_);
   base_timestamp_ = time;
+  reference_time_ = base::TimeTicks();
 }
 
 base::TimeDelta WallClockTimeSource::CurrentMediaTime() {

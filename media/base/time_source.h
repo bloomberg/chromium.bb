@@ -54,7 +54,8 @@ class MEDIA_EXPORT TimeSource {
   // time is stopped, timestamps will be converted.
   //
   // Passing an empty |media_timestamps| vector will return the last known media
-  // time as a wall clock time.
+  // time as a wall clock time. After SetMediaTime() and prior to StartTicking()
+  // the returned wall clock time must be zero.
   //
   // Within a single call to GetWallClockTimes() the returned wall clock times
   // are a strictly increasing function of the given media times. There is no
