@@ -42,6 +42,17 @@ class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
+// SVGImage does not use Skia to draw images (as BitmapImage does) but instead
+// handles drawing itself. Internally, SVGImage creates a detached & sandboxed
+// Page containing an SVGDocument and reuses the existing paint code in Blink to
+// draw the image. Because a single SVGImage can be referenced by multiple
+// containers (see: SVGImageForContainer.h), each call to SVGImage::draw() may
+// require (re-)laying out the inner SVGDocument.
+//
+// Using Page was an architectural hack and has surprising side-effects. Ideally
+// SVGImage would use a lighter container around an SVGDocument that does not
+// have the full Page machinery but still has the sandboxing security guarantees
+// needed by SVGImage.
 class CORE_EXPORT SVGImage final : public Image {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
@@ -90,6 +101,7 @@ private:
     // the the Image interface.
     friend class SVGImageForContainer;
 
+    SVGImage(ImageObserver*);
     ~SVGImage() override;
 
     String filenameExtension() const override;
@@ -104,16 +116,25 @@ private:
     void destroyDecodedData() override { }
 
     // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override
+    {
+        return false;
+    }
 
-    SVGImage(ImageObserver*);
-    void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode) override;
-    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&, const KURL&);
-    void drawPatternForContainer(GraphicsContext&, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
-        SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing, const KURL&);
-    sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&, const IntSize& containerSize);
-    void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
-        ImageClampingMode, const KURL&);
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect,
+        const FloatRect& toRect, RespectImageOrientationEnum,
+        ImageClampingMode) override;
+    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float,
+        const FloatRect&, const FloatRect&, const KURL&);
+    void drawPatternForContainer(GraphicsContext&, const FloatSize, float,
+        const FloatRect&, const FloatSize&, const FloatPoint&,
+        SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing,
+        const KURL&);
+    sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
+        const IntSize& containerSize);
+    void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect,
+        const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode,
+        const KURL&);
 
     void stopAnimation();
     void scheduleTimelineRewind();
@@ -122,12 +143,11 @@ private:
     Persistent<SVGImageChromeClient> m_chromeClient;
     Persistent<Page> m_page;
 
-    // When an SVG image has no intrinsic size the size depends on the
-    // default object size, which in turn depends on the
-    // container. SVGImage may belong to multiple containers so the
-    // final image size can't be known in
-    // SVGImage. SVGImageForContainer carried the final image size,
-    // also called concrete object size.
+    // When an SVG image has no intrinsic size, the size depends on the default
+    // object size, which in turn depends on the container. One SVGImage may
+    // belong to multiple containers so the final image size can't be known in
+    // SVGImage. SVGImageForContainer carries the final image size, also called
+    // the "concrete object size". For more, see: SVGImageForContainer.h
     IntSize m_intrinsicSize;
     bool m_hasPendingTimelineRewind;
 };
