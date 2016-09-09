@@ -817,13 +817,13 @@ crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pa
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-down-css_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-css_touch-manual.html  [ Skip ]
-#crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html  [ Skip ]
-#crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y-pan-y_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_highest-parent-none_touch-manual.html  [ Skip ]
-#crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html  [ Skip ]
-#crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-none-css_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html  [ Skip ]
@@ -836,12 +836,6 @@ crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap
 # These are errors even when running the tests manually.
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
-
-# These tests are using timeouts and might be flaky sometimes
-crbug.com/643215 imported/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html  [ Skip ]
-crbug.com/643215 imported/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html  [ Skip ]
-crbug.com/643215 imported/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html  [ Skip ]
-crbug.com/643215 imported/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html  [ Skip ]
 
 # There is no assoicated JS file to support automated user inputs.
 crbug.com/629724 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_click.html [ Skip ]

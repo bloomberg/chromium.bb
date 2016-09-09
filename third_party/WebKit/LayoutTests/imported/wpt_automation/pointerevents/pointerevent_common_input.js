@@ -2,6 +2,20 @@
 
 const scrollOffset = 30;
 const boundaryOffset = 5;
+const touchSourceType = 1;
+
+function delayPromise(delay) {
+  return new Promise(function(resolve, reject) {
+    window.setTimeout(resolve, delay);
+  });
+}
+
+function scrollPageIfNeeded(targetSelector) {
+  var target = document.querySelector(targetSelector);
+  var targetRect = target.getBoundingClientRect();
+  if (targetRect.top < 0 || targetRect.left < 0 || targetRect.bottom > window.innerHeight || targetRect.right > window.innerWidth)
+    window.scrollTo(targetRect.left, targetRect.top);
+}
 
 // Mouse inputs.
 function mouseMoveToDocument() {
@@ -82,8 +96,8 @@ function mouseWheelScroll(direction) {
 function touchTapInTarget(targetSelector) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector);
       var target = document.querySelector(targetSelector);
-      target.scrollIntoViewIfNeeded();
       var targetRect = target.getBoundingClientRect();
       chrome.gpuBenchmarking.tap(targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, function() {
         resolve();
@@ -97,12 +111,12 @@ function touchTapInTarget(targetSelector) {
 function touchScrollInTarget(targetSelector, direction) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector);
       var target = document.querySelector(targetSelector);
-      target.scrollIntoViewIfNeeded();
       var targetRect = target.getBoundingClientRect();
       chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, function() {
         resolve();
-      }, targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, 1, direction);
+      }, targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, touchSourceType, direction);
     } else {
       reject();
     }
@@ -172,3 +186,4 @@ function keyboardScroll(direction) {
     pointerevent_automation.done();
   });
 }
+
