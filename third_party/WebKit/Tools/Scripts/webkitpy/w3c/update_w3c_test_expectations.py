@@ -53,7 +53,7 @@ class W3CExpectationsLineAdder(object):
         return 0
 
     def get_issue_number(self):
-        return GitCL(self.host.executive).get_issue_number()
+        return GitCL(self.host).get_issue_number()
 
     def get_try_bots(self):
         return self.host.builders.all_try_builder_names()

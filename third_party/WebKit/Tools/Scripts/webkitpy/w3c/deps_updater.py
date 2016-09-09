@@ -43,7 +43,7 @@ class DepsUpdater(object):
         if not self.checkout_is_okay(options.allow_local_commits):
             return 1
 
-        self.git_cl = GitCL(self.executive, auth_refresh_token_json=options.auth_refresh_token_json)
+        self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 
         self.print_('## Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
@@ -298,17 +298,29 @@ class DepsUpdater(object):
             '-m', 'W3C auto test import CL.\n\nTBR=qyearsley@chromium.org',
         ] + ['--cc=' + email for email in cc_list])
 
+        # First try: if there are failures, update expectations.
         self.print_('## Triggering try jobs.')
         for try_bot in self.host.builders.all_try_builder_names():
             self.git_cl.run(['try', '-b', try_bot])
-        if self.git_cl.has_failing_try_results():
+        try_results = self.git_cl.wait_for_try_jobs()
+        if not try_results:
+            self.print_('## Timed out waiting for try results.')
+            return
+        if try_results and self.git_cl.has_failing_try_results(try_results):
             self.write_test_expectations()
 
+        # Second try: if there are failures, then abort.
         self.git_cl.run(['set-commit', '--rietveld'])
-        if self.git_cl.has_failing_try_results():
-            self.print_('## CL has failing results when trying to land; aborting.')
+        try_results = self.git_cl.wait_for_try_jobs()
+        if not try_results:
+            self.print_('Timed out waiting for try results.')
             self.git_cl.run(['set-close'])
             return False
+        if self.git_cl.has_failing_try_results(try_results):
+            self.print_('CQ failed; aborting.')
+            self.git_cl.run(['set-close'])
+            return False
+        self.print_('## Update completed.')
         return True
 
     def get_directory_owners_to_cc(self):

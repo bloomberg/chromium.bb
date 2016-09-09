@@ -6,58 +6,93 @@ import unittest
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.host_mock import MockHost
 
 
 class GitCLTest(unittest.TestCase):
 
     def test_run(self):
-        executive = MockExecutive2(output='mock-output')
-        git_cl = GitCL(executive)
+        host = MockHost()
+        host.executive = MockExecutive2(output='mock-output')
+        git_cl = GitCL(host)
         output = git_cl.run(['command'])
         self.assertEqual(output, 'mock-output')
-        self.assertEqual(executive.calls, [['git', 'cl', 'command']])
+        self.assertEqual(host.executive.calls, [['git', 'cl', 'command']])
 
     def test_run_with_auth(self):
-        executive = MockExecutive2(output='mock-output')
-        git_cl = GitCL(executive, auth_refresh_token_json='token.json')
+        host = MockHost()
+        host.executive = MockExecutive2(output='mock-output')
+        git_cl = GitCL(host, auth_refresh_token_json='token.json')
         git_cl.run(['command'])
         self.assertEqual(
-            executive.calls,
+            host.executive.calls,
             [['git', 'cl', 'command', '--auth-refresh-token-json', 'token.json']])
 
-    def test_parse_try_job_results(self):
-        output = """Successes:
-        linux_builder     http://example.com/linux_builder/builds/222
-        mac_builder       http://example.com/mac_builder/builds/222
-        win_builder       http://example.com/win_builder/builds/222
-        Failures:
-        android_builder   http://example.com/android_builder/builds/111
-        chromeos_builder  http://example.com/chromeos_builder/builds/111
-        Started:
-        chromeos_generic  http://example.com/chromeos_generic/builds/111
-        chromeos_daisy    http://example.com/chromeos_daisy/builds/111
-        Total: 8 tryjobs
-        """
-        self.assertEqual(GitCL.parse_try_job_results(output), {
-            'Successes': set([
-                'mac_builder',
-                'win_builder',
-                'linux_builder'
-            ]),
-            'Failures': set([
-                'android_builder',
-                'chromeos_builder'
-            ]),
-            'Started': set([
-                'chromeos_generic',
-                'chromeos_daisy'
-            ])
-        })
-
     def test_get_issue_number(self):
-        git_cl = GitCL(MockExecutive2(output='Issue number: 12345 (http://crrev.com/12345)'))
+        host = MockHost()
+        host.executive = MockExecutive2(output='Issue number: 12345 (http://crrev.com/12345)')
+        git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), '12345')
 
     def test_get_issue_number_none(self):
-        git_cl = GitCL(MockExecutive2(output='Issue number: None (None)'))
+        host = MockHost()
+        host.executive = MockExecutive2(output='Issue number: None (None)')
+        git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), 'None')
+
+    def test_all_jobs_finished_empty(self):
+        self.assertTrue(GitCL.all_jobs_finished([]))
+
+    def test_all_jobs_finished_with_started_jobs(self):
+        self.assertFalse(GitCL.all_jobs_finished([
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+            },
+            {
+                'builder_name': 'some-builder',
+                'status': 'STARTED',
+                'result': None,
+            },
+        ]))
+
+    def test_all_jobs_finished_only_completed_jobs(self):
+        self.assertTrue(GitCL.all_jobs_finished([
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+            },
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'SUCCESS',
+            },
+        ]))
+
+    def test_has_failing_try_results_empty(self):
+        self.assertFalse(GitCL.has_failing_try_results([]))
+
+    def test_has_failing_try_results_only_success_and_started(self):
+        self.assertFalse(GitCL.has_failing_try_results([
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'SUCCESS',
+            },
+            {
+                'builder_name': 'some-builder',
+                'status': 'STARTED',
+                'result': None,
+            },
+        ]))
+
+    def test_has_failing_try_results_with_failing_results(self):
+        self.assertTrue(GitCL.has_failing_try_results([
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+            },
+        ]))

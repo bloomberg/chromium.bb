@@ -94,7 +94,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
     def git_cl(self):
         """Returns a GitCL instance; can be overridden for tests."""
-        return GitCL(self._tool.executive)
+        return GitCL(self._tool)
 
     def trigger_jobs_for_missing_builds(self, builds):
         builders_with_builds = {b.builder_name for b in builds}

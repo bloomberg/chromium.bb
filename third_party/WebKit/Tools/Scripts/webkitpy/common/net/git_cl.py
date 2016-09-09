@@ -8,13 +8,17 @@ The git-cl tool is responsible for communicating with Rietveld, Gerrit,
 and Buildbucket to manage changelists and try jobs associated with them.
 """
 
+import json
+import logging
 import time
+
+_log = logging.getLogger(__name__)
 
 
 class GitCL(object):
 
-    def __init__(self, executive, auth_refresh_token_json=None, cwd=None):
-        self._executive = executive
+    def __init__(self, host, auth_refresh_token_json=None, cwd=None):
+        self._host = host
         self._auth_refresh_token_json = auth_refresh_token_json
         self._cwd = cwd
 
@@ -23,47 +27,46 @@ class GitCL(object):
         command = ['git', 'cl'] + args
         if self._auth_refresh_token_json:
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
-        return self._executive.run_command(command, cwd=self._cwd)
+        return self._host.executive.run_command(command, cwd=self._cwd)
 
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
 
-    def has_failing_try_results(self, poll_delay_seconds=300):
-        """Waits for try job results and checks whether there are failing results."""
-        # TODO(qyearsley): Refactor to make this more easily-testable.
-        # TODO(qyearsley): Add a time-out to avoid infinite looping.
-        while True:
-            time.sleep(poll_delay_seconds)
-            print 'Waiting for results.'
-            out = self.run(['try-results'])
-            results = self.parse_try_job_results(out)
-            if results.get('Started') or results.get('Scheduled'):
-                continue
-            if results.get('Failures'):
-                return True
-            return False
-
-    @staticmethod
-    def parse_try_job_results(results):
-        """Parses try job results from `git cl try-results`.
+    def wait_for_try_jobs(self, poll_delay_seconds=5, timeout_seconds=60):
+        """Waits until all try jobs are finished.
 
         Args:
-            results: The stdout obtained by running `git cl try-results`.
+            poll_delay_seconds: Time to wait between fetching results.
+            timeout_seconds: Time to wait before aborting.
 
         Returns:
-            A dict mapping result type (e.g. Success, Failure) to list of bots
-            with that result type. The list of builders is represented as a set
-            and any bots with both success and failure results are not included
-            in failures.
+            A list of try job result dicts, or None if a timeout occurred.
         """
-        sets = {}
-        for line in results.splitlines():
-            line = line.strip()
-            if line[-1] == ':':
-                result_type = line[:-1]
-                sets[result_type] = set()
-            elif line.split()[0] == 'Total:':
-                break
-            else:
-                sets[result_type].add(line.split()[0])
-        return sets
+        start = time.time()
+        while time.time() - start < timeout_seconds:
+            time.sleep(poll_delay_seconds)
+            try_results = self.fetch_try_results()
+            _log.debug('Fetched try results: %s', try_results)
+            if self.all_jobs_finished(try_results):
+                return try_results
+            self._host.print_('Waiting for results.')
+            time.sleep(poll_delay_seconds)
+        return None
+
+    def fetch_try_results(self):
+        """Requests results of try jobs for the current CL."""
+        with self._host.filesystem.mkdtemp() as temp_directory:
+            results_path = self._host.filesystem.join(temp_directory, 'try-results.json')
+            self.run(['try-results', '--json', results_path])
+            contents = self._host.filesystem.read_text_file(results_path)
+            _log.debug('Fetched try results to file "%s".', results_path)
+            self._host.filesystem.remove(results_path)
+        return json.loads(contents)
+
+    @staticmethod
+    def all_jobs_finished(try_results):
+        return all(r.get('status') == 'COMPLETED' for r in try_results)
+
+    @staticmethod
+    def has_failing_try_results(try_results):
+        return any(r.get('result') == 'FAILURE' for r in try_results)
