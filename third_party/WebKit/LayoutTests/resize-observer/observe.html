@@ -164,6 +164,31 @@ function test6() {
   return promise;
 }
 
+function test7() {
+  let harnessTest = async_test("test7: callback.this");
+  let resolvePromise;
+  let ro = new ResizeObserver( function(entries, obs)  {
+    let callbackThis = this;
+    resolvePromise();
+    harnessTest.step(() => {
+      assert_equals(callbackThis, ro, "callback.this is ResizeObserver");
+      assert_equals(obs, ro, "2nd argument is ResizeObserver");
+      ro.disconnect();
+      // every reference to RO must be null before test completes
+      // to avoid triggering test leak-detection
+      ro = null;
+      callbackThis = null;
+      obs = null;
+      harnessTest.done();
+     });
+    }
+  );
+  ro.observe(t1);
+
+  return new Promise( (resolve, reject) => {
+    resolvePromise = resolve;
+  });
+}
 let guard = async_test('guard');
 test0()
   .then(() => { return test1(); })
@@ -172,6 +197,7 @@ test0()
   .then(() => { return test4(); })
   .then(() => { return test5(); })
   .then(() => { return test6(); })
+  .then(() => { return test7(); })
   .then(() => { guard.done(); });
 
 </script>

@@ -3,5 +3,5 @@
 // found in the LICENSE file.
 
 callback interface ResizeObserverCallback {
-    void handleEvent(sequence<ResizeObserverEntry> entries, ResizeObserver observer);
+    [Custom] void handleEvent(sequence<ResizeObserverEntry> entries, ResizeObserver observer);
 };
