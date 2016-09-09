@@ -7,12 +7,20 @@ package org.chromium.chrome.browser.download;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+
+import org.chromium.base.Log;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * A wrapper for Android DownloadManager to provide utility functions.
  */
 public class DownloadManagerDelegate {
+    private static final String TAG = "DownloadDelegate";
     protected final Context mContext;
 
     public DownloadManagerDelegate(Context context) {
@@ -29,6 +37,26 @@ public class DownloadManagerDelegate {
                 (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         String newMimeType =
                 ChromeDownloadDelegate.remapGenericMimeType(mimeType, originalUrl, fileName);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            Class<?> c = manager.getClass();
+            try {
+                Class[] args = {String.class, String.class, boolean.class, String.class,
+                        String.class, long.class, boolean.class, Uri.class, Uri.class};
+                Method method = c.getMethod("addCompletedDownload", args);
+                Uri originalUri = Uri.parse(originalUrl);
+                Uri refererUri = referer == null ? Uri.EMPTY : Uri.parse(referer);
+                return (Long) method.invoke(manager, fileName, description, true, newMimeType, path,
+                        length, false, originalUri, refererUri);
+            } catch (SecurityException e) {
+                Log.e(TAG, "Cannot access the needed method.");
+            } catch (NoSuchMethodException e) {
+                Log.e(TAG, "Cannot find the needed method.");
+            } catch (InvocationTargetException e) {
+                Log.e(TAG, "Error calling the needed method.");
+            } catch (IllegalAccessException e) {
+                Log.e(TAG, "Error accessing the needed method.");
+            }
+        }
         return manager.addCompletedDownload(fileName, description, true, newMimeType, path, length,
                 false);
     }
