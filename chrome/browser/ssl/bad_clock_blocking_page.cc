@@ -15,7 +15,6 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/bad_clock_ui.h"
-#include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -58,8 +57,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       ssl_info_(ssl_info),
-      time_triggered_(time_triggered),
-      controller_(new ChromeControllerClient(web_contents)) {
+      time_triggered_(time_triggered) {
   // Set up the metrics helper for the BadClockUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMetricsName;
@@ -68,16 +66,16 @@ BadClockBlockingPage::BadClockBlockingPage(
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(false);
   std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper(
       chrome_metrics_helper);
-  controller_->set_metrics_helper(std::move(metrics_helper));
+  controller()->set_metrics_helper(std::move(metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
       std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,
-      false /* overridable */, controller_->metrics_helper()));
+      false /* overridable */, controller()->metrics_helper()));
 
   bad_clock_ui_.reset(new security_interstitials::BadClockUI(
       request_url, cert_error, ssl_info, time_triggered, clock_state,
-      controller_.get()));
+      controller()));
 }
 
 BadClockBlockingPage::~BadClockBlockingPage() {
@@ -94,10 +92,6 @@ bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
 InterstitialPageDelegate::TypeID BadClockBlockingPage::GetTypeForTesting()
     const {
   return BadClockBlockingPage::kTypeForTesting;
-}
-
-void BadClockBlockingPage::AfterShow() {
-  controller_->set_interstitial_page(interstitial_page());
 }
 
 void BadClockBlockingPage::PopulateInterstitialStrings(

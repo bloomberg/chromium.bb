@@ -91,14 +91,6 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
-void SecurityInterstitialPage::SetReportingPreference(bool report) {
-  controller_->SetReportingPreference(report);
-}
-
-void SecurityInterstitialPage::OpenExtendedReportingPrivacyPolicy() {
-  controller_->OpenExtendedReportingPrivacyPolicy();
-}
-
 security_interstitials::MetricsHelper*
 SecurityInterstitialPage::metrics_helper() {
   return controller_->metrics_helper();
@@ -107,4 +99,8 @@ SecurityInterstitialPage::metrics_helper() {
 void SecurityInterstitialPage::set_metrics_helper(
     std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper) {
   controller_->set_metrics_helper(std::move(metrics_helper));
+}
+
+ChromeControllerClient* SecurityInterstitialPage::controller() {
+  return controller_.get();
 }

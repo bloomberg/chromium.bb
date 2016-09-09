@@ -65,7 +65,6 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
-  void AfterShow() override;
 
  private:
   void NotifyDenyCertificate();

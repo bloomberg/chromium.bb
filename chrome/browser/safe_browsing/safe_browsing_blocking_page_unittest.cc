@@ -5,6 +5,7 @@
 #include <list>
 
 #include "base/run_loop.h"
+#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -666,13 +667,13 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
       prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user check the report agreement checkbox.
-  sb_interstitial->SetReportingPreference(true);
+  sb_interstitial->controller()->SetReportingPreference(true);
 
   EXPECT_TRUE(profile->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user uncheck the report agreement checkbox.
-  sb_interstitial->SetReportingPreference(false);
+  sb_interstitial->controller()->SetReportingPreference(false);
 
   EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingExtendedReportingEnabled));

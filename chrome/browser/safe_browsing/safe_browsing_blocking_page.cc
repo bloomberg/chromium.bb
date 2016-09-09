@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
@@ -236,12 +237,12 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
   switch (command) {
     case security_interstitials::CMD_DO_REPORT: {
       // User enabled SB Extended Reporting via the checkbox.
-      SetReportingPreference(true);
+      controller()->SetReportingPreference(true);
       break;
     }
     case security_interstitials::CMD_DONT_REPORT: {
       // User disabled SB Extended Reporting via the checkbox.
-      SetReportingPreference(false);
+      controller()->SetReportingPreference(false);
       break;
     }
     case security_interstitials::CMD_OPEN_HELP_CENTER: {
@@ -259,7 +260,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     }
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY: {
       // User pressed on the SB Extended Reporting "privacy policy" link.
-      OpenExtendedReportingPrivacyPolicy();
+      controller()->OpenExtendedReportingPrivacyPolicy();
       break;
     }
     case security_interstitials::CMD_PROCEED: {

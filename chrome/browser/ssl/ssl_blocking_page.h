@@ -36,7 +36,6 @@ class SSLErrorUI;
 }
 
 class CertReportHelper;
-class ChromeControllerClient;
 class SSLUITest;
 
 // This class is responsible for showing/hiding the interstitial page that is
@@ -88,7 +87,6 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
-  void AfterShow() override;
 
  private:
   void NotifyDenyCertificate();
@@ -101,7 +99,6 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // expired.
   const bool expired_but_previously_allowed_;
 
-  std::unique_ptr<ChromeControllerClient> controller_;
   std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
   std::unique_ptr<CertReportHelper> cert_report_helper_;
 

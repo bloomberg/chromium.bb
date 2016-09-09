@@ -122,8 +122,7 @@ SSLBlockingPage::SSLBlockingPage(
           options_mask,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       expired_but_previously_allowed_(
-          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
-      controller_(new ChromeControllerClient(web_contents)) {
+          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0) {
   // Override prefs for the SSLErrorUI.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -148,16 +147,16 @@ SSLBlockingPage::SSLBlockingPage(
       new ChromeMetricsHelper(web_contents, request_url, reporting_info,
                               GetSamplingEventName(overridable_, cert_error));
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(overridable_);
-  controller_->set_metrics_helper(base::WrapUnique(chrome_metrics_helper));
+  controller()->set_metrics_helper(base::WrapUnique(chrome_metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
       std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
-      controller_->metrics_helper()));
+      controller()->metrics_helper()));
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
                                      options_mask, time_triggered,
-                                     controller_.get()));
+                                     controller()));
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
@@ -179,10 +178,6 @@ SSLBlockingPage::~SSLBlockingPage() {
         expired_but_previously_allowed_, false, overridable_);
     NotifyDenyCertificate();
   }
-}
-
-void SSLBlockingPage::AfterShow() {
-  controller_->set_interstitial_page(interstitial_page());
 }
 
 void SSLBlockingPage::PopulateInterstitialStrings(

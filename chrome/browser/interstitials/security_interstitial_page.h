@@ -49,7 +49,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
 
   // Gives an opportunity for child classes to react to Show() having run. The
   // interstitial_page_ will now have a value.
-  virtual void AfterShow() = 0;
+  virtual void AfterShow() {}
 
   // InterstitialPageDelegate method:
   std::string GetHTMLContents() override;
@@ -68,11 +68,11 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // TODO(felt): Remove these. They are temporary methods, used to pass along
   // calls to the |controller_| for subclasses that don't yet have their own
   // ChromeControllerClients. crbug.com/488673
-  void SetReportingPreference(bool report);
-  void OpenExtendedReportingPrivacyPolicy();
   security_interstitials::MetricsHelper* metrics_helper();
   void set_metrics_helper(
       std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
+
+  ChromeControllerClient* controller();
 
  private:
   // The WebContents with which this interstitial page is
