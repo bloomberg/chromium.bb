@@ -39,7 +39,7 @@ TEST_F(TextAutosizerTest, SimpleParagraph)
     EXPECT_FLOAT_EQ(40.f, autosized->layoutObject()->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, TextSizeAdjustDisablesAutosizing)
+TEST_F(TextAutosizerTest, DISABLED_TextSizeAdjustDisablesAutosizing)
 {
     setBodyInnerHTML(
         "<meta name='viewport' content='width=800'>"
@@ -82,7 +82,7 @@ TEST_F(TextAutosizerTest, TextSizeAdjustDisablesAutosizing)
     EXPECT_FLOAT_EQ(16.f, textSizeAdjust100->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, ParagraphWithChangingTextSizeAdjustment)
+TEST_F(TextAutosizerTest, DISABLED_ParagraphWithChangingTextSizeAdjustment)
 {
     setBodyInnerHTML(
         "<meta name='viewport' content='width=800'>"
@@ -126,7 +126,7 @@ TEST_F(TextAutosizerTest, ParagraphWithChangingTextSizeAdjustment)
     EXPECT_FLOAT_EQ(40.f, autosizedDiv->layoutObject()->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, ZeroTextSizeAdjustment)
+TEST_F(TextAutosizerTest, DISABLED_ZeroTextSizeAdjustment)
 {
     setBodyInnerHTML(
         "<meta name='viewport' content='width=800'>"
@@ -191,7 +191,7 @@ TEST_F(TextAutosizerTest, TextSizeAdjustmentPixelUnits)
     EXPECT_FLOAT_EQ(40.f, textSizeAdjustPixels->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, NestedTextSizeAdjust)
+TEST_F(TextAutosizerTest, DISABLED_NestedTextSizeAdjust)
 {
     setBodyInnerHTML(
         "<meta name='viewport' content='width=800'>"
@@ -225,7 +225,7 @@ TEST_F(TextAutosizerTest, NestedTextSizeAdjust)
     EXPECT_FLOAT_EQ(8.48f, textSizeAdjustB->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, PrefixedTextSizeAdjustIsAlias)
+TEST_F(TextAutosizerTest, DISABLED_PrefixedTextSizeAdjustIsAlias)
 {
     setBodyInnerHTML(
         "<meta name='viewport' content='width=800'>"

@@ -988,7 +988,9 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
 {
     ASSERT(layoutObject);
     ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
-    if (!currentStyle.getTextSizeAdjust().isAuto()) {
+    // TODO(pdr): text-size-adjust is temporarily not honored due to
+    // breaking accessibility settings. See: https://645269.
+    if (false && !currentStyle.getTextSizeAdjust().isAuto()) {
         multiplier = currentStyle.getTextSizeAdjust().multiplier();
     } else if (multiplier < 1) {
         // Unlike text-size-adjust, the text autosizer should only inflate fonts.
