@@ -39,6 +39,11 @@ void GlRenderer::RequestCanvasSize() {
 void GlRenderer::OnPixelTransformationChanged(
     const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!canvas_) {
+    LOG(WARNING) << "Trying to set transformation matrix when the canvas is "
+        "not ready.";
+    return;
+  }
   canvas_->SetTransformationMatrix(matrix);
   RequestRender();
 }
@@ -97,6 +102,10 @@ void GlRenderer::OnSurfaceCreated(int gl_version) {
 
 void GlRenderer::OnSurfaceChanged(int view_width, int view_height) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!canvas_) {
+    LOG(WARNING) << "Trying to set the view size when the canvas is not ready.";
+    return;
+  }
   canvas_->SetViewSize(view_width, view_height);
   RequestRender();
 }
