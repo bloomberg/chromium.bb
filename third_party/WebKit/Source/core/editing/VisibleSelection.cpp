@@ -642,12 +642,12 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
         if (endRoot || endEditableAncestor != baseEditableAncestor) {
 
             PositionTemplate<Strategy>p = previousVisuallyDistinctCandidate(m_end);
-            Element* shadowAncestor = endRoot ? endRoot->shadowHost() : nullptr;
+            Element* shadowAncestor = endRoot ? endRoot->ownerShadowHost() : nullptr;
             if (p.isNull() && shadowAncestor)
                 p = PositionTemplate<Strategy>::afterNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.computeContainerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Element* root = rootEditableElementOf(p);
-                shadowAncestor = root ? root->shadowHost() : nullptr;
+                shadowAncestor = root ? root->ownerShadowHost() : nullptr;
                 p = isAtomicNode(p.computeContainerNode()) ? PositionTemplate<Strategy>::inParentBeforeNode(*p.computeContainerNode()) : previousVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
                     p = PositionTemplate<Strategy>::afterNode(shadowAncestor);
@@ -671,12 +671,12 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
         Element* startEditableAncestor = lowestEditableAncestor(m_start.computeContainerNode());
         if (startRoot || startEditableAncestor != baseEditableAncestor) {
             PositionTemplate<Strategy> p = nextVisuallyDistinctCandidate(m_start);
-            Element* shadowAncestor = startRoot ? startRoot->shadowHost() : nullptr;
+            Element* shadowAncestor = startRoot ? startRoot->ownerShadowHost() : nullptr;
             if (p.isNull() && shadowAncestor)
                 p = PositionTemplate<Strategy>::beforeNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.computeContainerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Element* root = rootEditableElementOf(p);
-                shadowAncestor = root ? root->shadowHost() : nullptr;
+                shadowAncestor = root ? root->ownerShadowHost() : nullptr;
                 p = isAtomicNode(p.computeContainerNode()) ? PositionTemplate<Strategy>::inParentAfterNode(*p.computeContainerNode()) : nextVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
                     p = PositionTemplate<Strategy>::beforeNode(shadowAncestor);

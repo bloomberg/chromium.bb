@@ -590,11 +590,11 @@ Node& Node::shadowIncludingRoot() const
     if (isConnected())
         return document();
     Node* root = const_cast<Node*>(this);
-    while (Node* host = root->shadowHost())
+    while (Node* host = root->ownerShadowHost())
         root = host;
     while (Node* ancestor = root->parentNode())
         root = ancestor;
-    DCHECK(!root->shadowHost());
+    DCHECK(!root->ownerShadowHost());
     return *root;
 }
 
@@ -819,7 +819,7 @@ bool Node::isShadowIncludingInclusiveAncestorOf(const Node* node) const
     if (!hasChildren && !hasShadow)
         return false;
 
-    for (; node; node = node->shadowHost()) {
+    for (; node; node = node->ownerShadowHost()) {
         if (treeScope() == node->treeScope())
             return contains(node);
     }
@@ -1033,7 +1033,7 @@ ShadowRoot* Node::v1ShadowRootOfParent() const
     return nullptr;
 }
 
-Element* Node::shadowHost() const
+Element* Node::ownerShadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())
         return &root->host();

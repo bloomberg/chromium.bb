@@ -375,8 +375,8 @@ bool HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     // startPosition and endPosition can be null position for example when
     // "-webkit-user-select: none" style attribute is specified.
     if (startPosition.isNotNull() && endPosition.isNotNull()) {
-        DCHECK_EQ(startPosition.anchorNode()->shadowHost(), this);
-        DCHECK_EQ(endPosition.anchorNode()->shadowHost(), this);
+        DCHECK_EQ(startPosition.anchorNode()->ownerShadowHost(), this);
+        DCHECK_EQ(endPosition.anchorNode()->ownerShadowHost(), this);
     }
 #endif // DCHECK_IS_ON()
     VisibleSelection newSelection;
@@ -751,7 +751,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 {
     DCHECK(position.isNull() || position.isOffsetInAnchor()
-        || position.computeContainerNode() || !position.anchorNode()->shadowHost()
+        || position.computeContainerNode() || !position.anchorNode()->ownerShadowHost()
         || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
     return enclosingTextFormControl(position.computeContainerNode());
 }
@@ -760,7 +760,7 @@ HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
 {
     if (!container)
         return nullptr;
-    Element* ancestor = container->shadowHost();
+    Element* ancestor = container->ownerShadowHost();
     return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRootType::UserAgent ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 

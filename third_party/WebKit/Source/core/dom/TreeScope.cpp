@@ -162,7 +162,7 @@ Node* TreeScope::ancestorInThisScope(Node* node) const
         if (!node->isInShadowTree())
             return nullptr;
 
-        node = node->shadowHost();
+        node = node->ownerShadowHost();
     }
 
     return nullptr;
@@ -369,7 +369,7 @@ void TreeScope::adoptIfNeeded(Node& node)
 
 Element* TreeScope::retarget(const Element& target) const
 {
-    for (const Element* ancestor = &target; ancestor; ancestor = ancestor->shadowHost()) {
+    for (const Element* ancestor = &target; ancestor; ancestor = ancestor->ownerShadowHost()) {
         if (this == ancestor->treeScope())
             return const_cast<Element*>(ancestor);
     }
@@ -409,7 +409,7 @@ Element* TreeScope::adjustedFocusedElement() const
 Element* TreeScope::adjustedElement(const Element& target) const
 {
     const Element* adjustedTarget = &target;
-    for (const Element* ancestor = &target; ancestor; ancestor = ancestor->shadowHost()) {
+    for (const Element* ancestor = &target; ancestor; ancestor = ancestor->ownerShadowHost()) {
         // This adjustment is done only for V1 shadows, and is skipped for V0 or UA shadows,
         // because .pointerLockElement and .(webkit)fullscreenElement is not available for
         // non-V1 shadow roots.

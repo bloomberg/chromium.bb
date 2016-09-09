@@ -65,7 +65,7 @@ HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
     Node* parent = parentNode();
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
-    Element* host = shadowHost();
+    Element* host = ownerShadowHost();
     if (isHTMLDetailsElement(host))
         return toHTMLDetailsElement(host);
     return nullptr;
@@ -91,7 +91,7 @@ static bool isClickableControl(Node* node)
     Element* element = toElement(node);
     if (element->isFormControlElement())
         return true;
-    Element* host = element->shadowHost();
+    Element* host = element->ownerShadowHost();
     return host && host->isFormControlElement();
 }
 

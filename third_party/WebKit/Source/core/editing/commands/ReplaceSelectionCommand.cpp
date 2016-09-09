@@ -165,7 +165,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
 
     Element* shadowAncestorElement;
     if (editableRoot->isInShadowTree())
-        shadowAncestorElement = editableRoot->shadowHost();
+        shadowAncestorElement = editableRoot->ownerShadowHost();
     else
         shadowAncestorElement = editableRoot;
 

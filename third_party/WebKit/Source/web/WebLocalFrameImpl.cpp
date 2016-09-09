@@ -1653,7 +1653,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
         // example, focus links if we have found text within the link.
         Node* node = activeMatch->firstNode();
         if (node && node->isInShadowTree()) {
-            if (Node* host = node->shadowHost()) {
+            if (Node* host = node->ownerShadowHost()) {
                 if (isHTMLInputElement(*host) || isHTMLTextAreaElement(*host))
                     node = host;
             }

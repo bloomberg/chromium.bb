@@ -375,7 +375,7 @@ bool ThemePainterDefault::paintSearchFieldCancelButton(const LayoutObject& cance
     // Get the layoutObject of <input> element.
     if (!cancelButtonObject.node())
         return false;
-    Node* input = cancelButtonObject.node()->shadowHost();
+    Node* input = cancelButtonObject.node()->ownerShadowHost();
     const LayoutObject& baseLayoutObject = input ? *input->layoutObject() : cancelButtonObject;
     if (!baseLayoutObject.isBox())
         return false;

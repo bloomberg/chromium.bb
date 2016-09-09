@@ -86,7 +86,7 @@ TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInFlatTreeStrategy>(TextIte
 // |node| is neither a shadow root nor the owner of a layout object.
 static bool notSkipping(const Node& node)
 {
-    return node.layoutObject() || (node.isShadowRoot() && node.shadowHost()->layoutObject());
+    return node.layoutObject() || (node.isShadowRoot() && node.ownerShadowHost()->layoutObject());
 }
 
 // This function is like Range::pastLastNode, except for the fact that it can
@@ -778,7 +778,7 @@ bool TextIteratorAlgorithm<Strategy>::shouldEmitNewlineForNode(Node* node, bool 
 
     if (layoutObject ? !layoutObject->isBR() : !isHTMLBRElement(node))
         return false;
-    return emitsOriginalText || !(node->isInShadowTree() && isHTMLInputElement(*node->shadowHost()));
+    return emitsOriginalText || !(node->isInShadowTree() && isHTMLInputElement(*node->ownerShadowHost()));
 }
 
 static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)

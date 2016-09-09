@@ -261,8 +261,8 @@ void SliderThumbElement::detachLayoutTree(const AttachContext& context)
 HTMLInputElement* SliderThumbElement::hostInput() const
 {
     // Only HTMLInputElement creates SliderThumbElement instances as its shadow nodes.
-    // So, shadowHost() must be an HTMLInputElement.
-    return toHTMLInputElement(shadowHost());
+    // So, ownerShadowHost() must be an HTMLInputElement.
+    return toHTMLInputElement(ownerShadowHost());
 }
 
 static const AtomicString& sliderThumbShadowPartId()
@@ -312,7 +312,7 @@ DEFINE_NODE_FACTORY(SliderContainerElement)
 
 HTMLInputElement* SliderContainerElement::hostInput() const
 {
-    return toHTMLInputElement(shadowHost());
+    return toHTMLInputElement(ownerShadowHost());
 }
 
 LayoutObject* SliderContainerElement::createLayoutObject(const ComputedStyle&)
@@ -408,10 +408,10 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container"));
     DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container"));
 
-    if (!shadowHost() || !shadowHost()->layoutObject())
+    if (!ownerShadowHost() || !ownerShadowHost()->layoutObject())
         return sliderContainer;
 
-    const ComputedStyle& sliderStyle = shadowHost()->layoutObject()->styleRef();
+    const ComputedStyle& sliderStyle = ownerShadowHost()->layoutObject()->styleRef();
     switch (sliderStyle.appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:

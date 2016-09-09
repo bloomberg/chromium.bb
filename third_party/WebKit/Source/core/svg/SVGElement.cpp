@@ -186,7 +186,7 @@ String SVGElement::title() const
         return String();
 
     if (inUseShadowTree()) {
-        String useTitle(shadowHost()->title());
+        String useTitle(ownerShadowHost()->title());
         if (!useTitle.isEmpty())
             return useTitle;
     }

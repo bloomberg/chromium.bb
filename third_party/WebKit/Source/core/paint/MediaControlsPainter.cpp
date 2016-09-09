@@ -413,7 +413,7 @@ bool MediaControlsPainter::paintMediaSliderThumb(const LayoutObject& object, con
     if (!object.node())
         return false;
 
-    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->shadowHost());
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->ownerShadowHost());
     if (!mediaElement)
         return false;
 
@@ -481,7 +481,7 @@ bool MediaControlsPainter::paintMediaVolumeSliderThumb(const LayoutObject& objec
     if (!object.node())
         return false;
 
-    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->shadowHost());
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object.node()->ownerShadowHost());
     if (!mediaElement)
         return false;
 

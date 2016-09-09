@@ -311,7 +311,7 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData)
 static HTMLInputElement* asFileInput(Node* node)
 {
     ASSERT(node);
-    for (; node; node = node->shadowHost()) {
+    for (; node; node = node->ownerShadowHost()) {
         if (isHTMLInputElement(*node) && toHTMLInputElement(node)->type() == InputTypeNames::file)
             return toHTMLInputElement(node);
     }
@@ -329,7 +329,7 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
     while (n && !n->isElementNode())
         n = n->parentOrShadowHostNode();
     if (n && n->isInShadowTree())
-        n = n->shadowHost();
+        n = n->ownerShadowHost();
 
     return toElement(n);
 }

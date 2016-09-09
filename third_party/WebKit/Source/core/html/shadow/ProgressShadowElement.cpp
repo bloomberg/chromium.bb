@@ -47,7 +47,7 @@ DEFINE_NODE_FACTORY(ProgressShadowElement)
 
 HTMLProgressElement* ProgressShadowElement::progressElement() const
 {
-    return toHTMLProgressElement(shadowHost());
+    return toHTMLProgressElement(ownerShadowHost());
 }
 
 bool ProgressShadowElement::layoutObjectIsNeeded(const ComputedStyle& style)

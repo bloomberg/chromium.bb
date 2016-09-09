@@ -82,7 +82,7 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
     // FXIME: Move these styles to html.css.
 
     RefPtr<ComputedStyle> style = ComputedStyle::create();
-    style->inheritFrom(shadowHost()->computedStyleRef());
+    style->inheritFrom(ownerShadowHost()->computedStyleRef());
 
     style->setFlexGrow(1);
     style->setMinWidth(Length(0, Fixed));
@@ -121,7 +121,7 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event)
     // Then we would add one to the text field's inner div, and we wouldn't need this subclass.
     // Or possibly we could just use a normal event listener.
     if (event->isBeforeTextInsertedEvent() || event->type() == EventTypeNames::webkitEditableContentChanged) {
-        Element* shadowAncestor = shadowHost();
+        Element* shadowAncestor = ownerShadowHost();
         // A TextControlInnerTextElement can have no host if its been detached,
         // but kept alive by an EditCommand. In this case, an undo/redo can
         // cause events to be sent to the TextControlInnerTextElement. To
@@ -141,7 +141,7 @@ LayoutObject* TextControlInnerEditorElement::createLayoutObject(const ComputedSt
 
 PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
 {
-    LayoutObject* parentLayoutObject = shadowHost()->layoutObject();
+    LayoutObject* parentLayoutObject = ownerShadowHost()->layoutObject();
     if (!parentLayoutObject || !parentLayoutObject->isTextControl())
         return originalStyleForLayoutObject();
     LayoutTextControlItem textControlLayoutItem = LayoutTextControlItem(toLayoutTextControl(parentLayoutObject));
@@ -183,7 +183,7 @@ void SearchFieldCancelButtonElement::detachLayoutTree(const AttachContext& conte
 void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
 {
     // If the element is visible, on mouseup, clear the value, and set selection
-    HTMLInputElement* input(toHTMLInputElement(shadowHost()));
+    HTMLInputElement* input(toHTMLInputElement(ownerShadowHost()));
     if (!input || input->isDisabledOrReadOnly()) {
         if (!event->defaultHandled())
             HTMLDivElement::defaultEventHandler(event);
@@ -204,7 +204,7 @@ void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
 
 bool SearchFieldCancelButtonElement::willRespondToMouseClickEvents()
 {
-    const HTMLInputElement* input = toHTMLInputElement(shadowHost());
+    const HTMLInputElement* input = toHTMLInputElement(ownerShadowHost());
     if (input && !input->isDisabledOrReadOnly())
         return true;
 

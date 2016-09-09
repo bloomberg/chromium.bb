@@ -47,7 +47,7 @@ const HTMLMediaElement* toParentMediaElement(const Node* node)
 {
     if (!node)
         return nullptr;
-    const Node* mediaNode = node->shadowHost();
+    const Node* mediaNode = node->ownerShadowHost();
     if (!mediaNode)
         return nullptr;
     if (!isHTMLMediaElement(mediaNode))

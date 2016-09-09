@@ -61,7 +61,7 @@ using namespace HTMLNames;
 class DataListIndicatorElement final : public HTMLDivElement {
 private:
     inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
-    inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
+    inline HTMLInputElement* hostInput() const { return toHTMLInputElement(ownerShadowHost()); }
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override
     {

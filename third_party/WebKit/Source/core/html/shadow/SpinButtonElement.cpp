@@ -200,12 +200,12 @@ void SpinButtonElement::releaseCapture(EventDispatch eventDispatch)
 
 bool SpinButtonElement::matchesReadOnlyPseudoClass() const
 {
-    return shadowHost()->matchesReadOnlyPseudoClass();
+    return ownerShadowHost()->matchesReadOnlyPseudoClass();
 }
 
 bool SpinButtonElement::matchesReadWritePseudoClass() const
 {
-    return shadowHost()->matchesReadWritePseudoClass();
+    return ownerShadowHost()->matchesReadWritePseudoClass();
 }
 
 void SpinButtonElement::startRepeatingTimer()

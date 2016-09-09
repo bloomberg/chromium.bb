@@ -2786,7 +2786,7 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadow
 
     if (ShadowRoot* root = node()->containingShadowRoot()) {
         if (root->type() == ShadowRootType::UserAgent) {
-            if (Element* shadowHost = node()->shadowHost()) {
+            if (Element* shadowHost = node()->ownerShadowHost()) {
                 return shadowHost->layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdSelection));
             }
         }

@@ -493,7 +493,7 @@ bool ThemePainterMac::paintSearchFieldCancelButton(const LayoutObject& o, const 
 {
     if (!o.node())
         return false;
-    Element* input = o.node()->shadowHost();
+    Element* input = o.node()->ownerShadowHost();
     if (!input)
         input = toElement(o.node());
 

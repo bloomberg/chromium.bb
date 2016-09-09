@@ -983,7 +983,7 @@ void ContainerNode::setFocus(bool received)
     // <input type="date"> the same way as author shadow.
     if (ShadowRoot* root = containingShadowRoot()) {
         if (root->type() != ShadowRootType::UserAgent)
-            shadowHost()->setFocus(received);
+            ownerShadowHost()->setFocus(received);
     }
 
     // If this is an author shadow host and indirectly focused (has focused element within

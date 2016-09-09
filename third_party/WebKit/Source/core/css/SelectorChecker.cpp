@@ -136,13 +136,13 @@ static bool scopeContainsLastMatchedElement(const SelectorChecker::SelectorCheck
     // Because Blink treats a shadow host's TreeScope as a separate one from its descendent shadow roots,
     // if the last matched element is a shadow host, the condition above isn't met, even though it
     // should be.
-    return context.element == context.scope->shadowHost() && (!context.previousElement || context.previousElement->isInDescendantTreeOf(context.element));
+    return context.element == context.scope->ownerShadowHost() && (!context.previousElement || context.previousElement->isInDescendantTreeOf(context.element));
 }
 
 static inline bool nextSelectorExceedsScope(const SelectorChecker::SelectorCheckingContext& context)
 {
     if (context.scope && context.scope->isInShadowTree())
-        return context.element == context.scope->shadowHost();
+        return context.element == context.scope->ownerShadowHost();
 
     return false;
 }
@@ -357,10 +357,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (!m_isUARule && !m_isQuerySelector && context.selector->getPseudoType() == CSSSelector::PseudoShadow)
                 Deprecation::countDeprecation(context.element->document(), UseCounter::CSSSelectorPseudoShadow);
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
-            if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope())
+            if (context.scope && context.scope->ownerShadowHost() && context.scope->ownerShadowHost()->treeScope() == context.element->treeScope())
                 return SelectorFailsCompletely;
 
-            Element* shadowHost = context.element->shadowHost();
+            Element* shadowHost = context.element->ownerShadowHost();
             if (!shadowHost)
                 return SelectorFailsCompletely;
             nextContext.element = shadowHost;
@@ -585,7 +585,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, MatchResu
     const CSSSelector& selector = *context.selector;
 
     // Only :host and :host-context() should match the host: http://drafts.csswg.org/css-scoping/#host-element
-    if (context.scope && context.scope->shadowHost() == element && (!selector.isHostPseudoClass()
+    if (context.scope && context.scope->ownerShadowHost() == element && (!selector.isHostPseudoClass()
         && !context.treatShadowHostAsNormalScope
         && selector.match() != CSSSelector::PseudoElement))
             return false;
@@ -1065,7 +1065,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
     // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
     if (!context.scope)
         return false;
-    const ContainerNode* shadowHost = context.scope->shadowHost();
+    const ContainerNode* shadowHost = context.scope->ownerShadowHost();
     if (!shadowHost || shadowHost != element)
         return false;
     ASSERT(element.shadow());

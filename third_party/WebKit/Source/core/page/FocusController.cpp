@@ -1052,7 +1052,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     if (!enclosingTextFormControl(selectionStartNode))
         return;
 
-    if (selectionStartNode->isInShadowTree() && selectionStartNode->shadowHost() == newFocusedElement)
+    if (selectionStartNode->isInShadowTree() && selectionStartNode->ownerShadowHost() == newFocusedElement)
         return;
 
     selection.clear();

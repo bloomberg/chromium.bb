@@ -480,7 +480,7 @@ static bool shouldCheckScope(const Element& element, const Node& scopingNode, bo
         const TreeScope* scope = &scopingNode.treeScope();
         while (scope && scope->parentTreeScope() != &element.treeScope())
             scope = scope->parentTreeScope();
-        Element* shadowHost = scope ? scope->rootNode().shadowHost() : nullptr;
+        Element* shadowHost = scope ? scope->rootNode().ownerShadowHost() : nullptr;
         return shadowHost && element.isDescendantOf(shadowHost);
     }
 

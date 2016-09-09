@@ -53,11 +53,11 @@ static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, 
 {
     if (shadowRoot.isV1()) {
         // In v1, an event is scoped by default unless event.composed flag is set.
-        return !event.composed() && target.toNode() && target.toNode()->shadowHost() == shadowRoot.host();
+        return !event.composed() && target.toNode() && target.toNode()->ownerShadowHost() == shadowRoot.host();
     }
     // Ignores event.composed() for v0.
     // Instead, use event.isScopedInV0() for backward compatibility.
-    return event.isScopedInV0() && target.toNode() && target.toNode()->shadowHost() == shadowRoot.host();
+    return event.isScopedInV0() && target.toNode() && target.toNode()->ownerShadowHost() == shadowRoot.host();
 }
 
 EventPath::EventPath(Node& node, Event* event)
@@ -152,7 +152,7 @@ void EventPath::calculatePath()
         if (current->isShadowRoot()) {
             if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
                 break;
-            current = current->shadowHost();
+            current = current->ownerShadowHost();
             nodesInPath.append(current);
         } else {
             current = current->parentNode();

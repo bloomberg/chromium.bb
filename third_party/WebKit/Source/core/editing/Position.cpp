@@ -506,13 +506,13 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos)
         Node* child = NodeTraversal::childAt(*anchor, offset);
         if (!child) {
             if (anchor->isShadowRoot())
-                return PositionInFlatTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
+                return PositionInFlatTree(anchor->ownerShadowHost(), PositionAnchorType::AfterChildren);
             return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
         }
         child->updateDistribution();
         if (child->isSlotOrActiveInsertionPoint()) {
             if (anchor->isShadowRoot())
-                return PositionInFlatTree(anchor->shadowHost(), offset);
+                return PositionInFlatTree(anchor->ownerShadowHost(), offset);
             return PositionInFlatTree(anchor, offset);
         }
         if (Node* parent = FlatTreeTraversal::parent(*child))
@@ -521,12 +521,12 @@ PositionInFlatTree toPositionInFlatTree(const Position& pos)
         // children of shadow host.
         // e.g. "foo",0 in <progress>foo</progress>
         if (anchor->isShadowRoot())
-            return PositionInFlatTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
+            return PositionInFlatTree(anchor->ownerShadowHost(), PositionAnchorType::AfterChildren);
         return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
     }
 
     if (anchor->isShadowRoot())
-        return PositionInFlatTree(anchor->shadowHost(), pos.anchorType());
+        return PositionInFlatTree(anchor->ownerShadowHost(), pos.anchorType());
     // TODO(yosin): Once we have a test case for SLOT or active insertion point,
     // this function should handle it.
     return PositionInFlatTree(anchor, pos.anchorType());

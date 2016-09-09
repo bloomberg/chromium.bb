@@ -298,10 +298,10 @@ public:
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 
     // If this node is in a shadow tree, returns its shadow host. Otherwise, returns nullptr.
-    // TODO(kochi): crbug.com/507413 shadowHost() can return nullptr even when it is in a
+    // TODO(kochi): crbug.com/507413 ownerShadowHost() can return nullptr even when it is in a
     // shadow tree but its root is detached from its host. This can happen when handling
     // queued events (e.g. during execCommand()).
-    Element* shadowHost() const;
+    Element* ownerShadowHost() const;
     // crbug.com/569532: containingShadowRoot() can return nullptr even if isInShadowTree() returns true.
     // This can happen when handling queued events (e.g. during execCommand())
     ShadowRoot* containingShadowRoot() const;

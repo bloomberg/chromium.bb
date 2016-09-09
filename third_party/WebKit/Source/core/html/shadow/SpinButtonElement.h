@@ -78,7 +78,7 @@ private:
 
     void detachLayoutTree(const AttachContext&) override;
     bool isSpinButtonElement() const override { return true; }
-    bool isDisabledFormControl() const override { return shadowHost() && shadowHost()->isDisabledFormControl(); }
+    bool isDisabledFormControl() const override { return ownerShadowHost() && ownerShadowHost()->isDisabledFormControl(); }
     bool matchesReadOnlyPseudoClass() const override;
     bool matchesReadWritePseudoClass() const override;
     void defaultEventHandler(Event*) override;
