@@ -74,6 +74,7 @@
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/previews_io_data.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync/driver/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
@@ -955,6 +956,11 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
         data_reduction_proxy_io_data) const {
   data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
+}
+
+void ProfileIOData::set_previews_io_data(
+    std::unique_ptr<previews::PreviewsIOData> previews_io_data) const {
+  previews_io_data_ = std::move(previews_io_data);
 }
 
 net::HttpServerProperties* ProfileIOData::http_server_properties() const {

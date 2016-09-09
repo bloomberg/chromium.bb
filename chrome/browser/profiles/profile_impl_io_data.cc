@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -33,6 +34,8 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,6 +51,8 @@
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/previews_io_data.h"
+#include "components/previews/previews_ui_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -200,6 +205,14 @@ void ProfileImplIOData::Handle::Init(
           profile_->GetRequestContext(), std::move(store),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           db_task_runner);
+
+  io_data_->set_previews_io_data(base::MakeUnique<previews::PreviewsIOData>(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  PreviewsServiceFactory::GetForProfile(profile_)->set_previews_ui_service(
+      base::MakeUnique<previews::PreviewsUIService>(
+          io_data_->previews_io_data(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 }
 
 content::ResourceContext*
