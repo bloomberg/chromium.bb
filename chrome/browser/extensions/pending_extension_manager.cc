@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,6 +55,13 @@ const PendingExtensionInfo* PendingExtensionManager::GetById(
 }
 
 bool PendingExtensionManager::Remove(const std::string& id) {
+  if (base::ContainsKey(expected_policy_reinstalls_, id)) {
+    base::TimeDelta latency =
+        base::TimeTicks::Now() - expected_policy_reinstalls_[id];
+    UMA_HISTOGRAM_LONG_TIMES("Extensions.CorruptPolicyExtensionResolved",
+                             latency);
+    expected_policy_reinstalls_.erase(id);
+  }
   PendingExtensionList::iterator iter;
   for (iter = pending_extension_list_.begin();
        iter != pending_extension_list_.end();
@@ -84,6 +93,17 @@ bool PendingExtensionManager::HasPendingExtensionFromSync() const {
   }
 
   return false;
+}
+
+void PendingExtensionManager::ExpectPolicyReinstallForCorruption(
+    const ExtensionId& id) {
+  expected_policy_reinstalls_[id] = base::TimeTicks::Now();
+  UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptPolicyExtensionDetected", true);
+}
+
+bool PendingExtensionManager::IsPolicyReinstallForCorruptionExpected(
+    const ExtensionId& id) const {
+  return base::ContainsKey(expected_policy_reinstalls_, id);
 }
 
 bool PendingExtensionManager::AddFromSync(

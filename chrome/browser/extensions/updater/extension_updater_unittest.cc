@@ -2131,22 +2131,22 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // the delegate.
   std::string id = crx_file::id_util::GenerateId("foo");
   EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
-  EXPECT_TRUE(
-      downloader->AddPendingExtension(id, GURL("http://example.com/update"),
-                                      0));
+  EXPECT_TRUE(downloader->AddPendingExtension(
+      id, GURL("http://example.com/update"), false, 0));
   downloader->StartAllPending(NULL);
   Mock::VerifyAndClearExpectations(&delegate);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // Extensions with invalid update URLs should be rejected.
   id = crx_file::id_util::GenerateId("foo2");
-  EXPECT_FALSE(
-      downloader->AddPendingExtension(id, GURL("http:google.com:foo"), 0));
+  EXPECT_FALSE(downloader->AddPendingExtension(id, GURL("http:google.com:foo"),
+                                               false, 0));
   downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // Extensions with empty IDs should be rejected.
-  EXPECT_FALSE(downloader->AddPendingExtension(std::string(), GURL(), 0));
+  EXPECT_FALSE(
+      downloader->AddPendingExtension(std::string(), GURL(), false, 0));
   downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
@@ -2162,7 +2162,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // filled in.
   id = crx_file::id_util::GenerateId("foo3");
   EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
-  EXPECT_TRUE(downloader->AddPendingExtension(id, GURL(), 0));
+  EXPECT_TRUE(downloader->AddPendingExtension(id, GURL(), false, 0));
   downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 

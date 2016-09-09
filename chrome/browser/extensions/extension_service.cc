@@ -203,11 +203,14 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 
   const Extension* extension = GetExtensionById(info.extension_id, true);
   if (extension) {
-    // Already installed. Skip this install if the current location has
-    // higher priority than |info.download_location|.
+    // Already installed. Skip this install if the current location has higher
+    // priority than |info.download_location|, and we aren't doing a
+    // reinstall of a corrupt policy force-installed extension.
     Manifest::Location current = extension->location();
-    if (current ==
-        Manifest::GetHigherPriorityLocation(current, info.download_location)) {
+    if (!pending_extension_manager_.IsPolicyReinstallForCorruptionExpected(
+            info.extension_id) &&
+        current == Manifest::GetHigherPriorityLocation(
+                       current, info.download_location)) {
       return false;
     }
     // Otherwise, overwrite the current installation.
@@ -911,6 +914,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   // can be uninstalled by the browser if the user sets extension-specific
   // preferences.
   if (extension && !(disable_reasons & Extension::DISABLE_RELOAD) &&
+      !(disable_reasons & Extension::DISABLE_CORRUPTED) &&
       !(disable_reasons & Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY) &&
       !system_->management_policy()->UserMayModifySettings(extension,
                                                            nullptr) &&

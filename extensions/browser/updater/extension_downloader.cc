@@ -85,6 +85,7 @@ const int kMaxOAuth2Attempts = 3;
 
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
+const char kReinstallInstallSource[] = "reinstall";
 
 const char kGoogleDotCom[] = "google.com";
 const char kTokenServiceConsumerId[] = "extension_downloader";
@@ -180,6 +181,8 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
 ExtensionDownloader::ExtensionFetch::~ExtensionFetch() {
 }
 
+ExtensionDownloader::ExtraParams::ExtraParams() : is_corrupt_reinstall(false) {}
+
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
     net::URLRequestContextGetter* request_context)
@@ -210,29 +213,35 @@ bool ExtensionDownloader::AddExtension(const Extension& extension,
     return false;
   }
 
+  ExtraParams extra;
+
   // If the extension updates itself from the gallery, ignore any update URL
   // data.  At the moment there is no extra data that an extension can
   // communicate to the the gallery update servers.
   std::string update_url_data;
   if (!ManifestURL::UpdatesFromGallery(&extension))
-    update_url_data = delegate_->GetUpdateUrlData(extension.id());
+    extra.update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
   return AddExtensionData(
       extension.id(), *extension.version(), extension.GetType(),
-      ManifestURL::GetUpdateURL(&extension), update_url_data, request_id);
+      ManifestURL::GetUpdateURL(&extension), extra, request_id);
 }
 
 bool ExtensionDownloader::AddPendingExtension(const std::string& id,
                                               const GURL& update_url,
+                                              bool is_corrupt_reinstall,
                                               int request_id) {
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
   base::Version version("0.0.0.0");
   DCHECK(version.IsValid());
+  ExtraParams extra;
+  if (is_corrupt_reinstall)
+    extra.is_corrupt_reinstall = true;
 
   return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, update_url,
-                          std::string(), request_id);
+                          extra, request_id);
 }
 
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
@@ -289,7 +298,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
                                            const base::Version& version,
                                            Manifest::Type extension_type,
                                            const GURL& extension_update_url,
-                                           const std::string& update_url_data,
+                                           const ExtraParams& extra,
                                            int request_id) {
   GURL update_url(extension_update_url);
   // Skip extensions with non-empty invalid update URLs.
@@ -347,6 +356,8 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
   std::string install_source = extension_urls::IsWebstoreUpdateUrl(update_url)
                                    ? kDefaultInstallSource
                                    : kNotFromWebstoreInstallSource;
+  if (extra.is_corrupt_reinstall)
+    install_source = kReinstallInstallSource;
 
   ManifestFetchData::PingData ping_data;
   ManifestFetchData::PingData* optional_ping_data = NULL;
@@ -362,7 +373,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     // Try to add to the ManifestFetchData at the end of the list.
     ManifestFetchData* existing_fetch = existing_iter->second.back().get();
     if (existing_fetch->AddExtension(id, version.GetString(),
-                                     optional_ping_data, update_url_data,
+                                     optional_ping_data, extra.update_url_data,
                                      install_source)) {
       added = true;
     }
@@ -376,7 +387,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     fetches_preparing_[std::make_pair(request_id, update_url)].push_back(
         std::move(fetch));
     added = fetch_ptr->AddExtension(id, version.GetString(), optional_ping_data,
-                                    update_url_data, install_source);
+                                    extra.update_url_data, install_source);
     DCHECK(added);
   }
 

@@ -257,7 +257,7 @@ void ExternalCache::CheckCache() {
         update_url = extension_urls::GetWebstoreUpdateUrl();
 
       if (update_url.is_valid())
-        downloader_->AddPendingExtension(it.key(), update_url, 0);
+        downloader_->AddPendingExtension(it.key(), update_url, false, 0);
     }
 
     base::FilePath file_path;

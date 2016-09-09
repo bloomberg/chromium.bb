@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_MANAGER_H_
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 
 class GURL;
@@ -66,6 +69,13 @@ class PendingExtensionManager {
 
   // Whether there is pending extension install from sync.
   bool HasPendingExtensionFromSync() const;
+
+  // Notifies the manager that we are reinstalling the policy force-installed
+  // extension with |id| because we detected corruption in the current copy.
+  void ExpectPolicyReinstallForCorruption(const ExtensionId& id);
+
+  // Are we expecting a reinstall of the extension with |id| due to corruption?
+  bool IsPolicyReinstallForCorruptionExpected(const ExtensionId& id) const;
 
   // Adds an extension in a pending state; the extension with the
   // given info will be installed on the next auto-update cycle.
@@ -139,6 +149,10 @@ class PendingExtensionManager {
   content::BrowserContext* context_;
 
   PendingExtensionList pending_extension_list_;
+
+  // A set of policy force-installed extension ids that are being reinstalled
+  // due to corruption, mapped to the time we detected the corruption.
+  std::map<ExtensionId, base::TimeTicks> expected_policy_reinstalls_;
 
   FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);

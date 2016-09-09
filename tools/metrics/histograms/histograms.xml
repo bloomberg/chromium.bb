@@ -14589,8 +14589,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.CorruptPolicyExtensionDetected" enum="BooleanHit">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    Fires when we detect corruption in an enterprise policy forced install
+    extension and begin the process of reinstalling it. Compare to
+    CorruptPolicyExtensionResolved to judge success rate.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CorruptPolicyExtensionResolved" units="ms">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    Fires when we've successfully resinstalled a corrupt enterprise policy
+    force-installed extension, with a value indicating how long it took
+    end-to-end to complete the reinstall (including download time).
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CorruptPolicyExtensionWouldBeDisabled"
     enum="BooleanHit">
+  <obsolete>
+    Deprecated 9/2016 by fix for Issue 447040.
+  </obsolete>
   <owner>asargent@chromium.org</owner>
   <summary>
     Fires when we detect corruption in an enterprise policy forced install

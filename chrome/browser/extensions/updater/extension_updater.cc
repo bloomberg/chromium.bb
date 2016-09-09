@@ -358,8 +358,11 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
         VLOG(2) << "Extension " << *iter << " is not auto updateable";
         continue;
       }
-      if (downloader_->AddPendingExtension(*iter, info->update_url(),
-                                           request_id))
+      if (downloader_->AddPendingExtension(
+              *iter, info->update_url(),
+              pending_extension_manager->IsPolicyReinstallForCorruptionExpected(
+                  *iter),
+              request_id))
         request.in_progress_ids_.push_back(*iter);
     }
 
