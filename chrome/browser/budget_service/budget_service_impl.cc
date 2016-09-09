@@ -48,9 +48,7 @@ void BudgetServiceImpl::GetBudget(const url::Origin& origin,
 
   // Query the BudgetManager for the budget.
   content::BrowserContext* context = host->GetBrowserContext();
-  // TODO(harkness): Convert BudgetManager to use url::Origin.
-  const GURL gurl(origin.Serialize());
-  BudgetManagerFactory::GetForProfile(context)->GetBudget(gurl, callback);
+  BudgetManagerFactory::GetForProfile(context)->GetBudget(origin, callback);
 }
 
 void BudgetServiceImpl::Reserve(const url::Origin& origin,

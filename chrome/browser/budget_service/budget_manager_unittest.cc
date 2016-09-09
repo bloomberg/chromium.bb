@@ -17,6 +17,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -27,18 +28,20 @@ const double kTestSES = 48.0;
 
 class BudgetManagerTest : public testing::Test {
  public:
+  BudgetManagerTest() : origin_(url::Origin(GURL(kTestOrigin))) {}
   ~BudgetManagerTest() override {}
 
   BudgetManager* GetManager() {
     return BudgetManagerFactory::GetForProfile(&profile_);
   }
 
-  void SetSiteEngagementScore(const GURL& url, double score) {
+  void SetSiteEngagementScore(double score) {
     SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetScoreForURL(url, score);
+    service->ResetScoreForURL(GURL(kTestOrigin), score);
   }
 
   Profile* profile() { return &profile_; }
+  const url::Origin origin() const { return origin_; }
 
   void StatusCallback(base::Closure run_loop_closure, bool success) {
     success_ = success;
@@ -46,10 +49,9 @@ class BudgetManagerTest : public testing::Test {
   }
 
   bool ReserveBudget(blink::mojom::BudgetOperationType type) {
-    const GURL origin(kTestOrigin);
     base::RunLoop run_loop;
     GetManager()->Reserve(
-        origin, type,
+        origin(), type,
         base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
     run_loop.Run();
@@ -57,10 +59,9 @@ class BudgetManagerTest : public testing::Test {
   }
 
   bool ConsumeBudget(blink::mojom::BudgetOperationType type) {
-    const GURL origin(kTestOrigin);
     base::RunLoop run_loop;
     GetManager()->Consume(
-        origin, type,
+        origin(), type,
         base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
     run_loop.Run();
@@ -73,13 +74,13 @@ class BudgetManagerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  const url::Origin origin_;
 };
 
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
   // Set initial SES. The first time we try to spend budget, the
   // engagement award will be granted which is 48.0.
-  const GURL origin(kTestOrigin);
-  SetSiteEngagementScore(origin, kTestSES);
+  SetSiteEngagementScore(kTestSES);
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
 

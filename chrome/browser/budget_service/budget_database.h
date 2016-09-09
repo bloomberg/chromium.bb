@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_DATABASE_H_
 
 #include <list>
+#include <map>
 #include <memory>
-#include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -25,7 +25,10 @@ namespace budget_service {
 class Budget;
 }
 
-class GURL;
+namespace url {
+class Origin;
+}
+
 class Profile;
 
 // A class used to asynchronously read and write details of the budget
@@ -48,13 +51,14 @@ class BudgetDatabase {
 
   // Get the full budget expectation for the origin. This will return a
   // sequence of time points and the expected budget at those times.
-  void GetBudgetDetails(const GURL& origin, const GetBudgetCallback& callback);
+  void GetBudgetDetails(const url::Origin& origin,
+                        const GetBudgetCallback& callback);
 
   // Spend a particular amount of budget for an origin. The callback takes
   // a boolean which indicates whether the origin had enough budget to spend.
   // If it returns success, then the budget was deducted and the result written
   // to the database.
-  void SpendBudget(const GURL& origin,
+  void SpendBudget(const url::Origin& origin,
                    double amount,
                    const StoreBudgetCallback& callback);
 
@@ -98,29 +102,29 @@ class BudgetDatabase {
 
   void OnDatabaseInit(bool success);
 
-  bool IsCached(const GURL& origin) const;
+  bool IsCached(const url::Origin& origin) const;
 
-  double GetBudget(const GURL& origin) const;
+  double GetBudget(const url::Origin& origin) const;
 
-  void AddToCache(const GURL& origin,
+  void AddToCache(const url::Origin& origin,
                   const AddToCacheCallback& callback,
                   bool success,
                   std::unique_ptr<budget_service::Budget> budget);
 
-  void GetBudgetAfterSync(const GURL& origin,
+  void GetBudgetAfterSync(const url::Origin& origin,
                           const GetBudgetCallback& callback,
                           bool success);
 
-  void SpendBudgetAfterSync(const GURL& origin,
+  void SpendBudgetAfterSync(const url::Origin& origin,
                             double amount,
                             const StoreBudgetCallback& callback,
                             bool success);
 
-  void WriteCachedValuesToDatabase(const GURL& origin,
+  void WriteCachedValuesToDatabase(const url::Origin& origin,
                                    const StoreBudgetCallback& callback);
 
-  void SyncCache(const GURL& origin, const SyncCacheCallback& callback);
-  void SyncLoadedCache(const GURL& origin,
+  void SyncCache(const url::Origin& origin, const SyncCacheCallback& callback);
+  void SyncLoadedCache(const url::Origin& origin,
                        const SyncCacheCallback& callback,
                        bool success);
 
@@ -128,9 +132,9 @@ class BudgetDatabase {
   // engagement score of the origin, and then calculates when engagement budget
   // was last awarded and awards a portion of the score based on that.
   // This only writes budget to the cache.
-  void AddEngagementBudget(const GURL& origin);
+  void AddEngagementBudget(const url::Origin& origin);
 
-  bool CleanupExpiredBudget(const GURL& origin);
+  bool CleanupExpiredBudget(const url::Origin& origin);
 
   Profile* profile_;
 
@@ -138,7 +142,7 @@ class BudgetDatabase {
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;
 
   // Cached data for the origins which have been loaded.
-  std::unordered_map<std::string, BudgetInfo> budget_map_;
+  std::map<url::Origin, BudgetInfo> budget_map_;
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;

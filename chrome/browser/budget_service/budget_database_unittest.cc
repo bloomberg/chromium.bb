@@ -19,6 +19,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -35,7 +37,8 @@ class BudgetDatabaseTest : public ::testing::Test {
       : success_(false),
         db_(&profile_,
             profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-            base::ThreadTaskRunnerHandle::Get()) {}
+            base::ThreadTaskRunnerHandle::Get()),
+        origin_(url::Origin(GURL(kTestOrigin))) {}
 
   void WriteBudgetComplete(base::Closure run_loop_closure, bool success) {
     success_ = success;
@@ -43,9 +46,9 @@ class BudgetDatabaseTest : public ::testing::Test {
   }
 
   // Spend budget for the origin.
-  bool SpendBudget(const GURL& origin, double amount) {
+  bool SpendBudget(double amount) {
     base::RunLoop run_loop;
-    db_.SpendBudget(origin, amount,
+    db_.SpendBudget(origin(), amount,
                     base::Bind(&BudgetDatabaseTest::WriteBudgetComplete,
                                base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -65,13 +68,13 @@ class BudgetDatabaseTest : public ::testing::Test {
   void GetBudgetDetails() {
     base::RunLoop run_loop;
     db_.GetBudgetDetails(
-        GURL(kTestOrigin),
-        base::Bind(&BudgetDatabaseTest::GetBudgetDetailsComplete,
-                   base::Unretained(this), run_loop.QuitClosure()));
+        origin(), base::Bind(&BudgetDatabaseTest::GetBudgetDetailsComplete,
+                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
   Profile* profile() { return &profile_; }
+  const url::Origin& origin() const { return origin_; }
 
   // Setup a test clock so that the tests can control time.
   base::SimpleTestClock* SetClockForTesting() {
@@ -80,9 +83,9 @@ class BudgetDatabaseTest : public ::testing::Test {
     return clock;
   }
 
-  void SetSiteEngagementScore(const GURL& url, double score) {
+  void SetSiteEngagementScore(double score) {
     SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetScoreForURL(url, score);
+    service->ResetScoreForURL(GURL(kTestOrigin), score);
   }
 
  protected:
@@ -96,10 +99,10 @@ class BudgetDatabaseTest : public ::testing::Test {
   TestingProfile profile_;
   BudgetDatabase db_;
   base::HistogramTester histogram_tester_;
+  const url::Origin origin_;
 };
 
 TEST_F(BudgetDatabaseTest, GetBudgetNoBudgetOrSES) {
-  const GURL origin(kTestOrigin);
   GetBudgetDetails();
   ASSERT_TRUE(success_);
   ASSERT_EQ(2U, prediction_.size());
@@ -107,13 +110,12 @@ TEST_F(BudgetDatabaseTest, GetBudgetNoBudgetOrSES) {
 }
 
 TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
-  const GURL origin(kTestOrigin);
   base::SimpleTestClock* clock = SetClockForTesting();
   base::Time expiration_time =
       clock->Now() + base::TimeDelta::FromHours(kDefaultExpirationInHours);
 
   // Set the default site engagement.
-  SetSiteEngagementScore(origin, kDefaultEngagement);
+  SetSiteEngagementScore(kDefaultEngagement);
 
   // The budget should include a full share of the engagement.
   GetBudgetDetails();
@@ -152,11 +154,10 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
 }
 
 TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
-  const GURL origin(kTestOrigin);
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(origin, kDefaultEngagement);
+  SetSiteEngagementScore(kDefaultEngagement);
 
   // Intialize the budget with several chunks.
   GetBudgetDetails();
@@ -166,7 +167,7 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
   GetBudgetDetails();
 
   // Spend an amount of budget less than kDefaultEngagement.
-  ASSERT_TRUE(SpendBudget(origin, 1));
+  ASSERT_TRUE(SpendBudget(1));
   GetBudgetDetails();
 
   // There should still be three chunks of budget of size kDefaultEngagement-1,
@@ -181,14 +182,14 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
 
   // Now spend enough that it will use up the rest of the first chunk and all of
   // the second chunk, but not all of the third chunk.
-  ASSERT_TRUE(SpendBudget(origin, kDefaultEngagement + daily_budget));
+  ASSERT_TRUE(SpendBudget(kDefaultEngagement + daily_budget));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
 
   // Validate that the code returns false if SpendBudget tries to spend more
   // budget than the origin has.
-  EXPECT_FALSE(SpendBudget(origin, kDefaultEngagement));
+  EXPECT_FALSE(SpendBudget(kDefaultEngagement));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
@@ -196,7 +197,7 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
   // Advance time until the last remaining chunk should be expired, then query
   // for the full engagement worth of budget.
   clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours + 1));
-  EXPECT_TRUE(SpendBudget(origin, kDefaultEngagement));
+  EXPECT_TRUE(SpendBudget(kDefaultEngagement));
 }
 
 // There are times when a device's clock could move backwards in time, either
@@ -204,11 +205,10 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
 // time goes backwards and then forwards again, the origin isn't granted extra
 // budget.
 TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
-  const GURL origin(kTestOrigin);
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(origin, kDefaultEngagement);
+  SetSiteEngagementScore(kDefaultEngagement);
 
   // Initialize the budget with two chunks.
   GetBudgetDetails();
@@ -236,11 +236,10 @@ TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
 }
 
 TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
-  const GURL origin(kTestOrigin);
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(origin, kDefaultEngagement);
+  SetSiteEngagementScore(kDefaultEngagement);
 
   // Initialize the budget with some interesting chunks: 30 budget, 3 budget,
   // 0 budget, and then after the first two expire, another 30 budget.
@@ -266,13 +265,12 @@ TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
 }
 
 TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
-  const GURL origin(kTestOrigin);
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the engagement to twice the cost of an action.
   double cost = 2;
   double engagement = cost * 2;
-  SetSiteEngagementScore(origin, engagement);
+  SetSiteEngagementScore(engagement);
 
   // Get the budget, which will award a chunk of budget equal to engagement.
   GetBudgetDetails();
@@ -280,19 +278,19 @@ TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
   // Now spend the budget to trigger the UMA recording the SES score. The first
   // call shouldn't write any UMA. The second should write a lowSES entry, and
   // the third should write a noSES entry.
-  ASSERT_TRUE(SpendBudget(origin, cost));
-  ASSERT_TRUE(SpendBudget(origin, cost));
-  ASSERT_FALSE(SpendBudget(origin, cost));
+  ASSERT_TRUE(SpendBudget(cost));
+  ASSERT_TRUE(SpendBudget(cost));
+  ASSERT_FALSE(SpendBudget(cost));
 
   // Advance the clock by 12 days (to guarantee a full new engagement grant)
   // then change the SES score to get a different UMA entry, then spend the
   // budget again.
   clock->Advance(base::TimeDelta::FromDays(12));
   GetBudgetDetails();
-  SetSiteEngagementScore(origin, engagement * 2);
-  ASSERT_TRUE(SpendBudget(origin, cost));
-  ASSERT_TRUE(SpendBudget(origin, cost));
-  ASSERT_FALSE(SpendBudget(origin, cost));
+  SetSiteEngagementScore(engagement * 2);
+  ASSERT_TRUE(SpendBudget(cost));
+  ASSERT_TRUE(SpendBudget(cost));
+  ASSERT_FALSE(SpendBudget(cost));
 
   // Now check the UMA. Both UMA should have 2 buckets with 1 entry each.
   std::vector<base::Bucket> no_budget_buckets =

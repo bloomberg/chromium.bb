@@ -13,12 +13,15 @@
 #include "chrome/browser/budget_service/budget_database.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
-#include "url/gurl.h"
 
 class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
+}
+
+namespace url {
+class Origin;
 }
 
 // A budget manager to help Chrome decide how much background work a service
@@ -42,18 +45,18 @@ class BudgetManager : public KeyedService {
   // Get the budget associated with the origin. This is passed to the
   // callback. Budget will be a sequence of points describing the time and
   // the budget at that time.
-  void GetBudget(const GURL& origin, const GetBudgetCallback& callback);
+  void GetBudget(const url::Origin& origin, const GetBudgetCallback& callback);
 
   // Spend enough budget to cover the cost of the desired action and create
   // a reservation for that action. If this returns true to the callback, then
   // the next action will consume that reservation and not cost any budget.
-  void Reserve(const GURL& origin,
+  void Reserve(const url::Origin& origin,
                blink::mojom::BudgetOperationType type,
                const ReserveCallback& callback);
 
   // Spend budget, first consuming a reservation if one exists, or spend
   // directly from the budget.
-  void Consume(const GURL& origin,
+  void Consume(const url::Origin& origin,
                blink::mojom::BudgetOperationType type,
                const ConsumeCallback& callback);
 
@@ -62,7 +65,7 @@ class BudgetManager : public KeyedService {
 
   // Called as a callback from BudgetDatabase after it has made a reserve
   // decision.
-  void DidReserve(const GURL& origin,
+  void DidReserve(const url::Origin& origin,
                   blink::mojom::BudgetOperationType type,
                   const ReserveCallback& callback,
                   bool success);

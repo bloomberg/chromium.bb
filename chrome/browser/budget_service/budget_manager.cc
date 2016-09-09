@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -65,35 +66,32 @@ double BudgetManager::GetCost(blink::mojom::BudgetOperationType type) {
   return SiteEngagementScore::kMaxPoints + 1.0;
 }
 
-void BudgetManager::GetBudget(const GURL& origin,
+void BudgetManager::GetBudget(const url::Origin& origin,
                               const GetBudgetCallback& callback) {
   db_.GetBudgetDetails(origin, callback);
 }
 
-void BudgetManager::Reserve(const GURL& origin,
+void BudgetManager::Reserve(const url::Origin& origin,
                             blink::mojom::BudgetOperationType type,
                             const ReserveCallback& callback) {
-  DCHECK_EQ(origin, origin.GetOrigin());
-
   db_.SpendBudget(
       origin, GetCost(type),
       base::Bind(&BudgetManager::DidReserve, weak_ptr_factory_.GetWeakPtr(),
                  origin, type, callback));
 }
 
-void BudgetManager::Consume(const GURL& origin,
+void BudgetManager::Consume(const url::Origin& origin,
                             blink::mojom::BudgetOperationType type,
                             const ConsumeCallback& callback) {
-  DCHECK_EQ(origin, origin.GetOrigin());
   bool found_reservation = false;
 
   // First, see if there is a reservation already.
-  auto count = reservation_map_.find(origin.spec());
+  auto count = reservation_map_.find(origin.host());
   if (count != reservation_map_.end()) {
     if (count->second == 1)
-      reservation_map_.erase(origin.spec());
+      reservation_map_.erase(origin.host());
     else
-      reservation_map_[origin.spec()]--;
+      reservation_map_[origin.host()]--;
     found_reservation = true;
   }
 
@@ -107,7 +105,7 @@ void BudgetManager::Consume(const GURL& origin,
   db_.SpendBudget(origin, GetCost(type), callback);
 }
 
-void BudgetManager::DidReserve(const GURL& origin,
+void BudgetManager::DidReserve(const url::Origin& origin,
                                blink::mojom::BudgetOperationType type,
                                const ReserveCallback& callback,
                                bool success) {
@@ -117,6 +115,6 @@ void BudgetManager::DidReserve(const GURL& origin,
   }
 
   // Write the new reservation into the map.
-  reservation_map_[origin.spec()]++;
+  reservation_map_[origin.host()]++;
   callback.Run(true);
 }

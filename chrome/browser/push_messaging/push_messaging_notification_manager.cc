@@ -192,7 +192,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     // push was allowed.
     BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
     manager->Consume(
-        origin, blink::mojom::BudgetOperationType::SILENT_PUSH,
+        url::Origin(origin), blink::mojom::BudgetOperationType::SILENT_PUSH,
         base::Bind(&PushMessagingNotificationManager::ProcessSilentPush,
                    weak_factory_.GetWeakPtr(), origin,
                    service_worker_registration_id, message_handled_closure));
