@@ -4,7 +4,7 @@ Profiler was enabled.
 
 Running: testProfiling
 found pageFunction heap-profiler-profiling.html:7
-found (anonymous function) heap-profiler-profiling.html:8
+found (anonymous) heap-profiler-profiling.html:8
 
 Profiler was disabled.
 

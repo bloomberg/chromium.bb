@@ -37,8 +37,8 @@ function test()
         WebInspector.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
         var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
         var invalidations = invalidationsTree.shadowRoot.textContent;
-        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:14");
-        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:15");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:14");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:15");
         InspectorTest.completeTest();
     });
 

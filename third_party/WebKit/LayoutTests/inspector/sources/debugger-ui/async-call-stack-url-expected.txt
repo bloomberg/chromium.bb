@@ -7,6 +7,6 @@ setTimeout (async)
 async-call-stack-url.html:9testFunction
 setTimeout (async)
 debugger-test.js:3scheduleTestFunction
-VM:1(anonymous function)
+VM:1(anonymous)
 Script execution resumed.
 

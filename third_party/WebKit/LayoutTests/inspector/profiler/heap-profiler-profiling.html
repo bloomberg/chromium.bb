@@ -44,7 +44,7 @@ function test()
                 if (!tree)
                     InspectorTest.addResult("no tree");
                 checkFunction(tree, "pageFunction", "heap-profiler-profiling.html:7");
-                checkFunction(tree, "(anonymous function)", "heap-profiler-profiling.html:8");
+                checkFunction(tree, "(anonymous)", "heap-profiler-profiling.html:8");
                 next();
             }
             InspectorTest.showProfileWhenAdded("Profile 1");

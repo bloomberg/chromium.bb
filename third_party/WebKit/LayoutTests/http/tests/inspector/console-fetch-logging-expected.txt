@@ -11,7 +11,7 @@ CONSOLE ERROR: Fetch API cannot load http://localhost:8000/inspector/resources/x
 Tests that fetch logging works when XMLHttpRequest Logging is Enabled and doesn't show logs when it is Disabled.
 
 console-fetch-logging.html:4 sending a GET request to resources/xhr-exists.html
-network-test.js:48 Fetch complete: GET "http://127.0.0.1:8000/inspector/resources/xhr-exists.html".makeFetch @ network-test.js:48requestHelper @ console-fetch-logging.html:11step1 @ console-fetch-logging.html:24makeRequests @ console-fetch-logging.html:18(anonymous function) @ VM:1
+network-test.js:48 Fetch complete: GET "http://127.0.0.1:8000/inspector/resources/xhr-exists.html".makeFetch @ network-test.js:48requestHelper @ console-fetch-logging.html:11step1 @ console-fetch-logging.html:24makeRequests @ console-fetch-logging.html:18(anonymous) @ VM:1
 console-fetch-logging.html:4 sending a GET request to resources/xhr-does-not-exist.html
 network-test.js:48 GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found)makeFetch @ network-test.js:48requestHelper @ console-fetch-logging.html:11step2 @ console-fetch-logging.html:30
 network-test.js:48 Fetch complete: GET "http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html".makeFetch @ network-test.js:48requestHelper @ console-fetch-logging.html:11step2 @ console-fetch-logging.html:30

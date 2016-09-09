@@ -38,7 +38,7 @@ function test()
                 if (!tree)
                     InspectorTest.addResult("no tree");
                 checkFunction(tree, "pageFunction", "cpu-profiler-profiling.html:7");
-                checkFunction(tree, "(anonymous function)");
+                checkFunction(tree, "(anonymous)");
                 next();
             }
             InspectorTest.showProfileWhenAdded("profile");
