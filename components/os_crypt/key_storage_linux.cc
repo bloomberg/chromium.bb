@@ -62,6 +62,7 @@ void KeyStorageLinux::SetMainThreadRunner(
 
 // static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
+#if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   // Select a backend.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop_env =
@@ -82,7 +83,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       return key_storage;
     }
   }
-#endif
+#endif  // defined(USE_LIBSECRET)
 
 #if defined(USE_KEYRING)
   if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
@@ -93,7 +94,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       return key_storage;
     }
   }
-#endif
+#endif  // defined(USE_KEYRING)
 
 #if defined(USE_KWALLET)
   if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
@@ -110,7 +111,9 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       return key_storage;
     }
   }
-#endif
+#endif  // defined(USE_KWALLET)
+#endif  // defined(USE_LIBSECRET) || defined(USE_KEYRING) ||
+        // defined(USE_KWALLET)
 
   // The appropriate store was not available.
   VLOG(1) << "OSCrypt could not initialize a backend.";
