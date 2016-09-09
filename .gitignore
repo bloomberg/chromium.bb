@@ -29,6 +29,7 @@
 /examples/decode_with_drops
 /examples/decode_with_partial_drops
 /examples/example_xma
+/examples/lossless_encoder
 /examples/postproc
 /examples/resize_util
 /examples/set_maps
@@ -36,7 +37,6 @@
 /examples/simple_encoder
 /examples/twopass_encoder
 /examples/aom_cx_set_ref
-/examples/av1_lossless_encoder
 /examples/av1_spatial_scalable_encoder
 /examples/aom_temporal_scalable_patterns
 /examples/aom_temporal_svc_encoder
