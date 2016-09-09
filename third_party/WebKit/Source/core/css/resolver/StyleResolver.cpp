@@ -421,7 +421,7 @@ static void matchHostRules(const Element& element, ElementRuleCollector& collect
     if (!shadow)
         return;
 
-    for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
+    for (ShadowRoot* shadowRoot = &shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (!shadowRoot->numberOfStyles())
             continue;
         if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver()) {

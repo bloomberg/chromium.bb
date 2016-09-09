@@ -2119,10 +2119,9 @@ ShadowRoot* Element::authorShadowRoot() const
 ShadowRoot* Element::userAgentShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {
-        if (ShadowRoot* root = elementShadow->oldestShadowRoot()) {
-            DCHECK(root->type() == ShadowRootType::UserAgent);
-            return root;
-        }
+        ShadowRoot& root = elementShadow->oldestShadowRoot();
+        DCHECK(root.type() == ShadowRootType::UserAgent);
+        return &root;
     }
 
     return nullptr;

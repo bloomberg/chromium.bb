@@ -692,7 +692,7 @@ ShadowRoot* Internals::oldestShadowRoot(Element* host)
 {
     ASSERT(host);
     if (ElementShadow* shadow = host->shadow())
-        return shadow->oldestShadowRoot();
+        return &shadow->oldestShadowRoot();
     return 0;
 }
 

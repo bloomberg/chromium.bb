@@ -580,7 +580,7 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
     if (!node->isElementNode())
         return nullptr;
     if (ElementShadow* shadow = toElement(node)->shadow())
-        return shadow->oldestShadowRoot();
+        return &shadow->oldestShadowRoot();
     return nullptr;
 }
 #endif

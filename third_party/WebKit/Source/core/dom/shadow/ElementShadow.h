@@ -45,7 +45,7 @@ public:
 
     Element& host() const;
     ShadowRoot& youngestShadowRoot() const;
-    ShadowRoot* oldestShadowRoot() const { return m_shadowRoot; }
+    ShadowRoot& oldestShadowRoot() const { DCHECK(m_shadowRoot); return *m_shadowRoot; }
     ElementShadow* containingShadow() const;
 
     ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);

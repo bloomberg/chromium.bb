@@ -393,7 +393,7 @@ static ShadowRoot* authorShadowRootOf(const ContainerNode& node)
 
     ElementShadow* shadow = toElement(node).shadow();
     DCHECK(shadow);
-    for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
+    for (ShadowRoot* shadowRoot = &shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (shadowRoot->type() == ShadowRootType::V0 || shadowRoot->type() == ShadowRootType::Open)
             return shadowRoot;
     }

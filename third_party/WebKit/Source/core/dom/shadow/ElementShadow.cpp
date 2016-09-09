@@ -332,7 +332,7 @@ const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()
         return m_selectFeatures;
 
     m_selectFeatures.clear();
-    for (ShadowRoot* root = oldestShadowRoot(); root; root = root->youngerShadowRoot())
+    for (ShadowRoot* root = &oldestShadowRoot(); root; root = root->youngerShadowRoot())
         collectSelectFeatureSetFrom(*root);
     m_needsSelectFeatureSet = false;
     return m_selectFeatures;
