@@ -70,7 +70,7 @@ copy("cpplib_unstripped") {
 action("cpplib_stripped") {
   _strip_bin = "${android_tool_prefix}strip"
   _soname = "libc++_shared.so"
-  _input_so = "${root_shlib_dir}/lib.unstripped/${_soname}"
+  _input_so = "${root_out_dir}/lib.unstripped/${_soname}"
   _output_so = "${root_shlib_dir}/${_soname}"
 
   deps = [
@@ -91,9 +91,9 @@ action("cpplib_stripped") {
     _output_so,
   ]
 
-  _rebased_strip_bin = rebase_path(_strip_bin, root_build_dir)
-  _rebased_input_so = rebase_path(_input_so, root_build_dir)
-  _rebased_output_so = rebase_path(_output_so, root_build_dir)
+  _rebased_strip_bin = rebase_path(_strip_bin, root_out_dir)
+  _rebased_input_so = rebase_path(_input_so, root_out_dir)
+  _rebased_output_so = rebase_path(_output_so, root_out_dir)
   args = [
     _rebased_strip_bin,
     "--strip-unneeded",
