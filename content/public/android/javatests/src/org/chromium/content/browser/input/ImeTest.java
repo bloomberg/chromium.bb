@@ -1350,6 +1350,30 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(0, 7, 7, -1, -1);
     }
 
+    // crbug.com/643477
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testUiThreadAccess() throws Exception {
+        final ChromiumBaseInputConnection connection = mConnection;
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // We allow UI thread access for most functions, except for
+                // beginBatchEdit(), endBatchEdit(), and get* methods().
+                assertTrue(connection.commitText("a", 1));
+                assertTrue(connection.setComposingText("b", 1));
+                assertTrue(connection.setComposingText("bc", 1));
+                assertTrue(connection.finishComposingText());
+            }
+        });
+        assertEquals("abc", runBlockingOnImeThread(new Callable<CharSequence>() {
+            @Override
+            public CharSequence call() throws Exception {
+                return connection.getTextBeforeCursor(5, 0);
+            }
+        }));
+    }
+
     private void performGo(TestCallbackHelperContainer testCallbackHelperContainer)
             throws Throwable {
         final InputConnection inputConnection = mConnection;

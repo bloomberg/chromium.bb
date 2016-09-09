@@ -6,6 +6,7 @@ package org.chromium.content.browser.input;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -32,6 +33,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import java.util.concurrent.Callable;
+
 /**
  * Unit tests for {@ThreadedInputConnection}.
  */
@@ -44,6 +47,7 @@ public class ThreadedInputConnectionTest {
     InOrder mInOrder;
     View mView;
     Context mContext;
+    boolean mRunningOnUiThread;
 
     @Before
     public void setUp() throws Exception {
@@ -59,7 +63,12 @@ public class ThreadedInputConnectionTest {
         when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE)).thenReturn(Mockito.mock(
                 InputMethodManager.class));
         // Let's create Handler for test thread and pretend that it is running on IME thread.
-        mConnection = new ThreadedInputConnection(mView, mImeAdapter, new Handler());
+        mConnection = new ThreadedInputConnection(mView, mImeAdapter, new Handler()) {
+            @Override
+            protected boolean runningOnUiThread() {
+                return mRunningOnUiThread;
+            }
+        };
     }
 
     @Test
@@ -103,7 +112,7 @@ public class ThreadedInputConnectionTest {
     @Feature({"TextInput"})
     public void testPressingDeadKey() {
         // On default keyboard "Alt+i" produces a dead key '\u0302'.
-        mConnection.setCombiningAccent(0x0302);
+        mConnection.setCombiningAccentOnUiThread(0x0302);
         mConnection.updateComposingText("\u0302", 1, true);
         mInOrder.verify(mImeAdapter)
                 .sendCompositionToNative(
@@ -185,5 +194,32 @@ public class ThreadedInputConnectionTest {
         });
         // Should not hang here. Return null to indicate failure.
         assertEquals(null, mConnection.getTextBeforeCursor(10, 0));
+    }
+
+    // crbug.com/643477
+    @Test
+    @Feature({"TextInput"})
+    public void testUiThreadAccess() {
+        assertTrue(mConnection.commitText("hello", 1));
+        mRunningOnUiThread = true;
+        // Depending on the timing, the result may not be up-to-date.
+        assertNotEquals("hello",
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<CharSequence>() {
+                    @Override
+                    public CharSequence call() {
+                        return mConnection.getTextBeforeCursor(10, 0);
+                    }
+                }));
+        // Or it could be.
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
+        assertEquals("hello",
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<CharSequence>() {
+                    @Override
+                    public CharSequence call() {
+                        return mConnection.getTextBeforeCursor(10, 0);
+                    }
+                }));
+
+        mRunningOnUiThread = false;
     }
 }
