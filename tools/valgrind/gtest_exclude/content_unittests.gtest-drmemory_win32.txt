@@ -7,6 +7,3 @@ GamepadServiceTest.ConnectionsTest
 # http://crbug.com/522049
 RenderWidgetCompositorOutputSurfaceTest.SucceedTwice
 RenderWidgetCompositorOutputSurfaceTest.FallbackSuccessNormalSuccess
-
-# https://crbug.com/604056
-CodecProfiles/RTCVideoDecoderTest.GetVDAErrorCounterForTesting*
