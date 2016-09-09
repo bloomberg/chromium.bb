@@ -699,6 +699,9 @@ class PDFiumEngine : public PDFEngine,
   // Whether to render in grayscale or in color.
   bool render_grayscale_;
 
+  // Whether to render PDF annotations.
+  bool render_annots_;
+
   // The link currently under the cursor.
   std::string link_under_cursor_;
 

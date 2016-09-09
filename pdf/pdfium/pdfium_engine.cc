@@ -551,6 +551,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       most_visible_page_(-1),
       called_do_document_action_(false),
       render_grayscale_(false),
+      render_annots_(true),
       progressive_paint_timeout_(0),
       getting_password_(false) {
   find_factory_.Initialize(this);
@@ -2986,6 +2987,8 @@ int PDFiumEngine::GetRenderingFlags() const {
     flags |= FPDF_GRAYSCALE;
   if (client_->IsPrintPreview())
     flags |= FPDF_PRINTING;
+  if (render_annots_)
+    flags |= FPDF_ANNOT;
   return flags;
 }
 
