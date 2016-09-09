@@ -2633,16 +2633,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                      base::Unretained(render_thread)),
           GetMediaInterfaceProvider()));
 #else
-  std::unique_ptr<media::RendererFactory> media_renderer_factory =
-      GetContentClient()->renderer()->CreateMediaRendererFactory(
-          this, render_thread->GetGpuFactories(), media_log);
-
-  if (!media_renderer_factory.get()) {
-    media_renderer_factory.reset(new media::DefaultRendererFactory(
-        media_log, GetDecoderFactory(),
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread))));
-  }
+  std::unique_ptr<media::RendererFactory> media_renderer_factory(
+      new media::DefaultRendererFactory(
+          media_log, GetDecoderFactory(),
+          base::Bind(&RenderThreadImpl::GetGpuFactories,
+                     base::Unretained(render_thread))));
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
   if (!url_index_.get() || url_index_->frame() != frame_)

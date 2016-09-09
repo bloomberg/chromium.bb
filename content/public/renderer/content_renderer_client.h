@@ -264,12 +264,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
 
-  // Allows an embedder to provide a media::RendererFactory.
-  virtual std::unique_ptr<media::RendererFactory> CreateMediaRendererFactory(
-      RenderFrame* render_frame,
-      media::GpuVideoAcceleratorFactories* gpu_factories,
-      const scoped_refptr<media::MediaLog>& media_log);
-
   // Allows an embedder to provide a MediaStreamRendererFactory.
   virtual std::unique_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
