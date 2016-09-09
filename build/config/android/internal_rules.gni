@@ -5,6 +5,7 @@
 import("//build_overrides/build.gni")
 import("//build/config/android/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//third_party/android_platform/config.gni")
 
 assert(is_android)
 
@@ -296,6 +297,17 @@ template("write_build_config") {
         args += [
           "--shared-libraries-runtime-deps",
           rebase_path(invoker.shared_libraries_runtime_deps_file,
+                      root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
+        # Don't list secondary_abi_shared_libraries_runtime_deps_file as an
+        # input in order to avoid having to depend on the runtime_deps target.
+        # See comment in rules.gni for why we do this.
+        args += [
+          "--secondary-abi-shared-libraries-runtime-deps",
+          rebase_path(invoker.secondary_abi_shared_libraries_runtime_deps_file,
                       root_build_dir),
         ]
       }
@@ -629,6 +641,7 @@ template("test_runner_script") {
 if (enable_java_templates) {
   import("//build/config/zip.gni")
   import("//third_party/ijar/ijar.gni")
+  import("//third_party/android_platform/config.gni")
 
   rebased_android_sdk = rebase_path(android_sdk, root_build_dir)
   rebased_android_sdk_build_tools =
@@ -1272,8 +1285,16 @@ if (enable_java_templates) {
       if (_native_lib_placeholders != []) {
         args += [ "--native-lib-placeholders=$_native_lib_placeholders" ]
       }
-      if (defined(invoker.secondary_native_libs) &&
-          invoker.secondary_native_libs != []) {
+
+      # TODO (michaelbai): Remove the secondary_native_libs variable.
+      if (defined(invoker.secondary_abi_native_libs_filearg)) {
+        assert(defined(android_app_secondary_abi))
+        args += [
+          "--secondary-native-libs=${invoker.secondary_abi_native_libs_filearg}",
+          "--secondary-android-abi=$android_app_secondary_abi",
+        ]
+      } else if (defined(invoker.secondary_native_libs) &&
+                 invoker.secondary_native_libs != []) {
         assert(defined(android_app_secondary_abi))
         inputs += invoker.secondary_native_libs
         _secondary_native_libs = rebase_path(invoker.secondary_native_libs)
@@ -1598,6 +1619,7 @@ if (enable_java_templates) {
                                "emma_instrument",
                                "native_lib_placeholders",
                                "native_libs_filearg",
+                               "secondary_abi_native_libs_filearg",
                                "secondary_native_libs",
                                "uncompress_shared_libraries",
                                "write_asset_list",
@@ -2637,6 +2659,42 @@ if (enable_java_templates) {
       ]
       inputs = [
         invoker.main_manifest,
+      ]
+    }
+  }
+
+  template("pack_relocation_section") {
+    assert(defined(invoker.file_list_json))
+    assert(defined(invoker.libraries_filearg))
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "inputs",
+                               "testonly",
+                             ])
+      script = "//build/android/gyp/pack_relocations.py"
+      depfile = "$target_gen_dir/$target_name.d"
+      _packed_libraries_dir = "$target_gen_dir/$target_name/packed-libs"
+      outputs = [
+        invoker.file_list_json,
+      ]
+      deps += [ relocation_packer_target ]
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--enable-packing=1",
+        "--android-pack-relocations",
+        rebase_path(relocation_packer_exe, root_build_dir),
+        "--stripped-libraries-dir",
+        rebase_path(root_build_dir, root_build_dir),
+        "--packed-libraries-dir",
+        rebase_path(_packed_libraries_dir, root_build_dir),
+        "--libraries=${invoker.libraries_filearg}",
+        "--filelistjson",
+        rebase_path(invoker.file_list_json, root_build_dir),
       ]
     }
   }
