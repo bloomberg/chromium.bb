@@ -184,6 +184,7 @@ Programming with liblouis
 * lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
+* lou_charSize::
 * Python bindings::
 
 @end detailmenu
@@ -2202,6 +2203,7 @@ the doctest directory in the source distribution.
 * lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
+* lou_charSize::
 * Python bindings::
 @end menu
 
@@ -2216,7 +2218,8 @@ You use the liblouis library by calling the following functions,
 @code{lou_getTable}, @code{lou_checkTable}, @code{lou_hyphenate},
 @code{lou_charToDots}, @code{lou_dotsToChar},
 @code{lou_compileString}, @code{lou_getTypeformForEmphClass},
-@code{lou_readCharFromFile}, @code{lou_version} and @code{lou_free}.
+@code{lou_readCharFromFile}, @code{lou_version}, @code{lou_free} and
+@code{lou_charSize}.
 These are described below. The header file, @file{liblouis.h}, also
 contains brief descriptions. Liblouis is written in straight C. It has
 four code modules, @file{compileTranslationTable.c}, @file{logging.c},
@@ -2257,6 +2260,9 @@ back-translate functions to expect input in 32-bit form and to deliver
 their output in this form. The input to the compiler (tables) is
 unaffected except that two new escape sequences for 20-bit and 32-bit
 characters are recognized.
+
+At runtime, the width of a character specified during compilation may
+be obtained using @code{lou_charSize}.
 
 Here are the definitions of the eleven liblouis functions and their
 parameters. They are given in terms of 16-bit Unicode. If liblouis has
@@ -2838,6 +2844,18 @@ all memory allocated by liblouis. Failure to do so will result in
 memory leaks. Do @emph{NOT} call @code{lou_free} after each
 translation. This will force liblouis to compile the translation
 tables every time they are used, resulting in great inefficiency.
+
+@node lou_charSize
+@section lou_charSize
+@findex lou_charSize
+
+@example
+int lou_charSize ();
+@end example
+
+This function returns the size of @code{widechar} in bytes and can
+therefore be used to differentiate between 16-bit and 32bit-Unicode
+builds of liblouis.
 
 @node Python bindings
 @section Python bindings
