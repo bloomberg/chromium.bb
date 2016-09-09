@@ -368,7 +368,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
-  builder->Add("oauthEnrollExplaneAttributeLink",
+  builder->Add("oauthEnrollExplainAttributeLink",
                IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK);
   builder->Add("oauthEnrollAttributeExplanation",
                IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION);
