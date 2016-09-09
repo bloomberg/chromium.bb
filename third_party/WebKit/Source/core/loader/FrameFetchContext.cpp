@@ -751,7 +751,11 @@ void FrameFetchContext::populateRequestData(ResourceRequest& request)
     // Subresource requests inherit their requestor origin from |m_document| directly.
     // Top-level and nested frame types are taken care of in 'FrameLoadRequest()'.
     // Auxiliary frame types in 'createWindow()' and 'FrameLoader::load'.
-    if (request.frameType() == WebURLRequest::FrameTypeNone && !request.requestorOrigin()) {
+    //
+    // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
+    // initialize itself with a `nullptr` initiator so that this can be a simple
+    // `isNull()` check. https://crbug.com/625969
+    if (request.frameType() == WebURLRequest::FrameTypeNone && request.requestorOrigin()->isUnique()) {
         request.setRequestorOrigin(m_document->isSandboxed(SandboxOrigin)
             ? SecurityOrigin::create(m_document->url())
             : m_document->getSecurityOrigin());

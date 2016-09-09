@@ -445,9 +445,9 @@ TEST_F(FrameFetchContextTest, PopulateRequestData)
     struct TestCase {
         const char* documentURL;
         bool documentSandboxed;
-        const char* requestorOrigin; // "" => nullptr, "null" => unique origin
+        const char* requestorOrigin; // "" => unique origin
         WebURLRequest::FrameType frameType;
-        const char* serializedOrigin; // "" => nullptr, "null" => unique origin
+        const char* serializedOrigin; // "" => unique origin
     } cases[] = {
         // No document origin => unique request origin
         { "", false, "", WebURLRequest::FrameTypeNone, "null" },
@@ -485,14 +485,14 @@ TEST_F(FrameFetchContextTest, PopulateRequestData)
         ResourceRequest request("http://example.test/");
         request.setFrameType(test.frameType);
         if (strlen(test.requestorOrigin) == 0)
-            request.setRequestorOrigin(nullptr);
+            request.setRequestorOrigin(SecurityOrigin::createUnique());
         else
             request.setRequestorOrigin(SecurityOrigin::create(KURL(ParsedURLString, test.requestorOrigin)));
 
         // Compare the populated |requestorOrigin| against |test.serializedOrigin|
         fetchContext->populateRequestData(request);
         if (strlen(test.serializedOrigin) == 0)
-            EXPECT_FALSE(request.requestorOrigin().get());
+            EXPECT_TRUE(request.requestorOrigin()->isUnique());
         else
             EXPECT_EQ(String(test.serializedOrigin), request.requestorOrigin()->toString());
 

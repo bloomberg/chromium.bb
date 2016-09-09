@@ -26,6 +26,11 @@ function handle_fallback(event) {
   // Do nothing.
 }
 
+function handle_fetch(event) {
+  event.respondWith(
+    fetch(event.request).then(response => ({response, origin: event.origin})));
+}
+
 function handle_meta(event) {
   var data = {
     origin: event.origin,
@@ -45,6 +50,7 @@ self.addEventListener('foreignfetch', function(event) {
     var handlers = [
       { pattern: '?basic', fn: handle_basic },
       { pattern: '?fallback', fn: handle_fallback },
+      { pattern: '?fetch', fn: handle_fetch },
       { pattern: '?onmessage', fn: handle_onmessage },
       { pattern: '?meta', fn: handle_meta },
       { pattern: '?script', fn: handle_script }
