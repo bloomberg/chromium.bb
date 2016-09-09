@@ -46,6 +46,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -306,7 +307,7 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) override;
+      content::ReloadType reload_type) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
@@ -349,9 +350,8 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    DidStartNavigationToPendingEntry(
-        const GURL& url,
-        content::NavigationController::ReloadType reload_type) {
+    DidStartNavigationToPendingEntry(const GURL& url,
+                                     content::ReloadType reload_type) {
   devtools_bindings_->frontend_host_.reset(
       content::DevToolsFrontendHost::Create(
           web_contents()->GetMainFrame(),

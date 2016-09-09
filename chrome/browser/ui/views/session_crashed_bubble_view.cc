@@ -366,8 +366,8 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
 }
 
 void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::NavigationController::ReloadType reload_type) {
+    const GURL& url,
+    content::ReloadType reload_type) {
   started_navigation_ = true;
 }
 

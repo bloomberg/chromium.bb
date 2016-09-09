@@ -36,7 +36,6 @@
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -219,7 +218,7 @@ void SearchTabHelper::OnTabDeactivated() {
 
 void SearchTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType /* reload_type */) {
+    content::ReloadType /* reload_type */) {
   if (search::IsNTPURL(url, profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
     // prevents any flickering of the tab title.

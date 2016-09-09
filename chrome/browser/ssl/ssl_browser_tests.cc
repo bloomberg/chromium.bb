@@ -67,6 +67,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -3130,7 +3131,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   content::TestNavigationObserver observer(tab2);
   tab2->GetController().Restore(
       entries.size() - 1,
-      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
+      content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
   tab2->GetController().LoadIfNecessary();
   observer.Wait();
   CheckAuthenticatedState(tab2, AuthState::NONE);

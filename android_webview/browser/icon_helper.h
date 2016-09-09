@@ -11,6 +11,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -50,7 +51,7 @@ class IconHelper : public content::WebContentsObserver {
       const std::vector<content::FaviconURL>& candidates) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) override;
+      content::ReloadType reload_type) override;
 
   void DownloadFaviconCallback(
       int id,

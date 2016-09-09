@@ -106,14 +106,14 @@ void NetErrorTabHelper::RenderFrameCreated(
 
 void NetErrorTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!is_error_page_)
     return;
 
   // Only record reloads.
-  if (reload_type != content::NavigationController::NO_RELOAD) {
+  if (reload_type != content::ReloadType::NONE) {
     error_page::RecordEvent(
         error_page::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
   }

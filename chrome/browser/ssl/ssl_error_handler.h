@@ -17,6 +17,7 @@
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/ssl/ssl_info.h"
@@ -121,7 +122,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // content::WebContentsObserver:
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) override;
+      content::ReloadType reload_type) override;
 
   // content::WebContentsObserver:
   void NavigationStopped() override;

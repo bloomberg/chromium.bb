@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/session_types.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
 
 // The android implementation does not do anything "foreign session" specific.
@@ -37,8 +37,7 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
       content::WebContents::CreateParams(context));
   int selected_index = session_tab.normalized_navigation_index();
   new_web_contents->GetController().Restore(
-      selected_index,
-      content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      selected_index, content::RestoreType::LAST_SESSION_EXITED_CLEANLY,
       &entries);
 
   TabAndroid* current_tab = TabAndroid::FromWebContents(web_contents);

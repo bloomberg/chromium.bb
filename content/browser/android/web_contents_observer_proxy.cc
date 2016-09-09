@@ -296,7 +296,7 @@ void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {
 
 void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
     const GURL& url,
-    NavigationController::ReloadType reload_type) {
+    ReloadType reload_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(

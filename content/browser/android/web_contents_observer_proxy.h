@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "url/gurl.h"
@@ -71,7 +72,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidChangeThemeColor(SkColor color) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      NavigationController::ReloadType reload_type) override;
+      ReloadType reload_type) override;
   void MediaSessionStateChanged(
       bool is_controllable,
       bool is_suspended,

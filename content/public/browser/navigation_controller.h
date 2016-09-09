@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
@@ -43,18 +44,6 @@ class WebContents;
 // exactly one NavigationController.
 class NavigationController {
  public:
-  // Note: NO_RELOAD is used in general, but behaviors depend on context.
-  // If it is used for tab restore, or history navigation, it loads preferring
-  // cache (which may be stale).
-  enum ReloadType {
-    NO_RELOAD,                   // Normal load, restore, or history navigation.
-    RELOAD,                      // Normal (cache-validating) reload.
-    RELOAD_MAIN_RESOURCE,        // Reload validating only the main resource.
-    RELOAD_BYPASSING_CACHE,      // Reload bypassing the cache (shift-reload).
-    RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.
-    RELOAD_DISABLE_LOFI_MODE     // Reload with Lo-Fi mode disabled.
-  };
-
   // Load type used in LoadURLParams.
   //
   // A Java counterpart will be generated for this enum.
@@ -96,16 +85,6 @@ class NavigationController {
 
     // Adding new UserAgentOverrideOption? Also update LoadUrlParams.java
     // static constants.
-  };
-
-  enum RestoreType {
-    // Indicates the restore is from the current session. For example, restoring
-    // a closed tab.
-    RESTORE_CURRENT_SESSION,
-
-    // Restore from the previous session.
-    RESTORE_LAST_SESSION_EXITED_CLEANLY,
-    RESTORE_LAST_SESSION_CRASHED,
   };
 
   // Creates a navigation entry and translates the virtual url to a real one.

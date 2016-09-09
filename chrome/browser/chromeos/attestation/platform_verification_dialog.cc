@@ -152,7 +152,7 @@ void PlatformVerificationDialog::StyledLabelLinkClicked(
 
 void PlatformVerificationDialog::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   views::Widget* widget = GetWidget();
   if (widget)
     widget->Close();

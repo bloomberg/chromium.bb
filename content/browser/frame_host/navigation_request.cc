@@ -158,7 +158,7 @@ NavigationRequest::NavigationRequest(
       request_params_(request_params),
       browser_initiated_(browser_initiated),
       state_(NOT_STARTED),
-      restore_type_(NavigationEntryImpl::RESTORE_NONE),
+      restore_type_(RestoreType::NONE),
       is_view_source_(false),
       bindings_(NavigationEntryImpl::kInvalidBindings),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE) {

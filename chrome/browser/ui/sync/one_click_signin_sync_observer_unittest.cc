@@ -22,6 +22,7 @@
 #include "components/browser_sync/browser/test_profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/startup_controller.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
@@ -45,7 +46,7 @@ class MockWebContentsObserver : public content::WebContentsObserver {
   // navigation start is a sufficient signal for the purposes of this test.
   // Listening for this call also has the advantage of being synchronous.
   MOCK_METHOD2(DidStartNavigationToPendingEntry,
-               void(const GURL&, content::NavigationController::ReloadType));
+               void(const GURL&, content::ReloadType));
 };
 
 class OneClickTestProfileSyncService : public TestProfileSyncService {

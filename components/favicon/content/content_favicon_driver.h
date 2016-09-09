@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/favicon/core/favicon_driver_impl.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -72,7 +73,7 @@ class ContentFaviconDriver
       const std::vector<content::FaviconURL>& candidates) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) override;
+      content::ReloadType reload_type) override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;

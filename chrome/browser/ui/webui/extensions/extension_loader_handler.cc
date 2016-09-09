@@ -171,12 +171,12 @@ void ExtensionLoaderHandler::OnLoadFailure(
 
 void ExtensionLoaderHandler::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   // In the event of a page reload, we ensure that the frontend is not notified
   // until the UI finishes loading, so we set |ui_ready_| to false. This is
   // balanced in HandleDisplayFailures, which is called when the frontend is
   // ready to receive failure notifications.
-  if (reload_type != content::NavigationController::NO_RELOAD)
+  if (reload_type != content::ReloadType::NONE)
     ui_ready_ = false;
 }
 

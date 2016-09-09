@@ -208,14 +208,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_->GetHasPostData());
 
   // Restored
-  EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE, entry1_->restore_type());
+  EXPECT_EQ(RestoreType::NONE, entry1_->restore_type());
   EXPECT_FALSE(entry1_->IsRestored());
-  EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE, entry2_->restore_type());
+  EXPECT_EQ(RestoreType::NONE, entry2_->restore_type());
   EXPECT_FALSE(entry2_->IsRestored());
-  entry2_->set_restore_type(
-      NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY);
-  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY,
-            entry2_->restore_type());
+  entry2_->set_restore_type(RestoreType::LAST_SESSION_EXITED_CLEANLY);
+  EXPECT_EQ(RestoreType::LAST_SESSION_EXITED_CLEANLY, entry2_->restore_type());
   EXPECT_TRUE(entry2_->IsRestored());
 
   // Original URL

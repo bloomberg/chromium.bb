@@ -91,7 +91,7 @@ void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
 
 void InfoBarService::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   ignore_next_reload_ = false;
 }
 

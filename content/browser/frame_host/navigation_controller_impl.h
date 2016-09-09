@@ -21,6 +21,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/browser/reload_type.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 

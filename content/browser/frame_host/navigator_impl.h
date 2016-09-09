@@ -59,7 +59,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) override;
   bool NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
                               const FrameNavigationEntry& frame_entry,
-                              NavigationController::ReloadType reload_type,
+                              ReloadType reload_type,
                               bool is_same_document_history_load) override;
   bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
                              const std::string& unique_name) override;
@@ -110,7 +110,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   bool NavigateToEntry(FrameTreeNode* frame_tree_node,
                        const FrameNavigationEntry& frame_entry,
                        const NavigationEntryImpl& entry,
-                       NavigationController::ReloadType reload_type,
+                       ReloadType reload_type,
                        bool is_same_document_history_load,
                        bool is_history_navigation_in_new_child,
                        bool is_pending_entry,
@@ -126,7 +126,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const Referrer& dest_referrer,
                          const FrameNavigationEntry& frame_entry,
                          const NavigationEntryImpl& entry,
-                         NavigationController::ReloadType reload_type,
+                         ReloadType reload_type,
                          LoFiState lofi_state,
                          bool is_same_document_history_load,
                          bool is_history_navigation_in_new_child,

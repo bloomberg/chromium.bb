@@ -11,6 +11,7 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/restore_type.h"
 
 AndroidLiveTabContext::AndroidLiveTabContext(TabModel* tab_model)
     : tab_model_(tab_model) {}
@@ -79,9 +80,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
   content::WebContents* web_contents = content::WebContents::Create(
           content::WebContents::CreateParams(profile));
   web_contents->GetController().Restore(
-      selected_navigation,
-      content::NavigationController::RESTORE_CURRENT_SESSION,
-      &nav_entries);
+      selected_navigation, content::RestoreType::CURRENT_SESSION, &nav_entries);
 
   // Create new tab.
   tab_model_->CreateTab(nullptr, web_contents, -1);

@@ -40,9 +40,8 @@ class ImmediateLoadObserver : WebContentsObserver {
   }
   ~ImmediateLoadObserver() override {}
 
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      NavigationController::ReloadType reload_type) override {
+  void DidStartNavigationToPendingEntry(const GURL& url,
+                                        ReloadType reload_type) override {
     // Simulate immediate web page load.
     contents_->TestSetIsLoading(false);
     Observe(nullptr);

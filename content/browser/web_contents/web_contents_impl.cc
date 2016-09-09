@@ -3279,9 +3279,8 @@ void WebContentsImpl::NotifyChangedNavigationState(
   NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::DidStartNavigationToPendingEntry(
-      const GURL& url,
-      NavigationController::ReloadType reload_type) {
+void WebContentsImpl::DidStartNavigationToPendingEntry(const GURL& url,
+                                                       ReloadType reload_type) {
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(
       WebContentsObserver,

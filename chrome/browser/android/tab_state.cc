@@ -25,6 +25,7 @@
 #include "components/sessions/core/session_command.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabState_jni.h"
 
@@ -440,8 +441,7 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   params.initially_hidden = initially_hidden;
   std::unique_ptr<WebContents> web_contents(WebContents::Create(params));
   web_contents->GetController().Restore(
-      current_entry_index, NavigationController::RESTORE_CURRENT_SESSION,
-      &entries);
+      current_entry_index, content::RestoreType::CURRENT_SESSION, &entries);
   return web_contents.release();
 }
 

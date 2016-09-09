@@ -394,10 +394,10 @@ void SSLErrorHandler::Observe(
 
 void SSLErrorHandler::DidStartNavigationToPendingEntry(
     const GURL& /* url */,
-    content::NavigationController::ReloadType /* reload_type */) {
-// Destroy the error handler on all new navigations. This ensures that the
-// handler is properly recreated when a hanging page is navigated to an SSL
-// error, even when the tab's WebContents doesn't change.
+    content::ReloadType /* reload_type */) {
+  // Destroy the error handler on all new navigations. This ensures that the
+  // handler is properly recreated when a hanging page is navigated to an SSL
+  // error, even when the tab's WebContents doesn't change.
   DeleteSSLErrorHandler();
 }
 

@@ -127,7 +127,7 @@ void ChromeOmniboxNavigationObserver::Observe(
 
 void ChromeOmniboxNavigationObserver::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   if (load_state_ == LOAD_NOT_SEEN) {
     load_state_ = LOAD_PENDING;
     if (fetcher_)

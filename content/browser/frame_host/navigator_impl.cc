@@ -52,26 +52,26 @@ namespace content {
 namespace {
 
 FrameMsg_Navigate_Type::Value GetNavigationType(
-    BrowserContext* browser_context, const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type) {
+    BrowserContext* browser_context,
+    const NavigationEntryImpl& entry,
+    ReloadType reload_type) {
   switch (reload_type) {
-    case NavigationController::RELOAD:
+    case ReloadType::NORMAL:
       return FrameMsg_Navigate_Type::RELOAD;
-    case NavigationController::RELOAD_MAIN_RESOURCE:
+    case ReloadType::MAIN_RESOURCE:
       return FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE;
-    case NavigationController::RELOAD_BYPASSING_CACHE:
-    case NavigationController::RELOAD_DISABLE_LOFI_MODE:
+    case ReloadType::BYPASSING_CACHE:
+    case ReloadType::DISABLE_LOFI_MODE:
       return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
-    case NavigationController::RELOAD_ORIGINAL_REQUEST_URL:
+    case ReloadType::ORIGINAL_REQUEST_URL:
       return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-    case NavigationController::NO_RELOAD:
+    case ReloadType::NONE:
       break;  // Fall through to rest of function.
   }
 
   // |RenderViewImpl::PopulateStateFromPendingNavigationParams| differentiates
   // between |RESTORE_WITH_POST| and |RESTORE|.
-  if (entry.restore_type() ==
-      NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY) {
+  if (entry.restore_type() == RestoreType::LAST_SESSION_EXITED_CLEANLY) {
     if (entry.GetHasPostData())
       return FrameMsg_Navigate_Type::RESTORE_WITH_POST;
     return FrameMsg_Navigate_Type::RESTORE;
@@ -85,12 +85,11 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
 struct NavigatorImpl::NavigationMetricsData {
   NavigationMetricsData(base::TimeTicks start_time,
                         GURL url,
-                        NavigationEntryImpl::RestoreType restore_type)
+                        RestoreType restore_type)
       : start_time_(start_time), url_(url) {
     is_restoring_from_last_session_ =
-        (restore_type ==
-             NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY ||
-         restore_type == NavigationEntryImpl::RESTORE_LAST_SESSION_CRASHED);
+        (restore_type == RestoreType::LAST_SESSION_EXITED_CLEANLY ||
+         restore_type == RestoreType::LAST_SESSION_CRASHED);
   }
 
   base::TimeTicks start_time_;
@@ -269,7 +268,7 @@ bool NavigatorImpl::NavigateToEntry(
     FrameTreeNode* frame_tree_node,
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type,
+    ReloadType reload_type,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     bool is_pending_entry,
@@ -278,8 +277,7 @@ bool NavigatorImpl::NavigateToEntry(
 
   GURL dest_url = frame_entry.url();
   Referrer dest_referrer = frame_entry.referrer();
-  if (reload_type ==
-          NavigationController::ReloadType::RELOAD_ORIGINAL_REQUEST_URL &&
+  if (reload_type == ReloadType::ORIGINAL_REQUEST_URL &&
       entry.GetOriginalRequestURL().is_valid() && !entry.GetHasPostData()) {
     // We may have been redirected when navigating to the current URL.
     // Use the URL the user originally intended to visit, if it's valid and if a
@@ -321,8 +319,7 @@ bool NavigatorImpl::NavigateToEntry(
                      ->root()
                      ->current_frame_host()
                      ->last_navigation_lofi_state();
-  } else if (reload_type ==
-             NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE) {
+  } else if (reload_type == ReloadType::DISABLE_LOFI_MODE) {
     // Disable LoFi when asked for it explicitly.
     lofi_state = LOFI_OFF;
   }
@@ -354,8 +351,7 @@ bool NavigatorImpl::NavigateToEntry(
   } else {
     RenderFrameHostImpl* dest_render_frame_host =
         frame_tree_node->render_manager()->Navigate(
-            dest_url, frame_entry, entry,
-            reload_type != NavigationController::NO_RELOAD);
+            dest_url, frame_entry, entry, reload_type != ReloadType::NONE);
     if (!dest_render_frame_host)
       return false;  // Unable to create the desired RenderFrameHost.
 
@@ -439,7 +435,7 @@ bool NavigatorImpl::NavigateToEntry(
 bool NavigatorImpl::NavigateToPendingEntry(
     FrameTreeNode* frame_tree_node,
     const FrameNavigationEntry& frame_entry,
-    NavigationController::ReloadType reload_type,
+    ReloadType reload_type,
     bool is_same_document_history_load) {
   return NavigateToEntry(frame_tree_node, frame_entry,
                          *controller_->GetPendingEntry(), reload_type,
@@ -463,8 +459,7 @@ bool NavigatorImpl::NavigateNewChildFrame(
     return false;
 
   return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
-                         *entry, NavigationControllerImpl::NO_RELOAD, false,
-                         true, false, nullptr);
+                         *entry, ReloadType::NONE, false, true, false, nullptr);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -864,9 +859,8 @@ void NavigatorImpl::RequestTransferURL(
         static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
         referrer_to_use, method, -1);
   }
-  NavigateToEntry(node, *frame_entry, *entry.get(),
-                  NavigationController::NO_RELOAD, false, false, false,
-                  post_body);
+  NavigateToEntry(node, *frame_entry, *entry.get(), ReloadType::NONE, false,
+                  false, false, post_body);
 }
 
 // PlzNavigate
@@ -1014,17 +1008,16 @@ void NavigatorImpl::LogBeforeUnloadTime(
 }
 
 // PlzNavigate
-void NavigatorImpl::RequestNavigation(
-    FrameTreeNode* frame_tree_node,
-    const GURL& dest_url,
-    const Referrer& dest_referrer,
-    const FrameNavigationEntry& frame_entry,
-    const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type,
-    LoFiState lofi_state,
-    bool is_same_document_history_load,
-    bool is_history_navigation_in_new_child,
-    base::TimeTicks navigation_start) {
+void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
+                                      const GURL& dest_url,
+                                      const Referrer& dest_referrer,
+                                      const FrameNavigationEntry& frame_entry,
+                                      const NavigationEntryImpl& entry,
+                                      ReloadType reload_type,
+                                      LoFiState lofi_state,
+                                      bool is_same_document_history_load,
+                                      bool is_history_navigation_in_new_child,
+                                      base::TimeTicks navigation_start) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
@@ -1070,7 +1063,7 @@ void NavigatorImpl::RequestNavigation(
           navigation_request->common_params().url)) {
     navigation_request->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(
-        true, reload_type != NavigationController::NO_RELOAD);
+        true, reload_type != ReloadType::NONE);
   } else {
     navigation_request->BeginNavigation();
   }

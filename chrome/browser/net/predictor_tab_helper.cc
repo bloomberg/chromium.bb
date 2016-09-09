@@ -48,7 +48,7 @@ void PredictorTabHelper::DidStartNavigation(
 
 void PredictorTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    content::ReloadType reload_type) {
   // The standard way to preconnect based on navigation.
   PreconnectUrl(url);
   predicted_from_pending_entry_ = true;

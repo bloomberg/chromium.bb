@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
@@ -194,9 +195,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // default mode, it is still necessary to override this function to be
   // notified about a navigation earlier than DidStartProvisionalLoad. This
   // function will be removed when PlzNavigate is enabled.
-  virtual void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      NavigationController::ReloadType reload_type) {}
+  virtual void DidStartNavigationToPendingEntry(const GURL& url,
+                                                ReloadType reload_type) {}
 
   // |render_frame_host| is the RenderFrameHost for which the provisional load
   // is happening.

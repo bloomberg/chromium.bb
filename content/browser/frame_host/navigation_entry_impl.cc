@@ -252,7 +252,7 @@ NavigationEntryImpl::NavigationEntryImpl(
       title_(title),
       page_id_(page_id),
       transition_type_(transition_type),
-      restore_type_(RESTORE_NONE),
+      restore_type_(RestoreType::NONE),
       is_overriding_user_agent_(false),
       http_status_code_(0),
       is_renderer_initiated_(is_renderer_initiated),
@@ -556,7 +556,7 @@ const std::vector<GURL>& NavigationEntryImpl::GetRedirectChain() const {
 }
 
 bool NavigationEntryImpl::IsRestored() const {
-  return restore_type_ != RESTORE_NONE;
+  return restore_type_ != RestoreType::NONE;
 }
 
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {

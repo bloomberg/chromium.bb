@@ -207,8 +207,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
   // Create a pending RenderFrameHost to use for the navigation.
   RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(
       dest_url, frame_entry.source_site_instance(), frame_entry.site_instance(),
-      entry.GetTransitionType(),
-      entry.restore_type() != NavigationEntryImpl::RESTORE_NONE,
+      entry.GetTransitionType(), entry.restore_type() != RestoreType::NONE,
       entry.IsViewSourceMode(), entry.transferred_global_request_id(),
       entry.bindings(), is_reload);
   if (!dest_render_frame_host)
@@ -761,8 +760,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       request.common_params().url, request.source_site_instance(),
       request.dest_site_instance(), candidate_site_instance,
       request.common_params().transition,
-      request.restore_type() != NavigationEntryImpl::RESTORE_NONE,
-      request.is_view_source());
+      request.restore_type() != RestoreType::NONE, request.is_view_source());
 
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;

@@ -20,6 +20,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 
@@ -300,20 +301,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   void set_user_typed_url(const GURL& user_typed_url) {
     user_typed_url_ = user_typed_url;
   }
-
-  // Enumerations of the possible restore types.
-  enum RestoreType {
-    // Restore from the previous session.
-    RESTORE_LAST_SESSION_EXITED_CLEANLY,
-    RESTORE_LAST_SESSION_CRASHED,
-
-    // The entry has been restored from the current session. This is used when
-    // the user issues 'reopen closed tab'.
-    RESTORE_CURRENT_SESSION,
-
-    // The entry was not restored.
-    RESTORE_NONE
-  };
 
   // The RestoreType for this entry. This is set if the entry was retored. This
   // is set to RESTORE_NONE once the entry is loaded.

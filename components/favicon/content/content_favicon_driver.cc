@@ -164,15 +164,13 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 
 void ContentFaviconDriver::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
-  if (reload_type == content::NavigationController::NO_RELOAD ||
-      IsOffTheRecord())
+    content::ReloadType reload_type) {
+  if (reload_type == content::ReloadType::NONE || IsOffTheRecord())
     return;
 
   bypass_cache_page_url_ = url;
   SetFaviconOutOfDateForPage(
-      url,
-      reload_type == content::NavigationController::RELOAD_BYPASSING_CACHE);
+      url, reload_type == content::ReloadType::BYPASSING_CACHE);
 }
 
 void ContentFaviconDriver::DidNavigateMainFrame(

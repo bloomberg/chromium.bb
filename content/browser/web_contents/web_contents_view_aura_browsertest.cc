@@ -178,9 +178,8 @@ class NavigationWatcher : public WebContentsObserver {
 
  private:
   // Overridden from WebContentsObserver:
-  void DidStartNavigationToPendingEntry(
-      const GURL& validated_url,
-      NavigationController::ReloadType reload_type) override {
+  void DidStartNavigationToPendingEntry(const GURL& validated_url,
+                                        ReloadType reload_type) override {
     navigated_ = true;
     if (should_quit_loop_)
       base::MessageLoop::current()->QuitWhenIdle();

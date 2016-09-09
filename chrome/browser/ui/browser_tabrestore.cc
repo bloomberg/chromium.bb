@@ -14,13 +14,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 
+using content::RestoreType;
 using content::WebContents;
-using content::NavigationController;
 using content::NavigationEntry;
 using sessions::ContentSerializedNavigationBuilder;
 using sessions::SerializedNavigationEntry;
@@ -29,13 +29,12 @@ namespace chrome {
 
 namespace {
 
-NavigationController::RestoreType GetRestoreType(Browser* browser,
-                                                 bool from_last_session) {
+RestoreType GetRestoreType(Browser* browser, bool from_last_session) {
   if (!from_last_session)
-    return NavigationController::RESTORE_CURRENT_SESSION;
-  return browser->profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED ?
-      NavigationController::RESTORE_LAST_SESSION_CRASHED :
-      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY;
+    return RestoreType::CURRENT_SESSION;
+  return browser->profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED
+             ? RestoreType::LAST_SESSION_CRASHED
+             : RestoreType::LAST_SESSION_EXITED_CLEANLY;
 }
 
 WebContents* CreateRestoredTab(

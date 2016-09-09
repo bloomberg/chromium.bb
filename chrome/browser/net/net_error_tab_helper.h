@@ -15,6 +15,7 @@
 #include "chrome/common/features.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/prefs/pref_member.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -53,7 +54,7 @@ class NetErrorTabHelper
 
   void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) override;
+      content::ReloadType reload_type) override;
 
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,

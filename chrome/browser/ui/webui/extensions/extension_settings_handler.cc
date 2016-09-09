@@ -279,8 +279,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
 
 void ExtensionSettingsHandler::DidStartNavigationToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
-  if (reload_type != content::NavigationController::NO_RELOAD)
+    content::ReloadType reload_type) {
+  if (reload_type != content::ReloadType::NONE)
     ReloadUnpackedExtensions();
 }
 

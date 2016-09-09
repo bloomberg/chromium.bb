@@ -114,30 +114,16 @@ void SetPageStateIfEmpty(NavigationEntryImpl* entry) {
     entry->SetPageState(PageState::CreateFromURL(entry->GetURL()));
 }
 
-NavigationEntryImpl::RestoreType ControllerRestoreTypeToEntryType(
-    NavigationController::RestoreType type) {
-  switch (type) {
-    case NavigationController::RESTORE_CURRENT_SESSION:
-      return NavigationEntryImpl::RESTORE_CURRENT_SESSION;
-    case NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY:
-      return NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY;
-    case NavigationController::RESTORE_LAST_SESSION_CRASHED:
-      return NavigationEntryImpl::RESTORE_LAST_SESSION_CRASHED;
-  }
-  NOTREACHED();
-  return NavigationEntryImpl::RESTORE_CURRENT_SESSION;
-}
-
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
     std::vector<std::unique_ptr<NavigationEntryImpl>>* entries,
-    NavigationController::RestoreType type) {
+    RestoreType type) {
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.
     (*entries)[i]->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
-    (*entries)[i]->set_restore_type(ControllerRestoreTypeToEntryType(type));
+    (*entries)[i]->set_restore_type(type);
     // NOTE(darin): This code is only needed for backwards compat.
     SetPageStateIfEmpty((*entries)[i].get());
   }
@@ -238,7 +224,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       needs_reload_(false),
       is_initial_navigation_(true),
       in_navigate_to_pending_entry_(false),
-      pending_reload_(NO_RELOAD),
+      pending_reload_(ReloadType::NONE),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
       screenshot_manager_(new NavigationEntryScreenshotManager(this)) {
   DCHECK(browser_context_);
@@ -280,29 +266,29 @@ void NavigationControllerImpl::Restore(
 }
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
-  ReloadType type = RELOAD;
+  ReloadType type = ReloadType::NORMAL;
   if (base::FeatureList::IsEnabled(
         features::kNonValidatingReloadOnNormalReload)) {
-    type = RELOAD_MAIN_RESOURCE;
+    type = ReloadType::MAIN_RESOURCE;
   }
   ReloadInternal(check_for_repost, type);
 }
 void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
-  ReloadType type = RELOAD;
+  ReloadType type = ReloadType::NORMAL;
   if (base::FeatureList::IsEnabled(
         features::kNonValidatingReloadOnRefreshContent)) {
-    type = RELOAD_MAIN_RESOURCE;
+    type = ReloadType::MAIN_RESOURCE;
   }
   ReloadInternal(check_for_repost, type);
 }
 void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
-  ReloadInternal(check_for_repost, RELOAD_BYPASSING_CACHE);
+  ReloadInternal(check_for_repost, ReloadType::BYPASSING_CACHE);
 }
 void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
-  ReloadInternal(check_for_repost, RELOAD_ORIGINAL_REQUEST_URL);
+  ReloadInternal(check_for_repost, ReloadType::ORIGINAL_REQUEST_URL);
 }
 void NavigationControllerImpl::ReloadDisableLoFi(bool check_for_repost) {
-  ReloadInternal(check_for_repost, RELOAD_DISABLE_LOFI_MODE);
+  ReloadInternal(check_for_repost, ReloadType::DISABLE_LOFI_MODE);
 }
 
 void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
@@ -378,7 +364,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
 
       // Mark the reload type as NO_RELOAD, so navigation will not be considered
       // a reload in the renderer.
-      reload_type = NavigationController::NO_RELOAD;
+      reload_type = ReloadType::NONE;
 
       nav_entry->set_should_replace_entry(true);
       pending_entry_ = nav_entry;
@@ -401,16 +387,16 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
 }
 
 void NavigationControllerImpl::CancelPendingReload() {
-  DCHECK(pending_reload_ != NO_RELOAD);
-  pending_reload_ = NO_RELOAD;
+  DCHECK(pending_reload_ != ReloadType::NONE);
+  pending_reload_ = ReloadType::NONE;
 }
 
 void NavigationControllerImpl::ContinuePendingReload() {
-  if (pending_reload_ == NO_RELOAD) {
+  if (pending_reload_ == ReloadType::NONE) {
     NOTREACHED();
   } else {
     ReloadInternal(false, pending_reload_);
-    pending_reload_ = NO_RELOAD;
+    pending_reload_ = ReloadType::NONE;
   }
 }
 
@@ -420,8 +406,8 @@ bool NavigationControllerImpl::IsInitialNavigation() const {
 
 bool NavigationControllerImpl::IsInitialBlankNavigation() const {
   // TODO(creis): Once we create a NavigationEntry for the initial blank page,
-  // we'll need to check for entry count 1 and restore_type RESTORE_NONE (to
-  // exclude the cloned tab case).
+  // we'll need to check for entry count 1 and restore_type NONE (to exclude
+  // the cloned tab case).
   return IsInitialNavigation() && GetEntryCount() == 0;
 }
 
@@ -444,7 +430,7 @@ void NavigationControllerImpl::LoadEntry(
   // end up leaving the current page.  The new page load could for example
   // result in a download or a 'no content' response (e.g., a mailto: URL).
   SetPendingEntry(std::move(entry));
-  NavigateToPendingEntry(NO_RELOAD);
+  NavigateToPendingEntry(ReloadType::NONE);
 }
 
 void NavigationControllerImpl::SetPendingEntry(
@@ -607,7 +593,7 @@ void NavigationControllerImpl::GoToIndex(int index) {
       ui::PageTransitionFromInt(
           entries_[pending_entry_index_]->GetTransitionType() |
           ui::PAGE_TRANSITION_FORWARD_BACK));
-  NavigateToPendingEntry(NO_RELOAD);
+  NavigateToPendingEntry(ReloadType::NONE);
 }
 
 void NavigationControllerImpl::GoToOffset(int offset) {
@@ -800,12 +786,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // If there is a pending entry at this point, it should have a SiteInstance,
   // except for restored entries.
-  DCHECK(pending_entry_index_ == -1 ||
-         pending_entry_->site_instance() ||
-         pending_entry_->restore_type() != NavigationEntryImpl::RESTORE_NONE);
-  if (pending_entry_ &&
-      pending_entry_->restore_type() != NavigationEntryImpl::RESTORE_NONE)
-    pending_entry_->set_restore_type(NavigationEntryImpl::RESTORE_NONE);
+  DCHECK(pending_entry_index_ == -1 || pending_entry_->site_instance() ||
+         pending_entry_->restore_type() != RestoreType::NONE);
+  if (pending_entry_ && pending_entry_->restore_type() != RestoreType::NONE) {
+    pending_entry_->set_restore_type(RestoreType::NONE);
+  }
 
   // The renderer tells us whether the navigation replaces the current entry.
   details->did_replace_entry = params.should_replace_current_entry;
@@ -1480,7 +1465,8 @@ void NavigationControllerImpl::CopyStateFrom(
     session_storage_namespace_map_[it->first] = source_namespace->Clone();
   }
 
-  FinishRestore(source.last_committed_entry_index_, RESTORE_CURRENT_SESSION);
+  FinishRestore(source.last_committed_entry_index_,
+                RestoreType::CURRENT_SESSION);
 
   // Copy the max page id map from the old tab to the new tab.  This ensures
   // that new and existing navigations in the tab's current SiteInstances
@@ -1785,10 +1771,9 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   // page from loading (which would normally happen during the navigation).
   if (pending_entry_index_ != -1 &&
       pending_entry_index_ == last_committed_entry_index_ &&
-      (entries_[pending_entry_index_]->restore_type() ==
-          NavigationEntryImpl::RESTORE_NONE) &&
+      (entries_[pending_entry_index_]->restore_type() == RestoreType::NONE) &&
       (entries_[pending_entry_index_]->GetTransitionType() &
-          ui::PAGE_TRANSITION_FORWARD_BACK)) {
+       ui::PAGE_TRANSITION_FORWARD_BACK)) {
     delegate_->Stop();
 
     // If an interstitial page is showing, we want to close it to get back
@@ -1996,10 +1981,10 @@ void NavigationControllerImpl::LoadIfNecessary() {
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.
   if (pending_entry_) {
-    NavigateToPendingEntry(NO_RELOAD);
+    NavigateToPendingEntry(ReloadType::NONE);
   } else if (last_committed_entry_index_ != -1) {
     pending_entry_index_ = last_committed_entry_index_;
-    NavigateToPendingEntry(NO_RELOAD);
+    NavigateToPendingEntry(ReloadType::NONE);
   } else {
     // If there is something to reload, the successful reload will clear the
     // |needs_reload_| flag. Otherwise, just do it here.
