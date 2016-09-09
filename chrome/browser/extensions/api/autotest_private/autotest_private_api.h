@@ -14,155 +14,153 @@
 
 namespace extensions {
 
-class AutotestPrivateLogoutFunction : public ChromeSyncExtensionFunction {
+class AutotestPrivateLogoutFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.logout", AUTOTESTPRIVATE_LOGOUT)
 
  private:
   ~AutotestPrivateLogoutFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateRestartFunction : public ChromeSyncExtensionFunction {
+class AutotestPrivateRestartFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.restart", AUTOTESTPRIVATE_RESTART)
 
  private:
   ~AutotestPrivateRestartFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateShutdownFunction : public ChromeSyncExtensionFunction {
+class AutotestPrivateShutdownFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.shutdown",
                              AUTOTESTPRIVATE_SHUTDOWN)
 
  private:
   ~AutotestPrivateShutdownFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateLoginStatusFunction : public ChromeSyncExtensionFunction {
+class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.loginStatus",
                              AUTOTESTPRIVATE_LOGINSTATUS)
 
  private:
   ~AutotestPrivateLoginStatusFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
+class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.lockScreen",
                              AUTOTESTPRIVATE_LOCKSCREEN)
 
  private:
   ~AutotestPrivateLockScreenFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateGetExtensionsInfoFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getExtensionsInfo",
                              AUTOTESTPRIVATE_GETEXTENSIONSINFO)
 
  private:
   ~AutotestPrivateGetExtensionsInfoFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSimulateAsanMemoryBugFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.simulateAsanMemoryBug",
                              AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG)
 
  private:
   ~AutotestPrivateSimulateAsanMemoryBugFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSetTouchpadSensitivityFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTouchpadSensitivity",
                              AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY)
 
  private:
   ~AutotestPrivateSetTouchpadSensitivityFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateSetTapToClickFunction
-    : public ChromeSyncExtensionFunction {
+class AutotestPrivateSetTapToClickFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapToClick",
                              AUTOTESTPRIVATE_SETTAPTOCLICK)
 
  private:
   ~AutotestPrivateSetTapToClickFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSetThreeFingerClickFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setThreeFingerClick",
                              AUTOTESTPRIVATE_SETTHREEFINGERCLICK)
 
  private:
   ~AutotestPrivateSetThreeFingerClickFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class AutotestPrivateSetTapDraggingFunction
-    : public ChromeSyncExtensionFunction {
+class AutotestPrivateSetTapDraggingFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapDragging",
                              AUTOTESTPRIVATE_SETTAPDRAGGING)
 
  private:
   ~AutotestPrivateSetTapDraggingFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSetNaturalScrollFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setNaturalScroll",
                              AUTOTESTPRIVATE_SETNATURALSCROLL)
 
  private:
   ~AutotestPrivateSetNaturalScrollFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSetMouseSensitivityFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMouseSensitivity",
                              AUTOTESTPRIVATE_SETMOUSESENSITIVITY)
 
  private:
   ~AutotestPrivateSetMouseSensitivityFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateSetPrimaryButtonRightFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPrimaryButtonRight",
                              AUTOTESTPRIVATE_SETPRIMARYBUTTONRIGHT)
 
  private:
   ~AutotestPrivateSetPrimaryButtonRightFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class AutotestPrivateGetVisibleNotificationsFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getVisibleNotifications",
                              AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS)
@@ -171,7 +169,7 @@ class AutotestPrivateGetVisibleNotificationsFunction
   static std::string ConvertToString(message_center::NotificationType type);
 
   ~AutotestPrivateGetVisibleNotificationsFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // Don't kill the browser when we're in a browser test.

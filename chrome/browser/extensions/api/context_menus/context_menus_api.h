@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENUS_CONTEXT_MENUS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENUS_CONTEXT_MENUS_API_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-class ContextMenusCreateFunction : public ChromeSyncExtensionFunction {
+class ContextMenusCreateFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contextMenus.create", CONTEXTMENUS_CREATE)
 
@@ -17,10 +17,10 @@ class ContextMenusCreateFunction : public ChromeSyncExtensionFunction {
   ~ContextMenusCreateFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
+class ContextMenusUpdateFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contextMenus.update", CONTEXTMENUS_UPDATE)
 
@@ -28,10 +28,10 @@ class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
   ~ContextMenusUpdateFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
+class ContextMenusRemoveFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contextMenus.remove", CONTEXTMENUS_REMOVE)
 
@@ -39,10 +39,10 @@ class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
   ~ContextMenusRemoveFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
+class ContextMenusRemoveAllFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contextMenus.removeAll", CONTEXTMENUS_REMOVEALL)
 
@@ -50,7 +50,7 @@ class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
   ~ContextMenusRemoveAllFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

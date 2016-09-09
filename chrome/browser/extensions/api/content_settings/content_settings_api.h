@@ -17,7 +17,7 @@ struct WebPluginInfo;
 namespace extensions {
 
 class ContentSettingsContentSettingClearFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.clear", CONTENTSETTINGS_CLEAR)
 
@@ -25,11 +25,11 @@ class ContentSettingsContentSettingClearFunction
   ~ContentSettingsContentSettingClearFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ContentSettingsContentSettingGetFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.get", CONTENTSETTINGS_GET)
 
@@ -37,11 +37,11 @@ class ContentSettingsContentSettingGetFunction
   ~ContentSettingsContentSettingGetFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ContentSettingsContentSettingSetFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.set", CONTENTSETTINGS_SET)
 
@@ -49,7 +49,7 @@ class ContentSettingsContentSettingSetFunction
   ~ContentSettingsContentSettingSetFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ContentSettingsContentSettingGetResourceIdentifiersFunction
