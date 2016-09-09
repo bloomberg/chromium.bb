@@ -21,12 +21,13 @@ public:
 
     Element* target() const { return m_target; }
     size_t targetDepth();
-    void setObservationSize(const LayoutSize&);
     // True if observationSize differs from target's current size.
-    bool observationSizeOutOfSync() const;
+    bool observationSizeOutOfSync();
+    void setObservationSize(const LayoutSize&);
     void elementSizeChanged();
 
-    static LayoutSize getTargetSize(Element* target);
+    LayoutSize computeTargetSize() const;
+    LayoutPoint computeTargetLocation() const;
 
     DECLARE_TRACE();
 

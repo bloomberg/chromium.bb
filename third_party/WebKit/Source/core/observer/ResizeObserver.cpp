@@ -98,9 +98,12 @@ void ResizeObserver::deliverObservations()
     HeapVector<Member<ResizeObserverEntry>> entries;
 
     for (auto& observation : m_activeObservations) {
-        auto entry = new ResizeObserverEntry(observation->target());
+        LayoutPoint location = observation->computeTargetLocation();
+        LayoutSize size = observation->computeTargetSize();
+        observation->setObservationSize(size);
+        auto entry = new ResizeObserverEntry(observation->target(),
+            LayoutRect(location, size));
         entries.append(entry);
-        observation->setObservationSize(entry->contentSize());
     }
     m_callback->handleEvent(entries, this);
     clearObservations();

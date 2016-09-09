@@ -11,23 +11,13 @@
 
 namespace blink {
 
-class ResizeObservation;
 
-ResizeObserverEntry::ResizeObserverEntry(Element* target)
+ResizeObserverEntry::ResizeObserverEntry(Element* target, const LayoutRect& contentRect)
     : m_target(target)
 {
-    FloatSize size = FloatSize(ResizeObservation::getTargetSize(m_target));
-    FloatPoint location;
-    LayoutBox* layout = m_target ? m_target->layoutBox() : nullptr;
-    if (layout) {
-        location = FloatPoint(layout->paddingLeft(), layout->paddingTop());
-    }
-    m_contentRect = ClientRect::create(FloatRect(location, size));
-}
-
-LayoutSize ResizeObserverEntry::contentSize() const
-{
-    return LayoutSize(m_contentRect->width(), m_contentRect->height());
+    m_contentRect = ClientRect::create(FloatRect(
+        FloatPoint(contentRect.location()),
+        FloatSize(contentRect.size())));
 }
 
 DEFINE_TRACE(ResizeObserverEntry)

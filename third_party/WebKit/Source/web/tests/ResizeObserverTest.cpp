@@ -83,12 +83,12 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize)
     ASSERT_TRUE(svgObservation->observationSizeOutOfSync());
 
     // Target size is correct
-    LayoutSize size = ResizeObservation::getTargetSize(domTarget);
+    LayoutSize size = domObservation->computeTargetSize();
     ASSERT_EQ(size.width(), 100);
     ASSERT_EQ(size.height(), 100);
     domObservation->setObservationSize(size);
 
-    size = ResizeObservation::getTargetSize(svgTarget);
+    size = svgObservation->computeTargetSize();
     ASSERT_EQ(size.width(), 200);
     ASSERT_EQ(size.height(), 200);
     svgObservation->setObservationSize(size);

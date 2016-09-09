@@ -3,7 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="./resources/resizeTestHelper.js"></script>
 <p>ResizeObserver svg tests</p>
-<svg height="430" width="500">
+<svg height="430" width="500" >
   <circle cx="10" cy="10" r="5" style="fill:orange;stroke:black;stroke-width:1" />
   <ellipse cx="10" cy="30" rx="5" ry="5" style="fill:orange;stroke:black;stroke-width:1"/>
   <foreignObject cy="50" width="100" height="20">
@@ -290,6 +290,27 @@ function test9() {
   ]);
   return helper.start();
 }
+
+
+function test10() {
+  let target = document.querySelector('svg');
+  let helper = new ResizeTestHelper(
+    "test10: observe svg:svg, top/left is 0 even with padding",
+  [
+    {
+      setup: observer => {
+        observer.observe(target);
+      },
+      notify: (entries, observer) => {
+        assert_equals(entries.length, 1);
+        assert_equals(entries[0].contentRect.top, 0);
+        assert_equals(entries[0].contentRect.left, 0);
+      }
+    }
+  ]);
+  return helper.start();
+}
+
 let guard = async_test('guard');
 test0()
   .then(() => { return test1(); })
@@ -301,6 +322,7 @@ test0()
   .then(() => { return test7(); })
   .then(() => { return test8(); })
   .then(() => { return test9(); })
+  .then(() => { return test10(); })
   .then(() => { guard.done(); });
 
 </script>

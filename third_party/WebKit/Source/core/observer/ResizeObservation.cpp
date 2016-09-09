@@ -21,15 +21,15 @@ ResizeObservation::ResizeObservation(Element* target, ResizeObserver* observer)
     m_observer->elementSizeChanged();
 }
 
-void ResizeObservation::setObservationSize(const LayoutSize& size)
+bool ResizeObservation::observationSizeOutOfSync()
 {
-    m_observationSize = size;
-    m_elementSizeChanged = false;
+    return m_elementSizeChanged && m_observationSize != computeTargetSize();
 }
 
-bool ResizeObservation::observationSizeOutOfSync() const
+void ResizeObservation::setObservationSize(const LayoutSize& observationSize)
 {
-    return m_elementSizeChanged && m_observationSize != ResizeObservation::getTargetSize(m_target);
+    m_observationSize = observationSize;
+    m_elementSizeChanged = false;
 }
 
 size_t ResizeObservation::targetDepth()
@@ -40,18 +40,27 @@ size_t ResizeObservation::targetDepth()
     return depth;
 }
 
-LayoutSize ResizeObservation::getTargetSize(Element* target) // static
+LayoutSize ResizeObservation::computeTargetSize() const
 {
-    if (target) {
-        if (target->isSVGElement() && toSVGElement(target)->isSVGGraphicsElement()) {
-            SVGGraphicsElement& svg = toSVGGraphicsElement(*target);
+    if (m_target) {
+        if (m_target->isSVGElement() && toSVGElement(m_target)->isSVGGraphicsElement()) {
+            SVGGraphicsElement& svg = toSVGGraphicsElement(*m_target);
             return LayoutSize(svg.getBBox().size());
         }
-        LayoutBox* layout = target->layoutBox();
+        LayoutBox* layout = m_target->layoutBox();
         if (layout)
             return layout->contentSize();
     }
     return LayoutSize();
+}
+
+LayoutPoint ResizeObservation::computeTargetLocation() const
+{
+    if (m_target && !m_target->isSVGElement()) {
+        if (LayoutBox* layout = m_target->layoutBox())
+            return LayoutPoint(layout->paddingLeft(), layout->paddingTop());
+    }
+    return LayoutPoint();
 }
 
 void ResizeObservation::elementSizeChanged()
