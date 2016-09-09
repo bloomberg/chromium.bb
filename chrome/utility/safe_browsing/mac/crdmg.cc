@@ -25,6 +25,14 @@
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
 #include "chrome/utility/safe_browsing/mac/udif.h"
 
+// This executable only works on 10.10+, so unconditionally use these functions
+// to make sandboxing easier.
+extern "C" {
+int mkdirat(int, const char *, mode_t);
+int openat(int, const char *, int, ...);
+int unlinkat(int, const char *, int);
+}
+
 namespace {
 
 // SafeDMG (crdmg) is a utility that can perform a list or extract operation
