@@ -1136,17 +1136,20 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
   } else {
     // Buffering has underflowed.
     DCHECK_EQ(state, BUFFERING_HAVE_NOTHING);
+
+    // Report the number of times we've entered the underflow state. Only report
+    // for src= playback since for MSE it's out of our control. Ensure we only
+    // report the value when transitioning from HAVE_ENOUGH to HAVE_NOTHING.
+    if (data_source_ &&
+        ready_state_ == WebMediaPlayer::ReadyStateHaveEnoughData) {
+      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", ++underflow_count_);
+      underflow_timer_.reset(new base::ElapsedTimer());
+    }
+
     // It shouldn't be possible to underflow if we've not advanced past
     // HAVE_CURRENT_DATA.
     DCHECK_GT(highest_ready_state_, WebMediaPlayer::ReadyStateHaveCurrentData);
     SetReadyState(WebMediaPlayer::ReadyStateHaveCurrentData);
-
-    // Report the number of times we've entered the underflow state. Only report
-    // for src= playback since for MSE it's out of our control.
-    if (data_source_) {
-      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", ++underflow_count_);
-      underflow_timer_.reset(new base::ElapsedTimer());
-    }
   }
 
   UpdatePlayState();

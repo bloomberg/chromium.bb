@@ -186,13 +186,11 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   // Declare HAVE_NOTHING if we reach a state where we can't progress playback
   // any further.  We don't want to do this if we've already done so, reached
   // end of stream, or have frames available.  We also don't want to do this in
-  // background rendering mode unless this isn't the first background render
-  // tick and we haven't seen any decoded frames since the last one.
+  // background rendering mode, as the frames aren't visible anyways.
   MaybeFireEndedCallback_Locked(true);
   if (buffering_state_ == BUFFERING_HAVE_ENOUGH && !received_end_of_stream_ &&
-      !algorithm_->effective_frames_queued() &&
-      (!background_rendering ||
-       (!frames_decoded_ && was_background_rendering_))) {
+      !algorithm_->effective_frames_queued() && !background_rendering &&
+      !was_background_rendering_) {
     // Do not set |buffering_state_| here as the lock in FrameReady() may be
     // held already and it fire the state changes in the wrong order.
     DVLOG(3) << __func__ << " posted TransitionToHaveNothing.";
