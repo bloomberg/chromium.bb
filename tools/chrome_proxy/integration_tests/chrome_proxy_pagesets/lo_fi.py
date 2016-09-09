@@ -10,6 +10,8 @@ class LoFiPage(page_module.Page):
   """
   A test page for the chrome proxy Lo-Fi tests.
   Checks that the compressed image is below a certain threshold.
+  The test page is uncacheable otherwise a cached page may be served that
+  doesn't have the correct via headers.
   """
 
   def __init__(self, url, page_set):
@@ -23,7 +25,7 @@ class LoFiStorySet(story.StorySet):
     super(LoFiStorySet, self).__init__()
 
     urls_list = [
-      'http://check.googlezip.net/cacheable/test.html',
+      'http://check.googlezip.net/static/index.html',
     ]
 
     for url in urls_list:
