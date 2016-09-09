@@ -44,6 +44,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
+    self.Fail('conformance2/rendering/blitframebuffer-test.html', bug=634525)
 
     # Windows only.
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
@@ -334,26 +335,22 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Mac AMD
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
-        ['mac', 'amd'], bug=483282)
+        ['mac', 'amd'], bug=643866)
     self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
-        ['mac', 'amd'], bug=483282)
+        ['mac', 'amd'], bug=643866)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['mac', 'amd'], bug=643866)
+
     self.Fail('deqp/functional/gles3/multisample.html',
         ['mac', 'amd'], bug=617290)
-    self.Fail('deqp/functional/gles3/instancedrendering.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/primitiverestart/00.html',
         ['mac', 'amd'], bug=598930)
     self.Fail('deqp/functional/gles3/primitiverestart/01.html',
         ['mac', 'amd'], bug=598930)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturesize.html',
-        ['mac', ('amd', 0x679e)], bug=640506)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlodoffset.html',
         ['mac', 'amd'], bug=483282)
@@ -386,6 +383,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Pro with AMD GPU
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('amd', 0x679e)], bug=636648)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturesize.html',
+        ['mac', ('amd', 0x679e)], bug=640506)
 
     # Mac Intel
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
