@@ -389,8 +389,6 @@ def chromium_skia(c):
 
 @config_ctx(includes=['chromium'])
 def chromium_webrtc(c):
-  c.got_revision_mapping['src/third_party/libjingle/source/talk'] = (
-      'got_libjingle_revision')
   c.got_revision_mapping['src/third_party/libvpx/source'] = (
       'got_libvpx_revision')
 
@@ -404,7 +402,6 @@ def chromium_webrtc_tot(c):
   """
   c.revisions['src'] = 'HEAD'
   c.revisions['src/third_party/webrtc'] = 'HEAD'
-  c.revisions['src/third_party/libjingle/source/talk'] = 'HEAD'
 
 @config_ctx()
 def webrtc_test_resources(c):
