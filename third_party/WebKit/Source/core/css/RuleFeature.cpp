@@ -653,19 +653,19 @@ void RuleFeatureSet::addFeaturesToInvalidationSetsForSimpleSelector(const CSSSel
 
 const CSSSelector* RuleFeatureSet::addFeaturesToInvalidationSetsForCompoundSelector(const CSSSelector& compound, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures)
 {
-    bool compoundHasTagIdClassOrAttribute = false;
+    bool compoundHasIdClassOrAttribute = false;
     const CSSSelector* simpleSelector = &compound;
     for (; simpleSelector; simpleSelector = simpleSelector->tagHistory()) {
         addFeaturesToInvalidationSetsForSimpleSelector(*simpleSelector, siblingFeatures, descendantFeatures);
         if (siblingFeatures)
-            compoundHasTagIdClassOrAttribute |= simpleSelector->isIdClassOrAttributeSelector();
+            compoundHasIdClassOrAttribute |= simpleSelector->isIdClassOrAttributeSelector();
         if (simpleSelector->relation() != CSSSelector::SubSelector)
             break;
         if (!simpleSelector->tagHistory())
             break;
     }
 
-    if (siblingFeatures && !compoundHasTagIdClassOrAttribute)
+    if (siblingFeatures && !compoundHasIdClassOrAttribute)
         addFeaturesToUniversalSiblingInvalidationSet(*siblingFeatures, descendantFeatures);
 
     return simpleSelector;
