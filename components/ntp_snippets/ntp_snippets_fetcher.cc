@@ -454,6 +454,7 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
   params.interactive_request = interactive_request_;
+  params.user_locale = locale_;
   FetchSnippetsImpl(url, std::string(), params.BuildRequest());
 }
 
