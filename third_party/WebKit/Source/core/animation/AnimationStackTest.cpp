@@ -143,28 +143,28 @@ TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
     ActiveInterpolationsMap interpolations;
 
     updateTimeline(11);
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
     EXPECT_EQ(1u, interpolations.size());
     EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));
     EXPECT_EQ(3u, sampledEffectCount());
 
     updateTimeline(13);
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
     EXPECT_EQ(1u, interpolations.size());
     EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));
     EXPECT_EQ(3u, sampledEffectCount());
 
     updateTimeline(15);
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
     EXPECT_EQ(1u, interpolations.size());
     EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));
     EXPECT_EQ(2u, sampledEffectCount());
 
     updateTimeline(17);
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
     EXPECT_EQ(1u, interpolations.size());
     EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));

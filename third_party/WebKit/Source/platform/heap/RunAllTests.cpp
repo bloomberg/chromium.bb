@@ -52,9 +52,10 @@ public:
 int runHelper(base::TestSuite* testSuite)
 {
     BlinkTestEnvironmentScope blinkTestEnvironment;
-    blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr, nullptr, nullptr);
+    blink::ThreadState* currentThreadState = blink::ThreadState::current();
+    currentThreadState->registerTraceDOMWrappers(nullptr, nullptr, nullptr, nullptr);
     int result = testSuite->Run();
-    blink::ThreadHeap::collectAllGarbage();
+    currentThreadState->collectAllGarbage();
     return result;
 }
 

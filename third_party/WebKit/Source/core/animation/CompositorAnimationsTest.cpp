@@ -1015,7 +1015,7 @@ TEST_F(AnimationCompositorAnimationsTest, cancelIncompatibleCompositorAnimations
     element->setLayoutObject(nullptr);
     LayoutObjectProxy::dispose(layoutObject);
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
 }
 

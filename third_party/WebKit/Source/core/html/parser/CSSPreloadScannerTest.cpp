@@ -73,7 +73,7 @@ TEST_F(CSSPreloadScannerTest, DestroyClientBeforeDataSent)
     new PreloadSuppressingCSSPreloaderResourceClient(resource, preloader);
 
     // Destroys the resourceClient.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 
     const char* data = "@import url('http://127.0.0.1/preload.css');";
     // Should not crash.

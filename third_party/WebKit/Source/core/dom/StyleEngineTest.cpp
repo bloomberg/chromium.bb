@@ -93,7 +93,7 @@ TEST_F(StyleEngineTest, TextToSheetCache)
     element = nullptr;
 
     // Garbage collection should clear the weak reference in the StyleSheetContents cache.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 
     element = HTMLStyleElement::create(document(), false);
     sheet1 = styleEngine().createSheet(element, sheetText, minPos, context);

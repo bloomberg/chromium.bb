@@ -2709,7 +2709,7 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     // checking below. We do a precise GC (collectAllGarbage does not scan the stack)
     // to ensure the div element dies. This is also why the Document is in a Persistent
     // since we want that to stay around.
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
 
     EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 }

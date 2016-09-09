@@ -455,7 +455,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
     buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
 
-    ThreadHeap::collectAllGarbage();
+    ThreadState::current()-> collectAllGarbage();
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
