@@ -54,8 +54,8 @@ class OZONE_EXPORT OzonePlatform {
   OzonePlatform();
   virtual ~OzonePlatform();
 
-  // Additional initalization params for the platform. Platforms must not retain
-  // a reference to this structure.
+  // Additional initialization params for the platform. Platforms must not
+  // retain a reference to this structure.
   struct InitParams {
     // Ozone may retain this pointer for later use. An Ozone platform embedder
     // must set this parameter in order for the Ozone platform implementation to

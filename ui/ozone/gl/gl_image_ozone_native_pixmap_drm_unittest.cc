@@ -38,8 +38,8 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
   DCHECK_EQ(0, size.width() % 2);
   DCHECK_EQ(0, size.height() % 2);
 
-  // TODO(dcastagna): move the creation of the drmbuf to minigmb, where it's
-  // supposed to be, so we can abastract it and use SurfaceFactoryOzone.
+  // TODO(dcastagna): move the creation of the drmbuf to minigbm, where it's
+  // supposed to be, so we can abstract it and use SurfaceFactoryOzone.
   base::ScopedFD drm_fd(
       HANDLE_EINTR(open("/dev/dri/card0", O_RDWR | O_CLOEXEC)));
   DCHECK(drm_fd.is_valid()) << "Couldn't open '/dev/dri/card0'";

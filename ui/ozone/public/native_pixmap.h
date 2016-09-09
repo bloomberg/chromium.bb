@@ -36,12 +36,11 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   virtual gfx::Size GetBufferSize() const = 0;
 
   // Sets the overlay plane to switch to at the next page flip.
-  // |w| specifies the screen to display this overlay plane on.
+  // |widget| specifies the screen to display this overlay plane on.
   // |plane_z_order| specifies the stacking order of the plane relative to the
   // main framebuffer located at index 0.
-  // |plane_transform| specifies how the buffer is to be transformed during.
+  // |plane_transform| specifies how the buffer is to be transformed during
   // composition.
-  // |buffer| to be presented by the overlay.
   // |display_bounds| specify where it is supposed to be on the screen.
   // |crop_rect| specifies the region within the buffer to be placed
   // inside |display_bounds|. This is specified in texture coordinates, in the

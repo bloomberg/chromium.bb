@@ -26,7 +26,7 @@ SurfaceFactoryOzone::GetAllowedGLImplementations() {
   return impls;
 }
 
-GLOzone* SurfaceFactoryOzone::GetGLOzone(gl::GLImplementation implemenation) {
+GLOzone* SurfaceFactoryOzone::GetGLOzone(gl::GLImplementation implementation) {
   return nullptr;
 }
 

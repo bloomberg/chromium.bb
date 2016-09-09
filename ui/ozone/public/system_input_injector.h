@@ -28,7 +28,7 @@ class OZONE_EXPORT SystemInputInjector {
   virtual ~SystemInputInjector() {}
 
   // Moves the cursor on the screen and generates the corresponding MouseMove or
-  // MouseDragged event.  |location| is in physical screen co-ordinates,
+  // MouseDragged event.  |location| is in physical screen coordinates,
   // independent of the scale factor and the display rotation settings.
   virtual void MoveCursorTo(const gfx::PointF& location) = 0;
 

@@ -208,7 +208,7 @@ class OzonePlatformGbm
     InitializeGPU(default_params);
   }
   void InitializeGPU(const InitParams& args) override {
-    // TODO(rjkroege): services/ui should initalize this with a connector.
+    // TODO(rjkroege): services/ui should initialize this with a connector.
     // However, in-progress refactorings in services/ui make it difficult to
     // require this at present. Set using_mojo_ like below once this is
     // complete.

@@ -45,7 +45,7 @@ class SurfaceOzoneCanvas;
 //
 // The following functions are specific to GL:
 //  - GetAllowedGLImplementations
-//  - GetOzoneGLementation (along with the associated GLOzone)
+//  - GetGLOzone (along with the associated GLOzone)
 //
 // 2) Software Drawing (Skia):
 //
@@ -56,7 +56,7 @@ class SurfaceOzoneCanvas;
 // path.
 //
 // The remaining functions are not covered since they are needed in both drawing
-// modes (See comments bellow for descriptions).
+// modes (See comments below for descriptions).
 class OZONE_BASE_EXPORT SurfaceFactoryOzone {
  public:
   // Returns a list of allowed GL implementations. The default implementation
@@ -65,7 +65,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
 
   // Returns the GLOzone to use for the specified GL implementation, or null if
   // GL implementation doesn't exist.
-  virtual GLOzone* GetGLOzone(gl::GLImplementation implemenation);
+  virtual GLOzone* GetGLOzone(gl::GLImplementation implementation);
 
   // DEPRECATED(kylechar): Implement GLOzoneEGL instead.
   virtual intptr_t GetNativeDisplay();
