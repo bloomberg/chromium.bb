@@ -27,9 +27,15 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   void OnPaint(gfx::Canvas* canvas) override;
   void NotifyClick(const ui::Event& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
+  SkColor GetInkDropBaseColor() const override;
+  bool ShouldShowInkDropHighlight() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  // Calculates the bounding box for the thumb (the circle).
+  gfx::Rect GetThumbBounds() const;
 
   bool is_on_;
   gfx::SlideAnimation slide_animation_;
