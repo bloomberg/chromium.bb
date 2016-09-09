@@ -63,7 +63,7 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void HandleRequestQueueCallback(
       std::string callback_id,
       offline_pages::RequestQueue::GetRequestsResult result,
-      const std::vector<offline_pages::SavePageRequest>& requests);
+      std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests);
 
   // Callback for DeletePage/ClearAll calls.
   void HandleDeletedPagesCallback(std::string callback_id,

@@ -16,7 +16,7 @@ namespace {
 // Completes the get requests call.
 void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
                      bool success,
-                     const std::vector<SavePageRequest>& requests) {
+                     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   RequestQueue::GetRequestsResult result =
       success ? RequestQueue::GetRequestsResult::SUCCESS
               : RequestQueue::GetRequestsResult::STORE_FAILURE;
@@ -24,7 +24,7 @@ void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
   // This may trigger the purging if necessary.
   // Also this may be turned into a method on the request queue or add a policy
   // parameter in the process.
-  callback.Run(result, requests);
+  callback.Run(result, std::move(requests));
 }
 
 // Completes the add request call.
@@ -53,16 +53,16 @@ void UpdateRequestDone(const RequestQueue::UpdateRequestCallback& callback,
 void UpdateMultipleRequestsDone(
     const RequestQueue::UpdateMultipleRequestsCallback& callback,
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
-  callback.Run(results, requests);
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  callback.Run(results, std::move(requests));
 }
 
 // Completes the remove request call.
 void RemoveRequestsDone(
     const RequestQueue::RemoveRequestsCallback& callback,
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
-  callback.Run(results, requests);
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  callback.Run(results, std::move(requests));
 }
 
 }  // namespace
@@ -108,7 +108,7 @@ void RequestQueue::GetForUpdateDone(
     const UpdateRequestCallback& update_callback,
     const SavePageRequest& update_request,
     bool success,
-    const std::vector<SavePageRequest>& found_requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> found_requests) {
   // If the result was not found, return now.
   if (!success) {
     update_callback.Run(
@@ -118,9 +118,9 @@ void RequestQueue::GetForUpdateDone(
   // If the found result does not contain the request we are looking for, return
   // now.
   bool found = false;
-  std::vector<SavePageRequest>::const_iterator iter;
+  std::vector<std::unique_ptr<SavePageRequest>>::const_iterator iter;
   for (iter = found_requests.begin(); iter != found_requests.end(); ++iter) {
-    if (iter->request_id() == update_request.request_id())
+    if ((*iter)->request_id() == update_request.request_id())
       found = true;
   }
   if (!found) {

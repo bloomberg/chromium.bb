@@ -47,15 +47,15 @@ class RequestQueueTest : public testing::Test {
   void AddRequestDone(AddRequestResult result, const SavePageRequest& request);
   // Callback for getting requests.
   void GetRequestsDone(GetRequestsResult result,
-                       const std::vector<SavePageRequest>& requests);
+                       std::vector<std::unique_ptr<SavePageRequest>> requests);
   // Callback for removing request.
   void RemoveRequestsDone(
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void UpdateMultipleRequestsDone(
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void UpdateRequestDone(UpdateRequestResult result);
 
@@ -81,7 +81,7 @@ class RequestQueueTest : public testing::Test {
   GetRequestsResult last_get_requests_result() const {
     return last_get_requests_result_;
   }
-  const std::vector<SavePageRequest>& last_requests() const {
+  const std::vector<std::unique_ptr<SavePageRequest>>& last_requests() const {
     return last_requests_;
   }
 
@@ -93,7 +93,7 @@ class RequestQueueTest : public testing::Test {
   UpdateRequestResult last_update_result_;
 
   GetRequestsResult last_get_requests_result_;
-  std::vector<SavePageRequest> last_requests_;
+  std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
 
   std::unique_ptr<RequestQueue> queue_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -127,23 +127,23 @@ void RequestQueueTest::AddRequestDone(AddRequestResult result,
 
 void RequestQueueTest::GetRequestsDone(
     GetRequestsResult result,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_get_requests_result_ = result;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueTest::RemoveRequestsDone(
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_remove_results_ = results;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueTest::UpdateMultipleRequestsDone(
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_multiple_update_results_ = results;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
@@ -275,7 +275,7 @@ TEST_F(RequestQueueTest, PauseAndResume) {
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_requests().front().request_state());
+            last_requests().at(0)->request_state());
 
   // Resume the request.
   queue()->ChangeRequestsState(
@@ -295,7 +295,7 @@ TEST_F(RequestQueueTest, PauseAndResume) {
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE,
-            last_requests().front().request_state());
+            last_requests().at(0)->request_state());
 }
 
 // A longer test populating the request queue with more than one item, properly
@@ -336,7 +336,7 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   PumpLoop();
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_EQ(request2.request_id(), last_requests()[0].request_id());
+  ASSERT_EQ(request2.request_id(), last_requests().at(0)->request_id());
 }
 
 TEST_F(RequestQueueTest, UpdateRequest) {
@@ -362,7 +362,7 @@ TEST_F(RequestQueueTest, UpdateRequest) {
   PumpLoop();
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
-  ASSERT_EQ(kRetryCount, last_requests().front().completed_attempt_count());
+  ASSERT_EQ(kRetryCount, last_requests().at(0)->completed_attempt_count());
 }
 
 TEST_F(RequestQueueTest, UpdateRequestNotPresent) {

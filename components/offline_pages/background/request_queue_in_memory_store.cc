@@ -17,11 +17,15 @@ RequestQueueInMemoryStore::~RequestQueueInMemoryStore() {}
 
 void RequestQueueInMemoryStore::GetRequests(
     const GetRequestsCallback& callback) {
-  std::vector<SavePageRequest> result_requests;
-  for (const auto& id_request_pair : requests_)
-    result_requests.push_back(id_request_pair.second);
+  std::vector<std::unique_ptr<SavePageRequest>> result_requests;
+  for (const auto& id_request_pair : requests_) {
+    std::unique_ptr<SavePageRequest> request(
+        new SavePageRequest(id_request_pair.second));
+    result_requests.push_back(std::move(request));
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, result_requests));
+      FROM_HERE,
+      base::Bind(callback, true, base::Passed(std::move(result_requests))));
 }
 
 void RequestQueueInMemoryStore::AddOrUpdateRequest(
@@ -40,7 +44,7 @@ void RequestQueueInMemoryStore::RemoveRequests(
     const RemoveCallback& callback) {
   RequestQueue::UpdateMultipleRequestResults results;
   RequestQueue::UpdateRequestResult result;
-  std::vector<SavePageRequest> requests;
+  std::vector<std::unique_ptr<SavePageRequest>> requests;
   RequestsMap::iterator iter;
 
   // If we find a request, mark it as succeeded, and put it in the request list.
@@ -48,10 +52,11 @@ void RequestQueueInMemoryStore::RemoveRequests(
   for (auto request_id : request_ids) {
     iter = requests_.find(request_id);
     if (iter != requests_.end()) {
-      SavePageRequest request = iter->second;
+      std::unique_ptr<SavePageRequest> request(
+          new SavePageRequest(iter->second));
       requests_.erase(iter);
       result = RequestQueue::UpdateRequestResult::SUCCESS;
-      requests.push_back(request);
+      requests.push_back(std::move(request));
     } else {
       result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     }
@@ -59,7 +64,8 @@ void RequestQueueInMemoryStore::RemoveRequests(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, results, requests));
+      FROM_HERE,
+      base::Bind(callback, results, base::Passed(std::move(requests))));
 }
 
 void RequestQueueInMemoryStore::ChangeRequestsState(
@@ -67,7 +73,7 @@ void RequestQueueInMemoryStore::ChangeRequestsState(
     const SavePageRequest::RequestState new_state,
     const UpdateMultipleRequestsCallback& callback) {
   RequestQueue::UpdateMultipleRequestResults results;
-  std::vector<SavePageRequest> requests;
+  std::vector<std::unique_ptr<SavePageRequest>> requests;
   RequestQueue::UpdateRequestResult result;
   for (int64_t request_id : request_ids) {
     auto pair = requests_.find(request_id);
@@ -75,7 +81,9 @@ void RequestQueueInMemoryStore::ChangeRequestsState(
     // the request list.
     if (pair != requests_.end()) {
       pair->second.set_request_state(new_state);
-      requests.push_back(pair->second);
+      std::unique_ptr<SavePageRequest> request(
+          new SavePageRequest(pair->second));
+      requests.push_back(std::move(request));
       result = RequestQueue::UpdateRequestResult::SUCCESS;
     } else {
       result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;;
@@ -85,7 +93,8 @@ void RequestQueueInMemoryStore::ChangeRequestsState(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, results, requests));
+      FROM_HERE,
+      base::Bind(callback, results, base::Passed(std::move(requests))));
 }
 
 void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {

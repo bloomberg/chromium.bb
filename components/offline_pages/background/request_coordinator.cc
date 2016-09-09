@@ -131,8 +131,8 @@ void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
 void RequestCoordinator::GetQueuedRequestsCallback(
     const GetRequestsCallback& callback,
     RequestQueue::GetRequestsResult result,
-    const std::vector<SavePageRequest>& requests) {
-  callback.Run(requests);
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  callback.Run(std::move(requests));
 }
 
 void RequestCoordinator::StopPrerendering() {
@@ -157,14 +157,14 @@ void RequestCoordinator::StopPrerendering() {
 
 void RequestCoordinator::GetRequestsForSchedulingCallback(
     RequestQueue::GetRequestsResult result,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   bool user_requested = false;
 
   // Examine all requests, if we find a user requested one, we will use the less
   // restrictive conditions for user_requested requests.  Otherwise we will use
   // the more restrictive non-user-requested conditions.
-  for (const SavePageRequest& request : requests) {
-    if (request.user_requested()) {
+  for (const auto& request : requests) {
+    if (request->user_requested()) {
       user_requested = true;
       break;
     }
@@ -285,18 +285,18 @@ void RequestCoordinator::UpdateRequestCallback(
 // Called in response to updating multiple requests in the request queue.
 void RequestCoordinator::UpdateMultipleRequestsCallback(
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   bool available_user_request = false;
-  for (SavePageRequest request : requests) {
-    NotifyChanged(request);
-    if (!available_user_request && request.user_requested() &&
-        request.request_state() == SavePageRequest::RequestState::AVAILABLE) {
+  for (const auto& request : requests) {
+    NotifyChanged(*(request));
+    if (!available_user_request && request->user_requested() &&
+        request->request_state() == SavePageRequest::RequestState::AVAILABLE) {
       // TODO(dougarnett): Consider avoiding prospect of N^2 in case
       // size of bulk requests can get large (perhaps with easier to consume
       // callback interface).
       for (std::pair<int64_t, RequestQueue::UpdateRequestResult> pair :
            results) {
-        if (pair.first == request.request_id() &&
+        if (pair.first == request->request_id() &&
             pair.second == RequestQueue::UpdateRequestResult::SUCCESS) {
           // We have a successfully updated, available, user request.
           available_user_request = true;
@@ -313,17 +313,17 @@ void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
     BackgroundSavePageResult status,
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   callback.Run(results);
-  HandleRemovedRequests(status, results, requests);
+  HandleRemovedRequests(status, results, std::move(requests));
 }
 
 void RequestCoordinator::HandleRemovedRequests(
     BackgroundSavePageResult status,
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
-  for (SavePageRequest request : requests)
-    NotifyCompleted(request, status);
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  for (const auto& request : requests)
+    NotifyCompleted(*request, status);
 }
 
 void RequestCoordinator::ScheduleAsNeeded() {

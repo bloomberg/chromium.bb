@@ -89,10 +89,8 @@ class RequestCoordinator : public KeyedService,
   // Resume a list of previously paused requests, making them available.
   void ResumeRequests(const std::vector<int64_t>& request_ids);
 
-  // Callback that receives the response for GetAllRequests.  Client must
-  // copy the result right away, it goes out of scope at the end of the
-  // callback.
-  typedef base::Callback<void(const std::vector<SavePageRequest>&)>
+  // Callback that receives the response for GetAllRequests.
+  typedef base::Callback<void(std::vector<std::unique_ptr<SavePageRequest>>)>
       GetRequestsCallback;
 
   // Get all save page request items in the callback.
@@ -167,15 +165,16 @@ class RequestCoordinator : public KeyedService,
  private:
   // Receives the results of a get from the request queue, and turns that into
   // SavePageRequest objects for the caller of GetQueuedRequests.
-  void GetQueuedRequestsCallback(const GetRequestsCallback& callback,
-                                 RequestQueue::GetRequestsResult result,
-                                 const std::vector<SavePageRequest>& requests);
+  void GetQueuedRequestsCallback(
+      const GetRequestsCallback& callback,
+      RequestQueue::GetRequestsResult result,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Receives the results of a get from the request queue, and turns that into
   // SavePageRequest objects for the caller of GetQueuedRequests.
   void GetRequestsForSchedulingCallback(
       RequestQueue::GetRequestsResult result,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Receives the result of add requests to the request queue.
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
@@ -187,18 +186,18 @@ class RequestCoordinator : public KeyedService,
 
   void UpdateMultipleRequestsCallback(
       const RequestQueue::UpdateMultipleRequestResults& result,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
       BackgroundSavePageResult status,
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void HandleRemovedRequests(
       BackgroundSavePageResult status,
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Start processing now if connected (but with conservative assumption
   // as to other device conditions).

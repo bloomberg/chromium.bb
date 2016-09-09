@@ -26,16 +26,16 @@ class RequestQueueStore {
 
   typedef base::Callback<void(
       bool /* success */,
-      const std::vector<SavePageRequest>& /* requests */)>
+      std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(UpdateStatus)> UpdateCallback;
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
-      const std::vector<SavePageRequest>& /* requests */)>
+      std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       UpdateMultipleRequestsCallback;
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses */,
-      const std::vector<SavePageRequest>& /* requests */)>
+      std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       RemoveCallback;
   typedef base::Callback<void(bool /* success */)> ResetCallback;
 

@@ -64,15 +64,15 @@ class RequestQueueStoreTestBase : public testing::Test {
 
   // Callback used for get requests.
   void GetRequestsDone(bool result,
-                       const std::vector<SavePageRequest>& requests);
+                       std::vector<std::unique_ptr<SavePageRequest>> requests);
   // Callback used for add/update request.
   void AddOrUpdateDone(UpdateStatus result);
   void UpdateMultipleRequestsDone(
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
   // Callback used for remove requests.
   void RemoveDone(const RequestQueue::UpdateMultipleRequestResults& results,
-                  const std::vector<SavePageRequest>& requests);
+                  std::vector<std::unique_ptr<SavePageRequest>> requests);
   // Callback used for reset.
   void ResetDone(bool result);
 
@@ -86,7 +86,7 @@ class RequestQueueStoreTestBase : public testing::Test {
       const {
     return last_remove_results_;
   }
-  const std::vector<SavePageRequest>& last_requests() const {
+  const std::vector<std::unique_ptr<SavePageRequest>>& last_requests() const {
     return last_requests_;
   }
 
@@ -98,7 +98,7 @@ class RequestQueueStoreTestBase : public testing::Test {
   UpdateStatus last_update_status_;
   RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
-  std::vector<SavePageRequest> last_requests_;
+  std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -130,9 +130,9 @@ void RequestQueueStoreTestBase::ClearResults() {
 
 void RequestQueueStoreTestBase::GetRequestsDone(
     bool result,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_result_ = result ? LastResult::kTrue : LastResult::kFalse;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
@@ -141,16 +141,16 @@ void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
 
 void RequestQueueStoreTestBase::UpdateMultipleRequestsDone(
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_multiple_update_results_ = results;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueStoreTestBase::RemoveDone(
     const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_remove_results_ = results;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestQueueStoreTestBase::ResetDone(bool result) {
@@ -240,7 +240,7 @@ TYPED_TEST(RequestQueueStoreTest, AddRequest) {
   this->PumpLoop();
   ASSERT_EQ(LastResult::kTrue, this->last_result());
   ASSERT_EQ(1ul, this->last_requests().size());
-  ASSERT_TRUE(request == this->last_requests()[0]);
+  ASSERT_TRUE(request == *(this->last_requests()[0]));
 }
 
 TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
@@ -275,7 +275,7 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   this->PumpLoop();
   ASSERT_EQ(LastResult::kTrue, this->last_result());
   ASSERT_EQ(1ul, this->last_requests().size());
-  ASSERT_TRUE(updated_request == this->last_requests()[0]);
+  ASSERT_TRUE(updated_request == *(this->last_requests()[0].get()));
 }
 
 TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
@@ -306,7 +306,7 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
   ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
             this->last_remove_results().at(1).second);
   ASSERT_EQ(2UL, this->last_requests().size());
-  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
+  ASSERT_EQ(kRequestId, this->last_requests().at(0)->request_id());
   this->ClearResults();
 
   store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
@@ -358,7 +358,7 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   ASSERT_EQ(1ul, this->last_multiple_update_results().size());
   ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
             this->last_multiple_update_results().at(0).second);
-  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
+  ASSERT_EQ(kRequestId, this->last_requests().at(0)->request_id());
   this->ClearResults();
 
   // Get the request from the queue to check it out
@@ -370,7 +370,7 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   ASSERT_EQ(1UL, this->last_requests().size());
   // Request 1 should be paused.
   ASSERT_EQ(SavePageRequest::RequestState::PAUSED,
-            this->last_requests().at(0).request_state());
+            this->last_requests().at(0)->request_state());
   this->ClearResults();
 
   // Now resume the same request we paused.
@@ -385,7 +385,7 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   ASSERT_EQ(1ul, this->last_multiple_update_results().size());
   ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
             this->last_multiple_update_results().at(0).second);
-  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
+  ASSERT_EQ(kRequestId, this->last_requests().at(0)->request_id());
   this->ClearResults();
 
   // Get the request from the queue to check it out
@@ -397,7 +397,7 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   ASSERT_EQ(1UL, this->last_requests().size());
   // Request 1 should be paused.
   ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE,
-            this->last_requests().at(0).request_state());
+            this->last_requests().at(0)->request_state());
   this->ClearResults();
 }
 
@@ -452,7 +452,7 @@ TEST_F(RequestQueueStoreSQLTest, SaveCloseReopenRead) {
   this->PumpLoop();
   ASSERT_EQ(LastResult::kTrue, this->last_result());
   ASSERT_EQ(1ul, this->last_requests().size());
-  ASSERT_TRUE(original_request == this->last_requests()[0]);
+  ASSERT_TRUE(original_request == *(this->last_requests().at(0).get()));
 }
 
 }  // offline_pages

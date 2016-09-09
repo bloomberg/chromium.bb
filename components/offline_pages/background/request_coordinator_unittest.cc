@@ -210,14 +210,15 @@ class RequestCoordinatorTest
 
   // Callback for getting requests.
   void GetRequestsDone(RequestQueue::GetRequestsResult result,
-                       const std::vector<SavePageRequest>& requests);
+                       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Callback for removing requests.
   void RemoveRequestsDone(
       const RequestQueue::UpdateMultipleRequestResults& results);
 
   // Callback for getting request statuses.
-  void GetQueuedRequestsDone(const std::vector<SavePageRequest>& requests);
+  void GetQueuedRequestsDone(
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void SendOfflinerDoneCallback(const SavePageRequest& request,
                                 Offliner::RequestStatus status);
@@ -226,7 +227,7 @@ class RequestCoordinatorTest
     return last_get_requests_result_;
   }
 
-  const std::vector<SavePageRequest>& last_requests() const {
+  const std::vector<std::unique_ptr<SavePageRequest>>& last_requests() const {
     return last_requests_;
   }
 
@@ -276,8 +277,8 @@ class RequestCoordinatorTest
 
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
-  std::vector<SavePageRequest> last_requests_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
+  std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<RequestCoordinator> coordinator_;
@@ -318,9 +319,9 @@ void RequestCoordinatorTest::PumpLoop() {
 
 void RequestCoordinatorTest::GetRequestsDone(
     RequestQueue::GetRequestsResult result,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_get_requests_result_ = result;
-  last_requests_ = requests;
+  last_requests_ = std::move(requests);
 }
 
 void RequestCoordinatorTest::RemoveRequestsDone(
@@ -330,8 +331,8 @@ void RequestCoordinatorTest::RemoveRequestsDone(
 }
 
 void RequestCoordinatorTest::GetQueuedRequestsDone(
-    const std::vector<SavePageRequest>& requests) {
-  last_requests_ = requests;
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  last_requests_ = std::move(requests);
   waiter_.Signal();
 }
 
@@ -394,15 +395,15 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
-  EXPECT_EQ(kUrl1, last_requests()[0].url());
-  EXPECT_EQ(kClientId1, last_requests()[0].client_id());
+  EXPECT_EQ(kUrl1, last_requests().at(0)->url());
+  EXPECT_EQ(kClientId1, last_requests().at(0)->client_id());
 
   // Expect that the scheduler got notified.
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
       coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
   EXPECT_EQ(coordinator()
-                ->GetTriggerConditions(last_requests()[0].user_requested())
+                ->GetTriggerConditions(last_requests()[0]->user_requested())
                 .minimum_battery_percentage,
             scheduler_stub->conditions()->minimum_battery_percentage);
 
@@ -550,8 +551,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   // Request no longer in the queue (for single attempt policy).
   EXPECT_EQ(1UL, last_requests().size());
   // Verify foreground cancel not counted as an attempt after all.
-  const SavePageRequest& found_request = last_requests().front();
-  EXPECT_EQ(0L, found_request.completed_attempt_count());
+  EXPECT_EQ(0L, last_requests().at(0)->completed_attempt_count());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
@@ -589,8 +589,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   // Request still in the queue.
   EXPECT_EQ(1UL, last_requests().size());
   // Verify prerendering cancel not counted as an attempt after all.
-  const SavePageRequest& found_request = last_requests().front();
-  EXPECT_EQ(0L, found_request.completed_attempt_count());
+  const std::unique_ptr<SavePageRequest>& found_request =
+      last_requests().front();
+  EXPECT_EQ(0L, found_request->completed_attempt_count());
 }
 
 // If one item completes, and there are no more user requeted items left,
@@ -898,8 +899,8 @@ TEST_F(RequestCoordinatorTest, GetAllRequests) {
 
   // Check that the statuses found in the callback match what we expect.
   EXPECT_EQ(2UL, last_requests().size());
-  EXPECT_EQ(kRequestId1, last_requests().at(0).request_id());
-  EXPECT_EQ(kRequestId2, last_requests().at(1).request_id());
+  EXPECT_EQ(kRequestId1, last_requests().at(0)->request_id());
+  EXPECT_EQ(kRequestId2, last_requests().at(1)->request_id());
 }
 
 TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {

@@ -69,14 +69,14 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
 }
 
 std::vector<int64_t> FilterRequestsByGuid(
-    const std::vector<SavePageRequest>& requests,
+    std::vector<std::unique_ptr<SavePageRequest>> requests,
     const std::string& guid) {
   std::vector<int64_t> request_ids;
-  for (const SavePageRequest& request : requests) {
-    if (request.client_id().id == guid &&
-        (request.client_id().name_space == kDownloadNamespace ||
-         request.client_id().name_space == kAsyncNamespace)) {
-      request_ids.push_back(request.request_id());
+  for (const auto& request : requests) {
+    if (request->client_id().id == guid &&
+        (request->client_id().name_space == kDownloadNamespace ||
+         request->client_id().name_space == kAsyncNamespace)) {
+      request_ids.push_back(request->request_id());
     }
   }
   return request_ids;
@@ -86,13 +86,15 @@ void CancelRequestCallback(const RequestQueue::UpdateMultipleRequestResults&) {
   // Results ignored here, as UI uses observer to update itself.
 }
 
-void CancelRequestsContinuation(content::BrowserContext* browser_context,
-                                const std::string& guid,
-                                const std::vector<SavePageRequest>& requests) {
+void CancelRequestsContinuation(
+    content::BrowserContext* browser_context,
+    const std::string& guid,
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator) {
-    std::vector<int64_t> request_ids = FilterRequestsByGuid(requests, guid);
+    std::vector<int64_t> request_ids =
+        FilterRequestsByGuid(std::move(requests), guid);
     coordinator->RemoveRequests(request_ids,
                                 base::Bind(&CancelRequestCallback));
   } else {
@@ -100,24 +102,27 @@ void CancelRequestsContinuation(content::BrowserContext* browser_context,
   }
 }
 
-void PauseRequestsContinuation(content::BrowserContext* browser_context,
-                               const std::string& guid,
-                               const std::vector<SavePageRequest>& requests) {
+void PauseRequestsContinuation(
+    content::BrowserContext* browser_context,
+    const std::string& guid,
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator)
-    coordinator->PauseRequests(FilterRequestsByGuid(requests, guid));
+    coordinator->PauseRequests(FilterRequestsByGuid(std::move(requests), guid));
   else
     LOG(WARNING) << "PauseRequestsContinuation has no valid coordinator.";
 }
 
-void ResumeRequestsContinuation(content::BrowserContext* browser_context,
-                                const std::string& guid,
-                                const std::vector<SavePageRequest>& requests) {
+void ResumeRequestsContinuation(
+    content::BrowserContext* browser_context,
+    const std::string& guid,
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator)
-    coordinator->ResumeRequests(FilterRequestsByGuid(requests, guid));
+    coordinator->ResumeRequests(
+        FilterRequestsByGuid(std::move(requests), guid));
   else
     LOG(WARNING) << "ResumeRequestsContinuation has no valid coordinator.";
 }

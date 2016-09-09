@@ -50,7 +50,7 @@ class RequestQueue {
 
   // Callback used for |GetRequests|.
   typedef base::Callback<void(GetRequestsResult,
-                              const std::vector<SavePageRequest>&)>
+                              std::vector<std::unique_ptr<SavePageRequest>>)>
       GetRequestsCallback;
 
   // Callback used for |AddRequest|.
@@ -61,13 +61,15 @@ class RequestQueue {
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
 
   // Callback used by |ChangeState| for more than one update at a time.
-  typedef base::Callback<void(const UpdateMultipleRequestResults& results,
-                              const std::vector<SavePageRequest>& requests)>
+  typedef base::Callback<void(
+      const UpdateMultipleRequestResults& results,
+      std::vector<std::unique_ptr<SavePageRequest>> requests)>
       UpdateMultipleRequestsCallback;
 
   // Callback used by |RemoveRequests|.
-  typedef base::Callback<void(const UpdateMultipleRequestResults& results,
-                              const std::vector<SavePageRequest>& requests)>
+  typedef base::Callback<void(
+      const UpdateMultipleRequestResults& results,
+      std::vector<std::unique_ptr<SavePageRequest>> requests)>
       RemoveRequestsCallback;
 
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
@@ -108,7 +110,7 @@ class RequestQueue {
       const RequestQueue::UpdateRequestCallback& update_callback,
       const SavePageRequest& update_request,
       bool success,
-      const std::vector<SavePageRequest>& requests);
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
  private:
   // Callback used by |PurgeRequests|.

@@ -37,13 +37,14 @@ class RequestPicker {
 
  private:
   // Callback for the GetRequest results to be delivered.
-  void GetRequestResultCallback(RequestQueue::GetRequestsResult result,
-                                const std::vector<SavePageRequest>& results);
+  void GetRequestResultCallback(
+      RequestQueue::GetRequestsResult result,
+      std::vector<std::unique_ptr<SavePageRequest>> results);
 
   // Filter out requests that don't meet the current conditions.  For instance,
   // if this is a predictive request, and we are not on WiFi, it should be
   // ignored this round.
-  bool RequestConditionsSatisfied(const SavePageRequest& request);
+  bool RequestConditionsSatisfied(const SavePageRequest* request);
 
   // Using policies, decide if the new request is preferable to the best we have
   // so far.
@@ -67,15 +68,17 @@ class RequestPicker {
   int CompareCreationTime(const SavePageRequest* left,
                           const SavePageRequest* right);
 
-  // Split all requests into expired ones and still valid ones.
-  void SplitRequests(const std::vector<SavePageRequest>& requests,
-                     std::vector<SavePageRequest>& valid_requests,
-                     std::vector<SavePageRequest>& expired_requests);
+  // Split all requests into expired ones and still valid ones.  Takes ownership
+  // of the requests, and moves them into either valid or expired requests.
+  void SplitRequests(
+      std::vector<std::unique_ptr<SavePageRequest>> requests,
+      std::vector<std::unique_ptr<SavePageRequest>>* valid_requests,
+      std::vector<std::unique_ptr<SavePageRequest>>* expired_requests);
 
   // Callback used after requests get expired.
   void OnRequestExpired(
       const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<SavePageRequest>& requests);
+      const std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Unowned pointer to the request queue.
   RequestQueue* queue_;

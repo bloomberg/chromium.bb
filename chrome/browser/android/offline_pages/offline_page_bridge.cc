@@ -138,7 +138,7 @@ void SingleOfflinePageItemCallback(
 
 ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
     JNIEnv* env,
-    const std::vector<SavePageRequest>& requests) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
   ScopedJavaLocalRef<jclass> save_page_request_clazz = base::android::GetClass(
       env, "org/chromium/chrome/browser/offlinepages/SavePageRequest");
   jobjectArray joa = env->NewObjectArray(
@@ -146,7 +146,7 @@ ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
   base::android::CheckException(env);
 
   for (size_t i = 0; i < requests.size(); ++i) {
-    SavePageRequest request = requests[i];
+    SavePageRequest request = *(requests[i]);
     ScopedJavaLocalRef<jstring> name_space =
         ConvertUTF8ToJavaString(env, request.client_id().name_space);
     ScopedJavaLocalRef<jstring> id =
@@ -163,12 +163,13 @@ ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
   return ScopedJavaLocalRef<jobjectArray>(env, joa);
 }
 
-void OnGetAllRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-                          const std::vector<SavePageRequest>& all_requests) {
+void OnGetAllRequestsDone(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    std::vector<std::unique_ptr<SavePageRequest>> all_requests) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobjectArray> j_result_obj =
-      CreateJavaSavePageRequests(env, all_requests);
+      CreateJavaSavePageRequests(env, std::move(all_requests));
   base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
