@@ -120,6 +120,7 @@ class TestHelper {
       bool enable_es3 = false);
   static void SetupTextureManagerInitExpectations(::gl::MockGLInterface* gl,
                                                   bool is_es3_enabled,
+                                                  bool is_es3_capable,
                                                   bool is_desktop_core_profile,
                                                   const char* extensions,
                                                   bool use_default_textures);

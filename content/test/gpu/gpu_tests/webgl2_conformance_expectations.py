@@ -441,8 +441,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux only.
 
-    self.Skip('conformance2/misc/getextension-while-pbo-bound-stability.html',
-              ['linux'], bug=644572)
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
                ['linux'], bug=627525)

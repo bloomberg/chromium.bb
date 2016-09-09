@@ -89,8 +89,9 @@ class TextureManagerTest : public GpuServiceTest {
                                       kMax3DTextureSize,
                                       kMaxArrayTextureLayers,
                                       kUseDefaultTextures));
+    SetupFeatureInfo("", "OpenGL ES 2.0", false);
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), false, false, "", kUseDefaultTextures);
+        gl_.get(), false, false, false, "", kUseDefaultTextures);
     manager_->Initialize();
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
   }
@@ -246,7 +247,7 @@ TEST_F(TextureManagerTest, SetParameter) {
 TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
   bool use_default_textures = true;
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
-      false, false, "GL_ANGLE_texture_usage", use_default_textures);
+      false, false, false, "GL_ANGLE_texture_usage", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -268,7 +269,7 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
 TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
   bool use_default_textures = false;
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
-      false, false, "GL_ANGLE_texture_usage", use_default_textures);
+      false, false, false, "GL_ANGLE_texture_usage", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -291,7 +292,7 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrueES3) {
   bool use_default_textures = true;
   SetupFeatureInfo("", "OpenGL ES 3.0", true);
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
-      true, false, "", use_default_textures);
+      true, true, false, "", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -312,7 +313,7 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalseES3) {
   bool use_default_textures = false;
   SetupFeatureInfo("", "OpenGL ES 3.0", true);
   TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
-      true, false, "", use_default_textures);
+      true, true, false, "", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -331,7 +332,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalseES3) {
 
 TEST_F(TextureManagerTest, TextureUsageExt) {
   TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), false, false, "GL_ANGLE_texture_usage", kUseDefaultTextures);
+      gl_.get(), false, false, false, "GL_ANGLE_texture_usage",
+      kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -360,7 +362,7 @@ TEST_F(TextureManagerTest, Destroy) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), false, false, "", kUseDefaultTextures);
+      gl_.get(), false, false, false, "", kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -544,8 +546,8 @@ TEST_F(TextureManagerTest, AlphaLuminanceCompatibilityProfile) {
   const GLuint kServiceId = 11;
 
   SetupFeatureInfo("", "2.1", false);
-  TestHelper::SetupTextureManagerInitExpectations(gl_.get(), false, false, "",
-      kUseDefaultTextures);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(), false, false,
+      false, "", kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -589,8 +591,8 @@ TEST_F(TextureManagerTest, AlphaLuminanceCoreProfileEmulation) {
   const GLuint kServiceId = 11;
 
   SetupFeatureInfo("", "4.2", true);
-  TestHelper::SetupTextureManagerInitExpectations(gl_.get(), true, true, "",
-      kUseDefaultTextures);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(), true, true, true,
+      "", kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -2252,11 +2254,12 @@ class SharedTextureTest : public GpuServiceTest {
                            TextureManagerTest::kMax3DTextureSize,
                            TextureManagerTest::kMaxArrayTextureLayers,
                            kUseDefaultTextures));
+    SetupFeatureInfo("", "OpenGL ES 2.0", false);
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), false, false, "", kUseDefaultTextures);
+        gl_.get(), false, false, false, "", kUseDefaultTextures);
     texture_manager1_->Initialize();
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), false, false, "", kUseDefaultTextures);
+        gl_.get(), false, false, false, "", kUseDefaultTextures);
     texture_manager2_->Initialize();
   }
 
@@ -2269,6 +2272,24 @@ class SharedTextureTest : public GpuServiceTest {
   }
 
  protected:
+  void SetupFeatureInfo(const char* gl_extensions,
+                        const char* gl_version,
+                        bool enable_es3) {
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+        gl_.get(), gl_extensions, "", gl_version,
+        feature_info_->context_type(), enable_es3);
+    feature_info_->InitializeForTesting();
+    if (enable_es3) {
+      EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
+          .WillOnce(SetArgPointee<1>(8))
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_DRAW_BUFFERS, _))
+          .WillOnce(SetArgPointee<1>(8))
+          .RetiresOnSaturation();
+      feature_info_->EnableES3Validators();
+    }
+  }
+
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_refptr<CountingMemoryTracker> memory_tracker1_;
   std::unique_ptr<TextureManager> texture_manager1_;

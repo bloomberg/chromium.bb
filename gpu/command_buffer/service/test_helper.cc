@@ -205,10 +205,17 @@ void TestHelper::SetupTextureInitializationExpectations(
 void TestHelper::SetupTextureManagerInitExpectations(
     ::gl::MockGLInterface* gl,
     bool is_es3_enabled,
+    bool is_es3_capable,
     bool is_desktop_core_profile,
     const char* extensions,
     bool use_default_textures) {
   InSequence sequence;
+
+  if (is_es3_capable) {
+    EXPECT_CALL(*gl, BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
 
   SetupTextureInitializationExpectations(
       gl, GL_TEXTURE_2D, use_default_textures);
@@ -467,8 +474,8 @@ void TestHelper::SetupContextGroupInitExpectations(
 
   bool use_default_textures = bind_generates_resource;
   SetupTextureManagerInitExpectations(
-      gl, false, gl_info.is_desktop_core_profile, extensions,
-      use_default_textures);
+      gl, false, gl_info.is_es3_capable, gl_info.is_desktop_core_profile,
+      extensions, use_default_textures);
 }
 
 void TestHelper::SetupFeatureInfoInitExpectations(::gl::MockGLInterface* gl,

@@ -1781,6 +1781,11 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
 }
 
 bool TextureManager::Initialize() {
+  // Reset PIXEL_UNPACK_BUFFER to avoid unrelated GL error on some GL drivers.
+  if (feature_info_->gl_version_info().is_es3_capable) {
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  }
+
   // TODO(gman): The default textures have to be real textures, not the 0
   // texture because we simulate non shared resources on top of shared
   // resources and all contexts that share resource share the same default
