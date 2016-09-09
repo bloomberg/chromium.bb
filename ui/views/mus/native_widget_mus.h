@@ -132,7 +132,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   gfx::Rect GetRestoredBounds() const override;
   std::string GetWorkspace() const override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  void SetBounds(const gfx::Rect& bounds_in_screen) override;
   void SetSize(const gfx::Size& size) override;
   void StackAbove(gfx::NativeView native_view) override;
   void StackAtTop() override;

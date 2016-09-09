@@ -907,7 +907,22 @@ void NativeWidgetMus::InitModalType(ui::ModalType modal_type) {
 }
 
 gfx::Rect NativeWidgetMus::GetWindowBoundsInScreen() const {
-  return window_ ? window_->GetBoundsInRoot() : gfx::Rect();
+  if (!window_)
+    return gfx::Rect();
+
+  // Correct for the origin of the display.
+  const int64_t window_display_id = window_->GetRoot()->display_id();
+  for (display::Display display :
+       display::Screen::GetScreen()->GetAllDisplays()) {
+    if (display.id() == window_display_id) {
+      gfx::Point display_origin = display.bounds().origin();
+      gfx::Rect bounds_in_screen = window_->GetBoundsInRoot();
+      bounds_in_screen.Offset(display_origin.x(), display_origin.y());
+      return bounds_in_screen;
+    }
+  }
+  // Unknown display, assume primary display at 0,0.
+  return window_->GetBoundsInRoot();
 }
 
 gfx::Rect NativeWidgetMus::GetClientAreaBoundsInScreen() const {
@@ -934,17 +949,26 @@ std::string NativeWidgetMus::GetWorkspace() const {
   return std::string();
 }
 
-void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
+void NativeWidgetMus::SetBounds(const gfx::Rect& bounds_in_screen) {
   if (!(window_ && window_tree_host_))
     return;
 
-  gfx::Size size(bounds.size());
+  // TODO(jamescook): Needs something like aura::ScreenPositionClient so higher
+  // level code can move windows between displays. crbug.com/645291
+  gfx::Point origin(bounds_in_screen.origin());
+  const gfx::Point display_origin = display::Screen::GetScreen()
+                                        ->GetDisplayMatching(bounds_in_screen)
+                                        .bounds()
+                                        .origin();
+  origin.Offset(-display_origin.x(), -display_origin.y());
+
+  gfx::Size size(bounds_in_screen.size());
   const gfx::Size min_size = GetMinimumSize();
   const gfx::Size max_size = GetMaximumSize();
   if (!max_size.IsEmpty())
     size.SetToMin(max_size);
   size.SetToMax(min_size);
-  window_->SetBounds(gfx::Rect(bounds.origin(), size));
+  window_->SetBounds(gfx::Rect(origin, size));
   // Observer on |window_tree_host_| expected to synchronously update bounds.
   DCHECK(window_->bounds() == window_tree_host_->GetBounds());
 }
