@@ -6,22 +6,32 @@
 #define NGLayoutInputText_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_direction.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <unicode/uscript.h>
 
 namespace blink {
 
 // Struct representing a single text node or styled inline element with text
-// content. In this representation TextNodes are merged up into their parent
-// inline element where possible.
+// content segmented by style, text direction, sideways rotation, font fallback
+// priority (text, symbol, emoji, etc) and script (but not by font).
+// In this representation TextNodes are merged up into their parent inline
+// element where possible.
 struct NGLayoutInputTextItem {
   unsigned start_offset;
   unsigned end_offset;
+  NGDirection direction;
+  UScriptCode script;
+  FontFallbackPriority fallback_priority;
+  bool rotate_sideways;
   RefPtr<ComputedStyle> style;
+  RefPtr<ShapeResult> shape_result;
 };
 
 // Class representing all text content for a given inline layout root in the
@@ -53,7 +63,6 @@ class CORE_EXPORT NGLayoutInputText final
   // utf-8 or utf-16. Currently we always shape in utf16 and
   // upconvert latin-1.
   String text_;
-  RefPtr<ShapeResult> shape_result_;
   Vector<NGLayoutInputTextItem> items_;
 };
 
