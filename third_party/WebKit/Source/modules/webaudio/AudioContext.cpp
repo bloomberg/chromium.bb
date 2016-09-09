@@ -90,7 +90,7 @@ AudioContext::AudioContext(Document& document)
 AudioContext::~AudioContext()
 {
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "[16%p]: AudioContext::~AudioContext(): %u\n", this, m_contextId);
+    fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this, m_contextId);
 #endif
 }
 
