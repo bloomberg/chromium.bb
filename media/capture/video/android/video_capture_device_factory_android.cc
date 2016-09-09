@@ -41,11 +41,14 @@ VideoCaptureDeviceFactoryAndroid::CreateDevice(
   std::unique_ptr<VideoCaptureDeviceAndroid> video_capture_device(
       new VideoCaptureDeviceAndroid(device_descriptor));
 
-  if (video_capture_device->Init())
+  if (video_capture_device->Init()) {
+    if (test_mode_)
+      video_capture_device->ConfigureForTesting();
     return std::move(video_capture_device);
+  }
 
   DLOG(ERROR) << "Error creating Video Capture Device.";
-  return std::unique_ptr<VideoCaptureDevice>();
+  return nullptr;
 }
 
 void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
@@ -105,8 +108,7 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     base::android::ScopedJavaLocalRef<jobject> format(
         env, env->GetObjectArrayElement(collected_formats.obj(), i));
 
-    VideoPixelFormat pixel_format =
-        media::PIXEL_FORMAT_UNKNOWN;
+    VideoPixelFormat pixel_format = media::PIXEL_FORMAT_UNKNOWN;
     switch (media::Java_VideoCaptureFactory_getCaptureFormatPixelFormat(
         env, format)) {
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_YV12:
@@ -116,6 +118,9 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
         pixel_format = media::PIXEL_FORMAT_NV21;
         break;
       default:
+        // TODO(mcasas): break here and let the enumeration continue with
+        // UNKNOWN pixel format because the platform doesn't know until capture,
+        // but some unrelated tests timeout https://crbug.com/644910.
         continue;
     }
     VideoCaptureFormat capture_format(
@@ -129,6 +134,15 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     DVLOG(1) << device.display_name << " "
              << VideoCaptureFormat::ToString(capture_format);
   }
+}
+
+bool VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
+    const std::string& device_id) {
+  int id;
+  if (!base::StringToInt(device_id, &id))
+    return true;
+  return (Java_VideoCaptureFactory_isLegacyOrDeprecatedDevice(
+      AttachCurrentThread(), base::android::GetApplicationContext(), id));
 }
 
 // static
