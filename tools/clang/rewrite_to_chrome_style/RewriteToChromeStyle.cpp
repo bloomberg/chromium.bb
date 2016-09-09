@@ -290,16 +290,39 @@ bool IsProbablyConst(const clang::VarDecl& decl,
   return initializer->isEvaluatable(context);
 }
 
+AST_MATCHER_P(clang::QualType, hasString, std::string, ExpectedString) {
+  return ExpectedString == Node.getAsString();
+}
+
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     clang::ASTContext& context,
                     std::string& name) {
   name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
 
-  // https://crbug.com/582312: Prepend "Get" if method name conflicts with type.
-  const clang::IdentifierInfo* return_type =
-      decl.getReturnType().getBaseTypeIdentifier();
-  if (return_type && return_type->getName() == name)
+  // Given
+  //   class Foo {};
+  //   using Bar = Foo;
+  //   Bar f1();  // <- |Bar| would be matched by hasString("Bar") below.
+  //   Bar f2();  // <- |Bar| would be matched by hasName("Foo") below.
+  // |type_with_same_name_as_function| matcher matches Bar and Foo return types.
+  auto type_with_same_name_as_function = qualType(anyOf(
+      hasString(name),  // hasString matches the type as spelled (Bar above).
+      hasDeclaration(namedDecl(hasName(name)))));  // hasDeclaration matches
+                                                   // resolved type (Foo above).
+  // |type_containing_same_name_as_function| matcher will match all of the
+  // return types below:
+  // - Foo foo()  // Direct application of |type_with_same_name_as_function|.
+  // - Foo* foo()  // |hasDescendant| traverses references/pointers.
+  // - RefPtr<Foo> foo()  // |hasDescendant| traverses template arguments.
+  auto type_containing_same_name_as_function =
+      qualType(anyOf(type_with_same_name_as_function,
+                     hasDescendant(type_with_same_name_as_function)));
+  // https://crbug.com/582312: Prepend "Get" if method name conflicts with
+  // return type.
+  auto conflict_matcher =
+      functionDecl(returns(type_containing_same_name_as_function));
+  if (!match(conflict_matcher, decl, context).empty())
     name = "Get" + name;
 
   return true;

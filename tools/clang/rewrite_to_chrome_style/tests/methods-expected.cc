@@ -177,16 +177,24 @@ class BitVector {
   class OutOfLineBits {};
   enum Foo { kBlah };
   struct Bar {};
+  class Baz {};
+  class FooBar {};
+
+  template <typename T>
+  class MyRefPtr {};
 
   // Naive renaming will break the build, by leaving return type the same
-  // as method the name - to avoid this "Get" prefix needs to be prepended
+  // as the method name - to avoid this "Get" prefix needs to be prepended
   // as suggested in https://crbug.com/582312#c17.
   const OutOfLineBits* GetOutOfLineBits() const { return nullptr; }
   Foo GetFoo() { return kBlah; }
   const Bar& GetBar() const { return bar_; }
+  MyRefPtr<Baz> GetBaz() { return MyRefPtr<Baz>(); }
+  const MyRefPtr<FooBar>& GetFooBar() { return foobar_; }
 
  private:
   Bar bar_;
+  MyRefPtr<FooBar> foobar_;
 };
 
 }  // namespace blink

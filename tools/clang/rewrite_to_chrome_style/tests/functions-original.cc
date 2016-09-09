@@ -4,6 +4,19 @@
 
 namespace blink {
 
+namespace {
+
+// Naive renaming will break the build, by leaving return type the same name as
+// the function name - to avoid this "Get" prefix needs to be prepended as
+// suggested in https://crbug.com/582312#c17.
+class Foo582312 {};
+using Bar = Foo582312;
+static Bar* bar() {
+  return nullptr;
+}
+
+}  // namespace
+
 // Tests that the prototype for a function is updated.
 int testFunctionThatTakesTwoInts(int x, int y);
 // Overload to test using declarations that introduce multiple shadow
