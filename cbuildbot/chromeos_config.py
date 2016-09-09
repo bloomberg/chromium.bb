@@ -691,20 +691,20 @@ _waterfall_config_map = {
         # Firmware Builders.
         'link-depthcharge-full-firmware',
 
-        # Toolchain Builders: 4 boards {peppy,daisy,x86-alex,oak}
+        # Toolchain Builders: 4 architectures {amd64,arm,x86,arm64}
         #                   x 3 toolchains {gcc,llvm,llvm-next}
-        'peppy-gcc-toolchain',
-        'peppy-llvm-toolchain',
-        'peppy-llvm-next-toolchain',
-        'daisy-gcc-toolchain',
-        'daisy-llvm-toolchain',
-        'daisy-llvm-next-toolchain',
-        'x86-alex-gcc-toolchain',
-        'x86-alex-llvm-toolchain',
-        'x86-alex-llvm-next-toolchain',
-        'oak-gcc-toolchain',
-        'oak-llvm-toolchain',
-        'oak-llvm-next-toolchain',
+        'amd64-gcc-toolchain',
+        'amd64-llvm-toolchain',
+        'amd64-llvm-next-toolchain',
+        'arm-gcc-toolchain',
+        'arm-llvm-toolchain',
+        'arm-llvm-next-toolchain',
+        'x86-gcc-toolchain',
+        'x86-llvm-toolchain',
+        'x86-llvm-next-toolchain',
+        'arm64-gcc-toolchain',
+        'arm64-llvm-toolchain',
+        'arm64-llvm-next-toolchain',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -2269,78 +2269,78 @@ def GetConfig():
       hw_tests_override=HWTestList.ToolchainTestLight(),
   )
 
-  ### Toolchain builder configs: 4 boards {peppy,daisy,x86-alex,oak}
+  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
   ###                          x 3 toolchains {gcc,llvm,llvm-next}
   ### All of these builders should be slaves of 'master-toolchain'.
 
   site_config.Add(
-      'peppy-gcc-toolchain',
+      'amd64-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['peppy'],
   )
 
   site_config.Add(
-      'peppy-llvm-toolchain',
+      'amd64-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['falco'],
   )
 
   site_config.Add(
-      'peppy-llvm-next-toolchain',
+      'amd64-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['peppy'],
   )
 
   site_config.Add(
-      'daisy-gcc-toolchain',
+      'arm-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['daisy'],
   )
 
   site_config.Add(
-      'daisy-llvm-toolchain',
+      'arm-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['daisy'],
   )
 
   site_config.Add(
-      'daisy-llvm-next-toolchain',
+      'arm-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['daisy'],
   )
 
   site_config.Add(
-      'x86-alex-gcc-toolchain',
+      'x86-gcc-toolchain',
       _toolchain, _gcc_builder_light,
       boards=['x86-alex'],
   )
 
   site_config.Add(
-      'x86-alex-llvm-toolchain',
+      'x86-llvm-toolchain',
       _toolchain, _llvm_builder_light,
       boards=['x86-alex'],
   )
 
   site_config.Add(
-      'x86-alex-llvm-next-toolchain',
+      'x86-llvm-next-toolchain',
       _toolchain, _llvm_next_builder_light,
       boards=['x86-alex'],
   )
 
   site_config.Add(
-      'oak-gcc-toolchain',
+      'arm64-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['oak'],
   )
 
   site_config.Add(
-      'oak-llvm-toolchain',
+      'arm64-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['oak'],
   )
 
   site_config.Add(
-      'oak-llvm-next-toolchain',
+      'arm64-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['oak'],
   )
