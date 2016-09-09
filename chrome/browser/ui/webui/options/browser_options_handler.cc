@@ -440,7 +440,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "accessibilityMonoAudio",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MONO_AUDIO_DESCRIPTION},
-    { "androidAppsTitle", IDS_OPTIONS_ARC_TITLE },
     { "androidAppsEnabled", IDS_OPTIONS_ARC_ENABLE },
     { "androidAppsSettingsLabel", IDS_OPTIONS_ARC_MANAGE_APPS },
     { "arcOptOutConfirmOverlayTabTitle", IDS_ARC_OPT_OUT_TAB_TITLE },
@@ -568,6 +567,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                 IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
 #if defined(ENABLE_PRINT_PREVIEW)
   RegisterCloudPrintValues(values);
+#endif
+
+  // TODO(xdai): Revert this after it's merged to M53.
+#if defined(OS_CHROMEOS)
+  std::string android_apps_title =
+      l10n_util::GetStringUTF8(IDS_OPTIONS_ARC_TITLE) + " (" +
+      l10n_util::GetStringUTF8(IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA) + ")";
+  values->SetString("androidAppsTitle", android_apps_title);
 #endif
 
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
