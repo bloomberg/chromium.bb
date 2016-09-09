@@ -776,10 +776,10 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
     Status status = UnpackAutomationExtension(temp_dir, &automation_extension);
     if (status.IsError())
       return status;
-#if defined(OS_WIN)
-    // On stable channel Chrome for Windows, a "Disable developer mode
-    // extensions" dialog appears for the automation extension. Suppress this by
-    // loading it as a component extension.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    // On Chrome for Windows and Mac, a "Disable developer mode extensions"
+    // dialog appears for the automation extension. Suppress this by loading
+    // it as a component extension.
     UpdateExtensionSwitch(switches, "load-component-extension",
                           automation_extension.value());
 #else
