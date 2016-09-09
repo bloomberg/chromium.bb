@@ -522,6 +522,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     enable_compression_ = value;
   }
 
+  void SetHpackIndexingPolicy(HpackEncoder::IndexingPolicy policy) {
+    GetHpackEncoder()->SetIndexingPolicy(std::move(policy));
+  }
+
   // Used only in log messages.
   void set_display_protocol(const std::string& protocol) {
     display_protocol_ = protocol;
