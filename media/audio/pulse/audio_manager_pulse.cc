@@ -174,29 +174,6 @@ AudioInputStream* AudioManagerPulse::MakeLowLatencyInputStream(
   return MakeInputStream(params, device_id);
 }
 
-std::string AudioManagerPulse::GetDefaultOutputDeviceID() {
-  return pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
-                                       pulse::RequestType::OUTPUT);
-}
-
-std::string AudioManagerPulse::GetAssociatedOutputDeviceID(
-    const std::string& input_device_id) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(input_mainloop_);
-  DCHECK(input_context_);
-  std::string input =
-      (input_device_id == AudioDeviceDescription::kDefaultDeviceId)
-          ? pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
-                                          pulse::RequestType::INPUT)
-          : input_device_id;
-
-  std::string input_bus =
-      pulse::GetBusOfInput(input_mainloop_, input_context_, input);
-  return input_bus.empty() ? ""
-                           : pulse::GetOutputCorrespondingTo(
-                                 input_mainloop_, input_context_, input_bus);
-}
-
 AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {

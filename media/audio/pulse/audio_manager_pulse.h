@@ -49,9 +49,6 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
       const AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
-  std::string GetAssociatedOutputDeviceID(
-      const std::string& input_device_id) override;
-  std::string GetDefaultOutputDeviceID() override;
 
  protected:
   ~AudioManagerPulse() override;
