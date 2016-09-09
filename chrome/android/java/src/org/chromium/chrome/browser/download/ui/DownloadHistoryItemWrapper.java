@@ -9,12 +9,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
@@ -24,8 +21,6 @@ import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.util.Locale;
-
-import javax.annotation.Nullable;
 
 /** Wraps different classes that contain information about downloads. */
 public abstract class DownloadHistoryItemWrapper implements TimedItem {
@@ -79,10 +74,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
     abstract void open();
 
     /**
-     * Called when the user wants to delete the file.
-     * @param callback The Callback to be notified when the item is finished being deleted.
+     * Called when the user wants to remove the download from the backend. May also delete the file
+     * associated with the download item.
+     * @return Whether the file associated with the download item was deleted.
      */
-    abstract void delete(@Nullable Callback<Void> callback);
+    abstract boolean remove();
 
     /**
      * @return Whether the file associated with this item has been removed through an external
@@ -203,35 +199,10 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete(@Nullable final Callback<Void> callback) {
+        public boolean remove() {
             // Tell the DownloadManager to remove the file from history.
             mBackendProvider.getDownloadDelegate().removeDownload(getId(), mIsOffTheRecord);
-
-            // Return early if the file has already been deleted from storage.
-            if (hasBeenExternallyRemoved()) {
-                if (callback != null) callback.onResult(null);
-                return;
-            }
-
-            // TODO(twellington): implement batch deletion of files. If too many items are selected
-            //                    for deletion at once, we will exceed the ThreadPool's maximum
-            //                    queue capacity, causing a crash.
-            // Delete the file from storage.
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                public Void doInBackground(Void... params) {
-                    File file = new File(getFilePath());
-                    if (file.exists() && !file.delete()) {
-                        Log.e(TAG, "Failed to delete: " + getFilePath());
-                    }
-                    return null;
-                }
-
-                @Override
-                public void onPostExecute(Void unused) {
-                    if (callback != null) callback.onResult(unused);
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return false;
         }
 
         @Override
@@ -337,9 +308,9 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete(@Nullable Callback<Void> callback) {
+        public boolean remove() {
             mBackendProvider.getOfflinePageBridge().deleteItem(getId());
-            if (callback != null) callback.onResult(null);
+            return true;
         }
 
         @Override

@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,9 +27,9 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -47,9 +48,9 @@ import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Displays and manages the UI for the download manager.
@@ -140,7 +141,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final LoadingView mLoadingView;
 
     private BasicNativePage mNativePage;
-    private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
 
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
@@ -475,27 +475,38 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private void deleteSelectedItems() {
         List<DownloadHistoryItemWrapper> selectedItems =
                 mBackendProvider.getSelectionDelegate().getSelectedItems();
-        mNumberOfFilesBeingDeleted.addAndGet(selectedItems.size());
+        final ArrayList<File> filesToDelete = new ArrayList<>();
 
         for (int i = 0; i < selectedItems.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
+            if (!wrappedItem.remove()) {
+                filesToDelete.add(wrappedItem.getFile());
+            }
+            // Delete the files associated with the download items (if necessary) using a single
+            // AsyncTask that batch deletes all of the files. The thread pool has a finite number
+            // of tasks that can be queued at once. If too many tasks are queued an exception is
+            // thrown. See crbug.com/643811.
+            if (filesToDelete.size() != 0) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    public Void doInBackground(Void... params) {
+                        FileUtils.batchDeleteFiles(filesToDelete);
+                        return null;
+                    }
 
-            // More than one download item may be associated with the same file path. After all
-            // files have been deleted, initiate a check for removed download files so that any
-            // download items associated with the same path as a deleted item are updated.
-            wrappedItem.delete(new Callback<Void>() {
-                @Override
-                public void onResult(Void unused) {
-                    int remaining = mNumberOfFilesBeingDeleted.decrementAndGet();
-                    if (remaining != 0) return;
-
-                    DownloadUtils.checkForExternallyRemovedDownloads(mBackendProvider,
-                            mIsOffTheRecord);
-                }
-            });
+                    @Override
+                    public void onPostExecute(Void unused) {
+                        // More than one download item may be associated with the same file path.
+                        // Initiate a check for removed download files so that any download items
+                        // associated with the same path as a deleted item are updated.
+                        DownloadUtils.checkForExternallyRemovedDownloads(
+                                mBackendProvider, mIsOffTheRecord);
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         }
-        mBackendProvider.getSelectionDelegate().clearSelection();
 
+        mBackendProvider.getSelectionDelegate().clearSelection();
         RecordUserAction.record("Android.DownloadManager.Delete");
     }
 

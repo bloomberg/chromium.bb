@@ -376,7 +376,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     private void removeExternallyDeletedItem(DownloadItemWrapper wrapper, boolean isOffTheRecord) {
         getExternallyDeletedItemsMap(isOffTheRecord).put(wrapper.getId(), true);
-        wrapper.delete(null);
+        wrapper.remove();
         RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeleted");
     }
 

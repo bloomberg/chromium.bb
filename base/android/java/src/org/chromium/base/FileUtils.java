@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Helper methods for dealing with Files.
@@ -34,6 +35,18 @@ public class FileUtils {
         }
 
         if (!currentFile.delete()) Log.e(TAG, "Failed to delete: " + currentFile);
+    }
+
+    /**
+     * Delete the given files or directories by calling {@link #recursivelyDeleteFile(File)}.
+     * @param files The files to delete.
+     */
+    public static void batchDeleteFiles(List<File> files) {
+        assert !ThreadUtils.runningOnUiThread();
+
+        for (File file : files) {
+            if (file.exists()) recursivelyDeleteFile(file);
+        }
     }
 
     /**
