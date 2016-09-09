@@ -56,7 +56,7 @@ class QuicChromiumClientSessionPeer;
 class NET_EXPORT_PRIVATE QuicChromiumClientSession
     : public QuicClientSessionBase,
       public QuicChromiumPacketReader::Visitor,
-      public QuicChromiumPacketWriter::WriteErrorObserver {
+      public QuicChromiumPacketWriter::Delegate {
  public:
   // Reasons to disable QUIC, that is under certain pathological
   // connection errors.  Note: these values must be kept in sync with
@@ -158,9 +158,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Cancels the pending stream creation request.
   void CancelRequest(StreamRequest* request);
 
-  // QuicChromiumPacketWriter::WriteErrorObserver override.
-  int OnWriteError(int error_code,
-                   scoped_refptr<StringIOBuffer> last_packet) override;
+  // QuicChromiumPacketWriter::Delegate override.
+  int HandleWriteError(int error_code,
+                       scoped_refptr<StringIOBuffer> last_packet) override;
+  void OnWriteError(int error_code) override;
+  void OnWriteUnblocked() override;
 
   // QuicSpdySession methods:
   void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) override;

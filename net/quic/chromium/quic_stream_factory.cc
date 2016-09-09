@@ -1641,7 +1641,7 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
                                    session->net_log()));
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
       new QuicChromiumPacketWriter(socket.get()));
-  new_writer->Initialize(session, session->connection());
+  new_writer->set_delegate(session);
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
                                 std::move(new_writer), packet)) {
@@ -1864,7 +1864,7 @@ int QuicStreamFactory::CreateSession(
       std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
-  writer->Initialize(*session, connection);
+  writer->set_delegate(*session);
 
   (*session)->Initialize();
   bool closed_during_initialize = !base::ContainsKey(all_sessions_, *session) ||

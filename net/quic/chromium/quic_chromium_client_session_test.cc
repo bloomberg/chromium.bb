@@ -129,7 +129,7 @@ class QuicChromiumClientSessionTest
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
     session_->Initialize();
     session_->StartReading();
-    writer->Initialize(session_.get(), connection);
+    writer->set_delegate(session_.get());
   }
 
   void TearDown() override {
@@ -145,7 +145,7 @@ class QuicChromiumClientSessionTest
       QuicChromiumClientSession* session) const {
     std::unique_ptr<QuicChromiumPacketWriter> writer(
         new QuicChromiumPacketWriter(socket));
-    writer->Initialize(session, session->connection());
+    writer->set_delegate(session);
     return writer.release();
   }
 

@@ -950,7 +950,7 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
-int QuicChromiumClientSession::OnWriteError(
+int QuicChromiumClientSession::HandleWriteError(
     int error_code,
     scoped_refptr<StringIOBuffer> packet) {
   DCHECK(packet != nullptr);
@@ -959,6 +959,16 @@ int QuicChromiumClientSession::OnWriteError(
     stream_factory_->MaybeMigrateSingleSession(this, WRITE_ERROR, packet);
   }
   return use_error_code_from_rewrite_ ? error_code_from_rewrite_ : error_code;
+}
+
+void QuicChromiumClientSession::OnWriteError(int error_code) {
+  DCHECK_NE(ERR_IO_PENDING, error_code);
+  DCHECK_GT(0, error_code);
+  connection()->OnWriteError(error_code);
+}
+
+void QuicChromiumClientSession::OnWriteUnblocked() {
+  connection()->OnCanWrite();
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
