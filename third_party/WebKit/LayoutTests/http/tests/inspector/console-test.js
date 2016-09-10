@@ -261,6 +261,8 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
             for (var node = element; node; node = node.traverseNextNode(element)) {
                 if (node.treeElementForTest)
                     node.treeElementForTest.expand();
+                if (node._expandStackTraceForTest)
+                    node._expandStackTraceForTest();
                 if (!node._section)
                     continue;
                 if (sectionFilter && !sectionFilter(node._section))

@@ -5,7 +5,7 @@ Object {a: 1, b: 2}
 {a:1}
 Object {a: 1}
 {var a = 1; eval("{ a:1, b:2 }");}
-    VM:1 Uncaught SyntaxError: Unexpected token :
+VM:1 Uncaught SyntaxError: Unexpected token :
 (anonymous) @ VM:1
 { for (var i = 0; i < 5; ++i); }
 undefined

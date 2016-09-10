@@ -1,7 +1,7 @@
 CONSOLE ERROR: line 8: Uncaught Error
 Tests exception message contains stack with correct function name.
 
-    function-name-in-console-message-stack.html:8 Uncaught Error
+function-name-in-console-message-stack.html:8 Uncaught Error
 foo.displayName @ function-name-in-console-message-stack.html:8
 bar.displayName @ function-name-in-console-message-stack.html:16
 baz.function.name @ function-name-in-console-message-stack.html:23
