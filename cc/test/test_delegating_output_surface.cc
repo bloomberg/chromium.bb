@@ -197,11 +197,6 @@ void TestDelegatingOutputSurface::DisplayOutputSurfaceLost() {
   DidLoseOutputSurface();
 }
 
-void TestDelegatingOutputSurface::DisplaySetMemoryPolicy(
-    const ManagedMemoryPolicy& policy) {
-  SetMemoryPolicy(policy);
-}
-
 void TestDelegatingOutputSurface::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {

@@ -466,8 +466,6 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
       layer_tree_host_impl_->ProcessLayerTreeMutations();
   begin_main_frame_state->scroll_info =
       layer_tree_host_impl_->ProcessScrollDeltas();
-  begin_main_frame_state->memory_allocation_limit_bytes =
-      layer_tree_host_impl_->memory_allocation_limit_bytes();
   begin_main_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
   channel_impl_->BeginMainFrame(std::move(begin_main_frame_state));

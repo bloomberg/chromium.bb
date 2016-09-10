@@ -7830,23 +7830,98 @@ TEST_F(LayerTreeHostImplTest,
             last_on_draw_frame_->will_draw_layers[0]);
 }
 
-// Checks that we have a non-0 default allocation if we pass a context that
-// doesn't support memory management extensions.
-TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
+// Checks that we use the memory limits provided.
+TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_->ReleaseOutputSurface();
   host_impl_ = nullptr;
 
+  const size_t kGpuByteLimit = 1234321;
+  const size_t kSoftwareByteLimit = 4321234;
+  const size_t kGpuResourceLimit = 2345432;
+  const size_t kSoftwareResourceLimit = 5432345;
+  const gpu::MemoryAllocation::PriorityCutoff kGpuCutoff =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
+  const gpu::MemoryAllocation::PriorityCutoff kSoftwareCutoff =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
+
+  const TileMemoryLimitPolicy kGpuTileCutoff =
+      ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(kGpuCutoff);
+  const TileMemoryLimitPolicy kSoftwareTileCutoff =
+      ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
+          kSoftwareCutoff);
+  const TileMemoryLimitPolicy kNothingTileCutoff =
+      ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
+          gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
+  EXPECT_NE(kGpuTileCutoff, kNothingTileCutoff);
+  EXPECT_NE(kSoftwareTileCutoff, kNothingTileCutoff);
+
   LayerTreeSettings settings = DefaultSettings();
+  settings.gpu_memory_policy =
+      ManagedMemoryPolicy(kGpuByteLimit, kGpuCutoff, kGpuResourceLimit);
+  settings.software_memory_policy = ManagedMemoryPolicy(
+      kSoftwareByteLimit, kSoftwareCutoff, kSoftwareResourceLimit);
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
 
+  // Gpu compositing.
   output_surface_ =
       FakeOutputSurface::CreateDelegating3d(TestWebGraphicsContext3D::Create());
   host_impl_->SetVisible(true);
   host_impl_->InitializeRenderer(output_surface_.get());
-  EXPECT_LT(0ul, host_impl_->memory_allocation_limit_bytes());
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kGpuTileCutoff, state.memory_limit_policy);
+  }
+
+  // Not visible, drops to 0.
+  host_impl_->SetVisible(false);
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(0u, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kNothingTileCutoff, state.memory_limit_policy);
+  }
+
+  // Visible, is the gpu limit again.
+  host_impl_->SetVisible(true);
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kGpuResourceLimit, state.num_resources_limit);
+  }
+
+  // Software compositing.
+  host_impl_->ReleaseOutputSurface();
+  output_surface_ = FakeOutputSurface::CreateDelegatingSoftware();
+  host_impl_->InitializeRenderer(output_surface_.get());
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(kSoftwareByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kSoftwareTileCutoff, state.memory_limit_policy);
+  }
+
+  // Not visible, drops to 0.
+  host_impl_->SetVisible(false);
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(0u, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kNothingTileCutoff, state.memory_limit_policy);
+  }
+
+  // Visible, is the software limit again.
+  host_impl_->SetVisible(true);
+  {
+    const auto& state = host_impl_->global_tile_state();
+    EXPECT_EQ(kSoftwareByteLimit, state.hard_memory_limit_in_bytes);
+    EXPECT_EQ(kSoftwareResourceLimit, state.num_resources_limit);
+    EXPECT_EQ(kSoftwareTileCutoff, state.memory_limit_policy);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {

@@ -183,13 +183,9 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 
   settings.use_output_surface_begin_frame_source = true;
 
-#if !defined(OS_ANDROID)
-  // TODO(sohanjg): Revisit this memory usage in tile manager.
-  cc::ManagedMemoryPolicy policy(
-      512 * 1024 * 1024, gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-      settings.memory_policy_.num_resources_limit);
-  settings.memory_policy_ = policy;
-#endif
+  settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
+  settings.gpu_memory_policy.priority_cutoff_when_visible =
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 

@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
@@ -143,9 +142,6 @@ class FakeOutputSurface : public OutputSurface {
     suspended_for_recycle_ = suspended;
   }
 
-  void SetMemoryPolicyToSetAtBind(
-      std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind);
-
   gfx::Rect last_swap_rect() const {
     DCHECK(last_swap_rect_valid_);
     return last_swap_rect_;
@@ -171,7 +167,6 @@ class FakeOutputSurface : public OutputSurface {
   GLint framebuffer_ = 0;
   GLenum framebuffer_format_ = 0;
   TransferableResourceArray resources_held_by_parent_;
-  std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;

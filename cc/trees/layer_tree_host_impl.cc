@@ -212,7 +212,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
-      cached_managed_memory_policy_(settings.memory_policy_),
+      cached_managed_memory_policy_(settings.gpu_memory_policy),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
                                       !settings.single_thread_proxy_scheduler),
       // Must be initialized after is_synchronous_single_threaded_ and
@@ -2105,10 +2105,6 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   return actual;
 }
 
-size_t LayerTreeHostImpl::memory_allocation_limit_bytes() const {
-  return ActualManagedMemoryPolicy().bytes_limit_when_visible;
-}
-
 void LayerTreeHostImpl::ReleaseTreeResources() {
   active_tree_->ReleaseResources();
   if (pending_tree_)
@@ -2306,6 +2302,12 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
     // point).
     return false;
   }
+
+  // When using software compositing, change to the limits specified for it.
+  // Since this is a one way trip, we don't need to worry about going back to
+  // GPU compositing.
+  if (!output_surface->context_provider())
+    SetMemoryPolicy(settings_.software_memory_policy);
 
   output_surface_ = output_surface;
   resource_provider_ = base::MakeUnique<ResourceProvider>(

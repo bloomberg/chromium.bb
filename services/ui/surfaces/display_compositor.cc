@@ -123,9 +123,6 @@ void DisplayCompositor::DisplayOutputSurfaceLost() {
   display_.reset();
 }
 
-void DisplayCompositor::DisplaySetMemoryPolicy(
-    const cc::ManagedMemoryPolicy& policy) {}
-
 void DisplayCompositor::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const cc::RenderPassList& render_passes) {

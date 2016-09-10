@@ -256,16 +256,6 @@ void OutputSurface::DidReceiveTextureInUseResponses(
   client_->DidReceiveTextureInUseResponses(responses);
 }
 
-void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
-  TRACE_EVENT1("cc", "OutputSurface::SetMemoryPolicy",
-               "bytes_limit_when_visible", policy.bytes_limit_when_visible);
-  // Just ignore the memory manager when it says to set the limit to zero
-  // bytes. This will happen when the memory manager thinks that the renderer
-  // is not visible (which the renderer knows better).
-  if (policy.bytes_limit_when_visible)
-    client_->SetMemoryPolicy(policy);
-}
-
 OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
 }

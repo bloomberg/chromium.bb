@@ -148,11 +148,6 @@ void SurfaceDisplayOutputSurface::DisplayOutputSurfaceLost() {
   DidLoseOutputSurface();
 }
 
-void SurfaceDisplayOutputSurface::DisplaySetMemoryPolicy(
-    const ManagedMemoryPolicy& policy) {
-  SetMemoryPolicy(policy);
-}
-
 void SurfaceDisplayOutputSurface::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {

@@ -36,7 +36,6 @@ TEST(ProxyCommonUnittest, SerializeBeginMainFrameAndCommitState) {
       gfx::Vector2dF(0.5f, 0.6f);
   begin_main_frame_state.scroll_info->top_controls_delta = 0.9f;
 
-  begin_main_frame_state.memory_allocation_limit_bytes = 16;
   begin_main_frame_state.evicted_ui_resources = false;
 
   proto::BeginMainFrameAndCommitState proto;
@@ -51,8 +50,6 @@ TEST(ProxyCommonUnittest, SerializeBeginMainFrameAndCommitState) {
             begin_main_frame_state.begin_frame_args);
   EXPECT_TRUE(begin_main_frame_state.scroll_info->EqualsForTesting(
       *new_begin_main_frame_state.scroll_info.get()));
-  EXPECT_EQ(new_begin_main_frame_state.memory_allocation_limit_bytes,
-            begin_main_frame_state.memory_allocation_limit_bytes);
   EXPECT_EQ(new_begin_main_frame_state.evicted_ui_resources,
             begin_main_frame_state.evicted_ui_resources);
 }

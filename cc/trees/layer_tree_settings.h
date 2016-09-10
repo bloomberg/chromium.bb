@@ -95,7 +95,8 @@ class CC_EXPORT LayerTreeSettings {
   bool abort_commit_before_output_surface_creation = true;
   bool use_layer_lists = false;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
-  ManagedMemoryPolicy memory_policy_;
+  ManagedMemoryPolicy gpu_memory_policy;
+  ManagedMemoryPolicy software_memory_policy;
   size_t gpu_decoded_image_budget_bytes = 96 * 1024 * 1024;
   size_t software_decoded_image_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;

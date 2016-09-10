@@ -498,8 +498,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   if (base::SysInfo::IsLowEndDevice())
     settings.max_staging_buffer_usage_in_bytes /= 4;
 
-  cc::ManagedMemoryPolicy current = settings.memory_policy_;
-  settings.memory_policy_ = GetGpuMemoryPolicy(current);
+  cc::ManagedMemoryPolicy defaults = settings.gpu_memory_policy;
+  settings.gpu_memory_policy = GetGpuMemoryPolicy(defaults);
+  settings.software_memory_policy.num_resources_limit =
+      base::SharedMemory::GetHandleLimit() / 3;
 
   settings.use_cached_picture_raster =
       !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
@@ -509,8 +511,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
 // static
 cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
-    const cc::ManagedMemoryPolicy& policy) {
-  cc::ManagedMemoryPolicy actual = policy;
+    const cc::ManagedMemoryPolicy& default_policy) {
+  cc::ManagedMemoryPolicy actual = default_policy;
   actual.bytes_limit_when_visible = 0;
 
   // If the value was overridden on the command line, use the specified value.

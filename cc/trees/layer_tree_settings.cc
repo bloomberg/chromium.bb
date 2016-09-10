@@ -13,9 +13,12 @@ LayerTreeSettings::LayerTreeSettings()
     : default_tile_size(gfx::Size(256, 256)),
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
-      memory_policy_(64 * 1024 * 1024,
-                     gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                     ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
+      gpu_memory_policy(64 * 1024 * 1024,
+                        gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
+                        ManagedMemoryPolicy::kDefaultNumResourcesLimit),
+      software_memory_policy(128 * 1024 * 1024,
+                             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+                             ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
 
 LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;
 LayerTreeSettings::~LayerTreeSettings() = default;
@@ -79,7 +82,8 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          wait_for_beginframe_interval == other.wait_for_beginframe_interval &&
          max_staging_buffer_usage_in_bytes ==
              other.max_staging_buffer_usage_in_bytes &&
-         memory_policy_ == other.memory_policy_ &&
+         gpu_memory_policy == other.gpu_memory_policy &&
+         software_memory_policy == other.software_memory_policy &&
          LayerTreeDebugState::Equal(initial_debug_state,
                                     other.initial_debug_state) &&
          use_cached_picture_raster == other.use_cached_picture_raster;

@@ -371,7 +371,8 @@ void Display::SetBeginFrameSource(BeginFrameSource* source) {
 }
 
 void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
-  client_->DisplaySetMemoryPolicy(policy);
+  // This is only for LayerTreeHostImpl.
+  NOTREACHED();
 }
 
 void Display::OnDraw(const gfx::Transform& transform,

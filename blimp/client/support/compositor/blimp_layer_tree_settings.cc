@@ -101,8 +101,8 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
 // settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
 
-  // Set the GpuMemoryPolicy.
-  cc::ManagedMemoryPolicy memory_policy = settings->memory_policy_;
+  // Set the gpu memory policy.
+  cc::ManagedMemoryPolicy& memory_policy = settings->gpu_memory_policy;
   memory_policy.bytes_limit_when_visible = 0;
 
 #if defined(OS_ANDROID)

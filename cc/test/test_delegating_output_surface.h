@@ -74,7 +74,6 @@ class TestDelegatingOutputSurface : public OutputSurface,
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
-  void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;

@@ -79,15 +79,6 @@ bool CompositorOutputSurface::BindToClient(
   output_surface_filter_->AddHandlerOnCompositorThread(
                               routing_id_,
                               output_surface_filter_handler_);
-
-  if (!context_provider()) {
-    // Without a GPU context, the memory policy otherwise wouldn't be set.
-    client->SetMemoryPolicy(cc::ManagedMemoryPolicy(
-        128 * 1024 * 1024,
-        gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-        base::SharedMemory::GetHandleLimit() / 3));
-  }
-
   return true;
 }
 

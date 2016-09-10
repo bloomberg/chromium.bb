@@ -44,7 +44,6 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) = 0;
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
   // valid for the lifetime of the OutputSurfaceClient or until unregisted --
@@ -54,6 +53,9 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void OnDraw(const gfx::Transform& transform,
                       const gfx::Rect& viewport,
                       bool resourceless_software_draw) = 0;
+  // For SynchronousCompositor (WebView) to set how much memory the compositor
+  // can use without changing visibility.
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

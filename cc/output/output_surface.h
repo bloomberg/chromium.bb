@@ -168,7 +168,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual unsigned GetOverlayTextureId() const;
 
   virtual void DidLoseOutputSurface();
-  void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   // Support for a pull-model where draws are requested by the output surface.
   //

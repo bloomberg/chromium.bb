@@ -85,10 +85,6 @@ uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
 bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (OutputSurface::BindToClient(client)) {
     client_ = client;
-    if (memory_policy_to_set_at_bind_) {
-      client_->SetMemoryPolicy(*memory_policy_to_set_at_bind_.get());
-      memory_policy_to_set_at_bind_ = nullptr;
-    }
     return true;
   } else {
     return false;
@@ -111,11 +107,6 @@ bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
 OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
     const {
   return overlay_candidate_validator_;
-}
-
-void FakeOutputSurface::SetMemoryPolicyToSetAtBind(
-    std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
-  memory_policy_to_set_at_bind_.swap(memory_policy_to_set_at_bind);
 }
 
 void FakeOutputSurface::ReturnResourcesHeldByParent() {
