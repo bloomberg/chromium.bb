@@ -75,4 +75,4 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
-    cls.SetStaticServerDir(webgl_conformance.conformance_path)
+    cls.SetStaticServerDirs([webgl_conformance.conformance_path])

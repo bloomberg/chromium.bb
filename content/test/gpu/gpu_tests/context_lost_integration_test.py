@@ -102,7 +102,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
-    cls.SetStaticServerDir(data_path)
+    cls.SetStaticServerDirs([data_path])
 
   def _WaitForPageToFinish(self, tab):
     try:
