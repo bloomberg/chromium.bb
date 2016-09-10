@@ -14,7 +14,6 @@ import android.support.customtabs.CustomTabsSessionToken;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 
 import java.util.List;
 
@@ -24,12 +23,6 @@ import java.util.List;
 public class CustomTabsConnectionService extends CustomTabsService {
     private CustomTabsConnection mConnection;
     private Intent mBindIntent;
-
-    @Override
-    public void onCreate() {
-        ProcessInitializationHandler.getInstance().initializePreNative();
-        super.onCreate();
-    }
 
     @Override
     public IBinder onBind(Intent intent) {
