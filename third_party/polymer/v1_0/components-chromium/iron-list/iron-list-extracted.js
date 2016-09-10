@@ -234,17 +234,6 @@
     _collection: null,
 
     /**
-     * True if the current item list was rendered for the first time
-     * after attached.
-     */
-    _itemsRendered: false,
-
-    /**
-     * The page that is currently rendered.
-     */
-    _lastPage: null,
-
-    /**
      * The max number of pages to render. One page is equivalent to the height of the list.
      */
     _maxPages: 3,
@@ -285,6 +274,11 @@
      * The height of the row in grid layout.
      */
     _rowHeight: 0,
+
+    /**
+     * The cost of stamping a template in ms.
+     */
+    _templateCost: 0,
 
     /**
      * The bottom of the physical content.
@@ -405,7 +399,7 @@
     * True if the current list is visible.
     */
     get _isVisible() {
-      return this.scrollTarget && Boolean(this.scrollTarget.offsetWidth || this.scrollTarget.offsetHeight);
+      return Boolean(this.offsetWidth || this.offsetHeight);
     },
 
     /**
@@ -462,6 +456,7 @@
     get _defaultScrollTarget() {
       return this;
     },
+
     get _virtualRowCount() {
       return Math.ceil(this._virtualCount / this._itemsPerRow);
     },
@@ -480,14 +475,15 @@
 
     attached: function() {
       this.updateViewportBoundaries();
-      this._render();
+      if (this._physicalCount === 0) {
+        this._debounceTemplate(this._render);
+      }
       // `iron-resize` is fired when the list is attached if the event is added
       // before attached causing unnecessary work.
       this.listen(this, 'iron-resize', '_resizeHandler');
     },
 
     detached: function() {
-      this._itemsRendered = false;
       this.unlisten(this, 'iron-resize', '_resizeHandler');
     },
 
@@ -612,7 +608,7 @@
       }
 
       if (recycledTiles === 0) {
-        // Try to increase the pool if the list's client height isn't filled up with physical items
+        // Try to increase the pool if the list's client isn't filled up with physical items
         if (physicalBottom < scrollBottom || this._physicalTop > scrollTop) {
           this._increasePoolIfNeeded();
         }
@@ -629,29 +625,25 @@
      * @param {!Array<number>=} movingUp
      */
     _update: function(itemSet, movingUp) {
-      // manage focus
       this._manageFocus();
-      // update models
       this._assignModels(itemSet);
-      // measure heights
       this._updateMetrics(itemSet);
-      // adjust offset after measuring
+      // Adjust offset after measuring.
       if (movingUp) {
         while (movingUp.length) {
           var idx = movingUp.pop();
           this._physicalTop -= this._getPhysicalSizeIncrement(idx);
         }
       }
-      // update the position of the items
       this._positionItems();
-      // set the scroller size
       this._updateScrollerSize();
-      // increase the pool of physical items
       this._increasePoolIfNeeded();
     },
 
     /**
      * Creates a pool of DOM elements and attaches them to the local dom.
+     *
+     * @param {number} size Size of the pool
      */
     _createPool: function(size) {
       var physicalItems = new Array(size);
@@ -661,7 +653,7 @@
       for (var i = 0; i < size; i++) {
         var inst = this.stamp(null);
         // First element child is item; Safari doesn't support children[0]
-        // on a doc fragment
+        // on a doc fragment.
         physicalItems[i] = inst.root.querySelector('*');
         Polymer.dom(this).appendChild(inst.root);
       }
@@ -678,30 +670,37 @@
       if (this._viewportHeight === 0) {
         return false;
       }
-      // Base case 2: If the physical size is optimal and the list's client height is full
+      var self = this;
+      var isClientFull = this._physicalBottom >= this._scrollBottom &&
+          this._physicalTop <= this._scrollPosition;
+
+      // Base case 2: if the physical size is optimal and the list's client height is full
       // with physical items, don't increase the pool.
-      var isClientHeightFull = this._physicalBottom >= this._scrollBottom && this._physicalTop <= this._scrollPosition;
-      if (this._physicalSize >= this._optPhysicalSize && isClientHeightFull) {
+      if (this._physicalSize >= this._optPhysicalSize && isClientFull) {
         return false;
       }
-      // this value should range between [0 <= `currentPage` <= `_maxPages`]
-      var currentPage = Math.floor(this._physicalSize / this._viewportHeight);
-
-      if (currentPage === 0) {
-        // fill the first page
-        this._debounceTemplate(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
-      } else if (this._lastPage !== currentPage && isClientHeightFull) {
-        // paint the page and defer the next increase
-        // wait 16ms which is rough enough to get paint cycle.
-        Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', this._increasePool.bind(this, this._itemsPerRow), 16));
-      } else {
-        // fill the rest of the pages
-        this._debounceTemplate(this._increasePool.bind(this, this._itemsPerRow));
+      var maxPoolSize = Math.round(this._physicalCount * 0.5);
+      // Increase the pool synchronously until the client is filled.
+      if (!isClientFull) {
+        this._debounceTemplate(this._increasePool.bind(this, maxPoolSize));
+        return true;
       }
-
-      this._lastPage = currentPage;
-
+      this._yield(function() {
+        self._increasePool(Math.min(maxPoolSize, Math.max(1, Math.round(50 / self._templateCost))));
+      });
       return true;
+    },
+
+    _yield: function(cb) {
+      var g = window;
+      var handle = g.requestIdleCallback ? g.requestIdleCallback(cb) : g.setTimeout(cb, 16);
+      // Polymer/issues/3895
+      Polymer.dom.addDebouncer(/** @type {!Polymer.Debouncer} */({
+        complete: function() {
+          g.cancelIdleCallback ? g.cancelIdleCallback(handle) : g.clearTimeout(handle);
+          cb();
+        }
+      }));
     },
 
     /**
@@ -715,17 +714,16 @@
         );
       var prevPhysicalCount = this._physicalCount;
       var delta = nextPhysicalCount - prevPhysicalCount;
+      var ts = window.performance.now();
 
       if (delta <= 0) {
         return;
       }
-
+      // Concat arrays in place.
       [].push.apply(this._physicalItems, this._createPool(delta));
       [].push.apply(this._physicalSizes, new Array(delta));
-
       this._physicalCount = prevPhysicalCount + delta;
-
-      // update the physical start if we need to preserve the model of the focused item.
+      // Update the physical start if it needs to preserve the model of the focused item.
       // In this situation, the focused item is currently rendered and its model would
       // have changed after increasing the pool if the physical start remained unchanged.
       if (this._physicalStart > this._physicalEnd &&
@@ -734,19 +732,19 @@
         this._physicalStart = this._physicalStart + delta;
       }
       this._update();
+      this._templateCost = (window.performance.now() - ts) / delta;
     },
 
     /**
-     * Render a new list of items. This method does exactly the same as `update`,
-     * but it also ensures that only one `update` cycle is created.
+     * Render a new list of items.
      */
     _render: function() {
-      var requiresUpdate = this._virtualCount > 0 || this._physicalCount > 0;
-
-      if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
-        this._lastPage = 0;
-        this._update();
-        this._itemsRendered = true;
+      if (this.isAttached && this._isVisible) {
+        if (this._physicalCount === 0) {
+          this._increasePool(DEFAULT_PHYSICAL_COUNT);
+        } else {
+          this._update();
+        }
       }
     },
 
@@ -762,7 +760,6 @@
         props[this.indexAs] = true;
         props[this.selectedAs] = true;
         props.tabIndex = true;
-
         this._instanceProps = props;
         this._userTemplate = Polymer.dom(this).querySelector('template');
 
@@ -863,7 +860,6 @@
      */
     _itemsChanged: function(change) {
       if (change.path === 'items') {
-        // reset items
         this._virtualStart = 0;
         this._physicalTop = 0;
         this._virtualCount = this.items ? this.items.length : 0;
@@ -871,31 +867,22 @@
         this._physicalIndexForKey = {};
         this._firstVisibleIndexVal = null;
         this._lastVisibleIndexVal = null;
-
+        this._physicalCount = this._physicalCount || 0;
+        this._physicalItems = this._physicalItems || [];
+        this._physicalSizes = this._physicalSizes || [];
+        this._physicalStart = 0;
         this._resetScrollPosition(0);
         this._removeFocusedItem();
-        // create the initial physical items
-        if (!this._physicalItems) {
-          this._physicalCount = Math.max(1, Math.min(DEFAULT_PHYSICAL_COUNT, this._virtualCount));
-          this._physicalItems = this._createPool(this._physicalCount);
-          this._physicalSizes = new Array(this._physicalCount);
-        }
-
-        this._physicalStart = 0;
+        this._debounceTemplate(this._render);
 
       } else if (change.path === 'items.splices') {
-
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
+        this._debounceTemplate(this._render);
 
       } else {
-        // update a single item
         this._forwardItemPath(change.path.split('.').slice(1).join('.'), change.value);
-        return;
       }
-
-      this._itemsRendered = false;
-      this._debounceTemplate(this._render);
     },
 
     /**
@@ -1008,7 +995,7 @@
      */
      _updateMetrics: function(itemSet) {
       // Make sure we distributed all the physical items
-      // so we can measure them
+      // so we can measure them.
       Polymer.dom.flush();
 
       var newPhysicalSize = 0;
@@ -1033,7 +1020,7 @@
         this._physicalSize = this._physicalSize + newPhysicalSize - oldPhysicalSize;
       }
 
-      // update the average if we measured something
+      // Update the average if it measured something.
       if (this._physicalAverageCount !== prevAvgCount) {
         this._physicalAverage = Math.round(
             ((prevPhysicalAvg * prevAvgCount) + newPhysicalSize) /
@@ -1064,23 +1051,17 @@
         var rowOffset = (this._viewportWidth - totalItemWidth) / 2;
 
         this._iterateItems(function(pidx, vidx) {
-
           var modulus = vidx % this._itemsPerRow;
           var x = Math.floor((modulus * this._itemWidth) + rowOffset);
-
           this.translate3d(x + 'px', y + 'px', 0, this._physicalItems[pidx]);
-
           if (this._shouldRenderNextRow(vidx)) {
             y += this._rowHeight;
           }
-
         });
       } else {
         this._iterateItems(function(pidx, vidx) {
-
           this.translate3d(0, y + 'px', 0, this._physicalItems[pidx]);
           y += this._physicalSizes[pidx];
-
         });
       }
     },
@@ -1150,7 +1131,7 @@
       forceUpdate = forceUpdate || this._scrollPosition >= this._estScrollHeight - this._physicalSize;
       forceUpdate = forceUpdate || this.grid && this.$.items.style.height < this._estScrollHeight;
 
-      // amortize height adjustment, so it won't trigger repaints very often
+      // Amortize height adjustment, so it won't trigger large repaints too often.
       if (forceUpdate || Math.abs(this._estScrollHeight - this._scrollHeight) >= this._optPhysicalSize) {
         this.$.items.style.height = this._estScrollHeight + 'px';
         this._scrollHeight = this._estScrollHeight;
@@ -1179,44 +1160,38 @@
       if (typeof idx !== 'number' || idx < 0 || idx > this.items.length - 1) {
         return;
       }
+
       Polymer.dom.flush();
       // Items should have been rendered prior scrolling to an index.
-      if (!this._itemsRendered) {
+      if (this._physicalCount === 0) {
         return;
       }
       idx = Math.min(Math.max(idx, 0), this._virtualCount-1);
-      // update the virtual start only when needed
+      // Update the virtual start only when needed.
       if (!this._isIndexRendered(idx) || idx >= this._maxVirtualStart) {
         this._virtualStart = this.grid ? (idx - this._itemsPerRow * 2) : (idx - 1);
       }
-      // manage focus
       this._manageFocus();
-      // assign new models
       this._assignModels();
-      // measure the new sizes
       this._updateMetrics();
-      // estimate new physical offset
+      // Estimate new physical offset.
       this._physicalTop = Math.floor(this._virtualStart / this._itemsPerRow)  * this._physicalAverage;
 
       var currentTopItem = this._physicalStart;
       var currentVirtualItem = this._virtualStart;
       var targetOffsetTop = 0;
       var hiddenContentSize = this._hiddenContentSize;
-      // scroll to the item as much as we can
+      // scroll to the item as much as we can.
       while (currentVirtualItem < idx && targetOffsetTop <= hiddenContentSize) {
         targetOffsetTop = targetOffsetTop + this._getPhysicalSizeIncrement(currentTopItem);
         currentTopItem = (currentTopItem + 1) % this._physicalCount;
         currentVirtualItem++;
       }
-      // update the scroller size
       this._updateScrollerSize(true);
-      // update the position of the items
       this._positionItems();
-      // set the new scroll position
       this._resetScrollPosition(this._physicalTop + this._scrollerPaddingTop + targetOffsetTop);
-      // increase the pool of physical items if needed
       this._increasePoolIfNeeded();
-      // clear cached visible index
+      // clear cached visible index.
       this._firstVisibleIndexVal = null;
       this._lastVisibleIndexVal = null;
     },
@@ -1245,7 +1220,7 @@
         this.updateViewportBoundaries();
         this._render();
 
-        if (this._itemsRendered && this._physicalItems && this._isVisible) {
+        if (this._physicalCount > 0 && this._isVisible) {
           this._resetAverage();
           this.scrollToIndex(this.firstVisibleIndex);
         }

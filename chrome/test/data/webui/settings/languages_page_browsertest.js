@@ -113,8 +113,9 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
             languagesCollapse.querySelector('.list-button:last-of-type');
         MockInteractions.tap(addLanguagesButton);
 
-        // The page stamps the dialog and registers listeners asynchronously.
-        Polymer.Base.async(function() {
+        // The page stamps the dialog, registers listeners, and populates the
+        // iron-list asynchronously at microtask timing, so wait for a new task.
+        setTimeout(function() {
           dialog = languagesPage.$$('settings-add-languages-dialog');
           assertTrue(!!dialog);
 

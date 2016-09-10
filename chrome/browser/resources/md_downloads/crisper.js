@@ -733,6 +733,19 @@ function quoteString(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 }
 
+function listenOnce(target, eventNames, callback) {
+  if (!Array.isArray(eventNames)) eventNames = eventNames.split(/ +/);
+  var removeAllAndCallCallback = function(event) {
+    eventNames.forEach(function(eventName) {
+      target.removeEventListener(eventName, removeAllAndCallCallback, false);
+    });
+    return callback(event);
+  };
+  eventNames.forEach(function(eventName) {
+    target.addEventListener(eventName, removeAllAndCallCallback, false);
+  });
+}
+
 // <if expr="is_ios">
 if (!('key' in KeyboardEvent.prototype)) {
   Object.defineProperty(KeyboardEvent.prototype, 'key', {
@@ -1403,8 +1416,6 @@ Polymer.IronScrollTargetBehavior = {
     _firstVisibleIndexVal: null,
     _lastVisibleIndexVal: null,
     _collection: null,
-    _itemsRendered: false,
-    _lastPage: null,
     _maxPages: 3,
     _focusedItem: null,
     _focusedIndex: -1,
@@ -1413,6 +1424,7 @@ Polymer.IronScrollTargetBehavior = {
     _itemsPerRow: 1,
     _itemWidth: 0,
     _rowHeight: 0,
+    _templateCost: 0,
     get _physicalBottom() {
       return this._physicalTop + this._physicalSize;
     },
@@ -1470,7 +1482,7 @@ Polymer.IronScrollTargetBehavior = {
       return this._estRowsInView * this._itemsPerRow * this._maxPages;
     },
     get _isVisible() {
-      return this.scrollTarget && Boolean(this.scrollTarget.offsetWidth || this.scrollTarget.offsetHeight);
+      return Boolean(this.offsetWidth || this.offsetHeight);
     },
     get firstVisibleIndex() {
       if (this._firstVisibleIndexVal === null) {
@@ -1523,11 +1535,12 @@ Polymer.IronScrollTargetBehavior = {
     },
     attached: function() {
       this.updateViewportBoundaries();
-      this._render();
+      if (this._physicalCount === 0) {
+        this._debounceTemplate(this._render);
+      }
       this.listen(this, 'iron-resize', '_resizeHandler');
     },
     detached: function() {
-      this._itemsRendered = false;
       this.unlisten(this, 'iron-resize', '_resizeHandler');
     },
     _setOverflow: function(scrollTarget) {
@@ -1628,25 +1641,36 @@ Polymer.IronScrollTargetBehavior = {
       if (this._viewportHeight === 0) {
         return false;
       }
-      var isClientHeightFull = this._physicalBottom >= this._scrollBottom && this._physicalTop <= this._scrollPosition;
-      if (this._physicalSize >= this._optPhysicalSize && isClientHeightFull) {
+      var self = this;
+      var isClientFull = this._physicalBottom >= this._scrollBottom && this._physicalTop <= this._scrollPosition;
+      if (this._physicalSize >= this._optPhysicalSize && isClientFull) {
         return false;
       }
-      var currentPage = Math.floor(this._physicalSize / this._viewportHeight);
-      if (currentPage === 0) {
-        this._debounceTemplate(this._increasePool.bind(this, Math.round(this._physicalCount * .5)));
-      } else if (this._lastPage !== currentPage && isClientHeightFull) {
-        Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', this._increasePool.bind(this, this._itemsPerRow), 16));
-      } else {
-        this._debounceTemplate(this._increasePool.bind(this, this._itemsPerRow));
+      var maxPoolSize = Math.round(this._physicalCount * .5);
+      if (!isClientFull) {
+        this._debounceTemplate(this._increasePool.bind(this, maxPoolSize));
+        return true;
       }
-      this._lastPage = currentPage;
+      this._yield(function() {
+        self._increasePool(Math.min(maxPoolSize, Math.max(1, Math.round(50 / self._templateCost))));
+      });
       return true;
+    },
+    _yield: function(cb) {
+      var g = window;
+      var handle = g.requestIdleCallback ? g.requestIdleCallback(cb) : g.setTimeout(cb, 16);
+      Polymer.dom.addDebouncer({
+        complete: function() {
+          g.cancelIdleCallback ? g.cancelIdleCallback(handle) : g.clearTimeout(handle);
+          cb();
+        }
+      });
     },
     _increasePool: function(missingItems) {
       var nextPhysicalCount = Math.min(this._physicalCount + missingItems, this._virtualCount - this._virtualStart, Math.max(this.maxPhysicalCount, DEFAULT_PHYSICAL_COUNT));
       var prevPhysicalCount = this._physicalCount;
       var delta = nextPhysicalCount - prevPhysicalCount;
+      var ts = window.performance.now();
       if (delta <= 0) {
         return;
       }
@@ -1657,13 +1681,15 @@ Polymer.IronScrollTargetBehavior = {
         this._physicalStart = this._physicalStart + delta;
       }
       this._update();
+      this._templateCost = (window.performance.now() - ts) / delta;
     },
     _render: function() {
-      var requiresUpdate = this._virtualCount > 0 || this._physicalCount > 0;
-      if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
-        this._lastPage = 0;
-        this._update();
-        this._itemsRendered = true;
+      if (this.isAttached && this._isVisible) {
+        if (this._physicalCount === 0) {
+          this._increasePool(DEFAULT_PHYSICAL_COUNT);
+        } else {
+          this._update();
+        }
       }
     },
     _ensureTemplatized: function() {
@@ -1744,23 +1770,20 @@ Polymer.IronScrollTargetBehavior = {
         this._physicalIndexForKey = {};
         this._firstVisibleIndexVal = null;
         this._lastVisibleIndexVal = null;
+        this._physicalCount = this._physicalCount || 0;
+        this._physicalItems = this._physicalItems || [];
+        this._physicalSizes = this._physicalSizes || [];
+        this._physicalStart = 0;
         this._resetScrollPosition(0);
         this._removeFocusedItem();
-        if (!this._physicalItems) {
-          this._physicalCount = Math.max(1, Math.min(DEFAULT_PHYSICAL_COUNT, this._virtualCount));
-          this._physicalItems = this._createPool(this._physicalCount);
-          this._physicalSizes = new Array(this._physicalCount);
-        }
-        this._physicalStart = 0;
+        this._debounceTemplate(this._render);
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
+        this._debounceTemplate(this._render);
       } else {
         this._forwardItemPath(change.path.split('.').slice(1).join('.'), change.value);
-        return;
       }
-      this._itemsRendered = false;
-      this._debounceTemplate(this._render);
     },
     _adjustVirtualIndex: function(splices) {
       splices.forEach(function(splice) {
@@ -1929,7 +1952,7 @@ Polymer.IronScrollTargetBehavior = {
         return;
       }
       Polymer.dom.flush();
-      if (!this._itemsRendered) {
+      if (this._physicalCount === 0) {
         return;
       }
       idx = Math.min(Math.max(idx, 0), this._virtualCount - 1);
@@ -1967,7 +1990,7 @@ Polymer.IronScrollTargetBehavior = {
       Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', function() {
         this.updateViewportBoundaries();
         this._render();
-        if (this._itemsRendered && this._physicalItems && this._isVisible) {
+        if (this._physicalCount > 0 && this._isVisible) {
           this._resetAverage();
           this.scrollToIndex(this.firstVisibleIndex);
         }
