@@ -231,8 +231,10 @@ weston_desktop_wl_shell_surface_protocol_resize(struct wl_client *wl_client,
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct weston_desktop_wl_shell_surface *surface =
 		weston_desktop_surface_get_implementation_data(dsurface);
+	enum weston_desktop_surface_edge surf_edges =
+		(enum weston_desktop_surface_edge) edges;
 
-	weston_desktop_api_resize(surface->desktop, dsurface, seat, serial, edges);
+	weston_desktop_api_resize(surface->desktop, dsurface, seat, serial, surf_edges);
 }
 
 static void

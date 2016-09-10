@@ -396,6 +396,8 @@ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
 		wl_resource_get_user_data(seat_resource);
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
+	enum weston_desktop_surface_edge surf_edges =
+		(enum weston_desktop_surface_edge) edges;
 
 	if (!toplevel->base.configured) {
 		wl_resource_post_error(toplevel->resource,
@@ -405,7 +407,7 @@ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
 	}
 
 	weston_desktop_api_resize(toplevel->base.desktop,
-				  dsurface, seat, serial, edges);
+				  dsurface, seat, serial, surf_edges);
 }
 
 static void
