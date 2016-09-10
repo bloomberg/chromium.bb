@@ -55,18 +55,54 @@ using namespace HTMLNames;
 
 namespace {
 
-bool fullscreenIsAllowedForAllOwners(const Document& document)
+// https://html.spec.whatwg.org/multipage/embedded-content.html#allowed-to-use
+bool allowedToUseFullscreen(const Frame* frame)
 {
-    if (!document.frame())
+    // To determine whether a Document object |document| is allowed to use the
+    // feature indicated by attribute name |allowattribute|, run these steps:
+
+    // 1. If |document| has no browsing context, then return false.
+    if (!frame)
         return false;
 
-    for (const Frame* frame = document.frame(); frame->owner(); frame = frame->tree().parent()) {
-        if (!frame->owner()->allowFullscreen())
-            return false;
-    }
-    return true;
+    // 2. If |document|'s browsing context has no browsing context container, then
+    // return true.
+    if (frame->isMainFrame())
+        return true;
+
+    // 3. If |document|'s browsing context has a browsing context container that
+    // is an iframe element with an |allowattribute| attribute specified, and
+    // whose node document is allowed to use the feature indicated by
+    // |allowattribute|, then return true.
+    if (frame->owner() && frame->owner()->allowFullscreen())
+        return allowedToUseFullscreen(frame->tree().parent());
+
+    // 4. Return false.
+    return false;
 }
 
+bool allowedToRequestFullscreen(Document& document)
+{
+    // An algorithm is allowed to request fullscreen if one of the following is
+    // true:
+
+    //  The algorithm is triggered by a user activation.
+    if (UserGestureIndicator::utilizeUserGesture())
+        return true;
+
+    //  The algorithm is triggered by a user generated orientation change.
+    if (ScopedOrientationChangeIndicator::processingOrientationChange())
+        return true;
+
+    String message = ExceptionMessages::failedToExecute("requestFullscreen",
+        "Element", "API can only be initiated by a user gesture.");
+    document.addConsoleMessage(
+        ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
+
+    return false;
+}
+
+// https://fullscreen.spec.whatwg.org/#fullscreen-is-supported
 bool fullscreenIsSupported(const Document& document)
 {
     // Fullscreen is supported if there is no previously-established user preference,
@@ -74,6 +110,7 @@ bool fullscreenIsSupported(const Document& document)
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
+// https://fullscreen.spec.whatwg.org/#fullscreen-element-ready-check
 bool fullscreenElementReady(const Element& element)
 {
     // A fullscreen element ready check for an element |element| returns true if all of the
@@ -83,8 +120,9 @@ bool fullscreenElementReady(const Element& element)
     if (!element.isConnected())
         return false;
 
-    // |element|'s node document's fullscreen enabled flag is set.
-    if (!fullscreenIsAllowedForAllOwners(element.document()))
+    // |element|'s node document is allowed to use the feature indicated by
+    // |attribute name allowfullscreen.
+    if (!allowedToUseFullscreen(element.document().frame()))
         return false;
 
     // |element|'s node document's fullscreen element stack is either empty or its top element is an
@@ -219,6 +257,7 @@ void Fullscreen::contextDestroyed()
     m_fullscreenElementStack.clear();
 }
 
+// https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
 void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bool forCrossProcessDescendant)
 {
     Document& document = element.document();
@@ -256,21 +295,11 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
             break;
 
         // This algorithm is not allowed to request fullscreen.
-        // An algorithm is allowed to request fullscreen if one of the following
-        // is true:
-        //  - the algorithm is triggered by a user activation.
-        //  - the algorithm is triggered by a user generated orientation change.
-        //
-        // If |forCrossProcessDescendant| is true, requestFullscreen
-        // was already called on a descendant element in another process, and
-        // getting here means that it already passed the user gesture check.
-        if (!UserGestureIndicator::utilizeUserGesture() && !ScopedOrientationChangeIndicator::processingOrientationChange() && !forCrossProcessDescendant) {
-            String message = ExceptionMessages::failedToExecute("requestFullscreen",
-                "Element", "API can only be initiated by a user gesture.");
-            document.addConsoleMessage(
-                ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
+        // OOPIF: If |forCrossProcessDescendant| is true, requestFullscreen was
+        // already called on a descendant element in another process, and
+        // getting here means that it was already allowed to request fullscreen.
+        if (!forCrossProcessDescendant && !allowedToRequestFullscreen(document))
             break;
-        }
 
         // 2. Let doc be element's node document. (i.e. "this")
 
@@ -341,6 +370,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
     from(document).enqueueErrorEvent(element, requestType);
 }
 
+// https://fullscreen.spec.whatwg.org/#fully-exit-fullscreen
 void Fullscreen::fullyExitFullscreen(Document& document)
 {
     // To fully exit fullscreen, run these steps:
@@ -368,6 +398,7 @@ void Fullscreen::fullyExitFullscreen(Document& document)
     exitFullscreen(doc);
 }
 
+// https://fullscreen.spec.whatwg.org/#exit-fullscreen
 void Fullscreen::exitFullscreen(Document& document)
 {
     // The exitFullscreen() method must run these steps:
@@ -471,13 +502,13 @@ void Fullscreen::exitFullscreen(Document& document)
     host->chromeClient().enterFullscreenForElement(newTop);
 }
 
+// https://fullscreen.spec.whatwg.org/#dom-document-fullscreenenabled
 bool Fullscreen::fullscreenEnabled(Document& document)
 {
-    // 4. The fullscreenEnabled attribute must return true if the context object has its
-    //    fullscreen enabled flag set and fullscreen is supported, and false otherwise.
-
-    // Top-level browsing contexts are implied to have their allowfullscreen attribute set.
-    return fullscreenIsAllowedForAllOwners(document) && fullscreenIsSupported(document);
+    // The fullscreenEnabled attribute's getter must return true if the context
+    // object is allowed to use the feature indicated by attribute name
+    // allowfullscreen and fullscreen is supported, and false otherwise.
+    return allowedToUseFullscreen(document.frame()) && fullscreenIsSupported(document);
 }
 
 void Fullscreen::didEnterFullscreenForElement(Element* element)
