@@ -23,8 +23,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/x/selection_utils.h"
-#include "ui/base/x/x11_foreign_window_manager.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -197,13 +197,12 @@ class DesktopDragDropClientAuraX11::X11DragContext
   // The XID of the window that's initiated the drag.
   unsigned long source_window_;
 
+  // Events that we have selected on |source_window_|.
+  std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
+
   // The DesktopDragDropClientAuraX11 for |source_window_| if |source_window_|
   // belongs to a Chrome window.
   DesktopDragDropClientAuraX11* source_client_;
-
-  // Used to unselect PropertyChangeMask on |source_window_| if |source_window_|
-  // does not belong to a Chrome window when X11DragContext is destroyed.
-  int foreign_window_manager_source_window_id_;
 
   // The client we inform once we're done with requesting data.
   DesktopDragDropClientAuraX11* drag_drop_client_;
@@ -241,7 +240,6 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
       source_window_(event.data.l[0]),
       source_client_(
           DesktopDragDropClientAuraX11::GetForWindow(source_window_)),
-      foreign_window_manager_source_window_id_(0),
       drag_drop_client_(NULL),
       waiting_to_handle_position_(false),
       suggested_action_(None) {
@@ -266,9 +264,8 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     // The window doesn't have a DesktopDragDropClientAuraX11, that means it's
     // created by some other process. Listen for messages on it.
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-    foreign_window_manager_source_window_id_ =
-        ui::XForeignWindowManager::GetInstance()->RequestEvents(
-            source_window_, PropertyChangeMask);
+    source_window_events_.reset(
+        new ui::XScopedEventSelector(source_window_, PropertyChangeMask));
 
     // We must perform a full sync here because we could be racing
     // |source_window_|.
@@ -287,8 +284,6 @@ DesktopDragDropClientAuraX11::X11DragContext::~X11DragContext() {
   if (!source_client_) {
     // Unsubscribe from message events.
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-    ui::XForeignWindowManager::GetInstance()->CancelRequest(
-        foreign_window_manager_source_window_id_);
   }
 }
 
