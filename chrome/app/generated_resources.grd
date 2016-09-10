@@ -246,43 +246,43 @@ are declared in build/common.gypi.
         Reload
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_POLICY" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to allow and managed by policy.">
-        Allowed by policy
+        Allow (by policy)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_POLICY" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to block and managed by policy.">
-        Blocked by policy
+        Block (by policy)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_POLICY" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to ask and managed by policy.">
-        Ask by policy
+        Ask (by policy)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_EXTENSION" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to allow and managed by an extension.">
-        Allowed by extension
+        Allow (by extension)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_EXTENSION" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to block and managed by an extension.">
-        Blocked by extension
+        Block (by extension)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to allow by the user.">
-        Allowed by you
+        Allow
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to block by the user.">
-        Blocked by you
+        Block
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to ask by the user.">
-        Ask by you
+        Ask
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to detect important content by the user.">
-        Detect by you
+        Detect
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is allow.">
-        Allowed by default
+        Allow (default)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is block.">
-        Blocked by default
+        Block (default)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
-        Ask by default
+        Ask (default)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
-        Detect important content by default
+        Detect (default)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_USB_DEVICE_LABEL" desc="The label used to describe a USB device that the user has granted the site permission to access.">
         <ph name="DEVICE_NAME">$1<ex>Android Phone</ex></ph>
@@ -379,6 +379,9 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_INSECURE_PASSIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included passive resources (e.g. images) over non-secure transport.">
         Your connection to this site is private, but someone on the network might be able to change the look of the page.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_NUM_COOKIES" desc="The label of the counts for allowed cookies that are in use on the page.">
+        {NUM_COOKIES, plural, =1 {1 in use} other {# in use}}
       </message>
       <message name="IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked cookies and site data for the top-level origin (i.e. the origin in the Omnibox).">
         {NUM_COOKIES, plural, =1 {1 from this site} other {# from this site}}
@@ -8952,16 +8955,40 @@ I don't think this site should be blocked!
       </if>
 
       <!-- Page Information Window -->
-      <if expr="not use_titlecase">
-        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates.">
+      <message name="IDS_WEBSITE_SETTINGS_SECURE_SUMMARY" desc="A short summary phrase at the top of the Page Info bubble (which shows when you click the lock icon) that indicates that the connection to the current website is secure.">
+        Secure connection
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_MIXED_CONTENT_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if the connection to the current website is using mainly using a secure connection but has some insecure parts (like insecurely loaded images).">
+        Your connection to this site is not fully secure
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_NOT_SECURE_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if the connection to the current website is secure.">
+        Your connection to this site is not secure
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SECURE_DETAILS" desc="A short paragraph explaining a secure site to the user.">
+        Your information (for example, passwords or credit card numbers) is private when it is sent to this site.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_MIXED_CONTENT_DETAILS" desc="A short paragraph explaining a partially insecure site to the user.">
+        Attackers might be able to see the images you’re looking at on this site and trick you by modifying them.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_NOT_SECURE_DETAILS" desc="A short paragraph explaining a non-secure site to the user.">
+        You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
+      </message>
+      <message name="IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION" desc="A short paragraph to the user that security warnings are disabled. This is the case when the user has encountered a certificate error for the current site and chosen to override it.">
+        You have chosen to disable security warnings for this site.
+      </message>
+      <if expr="is_android">
+        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates, which will start showing security warnings for the page again.">
           Stop using an invalid certificate
         </message>
       </if>
-      <if expr="use_titlecase">
-        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates.">
-          Stop using an invalid certificate
+      <if expr="not is_android">
+        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates, which will start showing security warnings for the page again.">
+          Re-enable warnings
         </message>
       </if>
+      <message name="IDS_PAGE_INFO_COOKIES" desc="The label for the Cookies setting in the Page Information Window.">
+        Cookies
+      </message>
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_LINK" desc="This is the text of the link pointing to Chrome's Site Settings page. This appears at the bottom of the Permissions pane of the Page Information Window.">
         Site settings
       </message>

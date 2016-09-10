@@ -116,6 +116,14 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
      IDR_ALLOWED_BACKGROUND_SYNC},
 };
 
+std::unique_ptr<WebsiteSettingsUI::SecurityDescription>
+CreateSecurityDescription(int summary_id, int details_id) {
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description(
+      new WebsiteSettingsUI::SecurityDescription());
+  security_description->summary = l10n_util::GetStringUTF16(summary_id);
+  security_description->details = l10n_util::GetStringUTF16(details_id);
+  return security_description;
+}
 }  // namespace
 
 WebsiteSettingsUI::CookieInfo::CookieInfo()
@@ -144,43 +152,51 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
 
 WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}
 
-base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
+std::unique_ptr<WebsiteSettingsUI::SecurityDescription>
+WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description(
+      new WebsiteSettingsUI::SecurityDescription());
+
   switch (identity_status) {
+    case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
+      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_INTERNAL_PAGE,
+                                       IDS_WEBSITE_SETTINGS_INTERNAL_PAGE);
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (connection_status) {
         case WebsiteSettings::
-            SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
-          return l10n_util::GetStringUTF16(
-              IDS_WEBSITE_SETTINGS_INSECURE_PASSIVE_CONTENT);
-        case WebsiteSettings::
             SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
-          return l10n_util::GetStringUTF16(
-              IDS_WEBSITE_SETTINGS_INSECURE_ACTIVE_CONTENT);
+          return CreateSecurityDescription(
+              IDS_WEBSITE_SETTINGS_NOT_SECURE_SUMMARY,
+              IDS_WEBSITE_SETTINGS_NOT_SECURE_DETAILS);
+        case WebsiteSettings::
+            SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
+          return CreateSecurityDescription(
+              IDS_WEBSITE_SETTINGS_MIXED_CONTENT_SUMMARY,
+              IDS_WEBSITE_SETTINGS_MIXED_CONTENT_DETAILS);
         default:
-          return l10n_util::GetStringUTF16(
-              IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
+          return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_SECURE_SUMMARY,
+                                           IDS_WEBSITE_SETTINGS_SECURE_DETAILS);
       }
     case WebsiteSettings::
         SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR:
     case WebsiteSettings::
         SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR:
-      return l10n_util::GetStringUTF16(
-          IDS_WEBSITE_DEPRECATED_SIGNATURE_ALGORITHM);
-    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
-      return l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
-      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT);
-    case WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR:
-      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_CT_ERROR);
-    case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
-      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INTERNAL_PAGE);
     case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
     default:
-      return l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
+      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_NOT_SECURE_SUMMARY,
+                                       IDS_WEBSITE_SETTINGS_NOT_SECURE_DETAILS);
   }
+}
+
+base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description =
+      GetSecurityDescription();
+  return security_description->summary;
 }
 
 WebsiteSettingsUI::~WebsiteSettingsUI() {

@@ -191,29 +191,25 @@ TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
   views::Label* label =
       static_cast<views::Label*>(selector->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Location:"), label->text());
-  EXPECT_EQ(base::ASCIIToUTF16("Allowed by you"),
-            api_->GetPermissionButtonTextAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
   // Verify calling SetPermisisonInfo() directly updates the UI.
   list.back().setting = CONTENT_SETTING_BLOCK;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(base::ASCIIToUTF16("Blocked by you"),
-            api_->GetPermissionButtonTextAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Block"), api_->GetPermissionButtonTextAt(0));
 
   // Simulate a user selection via the UI. Note this will also cover logic in
   // WebsiteSettings to update the pref.
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
-  EXPECT_EQ(base::ASCIIToUTF16("Allowed by you"),
-            api_->GetPermissionButtonTextAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
   list.back().setting = CONTENT_SETTING_ASK;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
-  EXPECT_EQ(base::ASCIIToUTF16("Ask by you"),
-            api_->GetPermissionButtonTextAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionButtonTextAt(0));
 
   // However, since the setting is now default, recreating the dialog with those
   // settings should omit the permission from the UI.

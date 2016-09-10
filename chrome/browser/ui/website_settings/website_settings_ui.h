@@ -48,6 +48,19 @@ class WebsiteSettingsUI {
     NUM_TAB_IDS,
   };
 
+  // The security summary is styled depending on the security state. At the
+  // moment, the only styling we apply is color, but it could also include e.g.
+  // bolding.
+  enum SecuritySummaryStyle { STYLE_UNSTYLED = 0, STYLE_COLOR = 1 << 1 };
+
+  struct SecurityDescription {
+    // A one-line summary of the security state.
+    base::string16 summary;
+    // A short paragraph with more details about the state, and how
+    // the user should treat it.
+    base::string16 details;
+  };
+
   // |CookieInfo| contains information about the cookies from a specific source.
   // A source can for example be a specific origin or an entire wildcard domain.
   struct CookieInfo {
@@ -103,7 +116,9 @@ class WebsiteSettingsUI {
     std::string site_identity;
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
-    // Helper to get the status text to display to the user.
+    // Helper to get security description info to display to the user.
+    std::unique_ptr<SecurityDescription> GetSecurityDescription() const;
+    // Deprecated method go get just the summary from GetSecurityDescription().
     base::string16 GetSecuritySummary() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
