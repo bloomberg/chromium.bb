@@ -77,7 +77,7 @@ blink::WebScriptSource GreasemonkeyApiJsString::GetSource() const {
   return blink::WebScriptSource(source_);
 }
 
-base::LazyInstance<GreasemonkeyApiJsString> g_greasemonkey_api =
+base::LazyInstance<GreasemonkeyApiJsString>::Leaky g_greasemonkey_api =
     LAZY_INSTANCE_INITIALIZER;
 
 bool ShouldInjectScripts(const UserScript::FileList& scripts,
