@@ -108,6 +108,7 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void getDocument(ErrorString*, std::unique_ptr<protocol::DOM::Node>* root) override;
+    void collectClassNamesFromSubtree(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<String>>* classNames) override;
     void requestChildNodes(ErrorString*, int nodeId, const Maybe<int>& depth) override;
     void querySelector(ErrorString*, int nodeId, const String& selector, int* outNodeId) override;
     void querySelectorAll(ErrorString*, int nodeId, const String& selector, std::unique_ptr<protocol::Array<int>>* nodeIds) override;

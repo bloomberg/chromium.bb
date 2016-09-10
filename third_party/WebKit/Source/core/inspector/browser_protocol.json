@@ -2150,6 +2150,17 @@
                 "description": "Returns the root DOM node to the caller."
             },
             {
+                "name": "collectClassNamesFromSubtree",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to collect class names." }
+                ],
+                "returns": [
+                    {"name": "classNames", "type": "array", "items": { "type": "string" }, "description": "Class name list." }
+                ],
+                "description": "Collects class names for the node with given id and all of it's child nodes.",
+                "experimental": true
+            },
+            {
                 "name": "requestChildNodes",
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." },
@@ -2927,6 +2938,17 @@
                     { "name": "text", "type": "string", "description": "The stylesheet text." }
                 ],
                 "description": "Returns the current textual content and the URL for a stylesheet."
+            },
+            {
+                "name": "collectClassNames",
+                "parameters": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" }
+                ],
+                "returns": [
+                    {"name": "classNames", "type": "array", "items": { "type": "string" }, "description": "Class name list." }
+                ],
+                "description": "Returns all class names from specified stylesheet.",
+                "experimental": true
             },
             {
                 "name": "setStyleSheetText",

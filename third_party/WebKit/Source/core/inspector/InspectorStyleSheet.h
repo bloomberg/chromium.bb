@@ -132,7 +132,7 @@ public:
     CSSMediaRule* setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
     CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
     bool deleteRule(const SourceRange&, ExceptionState&);
-
+    std::unique_ptr<protocol::Array<String>> collectClassNames();
     CSSStyleSheet* pageStyleSheet() { return m_pageStyleSheet.get(); }
 
     std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo();
@@ -142,7 +142,6 @@ public:
 
     std::unique_ptr<protocol::CSS::SourceRange> ruleHeaderSourceRange(CSSRule*);
     std::unique_ptr<protocol::CSS::SourceRange> mediaQueryExpValueSourceRange(CSSRule*, size_t mediaQueryIndex, size_t mediaQueryExpIndex);
-
     bool isInlineStyle() override { return false; }
     const CSSRuleVector& flatRules();
     CSSRuleSourceData* sourceDataForRule(CSSRule*);

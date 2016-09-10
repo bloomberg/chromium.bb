@@ -125,6 +125,7 @@ public:
     void getInlineStylesForNode(ErrorString*, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle) override;
     void getComputedStyleForNode(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*) override;
     void getPlatformFontsForNode(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>* fonts) override;
+    void collectClassNames(ErrorString*, const String& styleSheetId, std::unique_ptr<protocol::Array<String>>* classNames) override;
     void getStyleSheetText(ErrorString*, const String& styleSheetId, String* text) override;
     void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, Maybe<String>* sourceMapURL) override;
     void setRuleSelector(ErrorString*, const String& styleSheetId, std::unique_ptr<protocol::CSS::SourceRange>, const String& selector, std::unique_ptr<protocol::CSS::SelectorList>*) override;

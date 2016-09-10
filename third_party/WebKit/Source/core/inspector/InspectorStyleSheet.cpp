@@ -133,6 +133,22 @@ String findMagicComment(const String& content, const String& name)
     return match;
 }
 
+void getClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& uniqueNames)
+{
+    const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
+    if (!selectorList.isValid())
+        return;
+
+    for (const CSSSelector* subSelector = selectorList.first(); subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
+        const CSSSelector* simpleSelector = subSelector;
+        while (simpleSelector) {
+            if (simpleSelector->match() == CSSSelector::Class)
+                uniqueNames.add(simpleSelector->value());
+            simpleSelector = simpleSelector->tagHistory();
+        }
+    }
+}
+
 class StyleSheetHandler final : public CSSParserObserver {
 public:
     StyleSheetHandler(const String& parsedText, Document* document, RuleSourceDataList* result)
@@ -1312,6 +1328,20 @@ bool InspectorStyleSheet::deleteRule(const SourceRange& range, ExceptionState& e
     replaceText(range, "", nullptr, nullptr);
     onStyleSheetTextChanged();
     return true;
+}
+
+std::unique_ptr<protocol::Array<String>> InspectorStyleSheet::collectClassNames()
+{
+    HashSet<String> uniqueNames;
+    std::unique_ptr<protocol::Array<String>> result = protocol::Array<String>::create();
+
+    for (size_t i = 0; i < m_parsedFlatRules.size(); ++i) {
+        if (m_parsedFlatRules.at(i)->type() == CSSRule::kStyleRule)
+            getClassNamesFromRule(toCSSStyleRule(m_parsedFlatRules.at(i)), uniqueNames);
+    }
+    for (const String& className : uniqueNames)
+        result->addItem(className);
+    return result;
 }
 
 void InspectorStyleSheet::replaceText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText)

@@ -1072,6 +1072,16 @@ void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String
     inspectorStyleSheet->getText(result);
 }
 
+void InspectorCSSAgent::collectClassNames(ErrorString* errorString, const String& styleSheetId, std::unique_ptr<protocol::Array<String>>* classNames)
+{
+    IdToInspectorStyleSheet::iterator it = m_idToInspectorStyleSheet.find(styleSheetId);
+    if (it == m_idToInspectorStyleSheet.end()) {
+        *errorString = "No style sheet with given id found";
+        return;
+    }
+    *classNames = it->value.get()->collectClassNames();
+}
+
 void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text, protocol::Maybe<String>* sourceMapURL)
 {
     FrontendOperationScope scope;

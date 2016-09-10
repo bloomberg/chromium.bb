@@ -581,6 +581,30 @@ Node* InspectorDOMAgent::nodeForId(int id)
     return nullptr;
 }
 
+void InspectorDOMAgent::collectClassNamesFromSubtree(ErrorString* errorString, int nodeId, std::unique_ptr<protocol::Array<String>>* classNames)
+{
+    HashSet<String> uniqueNames;
+    *classNames = protocol::Array<String>::create();
+    Node* parentNode = nodeForId(nodeId);
+    if (!parentNode || (!parentNode->isElementNode() && !parentNode->isDocumentNode() && !parentNode->isDocumentFragment())) {
+        *errorString = "No suitable node with given id found";
+        return;
+    }
+
+    for (Node* node = parentNode; node; node = FlatTreeTraversal::next(*node, parentNode)) {
+        if (node->isElementNode()) {
+            const Element& element = toElement(*node);
+            if (!element.hasClass())
+                continue;
+            const SpaceSplitString& classNameList = element.classNames();
+            for (unsigned i = 0; i < classNameList.size(); ++i)
+                uniqueNames.add(classNameList[i]);
+        }
+    }
+    for (const String& className : uniqueNames)
+        (*classNames)->addItem(className);
+}
+
 void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, const Maybe<int>& depth)
 {
     int sanitizedDepth = depth.fromMaybe(1);

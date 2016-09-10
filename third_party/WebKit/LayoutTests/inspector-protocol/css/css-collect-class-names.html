@@ -1,0 +1,59 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    var documentNodeId;
+    var addedStyleSheetCount = 0;
+    var styleSheetClasses = [];
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+    function onDocumentNodeId(nodeId)
+    {
+        InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+        InspectorTest.sendCommandOrDie("CSS.enable", {});
+    }
+
+    function styleSheetAdded(response)
+    {
+        var styleSheetId = response.params.header.styleSheetId;
+        InspectorTest.sendCommandOrDie("CSS.collectClassNames", { styleSheetId: styleSheetId }, onClassNamesCollected);
+    }
+
+    function finalizeTest()
+    {
+        styleSheetClasses.sort();
+        for (var i = 0; i < styleSheetClasses.length; i++)
+            InspectorTest.log(styleSheetClasses[i]);
+        InspectorTest.completeTest();
+    }
+
+    function onClassNamesCollected(response)
+    {
+        var classNames = response.classNames;
+        for (var i=0; i < classNames.length; i++)
+            styleSheetClasses.push(classNames[i]);
+
+        if (++addedStyleSheetCount == 3)
+            finalizeTest();
+    }
+};
+
+window.addEventListener("DOMContentLoaded", function () {
+    runTest();
+}, false);
+
+</script>
+<link rel="stylesheet" href="resources/collect-class-names.css"/>
+<style>
+.inline1 {
+    font-size: 12px;
+}
+</style>
+</head>
+<body>
+</body>
+</html>
