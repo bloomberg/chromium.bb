@@ -8,6 +8,7 @@ import "app.mojom";
 import "audio.mojom";
 import "auth.mojom";
 import "bluetooth.mojom";
+import "boot_phase_monitor.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
 import "enterprise_reporting.mojom";
@@ -27,9 +28,9 @@ import "tts.mojom";
 import "video.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 19
+// Next MinVersion: 20
 // Deprecated method IDs: 101, 105
-// Next method ID: 125
+// Next method ID: 126
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -46,6 +47,10 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the BluetoothInstance interface is ready.
   [MinVersion=9] OnBluetoothInstanceReady@113(BluetoothInstance instance_ptr);
+
+  // Notifies Chrome that the BootPhaseMonitorInstance interface is ready.
+  [MinVersion=19] OnBootPhaseMonitorInstanceReady@125(
+      BootPhaseMonitorInstance instance_ptr);
 
   // Notifies Chrome that the ClipboardInstance interface is ready.
   [MinVersion=2] OnClipboardInstanceReady@109(ClipboardInstance instance_ptr);

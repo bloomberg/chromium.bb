@@ -14,6 +14,7 @@
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/bluetooth/arc_bluetooth_bridge.h"
+#include "components/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
@@ -57,6 +58,7 @@ ArcServiceManager::ArcServiceManager(
 
   AddService(base::MakeUnique<ArcAudioBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcClipboardBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcCrashCollectorBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcImeService>(arc_bridge_service()));

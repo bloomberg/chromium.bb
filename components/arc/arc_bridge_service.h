@@ -89,6 +89,9 @@ class ArcBridgeService {
   InstanceHolder<mojom::AudioInstance>* audio() { return &audio_; }
   InstanceHolder<mojom::AuthInstance>* auth() { return &auth_; }
   InstanceHolder<mojom::BluetoothInstance>* bluetooth() { return &bluetooth_; }
+  InstanceHolder<mojom::BootPhaseMonitorInstance>* boot_phase_monitor() {
+    return &boot_phase_monitor_;
+  }
   InstanceHolder<mojom::ClipboardInstance>* clipboard() { return &clipboard_; }
   InstanceHolder<mojom::CrashCollectorInstance>* crash_collector() {
     return &crash_collector_;
@@ -172,6 +175,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::AudioInstance> audio_;
   InstanceHolder<mojom::AuthInstance> auth_;
   InstanceHolder<mojom::BluetoothInstance> bluetooth_;
+  InstanceHolder<mojom::BootPhaseMonitorInstance> boot_phase_monitor_;
   InstanceHolder<mojom::ClipboardInstance> clipboard_;
   InstanceHolder<mojom::CrashCollectorInstance> crash_collector_;
   InstanceHolder<mojom::EnterpriseReportingInstance> enterprise_reporting_;

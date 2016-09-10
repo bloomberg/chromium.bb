@@ -98,6 +98,12 @@ void ArcBridgeHostImpl::OnBluetoothInstanceReady(
                   std::move(bluetooth_ptr));
 }
 
+void ArcBridgeHostImpl::OnBootPhaseMonitorInstanceReady(
+    mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) {
+  OnInstanceReady(ArcBridgeService::Get()->boot_phase_monitor(),
+                  std::move(boot_phase_monitor_ptr));
+}
+
 void ArcBridgeHostImpl::OnClipboardInstanceReady(
     mojom::ClipboardInstancePtr clipboard_ptr) {
   OnInstanceReady(ArcBridgeService::Get()->clipboard(),
