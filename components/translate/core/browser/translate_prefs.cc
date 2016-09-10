@@ -484,7 +484,8 @@ void TranslatePrefs::RegisterProfilePrefs(
       kPrefTranslateTooOftenDeniedForLanguage,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
-      kPrefLanguageProfile, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      kPrefLanguageProfile,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
 // static
