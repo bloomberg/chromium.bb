@@ -90,6 +90,8 @@ void DispatcherBase::sendResponse(int callId, const ErrorString& invocationError
 
 static void reportProtocolErrorTo(FrontendChannel* frontendChannel, int callId, DispatcherBase::CommonErrorCode code, const String& errorMessage, ErrorSupport* errors)
 {
+    if (!frontendChannel)
+        return;
     std::unique_ptr<protocol::DictionaryValue> error = DictionaryValue::create();
     error->setInteger("code", code);
     error->setString("message", errorMessage);
@@ -104,8 +106,7 @@ static void reportProtocolErrorTo(FrontendChannel* frontendChannel, int callId, 
 
 void DispatcherBase::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage, ErrorSupport* errors)
 {
-    if (m_frontendChannel)
-        reportProtocolErrorTo(m_frontendChannel, callId, code, errorMessage, errors);
+    reportProtocolErrorTo(m_frontendChannel, callId, code, errorMessage, errors);
 }
 
 void DispatcherBase::clearFrontend()
@@ -141,7 +142,7 @@ void UberDispatcher::dispatch(std::unique_ptr<Value> parsedMessage)
 
     int callId = 0;
     protocol::Value* callIdValue = messageObject->get("id");
-    bool success = callIdValue->asInteger(&callId);
+    bool success = callIdValue && callIdValue->asInteger(&callId);
     if (!success)
         return;
 
