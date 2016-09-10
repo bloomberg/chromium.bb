@@ -315,7 +315,6 @@ class CONTENT_EXPORT RenderViewImpl
   void showUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
                                   const blink::WebNode& tappedNode,
                                   bool pageChanged) override;
-  blink::WebRect windowResizerRect() override;
   blink::WebWidgetClient* widgetClient() override;
 
   // blink::WebViewClient implementation --------------------------------------

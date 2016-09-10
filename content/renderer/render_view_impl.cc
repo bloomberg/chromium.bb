@@ -2078,10 +2078,6 @@ void RenderViewImpl::showUnhandledTapUIIfNeeded(
                                            pageChanged);
 }
 
-blink::WebRect RenderViewImpl::windowResizerRect() {
-  return RenderWidget::windowResizerRect();
-}
-
 blink::WebWidgetClient* RenderViewImpl::widgetClient() {
   return static_cast<RenderWidget*>(this);
 }

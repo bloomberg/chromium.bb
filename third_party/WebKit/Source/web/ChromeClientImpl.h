@@ -98,7 +98,7 @@ public:
         const String& defaultValue, String& result) override;
     void setStatusbarText(const String& message) override;
     bool tabsToLinks() override;
-    IntRect windowResizerRect() const override;
+    IntRect windowResizerRect(LocalFrame&) const override;
     void invalidateRect(const IntRect&) override;
     void scheduleAnimation(Widget*) override;
     IntRect viewportToScreen(const IntRect&, const Widget*) const override;

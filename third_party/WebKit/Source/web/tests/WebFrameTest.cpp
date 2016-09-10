@@ -8109,6 +8109,8 @@ TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFra
     // Do a remote-to-local swap of the top frame.
     FrameTestHelpers::TestWebFrameClient localClient;
     WebLocalFrame* localRoot = WebLocalFrame::createProvisional(&localClient, remoteRoot, WebSandboxFlags::None);
+    FrameTestHelpers::TestWebWidgetClient webWidgetClient;
+    WebFrameWidget::create(&webWidgetClient, localRoot);
     remoteRoot->swap(localRoot);
 
     // Load a page with a child frame in the new root to make sure this doesn't

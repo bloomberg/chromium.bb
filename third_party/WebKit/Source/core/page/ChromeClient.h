@@ -156,7 +156,7 @@ public:
 
     virtual void* webView() const = 0;
 
-    virtual IntRect windowResizerRect() const = 0;
+    virtual IntRect windowResizerRect(LocalFrame&) const = 0;
 
     // Methods used by HostWindow.
     virtual WebScreenInfo screenInfo() const = 0;

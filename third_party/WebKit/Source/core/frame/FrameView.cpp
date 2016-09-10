@@ -2264,7 +2264,7 @@ void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const
 IntRect FrameView::windowResizerRect() const
 {
     if (Page* page = frame().page())
-        return page->chromeClient().windowResizerRect();
+        return page->chromeClient().windowResizerRect(frame());
     return IntRect();
 }
 

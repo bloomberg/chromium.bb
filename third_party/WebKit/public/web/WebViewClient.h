@@ -273,7 +273,6 @@ public:
     void showImeIfNeeded() override {}
     void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override {}
     void show(WebNavigationPolicy) override {}
-    WebRect windowResizerRect() override { return WebRect(); }
     virtual WebWidgetClient* widgetClient() { return this; }
 
 protected:

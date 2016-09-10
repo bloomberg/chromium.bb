@@ -131,7 +131,7 @@ public:
 
     bool tabsToLinks() override { return false; }
 
-    IntRect windowResizerRect() const override { return IntRect(); }
+    IntRect windowResizerRect(LocalFrame&) const override { return IntRect(); }
 
     void invalidateRect(const IntRect&) override {}
     void scheduleAnimation(Widget*) override {}
