@@ -39,7 +39,10 @@ class TestDirectMemoryPressureCalculator
       : DirectMemoryPressureCalculator(moderate_threshold_mb,
                                        critical_threshold_mb) {
     mem_info_.total = total_memory_mb * kKBperMB;
+    mem_info_.pgmajfault = 0;
   }
+
+  void InitPageFaultMonitor() override {}
 
   // Sets up the memory status to reflect the provided absolute memory left.
   void SetMemoryFree(int phys_left_mb) {
@@ -51,10 +54,33 @@ class TestDirectMemoryPressureCalculator
   }
 
   void SetNone() { SetMemoryFree(moderate_threshold_mb() + 1); }
-
   void SetModerate() { SetMemoryFree(moderate_threshold_mb() - 1); }
-
   void SetCritical() { SetMemoryFree(critical_threshold_mb() - 1); }
+
+  double GetEwma() { return current_faults_per_second_; }
+
+  // Set the next CPU time to be read.
+  void SetCpuTime(double cpu_time) {
+    user_cpu_time_ = base::TimeDelta::FromSecondsD(cpu_time);
+  }
+  // Set the next page faults value to be read.
+  void SetPageFaults(uint64_t page_faults) {
+    mem_info_.pgmajfault = page_faults;
+  }
+
+  void SetPageFaultMonitorState(double user_exec_time,
+                                uint64_t major_page_faults,
+                                double current_faults,
+                                double low_pass_half_life,
+                                double moderate_multiplier,
+                                double critical_multiplier) {
+    last_user_exec_time_ = base::TimeDelta::FromSecondsD(user_exec_time);
+    last_major_page_faults_ = major_page_faults;
+    current_faults_per_second_ = current_faults;
+    low_pass_half_life_seconds_ = low_pass_half_life;
+    moderate_multiplier_ = moderate_multiplier;
+    critical_multiplier_ = critical_multiplier;
+  }
 
  private:
   bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) const override {
@@ -63,6 +89,11 @@ class TestDirectMemoryPressureCalculator
     return true;
   }
 
+  base::TimeDelta GetUserCpuTimeSinceBoot() const override {
+    return user_cpu_time_;
+  }
+
+  base::TimeDelta user_cpu_time_;
   base::SystemMemoryInfoKB mem_info_;
 };
 
@@ -146,6 +177,68 @@ TEST_F(DirectMemoryPressureCalculatorTest,
   EXPECT_EQ(kCriticalMb, calc.critical_threshold_mb());
 
   ASSERT_NO_FATAL_FAILURE(CalculateCurrentPressureLevelTest(&calc));
+}
+
+// Double-check the math of the Ewma portion of the page fault monitor.
+TEST_F(DirectMemoryPressureCalculatorTest, Ewma) {
+  double half_life = 100.0;
+
+  double cpu_time = 0;
+  uint64_t page_faults = 1;
+
+  double ewma = 100.0;
+
+  TestDirectMemoryPressureCalculator calc;
+  calc.SetPageFaultMonitorState(cpu_time, page_faults, ewma, half_life, 0, 0);
+  // Advance by one half-life.  The ewma should be cut in half.
+  calc.SetCpuTime(half_life);
+  calc.SetPageFaults(page_faults);
+  calc.CalculateCurrentPressureLevel();
+  ewma /= 2;
+  EXPECT_DOUBLE_EQ(ewma, calc.GetEwma());
+
+  // We should get the same result if we advance by increments of 10 up to 100.
+  ewma = 100.0;
+  calc.SetPageFaultMonitorState(cpu_time, page_faults, ewma, half_life, 0, 0);
+  static const int kIncrements = 10;
+  for(int i = 1; i <= kIncrements; i++) {
+    calc.SetCpuTime(i * half_life / kIncrements);
+    calc.SetPageFaults(page_faults);
+    calc.CalculateCurrentPressureLevel();
+  }
+  ewma /= 2;
+  EXPECT_DOUBLE_EQ(ewma, calc.GetEwma());
+
+  static const struct {
+    uint64_t delta_time;
+    uint64_t delta_faults;
+    double expected_ewma;
+  } kSamples[] = {
+      // 0.5*0.0 + 0.5*10 = 5.0
+      { 1, 10,  5.0        },
+      // 0.5*5.0 + 0.5*10 = 7.5
+      { 1, 10,  7.5        },
+      // 0.25*7.5 + 0.75*(0/2) = 1.875
+      { 2, 0,   1.875      },
+      // 0.125*1.875 + 0.875*(420/3) = 122.734375
+      { 3, 420, 122.734375 },
+      // 0.5*122.734375 + 0.5*24 = 73.3671875
+      { 1, 24,  73.3671875 },
+  };
+
+  cpu_time = 1;
+  page_faults = 1;
+  ewma = 0.0;
+  half_life = 1.0;
+  calc.SetPageFaultMonitorState(cpu_time, page_faults, ewma, half_life, 0, 0);
+  for (size_t i = 0 ; i < arraysize(kSamples); i++) {
+    cpu_time += kSamples[i].delta_time;
+    page_faults += kSamples[i].delta_faults;
+    calc.SetCpuTime(cpu_time);
+    calc.SetPageFaults(page_faults);
+    calc.CalculateCurrentPressureLevel();
+    EXPECT_DOUBLE_EQ(kSamples[i].expected_ewma, calc.GetEwma());
+  }
 }
 
 }  // namespace memory_pressure
