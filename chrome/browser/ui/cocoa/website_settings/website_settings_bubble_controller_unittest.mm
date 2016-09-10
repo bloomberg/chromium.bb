@@ -206,35 +206,6 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
   NSWindow* window_;  // Weak, owned by controller.
 };
 
-TEST_F(WebsiteSettingsBubbleControllerTest, BasicIdentity) {
-  WebsiteSettingsUI::IdentityInfo info;
-  info.site_identity = std::string("nhl.com");
-  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
-
-  CreateBubble();
-
-  // Test setting the site identity.
-  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
-  NSTextField* identity_field = FindTextField(TEXT_EQUAL, @"nhl.com");
-  ASSERT_TRUE(identity_field != nil);
-
-  // Test changing the site identity, and ensure that the UI is updated.
-  info.site_identity = std::string("google.com");
-  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
-  EXPECT_EQ(identity_field, FindTextField(TEXT_EQUAL, @"google.com"));
-
-  // Find the identity status field.
-  NSTextField* identity_status_field =
-      FindTextField(TEXT_NOT_EQUAL, @"google.com");
-  ASSERT_NE(identity_field, identity_status_field);
-
-  // Ensure the text of the identity status field changes when the status does.
-  NSString* status = [identity_status_field stringValue];
-  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
-  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
-  EXPECT_NSNE(status, [identity_status_field stringValue]);
-}
-
 TEST_F(WebsiteSettingsBubbleControllerTest, SecurityDetailsButton) {
   WebsiteSettingsUI::IdentityInfo info;
   info.site_identity = std::string("example.com");

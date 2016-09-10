@@ -37,11 +37,13 @@ class X509Certificate;
   // The main content view for the Permissions tab.
   NSView* securitySectionView_;
 
-  // Displays the web site identity.
-  NSTextField* identityField_;
-
-  // Displays the security summary for the page (private/not private/etc.).
+  // Displays the short security summary for the page
+  // (private/not private/etc.).
   NSTextField* securitySummaryField_;
+
+  // Displays a longer explanation of the page's security state, and how the
+  // user should treat it.
+  NSTextField* securityDetailsField_;
 
   // The link button for opening security details for the page. This is the
   // DevTools Security panel for most users, but may be the certificate viewer
@@ -51,15 +53,22 @@ class X509Certificate;
   // URL of the page for which the bubble is shown.
   GURL url_;
 
+  // Displays a paragraph to accompany the reset decisions button, explaining
+  // that the user has made a decision to trust an invalid security certificate
+  // for the current site.
+  // This field only shows when there is an acrive certificate exception.
+  NSTextField* resetDecisionsField_;
+
+  // The link button for revoking certificate decisions.
+  // This link only shows when there is an acrive certificate exception.
+  NSButton* resetDecisionsButton_;
+
   // Whether DevTools is disabled for the relevant profile.
   BOOL isDevToolsDisabled_;
 
   // The server certificate from the identity info. This should always be
   // non-null on a cryptographic connection, and null otherwise.
   scoped_refptr<net::X509Certificate> certificate_;
-
-  // The link button for revoking certificate decisions.
-  NSButton* resetDecisionsButton_;
 
   // Separator line.
   NSView* separatorAfterSecuritySection_;

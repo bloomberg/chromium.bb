@@ -39,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -67,13 +68,14 @@ const CGFloat kDefaultWindowWidth = 320;
 const CGFloat kSectionVerticalPadding = 20;
 const CGFloat kSectionHorizontalPadding = 16;
 
-// Spacing between the identity field and the security summary.
-const CGFloat kSpacingBeforeSecuritySummary = 2;
+// Links are buttons with invisible padding, so we need to move them back to
+// align with other text.
+const CGFloat kLinkButtonXAdjustment = 1;
 
 /**************** Security Section ****************/
 
-// Spacing between the security summary and the reset decisions button.
-const CGFloat kSpacingBeforeResetDecisionsButton = 8;
+// Spacing between security summary, security details, and cert decisions text.
+const CGFloat kSecurityParagraphSpacing = 12;
 
 /**************** Site Settings Section ****************/
 
@@ -325,21 +327,22 @@ bool IsInternalURL(const GURL& url) {
   // matter, because the correct value is calculated in -performLayout.
   NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
-  // Create a text field (empty for now) to show the site identity.
-  identityField_ = [self addText:base::string16()
-                        withSize:[NSFont systemFontSize]
-                            bold:YES
-                          toView:securitySectionView
-                         atPoint:controlOrigin];
-
   // Create a text field for the security summary (private/not private/etc.).
   securitySummaryField_ = [self addText:base::string16()
+                               withSize:[NSFont systemFontSize]
+                                   bold:NO
+                                 toView:securitySectionView
+                                atPoint:controlOrigin];
+
+  securityDetailsField_ = [self addText:base::string16()
                                withSize:[NSFont smallSystemFontSize]
                                    bold:NO
                                  toView:securitySectionView
                                 atPoint:controlOrigin];
 
-  resetDecisionsButton_ = nil;  // This will be created only if necessary.
+  // These will be created only if necessary.
+  resetDecisionsField_ = nil;
+  resetDecisionsButton_ = nil;
 
   NSString* securityDetailsButtonText =
       l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
@@ -486,13 +489,13 @@ bool IsInternalURL(const GURL& url) {
   // Start the layout with the first element. Margins are handled by the caller.
   CGFloat yPos = 0;
 
-  [self sizeTextFieldHeightToFit:identityField_];
-  yPos = [self setYPositionOfView:identityField_
-                               to:yPos + kSectionVerticalPadding];
-
   [self sizeTextFieldHeightToFit:securitySummaryField_];
   yPos = [self setYPositionOfView:securitySummaryField_
-                               to:yPos + kSpacingBeforeSecuritySummary];
+                               to:yPos + kSectionVerticalPadding];
+
+  [self sizeTextFieldHeightToFit:securityDetailsField_];
+  yPos = [self setYPositionOfView:securityDetailsField_
+                               to:yPos + kSecurityParagraphSpacing];
 
   if (isDevToolsDisabled_ && !certificate_) {
     // -removeFromSuperview is idempotent.
@@ -500,12 +503,22 @@ bool IsInternalURL(const GURL& url) {
   } else {
     // -addSubview is idempotent.
     [securitySectionView_ addSubview:securityDetailsButton_];
-    yPos = [self setYPositionOfView:securityDetailsButton_ to:yPos];
+    [securityDetailsButton_
+        setFrameOrigin:NSMakePoint(
+                           kSectionHorizontalPadding - kLinkButtonXAdjustment,
+                           yPos)];
+    yPos = NSMaxY([securityDetailsButton_ frame]);
   }
 
   if (resetDecisionsButton_) {
-    yPos = [self setYPositionOfView:resetDecisionsButton_
-                                 to:yPos + kSpacingBeforeResetDecisionsButton];
+    DCHECK(resetDecisionsField_);
+    yPos = [self setYPositionOfView:resetDecisionsField_
+                                 to:yPos + kSecurityParagraphSpacing];
+    [resetDecisionsButton_
+        setFrameOrigin:NSMakePoint(NSMinX([resetDecisionsButton_ frame]) -
+                                       kLinkButtonXAdjustment,
+                                   yPos)];
+    yPos = NSMaxY([resetDecisionsButton_ frame]);
   }
 
   // Resize the height based on contents.
@@ -677,18 +690,33 @@ bool IsInternalURL(const GURL& url) {
 
 // Set the content of the identity and identity status fields.
 - (void)setIdentityInfo:(const WebsiteSettingsUI::IdentityInfo&)identityInfo {
-  [identityField_
-      setStringValue:base::SysUTF8ToNSString(identityInfo.site_identity)];
-  [securitySummaryField_ setStringValue:base::SysUTF16ToNSString(
-                                            identityInfo.GetSecuritySummary())];
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description =
+      identityInfo.GetSecurityDescription();
+  [securitySummaryField_
+      setStringValue:base::SysUTF16ToNSString(security_description->summary)];
+
+  [securityDetailsField_
+      setStringValue:SysUTF16ToNSString(security_description->details)];
 
   certificate_ = identityInfo.certificate;
 
   if (certificate_ &&  identityInfo.show_ssl_decision_revoke_button) {
-    NSString* text = l10n_util::GetNSString(
-        IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
+    resetDecisionsField_ =
+        [self addText:base::string16()
+             withSize:[NSFont smallSystemFontSize]
+                 bold:NO
+               toView:securitySectionView_
+              atPoint:NSMakePoint(kSectionHorizontalPadding, 0)];
+    [resetDecisionsField_
+        setStringValue:l10n_util::GetNSString(
+                           IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION)];
+    [self sizeTextFieldHeightToFit:resetDecisionsField_];
+
     resetDecisionsButton_ =
-        [self addButtonWithText:text toView:securitySectionView_];
+        [self addLinkButtonWithText:
+                  l10n_util::GetNSString(
+                      IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON)
+                             toView:securitySectionView_];
     [resetDecisionsButton_ setTarget:self];
     [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
   }
