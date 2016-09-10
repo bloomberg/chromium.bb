@@ -906,6 +906,30 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive)
     range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range), isActive);
 }
 
+static bool parseColor(const String& value, Color& color, ExceptionState& exceptionState, String errorMessage)
+{
+    if (!color.setFromString(value)) {
+        exceptionState.throwDOMException(InvalidAccessError, errorMessage);
+        return false;
+    }
+    return true;
+}
+
+void Internals::addCompositionMarker(const Range* range, const String& underlineColorValue,
+    bool thick, const String& backgroundColorValue, ExceptionState& exceptionState)
+{
+    DCHECK(range);
+    range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
+
+    Color underlineColor;
+    Color backgroundColor;
+    if (parseColor(underlineColorValue, underlineColor, exceptionState, "Invalid underline color.")
+        && parseColor(backgroundColorValue, backgroundColor, exceptionState, "Invalid background color.")) {
+        range->ownerDocument().markers().addCompositionMarker(
+            range->startPosition(), range->endPosition(), underlineColor, thick, backgroundColor);
+    }
+}
+
 void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active)
 {
     ASSERT(node);

@@ -161,6 +161,7 @@ public:
     Range* markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
+    void addCompositionMarker(const Range*, const String& underlineColorValue, bool thick, const String& backgroundColorValue, ExceptionState&);
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
     void setMarkedTextMatchesAreHighlighted(Document*, bool);
 
