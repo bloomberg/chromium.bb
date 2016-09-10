@@ -120,7 +120,7 @@ ChromeExtensionsRendererClient::~ChromeExtensionsRendererClient() {}
 
 // static
 ChromeExtensionsRendererClient* ChromeExtensionsRendererClient::GetInstance() {
-  static base::LazyInstance<ChromeExtensionsRendererClient> client =
+  static base::LazyInstance<ChromeExtensionsRendererClient>::Leaky client =
       LAZY_INSTANCE_INITIALIZER;
   return client.Pointer();
 }
