@@ -54,7 +54,8 @@ InputHandlerManager::InputHandlerManager(
     : task_runner_(task_runner),
       client_(client),
       synchronous_handler_proxy_client_(sync_handler_client),
-      renderer_scheduler_(renderer_scheduler) {
+      renderer_scheduler_(renderer_scheduler),
+      weak_ptr_factory_(this) {
   DCHECK(client_);
   client_->SetInputHandlerManager(this);
 }
@@ -196,10 +197,11 @@ void InputHandlerManager::ProcessRafAlignedInputOnMainThread(int routing_id) {
   client_->ProcessRafAlignedInput(routing_id);
 }
 
-InputEventAckState InputHandlerManager::HandleInputEvent(
+void InputHandlerManager::HandleInputEvent(
     int routing_id,
-    const WebInputEvent* input_event,
-    ui::LatencyInfo* latency_info) {
+    ui::ScopedWebInputEvent input_event,
+    const ui::LatencyInfo& latency_info,
+    const InputEventAckStateCallback& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input,benchmark,rail", "InputHandlerManager::HandleInputEvent",
                "type", WebInputEvent::GetName(input_event->type));
@@ -209,14 +211,28 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     TRACE_EVENT1("input,rail", "InputHandlerManager::HandleInputEvent",
                  "result", "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    callback.Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, std::move(input_event),
+                 latency_info, nullptr);
+    return;
   }
 
   TRACE_EVENT1("input,rail", "InputHandlerManager::HandleInputEvent",
                "result", "EventSentToInputHandlerProxy");
   InputHandlerProxy* proxy = it->second->input_handler_proxy();
-  InputEventAckState input_event_ack_state = InputEventDispositionToAck(
-      proxy->HandleInputEventWithLatencyInfo(*input_event, latency_info));
+  proxy->HandleInputEventWithLatencyInfo(
+      std::move(input_event), latency_info,
+      base::Bind(&InputHandlerManager::DidHandleInputEventAndOverscroll,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void InputHandlerManager::DidHandleInputEventAndOverscroll(
+    const InputEventAckStateCallback& callback,
+    InputHandlerProxy::EventDisposition event_disposition,
+    ui::ScopedWebInputEvent input_event,
+    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+  InputEventAckState input_event_ack_state =
+      InputEventDispositionToAck(event_disposition);
   switch (input_event_ack_state) {
     case INPUT_EVENT_ACK_STATE_CONSUMED:
       renderer_scheduler_->DidHandleInputEventOnCompositorThread(
@@ -231,7 +247,8 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     default:
       break;
   }
-  return input_event_ack_state;
+  callback.Run(input_event_ack_state, std::move(input_event), latency_info,
+               std::move(overscroll_params));
 }
 
 void InputHandlerManager::DidOverscroll(int routing_id,

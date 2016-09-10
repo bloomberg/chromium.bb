@@ -57,7 +57,6 @@ InputEventFilter::InputEventFilter(
       sender_(NULL),
       target_task_runner_(target_task_runner),
       input_handler_manager_(NULL),
-      current_overscroll_params_(NULL),
       renderer_scheduler_(NULL) {
   DCHECK(target_task_runner_.get());
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -96,11 +95,6 @@ void InputEventFilter::UnregisterRoutingID(int routing_id) {
 
 void InputEventFilter::DidOverscroll(int routing_id,
                                      const DidOverscrollParams& params) {
-  if (current_overscroll_params_) {
-    current_overscroll_params_->reset(new DidOverscrollParams(params));
-    return;
-  }
-
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_DidOverscroll(routing_id, params)));
 }
@@ -191,9 +185,7 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-InputEventFilter::~InputEventFilter() {
-  DCHECK(!current_overscroll_params_);
-}
+InputEventFilter::~InputEventFilter() {}
 
 void InputEventFilter::ForwardToHandler(const IPC::Message& message,
                                         base::TimeTicks received_time) {
@@ -219,6 +211,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
       ui::WebInputEventTraits::Clone(*std::get<0>(params));
   ui::LatencyInfo latency_info = std::get<1>(params);
   InputEventDispatchType dispatch_type = std::get<2>(params);
+
   DCHECK(event);
   DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
@@ -226,18 +219,20 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
   if (!received_time.is_null())
     event->timeStampSeconds = ui::EventTimeStampToSeconds(received_time);
 
+  input_handler_manager_->HandleInputEvent(
+      routing_id, std::move(event), latency_info,
+      base::Bind(&InputEventFilter::DidForwardToHandlerAndOverscroll, this,
+                 routing_id, dispatch_type));
+};
+
+void InputEventFilter::DidForwardToHandlerAndOverscroll(
+    int routing_id,
+    InputEventDispatchType dispatch_type,
+    InputEventAckState ack_state,
+    ui::ScopedWebInputEvent event,
+    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<DidOverscrollParams> overscroll_params) {
   bool send_ack = dispatch_type == DISPATCH_TYPE_BLOCKING;
-
-  // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
-  // response with the input event ack.
-  std::unique_ptr<DidOverscrollParams> overscroll_params;
-  base::AutoReset<std::unique_ptr<DidOverscrollParams>*>
-      auto_reset_current_overscroll_params(
-          &current_overscroll_params_, send_ack ? &overscroll_params : NULL);
-
-  InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
-      routing_id, event.get(), &latency_info);
-
   uint32_t unique_touch_event_id =
       ui::WebInputEventTraits::GetUniqueTouchEventId(*event);
   WebInputEvent::Type type = event->type;

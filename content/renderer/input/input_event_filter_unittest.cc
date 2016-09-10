@@ -60,20 +60,26 @@ class InputEventRecorder : public content::InputHandlerManager {
     records_.clear();
   }
 
-  InputEventAckState HandleInputEvent(int routing_id,
-                                      const WebInputEvent* event,
-                                      ui::LatencyInfo* latency_info) override {
+  void HandleInputEvent(int routing_id,
+                        ui::ScopedWebInputEvent event,
+                        const ui::LatencyInfo& latency_info,
+                        const InputHandlerManager::InputEventAckStateCallback&
+                            callback) override {
     DCHECK_EQ(kTestRoutingID, routing_id);
-    records_.push_back(Record(event));
+    records_.push_back(Record(event.get()));
     if (handle_events_) {
-      return INPUT_EVENT_ACK_STATE_CONSUMED;
+      callback.Run(INPUT_EVENT_ACK_STATE_CONSUMED, std::move(event),
+                   latency_info, nullptr);
     } else if (send_to_widget_) {
       if (passive_)
-        return INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
+        callback.Run(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, std::move(event),
+                     latency_info, nullptr);
       else
-        return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+        callback.Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, std::move(event),
+                     latency_info, nullptr);
     } else {
-      return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+      callback.Run(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, std::move(event),
+                   latency_info, nullptr);
     }
   }
 

@@ -100,6 +100,13 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
 
   void ForwardToHandler(const IPC::Message& message,
                         base::TimeTicks received_time);
+  void DidForwardToHandlerAndOverscroll(
+      int routing_id,
+      InputEventDispatchType dispatch_type,
+      InputEventAckState ack_state,
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
   void SendMessage(std::unique_ptr<IPC::Message> message);
   void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
   void SetIsFlingingInMainThreadEventQueue(int routing_id, bool is_flinging);
@@ -126,11 +133,6 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
       std::unordered_map<int, scoped_refptr<MainThreadEventQueue>>;
   RouteQueueMap route_queues_;
 
-  // Used to intercept overscroll notifications while an event is being
-  // dispatched.  If the event causes overscroll, the overscroll metadata can be
-  // bundled in the event ack, saving an IPC.  Note that we must continue
-  // supporting overscroll IPC notifications due to fling animation updates.
-  std::unique_ptr<ui::DidOverscrollParams>* current_overscroll_params_;
   blink::scheduler::RendererScheduler* renderer_scheduler_;
 };
 

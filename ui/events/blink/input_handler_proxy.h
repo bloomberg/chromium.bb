@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 
 namespace ui {
@@ -55,9 +56,15 @@ class InputHandlerProxy
     DID_HANDLE_NON_BLOCKING,
     DROP_EVENT
   };
-  EventDisposition HandleInputEventWithLatencyInfo(
-      const blink::WebInputEvent& event,
-      ui::LatencyInfo* latency_info);
+  using EventDispositionCallback =
+      base::Callback<void(EventDisposition,
+                          ScopedWebInputEvent WebInputEvent,
+                          const LatencyInfo&,
+                          std::unique_ptr<ui::DidOverscrollParams>)>;
+  void HandleInputEventWithLatencyInfo(
+      ScopedWebInputEvent event,
+      const LatencyInfo& latency_info,
+      const EventDispositionCallback& callback);
   EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
@@ -138,9 +145,11 @@ class InputHandlerProxy
   void RequestAnimation();
 
   // Used to send overscroll messages to the browser.
-  void HandleOverscroll(
-      const gfx::Point& causal_event_viewport_point,
-      const cc::InputHandlerScrollResult& scroll_result);
+  // |bundle_overscroll_params_with_ack| means overscroll message should be
+  // bundled with triggering event response, and won't fire |DidOverscroll|.
+  void HandleOverscroll(const gfx::Point& causal_event_viewport_point,
+                        const cc::InputHandlerScrollResult& scroll_result,
+                        bool bundle_overscroll_params_with_ack);
 
   // Whether to use a smooth scroll animation for this event.
   bool ShouldAnimate(bool has_precise_scroll_deltas) const;
@@ -209,6 +218,12 @@ class InputHandlerProxy
   int32_t touch_start_result_;
 
   base::TimeTicks last_fling_animate_time_;
+
+  // Used to record overscroll notifications while an event is being
+  // dispatched.  If the event causes overscroll, the overscroll metadata can be
+  // bundled in the event ack, saving an IPC.  Note that we must continue
+  // supporting overscroll IPC notifications due to fling animation updates.
+  std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

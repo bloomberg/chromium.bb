@@ -246,7 +246,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       has_fling_animation_started_(false),
       smooth_scroll_enabled_(false),
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
-      touch_start_result_(kEventDispositionUndefined) {
+      touch_start_result_(kEventDispositionUndefined),
+      current_overscroll_params_(nullptr) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
@@ -265,25 +266,29 @@ void InputHandlerProxy::WillShutdown() {
   client_->WillShutdown();
 }
 
-InputHandlerProxy::EventDisposition
-InputHandlerProxy::HandleInputEventWithLatencyInfo(
-    const WebInputEvent& event,
-    ui::LatencyInfo* latency_info) {
+void InputHandlerProxy::HandleInputEventWithLatencyInfo(
+    ScopedWebInputEvent event,
+    const LatencyInfo& latency_info,
+    const EventDispositionCallback& callback) {
   DCHECK(input_handler_);
 
   if (uma_latency_reporting_enabled_)
-    ReportInputEventLatencyUma(event, *latency_info);
+    ReportInputEventLatencyUma(*event, latency_info);
 
-  TRACE_EVENT_WITH_FLOW1("input,benchmark",
-                         "LatencyInfo.Flow",
-                         TRACE_ID_DONT_MANGLE(latency_info->trace_id()),
+  TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
+                         TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventImpl");
 
+  ui::LatencyInfo monitored_latency_info = latency_info;
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
-      input_handler_->CreateLatencyInfoSwapPromiseMonitor(latency_info);
-  InputHandlerProxy::EventDisposition disposition = HandleInputEvent(event);
-  return disposition;
+      input_handler_->CreateLatencyInfoSwapPromiseMonitor(
+          &monitored_latency_info);
+
+  current_overscroll_params_.reset();
+  InputHandlerProxy::EventDisposition disposition = HandleInputEvent(*event);
+  callback.Run(disposition, std::move(event), monitored_latency_info,
+               std::move(current_overscroll_params_));
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
@@ -533,7 +538,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
 
         scroll_result = input_handler_->ScrollBy(&scroll_state_update);
         HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y),
-                         scroll_result);
+                         scroll_result, false);
 
         cc::ScrollStateData scroll_state_end_data;
         scroll_state_end_data.is_ending = true;
@@ -651,7 +656,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   }
   cc::InputHandlerScrollResult scroll_result =
       input_handler_->ScrollBy(&scroll_state);
-  HandleOverscroll(scroll_point, scroll_result);
+  HandleOverscroll(scroll_point, scroll_result, true);
 
   if (scroll_elasticity_controller_)
     HandleScrollElasticityOverscroll(gesture_event, scroll_result);
@@ -1116,7 +1121,8 @@ void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
 
 void InputHandlerProxy::HandleOverscroll(
     const gfx::Point& causal_event_viewport_point,
-    const cc::InputHandlerScrollResult& scroll_result) {
+    const cc::InputHandlerScrollResult& scroll_result,
+    bool bundle_overscroll_params_with_ack) {
   DCHECK(client_);
   if (!scroll_result.did_overscroll_root)
     return;
@@ -1136,6 +1142,20 @@ void InputHandlerProxy::HandleOverscroll(
     disallow_vertical_fling_scroll_ |=
         std::abs(scroll_result.accumulated_root_overscroll.y()) >=
         kFlingOverscrollThreshold;
+  }
+
+  if (bundle_overscroll_params_with_ack) {
+    // Bundle overscroll message with triggering event response, saving an IPC.
+    current_overscroll_params_.reset(new DidOverscrollParams());
+    current_overscroll_params_->accumulated_overscroll =
+        scroll_result.accumulated_root_overscroll;
+    current_overscroll_params_->latest_overscroll_delta =
+        scroll_result.unused_scroll_delta;
+    current_overscroll_params_->current_fling_velocity =
+        ToClientScrollIncrement(current_fling_velocity_);
+    current_overscroll_params_->causal_event_viewport_point =
+        gfx::PointF(causal_event_viewport_point);
+    return;
   }
 
   client_->DidOverscroll(scroll_result.accumulated_root_overscroll,
@@ -1310,7 +1330,7 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
       cc::ScrollState scroll_state(scroll_state_data);
       cc::InputHandlerScrollResult scroll_result =
           input_handler_->ScrollBy(&scroll_state);
-      HandleOverscroll(fling_parameters_.point, scroll_result);
+      HandleOverscroll(fling_parameters_.point, scroll_result, false);
       did_scroll = scroll_result.did_scroll;
     } break;
     case blink::WebGestureDeviceUninitialized:

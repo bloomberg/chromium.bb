@@ -32,6 +32,9 @@ class InputHandlerProxyClient {
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) = 0;
 
+  // |HandleInputEvent/WithLatencyInfo| will respond to overscroll by calling
+  // the passed in callback.
+  // Otherwise |DidOverscroll| will be fired.
   virtual void DidOverscroll(
       const gfx::Vector2dF& accumulated_overscroll,
       const gfx::Vector2dF& latest_overscroll_delta,

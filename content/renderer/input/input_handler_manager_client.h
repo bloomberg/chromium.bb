@@ -13,17 +13,13 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace ui {
-class LatencyInfo;
-struct DidOverscrollParams;
-}
-
 namespace cc {
 class InputHandler;
 }
 
 namespace ui {
 class SynchronousInputHandlerProxy;
+struct DidOverscrollParams;
 }
 
 namespace content {
@@ -43,6 +39,10 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // Called from the compositor thread.
   virtual void RegisterRoutingID(int routing_id) = 0;
   virtual void UnregisterRoutingID(int routing_id) = 0;
+
+  // |HandleInputEvent| will respond to overscroll by calling the passed in
+  // callback.
+  // Otherwise |DidOverscroll| will be fired.
   virtual void DidOverscroll(int routing_id,
                              const ui::DidOverscrollParams& params) = 0;
   virtual void DidStartFlinging(int routing_id) = 0;

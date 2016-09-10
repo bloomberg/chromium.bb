@@ -8,7 +8,6 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "ui/events/blink/blink_event_util.h"
-#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
@@ -91,7 +90,7 @@ void CompositorMusConnection::OnConnectionLostOnMainThread() {
 }
 
 void CompositorMusConnection::OnWindowInputEventOnMainThread(
-    std::unique_ptr<blink::WebInputEvent> web_event,
+    ui::ScopedWebInputEvent web_event,
     const base::Callback<void(EventResult)>& ack) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   RenderWidgetMusConnection* connection =
@@ -177,15 +176,34 @@ void CompositorMusConnection::OnWindowInputEvent(
     const ui::Event& event,
     std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  std::unique_ptr<blink::WebInputEvent> web_event(Convert(event));
+
+  // Take ownership of the callback, indicating that we will handle it.
+  std::unique_ptr<base::Callback<void(EventResult)>> callback =
+      std::move(*ack_callback);
+  ui::ScopedWebInputEvent web_event(Convert(event).release());
   // TODO(sad): We probably need to plumb LatencyInfo through Mus.
   ui::LatencyInfo info;
-  InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
-      routing_id_, web_event.get(), &info);
+  input_handler_manager_->HandleInputEvent(
+      routing_id_, std::move(web_event), info,
+      base::Bind(
+          &CompositorMusConnection::DidHandleWindowInputEventAndOverscroll,
+          this, base::Passed(std::move(callback))));
+}
+
+void CompositorMusConnection::DidHandleWindowInputEventAndOverscroll(
+    std::unique_ptr<base::Callback<void(EventResult)>> ack_callback,
+    InputEventAckState ack_state,
+    ui::ScopedWebInputEvent web_event,
+    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
   // TODO(jonross): We probably need to ack the event based on the consumed
   // state.
-  if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
+  if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+    // We took the ownership of the callback, so we need to send the ack, and
+    // mark the event as not consumed to preserve existing behavior.
+    ack_callback->Run(EventResult::UNHANDLED);
     return;
+  }
   base::Callback<void(EventResult)> ack =
       base::Bind(&::DoNothingWithEventResult);
   const bool send_ack =
@@ -197,9 +215,14 @@ void CompositorMusConnection::OnWindowInputEvent(
     // OnWindowInputEventAckOnMainThread.
     ack =
         base::Bind(&CompositorMusConnection::OnWindowInputEventAckOnMainThread,
-                   this, *ack_callback->get());
-    ack_callback->reset();
+                   this, *ack_callback);
+  } else {
+    // We took the ownership of the callback, so we need to send the ack, and
+    // mark the event as not consumed to preserve existing behavior.
+    ack_callback->Run(EventResult::UNHANDLED);
   }
+  ack_callback.reset();
+
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CompositorMusConnection::OnWindowInputEventOnMainThread, this,

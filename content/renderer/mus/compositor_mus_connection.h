@@ -12,11 +12,13 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "services/ui/public/cpp/input_event_handler.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/gestures/motion_event_aura.h"
 
 namespace ui {
@@ -66,7 +68,7 @@ class CONTENT_EXPORT CompositorMusConnection
   void OnConnectionLostOnMainThread();
 
   void OnWindowInputEventOnMainThread(
-      std::unique_ptr<blink::WebInputEvent> web_event,
+      ui::ScopedWebInputEvent web_event,
       const base::Callback<void(ui::mojom::EventResult)>& ack);
 
   void OnWindowInputEventAckOnMainThread(
@@ -90,6 +92,13 @@ class CONTENT_EXPORT CompositorMusConnection
       const ui::Event& event,
       std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>*
           ack_callback) override;
+  void DidHandleWindowInputEventAndOverscroll(
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>
+          ack_callback,
+      InputEventAckState ack_state,
+      ui::ScopedWebInputEvent web_event,
+      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
 
   const int routing_id_;
   // Use this lock when accessing |window_tree_client_|. Lock exists solely for
