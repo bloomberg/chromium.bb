@@ -15,14 +15,20 @@
 @class CrTrackingArea;
 @class DropdownAnimation;
 
-namespace fullscreen_mac {
-enum SlidingStyle {
-  OMNIBOX_TABS_PRESENT = 0,  // Tab strip and omnibox both visible.
-  OMNIBOX_TABS_HIDDEN,       // Tab strip and omnibox both hidden.
-  OMNIBOX_TABS_NONE,         // Tab strip and omnibox both hidden and never
-                             // shown.
+enum class FullscreenSlidingStyle {
+  OMNIBOX_TABS_PRESENT,  // Tab strip and omnibox both visible.
+  OMNIBOX_TABS_HIDDEN,   // Tab strip and omnibox both hidden.
+  OMNIBOX_TABS_NONE,     // Tab strip and omnibox both hidden and never
+                         // shown.
 };
-}  // namespace fullscreen_mac
+
+// State of the menubar in the window's screen.
+enum class FullscreenMenubarState {
+  SHOWN,    // Menubar is fully shown.
+  HIDDEN,   // Menubar is fully hidden.
+  SHOWING,  // Menubar is animating in.
+  HIDING,   // Menubar is animating out.
+};
 
 // Provides a controller to fullscreen toolbar for a single browser
 // window.  This class handles running animations, showing and hiding the
@@ -72,14 +78,14 @@ enum SlidingStyle {
   base::mac::FullScreenMode systemFullscreenMode_;
 
   // Whether the omnibox is hidden in fullscreen.
-  fullscreen_mac::SlidingStyle slidingStyle_;
+  FullscreenSlidingStyle slidingStyle_;
 
   // The fraction of the AppKit Menubar that is showing. Ranges from 0 to 1.
   // Only used in AppKit Fullscreen.
   CGFloat menubarFraction_;
 
-  // The toolbar fraction set by the menu progress.
-  CGFloat toolbarFractionFromMenuProgress_;
+  // The state of the menubar in fullscreen.
+  FullscreenMenubarState menubarState_;
 
   // A Carbon event handler that tracks the revealed fraction of the menu bar.
   EventHandlerRef menuBarTrackingHandler_;
@@ -88,17 +94,22 @@ enum SlidingStyle {
   BOOL isRevealingToolbarForTabStripChanges_;
 
   // True when the toolbar should be animated back out via a DropdownAnimation.
-  // This is set and unset in hideTimer:. It's set to YES before it calls
-  // animateToolbarVisibility: and then set to NO after the animation has
-  // started.
+  // This is set and unset in hideTimer: and mouseExited:. It's set to YES
+  // before it calls animateToolbarVisibility: and then set to NO after the
+  // animation has started.
   BOOL shouldAnimateToolbarOut_;
+
+  // True when the toolbar is animating in/out for changes in the toolbar
+  // visibility locks.
+  BOOL isLockingBarVisibility_;
+  BOOL isReleasingBarVisibility_;
 }
 
-@property(nonatomic, assign) fullscreen_mac::SlidingStyle slidingStyle;
+@property(nonatomic, assign) FullscreenSlidingStyle slidingStyle;
 
 // Designated initializer.
 - (id)initWithBrowserController:(BrowserWindowController*)controller
-                          style:(fullscreen_mac::SlidingStyle)style;
+                          style:(FullscreenSlidingStyle)style;
 
 // Informs the controller that the browser has entered or exited fullscreen
 // mode. |-setupFullscreenToolbarForContentView:showDropdown:| should be called
@@ -115,6 +126,14 @@ enum SlidingStyle {
 // Generally, this is > 0 when the window is on the primary screen and 0
 // otherwise.
 - (CGFloat)floatingBarVerticalOffset;
+
+// Shows/hides the toolbar with animation to reflect changes for the toolbar
+// visibility locks. lockBarVisibilityWithAnimation: should only be called when
+// the lock state goes from unlocked to locked. Likewise,
+// releaseBarVisibilityWithAnimation: should only be called whenthe lock state
+// goes from locked to unlocked.
+- (void)lockBarVisibilityWithAnimation:(BOOL)animate;
+- (void)releaseBarVisibilityWithAnimation:(BOOL)animate;
 
 // Informs the controller that the overlay should be shown/hidden, possibly
 // with animation.

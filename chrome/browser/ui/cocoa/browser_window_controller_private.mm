@@ -468,7 +468,7 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
-- (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style {
+- (void)adjustUIForSlidingFullscreenStyle:(FullscreenSlidingStyle)style {
   // The UI should only be adjusted in fullscreen mode.
   if (![self isInAnyFullscreenMode])
     return;
@@ -495,7 +495,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (FullscreenToolbarController*)newFullscreenToolbarControllerWithStyle:
-    (fullscreen_mac::SlidingStyle)style {
+    (FullscreenSlidingStyle)style {
   return [[FullscreenToolbarController alloc] initWithBrowserController:self
                                                                   style:style];
 }
@@ -527,7 +527,7 @@ willPositionSheet:(NSWindow*)sheet
                           regularWindow:[self window]
                        fullscreenWindow:fullscreenWindow_.get()];
 
-  fullscreen_mac::SlidingStyle style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
+  FullscreenSlidingStyle style = FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN;
   [self adjustUIForSlidingFullscreenStyle:style];
 
   [fullscreenWindow_ display];
@@ -832,14 +832,11 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)adjustUIForEnteringFullscreen {
-  fullscreen_mac::SlidingStyle style;
-  if ([self isFullscreenForTabContentOrExtension]) {
-    style = fullscreen_mac::OMNIBOX_TABS_NONE;
-  } else if (!shouldShowFullscreenToolbar_) {
-    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
-  } else {
-    style = fullscreen_mac::OMNIBOX_TABS_PRESENT;
-  }
+  FullscreenSlidingStyle style = FullscreenSlidingStyle::OMNIBOX_TABS_PRESENT;
+  if ([self isFullscreenForTabContentOrExtension])
+    style = FullscreenSlidingStyle::OMNIBOX_TABS_NONE;
+  else if (!shouldShowFullscreenToolbar_)
+    style = FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN;
 
   [self adjustUIForSlidingFullscreenStyle:style];
 }
@@ -940,8 +937,7 @@ willPositionSheet:(NSWindow*)sheet
   [layout setWindowSize:windowSize];
 
   [layout setInAnyFullscreen:[self isInAnyFullscreenMode]];
-  [layout setFullscreenSlidingStyle:fullscreenToolbarController_.get()
-                                        .slidingStyle];
+  [layout setSlidingStyle:fullscreenToolbarController_.get().slidingStyle];
   [layout
       setFullscreenMenubarOffset:[fullscreenToolbarController_ menubarOffset]];
   [layout setFullscreenToolbarFraction:[fullscreenToolbarController_

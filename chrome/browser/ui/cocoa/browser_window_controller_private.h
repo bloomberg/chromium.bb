@@ -112,7 +112,7 @@ class WebContents;
 // Allows the omnibox to slide. Also prepares UI for several fullscreen modes.
 // This method gets called when entering AppKit fullscren, or when entering
 // Immersive fullscreen. Expects fullscreenStyle_ to be set.
-- (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style;
+- (void)adjustUIForSlidingFullscreenStyle:(FullscreenSlidingStyle)style;
 
 // This method gets called when exiting AppKit fullscreen, or when exiting
 // Immersive fullscreen. It performs some common UI changes, and stops the
@@ -122,7 +122,7 @@ class WebContents;
 // Exposed for testing.
 // Creates a FullscreenToolbarController with the given style.
 - (FullscreenToolbarController*)newFullscreenToolbarControllerWithStyle:
-    (fullscreen_mac::SlidingStyle)style;
+    (FullscreenSlidingStyle)style;
 
 // Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
 // Fullscreen.
