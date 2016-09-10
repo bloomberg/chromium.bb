@@ -1388,6 +1388,10 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     if (isContextLost())
         return;
 
+    if (isWebGL2OrHigher()) {
+        contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+
     // This is an approximation because at WebGLRenderingContextBase level we don't
     // know if the underlying FBO uses textures or renderbuffers.
     GLint maxSize = std::min(m_maxTextureSize, m_maxRenderbufferSize);
@@ -1416,6 +1420,7 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     contextGL()->BindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
     contextGL()->BindRenderbuffer(GL_RENDERBUFFER, objectOrZero(m_renderbufferBinding.get()));
     drawingBuffer()->restoreFramebufferBindings();
+    drawingBuffer()->restorePixelUnpackBufferBindings();
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const
@@ -1520,6 +1525,9 @@ void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer)
     if (!validateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
         return;
 
+    if (target == GL_PIXEL_UNPACK_BUFFER) {
+        drawingBuffer()->setPixelUnpackBufferBinding(objectOrZero(buffer));
+    }
     contextGL()->BindBuffer(target, objectOrZero(buffer));
 }
 
@@ -2030,8 +2038,10 @@ bool WebGLRenderingContextBase::deleteObject(WebGLObject* object)
 
 void WebGLRenderingContextBase::deleteBuffer(WebGLBuffer* buffer)
 {
+    GLuint bufferName = objectOrZero(buffer);
     if (!deleteObject(buffer))
         return;
+    drawingBuffer()->notifyBufferDeleted(bufferName);
     removeBoundBuffer(buffer);
 }
 

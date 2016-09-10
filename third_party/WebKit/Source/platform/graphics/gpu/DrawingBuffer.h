@@ -136,6 +136,19 @@ public:
     // The bound texture is tracked to avoid costly queries during rendering.
     void setTexture2DBinding(GLuint texture) { m_texture2DBinding = texture; }
 
+    void setPixelUnpackBufferBinding(GLuint buffer)
+    {
+        DCHECK(m_webGLVersion > WebGL1);
+        m_pixelUnpackBufferBinding = buffer;
+    }
+
+    void notifyBufferDeleted(GLuint buffer)
+    {
+        if (m_webGLVersion > WebGL1 && buffer == m_pixelUnpackBufferBinding) {
+            setPixelUnpackBufferBinding(0);
+        }
+    }
+
     // The DrawingBuffer needs to track the currently bound framebuffer so it
     // restore the binding when needed.
     void setFramebufferBinding(GLenum target, GLuint fbo)
@@ -226,6 +239,8 @@ public:
 
     int sampleCount() const { return m_sampleCount; }
     bool explicitResolveOfMultisampleData() const { return m_antiAliasingMode == MSAAExplicitResolve; }
+
+    void restorePixelUnpackBufferBindings();
 
     // Bind to m_drawFramebufferBinding or m_readFramebufferBinding if it's not 0.
     // Otherwise, bind to the default FBO.
@@ -377,6 +392,7 @@ private:
     const WebGLVersion m_webGLVersion;
     bool m_scissorEnabled = false;
     GLuint m_texture2DBinding = 0;
+    GLuint m_pixelUnpackBufferBinding = 0;
     GLuint m_drawFramebufferBinding = 0;
     GLuint m_readFramebufferBinding = 0;
     GLuint m_renderbufferBinding = 0;

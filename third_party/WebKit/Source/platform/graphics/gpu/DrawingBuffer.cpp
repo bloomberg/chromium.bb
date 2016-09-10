@@ -324,6 +324,10 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
         return true;
     }
 
+    if (m_webGLVersion > WebGL1) {
+        m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+
     // We must restore the texture binding since creating new textures,
     // consuming and producing mailboxes changes it.
     ScopedTextureUnit0BindingRestorer restorer(m_gl, m_activeTextureUnit, m_texture2DBinding);
@@ -351,6 +355,7 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
     }
 
     restoreFramebufferBindings();
+    restorePixelUnpackBufferBindings();
     m_contentsChanged = false;
 
     m_gl->ProduceTextureDirectCHROMIUM(mailboxInfo->textureInfo.textureId, mailboxInfo->textureInfo.parameters.target, mailboxInfo->mailbox.name);
@@ -950,6 +955,13 @@ void DrawingBuffer::commit()
         m_gl->ApplyScreenSpaceAntialiasingCHROMIUM();
     }
     m_contentsChangeCommitted = true;
+}
+
+void DrawingBuffer::restorePixelUnpackBufferBindings()
+{
+    if (m_webGLVersion > WebGL1) {
+        m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixelUnpackBufferBinding);
+    }
 }
 
 void DrawingBuffer::restoreFramebufferBindings()
