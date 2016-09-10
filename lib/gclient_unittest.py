@@ -22,7 +22,10 @@ class TestGclientWriteConfigFile(
 
   def _AssertGclientConfigSpec(self, expected_spec, use_cache=True):
     if cros_build_lib.HostIsCIBuilder() and use_cache:
-      expected_spec += "cache_dir = '/b/git-cache'\n"
+      if cros_build_lib.IsInsideChroot():
+        expected_spec += "cache_dir = '/tmp/b/git-cache'\n"
+      else:
+        expected_spec += "cache_dir = '/b/git-cache'\n"
     self.rc.assertCommandContains(('gclient', 'config', '--spec',
                                    expected_spec),
                                   cwd=self._TEST_CWD)
