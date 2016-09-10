@@ -17,6 +17,8 @@ import org.chromium.mojo.bindings.test.mojom.mojo.Struct5;
 import org.chromium.mojo.bindings.test.mojom.mojo.Struct6;
 import org.chromium.mojo.bindings.test.mojom.mojo.StructOfNullables;
 
+import java.nio.ByteBuffer;
+
 /**
  * Tests for the serialization logic of the generated structs, using structs defined in
  * mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom .
@@ -127,5 +129,47 @@ public class SerializationTest extends TestCase {
         assertNull(struct.struct1);
         assertNull(struct.str);
         struct.serialize(null);
+    }
+
+    /**
+     * Verifies that a struct can be serialized to and deserialized from a ByteBuffer.
+     */
+    @SmallTest
+    public void testByteBufferSerialization() {
+        Struct1 input = new Struct1();
+        input.i = 0x7F;
+
+        ByteBuffer buf = input.serialize();
+
+        byte[] expected_raw_bytes = {16, 0, 0, 0, 0, 0, 0, 0, 0x7F, 0, 0, 0, 0, 0, 0, 0};
+        ByteBuffer expected_buf = ByteBuffer.wrap(expected_raw_bytes);
+        assertEquals(expected_buf, buf);
+
+        Struct1 output = Struct1.deserialize(buf);
+        assertEquals(0x7F, output.i);
+    }
+
+    /**
+     * Verifies that a struct with handles cannot be serialized to a ByteBuffer.
+     */
+    @SmallTest
+    public void testByteBufferSerializationWithHandles() {
+        StructOfNullables struct = new StructOfNullables();
+        assertFalse(struct.hdl.isValid());
+        assertNull(struct.struct1);
+        assertNull(struct.str);
+
+        // It is okay to serialize invalid handles.
+        struct.serialize();
+
+        struct.hdl = new HandleMock();
+
+        try {
+            struct.serialize();
+            fail("Serializing a struct with handles to a ByteBuffer should have thrown an "
+                    + "exception.");
+        } catch (UnsupportedOperationException ex) {
+            // Expected.
+        }
     }
 }

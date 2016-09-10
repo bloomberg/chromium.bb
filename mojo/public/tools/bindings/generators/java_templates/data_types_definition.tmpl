@@ -182,6 +182,19 @@ if ({{variable}} != null) {
         return decode(new org.chromium.mojo.bindings.Decoder(message));
     }
 
+    /**
+     * Similar to the method above, but deserializes from a |ByteBuffer| instance.
+     *
+     * @throws org.chromium.mojo.bindings.DeserializationException on deserialization failure.
+     */
+    public static {{struct|name}} deserialize(java.nio.ByteBuffer data) {
+        if (data == null)
+            return null;
+
+        return deserialize(new org.chromium.mojo.bindings.Message(
+                data, new java.util.ArrayList<org.chromium.mojo.system.Handle>()));
+    }
+
     @SuppressWarnings("unchecked")
     public static {{struct|name}} decode(org.chromium.mojo.bindings.Decoder decoder0) {
         if (decoder0 == null) {

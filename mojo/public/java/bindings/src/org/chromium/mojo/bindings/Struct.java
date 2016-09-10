@@ -6,6 +6,8 @@ package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.system.Core;
 
+import java.nio.ByteBuffer;
+
 /**
  * Base class for all mojo structs.
  */
@@ -46,6 +48,23 @@ public abstract class Struct {
         Encoder encoder = new Encoder(core, mEncodedBaseSize);
         encode(encoder);
         return encoder.getMessage();
+    }
+
+    /**
+     * Similar to the method above, but returns the serialization result as |ByteBuffer|.
+     *
+     * @throws UnsupportedOperationException if the struct contains interfaces or handles.
+     * @throws SerializationException on serialization failure.
+     */
+    public ByteBuffer serialize() {
+        // If the struct contains interfaces which require a non-null |Core| instance, it will throw
+        // UnsupportedOperationException.
+        Message message = serialize(null);
+
+        if (!message.getHandles().isEmpty())
+            throw new UnsupportedOperationException("Handles are discarded.");
+
+        return message.getData();
     }
 
     /**
