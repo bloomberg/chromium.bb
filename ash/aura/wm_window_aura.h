@@ -74,13 +74,10 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   bool IsVisible() const override;
   void SetOpacity(float opacity) override;
   float GetTargetOpacity() const override;
-  gfx::Rect GetMinimizeAnimationTargetBoundsInScreen() const override;
   void SetTransform(const gfx::Transform& transform) override;
   gfx::Transform GetTargetTransform() const override;
   bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
-  SkColor GetColorProperty(WmWindowProperty key) override;
-  void SetColorProperty(WmWindowProperty key, SkColor value) override;
   int GetIntProperty(WmWindowProperty key) override;
   void SetIntProperty(WmWindowProperty key, int value) override;
   ShelfItemDetails* GetShelfItemDetails() override;

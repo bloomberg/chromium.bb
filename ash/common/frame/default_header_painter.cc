@@ -206,14 +206,6 @@ void DefaultHeaderPainter::SetFrameColors(SkColor active_frame_color,
   UpdateAllButtonImages();
 }
 
-SkColor DefaultHeaderPainter::GetActiveFrameColor() const {
-  return active_frame_color_;
-}
-
-SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
-  return inactive_frame_color_;
-}
-
 void DefaultHeaderPainter::UpdateLeftHeaderView(views::View* left_header_view) {
   left_header_view_ = left_header_view;
 }

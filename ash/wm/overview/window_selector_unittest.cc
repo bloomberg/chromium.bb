@@ -26,9 +26,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/display/display_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
@@ -78,10 +76,6 @@ namespace {
 // With Material Design the label covers selector item windows with a padding
 // in order to prevent them from receiving user input events while in overview.
 static const int kWindowMarginMD = 5;
-
-// With Material Design the overview mode header overlaps original window
-// header. This value is used to set top inset property on the windows.
-static const int kHeaderHeight = 32;
 
 const char kActiveWindowChangedFromOverview[] =
     "WindowSelector_ActiveWindowChanged";
@@ -134,17 +128,11 @@ class WindowSelectorTest
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
-    aura::Window* window =
-        CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
-    window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    return window;
+    return CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
   }
 
   aura::Window* CreateWindowWithId(const gfx::Rect& bounds, int id) {
-    aura::Window* window =
-        CreateTestWindowInShellWithDelegate(&delegate_, id, bounds);
-    window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    return window;
+    return CreateTestWindowInShellWithDelegate(&delegate_, id, bounds);
   }
   aura::Window* CreateNonActivatableWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateWindow(bounds);
@@ -166,8 +154,6 @@ class WindowSelectorTest
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(params);
     widget->Show();
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
-    window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
     ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
     return widget;
   }
@@ -175,7 +161,6 @@ class WindowSelectorTest
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
     test::TestShelfDelegate::instance()->AddShelfItem(window);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
@@ -429,10 +414,6 @@ TEST_P(WindowSelectorTest, SmallDisplay) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
-  window1->SetProperty(aura::client::kTopViewInset, 0);
-  window2->SetProperty(aura::client::kTopViewInset, 0);
-  window3->SetProperty(aura::client::kTopViewInset, 0);
-  window4->SetProperty(aura::client::kTopViewInset, 0);
   ToggleOverview();
 }
 
@@ -713,10 +694,8 @@ TEST_P(WindowSelectorTest, ActivateDockedWindow) {
   delegate.set_minimum_size(gfx::Size(200, 500));
   std::unique_ptr<aura::Window> docked_window1(
       CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
   std::unique_ptr<aura::Window> docked_window2(
       CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window2->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
   wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
   wm::WindowState* state2 = wm::GetWindowState(docked_window2.get());
 
@@ -741,7 +720,7 @@ TEST_P(WindowSelectorTest, ActivateDockedWindow) {
   // Activate |docked_window2| leaving the overview.
   const gfx::RectF rect =
       GetTransformedBoundsInRootWindow(docked_window2.get());
-  gfx::Point point(rect.top_right().x() - 50, rect.top_right().y() + 50);
+  gfx::Point point(rect.top_right().x() - 50, rect.top_right().y() + 10);
   ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
                                            point);
   event_generator.ClickLeftButton();
@@ -772,7 +751,6 @@ TEST_P(WindowSelectorTest, CloseDockedWindow) {
   delegate.set_minimum_size(gfx::Size(200, 500));
   std::unique_ptr<aura::Window> docked_window1(
       CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
   std::unique_ptr<views::Widget> docked2 = CreateWindowWidget(bounds);
   aura::Window* docked_window2 = docked2->GetNativeWindow();
   wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
@@ -796,7 +774,7 @@ TEST_P(WindowSelectorTest, CloseDockedWindow) {
 
   // Close |docked_window2| (staying in overview).
   const gfx::RectF rect = GetTransformedBoundsInRootWindow(docked_window2);
-  gfx::Point point(rect.top_right().x() - 5, rect.top_right().y() + 5);
+  gfx::Point point(rect.top_right().x() - 5, rect.top_right().y() - 5);
   ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
                                            point);
   // Both windows are visible while in overview.
@@ -834,7 +812,6 @@ TEST_P(WindowSelectorTest, CloseDockedMinimizedWindow) {
   delegate.set_minimum_size(gfx::Size(200, 500));
   std::unique_ptr<aura::Window> docked_window1(
       CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
   std::unique_ptr<views::Widget> docked2 = CreateWindowWidget(bounds);
   aura::Window* docked_window2 = docked2->GetNativeWindow();
   wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
@@ -858,7 +835,7 @@ TEST_P(WindowSelectorTest, CloseDockedMinimizedWindow) {
 
   // Close |docked_window2| (staying in overview).
   const gfx::RectF rect = GetTransformedBoundsInRootWindow(docked_window2);
-  gfx::Point point(rect.top_right().x() - 5, rect.top_right().y() + 5);
+  gfx::Point point(rect.top_right().x() - 5, rect.top_right().y() - 5);
   ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
                                            point);
   // Both windows are visible while in overview.
@@ -994,7 +971,7 @@ TEST_P(WindowSelectorTest, ActiveWindowChangedUserActionWindowClose) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   ASSERT_FALSE(widget->IsClosed());
@@ -1109,7 +1086,7 @@ TEST_P(WindowSelectorTest, CloseButton) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
   ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -1140,8 +1117,6 @@ TEST_P(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
   params.parent = window1->parent();
   widget->Init(params);
   widget->Show();
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
-  window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
 
   ASSERT_EQ(root_windows[1], window1->GetRootWindow());
 
@@ -1149,7 +1124,7 @@ TEST_P(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
 
   aura::Window* window2 = widget->GetNativeWindow();
   gfx::RectF bounds = GetTransformedBoundsInRootWindow(window2);
-  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() + 5);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
   ui::test::EventGenerator event_generator(window2->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -1289,8 +1264,6 @@ TEST_P(WindowSelectorTest, DISABLED_MinimizedWindowVisibility) {
 // Tests that a bounds change during overview is corrected for.
 TEST_P(WindowSelectorTest, BoundsChangeDuringOverview) {
   std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
-  // Use overview headers above the window in this test.
-  window->SetProperty(aura::client::kTopViewInset, 0);
   ToggleOverview();
   gfx::Rect overview_bounds =
       ToEnclosingRect(GetTransformedTargetBounds(window.get()));

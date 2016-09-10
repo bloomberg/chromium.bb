@@ -5,19 +5,14 @@
 #ifndef ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_AURA_H_
 #define ASH_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_AURA_H_
 
-#include <memory>
-
 #include "ash/common/wm/overview/overview_animation_type.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
 #include "base/macros.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
-
-namespace ui {
-class ScopedLayerAnimationSettings;
-}  // namespace ui
 
 namespace ash {
 
@@ -28,11 +23,10 @@ class ScopedOverviewAnimationSettingsAura
   ScopedOverviewAnimationSettingsAura(OverviewAnimationType animation_type,
                                       aura::Window* window);
   ~ScopedOverviewAnimationSettingsAura() override;
-  void AddObserver(ui::ImplicitAnimationObserver* observer) override;
 
  private:
   // The managed animation settings.
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> animation_settings_;
+  ui::ScopedLayerAnimationSettings animation_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOverviewAnimationSettingsAura);
 };

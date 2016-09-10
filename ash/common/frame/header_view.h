@@ -60,8 +60,6 @@ class ASH_EXPORT HeaderView : public views::View,
   void SizeConstraintsChanged();
 
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
-  SkColor GetActiveFrameColor() const;
-  SkColor GetInactiveFrameColor() const;
 
   // views::View:
   void Layout() override;
