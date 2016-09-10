@@ -405,14 +405,19 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
 
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(10000, 0, 1, 1));
   EXPECT_EQ(2u, images.size());
-  int expected10k = static_cast<int>(static_cast<float>(dimension - 10000));
-  int expected500 = static_cast<int>(static_cast<float>(dimension - 500));
-  EXPECT_EQ(gfx::Rect(10000, 0, expected10k, dimension), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(10000, 0, dimension - 10000, dimension),
+            images[1].image_rect);
   EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
 
+  // Since we adjust negative offsets before using ToEnclosingRect, the expected
+  // width will be converted to float, which means that we lose some precision.
+  // The expected value is whatever the value is converted to float and then
+  // back to int.
+  int expected10k = static_cast<int>(static_cast<float>(dimension - 10000));
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(0, 500, 1, 1));
   EXPECT_EQ(2u, images.size());
-  EXPECT_EQ(gfx::Rect(0, 500, expected10k, expected500), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 500, expected10k, dimension - 500),
+            images[1].image_rect);
   EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
 }
 

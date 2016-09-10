@@ -530,39 +530,30 @@ TEST(RectTest, ToEnclosingRect) {
     int y2;
     int w2;
     int h2;
-  } tests[] = {{0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
-               {5.5f, 5.5f, 0.0f, 0.0f, 5, 5, 0, 0},
-               {-1.5f, -1.5f, 3.0f, 3.0f, -2, -2, 4, 4},
-               {-1.5f, -1.5f, 3.5f, 3.5f, -2, -2, 4, 4},
-               {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
-               {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
-               {20000.5f, 20000.5f, 0.5f, 0.5f, 20000, 20000, 1, 1},
-               {static_cast<float>(min_int),
-                static_cast<float>(min_int),
-                max_int * 2.f,
-                max_int * 2.f,
-                min_int,
-                min_int,
-                max_int,
-                max_int},
-               {static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                max_int,
-                max_int,
-                0,
-                0}};
+  } tests[] = {
+      {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
+      {5.5f, 5.5f, 0.0f, 0.0f, 5, 5, 0, 0},
+      {-1.5f, -1.5f, 3.0f, 3.0f, -2, -2, 4, 4},
+      {-1.5f, -1.5f, 3.5f, 3.5f, -2, -2, 4, 4},
+      {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
+      {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
+      {20000.5f, 20000.5f, 0.5f, 0.5f, 20000, 20000, 1, 1},
+      {static_cast<float>(min_int), static_cast<float>(min_int), max_int * 2.f,
+       max_int * 2.f, min_int, min_int, max_int, max_int},
+      {static_cast<float>(max_int), static_cast<float>(max_int),
+       static_cast<float>(max_int), static_cast<float>(max_int), max_int,
+       max_int, 0, 0},
+      {-0.5f, -0.5f, 22777712.f, 1.f, -1, -1, 22777713, 2}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
     Rect enclosed = ToEnclosingRect(r1);
-    EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.height(), enclosed.height());
+    EXPECT_EQ(r2.x(), enclosed.x());
+    EXPECT_EQ(r2.y(), enclosed.y());
+    EXPECT_EQ(r2.width(), enclosed.width());
+    EXPECT_EQ(r2.height(), enclosed.height());
   }
 }
 
