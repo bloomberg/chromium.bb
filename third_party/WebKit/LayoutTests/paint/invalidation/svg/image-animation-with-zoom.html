@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<!-- Test for crbug.com/375765: test passes if a green square is drawn. -->
+<script src="../resources/text-based-repaint.js"></script>
+<style>
+  html {
+    zoom: 2.2;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+<script>
+window.testIsAsync = true;
+window.onload = runRepaintTest;
+
+function repaintTest() {
+  window.internals.advanceImageAnimation(targetImage);
+  window.requestAnimationFrame(function() {
+    finishRepaintTest();
+  });
+};
+</script>
+<img id="targetImage" src="resources/animate-center.svg" width="10px" height="10px">
