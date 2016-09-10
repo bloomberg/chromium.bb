@@ -2672,6 +2672,7 @@ def GetConfig():
       'gnawty',
       'jecht',
       'kefka',
+      'kevin',
       'kip',
       'lars',
       'leon',

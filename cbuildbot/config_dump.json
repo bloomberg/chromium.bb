@@ -11936,6 +11936,17 @@
             "chrome_internal"
         ]
     },
+    "kevin-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "kevin"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
     "kevin-full": {
         "_template": "full",
         "boards": [
