@@ -19,40 +19,34 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 namespace {
-const size_t kLargestDrawQuadSize =
-    sizeof(cc::YUVVideoDrawQuad) + sizeof(gfx::ColorSpace);
+template <typename...>
+struct MaxSize {};
+template <class T, class... Args>
+struct MaxSize<T, Args...> {
+  static const size_t value = sizeof(T) > MaxSize<Args...>::value
+                                  ? sizeof(T)
+                                  : MaxSize<Args...>::value;
+};
+template <>
+struct MaxSize<> {
+  static const size_t value = 0;
+};
+
+const size_t kLargestDrawQuadSize = MaxSize<cc::DebugBorderDrawQuad,
+                                            cc::PictureDrawQuad,
+                                            cc::RenderPassDrawQuad,
+                                            cc::SolidColorDrawQuad,
+                                            cc::StreamVideoDrawQuad,
+                                            cc::SurfaceDrawQuad,
+                                            cc::TextureDrawQuad,
+                                            cc::TileDrawQuad,
+                                            cc::YUVVideoDrawQuad>::value;
+
 }  // namespace
 
 namespace cc {
 
 size_t LargestDrawQuadSize() {
-  // Currently the largest quad is either a RenderPassDrawQuad or a
-  // StreamVideoDrawQuad depends on hardware structure.
-
-  // Use compile assert to make sure largest is actually larger than all other
-  // type of draw quads.
-  static_assert(sizeof(DebugBorderDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. DebugBorderDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(PictureDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. PictureDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(TextureDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. TextureDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(SolidColorDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. SolidColorDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(SurfaceDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. SurfaceDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(TileDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. TileDrawQuad is "
-                "currently largest.");
-  static_assert(sizeof(YUVVideoDrawQuad) <= kLargestDrawQuadSize,
-                "Largest Draw Quad size needs update. YUVVideoDrawQuad is "
-                "currently largest.");
-
   return kLargestDrawQuadSize;
 }
 
