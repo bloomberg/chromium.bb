@@ -79,34 +79,25 @@ const CGFloat kSecurityParagraphSpacing = 12;
 
 /**************** Site Settings Section ****************/
 
-// Spacing between parts of the site settings section.
-const CGFloat kSiteSettingsSectionSpacing = 2;
-
 // Square size of the permission images.
-const CGFloat kPermissionImageSize = 19;
+const CGFloat kPermissionImageSize = 16;
+
+// Spacing between a permission image and the text.
+const CGFloat kPermissionImageSpacing = 6;
 
 // Square size of the permission delete button image.
 const CGFloat kPermissionDeleteImageSize = 16;
 
-// Vertical adjustment for the permission images. They have an extra pixel of
-// padding on the bottom edge.
-const CGFloat kPermissionImageYAdjust = 1;
+// The spacing between individual permissions.
+const CGFloat kPermissionsVerticalSpacing = 16;
 
-// Spacing between a permission image and the text.
-const CGFloat kPermissionImageSpacing = 3;
+// Amount to lower each permission icon to align the icon baseline with the
+// label text.
+const CGFloat kPermissionIconYAdjustment = 1;
 
-// The spacing between individual items in the Permissions tab.
-const CGFloat kPermissionsTabSpacing = 12;
-
-// Extra spacing after a headline on the Permissions tab.
-const CGFloat kPermissionsHeadlineSpacing = 2;
-
-// The amount of horizontal space between a permission label and the popup.
-const CGFloat kPermissionPopUpXSpacing = 3;
-
-// The amount of padding to *remove* when placing
-// |IDS_WEBSITE_SETTINGS_{FIRST,THIRD}_PARTY_SITE_DATA| next to each other.
-const CGFloat kTextLabelXPadding = 5;
+// Amount to lower each permission popup button to make its text align with the
+// permission label.
+const CGFloat kPermissionPopupButtonYAdjustment = 3;
 
 /**************** Internal Page Bubble ****************/
 
@@ -378,8 +369,10 @@ bool IsInternalURL(const GURL& url) {
   // performLayout.
   NSString* siteSettingsButtonText =
       l10n_util::GetNSString(IDS_PAGE_INFO_SITE_SETTINGS_LINK);
-  siteSettingsButton_ = [self addLinkButtonWithText:siteSettingsButtonText
-                                             toView:siteSettingsSectionView];
+  siteSettingsButton_ = [self addButtonWithText:siteSettingsButtonText
+                                         toView:siteSettingsSectionView];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:siteSettingsButton_];
+
   [siteSettingsButton_ setTarget:self];
   [siteSettingsButton_ setAction:@selector(showSiteSettingsData:)];
 
@@ -438,6 +431,18 @@ bool IsInternalURL(const GURL& url) {
   DCHECK(resetDecisionsButton_);
   presenter_->OnRevokeSSLErrorBypassButtonPressed();
   [self close];
+}
+
+- (CGFloat)layoutViewAtRTLStart:(NSView*)view withYPosition:(CGFloat)yPos {
+  CGFloat xPos;
+  if (base::i18n::IsRTL()) {
+    xPos =
+        kDefaultWindowWidth - kSectionHorizontalPadding - NSWidth([view frame]);
+  } else {
+    xPos = kSectionHorizontalPadding;
+  }
+  [view setFrameOrigin:NSMakePoint(xPos, yPos)];
+  return yPos + NSHeight([view frame]);
 }
 
 // Set the Y position of |view| to the given position, and return the position
@@ -534,17 +539,10 @@ bool IsInternalURL(const GURL& url) {
 
   if (permissionsPresent_) {
     // Put the permission info just below the link button.
-    yPos = [self setYPositionOfView:permissionsView_
-                                 to:yPos + kSiteSettingsSectionSpacing];
+    yPos = [self setYPositionOfView:permissionsView_ to:yPos];
   }
 
-  // Put the link button for site settings just below the permissions.
-  // TODO(lgarron): set the position of this based on RTL/LTR.
-  // http://code.google.com/p/chromium/issues/detail?id=525304
-  yPos += kSiteSettingsSectionSpacing;
-  [siteSettingsButton_
-      setFrameOrigin:NSMakePoint(kSectionHorizontalPadding, yPos)];
-  yPos = NSMaxY([siteSettingsButton_ frame]);
+  yPos = [self layoutViewAtRTLStart:siteSettingsButton_ withYPosition:yPos];
 
   // Resize the height based on contents.
   [self setHeightOfView:siteSettingsSectionView_
@@ -740,6 +738,7 @@ bool IsInternalURL(const GURL& url) {
       [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
                                                         forURL:url
                                                   withCallback:callback]);
+
   // Determine the largest possible size for this button.
   CGFloat maxTitleWidth = [button
       maxTitleWidthForContentSettingsType:permissionInfo.type
@@ -802,10 +801,8 @@ bool IsInternalURL(const GURL& url) {
                   toView:(NSView*)view
                  atPoint:(NSPoint)point {
   base::string16 labelText =
-      WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type) +
-      base::ASCIIToUTF16(":");
-  bool isRTL =
-      base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(labelText);
+      WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type);
+  bool isRTL = base::i18n::IsRTL();
   base::scoped_nsobject<NSImage> image(
       [WebsiteSettingsUI::GetPermissionIcon(permissionInfo).ToNSImage()
           retain]);
@@ -819,13 +816,13 @@ bool IsInternalURL(const GURL& url) {
 
   if (isRTL) {
     point.x = NSWidth([view frame]) - kPermissionImageSize -
-              kPermissionImageSpacing - kSectionHorizontalPadding;
+              kSectionHorizontalPadding;
     imageView = [self addImageWithSize:[image size] toView:view atPoint:point];
     [imageView setImage:image];
     point.x -= kPermissionImageSpacing;
 
     label = [self addText:labelText
-                 withSize:[NSFont smallSystemFontSize]
+                 withSize:[NSFont systemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
@@ -833,7 +830,8 @@ bool IsInternalURL(const GURL& url) {
     point.x -= NSWidth([label frame]);
     [label setFrameOrigin:point];
 
-    position = NSMakePoint(point.x, point.y);
+    position =
+        NSMakePoint(point.x, point.y + kPermissionPopupButtonYAdjustment);
     button = [self addPopUpButtonForPermission:permissionInfo
                                         toView:view
                                        atPoint:position];
@@ -845,13 +843,15 @@ bool IsInternalURL(const GURL& url) {
     point.x += kPermissionImageSize + kPermissionImageSpacing;
 
     label = [self addText:labelText
-                 withSize:[NSFont smallSystemFontSize]
+                 withSize:[NSFont systemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
     [label sizeToFit];
 
-    position = NSMakePoint(NSMaxX([label frame]), point.y);
+    position = NSMakePoint(NSMaxX([label frame]),
+                           point.y + kPermissionPopupButtonYAdjustment);
+
     button = [self addPopUpButtonForPermission:permissionInfo
                                         toView:view
                                        atPoint:position];
@@ -865,9 +865,10 @@ bool IsInternalURL(const GURL& url) {
   // invisible bezel.
   NSRect titleRect = [[button cell] titleRectForBounds:[button bounds]];
   if (isRTL) {
-    position.x += kPermissionPopUpXSpacing;
+    position.x = kSectionHorizontalPadding;
   } else {
-    position.x -= titleRect.origin.x - kPermissionPopUpXSpacing;
+    position.x = kDefaultWindowWidth - kSectionHorizontalPadding -
+                 [button frame].size.width;
   }
   position.y -= titleRect.origin.y;
   [button setFrameOrigin:position];
@@ -894,8 +895,7 @@ bool IsInternalURL(const GURL& url) {
   base::string16 labelText = l10n_util::GetStringFUTF16(
       objectInfo->ui_info.label_string_id,
       WebsiteSettingsUI::ChosenObjectToUIString(*objectInfo));
-  bool isRTL =
-      base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(labelText);
+  bool isRTL = base::i18n::IsRTL();
   base::scoped_nsobject<NSImage> image(
       [WebsiteSettingsUI::GetChosenObjectIcon(*objectInfo, false)
               .ToNSImage() retain]);
@@ -915,7 +915,7 @@ bool IsInternalURL(const GURL& url) {
     point.x -= kPermissionImageSpacing;
 
     label = [self addText:labelText
-                 withSize:[NSFont smallSystemFontSize]
+                 withSize:[NSFont systemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
@@ -935,7 +935,7 @@ bool IsInternalURL(const GURL& url) {
     point.x += kPermissionImageSize + kPermissionImageSpacing;
 
     label = [self addText:labelText
-                 withSize:[NSFont smallSystemFontSize]
+                 withSize:[NSFont systemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
@@ -954,11 +954,6 @@ bool IsInternalURL(const GURL& url) {
   // Also adjust the horizontal position to remove excess space due to the
   // invisible bezel.
   NSRect titleRect = [[button cell] titleRectForBounds:[button bounds]];
-  if (isRTL) {
-    position.x += kPermissionPopUpXSpacing;
-  } else {
-    position.x -= titleRect.origin.x - kPermissionPopUpXSpacing;
-  }
   position.y -= titleRect.origin.y;
   [button setFrameOrigin:position];
 
@@ -973,15 +968,9 @@ bool IsInternalURL(const GURL& url) {
 // the cap height of the first line of text.
 - (void)alignPermissionIcon:(NSImageView*)imageView
               withTextField:(NSTextField*)textField {
-  NSFont* font = [textField font];
-
-  // Calculate the offset from the top of the text field.
-  CGFloat capHeight = [font capHeight];
-  CGFloat offset = (kPermissionImageSize - capHeight) / 2 -
-      ([font ascender] - capHeight) - kPermissionImageYAdjust;
 
   NSRect frame = [imageView frame];
-  frame.origin.y -= offset;
+  frame.origin.y += kPermissionIconYAdjustment;
   [imageView setFrame:frame];
 }
 
@@ -993,44 +982,22 @@ bool IsInternalURL(const GURL& url) {
   // |cookieInfoList| should only ever have 2 items: first- and third-party
   // cookies.
   DCHECK_EQ(cookieInfoList.size(), 2u);
-  base::string16 firstPartyLabelText;
-  base::string16 thirdPartyLabelText;
+
+  int totalAllowed = 0;
   for (const auto& i : cookieInfoList) {
-    if (i.is_first_party) {
-      firstPartyLabelText = l10n_util::GetPluralStringFUTF16(
-          IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA, i.allowed);
-    } else {
-      thirdPartyLabelText = l10n_util::GetPluralStringFUTF16(
-          IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA, i.allowed);
-    }
+    totalAllowed += i.allowed;
   }
+  base::string16 label_text = l10n_util::GetPluralStringFUTF16(
+      IDS_WEBSITE_SETTINGS_NUM_COOKIES, totalAllowed);
 
   base::string16 sectionTitle =
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA);
-  bool isRTL = base::i18n::RIGHT_TO_LEFT ==
-               base::i18n::GetStringDirection(firstPartyLabelText);
+  bool isRTL = base::i18n::IsRTL();
 
   [cookiesView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
-  NSTextField* label;
-
   CGFloat viewWidth = NSWidth([cookiesView_ frame]);
-
-  NSTextField* header = [self addText:sectionTitle
-                             withSize:[NSFont smallSystemFontSize]
-                                 bold:YES
-                               toView:cookiesView_
-                              atPoint:controlOrigin];
-  [header sizeToFit];
-
-  if (isRTL) {
-    controlOrigin.x =
-        viewWidth - kSectionHorizontalPadding - NSWidth([header frame]);
-    [header setFrameOrigin:controlOrigin];
-  }
-  controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
-  controlOrigin.y += kPermissionsTabSpacing;
 
   // Reset X for the cookie image.
   if (isRTL) {
@@ -1049,51 +1016,53 @@ bool IsInternalURL(const GURL& url) {
                                           atPoint:controlOrigin];
   [imageView setImage:image];
 
-  base::string16 comma = base::ASCIIToUTF16(", ");
-  NSString* cookieButtonText = base::SysUTF16ToNSString(firstPartyLabelText);
+  NSButton* cookiesButton =
+      [self addLinkButtonWithText:base::SysUTF16ToNSString(label_text)
+                           toView:cookiesView_];
+  [cookiesButton setTarget:self];
+  [cookiesButton setAction:@selector(showCookiesAndSiteData:)];
 
   if (isRTL) {
-    NSButton* cookiesButton =
-        [self addLinkButtonWithText:cookieButtonText toView:cookiesView_];
-    [cookiesButton setTarget:self];
-    [cookiesButton setAction:@selector(showCookiesAndSiteData:)];
-    controlOrigin.x -= NSWidth([cookiesButton frame]);
-    [cookiesButton setFrameOrigin:controlOrigin];
+    controlOrigin.x -= kPermissionImageSpacing;
+    NSTextField* cookiesLabel =
+        [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES)
+             withSize:[NSFont systemFontSize]
+                 bold:NO
+               toView:cookiesView_
+              atPoint:controlOrigin];
+    [cookiesLabel sizeToFit];
 
-    label = [self addText:comma + thirdPartyLabelText
-                 withSize:[NSFont smallSystemFontSize]
-                     bold:NO
-                   toView:cookiesView_
-                  atPoint:controlOrigin];
-    [label sizeToFit];
-    controlOrigin.x -= NSWidth([label frame]) - kTextLabelXPadding;
-    [label setFrameOrigin:controlOrigin];
+    NSPoint cookiesLabelOrigin = [cookiesLabel frame].origin;
+    cookiesLabelOrigin.x -= NSWidth([cookiesLabel frame]);
+    [cookiesLabel setFrameOrigin:cookiesLabelOrigin];
+
+    // Align the icon with the text.
+    [self alignPermissionIcon:imageView withTextField:cookiesLabel];
+
+    controlOrigin.y += NSHeight([cookiesLabel frame]);
+    controlOrigin.x -= NSWidth([cookiesButton frame]) - kLinkButtonXAdjustment;
+    [cookiesButton setFrameOrigin:controlOrigin];
   } else {
     controlOrigin.x += kPermissionImageSize + kPermissionImageSpacing;
+    NSTextField* cookiesLabel =
+        [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES)
+             withSize:[NSFont systemFontSize]
+                 bold:NO
+               toView:cookiesView_
+              atPoint:controlOrigin];
+    [cookiesLabel sizeToFit];
 
-    NSButton* cookiesButton =
-        [self addLinkButtonWithText:cookieButtonText toView:cookiesView_];
-    [cookiesButton setTarget:self];
-    [cookiesButton setAction:@selector(showCookiesAndSiteData:)];
+    controlOrigin.y += NSHeight([cookiesLabel frame]);
+    controlOrigin.x -= kLinkButtonXAdjustment;
     [cookiesButton setFrameOrigin:controlOrigin];
 
-    controlOrigin.x += NSWidth([cookiesButton frame]) - kTextLabelXPadding;
-
-    label = [self addText:comma + thirdPartyLabelText
-                 withSize:[NSFont smallSystemFontSize]
-                     bold:NO
-                   toView:cookiesView_
-                  atPoint:controlOrigin];
-    [label sizeToFit];
+    // Align the icon with the text.
+    [self alignPermissionIcon:imageView withTextField:cookiesLabel];
   }
 
-  // Align the icon with the text.
-  [self alignPermissionIcon:imageView withTextField:label];
-
-  controlOrigin.y += NSHeight([label frame]) + kPermissionsTabSpacing;
-
-  [cookiesView_ setFrameSize:
-      NSMakeSize(NSWidth([cookiesView_ frame]), controlOrigin.y)];
+  controlOrigin.y += NSHeight([cookiesButton frame]);
+  [cookiesView_
+      setFrameSize:NSMakeSize(NSWidth([cookiesView_ frame]), controlOrigin.y)];
 
   [self performLayout];
 }
@@ -1108,23 +1077,9 @@ bool IsInternalURL(const GURL& url) {
   if (permissionInfoList.size() > 0 || chosenObjectInfoList.size() > 0) {
     base::string16 sectionTitle = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
-    bool isRTL = base::i18n::RIGHT_TO_LEFT ==
-                 base::i18n::GetStringDirection(sectionTitle);
-    NSTextField* header = [self addText:sectionTitle
-                               withSize:[NSFont smallSystemFontSize]
-                                   bold:YES
-                                 toView:permissionsView_
-                                atPoint:controlOrigin];
-    [header sizeToFit];
-    if (isRTL) {
-      controlOrigin.x = NSWidth([permissionsView_ frame]) -
-                        kSectionHorizontalPadding - NSWidth([header frame]);
-      [header setFrameOrigin:controlOrigin];
-    }
-    controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
 
     for (const auto& permission : permissionInfoList) {
-      controlOrigin.y += kPermissionsTabSpacing;
+      controlOrigin.y += kPermissionsVerticalSpacing;
       NSPoint rowBottomRight = [self addPermission:permission
                                             toView:permissionsView_
                                            atPoint:controlOrigin];
@@ -1132,14 +1087,14 @@ bool IsInternalURL(const GURL& url) {
     }
 
     for (auto* object : chosenObjectInfoList) {
-      controlOrigin.y += kPermissionsTabSpacing;
+      controlOrigin.y += kPermissionsVerticalSpacing;
       NSPoint rowBottomRight = [self addChosenObject:base::WrapUnique(object)
                                               toView:permissionsView_
                                              atPoint:controlOrigin];
       controlOrigin.y = rowBottomRight.y;
     }
 
-    controlOrigin.y += kPermissionsTabSpacing;
+    controlOrigin.y += kPermissionsVerticalSpacing;
   }
 
   [permissionsView_ setFrameSize:

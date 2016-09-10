@@ -252,10 +252,9 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   CreateBubble();
   SetTestPermissions();
 
-  // There should be three subviews per permission (an icon, a label and a
-  // select box), plus a text label for the Permission section.
+  // There should be three subviews per permission.
   NSArray* subviews = [[controller_ permissionsView] subviews];
-  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3 + 1, [subviews count]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3 , [subviews count]);
 
   // Ensure that there is a distinct label for each permission.
   NSMutableSet* labels = [NSMutableSet set];
@@ -263,8 +262,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
     if ([view isKindOfClass:[NSTextField class]])
       [labels addObject:[static_cast<NSTextField*>(view) stringValue]];
   }
-  // The section header ("Permissions") will also be found, hence the +1.
-  EXPECT_EQ(arraysize(kTestPermissionTypes) + 1, [labels count]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
 
   // Ensure that the button labels are distinct, and look for the correct
   // number of disabled buttons.
