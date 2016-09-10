@@ -178,7 +178,7 @@ generate_global_constructors("modules_global_constructors_idls") {
 
 # Compile the sources produced above. This will get linked into "modules".
 source_set("generated") {
-  visibility = [ "//third_party/WebKit/Source/modules" ]
+  visibility = [ "//third_party/WebKit/Source/modules:*" ]
 
   sources = get_target_outputs(":event_modules") +
             get_target_outputs(":event_modules_names") +
