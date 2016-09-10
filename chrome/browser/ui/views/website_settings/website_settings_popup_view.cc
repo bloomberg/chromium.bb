@@ -47,6 +47,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -78,22 +79,18 @@ const int kIconMarginLeft = 6;
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 16;
 const int kHeaderPaddingLeft = 18;
-const int kHeaderPaddingRightForCloseButton = 8;
 const int kHeaderPaddingRightForText = kHeaderPaddingLeft;
-const int kHeaderPaddingTop = 12;
+const int kHeaderPaddingTop = 16;
+const int kHeaderPaddingForCloseButton = 8;
 
-// Spacing between the site identity label and the site identity status text in
-// the popup header.
-const int kHeaderRowSpacing = 4;
+// Spacing between labels in the header.
+const int kHeaderLabelSpacing = 4;
 
 // The max possible width of the popup.
 const int kMaxPopupWidth = 1000;
 
 // The margins between the popup border and the popup content.
-const int kPopupMarginTop = 4;
-const int kPopupMarginLeft = 0;
 const int kPopupMarginBottom = 14;
-const int kPopupMarginRight = 0;
 
 // Padding values for sections on the site settings view.
 const int kSiteSettingsViewContentMinWidth = 300;
@@ -123,31 +120,33 @@ class PopupHeaderView : public views::View {
                            views::StyledLabelListener* styled_label_listener);
   ~PopupHeaderView() override;
 
-  // Sets the name of the site's identity.
-  void SetIdentityName(const base::string16& name);
+  // Sets the security summary for the current page.
+  void SetSummary(const base::string16& summary_text);
 
-  // Sets the security summary text for the current page.
-  void SetSecuritySummary(const base::string16& security_summary_text,
-                          bool include_details_link);
+  // Sets the security details for the current page.
+  void SetDetails(const base::string16& details_text,
+                  bool include_details_link);
 
   int GetPreferredNameWidth() const;
 
-  void AddResetDecisionsButton();
+  void AddResetDecisionsLabel();
 
  private:
-  // The label that displays the name of the site's identity.
-  views::Label* name_;
+  // The listener for the styled labels in this view.
+  views::StyledLabelListener* styled_label_listener_;
+
+  // The label that displays security summary for the current page.
+  views::Label* summary_label_;
+
   // The label that displays the status of the identity check for this site.
   // Includes a link to open the DevTools Security panel.
-  views::StyledLabel* status_;
+  views::StyledLabel* details_label_;
 
-  // The button listener attached to the buttons in this view.
-  views::ButtonListener* button_listener_;
-
-  // A container for the button for resetting cert decisions. The button is only
-  // shown sometimes, so we use a container to keep track of where to place it
-  // (if needed).
-  views::View* reset_decisions_button_container_;
+  // A container for the styled label with a link for resetting cert decisions.
+  // This is only shown sometimes, so we use a container to keep track of
+  // where to place it (if needed).
+  views::View* reset_decisions_label_container_;
+  views::StyledLabel* reset_decisions_label_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupHeaderView);
 };
@@ -168,7 +167,6 @@ class InternalPageInfoPopupView : public views::BubbleDialogDelegateView {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
-  int GetDialogButtons() const override;
 
  private:
   friend class WebsiteSettingsPopupView;
@@ -183,10 +181,11 @@ class InternalPageInfoPopupView : public views::BubbleDialogDelegateView {
 PopupHeaderView::PopupHeaderView(
     views::ButtonListener* button_listener,
     views::StyledLabelListener* styled_label_listener)
-    : name_(nullptr),
-      status_(nullptr),
-      button_listener_(button_listener),
-      reset_decisions_button_container_(nullptr) {
+    : styled_label_listener_(styled_label_listener),
+      summary_label_(nullptr),
+      details_label_(nullptr),
+      reset_decisions_label_container_(nullptr),
+      reset_decisions_label_(nullptr) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
@@ -206,15 +205,21 @@ PopupHeaderView::PopupHeaderView(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, kHeaderPaddingRightForCloseButton);
+  column_set->AddPaddingColumn(0, kHeaderPaddingForCloseButton);
 
-  layout->AddPaddingRow(0, kHeaderPaddingTop);
+  // First we add the padding needed for the close button.
+  // In order to move down the summary, we simulate additional padding by giving
+  // it an empty border on top later on.
+  layout->AddPaddingRow(0, kHeaderPaddingForCloseButton);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   layout->StartRow(0, label_column);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  name_ = new views::Label(
-      base::string16(), rb.GetFontList(ui::ResourceBundle::BoldFont));
-  layout->AddView(name_, 1, 1, views::GridLayout::LEADING,
+  const gfx::FontList& font_list = rb.GetFontListWithDelta(1);
+  summary_label_ = new views::Label(base::string16(), font_list);
+  summary_label_->SetBorder(views::Border::CreateEmptyBorder(
+      kHeaderPaddingTop - kHeaderPaddingForCloseButton, 0, 0, 0));
+  layout->AddView(summary_label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
   views::ImageButton* close_button = new views::ImageButton(button_listener);
   close_button->SetImage(views::CustomButton::STATE_NORMAL,
@@ -226,7 +231,7 @@ PopupHeaderView::PopupHeaderView(
   layout->AddView(close_button, 1, 1, views::GridLayout::TRAILING,
                   views::GridLayout::LEADING);
 
-  layout->AddPaddingRow(0, kHeaderRowSpacing);
+  layout->AddPaddingRow(0, kHeaderLabelSpacing);
 
   const int label_column_status = 1;
   views::ColumnSet* column_set_status =
@@ -236,19 +241,19 @@ PopupHeaderView::PopupHeaderView(
                                1, views::GridLayout::USE_PREF, 0, 0);
   column_set_status->AddPaddingColumn(0, kHeaderPaddingRightForText);
 
+  layout->AddPaddingRow(0, kHeaderLabelSpacing);
+
   layout->StartRow(0, label_column_status);
-  status_ = new views::StyledLabel(base::string16(), styled_label_listener);
-  layout->AddView(status_,
-                  1,
-                  1,
-                  views::GridLayout::LEADING,
+  details_label_ =
+      new views::StyledLabel(base::string16(), styled_label_listener);
+  layout->AddView(details_label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
 
   layout->StartRow(0, label_column_status);
-  reset_decisions_button_container_ = new views::View();
-  reset_decisions_button_container_->SetLayoutManager(
+  reset_decisions_label_container_ = new views::View();
+  reset_decisions_label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  layout->AddView(reset_decisions_button_container_, 1, 1,
+  layout->AddView(reset_decisions_label_container_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::LEADING);
 
   layout->AddPaddingRow(1, kHeaderPaddingBottom);
@@ -257,29 +262,28 @@ PopupHeaderView::PopupHeaderView(
 PopupHeaderView::~PopupHeaderView() {}
 
 int PopupHeaderView::GetPreferredNameWidth() const {
-  return name_->GetPreferredSize().width();
+  return summary_label_->GetPreferredSize().width();
 }
 
-void PopupHeaderView::SetIdentityName(const base::string16& name) {
-  name_->SetText(name);
+void PopupHeaderView::SetSummary(const base::string16& summary_text) {
+  summary_label_->SetText(summary_text);
 }
 
-void PopupHeaderView::SetSecuritySummary(
-    const base::string16& security_summary_text,
-    bool include_details_link) {
-  if (include_details_link) {
-    base::string16 details_string =
+void PopupHeaderView::SetDetails(const base::string16& details_text,
+                                 bool include_details_label_link) {
+  if (include_details_label_link) {
+    base::string16 details_link_text =
         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
 
     std::vector<base::string16> subst;
-    subst.push_back(security_summary_text);
-    subst.push_back(details_string);
+    subst.push_back(details_text);
+    subst.push_back(details_link_text);
 
     std::vector<size_t> offsets;
 
     base::string16 text = base::ReplaceStringPlaceholders(
         base::ASCIIToUTF16("$1 $2"), subst, &offsets);
-    status_->SetText(text);
+    details_label_->SetText(text);
     gfx::Range details_range(offsets[1], text.length());
 
     views::StyledLabel::RangeStyleInfo link_style =
@@ -288,29 +292,42 @@ void PopupHeaderView::SetSecuritySummary(
       link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
     link_style.disable_line_wrapping = false;
 
-    status_->AddStyleRange(details_range, link_style);
+    details_label_->AddStyleRange(details_range, link_style);
   } else {
-    status_->SetText(security_summary_text);
+    details_label_->SetText(details_text);
   }
 
   // Fit the styled label to occupy available width.
-  status_->SizeToFit(0);
+  details_label_->SizeToFit(0);
 }
 
-void PopupHeaderView::AddResetDecisionsButton() {
-  // TODO(estade): this looks pretty crazy as an MD button because the button
-  // text is very long. See crbug.com/512442
-  views::LabelButton* reset_decisions_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          button_listener_,
-          l10n_util::GetStringUTF16(
-              IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
-  reset_decisions_button->set_id(BUTTON_RESET_CERTIFICATE_DECISIONS);
+void PopupHeaderView::AddResetDecisionsLabel() {
+  std::vector<base::string16> subst;
+  subst.push_back(
+      l10n_util::GetStringUTF16(IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION));
+  subst.push_back(l10n_util::GetStringUTF16(
+      IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
 
-  reset_decisions_button_container_->AddChildView(reset_decisions_button);
+  std::vector<size_t> offsets;
 
-  // Now that it contains a button, the container needs padding at the top.
-  reset_decisions_button_container_->SetBorder(
+  base::string16 text = base::ReplaceStringPlaceholders(
+      base::ASCIIToUTF16("$1 $2"), subst, &offsets);
+  reset_decisions_label_ = new views::StyledLabel(text, styled_label_listener_);
+  gfx::Range link_range(offsets[1], text.length());
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+    link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+  link_style.disable_line_wrapping = false;
+
+  reset_decisions_label_->AddStyleRange(link_range, link_style);
+  // Fit the styled label to occupy available width.
+  reset_decisions_label_->SizeToFit(0);
+  reset_decisions_label_container_->AddChildView(reset_decisions_label_);
+
+  // Now that it contains a label, the container needs padding at the top.
+  reset_decisions_label_container_->SetBorder(
       views::Border::CreateEmptyBorder(8, 0, 0, 0));
 
   InvalidateLayout();
@@ -377,10 +394,6 @@ views::NonClientFrameView* InternalPageInfoPopupView::CreateNonClientFrameView(
 
 void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
   is_popup_showing = false;
-}
-
-int InternalPageInfoPopupView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -475,8 +488,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   site_settings_view_ = CreateSiteSettingsView();
   layout->AddView(site_settings_view_);
 
-  set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
-                          kPopupMarginBottom, kPopupMarginRight));
+  // Each section handles its own padding.
+  set_margins(gfx::Insets(0, 0, kPopupMarginBottom, 0));
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 
@@ -709,19 +722,21 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
-  base::string16 security_summary_text = identity_info.GetSecuritySummary();
-  header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
+  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description =
+      identity_info.GetSecurityDescription();
+
+  header_->SetSummary(security_description->summary);
 
   if (identity_info.certificate) {
     certificate_ = identity_info.certificate;
 
     if (identity_info.show_ssl_decision_revoke_button)
-      header_->AddResetDecisionsButton();
+      header_->AddResetDecisionsLabel();
   }
 
   bool include_details_link = !is_devtools_disabled_ || certificate_;
 
-  header_->SetSecuritySummary(security_summary_text, include_details_link);
+  header_->SetDetails(security_description->details, include_details_link);
 
   Layout();
   SizeToContents();
