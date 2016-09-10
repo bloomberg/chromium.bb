@@ -77,6 +77,11 @@ constexpr VideoCodecProfile kSupportedH264Profiles[] = {
     H264PROFILE_STEREOHIGH,
     H264PROFILE_MULTIVIEWHIGH};
 
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+constexpr VideoCodecProfile kSupportedHevcProfiles[] = {HEVCPROFILE_MAIN,
+                                                        HEVCPROFILE_MAIN10};
+#endif
+
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
 // has no callback mechanism (b/11990118), we must drive it by polling for
 // complete frames (and available input buffers, when the codec is fully
@@ -477,6 +482,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (codec_config_->codec_ != kCodecVP8 &&
       codec_config_->codec_ != kCodecVP9 &&
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+      codec_config_->codec_ != kCodecHEVC &&
+#endif
       codec_config_->codec_ != kCodecH264) {
     LOG(ERROR) << "Unsupported profile: " << config.profile;
     return false;
@@ -1615,6 +1623,16 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
         SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
   }
 
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  for (const auto& supported_profile : kSupportedHevcProfiles) {
+    SupportedProfile profile;
+    profile.profile = supported_profile;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(3840, 2160);
+    profiles.push_back(profile);
+  }
+#endif
+
   return capabilities;
 }
 
@@ -1622,8 +1640,8 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
     const {
   // Prevent MediaCodec from using its internal software decoders when we have
   // more secure and up to date versions in the renderer process.
-  return !config_.is_encrypted && (codec_config_->codec_ == media::kCodecVP8 ||
-                                   codec_config_->codec_ == media::kCodecVP9);
+  return !config_.is_encrypted && (codec_config_->codec_ == kCodecVP8 ||
+                                   codec_config_->codec_ == kCodecVP9);
 }
 
 }  // namespace media
