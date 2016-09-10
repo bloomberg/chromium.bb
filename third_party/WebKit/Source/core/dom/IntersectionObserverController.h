@@ -6,10 +6,10 @@
 #define IntersectionObserverController_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/IdleRequestCallback.h"
 #include "core/dom/IntersectionObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
+#include "wtf/WeakPtr.h"
 
 // Design doc for IntersectionObserver implementation:
 //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
@@ -18,14 +18,13 @@ namespace blink {
 
 class Document;
 
-class IntersectionObserverController : public IdleRequestCallback, public ActiveDOMObject {
+class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController>, public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 public:
     static IntersectionObserverController* create(Document*);
     ~IntersectionObserverController();
 
     void resume() override;
-    void handleEvent(IdleDeadline*) override;
 
     void scheduleIntersectionObserverForDelivery(IntersectionObserver&);
     void deliverIntersectionObservations();
@@ -43,8 +42,8 @@ private:
     HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
     // IntersectionObservers for which this is the execution context of the callback.
     HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
+    WTF::WeakPtrFactory<IntersectionObserverController> m_weakPtrFactory;
 
-    int m_callbackID;
     bool m_callbackFiredWhileSuspended;
 };
 

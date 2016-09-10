@@ -8,71 +8,28 @@ function test_function() {
 }
 onload = function() {
   observer.observe(target);
-  requestAnimationFrame(() => { requestAnimationFrame(test_function) });
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      setTimeout(test_function);
+    });
+  });
 }
 
-Subsequent steps in the test use a single RAF to give the observer a chance to
-generate notifications, but the double RAF is required in the onload handler.
 Here's the chain of events:
 
 - onload
   - observer.observe()
-  - First RAF handler is registered
+  - RAF handler is registered
 - BeginFrame
-  - RAF handlers run
-    - Second RAF handler is registered 
+  - RAF handler runs
+    - First setTimeout is registered 
   - UpdateAllLifecyclePhases
     - IntersectionObserver generates notifications
+  - First setTimeout runs
+    - Second setTimeout is regsitered
+  - Notifications that haven't be taken via takeRecords are delivered
+  - Second setTimeout runs and queues another RAF handler
 - BeginFrame
-  - RAF handlers run
-    - Second RAF handler verifies observer notifications.
-
-#-------------------------------------------------------------------------------
-
-All of the IntersectionObserver tests are currently listed in LeakExpecations.
-
-To avoid leaking DOM objects, the tests must ensure that all posted tasks have
-run before exiting.  IntersectionObserverController requests an idle callback
-through the document's ScriptedIdleTaskController with a timeout of 100ms.  That
-callback must be allowed to run before the test finishes to avoid a leak.
-
-ScriptedIdleTaskController posts two tasks to the WebScheduler: one to run at
-the next idle time, and another to run when the timeout expires.
-crbug.com/595155 explains that when one of those tasks runs, it does not release
-its reference to the ScriptedIdleTaskController, which is needlessly kept alive
-until the both tasks have fired.  If a test exits before both tasks have fired,
-it will have a DOM leak.
-
-crbug.com/595152 explains that when running without the threaded compositor --
-as the layout tests do -- idle tasks are never serviced.  They will still run
-when their timeout expires, but the idle task posted by
-ScriptedIdleTaskController will never run.
-
-Fixing the first bug means that requestIdleCallback will not leak as long as it
-actually runs before exit.  The second bug means that when running without the
-threaded compositor, requestIdleCallback will only ever run when its timeout
-expires.
-
-The upshot of all of this is that the only way to ensure that
-IntersectionObserver tests don't leak is to ensure that their idle tasks all run
-before the tests exit, and those idle tasks will only run when their 100ms
-timeout expires.
-
-Note that all of this still holds when observer.takeRecords() is called before
-the idle task runs.  In that case, the idle task is not cancelled (because the
-idle task needs to service all observers tracked by a given
-IntersectionObserverController); when the idle task runs, it's simply a no-op.
-There is no way in javascript to detect that such a no-op has occurred, but
-using requestIdleCallback with a timeout of 100 should be guaranteed to run
-after the IntersectionObserverController's idle task has run, as long as
-ScriptedIdleTaskController honors first-in-first-out semantics.
-
-At the time of writing, there is a patch out to add testRunner.runIdleTasks():
-
-https://codereview.chromium.org/1806133002/
-
-With that patch, the tests can be removed from LeakExpectations as long as they
-end with:
-
-if (window.testRunner)
-  testRunner.runIdleTasks(finishJSTest);
+  - RAF handler runs
+    - RAF handler verifies observer notifications via takeRecords or
+      does the setTimeout dance to respond after they've been delivered.

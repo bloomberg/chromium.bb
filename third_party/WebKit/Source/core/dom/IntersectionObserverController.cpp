@@ -5,7 +5,7 @@
 #include "core/dom/IntersectionObserverController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/IdleRequestOptions.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ IntersectionObserverController* IntersectionObserverController::create(Document*
 
 IntersectionObserverController::IntersectionObserverController(Document* document)
     : ActiveDOMObject(document)
-    , m_callbackID(0)
+    , m_weakPtrFactory(this)
     , m_callbackFiredWhileSuspended(false)
 {
 }
@@ -29,15 +29,14 @@ IntersectionObserverController::~IntersectionObserverController() { }
 void IntersectionObserverController::scheduleIntersectionObserverForDelivery(IntersectionObserver& observer)
 {
     m_pendingIntersectionObservers.add(&observer);
-    if (m_callbackID)
-        return;
-    Document* document = toDocument(getExecutionContext());
-    if (!document)
-        return;
-    IdleRequestOptions options;
-    // The IntersectionObserver spec mandates that notifications be sent within 100ms.
-    options.setTimeout(100);
-    m_callbackID = document->requestIdleCallback(this, options);
+    if (!m_weakPtrFactory.hasWeakPtrs()) {
+        // TODO(ojan): These tasks decide whether to throttle a subframe, so they need to
+        // be unthrottled, but we should throttle all the other tasks (e.g. ones coming from
+        // the web page).
+        TaskRunnerHelper::get(TaskType::Unthrottled,
+            getExecutionContext())->postTask(BLINK_FROM_HERE,
+                WTF::bind(&IntersectionObserverController::deliverIntersectionObservations, m_weakPtrFactory.createWeakPtr()));
+    }
 }
 
 void IntersectionObserverController::resume()
@@ -48,13 +47,6 @@ void IntersectionObserverController::resume()
         m_callbackFiredWhileSuspended = false;
         deliverIntersectionObservations();
     }
-}
-
-void IntersectionObserverController::handleEvent(IdleDeadline*)
-{
-    DCHECK(m_callbackID);
-    m_callbackID = 0;
-    deliverIntersectionObservations();
 }
 
 void IntersectionObserverController::deliverIntersectionObservations()
@@ -104,7 +96,6 @@ DEFINE_TRACE(IntersectionObserverController)
     visitor->trace(m_trackedIntersectionObservers);
     visitor->trace(m_pendingIntersectionObservers);
     ActiveDOMObject::trace(visitor);
-    IdleRequestCallback::trace(visitor);
 }
 
 } // namespace blink
