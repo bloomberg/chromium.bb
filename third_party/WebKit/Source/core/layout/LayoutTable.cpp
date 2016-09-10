@@ -61,7 +61,7 @@ LayoutTable::LayoutTable(Element* element)
     , m_needsSectionRecalc(false)
     , m_columnLogicalWidthChanged(false)
     , m_columnLayoutObjectsValid(false)
-    , m_hasCellColspanThatDeterminesTableWidth(false)
+    , m_noCellColspanAtLeast(0)
     , m_hSpacing(0)
     , m_vSpacing(0)
     , m_borderStart(0)
@@ -797,7 +797,9 @@ void LayoutTable::appendEffectiveColumn(unsigned span)
 
     // Unless the table has cell(s) with colspan that exceed the number of columns afforded
     // by the other rows in the table we can use the fast path when mapping columns to effective columns.
-    m_hasCellColspanThatDeterminesTableWidth = m_hasCellColspanThatDeterminesTableWidth || span > 1;
+    if (span == 1 && m_noCellColspanAtLeast + 1 == numEffectiveColumns()) {
+        m_noCellColspanAtLeast++;
+    }
 
     // Propagate the change in our columns representation to the sections that don't need
     // cell recalc. If they do, they will be synced up directly with m_columns later.
@@ -885,7 +887,7 @@ void LayoutTable::recalcSections() const
     m_foot = nullptr;
     m_firstBody = nullptr;
     m_hasColElements = false;
-    m_hasCellColspanThatDeterminesTableWidth = hasCellColspanThatDeterminesTableWidth();
+    m_noCellColspanAtLeast = calcNoCellColspanAtLeast();
 
     // We need to get valid pointers to caption, head, foot and first body again
     LayoutObject* nextSibling;

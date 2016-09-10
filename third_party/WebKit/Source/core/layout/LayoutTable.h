@@ -261,23 +261,23 @@ public:
 
     unsigned absoluteColumnToEffectiveColumn(unsigned absoluteColumnIndex) const
     {
-        if (!m_hasCellColspanThatDeterminesTableWidth)
+        if (absoluteColumnIndex < m_noCellColspanAtLeast)
             return absoluteColumnIndex;
 
-        unsigned effectiveColumn = 0;
+        unsigned effectiveColumn = m_noCellColspanAtLeast;
         unsigned numColumns = numEffectiveColumns();
-        for (unsigned c = 0; effectiveColumn < numColumns && c + m_effectiveColumns[effectiveColumn].span - 1 < absoluteColumnIndex; ++effectiveColumn)
+        for (unsigned c = m_noCellColspanAtLeast; effectiveColumn < numColumns && c + m_effectiveColumns[effectiveColumn].span - 1 < absoluteColumnIndex; ++effectiveColumn)
             c += m_effectiveColumns[effectiveColumn].span;
         return effectiveColumn;
     }
 
     unsigned effectiveColumnToAbsoluteColumn(unsigned effectiveColumnIndex) const
     {
-        if (!m_hasCellColspanThatDeterminesTableWidth)
+        if (effectiveColumnIndex < m_noCellColspanAtLeast)
             return effectiveColumnIndex;
 
-        unsigned c = 0;
-        for (unsigned i = 0; i < effectiveColumnIndex; i++)
+        unsigned c = m_noCellColspanAtLeast;
+        for (unsigned i = m_noCellColspanAtLeast; i < effectiveColumnIndex; i++)
             c += m_effectiveColumns[i].span;
         return c;
     }
@@ -492,14 +492,14 @@ private:
 
     bool m_columnLogicalWidthChanged : 1;
     mutable bool m_columnLayoutObjectsValid: 1;
-    mutable bool m_hasCellColspanThatDeterminesTableWidth : 1;
-    bool hasCellColspanThatDeterminesTableWidth() const
+    mutable unsigned m_noCellColspanAtLeast;
+    unsigned calcNoCellColspanAtLeast() const
     {
         for (unsigned c = 0; c < numEffectiveColumns(); c++) {
             if (m_effectiveColumns[c].span > 1)
-                return true;
+                return c;
         }
-        return false;
+        return numEffectiveColumns();
     }
 
     short m_hSpacing;
