@@ -34,7 +34,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/resource_format.h"
-#include "cc/resources/scoped_ui_resource.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree.h"
@@ -73,7 +72,6 @@ class ResourceUpdateQueue;
 class SharedBitmapManager;
 class TaskGraphRunner;
 class TopControlsManager;
-class UIResourceRequest;
 struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
@@ -145,6 +143,7 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   int SourceFrameNumber() const override;
   LayerTree* GetLayerTree() override;
   const LayerTree* GetLayerTree() const override;
+  UIResourceManager* GetUIResourceManager() const override;
   TaskRunnerProvider* GetTaskRunnerProvider() const override;
   const LayerTreeSettings& GetSettings() const override;
   void SetSurfaceClientId(uint32_t client_id) override;
@@ -228,21 +227,6 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
 
   Proxy* proxy() const { return proxy_.get(); }
 
-  // CreateUIResource creates a resource given a bitmap.  The bitmap is
-  // generated via an interface function, which is called when initializing the
-  // resource and when the resource has been lost (due to lost context).  The
-  // parameter of the interface is a single boolean, which indicates whether the
-  // resource has been lost or not.  CreateUIResource returns an Id of the
-  // resource, which is always positive.
-  virtual UIResourceId CreateUIResource(UIResourceClient* client);
-  // Deletes a UI resource.  May safely be called more than once.
-  virtual void DeleteUIResource(UIResourceId id);
-  // Put the recreation of all UI resources into the resource queue after they
-  // were evicted on the impl thread.
-  void RecreateUIResources();
-
-  virtual gfx::Size GetUIResourceSize(UIResourceId id) const;
-
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
   std::vector<std::unique_ptr<SwapPromise>> TakeSwapPromises();
 
@@ -313,6 +297,8 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   void InitializePictureCacheForTesting();
   void SetTaskRunnerProviderForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider);
+  void SetUIResourceManagerForTesting(
+      std::unique_ptr<UIResourceManager> ui_resource_manager);
 
   // shared_bitmap_manager(), gpu_memory_buffer_manager(), and
   // task_graph_runner() return valid values only until the LayerTreeHostImpl is
@@ -353,19 +339,6 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
-  struct UIResourceClientData {
-    UIResourceClient* client;
-    gfx::Size size;
-  };
-
-  using UIResourceClientMap =
-      std::unordered_map<UIResourceId, UIResourceClientData>;
-  UIResourceClientMap ui_resource_client_map_;
-  int next_ui_resource_id_;
-
-  using UIResourceRequestQueue = std::vector<UIResourceRequest>;
-  UIResourceRequestQueue ui_resource_request_queue_;
-
   void CalculateLCDTextMetricsCallback(Layer* layer);
 
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
@@ -373,6 +346,8 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   void SetPropertyTreesNeedRebuild();
 
   const CompositorMode compositor_mode_;
+
+  std::unique_ptr<UIResourceManager> ui_resource_manager_;
 
   LayerTreeHostClient* client_;
   std::unique_ptr<Proxy> proxy_;

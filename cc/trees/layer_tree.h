@@ -37,7 +37,9 @@ class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHost;
 class LayerTreeImpl;
+class LayerTreeSettings;
 struct PendingPageScaleAnimation;
+class UIResourceManager;
 
 class CC_EXPORT LayerTree : public MutatorHostClient {
  public:
@@ -119,6 +121,9 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   PropertyTrees* property_trees() { return &property_trees_; }
 
   void SetNeedsDisplayOnAllLayers();
+
+  UIResourceManager* GetUIResourceManager() const;
+  const LayerTreeSettings& GetSettings() const;
 
   // Methods which should only be used internally in cc ------------------
   void RegisterLayer(Layer* layer);

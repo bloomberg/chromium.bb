@@ -6,29 +6,29 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/resources/ui_resource_manager.h"
 
 namespace cc {
 
 std::unique_ptr<ScopedUIResource> ScopedUIResource::Create(
-    LayerTreeHost* host,
+    UIResourceManager* ui_resource_manager,
     const UIResourceBitmap& bitmap) {
-  return base::WrapUnique(new ScopedUIResource(host, bitmap));
+  return base::WrapUnique(new ScopedUIResource(ui_resource_manager, bitmap));
 }
 
-ScopedUIResource::ScopedUIResource(LayerTreeHost* host,
+ScopedUIResource::ScopedUIResource(UIResourceManager* ui_resource_manager,
                                    const UIResourceBitmap& bitmap)
-    : bitmap_(bitmap), host_(host) {
-  DCHECK(host_);
-  id_ = host_->CreateUIResource(this);
+    : bitmap_(bitmap), ui_resource_manager_(ui_resource_manager) {
+  DCHECK(ui_resource_manager_);
+  id_ = ui_resource_manager_->CreateUIResource(this);
 }
 
 // User must make sure that host is still valid before this object goes out of
 // scope.
 ScopedUIResource::~ScopedUIResource() {
   if (id_) {
-    DCHECK(host_);
-    host_->DeleteUIResource(id_);
+    DCHECK(ui_resource_manager_);
+    ui_resource_manager_->DeleteUIResource(id_);
   }
 }
 

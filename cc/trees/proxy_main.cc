@@ -15,6 +15,7 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/remote_channel_main.h"
@@ -178,7 +179,7 @@ void ProxyMain::BeginMainFrame(
   // Recreate all UI resources if there were evicted UI resources when the impl
   // thread initiated the commit.
   if (begin_main_frame_state->evicted_ui_resources)
-    layer_tree_host_->RecreateUIResources();
+    layer_tree_host_->GetUIResourceManager()->RecreateUIResources();
 
   layer_tree_host_->RequestMainFrameUpdate();
   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");

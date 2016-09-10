@@ -8,6 +8,7 @@
 
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/ui_resource_bitmap.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

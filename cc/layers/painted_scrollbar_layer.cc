@@ -170,7 +170,7 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
 
 void PaintedScrollbarLayer::UpdateInternalContentScale() {
   float scale = GetLayerTree()->device_scale_factor();
-  if (layer_tree_host()
+  if (GetLayerTree()
           ->GetSettings()
           .layer_transforms_should_scale_layer_contents) {
     gfx::Transform transform;
@@ -229,7 +229,7 @@ bool PaintedScrollbarLayer::Update() {
 
   if (!track_resource_ || scrollbar_->NeedsPaintPart(TRACK)) {
     track_resource_ = ScopedUIResource::Create(
-        layer_tree_host(),
+        GetLayerTree()->GetUIResourceManager(),
         RasterizeScrollbarPart(track_layer_rect, scaled_track_rect, TRACK));
   }
 
@@ -241,7 +241,7 @@ bool PaintedScrollbarLayer::Update() {
         scaled_thumb_rect.size() !=
             thumb_resource_->GetBitmap(0, false).GetSize()) {
       thumb_resource_ = ScopedUIResource::Create(
-          layer_tree_host(),
+          GetLayerTree()->GetUIResourceManager(),
           RasterizeScrollbarPart(thumb_layer_rect, scaled_thumb_rect, THUMB));
     }
     thumb_opacity_ = scrollbar_->ThumbOpacity();

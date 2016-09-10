@@ -48,7 +48,7 @@
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer_tree.pb.h"
 #include "cc/proto/layer_tree_host.pb.h"
-#include "cc/resources/ui_resource_request.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -210,8 +210,8 @@ LayerTreeHost::LayerTreeHost(InitParams* params,
                              std::unique_ptr<LayerTree> layer_tree)
     : micro_benchmark_controller_(this),
       layer_tree_(std::move(layer_tree)),
-      next_ui_resource_id_(1),
       compositor_mode_(mode),
+      ui_resource_manager_(base::MakeUnique<UIResourceManager>()),
       client_(params->client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
@@ -326,6 +326,11 @@ void LayerTreeHost::SetTaskRunnerProviderForTesting(
   task_runner_provider_ = std::move(task_runner_provider);
 }
 
+void LayerTreeHost::SetUIResourceManagerForTesting(
+    std::unique_ptr<UIResourceManager> ui_resource_manager) {
+  ui_resource_manager_ = std::move(ui_resource_manager);
+}
+
 void LayerTreeHost::InitializeProxy(
     std::unique_ptr<Proxy> proxy,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
@@ -372,6 +377,10 @@ LayerTree* LayerTreeHost::GetLayerTree() {
 
 const LayerTree* LayerTreeHost::GetLayerTree() const {
   return layer_tree_.get();
+}
+
+UIResourceManager* LayerTreeHost::GetUIResourceManager() const {
+  return ui_resource_manager_.get();
 }
 
 TaskRunnerProvider* LayerTreeHost::GetTaskRunnerProvider() const {
@@ -460,10 +469,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->SetDeviceScaleFactor(layer_tree_->device_scale_factor());
   host_impl->SetDebugState(debug_state_);
 
-  if (!ui_resource_request_queue_.empty()) {
-    sync_tree->set_ui_resource_request_queue(ui_resource_request_queue_);
-    ui_resource_request_queue_.clear();
-  }
+  sync_tree->set_ui_resource_request_queue(
+      ui_resource_manager_->TakeUIResourcesRequests());
 
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
@@ -910,67 +917,6 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
 
   if (!events->events_.empty())
     layer_tree_->property_trees()->needs_rebuild = true;
-}
-
-UIResourceId LayerTreeHost::CreateUIResource(UIResourceClient* client) {
-  DCHECK(client);
-
-  UIResourceId next_id = next_ui_resource_id_++;
-  DCHECK(ui_resource_client_map_.find(next_id) ==
-         ui_resource_client_map_.end());
-
-  bool resource_lost = false;
-  UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, next_id,
-                            client->GetBitmap(next_id, resource_lost));
-  ui_resource_request_queue_.push_back(request);
-
-  UIResourceClientData data;
-  data.client = client;
-  data.size = request.GetBitmap().GetSize();
-
-  ui_resource_client_map_[request.GetId()] = data;
-  return request.GetId();
-}
-
-// Deletes a UI resource.  May safely be called more than once.
-void LayerTreeHost::DeleteUIResource(UIResourceId uid) {
-  UIResourceClientMap::iterator iter = ui_resource_client_map_.find(uid);
-  if (iter == ui_resource_client_map_.end())
-    return;
-
-  UIResourceRequest request(UIResourceRequest::UI_RESOURCE_DELETE, uid);
-  ui_resource_request_queue_.push_back(request);
-  ui_resource_client_map_.erase(iter);
-}
-
-void LayerTreeHost::RecreateUIResources() {
-  for (UIResourceClientMap::iterator iter = ui_resource_client_map_.begin();
-       iter != ui_resource_client_map_.end();
-       ++iter) {
-    UIResourceId uid = iter->first;
-    const UIResourceClientData& data = iter->second;
-    bool resource_lost = true;
-    auto it = std::find_if(ui_resource_request_queue_.begin(),
-                           ui_resource_request_queue_.end(),
-                           [uid](const UIResourceRequest& request) {
-                             return request.GetId() == uid;
-                           });
-    if (it == ui_resource_request_queue_.end()) {
-      UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, uid,
-                                data.client->GetBitmap(uid, resource_lost));
-      ui_resource_request_queue_.push_back(request);
-    }
-  }
-}
-
-// Returns the size of a resource given its id.
-gfx::Size LayerTreeHost::GetUIResourceSize(UIResourceId uid) const {
-  UIResourceClientMap::const_iterator iter = ui_resource_client_map_.find(uid);
-  if (iter == ui_resource_client_map_.end())
-    return gfx::Size();
-
-  const UIResourceClientData& data = iter->second;
-  return data.size;
 }
 
 int LayerTreeHost::ScheduleMicroBenchmark(

@@ -13,7 +13,7 @@
 
 namespace cc {
 
-class LayerTreeHost;
+class UIResourceManager;
 
 // ScopedUIResource creates an UIResource from a bitmap and a LayerTreeHost.
 // This class holds a pointer to the host so that when the instance goes out of
@@ -24,7 +24,7 @@ class LayerTreeHost;
 class CC_EXPORT ScopedUIResource : public UIResourceClient {
  public:
   static std::unique_ptr<ScopedUIResource> Create(
-      LayerTreeHost* host,
+      UIResourceManager* ui_resource_manager,
       const UIResourceBitmap& bitmap);
   ~ScopedUIResource() override;
 
@@ -33,10 +33,11 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
   UIResourceId id() { return id_; }
 
  protected:
-  ScopedUIResource(LayerTreeHost* host, const UIResourceBitmap& bitmap);
+  ScopedUIResource(UIResourceManager* ui_resource_manager,
+                   const UIResourceBitmap& bitmap);
 
   UIResourceBitmap bitmap_;
-  LayerTreeHost* host_;
+  UIResourceManager* ui_resource_manager_;
   UIResourceId id_;
 
  private:

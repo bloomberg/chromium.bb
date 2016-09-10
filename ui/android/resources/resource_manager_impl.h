@@ -14,6 +14,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace cc {
+class UIResourceManager;
+}  // namespace cc
+
 namespace ui {
 
 class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
@@ -23,7 +27,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
   explicit ResourceManagerImpl(gfx::NativeWindow native_window);
   ~ResourceManagerImpl() override;
 
-  void Init(cc::LayerTreeHost* host);
+  void Init(cc::UIResourceManager* ui_resource_manager);
 
   // ResourceManager implementation.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
@@ -92,7 +96,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
   typedef std::unordered_map<int, std::unique_ptr<ResourceMap> >
       TintedResourceMap;
 
-  cc::LayerTreeHost* host_;
+  cc::UIResourceManager* ui_resource_manager_;
   ResourceMap resources_[ANDROID_RESOURCE_TYPE_COUNT];
   CrushedSpriteResourceMap crushed_sprite_resources_;
   TintedResourceMap tinted_resources_;

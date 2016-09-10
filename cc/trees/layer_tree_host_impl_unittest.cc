@@ -44,6 +44,8 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

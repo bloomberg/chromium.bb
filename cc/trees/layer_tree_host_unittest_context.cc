@@ -16,6 +16,7 @@
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/filter_operations.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -1229,7 +1230,8 @@ class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         // Expects a valid UIResourceId.
         EXPECT_NE(0, ui_resource_->id());
         PostSetNeedsCommitToMainThread();
@@ -1287,7 +1289,8 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
   void StepCompleteOnMainThread(int step) override {
     switch (step) {
       case 0:
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         // Lose the context on the impl thread before the commit.
         PostLoseContextToImplThread();
         break;
@@ -1298,7 +1301,8 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         // Delete this resource.
         ui_resource_ = nullptr;
         // Create another resource.
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         test_id1_ = ui_resource_->id();
         // Sanity check that two resource creations return different ids.
         EXPECT_NE(test_id0_, test_id1_);
@@ -1312,14 +1316,15 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         break;
       case 4:
         // Sequence 3:
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         test_id0_ = ui_resource_->id();
         // Sanity check the UIResourceId should not be 0.
         EXPECT_NE(0, test_id0_);
         // Usually ScopedUIResource are deleted from the manager in their
         // destructor (so usually ui_resource_ = nullptr).  But here we need
         // ui_resource_ for the next step, so call DeleteUIResource directly.
-        layer_tree_host()->DeleteUIResource(test_id0_);
+        layer_tree_host()->GetUIResourceManager()->DeleteUIResource(test_id0_);
         // Delete the resouce and then lose the context.
         PostLoseContextToImplThread();
         break;
@@ -1384,7 +1389,8 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1467,8 +1473,10 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     switch (step) {
       case 0:
-        ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
-        ui_resource2_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
+        ui_resource2_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         EXPECT_NE(0, ui_resource_->id());
         EXPECT_NE(0, ui_resource2_->id());
         PostSetNeedsCommitToMainThread();
@@ -1477,7 +1485,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         // Make the tree not visible.
         PostSetVisibleToMainThread(false);
         ui_resource2_->DeleteResource();
-        ui_resource3_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource3_ = FakeScopedUIResource::Create(
+            layer_tree_host()->GetUIResourceManager());
         break;
       case 3:
         // Release resources before ending the test.

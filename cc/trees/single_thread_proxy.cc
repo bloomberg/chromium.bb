@@ -14,6 +14,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -205,7 +206,7 @@ void SingleThreadProxy::DoCommit() {
     layer_tree_host_impl_->BeginCommit();
 
     if (layer_tree_host_impl_->EvictedUIResourcesExist())
-      layer_tree_host_->RecreateUIResources();
+      layer_tree_host_->GetUIResourceManager()->RecreateUIResources();
 
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 

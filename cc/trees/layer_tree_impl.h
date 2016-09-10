@@ -278,7 +278,7 @@ class CC_EXPORT LayerTreeImpl {
   }
   bool has_ever_been_drawn() const { return has_ever_been_drawn_; }
 
-  void set_ui_resource_request_queue(const UIResourceRequestQueue& queue);
+  void set_ui_resource_request_queue(UIResourceRequestQueue queue);
 
   const LayerImplList& RenderSurfaceLayerList() const;
   const Region& UnoccludedScreenSpaceRegion() const;

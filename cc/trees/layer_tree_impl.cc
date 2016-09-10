@@ -1556,8 +1556,8 @@ void LayerTreeImpl::DidModifyTilePriorities() {
 }
 
 void LayerTreeImpl::set_ui_resource_request_queue(
-    const UIResourceRequestQueue& queue) {
-  ui_resource_request_queue_ = queue;
+    UIResourceRequestQueue queue) {
+  ui_resource_request_queue_ = std::move(queue);
 }
 
 ResourceId LayerTreeImpl::ResourceIdForUIResource(UIResourceId uid) const {

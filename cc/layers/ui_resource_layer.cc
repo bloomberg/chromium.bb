@@ -9,6 +9,7 @@
 #include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -19,15 +20,18 @@ namespace {
 class ScopedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
  public:
   static std::unique_ptr<ScopedUIResourceHolder> Create(
-      LayerTreeHost* host,
+      UIResourceManager* ui_resource_manager,
       const SkBitmap& skbitmap) {
-    return base::WrapUnique(new ScopedUIResourceHolder(host, skbitmap));
+    return base::WrapUnique(
+        new ScopedUIResourceHolder(ui_resource_manager, skbitmap));
   }
   UIResourceId id() override { return resource_->id(); }
 
  private:
-  ScopedUIResourceHolder(LayerTreeHost* host, const SkBitmap& skbitmap) {
-    resource_ = ScopedUIResource::Create(host, UIResourceBitmap(skbitmap));
+  ScopedUIResourceHolder(UIResourceManager* ui_resource_manager,
+                         const SkBitmap& skbitmap) {
+    resource_ = ScopedUIResource::Create(ui_resource_manager,
+                                         UIResourceBitmap(skbitmap));
   }
 
   std::unique_ptr<ScopedUIResource> resource_;
@@ -118,9 +122,9 @@ void UIResourceLayer::RecreateUIResourceHolder() {
 
 void UIResourceLayer::SetBitmap(const SkBitmap& skbitmap) {
   bitmap_ = skbitmap;
-  if (layer_tree_host() && !bitmap_.empty()) {
-    ui_resource_holder_ =
-        ScopedUIResourceHolder::Create(layer_tree_host(), bitmap_);
+  if (GetLayerTree() && !bitmap_.empty()) {
+    ui_resource_holder_ = ScopedUIResourceHolder::Create(
+        GetLayerTree()->GetUIResourceManager(), bitmap_);
   } else {
     ui_resource_holder_ = nullptr;
   }
@@ -157,10 +161,11 @@ void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
   if (!ui_resource_holder_) {
     layer_impl->SetUIResourceId(0);
   } else {
-    DCHECK(layer_tree_host());
+    DCHECK(GetLayerTree());
 
     gfx::Size image_size =
-        layer_tree_host()->GetUIResourceSize(ui_resource_holder_->id());
+        GetLayerTree()->GetUIResourceManager()->GetUIResourceSize(
+            ui_resource_holder_->id());
     layer_impl->SetUIResourceId(ui_resource_holder_->id());
     layer_impl->SetImageBounds(image_size);
     layer_impl->SetUV(uv_top_left_, uv_bottom_right_);

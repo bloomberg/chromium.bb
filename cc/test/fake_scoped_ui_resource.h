@@ -14,7 +14,8 @@ class LayerTreeHost;
 
 class FakeScopedUIResource : public ScopedUIResource {
  public:
-  static std::unique_ptr<FakeScopedUIResource> Create(LayerTreeHost* host);
+  static std::unique_ptr<FakeScopedUIResource> Create(
+      UIResourceManager* ui_resource_manager);
 
   UIResourceBitmap GetBitmap(UIResourceId uid, bool resource_lost) override;
   void DeleteResource();
@@ -24,7 +25,7 @@ class FakeScopedUIResource : public ScopedUIResource {
   int lost_resource_count;
 
  private:
-  explicit FakeScopedUIResource(LayerTreeHost* host);
+  explicit FakeScopedUIResource(UIResourceManager* ui_resource_manager);
 };
 
 }  // namespace cc

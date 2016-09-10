@@ -33,6 +33,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -3016,12 +3017,14 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
         // Usually ScopedUIResource are deleted from the manager in their
         // destructor.  Here we just want to test that a direct call to
         // DeleteUIResource works.
-        layer_tree_host()->DeleteUIResource(ui_resources_[0]->id());
+        layer_tree_host()->GetUIResourceManager()->DeleteUIResource(
+            ui_resources_[0]->id());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
         // DeleteUIResource can be called with an invalid id.
-        layer_tree_host()->DeleteUIResource(ui_resources_[0]->id());
+        layer_tree_host()->GetUIResourceManager()->DeleteUIResource(
+            ui_resources_[0]->id());
         PostSetNeedsCommitToMainThread();
         break;
       case 4:
@@ -3078,7 +3081,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
 
   void CreateResource() {
     ui_resources_[num_ui_resources_++] =
-        FakeScopedUIResource::Create(layer_tree_host());
+        FakeScopedUIResource::Create(layer_tree_host()->GetUIResourceManager());
   }
 
   std::unique_ptr<FakeScopedUIResource> ui_resources_[5];
@@ -4931,7 +4934,8 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
  protected:
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
-    ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+    ui_resource_ =
+        FakeScopedUIResource::Create(layer_tree_host()->GetUIResourceManager());
     client_.set_bounds(layer_tree()->root_layer()->bounds());
   }
 

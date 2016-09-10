@@ -70,6 +70,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::InitializeForTesting;
   using LayerTreeHost::InitializePictureCacheForTesting;
   using LayerTreeHost::RecordGpuRasterizationHistogram;
+  using LayerTreeHost::SetUIResourceManagerForTesting;
 
   void UpdateLayers() { LayerTreeHost::UpdateLayers(); }
 
@@ -79,7 +80,6 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   bool needs_commit() { return needs_commit_; }
 
- protected:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     LayerTreeHost::InitParams* params,
                     CompositorMode mode);

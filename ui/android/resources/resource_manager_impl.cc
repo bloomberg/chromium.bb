@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "jni/ResourceManager_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -36,7 +37,7 @@ ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(jobject jobj) {
 }
 
 ResourceManagerImpl::ResourceManagerImpl(gfx::NativeWindow native_window)
-    : host_(nullptr) {
+    : ui_resource_manager_(nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(
       env, Java_ResourceManager_create(env, native_window->GetJavaObject(),
@@ -49,10 +50,10 @@ ResourceManagerImpl::~ResourceManagerImpl() {
   Java_ResourceManager_destroy(base::android::AttachCurrentThread(), java_obj_);
 }
 
-void ResourceManagerImpl::Init(cc::LayerTreeHost* host) {
-  DCHECK(!host_);
-  DCHECK(host);
-  host_ = host;
+void ResourceManagerImpl::Init(cc::UIResourceManager* ui_resource_manager) {
+  DCHECK(!ui_resource_manager_);
+  DCHECK(ui_resource_manager);
+  ui_resource_manager_ = ui_resource_manager;
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -135,8 +136,8 @@ ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
   tinted_resource->size = gfx::Size(base_image->size);
   tinted_resource->padding = gfx::Rect(base_image->padding);
   tinted_resource->aperture = gfx::Rect(base_image->aperture);
-  tinted_resource->ui_resource = cc::ScopedUIResource::Create(host_,
-      cc::UIResourceBitmap(tinted_bitmap));
+  tinted_resource->ui_resource = cc::ScopedUIResource::Create(
+      ui_resource_manager_, cc::UIResourceBitmap(tinted_bitmap));
 
   resource_map->AddWithID(tinted_resource, res_id);
 
@@ -196,8 +197,8 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
 
   SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(jbitmap);
   skbitmap.setImmutable();
-  resource->ui_resource =
-      cc::ScopedUIResource::Create(host_, cc::UIResourceBitmap(skbitmap));
+  resource->ui_resource = cc::ScopedUIResource::Create(
+      ui_resource_manager_, cc::UIResourceBitmap(skbitmap));
 }
 
 CrushedSpriteResource* ResourceManagerImpl::GetCrushedSpriteResource(

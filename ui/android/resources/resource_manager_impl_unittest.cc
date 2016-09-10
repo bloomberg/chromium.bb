@@ -7,9 +7,9 @@
 #include "base/macros.h"
 #include "cc/animation/animation_host.h"
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/test/stub_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -71,17 +71,15 @@ namespace {
 
 const ui::SystemUIResourceType kTestResourceType = ui::OVERSCROLL_GLOW;
 
-class MockLayerTreeHost : public cc::LayerTreeHost {
+class MockUIResourceManager : public cc::UIResourceManager {
  public:
-  MockLayerTreeHost(cc::LayerTreeHost::InitParams* params,
-                    cc::CompositorMode mode)
-      : cc::LayerTreeHost(params, mode) {}
+  MockUIResourceManager() {}
 
   MOCK_METHOD1(CreateUIResource, cc::UIResourceId(cc::UIResourceClient*));
   MOCK_METHOD1(DeleteUIResource, void(cc::UIResourceId));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockLayerTreeHost);
+  DISALLOW_COPY_AND_ASSIGN(MockUIResourceManager);
 };
 
 }  // namespace
@@ -91,16 +89,7 @@ class ResourceManagerTest : public testing::Test {
   ResourceManagerTest()
       : window_android_(WindowAndroid::CreateForTesting()),
         resource_manager_(window_android_) {
-    cc::LayerTreeHost::InitParams params;
-    cc::LayerTreeSettings settings;
-    params.client = &stub_client_;
-    params.settings = &settings;
-    params.task_graph_runner = &task_graph_runner_;
-    params.animation_host =
-        cc::AnimationHost::CreateForTesting(cc::ThreadInstance::MAIN);
-    host_.reset(new MockLayerTreeHost(&params,
-                                      cc::CompositorMode::SINGLE_THREADED));
-    resource_manager_.Init(host_.get());
+    resource_manager_.Init(&ui_resource_manager_);
   }
 
   ~ResourceManagerTest() override {
@@ -125,7 +114,7 @@ class ResourceManagerTest : public testing::Test {
   WindowAndroid* window_android_;
 
  protected:
-  std::unique_ptr<MockLayerTreeHost> host_;
+  MockUIResourceManager ui_resource_manager_;
   TestResourceManagerImpl resource_manager_;
   cc::TestTaskGraphRunner task_graph_runner_;
   cc::StubLayerTreeHostClient stub_client_;
@@ -133,7 +122,7 @@ class ResourceManagerTest : public testing::Test {
 
 TEST_F(ResourceManagerTest, GetResource) {
   const cc::UIResourceId kResourceId = 99;
-  EXPECT_CALL(*host_.get(), CreateUIResource(_))
+  EXPECT_CALL(ui_resource_manager_, CreateUIResource(_))
       .WillOnce(Return(kResourceId))
       .RetiresOnSaturation();
   EXPECT_EQ(kResourceId, GetUIResourceId(kTestResourceType));
@@ -142,7 +131,7 @@ TEST_F(ResourceManagerTest, GetResource) {
 TEST_F(ResourceManagerTest, PreloadEnsureResource) {
   const cc::UIResourceId kResourceId = 99;
   PreloadResource(kTestResourceType);
-  EXPECT_CALL(*host_.get(), CreateUIResource(_))
+  EXPECT_CALL(ui_resource_manager_, CreateUIResource(_))
       .WillOnce(Return(kResourceId))
       .RetiresOnSaturation();
   SetResourceAsLoaded(kTestResourceType);

@@ -39,6 +39,7 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
+#include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
@@ -410,7 +411,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
   root_window->GetLayer()->AddChild(readback_layer_tree_);
   root_window->AttachCompositor(this);
   CreateLayerTreeHost();
-  resource_manager_.Init(host_.get());
+  resource_manager_.Init(host_->GetUIResourceManager());
 }
 
 CompositorImpl::~CompositorImpl() {
@@ -746,12 +747,12 @@ void CompositorImpl::RemoveObserver(VSyncObserver* observer) {
 cc::UIResourceId CompositorImpl::CreateUIResource(
     cc::UIResourceClient* client) {
   TRACE_EVENT0("compositor", "CompositorImpl::CreateUIResource");
-  return host_->CreateUIResource(client);
+  return host_->GetUIResourceManager()->CreateUIResource(client);
 }
 
 void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
   TRACE_EVENT0("compositor", "CompositorImpl::DeleteUIResource");
-  host_->DeleteUIResource(resource_id);
+  host_->GetUIResourceManager()->DeleteUIResource(resource_id);
 }
 
 bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {

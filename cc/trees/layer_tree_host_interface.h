@@ -27,6 +27,7 @@ class LayerTreeSettings;
 class OutputSurface;
 class SwapPromiseMonitor;
 class TaskRunnerProvider;
+class UIResourceManager;
 
 // TODO(khushalsagar): Will be renamed to LayerTreeHost.
 class CC_EXPORT LayerTreeHostInterface {
@@ -44,6 +45,10 @@ class CC_EXPORT LayerTreeHostInterface {
   // LayerTreeImpl on commit.
   virtual LayerTree* GetLayerTree() = 0;
   virtual const LayerTree* GetLayerTree() const = 0;
+
+  // Returns the UIResourceManager used to create UIResources for
+  // UIResourceLayers pushed to the LayerTree.
+  virtual UIResourceManager* GetUIResourceManager() const = 0;
 
   // Returns the TaskRunnerProvider used to access the main and compositor
   // thread task runners.
