@@ -127,9 +127,9 @@ const char kFieldRequiresFinalizationNote[] =
 const char kManualDispatchMethodNote[] =
     "[blink-gc] Manual dispatch %0 declared here:";
 
-const char kDerivesNonStackAllocated[] =
+const char kStackAllocatedDerivesGarbageCollected[] =
     "[blink-gc] Stack-allocated class %0 derives class %1"
-    " which is not stack allocated.";
+    " which is garbage collected.";
 
 const char kClassOverridesNew[] =
     "[blink-gc] Garbage collected class %0"
@@ -197,8 +197,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kMissingTraceDispatch);
   diag_missing_finalize_dispatch_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kMissingFinalizeDispatch);
-  diag_derives_non_stack_allocated_ =
-      diagnostic_.getCustomDiagID(getErrorLevel(), kDerivesNonStackAllocated);
+  diag_stack_allocated_derives_gc_ = diagnostic_.getCustomDiagID(
+      getErrorLevel(), kStackAllocatedDerivesGarbageCollected);
   diag_class_overrides_new_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kClassOverridesNew);
   diag_class_declares_pure_virtual_trace_ = diagnostic_.getCustomDiagID(
@@ -453,11 +453,11 @@ void DiagnosticsReporter::ReportMissingDispatch(
   ReportDiagnostic(dispatch->getLocStart(), error) << receiver->record();
 }
 
-void DiagnosticsReporter::DerivesNonStackAllocated(
+void DiagnosticsReporter::StackAllocatedDerivesGarbageCollected(
     RecordInfo* info,
     BasePoint* base) {
   ReportDiagnostic(base->spec().getLocStart(),
-                   diag_derives_non_stack_allocated_)
+                   diag_stack_allocated_derives_gc_)
       << info->record() << base->info()->record();
 }
 

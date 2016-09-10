@@ -54,7 +54,7 @@ class DiagnosticsReporter {
                             RecordInfo* receiver);
   void MissingFinalizeDispatch(const clang::FunctionDecl* dispatch,
                                RecordInfo* receiver);
-  void DerivesNonStackAllocated(RecordInfo* info, BasePoint* base);
+  void StackAllocatedDerivesGarbageCollected(RecordInfo* info, BasePoint* base);
   void ClassOverridesNew(RecordInfo* info, clang::CXXMethodDecl* newop);
   void ClassDeclaresPureVirtualTrace(RecordInfo* info,
                                      clang::CXXMethodDecl* trace);
@@ -107,7 +107,7 @@ class DiagnosticsReporter {
   unsigned diag_virtual_and_manual_dispatch_;
   unsigned diag_missing_trace_dispatch_;
   unsigned diag_missing_finalize_dispatch_;
-  unsigned diag_derives_non_stack_allocated_;
+  unsigned diag_stack_allocated_derives_gc_;
   unsigned diag_class_overrides_new_;
   unsigned diag_class_declares_pure_virtual_trace_;
   unsigned diag_left_most_base_must_be_polymorphic_;

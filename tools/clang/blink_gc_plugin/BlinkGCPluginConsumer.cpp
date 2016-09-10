@@ -177,13 +177,6 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
   if (!info)
     return;
 
-  // Check consistency of stack-allocated hierarchies.
-  if (info->IsStackAllocated()) {
-    for (auto& base : info->GetBases())
-      if (!base.second.info()->IsStackAllocated())
-        reporter_.DerivesNonStackAllocated(info, &base.second);
-  }
-
   if (CXXMethodDecl* trace = info->GetTraceMethod()) {
     if (trace->isPure())
       reporter_.ClassDeclaresPureVirtualTrace(info, trace);
@@ -206,6 +199,17 @@ void BlinkGCPluginConsumer::CheckClass(RecordInfo* info) {
   }
 
   if (info->IsGCDerived()) {
+    // It is illegal for a class to be both stack allocated and garbage
+    // collected.
+    if (info->IsStackAllocated()) {
+      for (auto& base : info->GetBases()) {
+        RecordInfo* base_info = base.second.info();
+        if (Config::IsGCBase(base_info->name()) || base_info->IsGCDerived()) {
+          reporter_.StackAllocatedDerivesGarbageCollected(info, &base.second);
+        }
+      }
+    }
+
     if (!info->IsGCMixin()) {
       CheckLeftMostDerived(info);
       CheckDispatch(info);
