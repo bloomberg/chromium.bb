@@ -1032,6 +1032,11 @@ public:
     // bounding boxes.
     IntRect absoluteBoundingBoxRectIncludingDescendants() const;
 
+    // For accessibility, we want the bounding box rect of this element
+    // in local coordinates, which can then be converted to coordinates relative
+    // to any ancestor using, e.g., localToAncestorTransform.
+    virtual FloatRect localBoundingBoxRectForAccessibility() const = 0;
+
     // This function returns the minimal logical width this object can have
     // without overflowing. This means that all the opportunities for wrapping
     // have been taken.

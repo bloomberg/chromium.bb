@@ -83,6 +83,11 @@ void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads) const
     quads.append(localToAbsoluteQuad(strokeBoundingBox()));
 }
 
+FloatRect LayoutSVGModelObject::localBoundingBoxRectForAccessibility() const
+{
+    return strokeBoundingBox();
+}
+
 void LayoutSVGModelObject::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);

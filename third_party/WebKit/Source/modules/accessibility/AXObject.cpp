@@ -39,8 +39,6 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutTheme.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
@@ -1361,27 +1359,7 @@ void AXObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsIn
     if (!container)
         return;
     *outContainer = container;
-
-    // Next get the local bounds of this LayoutObject, which is typically
-    // a rect at point (0, 0) with the width and height of the LayoutObject.
-    LayoutRect localBounds;
-    if (layoutObject->isText()) {
-        Vector<FloatQuad> quads;
-        toLayoutText(layoutObject)->quads(quads, LayoutText::ClipToEllipsis, LayoutText::LocalQuads);
-        for (const FloatQuad& quad : quads)
-            localBounds.unite(LayoutRect(quad.boundingBox()));
-    } else if (layoutObject->isLayoutInline()) {
-        Vector<LayoutRect> rects;
-        toLayoutInline(layoutObject)->addOutlineRects(rects, LayoutPoint(), LayoutObject::IncludeBlockVisualOverflow);
-        localBounds = unionRect(rects);
-    } else if (layoutObject->isBox()) {
-        localBounds = LayoutRect(LayoutPoint(), toLayoutBox(layoutObject)->size());
-    } else if (layoutObject->isSVG()) {
-        localBounds = LayoutRect(layoutObject->strokeBoundingBox());
-    } else {
-        DCHECK(false);
-    }
-    outBoundsInContainer = FloatRect(localBounds);
+    outBoundsInContainer = layoutObject->localBoundingBoxRectForAccessibility();
 
     // If the container has a scroll offset, subtract that out because we want our
     // bounds to be relative to the *unscrolled* position of the container object.

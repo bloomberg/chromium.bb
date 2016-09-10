@@ -282,6 +282,7 @@ public:
 
     const char* name() const override { return nullptr; }
     void layout() override { }
+    FloatRect localBoundingBoxRectForAccessibility() const { return FloatRect(); }
 
 private:
     explicit LayoutObjectProxy(Node* node)

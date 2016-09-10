@@ -623,6 +623,11 @@ void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads) const
     quads.append(localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat())));
 }
 
+FloatRect LayoutBox::localBoundingBoxRectForAccessibility() const
+{
+    return FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat());
+}
+
 void LayoutBox::updateLayerTransformAfterLayout()
 {
     // Transform-origin depends on box size, so we need to update the layer transform after layout.

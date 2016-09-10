@@ -1330,6 +1330,13 @@ void LayoutInline::addOutlineRectsForContinuations(Vector<LayoutRect>& rects, co
     }
 }
 
+FloatRect LayoutInline::localBoundingBoxRectForAccessibility() const
+{
+    Vector<LayoutRect> rects;
+    addOutlineRects(rects, LayoutPoint(), IncludeBlockVisualOverflow);
+    return FloatRect(unionRect(rects));
+}
+
 void LayoutInline::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const
 {
     AbsoluteLayoutRectsGeneratorContext context(rects, layerOffset);

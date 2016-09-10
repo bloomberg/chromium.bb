@@ -101,6 +101,7 @@ public:
 
     void absoluteQuads(Vector<FloatQuad>&) const final;
     void absoluteQuadsForRange(Vector<FloatQuad>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false);
+    FloatRect localBoundingBoxRectForAccessibility() const final;
 
     enum ClippingOption { NoClipping, ClipToEllipsis };
     enum LocalOrAbsoluteOption { LocalQuads, AbsoluteQuads };

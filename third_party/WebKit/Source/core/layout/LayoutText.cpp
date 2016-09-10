@@ -475,6 +475,16 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
     }
 }
 
+FloatRect LayoutText::localBoundingBoxRectForAccessibility() const
+{
+    FloatRect result;
+    Vector<FloatQuad> quads;
+    this->quads(quads, LayoutText::ClipToEllipsis, LayoutText::LocalQuads);
+    for (const FloatQuad& quad : quads)
+        result.unite(quad.boundingBox());
+    return result;
+}
+
 enum ShouldAffinityBeDownstream { AlwaysDownstream, AlwaysUpstream, UpstreamIfPositionIsNotAtStart };
 
 static bool lineDirectionPointFitsInBox(int pointLineDirection, InlineTextBox* box, ShouldAffinityBeDownstream& shouldAffinityBeDownstream)

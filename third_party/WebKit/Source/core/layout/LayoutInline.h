@@ -139,6 +139,7 @@ public:
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
     void absoluteQuads(Vector<FloatQuad>&) const override;
+    FloatRect localBoundingBoxRectForAccessibility() const final;
 
     LayoutSize offsetFromContainer(const LayoutObject*) const final;
 
