@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
@@ -19,9 +18,7 @@ namespace sysui {
 
 class AshInit;
 
-class SysUIApplication
-    : public shell::Service,
-      public shell::InterfaceFactory<mojom::WallpaperController> {
+class SysUIApplication : public shell::Service {
  public:
   SysUIApplication();
   ~SysUIApplication() override;
@@ -32,14 +29,8 @@ class SysUIApplication
   bool OnConnect(const ::shell::Identity& remote_identity,
                  ::shell::InterfaceRegistry* registry) override;
 
-  // InterfaceFactory<mojom::WallpaperController>:
-  void Create(const shell::Identity& remote_identity,
-              mojom::WallpaperControllerRequest request) override;
-
   tracing::Provider tracing_;
   std::unique_ptr<AshInit> ash_init_;
-
-  mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   // Subscribes to updates about input-devices.
   ui::InputDeviceClient input_device_client_;

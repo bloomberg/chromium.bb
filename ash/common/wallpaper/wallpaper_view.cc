@@ -44,9 +44,14 @@ class LayerControlView : public views::View {
     // wallpaper view such as an overview mode shield.
     window->GetParent()->StackChildAtBottom(window);
     display::Display display = window->GetDisplayNearestWindow();
+
+    // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
+    float ui_scale = 1.f;
     display::ManagedDisplayInfo info =
         WmShell::Get()->GetDisplayInfo(display.id());
-    float ui_scale = info.GetEffectiveUIScale();
+    if (info.id() == display.id())
+      ui_scale = info.GetEffectiveUIScale();
+
     gfx::Size rounded_size =
         gfx::ScaleToFlooredSize(display.size(), 1.f / ui_scale);
     DCHECK_EQ(1, child_count());

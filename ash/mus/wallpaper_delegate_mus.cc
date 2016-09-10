@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/sysui/wallpaper_delegate_mus.h"
+#include "ash/mus/wallpaper_delegate_mus.h"
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "services/shell/public/cpp/connector.h"
-#include "ui/views/mus/window_manager_connection.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace {
 
+// TODO(msw): Use enum traits instead.
 wallpaper::WallpaperLayout WallpaperLayoutFromMojo(
     ash::mojom::WallpaperLayout layout) {
   switch (layout) {
@@ -32,9 +32,9 @@ wallpaper::WallpaperLayout WallpaperLayoutFromMojo(
 }  // namespace
 
 namespace ash {
-namespace sysui {
 
-WallpaperDelegateMus::WallpaperDelegateMus() {}
+WallpaperDelegateMus::WallpaperDelegateMus(shell::Connector* connector)
+    : connector_(connector) {}
 
 WallpaperDelegateMus::~WallpaperDelegateMus() {}
 
@@ -65,8 +65,7 @@ void WallpaperDelegateMus::InitializeWallpaper() {
 
 void WallpaperDelegateMus::OpenSetWallpaperPage() {
   mojom::WallpaperManagerPtr wallpaper_manager;
-  auto* connector = views::WindowManagerConnection::Get()->connector();
-  connector->ConnectToInterface("exe:chrome", &wallpaper_manager);
+  connector_->ConnectToInterface("exe:chrome", &wallpaper_manager);
   wallpaper_manager->Open();
 }
 
@@ -88,5 +87,4 @@ void WallpaperDelegateMus::SetWallpaper(const SkBitmap& wallpaper,
       image, WallpaperLayoutFromMojo(layout));
 }
 
-}  // namespace sysui
 }  // namespace ash

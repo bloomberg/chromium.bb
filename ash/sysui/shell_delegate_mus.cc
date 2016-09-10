@@ -10,8 +10,8 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/sysui/app_list_presenter_mus.h"
-#include "ash/sysui/wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
@@ -170,7 +170,8 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
-  return base::MakeUnique<WallpaperDelegateMus>();
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {

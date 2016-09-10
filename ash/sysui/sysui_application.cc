@@ -25,7 +25,6 @@
 #include "ash/sysui/keyboard_ui_mus.h"
 #include "ash/sysui/shell_delegate_mus.h"
 #include "ash/sysui/stub_context_factory.h"
-#include "ash/sysui/wallpaper_delegate_mus.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -323,16 +322,7 @@ void SysUIApplication::OnStart(const ::shell::Identity& identity) {
 
 bool SysUIApplication::OnConnect(const ::shell::Identity& remote_identity,
                                  ::shell::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::WallpaperController>(this);
   return true;
-}
-
-void SysUIApplication::Create(const ::shell::Identity& remote_identity,
-                              mojom::WallpaperControllerRequest request) {
-  mojom::WallpaperController* wallpaper_controller =
-      static_cast<WallpaperDelegateMus*>(WmShell::Get()->wallpaper_delegate());
-  wallpaper_controller_bindings_.AddBinding(wallpaper_controller,
-                                            std::move(request));
 }
 
 }  // namespace sysui

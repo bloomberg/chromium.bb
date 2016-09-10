@@ -151,8 +151,12 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
     // Display::size.
     // TODO(msw): Avoid using Display::size here; see http://crbug.com/613657.
     gfx::Size size = display.size();
-    if (shell)
-      size = shell->GetDisplayInfo(display.id()).bounds_in_native().size();
+    if (shell) {
+      display::ManagedDisplayInfo info = shell->GetDisplayInfo(display.id());
+      // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
+      if (info.id() == display.id())
+        size = info.bounds_in_native().size();
+    }
     if (display.rotation() == display::Display::ROTATE_90 ||
         display.rotation() == display::Display::ROTATE_270) {
       size = gfx::Size(size.height(), size.width());

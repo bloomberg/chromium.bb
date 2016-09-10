@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSUI_WALLPAPER_DELEGATE_MUS_H_
-#define ASH_SYSUI_WALLPAPER_DELEGATE_MUS_H_
+#ifndef ASH_MUS_WALLPAPER_DELEGATE_MUS_H_
+#define ASH_MUS_WALLPAPER_DELEGATE_MUS_H_
 
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 
+namespace shell {
+class Connector;
+}
+
 namespace ash {
-namespace sysui {
 
 class WallpaperDelegateMus : public WallpaperDelegate,
                              public mojom::WallpaperController {
  public:
-  WallpaperDelegateMus();
+  explicit WallpaperDelegateMus(shell::Connector* connector);
   ~WallpaperDelegateMus() override;
 
  private:
@@ -35,10 +38,11 @@ class WallpaperDelegateMus : public WallpaperDelegate,
   void SetWallpaper(const SkBitmap& wallpaper,
                     mojom::WallpaperLayout layout) override;
 
+  shell::Connector* connector_;
+
   DISALLOW_COPY_AND_ASSIGN(WallpaperDelegateMus);
 };
 
-}  // namespace sysui
 }  // namespace ash
 
-#endif  // ASH_SYSUI_WALLPAPER_DELEGATE_MUS_H_
+#endif  // ASH_MUS_WALLPAPER_DELEGATE_MUS_H_

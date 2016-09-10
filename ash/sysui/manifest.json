@@ -6,7 +6,6 @@
     "required": {
       "*": { "classes": [ "app" ] },
       "exe:chrome" : {
-        "interfaces": [ "ash::mojom::WallpaperManager" ],
         "classes": [ "app_list:presenter" ]
       }
     }

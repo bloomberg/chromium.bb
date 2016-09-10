@@ -8,6 +8,9 @@
     },
     "required": {
       "*": { "classes": [ "accessibility", "app" ] },
+      "exe:chrome" : {
+        "interfaces": [ "ash::mojom::WallpaperManager" ]
+      },
       "mojo:mash_session": {
         "interfaces": [ "mash::session::mojom::Session" ]
       },

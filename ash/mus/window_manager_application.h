@@ -11,6 +11,7 @@
 #include <set>
 
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mash/session/public/interfaces/session.mojom.h"
@@ -50,10 +51,10 @@ class NativeWidgetFactoryMus;
 class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
-// TODO(mash): Port ash_sysui's WallpaperController here.
 class WindowManagerApplication
     : public shell::Service,
       public shell::InterfaceFactory<ash::mojom::ShelfController>,
+      public shell::InterfaceFactory<ash::mojom::WallpaperController>,
       public shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener {
  public:
@@ -83,6 +84,10 @@ class WindowManagerApplication
   void Create(const shell::Identity& remote_identity,
               ash::mojom::ShelfControllerRequest request) override;
 
+  // InterfaceFactory<ash::mojom::WallpaperController>:
+  void Create(const shell::Identity& remote_identity,
+              ash::mojom::WallpaperControllerRequest request) override;
+
   // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
   void Create(const shell::Identity& remote_identity,
               ui::mojom::AcceleratorRegistrarRequest request) override;
@@ -103,6 +108,8 @@ class WindowManagerApplication
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   mojo::BindingSet<ash::mojom::ShelfController> shelf_controller_bindings_;
+  mojo::BindingSet<ash::mojom::WallpaperController>
+      wallpaper_controller_bindings_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 

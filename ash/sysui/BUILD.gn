@@ -19,8 +19,6 @@ source_set("lib") {
     "stub_context_factory.h",
     "sysui_application.cc",
     "sysui_application.h",
-    "wallpaper_delegate_mus.cc",
-    "wallpaper_delegate_mus.h",
   ]
 
   deps = [
@@ -29,7 +27,6 @@ source_set("lib") {
     "//cc",
     "//cc/surfaces",
     "//components/user_manager",
-    "//components/wallpaper",
     "//device/bluetooth",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",

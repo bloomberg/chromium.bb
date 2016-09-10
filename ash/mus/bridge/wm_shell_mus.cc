@@ -140,8 +140,7 @@ WmShellMus::WmShellMus(
   // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.
   SetKeyboardUI(KeyboardUI::Create());
 
-  // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
-  // wallpaper_delegate()->InitializeWallpaper();
+  wallpaper_delegate()->InitializeWallpaper();
 }
 
 WmShellMus::~WmShellMus() {

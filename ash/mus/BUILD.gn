@@ -73,6 +73,8 @@ source_set("lib") {
     "shelf_delegate_mus.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
+    "wallpaper_delegate_mus.cc",
+    "wallpaper_delegate_mus.h",
     "window_manager.cc",
     "window_manager.h",
     "window_manager_application.cc",
@@ -84,6 +86,7 @@ source_set("lib") {
 
   deps = [
     "//components/user_manager",
+    "//components/wallpaper",
     "//ui/app_list/presenter",
     "//ui/message_center",
   ]
@@ -110,6 +113,7 @@ source_set("lib") {
     "//ui/strings",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
+    "//ui/wm",
   ]
 
   data_deps = [

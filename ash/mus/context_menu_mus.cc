@@ -35,9 +35,8 @@ bool ContextMenuMus::IsCommandIdChecked(int command_id) const {
 }
 
 bool ContextMenuMus::IsCommandIdEnabled(int command_id) const {
-  // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
-  // if (command_id == MENU_CHANGE_WALLPAPER)
-  //   return WmShell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
+  if (command_id == MENU_CHANGE_WALLPAPER)
+    return WmShell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
   return true;
 }
 
@@ -48,8 +47,7 @@ void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
                                        ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                        : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   } else if (command_id == MENU_CHANGE_WALLPAPER) {
-    // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
-    // WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
+    WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
   }
 }
 
