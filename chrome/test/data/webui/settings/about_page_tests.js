@@ -64,8 +64,10 @@ cr.define('settings_about_page', function() {
 
     /** @override */
     refreshUpdateStatus: function() {
-      cr.webUIListenerCallback(
-          'update-status-changed', {status: this.updateStatus_});
+      cr.webUIListenerCallback('update-status-changed', {
+        progress: 0,
+        status: this.updateStatus_,
+      });
       this.methodCalled('refreshUpdateStatus');
     },
 
@@ -138,7 +140,10 @@ cr.define('settings_about_page', function() {
   function registerAboutPageTests() {
     /** @param {!UpdateStatus} status */
     function fireStatusChanged(status) {
-      cr.webUIListenerCallback('update-status-changed', {status: status});
+      cr.webUIListenerCallback('update-status-changed', {
+        progress: 0,
+        status: status,
+      });
     }
 
     suite('AboutPageTest', function() {

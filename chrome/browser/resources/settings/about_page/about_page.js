@@ -160,13 +160,17 @@ Polymer({
       case UpdateStatus.UPDATED:
         return this.i18n('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
+        assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
+        var progressPercent = this.currentUpdateStatusEvent_.progress + '%';
+
 <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_) {
           return this.i18n('aboutUpgradeUpdatingChannelSwitch',
-              this.i18n(settings.browserChannelToI18nId(this.targetChannel_)));
+              this.i18n(settings.browserChannelToI18nId(this.targetChannel_)),
+              progressPercent);
         }
 </if>
-        return this.i18n('aboutUpgradeUpdating');
+        return this.i18n('aboutUpgradeUpdating', progressPercent);
       default:
         var message = this.currentUpdateStatusEvent_.message;
         return message ?
