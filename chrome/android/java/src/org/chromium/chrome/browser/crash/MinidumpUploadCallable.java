@@ -96,7 +96,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
 
         if (mPermManager.isUploadEnabledForTests()) {
             Log.i(TAG, "Minidump upload enabled for tests, skipping other checks.");
-        } else {
+        } else if (!CrashFileManager.isForcedUpload(mFileToUpload)) {
             if (!mPermManager.isUploadUserPermitted()) {
                 Log.i(TAG, "Minidump upload is not permitted by user. Marking file as skipped for "
                                 + "cleanup to prevent future uploads.");

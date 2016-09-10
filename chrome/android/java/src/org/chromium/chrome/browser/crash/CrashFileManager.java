@@ -45,9 +45,13 @@ public class CrashFileManager {
 
     private static final Pattern UPLOADED_MINIDUMP_PATTERN = Pattern.compile("\\.up([0-9]*)\\z");
 
+    private static final String NOT_YET_UPLOADED_MINIDUMP_SUFFIX = ".dmp";
+
     private static final String UPLOADED_MINIDUMP_SUFFIX = ".up";
 
     private static final String UPLOAD_SKIPPED_MINIDUMP_SUFFIX = ".skipped";
+
+    private static final String UPLOAD_FORCED_MINIDUMP_SUFFIX = ".forced";
 
     private static final String UPLOAD_ATTEMPT_DELIMITER = ".try";
 
@@ -116,11 +120,49 @@ public class CrashFileManager {
         int numTried = readAttemptNumber(filename);
         if (numTried > 0) {
             int newCount = numTried + 1;
-            return filename.replaceAll(UPLOAD_ATTEMPT_DELIMITER + numTried,
-                    UPLOAD_ATTEMPT_DELIMITER + newCount);
+            return filename.replace(
+                    UPLOAD_ATTEMPT_DELIMITER + numTried, UPLOAD_ATTEMPT_DELIMITER + newCount);
         } else {
             return filename + UPLOAD_ATTEMPT_DELIMITER + "1";
         }
+    }
+
+    /**
+     * Attempts to rename the given file to mark it as a forced upload. This is useful for allowing
+     * users to manually initiate previously skipped uploads.
+     *
+     * @return The renamed file, or null if renaming failed.
+     */
+    public static File trySetForcedUpload(File fileToUpload) {
+        if (fileToUpload.getName().contains(UPLOADED_MINIDUMP_SUFFIX)) {
+            Log.w(TAG, "Refusing to reset upload attempt state for a file that has already been "
+                            + "successfully uploaded: " + fileToUpload.getName());
+            return null;
+        }
+        File renamedFile = new File(filenameWithForcedUploadState(fileToUpload.getPath()));
+        return fileToUpload.renameTo(renamedFile) ? renamedFile : null;
+    }
+
+    /**
+     * @return True iff the provided File was manually forced (by the user) to be uploaded.
+     */
+    public static boolean isForcedUpload(File fileToUpload) {
+        return fileToUpload.getName().contains(UPLOAD_FORCED_MINIDUMP_SUFFIX);
+    }
+
+    /**
+     * @return The filename to rename to so as to manually force an upload (including clearing any
+     *     previous upload attempt history).
+     */
+    @VisibleForTesting
+    protected static String filenameWithForcedUploadState(String filename) {
+        int numTried = readAttemptNumber(filename);
+        if (numTried > 0) {
+            filename = filename.replace(
+                    UPLOAD_ATTEMPT_DELIMITER + numTried, UPLOAD_ATTEMPT_DELIMITER + 0);
+        }
+        filename = filename.replace(UPLOAD_SKIPPED_MINIDUMP_SUFFIX, UPLOAD_FORCED_MINIDUMP_SUFFIX);
+        return filename.replace(NOT_YET_UPLOADED_MINIDUMP_SUFFIX, UPLOAD_FORCED_MINIDUMP_SUFFIX);
     }
 
     @VisibleForTesting
@@ -171,8 +213,11 @@ public class CrashFileManager {
      * immediately.
      */
     private static void renameCrashDumpFollowingUpload(File crashDumpFile, String suffix) {
-        boolean renamed = crashDumpFile.renameTo(
-                new File(crashDumpFile.getPath().replaceAll("\\.dmp", suffix)));
+        // The pre-upload filename might have been either "foo.dmpN.tryM" or "foo.forcedN.tryM".
+        String newName = crashDumpFile.getPath()
+                                 .replace(NOT_YET_UPLOADED_MINIDUMP_SUFFIX, suffix)
+                                 .replace(UPLOAD_FORCED_MINIDUMP_SUFFIX, suffix);
+        boolean renamed = crashDumpFile.renameTo(new File(newName));
         if (!renamed) {
             Log.w(TAG, "Failed to rename " + crashDumpFile);
             if (!crashDumpFile.delete()) {
@@ -310,6 +355,33 @@ public class CrashFileManager {
 
     File getCrashFile(String filename) {
         return new File(getCrashDirectory(), filename);
+    }
+
+    /**
+     * Returns the minidump file with the given local ID, or null if no minidump file has the given
+     * local ID.
+     * NOTE: Crash files that have already been successfully uploaded are not included.
+     *
+     * @param localId The local ID of the crash report.
+     * @return The matching File, or null if no matching file is found.
+     */
+    File getCrashFileWithLocalId(String localId) {
+        for (File f : getAllFilesSorted()) {
+            // Only match non-uploaded or previously skipped files. In particular, do not match
+            // successfully uploaded files; nor files which are not minidump files, such as logcat
+            // files.
+            if (!f.getName().contains(NOT_YET_UPLOADED_MINIDUMP_SUFFIX)
+                    && !f.getName().contains(UPLOAD_SKIPPED_MINIDUMP_SUFFIX)
+                    && !f.getName().contains(UPLOAD_FORCED_MINIDUMP_SUFFIX)) {
+                continue;
+            }
+
+            String filenameSansExtension = f.getName().split("\\.")[0];
+            if (filenameSansExtension.endsWith(localId)) {
+                return f;
+            }
+        }
+        return null;
     }
 
     File getCrashUploadLogFile() {

@@ -192,6 +192,33 @@ public class CrashFileManagerTest extends CrashTestCase {
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
         assertEquals("f.tryN.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
+        assertEquals("f.forced.try3",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.forced.try2"));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testFilenameWithForcedUploadState() {
+        // The ".try0" suffix is sometimes implicit -- in particular, when logcat extraction fails.
+        assertEquals("file.forced", CrashFileManager.filenameWithForcedUploadState("file.dmp"));
+        // A not-yet-attempted upload.
+        assertEquals("file.forced0.try0",
+                CrashFileManager.filenameWithForcedUploadState("file.dmp0.try0"));
+        // A failed upload.
+        assertEquals("file.forced12.try0",
+                CrashFileManager.filenameWithForcedUploadState("file.dmp12.try3"));
+
+        // The same set of tests as above, but for skipped uploads rather than failed or
+        // not-yet-attempted uploads.
+        assertEquals("file.forced", CrashFileManager.filenameWithForcedUploadState("file.skipped"));
+        assertEquals("file.forced0.try0",
+                CrashFileManager.filenameWithForcedUploadState("file.skipped0.try0"));
+        assertEquals("file.forced12.try0",
+                CrashFileManager.filenameWithForcedUploadState("file.skipped12.try3"));
+
+        // A failed previously-forced upload.
+        assertEquals("file.forced0.try0",
+                CrashFileManager.filenameWithForcedUploadState("file.forced0.try3"));
     }
 
     @SmallTest
@@ -199,6 +226,17 @@ public class CrashFileManagerTest extends CrashTestCase {
     public void testMarkUploadSuccess() {
         CrashFileManager.markUploadSuccess(mDmpFile1);
         assertFalse(mDmpFile1.exists());
+        assertTrue(new File(mCrashDir, "123_abc.up0").exists());
+    }
+
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testMarkUploadSuccess_ForcedUpload() throws IOException {
+        File forced = new File(mCrashDir, "123_abc.forced0");
+        forced.createNewFile();
+        CrashFileManager.markUploadSuccess(forced);
+        assertFalse(forced.exists());
         assertTrue(new File(mCrashDir, "123_abc.up0").exists());
     }
 

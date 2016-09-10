@@ -12,6 +12,8 @@ import android.support.annotation.StringDef;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -23,6 +25,7 @@ import java.io.IOException;
 /**
  * Service that is responsible for uploading crash minidumps to the Google crash server.
  */
+@JNINamespace("crash")
 public class MinidumpUploadService extends IntentService {
     private static final String TAG = "MinidmpUploadService";
     // Intent actions
@@ -342,5 +345,41 @@ public class MinidumpUploadService extends IntentService {
     public static void tryUploadAllCrashDumps(Context context) {
         Intent findAndUploadAllCrashesIntent = createFindAndUploadAllCrashesIntent(context);
         context.startService(findAndUploadAllCrashesIntent);
+    }
+
+    /**
+     * Attempts to upload the crash report with the given local ID.
+     *
+     * Note that this method is asynchronous. All that is guaranteed is that
+     * upload attempts will be enqueued.
+     *
+     * This method is safe to call from the UI thread.
+     *
+     * @param localId The local ID of the crash report.
+     */
+    @CalledByNative
+    public void tryUploadCrashDumpWithLocalId(String localId) {
+        Context context = getApplicationContext();
+        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        File minidumpFile = fileManager.getCrashFileWithLocalId(localId);
+        if (minidumpFile == null) {
+            Log.w(TAG, "Could not find a crash dump with local ID " + localId);
+            return;
+        }
+        File renamedMinidumpFile = fileManager.trySetForcedUpload(minidumpFile);
+        if (renamedMinidumpFile == null) {
+            Log.w(TAG, "Could not rename the file " + minidumpFile.getName() + " for re-upload");
+            return;
+        }
+        File logfile = fileManager.getCrashUploadLogFile();
+        Intent uploadIntent = createUploadIntent(context, renamedMinidumpFile, logfile);
+
+        // This method is intended to be used for manually triggering an attempt to upload an
+        // already existing crash dump. Such a crash dump should already have had a chance to attach
+        // the logcat to the minidump. Moreover, it's almost certainly too late to try to extract
+        // the logcat now, since typically some time has passed between the crash and the user's
+        // manual upload attempt.
+        uploadIntent.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
+        startService(uploadIntent);
     }
 }
