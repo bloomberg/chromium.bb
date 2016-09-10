@@ -733,6 +733,13 @@ crbug.com/623120 virtual/gpu/fast/canvas/webgl/webgl-array-invalid-ranges.html [
 crbug.com/623120 fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
 crbug.com/623120 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
 
+crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
