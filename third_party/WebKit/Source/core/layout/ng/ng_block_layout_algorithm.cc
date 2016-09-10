@@ -47,7 +47,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
       constraint_space_for_children_ =
           new NGConstraintSpace(*constraint_space, NGLogicalOffset(),
                                 NGLogicalSize(inline_size, block_size));
-      content_size_ = LayoutUnit();
+      content_size_ =
+          computeBorderAndPaddingBlockStart(*constraint_space, *style_);
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -66,9 +67,15 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         LayoutUnit margin_block_start =
             CollapseMargins(child_margins, fragment->MarginStrut());
 
+        // TODO(layout-ng): This is probably something we shouldn't calculate
+        // over and over again for each child.
+        LayoutUnit content_inline_start_edge =
+            computeBorderAndPaddingInlineStart(*constraint_space, *style_);
+
         // TODO(layout-ng): Support auto margins
         builder_->AddChild(fragment,
-                           NGLogicalOffset(child_margins.inline_start,
+                           NGLogicalOffset(content_inline_start_edge +
+                                               child_margins.inline_start,
                                            content_size_ + margin_block_start));
 
         content_size_ += fragment->BlockSize() + margin_block_start;

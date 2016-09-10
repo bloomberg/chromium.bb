@@ -49,6 +49,21 @@ CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit contentSize);
 
+CORE_EXPORT LayoutUnit
+computeBorderAndPaddingBlockStart(const NGConstraintSpace&,
+                                  const ComputedStyle&);
+
+CORE_EXPORT LayoutUnit computeBorderAndPaddingBlockEnd(const NGConstraintSpace&,
+                                                       const ComputedStyle&);
+
+CORE_EXPORT LayoutUnit
+computeBorderAndPaddingInlineStart(const NGConstraintSpace&,
+                                   const ComputedStyle&);
+
+CORE_EXPORT LayoutUnit
+computeBorderAndPaddingInlineEnd(const NGConstraintSpace&,
+                                 const ComputedStyle&);
+
 CORE_EXPORT NGBoxStrut computeMargins(const NGConstraintSpace&,
                                       const ComputedStyle&);
 

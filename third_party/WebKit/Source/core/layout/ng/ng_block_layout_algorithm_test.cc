@@ -185,5 +185,79 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   EXPECT_EQ(child->Height(), kHeight);
   EXPECT_EQ(child->TopOffset(), kHeight + kExpectedCollapsedMargin);
 }
+
+// Verifies that a box's size includes its borders and padding, and that
+// children are positioned inside the content box.
+//
+// Test case's HTML representation:
+// <style>
+//   #div1 { width:100px; height:100px; }
+//   #div1 { border-style:solid; border-width:1px 2px 3px 4px; }
+//   #div1 { padding:5px 6px 7px 8px; }
+// </style>
+// <div id="div1">
+//    <div id="div2"></div>
+// </div>
+TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
+  const int kWidth = 100;
+  const int kHeight = 100;
+  const int kBorderTop = 1;
+  const int kBorderRight = 2;
+  const int kBorderBottom = 3;
+  const int kBorderLeft = 4;
+  const int kPaddingTop = 5;
+  const int kPaddingRight = 6;
+  const int kPaddingBottom = 7;
+  const int kPaddingLeft = 8;
+  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
+
+  div1_style->setWidth(Length(kWidth, Fixed));
+  div1_style->setHeight(Length(kHeight, Fixed));
+
+  div1_style->setBorderTopWidth(kBorderTop);
+  div1_style->setBorderTopStyle(BorderStyleSolid);
+  div1_style->setBorderRightWidth(kBorderRight);
+  div1_style->setBorderRightStyle(BorderStyleSolid);
+  div1_style->setBorderBottomWidth(kBorderBottom);
+  div1_style->setBorderBottomStyle(BorderStyleSolid);
+  div1_style->setBorderLeftWidth(kBorderLeft);
+  div1_style->setBorderLeftStyle(BorderStyleSolid);
+
+  div1_style->setPaddingTop(Length(kPaddingTop, Fixed));
+  div1_style->setPaddingRight(Length(kPaddingRight, Fixed));
+  div1_style->setPaddingBottom(Length(kPaddingBottom, Fixed));
+  div1_style->setPaddingLeft(Length(kPaddingLeft, Fixed));
+  NGBox* div1 = new NGBox(div1_style.get());
+
+  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
+  NGBox* div2 = new NGBox(div2_style.get());
+
+  div1->SetFirstChild(div2);
+
+  NGConstraintSpace* space = new NGConstraintSpace(
+      HorizontalTopBottom, NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  NGBlockLayoutAlgorithm algorithm(style_, div1);
+  NGPhysicalFragment* frag;
+  while (!algorithm.Layout(space, &frag))
+    ;
+
+  ASSERT_EQ(frag->Children().size(), 1UL);
+
+  // div1
+  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  EXPECT_EQ(kBorderLeft + kPaddingLeft + kWidth + kPaddingRight + kBorderRight,
+            child->Width());
+  EXPECT_EQ(kBorderTop + kPaddingTop + kHeight + kPaddingBottom + kBorderBottom,
+            child->Height());
+
+  ASSERT_TRUE(child->Type() == NGPhysicalFragmentBase::FragmentBox);
+  ASSERT_EQ(static_cast<const NGPhysicalFragment*>(child)->Children().size(),
+            1UL);
+
+  // div2
+  child = static_cast<const NGPhysicalFragment*>(child)->Children()[0];
+  EXPECT_EQ(kBorderTop + kPaddingTop, child->TopOffset());
+  EXPECT_EQ(kBorderLeft + kPaddingLeft, child->LeftOffset());
+}
 }  // namespace
 }  // namespace blink
