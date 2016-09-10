@@ -48,7 +48,7 @@ crbug.com/629058 plugins/fullscreen-plugins-dont-reload.html [ Leak ]
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
 
-crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
+crbug.com/364417 paint/invalidation/japanese-rl-selection-clear.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
 
