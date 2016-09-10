@@ -164,6 +164,9 @@ class ASH_EXPORT WindowTreeHostManager
   void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
+#if defined(OS_CHROMEOS)
+  ui::DisplayConfigurator* display_configurator() override;
+#endif
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(

@@ -28,10 +28,6 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
-namespace chromeos {
-class DisplayNotificationsTest;
-}
-
 namespace display {
 class DisplayLayoutStore;
 class DisplayObserver;
@@ -44,14 +40,11 @@ class Rect;
 }
 
 namespace ash {
-class AcceleratorControllerTest;
-
 using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
 
 namespace test {
 class AshTestBase;
 class DisplayManagerTestApi;
-class SystemGestureEventFilterTest;
 }
 
 // DisplayManager maintains the current display configurations,
@@ -80,6 +73,11 @@ class ASH_EXPORT DisplayManager
     // deactivate the active window and set the focus window to NULL.
     virtual void PreDisplayConfigurationChange(bool clear_focus) = 0;
     virtual void PostDisplayConfigurationChange() = 0;
+
+#if defined(OS_CHROMEOS)
+    // Get the ui::DisplayConfigurator.
+    virtual ui::DisplayConfigurator* display_configurator() = 0;
+#endif
   };
 
   // How the second display will be used.
@@ -353,12 +351,9 @@ class ASH_EXPORT DisplayManager
                            NativeDisplaysChangedAfterPrimaryChange);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, AutomaticOverscanInsets);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, Rotate);
-  friend class AcceleratorControllerTest;
   friend class DisplayManagerTest;
-  friend class chromeos::DisplayNotificationsTest;
   friend class test::AshTestBase;
   friend class test::DisplayManagerTestApi;
-  friend class test::SystemGestureEventFilterTest;
 
   bool software_mirroring_enabled() const {
     return multi_display_mode_ == MIRRORING;

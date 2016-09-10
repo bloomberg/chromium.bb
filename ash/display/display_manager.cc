@@ -15,8 +15,8 @@
 
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
-#include "ash/shell.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -392,7 +392,7 @@ bool DisplayManager::SetDisplayMode(
     ReconfigureDisplays();
 #if defined(OS_CHROMEOS)
   } else if (resolution_changed && base::SysInfo::IsRunningOnChromeOS()) {
-    Shell::GetInstance()->display_configurator()->OnConfigurationChanged();
+    delegate_->display_configurator()->OnConfigurationChanged();
 #endif
   }
   return resolution_changed || display_property_changed;
@@ -504,8 +504,8 @@ void DisplayManager::SetColorCalibrationProfile(
     delegate_->PreDisplayConfigurationChange(false);
   // Just sets color profile if it's not running on ChromeOS (like tests).
   if (!base::SysInfo::IsRunningOnChromeOS() ||
-      Shell::GetInstance()->display_configurator()->SetColorCalibrationProfile(
-          display_id, profile)) {
+      delegate_->display_configurator()->SetColorCalibrationProfile(display_id,
+                                                                    profile)) {
     display_info_[display_id].SetColorProfile(profile);
     UMA_HISTOGRAM_ENUMERATION("ChromeOS.Display.ColorProfile", profile,
                               ui::NUM_COLOR_PROFILES);
@@ -944,7 +944,7 @@ void DisplayManager::SetMirrorMode(bool mirror) {
     ui::MultipleDisplayState new_state =
         mirror ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
                : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
-    Shell::GetInstance()->display_configurator()->SetDisplayMode(new_state);
+    delegate_->display_configurator()->SetDisplayMode(new_state);
     return;
   }
 #endif
@@ -1293,7 +1293,7 @@ void DisplayManager::OnDisplayInfoUpdated(
 #if defined(OS_CHROMEOS)
   ui::ColorCalibrationProfile color_profile = display_info.color_profile();
   if (color_profile != ui::COLOR_PROFILE_STANDARD) {
-    Shell::GetInstance()->display_configurator()->SetColorCalibrationProfile(
+    delegate_->display_configurator()->SetColorCalibrationProfile(
         display_info.id(), color_profile);
   }
 #endif

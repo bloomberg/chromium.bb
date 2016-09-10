@@ -797,6 +797,12 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   UpdateMouseLocationAfterDisplayChange();
 }
 
+#if defined(OS_CHROMEOS)
+ui::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
+  return Shell::GetInstance()->display_configurator();
+}
+#endif
+
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
   // Getting the active root window to dispatch the event. This isn't
