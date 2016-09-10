@@ -52,6 +52,7 @@ using blink::WebIDBDatabase;
 namespace blink {
 
 const char IDBDatabase::indexDeletedErrorMessage[] = "The index or its object store has been deleted.";
+const char IDBDatabase::indexNameTakenErrorMessage[] = "An index with the specified name already exists.";
 const char IDBDatabase::isKeyCursorErrorMessage[] = "The cursor is a key cursor.";
 const char IDBDatabase::noKeyOrKeyRangeErrorMessage[] = "No key or key range specified.";
 const char IDBDatabase::noSuchIndexErrorMessage[] = "The specified index was not found.";
@@ -60,6 +61,7 @@ const char IDBDatabase::noValueErrorMessage[] = "The cursor is being iterated or
 const char IDBDatabase::notValidKeyErrorMessage[] = "The parameter is not a valid key.";
 const char IDBDatabase::notVersionChangeTransactionErrorMessage[] = "The database is not running a version change transaction.";
 const char IDBDatabase::objectStoreDeletedErrorMessage[] = "The object store has been deleted.";
+const char IDBDatabase::objectStoreNameTakenErrorMessage[] = "An object store with the specified name already exists.";
 const char IDBDatabase::requestNotFinishedErrorMessage[] = "The request has not finished.";
 const char IDBDatabase::sourceDeletedErrorMessage[] = "The cursor's source or effective object store has been deleted.";
 const char IDBDatabase::transactionInactiveErrorMessage[] = "The transaction is not active.";
@@ -119,6 +121,17 @@ void IDBDatabase::indexDeleted(int64_t objectStoreId, int64_t indexId)
     IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(objectStoreId);
     ASSERT_WITH_SECURITY_IMPLICATION(it != m_metadata.objectStores.end());
     it->value.indexes.remove(indexId);
+}
+
+void IDBDatabase::indexRenamed(int64_t objectStoreId, int64_t indexId, const String& newName)
+{
+    IDBDatabaseMetadata::ObjectStoreMap::iterator storeIterator = m_metadata.objectStores.find(objectStoreId);
+    SECURITY_DCHECK(storeIterator != m_metadata.objectStores.end());
+
+    IDBObjectStoreMetadata& storeMetadata = storeIterator->value;
+    IDBObjectStoreMetadata::IndexMap::iterator indexIterator = storeMetadata.indexes.find(indexId);
+    DCHECK(indexIterator != storeMetadata.indexes.end());
+    indexIterator->value.name = newName;
 }
 
 void IDBDatabase::transactionCreated(IDBTransaction* transaction)
@@ -201,7 +214,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
     }
 
     if (containsObjectStore(name)) {
-        exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
+        exceptionState.throwDOMException(ConstraintError, IDBDatabase::objectStoreNameTakenErrorMessage);
         return nullptr;
     }
 
@@ -420,6 +433,13 @@ int64_t IDBDatabase::findObjectStoreId(const String& name) const
         }
     }
     return IDBObjectStoreMetadata::InvalidId;
+}
+
+void IDBDatabase::objectStoreRenamed(int64_t storeId, const String& newName)
+{
+    DCHECK(m_metadata.objectStores.contains(storeId));
+    IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(storeId);
+    it->value.name = newName;
 }
 
 bool IDBDatabase::hasPendingActivity() const

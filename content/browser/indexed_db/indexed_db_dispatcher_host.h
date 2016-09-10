@@ -171,6 +171,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDeleteObjectStore(int32_t ipc_database_id,
                              int64_t transaction_id,
                              int64_t object_store_id);
+    void OnRenameObjectStore(int32_t ipc_database_id,
+                             int64_t transaction_id,
+                             int64_t object_store_id,
+                             const base::string16& new_name);
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
     void OnClose(int32_t ipc_database_id);
@@ -209,6 +213,11 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                        int64_t transaction_id,
                        int64_t object_store_id,
                        int64_t index_id);
+    void OnRenameIndex(int32_t ipc_database_id,
+                       int64_t transaction_id,
+                       int64_t object_store_id,
+                       int64_t index_id,
+                       const base::string16& new_name);
 
     void OnAbort(int32_t ipc_database_id, int64_t transaction_id);
     void OnCommit(int32_t ipc_database_id, int64_t transaction_id);

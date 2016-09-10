@@ -71,6 +71,49 @@ DEFINE_TRACE(IDBObjectStore)
     visitor->trace(m_createdIndexes);
 }
 
+void IDBObjectStore::setName(const String& name, ExceptionState& exceptionState)
+{
+    if (!RuntimeEnabledFeatures::indexedDBExperimentalEnabled())
+        return;
+
+    IDB_TRACE("IDBObjectStore::setName");
+    if (!m_transaction->isVersionChange()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        return;
+    }
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
+        return;
+    }
+    if (m_transaction->isFinished() || m_transaction->isFinishing()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return;
+    }
+    if (!m_transaction->isActive()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return;
+    }
+
+    if (m_metadata.name == name)
+        return;
+    if (m_transaction->db()->containsObjectStore(name)) {
+        exceptionState.throwDOMException(ConstraintError, IDBDatabase::objectStoreNameTakenErrorMessage);
+        return;
+    }
+    if (!backendDB()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return;
+    }
+
+    backendDB()->renameObjectStore(m_transaction->id(), id(), name);
+    m_transaction->objectStoreRenamed(m_metadata.name, name);
+    m_metadata.name = name;
+
+    // The name inside the database's version of the object store metadata is used by IDBDatabase.objectStoreNames().
+    // If the transaction is aborted, this name will be reverted when the metadata is overwritten with the previousMetadata in IDBTransaction.
+    m_transaction->db()->objectStoreRenamed(id(), name);
+}
+
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
 {
     return ScriptValue::from(scriptState, m_metadata.keyPath);
@@ -545,7 +588,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
         return nullptr;
     }
     if (containsIndex(name)) {
-        exceptionState.throwDOMException(ConstraintError, "An index with the specified name already exists.");
+        exceptionState.throwDOMException(ConstraintError, IDBDatabase::indexNameTakenErrorMessage);
         return nullptr;
     }
     if (!keyPath.isValid()) {
@@ -778,6 +821,24 @@ void IDBObjectStore::transactionFinished()
     // TODO(jsbell): This can be removed c/o Oilpan.
     m_indexMap.clear();
     m_createdIndexes.clear();
+}
+
+void IDBObjectStore::indexRenamed(int64_t indexId, const String& newName)
+{
+    DCHECK(m_transaction->isVersionChange());
+    DCHECK(m_transaction->isActive());
+
+    IDBObjectStoreMetadata::IndexMap::iterator metadataIterator = m_metadata.indexes.find(indexId);
+    DCHECK(metadataIterator != m_metadata.indexes.end()) << "Invalid indexId";
+    const String& oldName = metadataIterator->value.name;
+
+    DCHECK(m_indexMap.contains(oldName)) << "The index had to be accessed in order to be renamed.";
+    DCHECK(!m_indexMap.contains(newName));
+    IDBIndexMap::iterator it = m_indexMap.find(oldName);
+    m_indexMap.set(newName, it->value);
+    m_indexMap.remove(oldName);
+
+    metadataIterator->value.name = newName;
 }
 
 int64_t IDBObjectStore::findIndexId(const String& name) const

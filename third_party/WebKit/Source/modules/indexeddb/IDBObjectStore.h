@@ -62,6 +62,7 @@ public:
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }
     const String& name() const { return m_metadata.name; }
+    void setName(const String& name, ExceptionState&);
     ScriptValue keyPath(ScriptState*) const;
     DOMStringList* indexNames() const;
     IDBTransaction* transaction() const { return m_transaction.get(); }
@@ -105,6 +106,13 @@ public:
 
     typedef HeapVector<Member<IDBKey>> IndexKeys;
 
+    // Used by IDBIndex::setName:
+    bool containsIndex(const String& name) const
+    {
+        return findIndexId(name) != IDBIndexMetadata::InvalidId;
+    }
+    void indexRenamed(int64_t indexId, const String& newName);
+
     WebIDBDatabase* backendDB() const;
 
 private:
@@ -114,10 +122,6 @@ private:
     IDBRequest* put(ScriptState*, WebIDBPutMode, IDBAny* source, const ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
-    bool containsIndex(const String& name) const
-    {
-        return findIndexId(name) != IDBIndexMetadata::InvalidId;
-    }
 
     IDBObjectStoreMetadata m_metadata;
     Member<IDBTransaction> m_transaction;

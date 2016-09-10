@@ -67,6 +67,7 @@ public:
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
     void indexDeleted(int64_t objectStoreId, int64_t indexId);
+    void indexRenamed(int64_t objectStoreId, int64_t indexId, const String& newName);
     void transactionCreated(IDBTransaction*);
     void transactionFinished(const IDBTransaction*);
     const String& getObjectStoreName(int64_t objectStoreId) const;
@@ -111,6 +112,7 @@ public:
     {
         return findObjectStoreId(name) != IDBObjectStoreMetadata::InvalidId;
     }
+    void objectStoreRenamed(int64_t storeId, const String& newName);
 
     // Will return nullptr if this database is stopped.
     WebIDBDatabase* backend() const { return m_backend.get(); }
@@ -118,6 +120,7 @@ public:
     static int64_t nextTransactionId();
 
     static const char indexDeletedErrorMessage[];
+    static const char indexNameTakenErrorMessage[];
     static const char isKeyCursorErrorMessage[];
     static const char noKeyOrKeyRangeErrorMessage[];
     static const char noSuchIndexErrorMessage[];
@@ -126,6 +129,7 @@ public:
     static const char notValidKeyErrorMessage[];
     static const char notVersionChangeTransactionErrorMessage[];
     static const char objectStoreDeletedErrorMessage[];
+    static const char objectStoreNameTakenErrorMessage[];
     static const char requestNotFinishedErrorMessage[];
     static const char sourceDeletedErrorMessage[];
     static const char transactionFinishedErrorMessage[];

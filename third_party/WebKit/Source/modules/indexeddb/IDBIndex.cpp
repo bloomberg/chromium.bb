@@ -65,6 +65,46 @@ DEFINE_TRACE(IDBIndex)
     visitor->trace(m_transaction);
 }
 
+void IDBIndex::setName(const String& name, ExceptionState& exceptionState)
+{
+    if (!RuntimeEnabledFeatures::indexedDBExperimentalEnabled())
+        return;
+
+    IDB_TRACE("IDBIndex::setName");
+    if (!m_transaction->isVersionChange()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        return;
+    }
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return;
+    }
+    if (m_transaction->isFinished() || m_transaction->isFinishing()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return;
+    }
+    if (!m_transaction->isActive()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return;
+    }
+
+    if (m_metadata.name == name)
+        return;
+    if (m_objectStore->containsIndex(name)) {
+        exceptionState.throwDOMException(ConstraintError, IDBDatabase::indexNameTakenErrorMessage);
+        return;
+    }
+    if (!backendDB()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return;
+    }
+
+    backendDB()->renameIndex(m_transaction->id(), m_objectStore->id(), id(), name);
+    m_metadata.name = name;
+    m_objectStore->indexRenamed(m_metadata.id, name);
+    m_transaction->db()->indexRenamed(m_objectStore->id(), id(), name);
+}
+
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
     return ScriptValue::from(scriptState, m_metadata.keyPath);

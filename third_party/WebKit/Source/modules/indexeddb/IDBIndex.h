@@ -55,6 +55,7 @@ public:
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
+    void setName(const String& name, ExceptionState&);
     IDBObjectStore* objectStore() const { return m_objectStore.get(); }
     ScriptValue keyPath(ScriptState*) const;
     bool unique() const { return m_metadata.unique; }
@@ -72,6 +73,7 @@ public:
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
+    int64_t id() const { return m_metadata.id; }
 
     // Used internally and by InspectorIndexedDBAgent:
     IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection);

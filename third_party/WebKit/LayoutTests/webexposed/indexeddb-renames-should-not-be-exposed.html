@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script>
+
+// This test makes sure that the IndexedDB object store and index name setters
+// are only exposed when the experimental Web Platform features flag is set.
+// This is implemented in Blink because our bindings generator does not support
+// separate settings for exposing a property's getter and setter.
+//
+// TODO(crbug.com/644889): Remove this test after we ship IndexedDB v2.
+
+async_test(t => {
+    const dbName = 'db' + self.location.pathname + '-' + t.name;
+    indexedDB.deleteDatabase(dbName);
+    const request = indexedDB.open(dbName, 1);
+    request.onupgradeneeded = t.step_func(event => {
+        const database = event.target.result;
+        const transaction = event.target.transaction;
+        const store = database.createObjectStore('books');
+        const index = store.createIndex('by_author', 'author');
+
+        store.name = 'renamed_books';
+        assert_equals(
+            store.name, 'books',
+            'IndexedDB object store renaming should not be web-exposed');
+        index.name = 'renamed_by_author';
+        assert_equals(
+            index.name, 'by_author',
+            'IndexedDB index renaming should not be web-exposed');
+
+        // In strict mode, attempting to set a read-only property should throw
+        // a TypeError. We do not implement the correct semantics here because
+        // detecting strict mode would require writing custom bindings. The
+        // deviation is small, and will go away when we ship IndexedDB v2. Thus,
+        // avoiding the deviation is not worth the engineering effort of writing
+        // and testing a custom binding.
+        (() => {
+            'use strict';
+
+            store.name = 'renamed_books';
+            assert_equals(
+                store.name, 'books',
+                'IndexedDB object store renaming should not be web-exposed ' +
+                'in strict mode');
+            index.name = 'renamed_by_author';
+            assert_equals(
+                index.name, 'by_author',
+                'IndexedDB index renaming should not be web-exposed ' +
+                'in strict mode');
+        })();
+    });
+    request.onsuccess = t.step_func_done(event => {
+        const database = event.target.result;
+        database.close();
+    });
+    request.onerror = t.unreached_func(
+        'The IndexedDB request should not receive an error event');
+}, 'IndexedDB object store and index renaming should not be web-exposed\nThis test is expected to fail in LayoutTests/webexposed');
+
+</script>

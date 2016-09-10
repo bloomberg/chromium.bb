@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS IndexedDB object store and index renaming should not be web-exposed
+This test is expected to fail in LayoutTests/webexposed 
+Harness: the test ran to completion.
+

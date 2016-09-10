@@ -74,10 +74,14 @@ class CONTENT_EXPORT IndexedDBDatabase
   void AddObjectStore(const IndexedDBObjectStoreMetadata& metadata,
                       int64_t new_max_object_store_id);
   void RemoveObjectStore(int64_t object_store_id);
+  void SetObjectStoreName(int64_t object_store_id, const base::string16& name);
   void AddIndex(int64_t object_store_id,
                 const IndexedDBIndexMetadata& metadata,
                 int64_t new_max_index_id);
   void RemoveIndex(int64_t object_store_id, int64_t index_id);
+  void SetIndexName(int64_t object_store_id,
+                    int64_t index_id,
+                    const base::string16& name);
 
   void OpenConnection(std::unique_ptr<IndexedDBPendingConnection> connection);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -89,6 +93,9 @@ class CONTENT_EXPORT IndexedDBDatabase
                          const IndexedDBKeyPath& key_path,
                          bool auto_increment);
   void DeleteObjectStore(int64_t transaction_id, int64_t object_store_id);
+  void RenameObjectStore(int64_t transaction_id,
+                         int64_t object_store_id,
+                         const base::string16& new_name);
 
   // Returns a pointer to a newly created transaction. The object is owned
   // by |transaction_coordinator_|.
@@ -119,6 +126,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   void DeleteIndex(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id);
+  void RenameIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id,
+                   const base::string16& new_name);
 
   IndexedDBTransactionCoordinator& transaction_coordinator() {
     return transaction_coordinator_;
@@ -213,6 +224,9 @@ class CONTENT_EXPORT IndexedDBDatabase
   void DeleteObjectStoreAbortOperation(
       const IndexedDBObjectStoreMetadata& object_store_metadata,
       IndexedDBTransaction* transaction);
+  void RenameObjectStoreAbortOperation(int64_t object_store_id,
+                                       const base::string16& old_name,
+                                       IndexedDBTransaction* transaction);
   void VersionChangeOperation(int64_t version,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               IndexedDBTransaction* transaction);
@@ -226,6 +240,10 @@ class CONTENT_EXPORT IndexedDBDatabase
                                  IndexedDBTransaction* transaction);
   void DeleteIndexAbortOperation(int64_t object_store_id,
                                  const IndexedDBIndexMetadata& index_metadata,
+                                 IndexedDBTransaction* transaction);
+  void RenameIndexAbortOperation(int64_t object_store_id,
+                                 int64_t index_id,
+                                 const base::string16& old_name,
                                  IndexedDBTransaction* transaction);
   void GetOperation(int64_t object_store_id,
                     int64_t index_id,

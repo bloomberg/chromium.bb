@@ -321,6 +321,7 @@ interface IDBIndex
     method getKey
     method openCursor
     method openKeyCursor
+    setter name
 interface IDBKeyRange
     static method bound
     static method lowerBound
@@ -353,6 +354,7 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
+    setter name
 interface IDBObservation
     getter key
     getter type
@@ -1296,6 +1298,7 @@ interface webkitIDBIndex
     method getKey
     method openCursor
     method openKeyCursor
+    setter name
 interface webkitIDBKeyRange
     static method bound
     static method lowerBound
@@ -1328,6 +1331,7 @@ interface webkitIDBObjectStore
     method openCursor
     method openKeyCursor
     method put
+    setter name
 interface webkitIDBRequest : EventTarget
     getter error
     getter onerror

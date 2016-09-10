@@ -403,6 +403,13 @@ void IndexedDBDatabase::RemoveObjectStore(int64_t object_store_id) {
   metadata_.object_stores.erase(object_store_id);
 }
 
+void IndexedDBDatabase::SetObjectStoreName(
+    int64_t object_store_id, const base::string16& name) {
+  DCHECK(metadata_.object_stores.find(object_store_id) !=
+         metadata_.object_stores.end());
+  metadata_.object_stores[object_store_id].name = name;
+}
+
 void IndexedDBDatabase::AddIndex(int64_t object_store_id,
                                  const IndexedDBIndexMetadata& index,
                                  int64_t new_max_index_id) {
@@ -428,6 +435,18 @@ void IndexedDBDatabase::RemoveIndex(int64_t object_store_id, int64_t index_id) {
 
   DCHECK(object_store.indexes.find(index_id) != object_store.indexes.end());
   object_store.indexes.erase(index_id);
+  metadata_.object_stores[object_store_id] = object_store;
+}
+
+void IndexedDBDatabase::SetIndexName(
+    int64_t object_store_id, int64_t index_id, const base::string16& name) {
+  DCHECK(metadata_.object_stores.find(object_store_id) !=
+         metadata_.object_stores.end());
+  IndexedDBObjectStoreMetadata object_store =
+      metadata_.object_stores[object_store_id];
+
+  DCHECK(object_store.indexes.find(index_id) != object_store.indexes.end());
+  object_store.indexes[index_id].name = name;
   metadata_.object_stores[object_store_id] = object_store;
 }
 
@@ -599,6 +618,48 @@ void IndexedDBDatabase::DeleteObjectStore(int64_t transaction_id,
                  object_store_id));
 }
 
+void IndexedDBDatabase::RenameObjectStore(int64_t transaction_id,
+                                          int64_t object_store_id,
+                                          const base::string16& new_name) {
+  IDB_TRACE1("IndexedDBDatabase::RenameObjectStore", "txn.id", transaction_id);
+  IndexedDBTransaction* transaction = GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
+
+  if (!ValidateObjectStoreId(object_store_id))
+    return;
+
+  // Store renaming is done synchronously, as it may be followed by
+  // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
+  // may follow.
+  const IndexedDBObjectStoreMetadata object_store_metadata =
+      metadata_.object_stores[object_store_id];
+
+  leveldb::Status s =
+      backing_store_->RenameObjectStore(transaction->BackingStoreTransaction(),
+                                        transaction->database()->id(),
+                                        object_store_metadata.id, new_name);
+  if (!s.ok()) {
+    IndexedDBDatabaseError error(
+        blink::WebIDBDatabaseExceptionUnknownError,
+        ASCIIToUTF16("Internal error renaming object store '") +
+            object_store_metadata.name + ASCIIToUTF16("' to '") + new_name +
+            ASCIIToUTF16("'."));
+    transaction->Abort(error);
+    if (s.IsCorruption())
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
+    return;
+  }
+
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::RenameObjectStoreAbortOperation,
+                 this,
+                 object_store_id,
+                 object_store_metadata.name));
+  SetObjectStoreName(object_store_id, new_name);
+}
+
 void IndexedDBDatabase::CreateIndex(int64_t transaction_id,
                                     int64_t object_store_id,
                                     int64_t index_id,
@@ -720,6 +781,60 @@ void IndexedDBDatabase::DeleteIndexAbortOperation(
   DCHECK(!transaction);
   IDB_TRACE("IndexedDBDatabase::DeleteIndexAbortOperation");
   AddIndex(object_store_id, index_metadata, IndexedDBIndexMetadata::kInvalidId);
+}
+
+void IndexedDBDatabase::RenameIndex(int64_t transaction_id,
+                                    int64_t object_store_id,
+                                    int64_t index_id,
+                                    const base::string16& new_name) {
+  IDB_TRACE1("IndexedDBDatabase::RenameIndex", "txn.id", transaction_id);
+  IndexedDBTransaction* transaction = GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
+
+  if (!ValidateObjectStoreIdAndIndexId(object_store_id, index_id))
+    return;
+
+  // Index renaming is done synchronously since preemptive
+  // OpenCursor/SetIndexKeys may follow.
+
+  const IndexedDBIndexMetadata index_metadata =
+      metadata_.object_stores[object_store_id].indexes[index_id];
+
+  leveldb::Status s =
+      backing_store_->RenameIndex(transaction->BackingStoreTransaction(),
+                                  transaction->database()->id(),
+                                  object_store_id,
+                                  index_id,
+                                  new_name);
+  if (!s.ok()) {
+    base::string16 error_string =
+        ASCIIToUTF16("Internal error renaming index '") +
+        index_metadata.name + ASCIIToUTF16("' to '") + new_name +
+        ASCIIToUTF16("'.");
+    transaction->Abort(IndexedDBDatabaseError(
+        blink::WebIDBDatabaseExceptionUnknownError, error_string));
+    return;
+  }
+
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::RenameIndexAbortOperation,
+                 this,
+                 object_store_id,
+                 index_id,
+                 index_metadata.name));
+  SetIndexName(object_store_id, index_id, new_name);
+}
+
+void IndexedDBDatabase::RenameIndexAbortOperation(
+    int64_t object_store_id,
+    int64_t index_id,
+    const base::string16& old_name,
+    IndexedDBTransaction* transaction) {
+  DCHECK(!transaction);
+  IDB_TRACE("IndexedDBDatabase::RenameIndexAbortOperation");
+  SetIndexName(object_store_id, index_id, old_name);
 }
 
 void IndexedDBDatabase::Commit(int64_t transaction_id) {
@@ -2000,6 +2115,15 @@ void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
   IDB_TRACE("IndexedDBDatabase::DeleteObjectStoreAbortOperation");
   AddObjectStore(object_store_metadata,
                  IndexedDBObjectStoreMetadata::kInvalidId);
+}
+
+void IndexedDBDatabase::RenameObjectStoreAbortOperation(
+    int64_t object_store_id,
+    const base::string16& old_name,
+    IndexedDBTransaction* transaction) {
+  DCHECK(!transaction);
+  IDB_TRACE("IndexedDBDatabase::RenameObjectStoreAbortOperation");
+  SetObjectStoreName(object_store_id, old_name);
 }
 
 void IndexedDBDatabase::VersionChangeAbortOperation(

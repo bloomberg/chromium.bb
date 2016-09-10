@@ -437,11 +437,16 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t object_store_id,
       const base::string16& name,
       const IndexedDBKeyPath& key_path,
-      bool auto_increment);
+      bool auto_increment) WARN_UNUSED_RESULT;
   virtual leveldb::Status DeleteObjectStore(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id) WARN_UNUSED_RESULT;
+  virtual leveldb::Status RenameObjectStore(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64_t database_id,
+      int64_t object_store_id,
+      const base::string16& name) WARN_UNUSED_RESULT;
 
   virtual leveldb::Status GetRecord(
       IndexedDBBackingStore::Transaction* transaction,
@@ -505,6 +510,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t database_id,
       int64_t object_store_id,
       int64_t index_id) WARN_UNUSED_RESULT;
+  virtual leveldb::Status RenameIndex(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64_t database_id,
+      int64_t object_store_id,
+      int64_t index_id,
+      const base::string16& new_name) WARN_UNUSED_RESULT;
   virtual leveldb::Status PutIndexDataForRecord(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,

@@ -94,7 +94,7 @@ PASS IDBObjectStore interface object length
 PASS IDBObjectStore interface object name 
 FAIL IDBObjectStore interface: existence and properties of interface prototype object assert_equals: class string of IDBObjectStore.prototype expected "[object IDBObjectStorePrototype]" but got "[object IDBObjectStore]"
 PASS IDBObjectStore interface: existence and properties of interface prototype object's "constructor" property 
-FAIL IDBObjectStore interface: attribute name assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS IDBObjectStore interface: attribute name 
 PASS IDBObjectStore interface: attribute keyPath 
 PASS IDBObjectStore interface: attribute indexNames 
 PASS IDBObjectStore interface: attribute transaction 
@@ -114,7 +114,7 @@ PASS IDBIndex interface object length
 PASS IDBIndex interface object name 
 FAIL IDBIndex interface: existence and properties of interface prototype object assert_equals: class string of IDBIndex.prototype expected "[object IDBIndexPrototype]" but got "[object IDBIndex]"
 PASS IDBIndex interface: existence and properties of interface prototype object's "constructor" property 
-FAIL IDBIndex interface: attribute name assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS IDBIndex interface: attribute name 
 PASS IDBIndex interface: attribute objectStore 
 PASS IDBIndex interface: attribute keyPath 
 PASS IDBIndex interface: attribute multiEntry 

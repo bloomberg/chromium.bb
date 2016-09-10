@@ -23,6 +23,7 @@ public:
 
     MOCK_METHOD5(createObjectStore, void(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement));
     MOCK_METHOD2(deleteObjectStore, void(long long transactionId, long long objectStoreId));
+    MOCK_METHOD3(renameObjectStore, void(long long transactionId, long long objectStoreId, const WebString& newName));
     MOCK_METHOD4(createTransaction, void(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, WebIDBTransactionMode));
     MOCK_METHOD0(close, void());
     MOCK_METHOD0(versionChangeIgnored, void());
@@ -30,6 +31,7 @@ public:
     MOCK_METHOD1(commit, void(long long transactionId));
     MOCK_METHOD7(createIndex, void(long long transactionId, long long objectStoreId, long long indexId, const WebString& name, const WebIDBKeyPath&, bool unique, bool multiEntry));
     MOCK_METHOD3(deleteIndex, void(long long transactionId, long long objectStoreId, long long indexId));
+    MOCK_METHOD4(renameIndex, void(long long transactionId, long long objectStoreId, long long indexId, const WebString& newName));
 
     // Gmock does not support movable type, so cannot use MOCK_METHOD for addObserver. Issue: https://github.com/google/googletest/issues/395.
     int32_t addObserver(std::unique_ptr<WebIDBObserver>, long long transactionId) { return -1; }

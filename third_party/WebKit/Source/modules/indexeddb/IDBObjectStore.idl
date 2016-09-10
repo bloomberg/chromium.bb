@@ -28,7 +28,7 @@
 [
     Exposed=(Window,Worker),
 ] interface IDBObjectStore {
-    readonly attribute DOMString name;
+    [RaisesException=Setter] attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any keyPath;
     [Measure] readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;

@@ -539,6 +539,13 @@ IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                      int64_t, /* transaction_id */
                      int64_t) /* object_store_id */
 
+// WebIDBDatabase::renameObjectStore() message.
+IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_DatabaseRenameObjectStore,
+                     int32_t,        /* ipc_database_id */
+                     int64_t,        /* transaction_id */
+                     int64_t,        /* object_store_id */
+                     base::string16) /* new_name */
+
 // WebIDBDatabase::createTransaction() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateTransaction,
                      IndexedDBHostMsg_DatabaseCreateTransaction_Params)
@@ -612,6 +619,14 @@ IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_DatabaseDeleteIndex,
                      int64_t, /* transaction_id */
                      int64_t, /* object_store_id */
                      int64_t) /* index_id */
+
+// WebIDBDatabase::renameIndex() message.
+IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_DatabaseRenameIndex,
+                     int32_t,        /* ipc_database_id */
+                     int64_t,        /* transaction_id */
+                     int64_t,        /* object_store_id */
+                     int64_t,        /* index_id */
+                     base::string16) /* new_name */
 
 // WebIDBDatabase::abort() message.
 IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseAbort,

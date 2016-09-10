@@ -327,6 +327,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
+[Worker]     setter name
 [Worker] interface IDBKeyRange
 [Worker]     static method bound
 [Worker]     static method lowerBound
@@ -360,6 +361,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
+[Worker]     setter name
 [Worker] interface IDBOpenDBRequest : IDBRequest
 [Worker]     attribute @@toStringTag
 [Worker]     getter onblocked
@@ -793,6 +795,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
+[Worker]     setter name
 [Worker] interface webkitIDBKeyRange
 [Worker]     static method bound
 [Worker]     static method lowerBound
@@ -826,6 +829,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
+[Worker]     setter name
 [Worker] interface webkitIDBRequest : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter error

@@ -3446,6 +3446,7 @@ interface IDBIndex
     method getKey
     method openCursor
     method openKeyCursor
+    setter name
 interface IDBKeyRange
     static method bound
     static method lowerBound
@@ -3480,6 +3481,7 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
+    setter name
 interface IDBObservation
     attribute @@toStringTag
     getter key
@@ -7384,6 +7386,7 @@ interface webkitIDBIndex
     method getKey
     method openCursor
     method openKeyCursor
+    setter name
 interface webkitIDBKeyRange
     static method bound
     static method lowerBound
@@ -7418,6 +7421,7 @@ interface webkitIDBObjectStore
     method openCursor
     method openKeyCursor
     method put
+    setter name
 interface webkitIDBRequest : EventTarget
     attribute @@toStringTag
     getter error

@@ -74,6 +74,14 @@ leveldb::Status IndexedDBFakeBackingStore::DeleteObjectStore(
   return leveldb::Status::OK();
 }
 
+leveldb::Status IndexedDBFakeBackingStore::RenameObjectStore(
+    Transaction* transaction,
+    int64_t database_id,
+    int64_t object_store_id,
+    const base::string16& new_name) {
+  return leveldb::Status::OK();
+}
+
 leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
@@ -139,6 +147,14 @@ leveldb::Status IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
                                                        int64_t database_id,
                                                        int64_t object_store_id,
                                                        int64_t index_id) {
+  return leveldb::Status::OK();
+}
+leveldb::Status IndexedDBFakeBackingStore::RenameIndex(
+    Transaction*,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
+    const base::string16& new_name) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(

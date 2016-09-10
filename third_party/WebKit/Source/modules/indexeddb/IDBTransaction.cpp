@@ -191,6 +191,19 @@ void IDBTransaction::objectStoreDeleted(const String& name)
     }
 }
 
+void IDBTransaction::objectStoreRenamed(const String& oldName, const String& newName)
+{
+    DCHECK(m_state != Finished);
+    DCHECK(isVersionChange());
+
+    DCHECK(!m_objectStoreMap.contains(newName));
+    DCHECK(m_objectStoreMap.contains(oldName)) << "The object store had to be accessed in order to be renamed.";
+
+    IDBObjectStoreMap::iterator it = m_objectStoreMap.find(oldName);
+    m_objectStoreMap.set(newName, it->value);
+    m_objectStoreMap.remove(oldName);
+}
+
 void IDBTransaction::setActive(bool active)
 {
     DCHECK_NE(m_state, Finished) << "A finished transaction tried to setActive(" << (active ? "true" : "false") << ")";

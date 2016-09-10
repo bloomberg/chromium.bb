@@ -1824,6 +1824,42 @@ leveldb::Status IndexedDBBackingStore::DeleteObjectStore(
   return ClearObjectStore(transaction, database_id, object_store_id);
 }
 
+leveldb::Status IndexedDBBackingStore::RenameObjectStore(
+    IndexedDBBackingStore::Transaction* transaction,
+    int64_t database_id,
+    int64_t object_store_id,
+    const base::string16& new_name) {
+  IDB_TRACE("IndexedDBBackingStore::RenameObjectStore");
+  if (!KeyPrefix::ValidIds(database_id, object_store_id))
+    return InvalidDBKeyStatus();
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
+
+  const std::string name_key = ObjectStoreMetaDataKey::Encode(
+      database_id, object_store_id, ObjectStoreMetaDataKey::NAME);
+  const std::string new_names_key = ObjectStoreNamesKey::Encode(
+      database_id, new_name);
+
+  base::string16 old_name;
+  bool found = false;
+  leveldb::Status s =
+      GetString(leveldb_transaction, name_key, &old_name, &found);
+  if (!s.ok()) {
+    INTERNAL_READ_ERROR_UNTESTED(DELETE_OBJECT_STORE);
+    return s;
+  }
+  if (!found) {
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(DELETE_OBJECT_STORE);
+    return InternalInconsistencyStatus();
+  }
+  const std::string old_names_key = ObjectStoreNamesKey::Encode(
+      database_id, old_name);
+
+  PutString(leveldb_transaction, name_key, new_name);
+  PutInt(leveldb_transaction, new_names_key, object_store_id);
+  leveldb_transaction->Remove(old_names_key);
+  return s;
+}
+
 leveldb::Status IndexedDBBackingStore::GetRecord(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
@@ -2864,6 +2900,24 @@ leveldb::Status IndexedDBBackingStore::DeleteIndex(
     INTERNAL_WRITE_ERROR_UNTESTED(DELETE_INDEX);
 
   return s;
+}
+
+leveldb::Status IndexedDBBackingStore::RenameIndex(
+    IndexedDBBackingStore::Transaction* transaction,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
+    const base::string16& new_name) {
+  IDB_TRACE("IndexedDBBackingStore::RenameIndex");
+  if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
+    return InvalidDBKeyStatus();
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
+
+  const std::string name_key = IndexMetaDataKey::Encode(
+      database_id, object_store_id, index_id, IndexMetaDataKey::NAME);
+
+  PutString(leveldb_transaction, name_key, new_name);
+  return leveldb::Status::OK();
 }
 
 leveldb::Status IndexedDBBackingStore::PutIndexDataForRecord(

@@ -28,7 +28,7 @@
 [
     Exposed=(Window,Worker),
 ] interface IDBIndex {
-    readonly attribute DOMString name;
+    [RaisesException=Setter] attribute DOMString name;
     readonly attribute IDBObjectStore objectStore;
     [CallWith=ScriptState] readonly attribute any keyPath;
     readonly attribute boolean multiEntry;

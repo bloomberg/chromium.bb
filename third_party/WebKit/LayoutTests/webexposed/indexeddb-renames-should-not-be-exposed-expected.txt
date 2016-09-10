@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL IndexedDB object store and index renaming should not be web-exposed
+This test is expected to fail in LayoutTests/webexposed assert_equals: IndexedDB object store renaming should not be web-exposed expected "books" but got "renamed_books"
+Harness: the test ran to completion.
+

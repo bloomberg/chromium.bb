@@ -78,6 +78,13 @@ void WebIDBDatabaseImpl::deleteObjectStore(long long transaction_id,
       ipc_database_id_, transaction_id, object_store_id));
 }
 
+void WebIDBDatabaseImpl::renameObjectStore(long long transaction_id,
+                                           long long object_store_id,
+                                           const blink::WebString& new_name) {
+  thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseRenameObjectStore(
+      ipc_database_id_, transaction_id, object_store_id, new_name));
+}
+
 void WebIDBDatabaseImpl::createTransaction(
     long long transaction_id,
     WebIDBDatabaseCallbacks* callbacks,
@@ -306,6 +313,14 @@ void WebIDBDatabaseImpl::deleteIndex(long long transaction_id,
                                      long long index_id) {
   thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseDeleteIndex(
       ipc_database_id_, transaction_id, object_store_id, index_id));
+}
+
+void WebIDBDatabaseImpl::renameIndex(long long transaction_id,
+                                     long long object_store_id,
+                                     long long index_id,
+                                     const WebString& new_name) {
+  thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseRenameIndex(
+      ipc_database_id_, transaction_id, object_store_id, index_id, new_name));
 }
 
 void WebIDBDatabaseImpl::abort(long long transaction_id) {

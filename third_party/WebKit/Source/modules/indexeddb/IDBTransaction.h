@@ -86,6 +86,7 @@ public:
     void unregisterRequest(IDBRequest*);
     void objectStoreCreated(const String&, IDBObjectStore*);
     void objectStoreDeleted(const String&);
+    void objectStoreRenamed(const String& oldName, const String& newName);
     void setActive(bool);
     void setError(DOMException*);
 
