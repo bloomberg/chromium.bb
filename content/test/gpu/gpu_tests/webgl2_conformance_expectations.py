@@ -169,9 +169,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
-    self.Fail('conformance2/rendering/rgb-format-support.html',
-        ['mac'], bug=483282)
-
     # This is due to "centroid out" / "in" mismatch.
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -180,7 +177,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=641149)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['mac'], bug=641209)
+        ['mac', 'intel'], bug=641209)
+
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['mac', 'nvidia'], bug=641209)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['mac'], bug=483282)

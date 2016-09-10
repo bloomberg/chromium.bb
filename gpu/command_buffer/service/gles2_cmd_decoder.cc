@@ -2288,7 +2288,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   // Used to validate multisample renderbuffers if needed
-  GLuint validation_texture_;
+  typedef base::hash_map<GLenum, GLuint> TextureMap;
+  TextureMap validation_textures_;
   GLuint validation_fbo_multisample_;
   GLuint validation_fbo_;
 
@@ -2936,7 +2937,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       gpu_trace_level_(2),
       gpu_trace_commands_(false),
       gpu_debug_commands_(false),
-      validation_texture_(0),
       validation_fbo_multisample_(0),
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
@@ -4558,10 +4558,15 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       glDeleteBuffersARB(1, &fixed_attrib_buffer_id_);
     }
 
-    if (validation_texture_) {
-      glDeleteTextures(1, &validation_texture_);
+    if (validation_fbo_) {
       glDeleteFramebuffersEXT(1, &validation_fbo_multisample_);
       glDeleteFramebuffersEXT(1, &validation_fbo_);
+    }
+    while (!validation_textures_.empty()) {
+      GLuint tex;
+      tex = validation_textures_.begin()->second;
+      glDeleteTextures(1, &tex);
+      validation_textures_.erase(validation_textures_.begin());
     }
 
     if (offscreen_target_frame_buffer_.get())
@@ -7798,9 +7803,7 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
   // to be used by the WebGL backbuffer. If problems are observed with other
   // color formats they can be added here.
   switch (format) {
-    case GL_RGB:
     case GL_RGB8:
-    case GL_RGBA:
     case GL_RGBA8:
       break;
     default:
@@ -7813,30 +7816,30 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw_framebuffer);
   glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read_framebuffer);
 
-  if (!validation_texture_) {
-    GLint bound_texture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
-
-    // Create additional resources needed for the verification.
-    glGenTextures(1, &validation_texture_);
+  if (!validation_fbo_) {
     glGenFramebuffersEXT(1, &validation_fbo_multisample_);
     glGenFramebuffersEXT(1, &validation_fbo_);
+  }
+
+  GLint bound_texture;
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+  GLuint validation_texture;
+  TextureMap::iterator iter = validation_textures_.find(format);
+  if (iter == validation_textures_.end()) {
+    // Create additional resources needed for the verification.
+    glGenTextures(1, &validation_texture);
+    validation_textures_.insert(std::make_pair(format, validation_texture));
 
     // Texture only needs to be 1x1.
-    glBindTexture(GL_TEXTURE_2D, validation_texture_);
-    // TODO(erikchen): When Chrome on Mac is linked against an OSX 10.9+ SDK, a
-    // multisample will fail if the color format of the source and destination
-    // do not match. Here, we assume that the source is GL_RGBA, and make the
-    // destination GL_RGBA. http://crbug.com/484203
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-        GL_UNSIGNED_BYTE, NULL);
-
-    glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_);
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D, validation_texture_, 0);
-
-    glBindTexture(GL_TEXTURE_2D, bound_texture);
+    glBindTexture(GL_TEXTURE_2D, validation_texture);
+    glTexStorage2DEXT(GL_TEXTURE_2D, 1, format, 1, 1);
+  } else {
+    validation_texture = iter->second;
   }
+  glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      GL_TEXTURE_2D, validation_texture, 0);
+  glBindTexture(GL_TEXTURE_2D, bound_texture);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_multisample_);
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
