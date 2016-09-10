@@ -153,7 +153,7 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
     { GoogleServiceAuthError::TWO_FACTOR, true },
     { GoogleServiceAuthError::REQUEST_CANCELED, true },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
+    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
     { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
@@ -162,6 +162,8 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
       "table array does not match the number of auth error types");
 
   for (size_t i = 0; i < arraysize(table); ++i) {
+    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
+      continue;
     FakeAuthStatusProvider provider(error_controller_.get());
     provider.SetAuthError(kTestAccountId,
                           GoogleServiceAuthError(table[i].error_state));

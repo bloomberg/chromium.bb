@@ -110,7 +110,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             case ACCOUNT_DELETED:
             case ACCOUNT_DISABLED:
             case TWO_FACTOR:
-            case HOSTED_NOT_ALLOWED:
                 return true;
             default:
                 Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());

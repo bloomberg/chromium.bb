@@ -82757,7 +82757,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="SERVICE_UNAVAILABLE"/>
   <int value="8" label="TWO_FACTOR"/>
   <int value="9" label="REQUEST_CANCELED"/>
-  <int value="10" label="HOSTED_NOT_ALLOWED"/>
+  <int value="10" label="HOSTED_NOT_ALLOWED (deprecated)"/>
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
   <int value="13" label="WEB_LOGIN_REQUIRED"/>

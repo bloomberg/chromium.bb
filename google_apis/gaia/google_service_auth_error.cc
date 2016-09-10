@@ -126,6 +126,11 @@ GoogleServiceAuthError GoogleServiceAuthError::AuthErrorNone() {
   return GoogleServiceAuthError(NONE);
 }
 
+// static
+bool GoogleServiceAuthError::IsDeprecated(State state) {
+  return state == HOSTED_NOT_ALLOWED_DEPRECATED;
+}
+
 GoogleServiceAuthError::State GoogleServiceAuthError::state() const {
   return state_;
 }
@@ -176,7 +181,6 @@ base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
     STATE_CASE(SERVICE_UNAVAILABLE);
     STATE_CASE(TWO_FACTOR);
     STATE_CASE(REQUEST_CANCELED);
-    STATE_CASE(HOSTED_NOT_ALLOWED);
     STATE_CASE(UNEXPECTED_SERVICE_RESPONSE);
     STATE_CASE(SERVICE_ERROR);
     STATE_CASE(WEB_LOGIN_REQUIRED);
@@ -235,8 +239,6 @@ std::string GoogleServiceAuthError::ToString() const {
                                 second_factor_.token.c_str());
     case REQUEST_CANCELED:
       return "Request canceled.";
-    case HOSTED_NOT_ALLOWED:
-      return "Google account required.";
     case UNEXPECTED_SERVICE_RESPONSE:
       return base::StringPrintf("Unexpected service response (%s)",
                                 error_message_.c_str());

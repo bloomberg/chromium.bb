@@ -228,7 +228,7 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
     { GoogleServiceAuthError::TWO_FACTOR, true },
     { GoogleServiceAuthError::REQUEST_CANCELED, true },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
+    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
     { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
@@ -237,6 +237,8 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
       "table size should match number of auth error types");
 
   for (size_t i = 0; i < arraysize(table); ++i) {
+    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
+      continue;
     FakeAuthStatusProvider provider(error_controller_);
     provider.SetAuthError(kTestAccountId,
                           GoogleServiceAuthError(table[i].error_state));

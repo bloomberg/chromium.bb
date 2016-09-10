@@ -74,9 +74,9 @@ class GoogleServiceAuthError {
     // prior to completion.
     REQUEST_CANCELED = 9,
 
-    // The user has provided a HOSTED account, when this service requires
-    // a GOOGLE account.
-    HOSTED_NOT_ALLOWED = 10,
+    // HOSTED accounts are deprecated; left in enumeration to match
+    // GoogleServiceAuthError enum in histograms.xml.
+    HOSTED_NOT_ALLOWED_DEPRECATED = 10,
 
     // Indicates the service responded to a request, but we cannot
     // interpret the response.
@@ -129,11 +129,11 @@ class GoogleServiceAuthError {
 
     // Globally identifies the specific second-factor challenge.
     std::string token;
-    // Localised prompt text, eg Enter the verification code sent to your
-    // phone number ending in XXX.
+    // Localized prompt text, e.g. "Enter the verification code sent to your
+    // phone number ending in XXX".
     std::string prompt_text;
-    // Localized text describing an alternate option, eg Get a verification
-    // code in a text message.
+    // Localized text describing an alternate option, e.g. "Get a verification
+    // code in a text message".
     std::string alternate_text;
     // Character length for the challenge field.
     int field_length;
@@ -175,6 +175,8 @@ class GoogleServiceAuthError {
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!
   static GoogleServiceAuthError AuthErrorNone();
+
+  static bool IsDeprecated(State state);
 
   // The error information.
   State state() const;

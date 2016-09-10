@@ -155,8 +155,7 @@ TEST_F(SyncUIUtilTest, AuthStateGlobalError) {
     GoogleServiceAuthError::ACCOUNT_DISABLED,
     GoogleServiceAuthError::SERVICE_UNAVAILABLE,
     GoogleServiceAuthError::TWO_FACTOR,
-    GoogleServiceAuthError::REQUEST_CANCELED,
-    GoogleServiceAuthError::HOSTED_NOT_ALLOWED
+    GoogleServiceAuthError::REQUEST_CANCELED
   };
 
   for (size_t i = 0; i < arraysize(table); ++i) {

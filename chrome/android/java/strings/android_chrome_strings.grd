@@ -1293,9 +1293,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_ERROR_CONNECTION" desc="Sync error string for network connection. [CHAR-LIMIT=80]">
         Could not connect to the sync server.
       </message>
-      <message name="IDS_SYNC_ERROR_DOMAIN" desc="Sync error string for domain not supported. [CHAR-LIMIT=80]">
-        Sync is not available for your domain.
-      </message>
       <message name="IDS_SYNC_ERROR_UPGRADE_CLIENT" desc="Sync error string for out-of-date client. [CHAR-LIMIT=80]">
         <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph> is out of date.
       </message>

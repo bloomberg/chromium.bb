@@ -138,7 +138,7 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
     case GoogleServiceAuthError::TWO_FACTOR:
-    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
+    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED:
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::WEB_LOGIN_REQUIRED:
     // Conventional value for counting the states, never used.

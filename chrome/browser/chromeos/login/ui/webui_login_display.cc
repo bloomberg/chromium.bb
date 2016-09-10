@@ -115,10 +115,6 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
   std::string error_text;
   switch (error_msg_id) {
-    case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
-      error_text = l10n_util::GetStringFUTF8(
-          error_msg_id, l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
-      break;
     case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
       error_text = l10n_util::GetStringFUTF8(
           error_msg_id, delegate()->GetConnectedNetworkName());
@@ -152,15 +148,8 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
   }
 
   std::string help_link;
-  switch (error_msg_id) {
-    case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
-      help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
-      break;
-    default:
-      if (login_attempts > 1)
-        help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
-      break;
-  }
+  if (login_attempts > 1)
+    help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
 
   webui_handler_->ShowError(login_attempts, error_text, help_link,
                             help_topic_id);

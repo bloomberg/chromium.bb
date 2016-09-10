@@ -605,16 +605,10 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
         ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
     } else {
       // TODO(nkostylev): Cleanup rest of ClientLogin related code.
-      if (failure.reason() == AuthFailure::NETWORK_AUTH_FAILED &&
-          failure.error().state() ==
-              GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
-        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
-      } else {
-        if (!is_known_user)
-          ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
-        else
-          ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
-      }
+      if (!is_known_user)
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
+      else
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
     }
     if (auth_flow_offline_)
       UMA_HISTOGRAM_BOOLEAN("Login.OfflineFailure.IsKnownUser", is_known_user);
@@ -997,9 +991,6 @@ void ExistingUserController::ShowError(int error_id,
     switch (login_performer_->error().state()) {
       case GoogleServiceAuthError::ACCOUNT_DISABLED:
         help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
-        break;
-      case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
-        help_topic_id = HelpAppLauncher::HELP_HOSTED_ACCOUNT;
         break;
       default:
         help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;

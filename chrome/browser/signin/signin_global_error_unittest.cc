@@ -139,7 +139,7 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
     { GoogleServiceAuthError::TWO_FACTOR, true },
     { GoogleServiceAuthError::REQUEST_CANCELED, true },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
+    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
     { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
@@ -151,6 +151,8 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
   testing_profile_manager()->UpdateLastUser(profile());
 
   for (size_t i = 0; i < arraysize(table); ++i) {
+    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
+      continue;
     base::HistogramTester histogram_tester;
     FakeAuthStatusProvider provider(error_controller());
     provider.SetAuthError(kTestAccountId,
