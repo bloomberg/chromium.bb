@@ -80794,6 +80794,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1552" label="ClipCssOfFixedPositionElement"/>
   <int value="1553" label="RTCPeerConnectionCreateOfferOptionsOfferToReceive"/>
   <int value="1554" label="DragAndDropScrollStart"/>
+  <int value="1555"
+      label="PresentationConnectionListConnectionAvailableEventListener"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

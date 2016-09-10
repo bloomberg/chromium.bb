@@ -23,6 +23,7 @@ namespace blink {
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class PresentationController;
+class PresentationReceiver;
 class PresentationRequest;
 
 class PresentationConnection final
@@ -36,6 +37,7 @@ public:
 
     static PresentationConnection* take(ScriptPromiseResolver*, std::unique_ptr<WebPresentationConnectionClient>, PresentationRequest*);
     static PresentationConnection* take(PresentationController*, std::unique_ptr<WebPresentationConnectionClient>, PresentationRequest*);
+    static PresentationConnection* take(PresentationReceiver*, std::unique_ptr<WebPresentationConnectionClient>);
     ~PresentationConnection() override;
 
     // EventTarget implementation.

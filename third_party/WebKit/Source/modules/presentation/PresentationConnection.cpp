@@ -21,6 +21,7 @@
 #include "modules/presentation/PresentationConnectionAvailableEvent.h"
 #include "modules/presentation/PresentationConnectionCloseEvent.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/Assertions.h"
@@ -198,6 +199,18 @@ PresentationConnection* PresentationConnection::take(PresentationController* con
     PresentationConnection* connection = new PresentationConnection(controller->frame(), client->getId(), client->getUrl());
     controller->registerConnection(connection);
     request->dispatchEvent(PresentationConnectionAvailableEvent::create(EventTypeNames::connectionavailable, connection));
+
+    return connection;
+}
+
+// static
+PresentationConnection* PresentationConnection::take(PresentationReceiver* receiver, std::unique_ptr<WebPresentationConnectionClient> client)
+{
+    DCHECK(receiver);
+    DCHECK(client);
+
+    PresentationConnection* connection = new PresentationConnection(receiver->frame(), client->getId(), client->getUrl());
+    receiver->registerConnection(connection);
 
     return connection;
 }

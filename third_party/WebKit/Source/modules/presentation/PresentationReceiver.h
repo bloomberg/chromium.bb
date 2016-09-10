@@ -8,35 +8,46 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMException.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
 
+class PresentationConnection;
 class PresentationConnectionList;
-class PresentationReceiver;
-
-using ConnectionListProperty = ScriptPromiseProperty<Member<PresentationReceiver>, Member<PresentationConnectionList>, Member<DOMException>>;
+class WebPresentationConnectionClient;
 
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation session.
-class PresentationReceiver final
+class MODULES_EXPORT PresentationReceiver final
     : public GarbageCollected<PresentationReceiver>
     , public ScriptWrappable
     , public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
     DEFINE_WRAPPERTYPEINFO();
+
+    using ConnectionListProperty = ScriptPromiseProperty<Member<PresentationReceiver>, Member<PresentationConnectionList>, Member<DOMException>>;
+
 public:
     explicit PresentationReceiver(LocalFrame*);
     ~PresentationReceiver() = default;
 
+    // PresentationReceiver.idl implementation
     ScriptPromise connectionList(ScriptState*);
+
+    void onConnectionReceived(WebPresentationConnectionClient*);
+    void registerConnection(PresentationConnection*);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class PresentationReceiverTest;
+
     Member<ConnectionListProperty> m_connectionListProperty;
+    Member<PresentationConnectionList> m_connectionList;
 };
 
 } // namespace blink

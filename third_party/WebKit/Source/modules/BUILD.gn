@@ -265,6 +265,7 @@ source_set("unit_tests") {
     "payments/PaymentsValidatorsTest.cpp",
     "peerconnection/RTCDataChannelTest.cpp",
     "presentation/PresentationAvailabilityTest.cpp",
+    "presentation/PresentationReceiverTest.cpp",
     "push_messaging/PushManagerTest.cpp",
     "push_messaging/PushMessageDataTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
