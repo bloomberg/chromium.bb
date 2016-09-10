@@ -18,8 +18,6 @@ libnss3 (>= 3.12.4)
 libpango1.0-0 (>= 1.14.0)
 libstdc++6 (>= 4.6)
 libx11-6 (>= 2:1.4.99.1)
-libx11-xcb1
-libxcb1 (>= 1.6)
 libxcomposite1 (>= 1:0.3-1)
 libxcursor1 (>> 1.1.2)
 libxdamage1 (>= 1:1.1)
