@@ -22,9 +22,6 @@ from infra_libs.ts_mon.common.test import stubs
 import infra_libs
 
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-
-
 class GlobalsTest(auto_stub.TestCase):
 
   def setUp(self):
@@ -55,32 +52,6 @@ class GlobalsTest(auto_stub.TestCase):
 
     self.assertIsInstance(interface.state.global_monitor,
                           monitors.PubSubMonitor)
-
-    self.assertIsInstance(interface.state.target, targets.DeviceTarget)
-    self.assertEquals(interface.state.target.hostname, 'slave1-a1')
-    self.assertEquals(interface.state.target.region, 'reg')
-    self.assertEquals(args.ts_mon_flush, 'auto')
-    self.assertIsNotNone(interface.state.flush_thread)
-    self.assertTrue(standard_metrics.up.get())
-
-  @mock.patch('requests.get', autospec=True)
-  @mock.patch('socket.getfqdn', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.HttpsMonitor.'
-              '_load_credentials', autospec=True)
-  def test_https_monitor_args(self, _load_creds, fake_fqdn, fake_get):
-    print [_load_creds, fake_fqdn, fake_get]
-    fake_fqdn.return_value = 'slave1-a1.reg.tld'
-    fake_get.return_value.side_effect = requests.exceptions.ConnectionError
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'https://test/random:insert'])
-
-    config.process_argparse_options(args)
-
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.HttpsMonitor)
 
     self.assertIsInstance(interface.state.target, targets.DeviceTarget)
     self.assertEquals(interface.state.target.hostname, 'slave1-a1')
@@ -136,21 +107,6 @@ class GlobalsTest(auto_stub.TestCase):
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
-  def test_explicit_disable_args(self, fake_fqdn, fake_get):
-    fake_fqdn.return_value = 'foo'
-    fake_get.return_value.side_effect = requests.exceptions.ConnectionError
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'none'])
-    config.process_argparse_options(args)
-
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.NullMonitor)
-
-  @mock.patch('requests.get', autospec=True)
-  @mock.patch('socket.getfqdn', autospec=True)
   def test_manual_flush(self, fake_fqdn, fake_get):
     fake_fqdn.return_value = 'foo'
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
@@ -175,20 +131,6 @@ class GlobalsTest(auto_stub.TestCase):
         use_instrumented_http=True)
     self.assertIs(interface.state.global_monitor, singleton)
 
-  @mock.patch('infra_libs.ts_mon.common.monitors.PubSubMonitor', autospec=True)
-  def test_pubsub_without_credentials(self, fake_monitor):
-    # safety net, not supposed to be called.
-    singleton = mock.Mock()
-    fake_monitor.return_value = singleton
-
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-config-file',
-                         os.path.join(DATA_DIR, 'empty-config-file.json'),
-                         '--ts-mon-endpoint', 'pubsub://mytopic/myproject'])
-    config.process_argparse_options(args)
-    self.assertIsInstance(interface.state.global_monitor, monitors.NullMonitor)
-
   @mock.patch('infra_libs.ts_mon.common.monitors.DebugMonitor', auto_spec=True)
   def test_dryrun_args(self, fake_monitor):
     singleton = mock.Mock()
@@ -200,7 +142,10 @@ class GlobalsTest(auto_stub.TestCase):
     fake_monitor.assert_called_once_with('foo.txt')
     self.assertIs(interface.state.global_monitor, singleton)
 
-  def test_device_args(self):
+  @mock.patch('infra_libs.ts_mon.common.targets.DeviceTarget', autospec=True)
+  def test_device_args(self, fake_target):
+    singleton = mock.Mock()
+    fake_target.return_value = singleton
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
     args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
@@ -210,48 +155,13 @@ class GlobalsTest(auto_stub.TestCase):
                          '--ts-mon-device-network', 'net',
                          '--ts-mon-device-hostname', 'host'])
     config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.role, 'role')
-    self.assertEqual(interface.state.target.network, 'net')
-    self.assertEqual(interface.state.target.hostname, 'host')
+    fake_target.assert_called_once_with('reg', 'role', 'net', 'host')
+    self.assertIs(interface.state.target, singleton)
 
-  def test_autogen_device_args(self):
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'device',
-                         '--ts-mon-device-region', 'reg',
-                         '--ts-mon-device-role', 'role',
-                         '--ts-mon-device-network', 'net',
-                         '--ts-mon-device-hostname', 'host',
-                         '--ts-mon-autogen-hostname'])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.role, 'role')
-    self.assertEqual(interface.state.target.network, 'net')
-    self.assertEqual(interface.state.target.hostname, 'autogen:host')
-
-  def test_autogen_device_config(self):
-    self.mock(config, 'load_machine_config', lambda x: {
-        'autogen_hostname': True,
-        'credentials': '/path/to/creds.p8.json',
-        'endpoint': 'test://endpoint'})
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-target-type', 'device',
-        '--ts-mon-device-region', 'reg',
-        '--ts-mon-device-role', 'role',
-        '--ts-mon-device-network', 'net',
-        '--ts-mon-device-hostname', 'host'])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.role, 'role')
-    self.assertEqual(interface.state.target.network, 'net')
-    self.assertEqual(interface.state.target.hostname, 'autogen:host')
-
-
-  def test_task_args(self):
+  @mock.patch('infra_libs.ts_mon.common.targets.TaskTarget', autospec=True)
+  def test_task_args(self, fake_target):
+    singleton = mock.Mock()
+    fake_target.return_value = singleton
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
     args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
@@ -262,80 +172,8 @@ class GlobalsTest(auto_stub.TestCase):
                          '--ts-mon-task-hostname', 'host',
                          '--ts-mon-task-number', '1'])
     config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.service_name, 'serv')
-    self.assertEqual(interface.state.target.job_name, 'job')
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.hostname, 'host')
-    self.assertEqual(interface.state.target.task_num, 1)
-
-  def test_autogen_task_args(self):
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1',
-                         '--ts-mon-autogen-hostname'])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.service_name, 'serv')
-    self.assertEqual(interface.state.target.job_name, 'job')
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.hostname, 'autogen:host')
-    self.assertEqual(interface.state.target.task_num, 1)
-
-  def test_autogen_task_config(self):
-    self.mock(config, 'load_machine_config', lambda x: {
-        'autogen_hostname': True,
-        'credentials': '/path/to/creds.p8.json',
-        'endpoint': 'test://endpoint'})
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.target.service_name, 'serv')
-    self.assertEqual(interface.state.target.job_name, 'job')
-    self.assertEqual(interface.state.target.region, 'reg')
-    self.assertEqual(interface.state.target.hostname, 'autogen:host')
-    self.assertEqual(interface.state.target.task_num, 1)
-
-  def test_task_args_missing_service_name(self):
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
-    with self.assertRaises(SystemExit):
-      config.process_argparse_options(args)
-
-  def test_task_args_missing_job_name(self):
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
-    with self.assertRaises(SystemExit):
-      config.process_argparse_options(args)
-
-  def test_metric_name_prefix(self):
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-metric-name-prefix', '/test/random/'])
-    config.process_argparse_options(args)
-    self.assertEqual('/test/random/', interface.state.metric_name_prefix)
+    fake_target.assert_called_once_with('serv', 'job', 'reg', 'host', 1)
+    self.assertIs(interface.state.target, singleton)
 
   @mock.patch('infra_libs.ts_mon.common.monitors.NullMonitor', autospec=True)
   def test_no_args(self, fake_monitor):
@@ -346,7 +184,6 @@ class GlobalsTest(auto_stub.TestCase):
     args = p.parse_args([])
     config.process_argparse_options(args)
     self.assertEqual(1, len(fake_monitor.mock_calls))
-    self.assertEqual('/chrome/infra/', interface.state.metric_name_prefix)
     self.assertIs(interface.state.global_monitor, singleton)
 
   @mock.patch('requests.get', autospec=True)

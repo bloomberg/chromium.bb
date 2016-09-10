@@ -103,6 +103,4 @@ message MetricsData {
     DEGREES_CELSIUS = 62;
   }
   optional Units units = 41;
-
-  optional string description = 43;
 }

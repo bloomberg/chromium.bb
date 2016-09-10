@@ -10,17 +10,6 @@
   "    hostname: \"host\"",
   "    hostgroup: \"net\"",
   "  }",
-  "  fields {",
-  "    name: \"bar\"",
-  "    type: INT",
-  "    int_value: 1",
-  "  }",
-  "  fields {",
-  "    name: \"baz\"",
-  "    type: BOOL",
-  "    bool_value: false",
-  "  }",
-  "  gauge: 1",
-	"  units: SECONDS",
+  "  string_value: \"val\"",
   "}"
 ]

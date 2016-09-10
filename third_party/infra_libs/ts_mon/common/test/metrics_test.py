@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import sys
+import textwrap
 import unittest
 
 import mock
@@ -21,17 +22,13 @@ from infra_libs.ts_mon.protos import metrics_pb2
 
 class TestBase(unittest.TestCase):
   def setUp(self):
-    super(TestBase, self).setUp()
-    target = targets.TaskTarget('test_service', 'test_job',
-                                'test_region', 'test_host')
-    self.mock_state = interface.State(target=target)
+    self.mock_state = stubs.MockState()
     self.state_patcher = mock.patch('infra_libs.ts_mon.common.interface.state',
                                     new=self.mock_state)
     self.state_patcher.start()
 
   def tearDown(self):
     self.state_patcher.stop()
-    super(TestBase, self).tearDown()
 
 
 class MetricTest(TestBase):
@@ -52,23 +49,6 @@ class MetricTest(TestBase):
     m.set('val')
     p = metrics_pb2.MetricsCollection()
     m.serialize_to(p, 1234, (('bar', 1), ('baz', False)), m.get(), t)
-    return str(p).splitlines()
-
-  def test_serialize_with_description(self):
-    t = targets.DeviceTarget('reg', 'role', 'net', 'host')
-    m = metrics.StringMetric('test', description='a custom description')
-    m.set('val')
-    p = metrics_pb2.MetricsCollection()
-    m.serialize_to(p, 1234, (('bar', 1), ('baz', False)), m.get(), t)
-    return str(p).splitlines()
-
-  def test_serialize_with_units(self):
-    t = targets.DeviceTarget('reg', 'role', 'net', 'host')
-    m = metrics.GaugeMetric('test', units=metrics.MetricsDataUnits.SECONDS)
-    m.set(1)
-    p = metrics_pb2.MetricsCollection()
-    m.serialize_to(p, 1234, (('bar', 1), ('baz', False)), m.get(), t)
-    self.assertEquals(p.data[0].units, metrics.MetricsDataUnits.SECONDS)
     return str(p).splitlines()
 
   def test_serialize_too_many_fields(self):
@@ -139,10 +119,6 @@ class StringMetricTest(TestBase):
     with self.assertRaises(errors.MonitoringInvalidValueTypeError):
       m.set(object())
 
-  def test_is_cumulative(self):
-    m = metrics.StringMetric('test')
-    self.assertFalse(m.is_cumulative())
-
 
 class BooleanMetricTest(TestBase):
 
@@ -165,10 +141,6 @@ class BooleanMetricTest(TestBase):
       m.set('True')
     with self.assertRaises(errors.MonitoringInvalidValueTypeError):
       m.set(123)
-
-  def test_is_cumulative(self):
-    m = metrics.BooleanMetric('test')
-    self.assertFalse(m.is_cumulative())
 
 
 class CounterMetricTest(TestBase):
@@ -235,21 +207,6 @@ class CounterMetricTest(TestBase):
     m.serialize_to(p, 1234, (), m.get(), t)
     self.assertEquals(1234000000, p.data[0].start_timestamp_us)
 
-  def test_is_cumulative(self):
-    m = metrics.CounterMetric('test')
-    self.assertTrue(m.is_cumulative())
-
-  def test_get_all(self):
-    m = metrics.CounterMetric('test')
-    m.increment()
-    m.increment({'foo': 'bar'})
-    m.increment({'foo': 'baz', 'moo': 'wibble'})
-    self.assertEqual([
-        ((), 1),
-        ((('foo', 'bar'),), 1),
-        ((('foo', 'baz'), ('moo', 'wibble')), 1),
-    ], sorted(m.get_all()))
-
 
 class GaugeMetricTest(TestBase):
 
@@ -270,10 +227,6 @@ class GaugeMetricTest(TestBase):
     m = metrics.GaugeMetric('test')
     with self.assertRaises(errors.MonitoringInvalidValueTypeError):
       m.set(object())
-
-  def test_is_cumulative(self):
-    m = metrics.GaugeMetric('test')
-    self.assertFalse(m.is_cumulative())
 
 
 class CumulativeMetricTest(TestBase):
@@ -310,10 +263,6 @@ class CumulativeMetricTest(TestBase):
     m.serialize_to(p, 1234, (), m.get(), t)
     self.assertEquals(1234000000, p.data[0].start_timestamp_us)
 
-  def test_is_cumulative(self):
-    m = metrics.CumulativeMetric('test')
-    self.assertTrue(m.is_cumulative())
-
 
 class FloatMetricTest(TestBase):
 
@@ -332,10 +281,6 @@ class FloatMetricTest(TestBase):
     m = metrics.FloatMetric('test')
     with self.assertRaises(errors.MonitoringInvalidValueTypeError):
       m.set(object())
-
-  def test_is_cumulative(self):
-    m = metrics.FloatMetric('test')
-    self.assertFalse(m.is_cumulative())
 
 
 class RunningZeroGeneratorTest(TestBase):
@@ -527,9 +472,3 @@ class DistributionMetricTest(TestBase):
     p = metrics_pb2.MetricsCollection()
     m.serialize_to(p, 1234, (), m.get(), t)
     self.assertEquals(1234000000, p.data[0].start_timestamp_us)
-
-  def test_is_cumulative(self):
-    cd = metrics.CumulativeDistributionMetric('test')
-    ncd = metrics.NonCumulativeDistributionMetric('test2')
-    self.assertTrue(cd.is_cumulative())
-    self.assertFalse(ncd.is_cumulative())
