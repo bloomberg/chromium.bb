@@ -16,6 +16,9 @@
 #ifdef LLVM_ON_UNIX
 #include <sys/param.h>
 #endif
+#if defined(LLVM_ON_WIN32)
+#include <windows.h>
+#endif
 
 using namespace clang;
 using chrome_checker::Options;
@@ -130,16 +133,31 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
 #endif
 
 #if defined(LLVM_ON_WIN32)
-  std::replace(filename.begin(), filename.end(), '\\', '/');
+  // Make path absolute.
+  if (options_.no_realpath) {
+    // This turns e.g. "gen/dir/file.cc" to "/gen/dir/file.cc" which lets the
+    // "/gen/" banned_dir work.
+    filename.insert(filename.begin(), '/');
+  } else {
+    // The Windows dance: Convert to UTF-16, call GetFullPathNameW, convert back
+    DWORD size_needed =
+        MultiByteToWideChar(CP_UTF8, 0, filename.data(), -1, nullptr, 0);
+    std::wstring utf16(size_needed, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, filename.data(), -1,
+                        &utf16[0], size_needed);
 
-  // On Posix, realpath() has made the path absolute.  On Windows, this isn't
-  // necessarily true, so prepend a '/' to the path to make sure the
-  // banned_directories_ loop below works correctly.
-  // This turns e.g. "gen/dir/file.cc" to "/gen/dir/file.cc" which lets the
-  // "/gen/" banned_dir work.
-  // This seems simpler than converting to utf16, calling GetFullPathNameW(),
-  // and converting back to utf8.
-  filename.insert(filename.begin(), '/');
+    size_needed = GetFullPathNameW(utf16.data(), 0, nullptr, nullptr);
+    std::wstring full_utf16(size_needed, L'\0');
+    GetFullPathNameW(utf16.data(), full_utf16.size(), &full_utf16[0], nullptr);
+
+    size_needed = WideCharToMultiByte(CP_UTF8, 0, full_utf16.data(), -1,
+                                      nullptr, 0, nullptr, nullptr);
+    filename.resize(size_needed);
+    WideCharToMultiByte(CP_UTF8, 0, full_utf16.data(), -1, &filename[0],
+                        size_needed, nullptr, nullptr);
+  }
+
+  std::replace(filename.begin(), filename.end(), '\\', '/');
 #endif
 
   for (const std::string& allowed_dir : allowed_directories_) {
