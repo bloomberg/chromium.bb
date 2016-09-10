@@ -26,10 +26,6 @@
   // Map of port IDs to port object.
   var ports = {__proto__: null};
 
-  // Change even to odd and vice versa, to get the other side of a given
-  // channel.
-  function getOppositePortId(portId) { return portId ^ 1; }
-
   // Port object.  Represents a connection to another script context through
   // which messages can be passed.
   function PortImpl(portId, opt_name) {
@@ -102,13 +98,6 @@
     privates(this.onDisconnect).impl.destroy_();
     privates(this.onMessage).impl.destroy_();
     delete ports[this.portId_];
-  };
-
-  // Returns true if the specified port id is in this context. This is used by
-  // the C++ to avoid creating the javascript message for all the contexts that
-  // don't care about a particular message.
-  function hasPort(portId) {
-    return $Object.hasOwnProperty(ports, portId);
   };
 
   // Hidden port creation function.  We don't want to expose an API that lets
@@ -248,9 +237,6 @@
     // messaging_bindings.cc should ensure that this method only gets called for
     // the right extension.
     logging.CHECK(targetExtensionId == extensionId);
-
-    if (ports[getOppositePortId(portId)])
-      return false;  // this channel was opened by us, so ignore it
 
     // Determine whether this is coming from another extension, so we can use
     // the right event.
@@ -434,7 +420,6 @@ exports.$set('sendMessageImpl', sendMessageImpl);
 exports.$set('sendMessageUpdateArguments', sendMessageUpdateArguments);
 
 // For C++ code to call.
-exports.$set('hasPort', hasPort);
 exports.$set('dispatchOnConnect', dispatchOnConnect);
 exports.$set('dispatchOnDisconnect', dispatchOnDisconnect);
 exports.$set('dispatchOnMessage', dispatchOnMessage);

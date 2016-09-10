@@ -18,12 +18,6 @@ class RuntimeCustomBindings : public ObjectBackedNativeHandler {
 
   ~RuntimeCustomBindings() override;
 
-  // Creates a new messaging channel to the given extension.
-  void OpenChannelToExtension(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Creates a new messaging channels for the specified native application.
-  void OpenChannelToNativeApp(const v8::FunctionCallbackInfo<v8::Value>& args);
-
  private:
   void GetManifest(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetExtensionViews(const v8::FunctionCallbackInfo<v8::Value>& args);

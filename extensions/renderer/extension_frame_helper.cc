@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/extension_frame_helper.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
@@ -91,6 +92,7 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       browser_window_id_(-1),
       extension_dispatcher_(extension_dispatcher),
       did_create_current_document_element_(false),
+      next_port_request_id_(0),
       weak_ptr_factory_(this) {
   g_frame_helpers.Get().insert(this);
 }
@@ -172,6 +174,22 @@ void ExtensionFrameHelper::ScheduleAtDocumentEnd(
   document_load_finished_callbacks_.push_back(callback);
 }
 
+void ExtensionFrameHelper::RequestPortId(
+    const ExtensionMsg_ExternalConnectionInfo& info,
+    const std::string& channel_name,
+    bool include_tls_channel_id,
+    const base::Callback<void(int)>& callback) {
+  int port_request_id = next_port_request_id_++;
+  pending_port_requests_[port_request_id] = callback;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.GetPortIdSyncTime.Extension");
+    render_frame()->Send(new ExtensionHostMsg_OpenChannelToExtension(
+        render_frame()->GetRoutingID(), info, channel_name,
+        include_tls_channel_id, port_request_id));
+  }
+}
+
 void ExtensionFrameHelper::DidMatchCSS(
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
@@ -212,6 +230,7 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AssignPortId, OnAssignPortId)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -289,6 +308,13 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
   extension_dispatcher_->InvokeModuleSystemMethod(render_frame(), extension_id,
                                                   module_name, function_name,
                                                   args, user_gesture);
+}
+
+void ExtensionFrameHelper::OnAssignPortId(int port_id, int request_id) {
+  auto iter = pending_port_requests_.find(request_id);
+  DCHECK(iter != pending_port_requests_.end());
+  iter->second.Run(port_id);
+  pending_port_requests_.erase(iter);
 }
 
 void ExtensionFrameHelper::OnDestruct() {

@@ -242,8 +242,6 @@ static_library("renderer") {
       "extensions/resource_request_policy.h",
       "extensions/sync_file_system_custom_bindings.cc",
       "extensions/sync_file_system_custom_bindings.h",
-      "extensions/tabs_custom_bindings.cc",
-      "extensions/tabs_custom_bindings.h",
       "extensions/webstore_bindings.cc",
       "extensions/webstore_bindings.h",
       "media/cast_ipc_dispatcher.cc",

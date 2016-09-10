@@ -129,9 +129,11 @@ void ChromeExtensionMessageFilter::OnOpenChannelToExtension(
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
     bool include_tls_channel_id,
-    int* port_id) {
-  int port2_id;
-  extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
+    int request_id) {
+  int port1_id = 0;
+  int port2_id = 0;
+  extensions::MessageService::AllocatePortIdPair(&port1_id, &port2_id);
+  Send(new ExtensionMsg_AssignPortId(routing_id, port1_id, request_id));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

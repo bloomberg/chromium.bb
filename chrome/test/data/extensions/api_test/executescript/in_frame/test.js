@@ -23,18 +23,24 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       script_file.allFrames = true;
       var counter = 0;
       var totalTitles = '';
-      function eventListener(port) {
-        port.onMessage.addListener(function(data) {
-          counter++;
-          totalTitles += data.message;
-        });
-      };
-      chrome.runtime.onConnect.addListener(eventListener);
-      chrome.tabs.executeScript(tabId, script_file, pass(function() {
+      var done = pass();
+      function verifyAndFinish() {
         assertEq(counter, 5);
         assertEq(totalTitles, 'frametest0test1test2test3');
         chrome.runtime.onConnect.removeListener(eventListener);
-      }));
+        done();
+      }
+      function eventListener(port) {
+        port.onMessage.addListener(function(data) {
+          counter++;
+          assertTrue(counter <= 5);
+          totalTitles += data.message;
+          if (counter == 5)
+            verifyAndFinish();
+        });
+      };
+      chrome.runtime.onConnect.addListener(eventListener);
+      chrome.tabs.executeScript(tabId, script_file);
     },
 
     function insertCSSTextInAllFramesShouldSucceed() {
@@ -43,10 +49,19 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       css_file.allFrames = true;
       var newStyle = '';
       var counter = 0;
+      var done = pass();
+      function verifyAndFinish() {
+        assertEq(newStyle, 'nonenonenonenone');
+        assertEq(counter, 4);
+        chrome.runtime.onConnect.removeListener(eventListener);
+        done();
+      }
       function eventListener(port) {
         port.onMessage.addListener(function(data) {
           counter++;
           newStyle += data.message;
+          if (counter == 4)
+            verifyAndFinish();
         });
       };
       chrome.runtime.onConnect.addListener(eventListener);
@@ -54,12 +69,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         var script_file = {};
         script_file.file = 'script.js';
         script_file.allFrames = true;
-        chrome.tabs.executeScript(tabId, script_file,
-          pass(function() {
-            assertEq(newStyle, 'nonenonenonenone');
-            assertEq(counter, 4);
-            chrome.runtime.onConnect.removeListener(eventListener);
-        }));
+        chrome.tabs.executeScript(tabId, script_file);
       });
     }
   ]);

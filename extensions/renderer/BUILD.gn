@@ -51,6 +51,8 @@ source_set("renderer") {
     "extension_helper.h",
     "extension_injection_host.cc",
     "extension_injection_host.h",
+    "extension_port.cc",
+    "extension_port.h",
     "extensions_render_frame_observer.cc",
     "extensions_render_frame_observer.h",
     "extensions_renderer_client.cc",

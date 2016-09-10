@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
@@ -27,81 +26,12 @@ RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
   RouteFunction(
       "GetManifest",
       base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
-  RouteFunction("OpenChannelToExtension", "runtime.connect",
-                base::Bind(&RuntimeCustomBindings::OpenChannelToExtension,
-                           base::Unretained(this)));
-  RouteFunction("OpenChannelToNativeApp", "runtime.connectNative",
-                base::Bind(&RuntimeCustomBindings::OpenChannelToNativeApp,
-                           base::Unretained(this)));
   RouteFunction("GetExtensionViews",
                 base::Bind(&RuntimeCustomBindings::GetExtensionViews,
                            base::Unretained(this)));
 }
 
 RuntimeCustomBindings::~RuntimeCustomBindings() {
-}
-
-void RuntimeCustomBindings::OpenChannelToExtension(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Get the current RenderFrame so that we can send a routed IPC message from
-  // the correct source.
-  content::RenderFrame* renderframe = context()->GetRenderFrame();
-  if (!renderframe)
-    return;
-
-  // The Javascript code should validate/fill the arguments.
-  CHECK_EQ(args.Length(), 3);
-  CHECK(args[0]->IsString() && args[1]->IsString() && args[2]->IsBoolean());
-
-  ExtensionMsg_ExternalConnectionInfo info;
-
-  // For messaging APIs, hosted apps should be considered a web page so hide
-  // its extension ID.
-  const Extension* extension = context()->extension();
-  if (extension && !extension->is_hosted_app())
-    info.source_id = extension->id();
-
-  info.target_id = *v8::String::Utf8Value(args[0]);
-  info.source_url = context()->url();
-  std::string channel_name = *v8::String::Utf8Value(args[1]);
-  bool include_tls_channel_id =
-      args.Length() > 2 ? args[2]->BooleanValue() : false;
-  int port_id = -1;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Extensions.Messaging.GetPortIdSyncTime.Extension");
-    // TODO(devlin): This file is littered with sync IPCs. Yuck.
-    renderframe->Send(new ExtensionHostMsg_OpenChannelToExtension(
-        renderframe->GetRoutingID(), info, channel_name, include_tls_channel_id,
-        &port_id));
-  }
-  args.GetReturnValue().Set(static_cast<int32_t>(port_id));
-}
-
-void RuntimeCustomBindings::OpenChannelToNativeApp(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // The Javascript code should validate/fill the arguments.
-  CHECK_EQ(args.Length(), 1);
-  CHECK(args[0]->IsString());
-
-  // Verify that the extension has permission to use native messaging.
-  if (!context()->GetAvailability("runtime.connectNative").is_available())
-    return;
-
-  content::RenderFrame* render_frame = context()->GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  std::string native_app_name = *v8::String::Utf8Value(args[0]);
-
-  int port_id = -1;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Extensions.Messaging.GetPortIdSyncTime.NativeApp");
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-        render_frame->GetRoutingID(), native_app_name, &port_id));
-  }
-  args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
 void RuntimeCustomBindings::GetManifest(

@@ -19,6 +19,7 @@ class RenderFrame;
 }
 
 namespace extensions {
+class ExtensionPort;
 struct Message;
 class ScriptContextSet;
 
@@ -60,7 +61,21 @@ class MessagingBindings : public ObjectBackedNativeHandler {
       const std::string& error_message,
       content::RenderFrame* restrict_to_render_frame);
 
+  // Returns an existing port with the given |global_id|, or null.
+  ExtensionPort* GetPortWithGlobalId(int global_id);
+
+  // Creates a new port with the given |global_id|. MessagingBindings owns the
+  // returned port.
+  ExtensionPort* CreateNewPortWithGlobalId(int global_id);
+
+  // Removes the port with the given |local_id|.
+  void RemovePortWithLocalId(int local_id);
+
+  base::WeakPtr<MessagingBindings> GetWeakPtr();
+
  private:
+  using PortMap = std::map<int, std::unique_ptr<ExtensionPort>>;
+
   // JS Exposed Function: Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args);
 
@@ -74,9 +89,33 @@ class MessagingBindings : public ObjectBackedNativeHandler {
   // then call into the script context if it's been invalidated.
   void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // JS Exposed Function: Opens a new channel to an extension.
+  void OpenChannelToExtension(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // JS Exposed Function: Opens a new channel to a native application.
+  void OpenChannelToNativeApp(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // JS Exposed Function: Opens a new channel to a tab.
+  void OpenChannelToTab(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Helper function to close a port. See CloseChannel() for |force_close|
   // documentation.
   void ClosePort(int port_id, bool force_close);
+
+  // Sets the global id for the port with |local_id|.
+  void SetGlobalPortId(int local_id, int global_id);
+
+  int GetNextLocalId();
+
+  // Active ports, mapped by local port id.
+  PortMap ports_;
+
+  // Ports which are disconnected, but haven't been fully initialized. Once
+  // initialized and any pending messages are sent, these ports are removed.
+  PortMap disconnected_ports_;
+
+  // The next available local id for a port.
+  int next_local_id_ = 0;
 
   base::WeakPtrFactory<MessagingBindings> weak_ptr_factory_;
 

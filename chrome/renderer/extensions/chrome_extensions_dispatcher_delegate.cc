@@ -23,7 +23,6 @@
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/platform_keys_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
-#include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
@@ -124,9 +123,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "platform_keys_natives",
       std::unique_ptr<NativeHandler>(
           new extensions::PlatformKeysNatives(context)));
-  module_system->RegisterNativeHandler(
-      "tabs", std::unique_ptr<NativeHandler>(
-                  new extensions::TabsCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "webstore", std::unique_ptr<NativeHandler>(
                       new extensions::WebstoreBindings(context)));

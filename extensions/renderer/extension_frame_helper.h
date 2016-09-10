@@ -81,6 +81,13 @@ class ExtensionFrameHelper
   // Schedule a callback, to be run at the next RunScriptsAtDocumentEnd call.
   void ScheduleAtDocumentEnd(const base::Closure& callback);
 
+  // Sends a message to the browser requesting a port id. |callback| will be
+  // invoked with the global port id when the browser responds.
+  void RequestPortId(const ExtensionMsg_ExternalConnectionInfo& info,
+                     const std::string& channel_name,
+                     bool include_tls_channel_id,
+                     const base::Callback<void(int)>& callback);
+
  private:
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
@@ -121,6 +128,7 @@ class ExtensionFrameHelper
                                 const std::string& function_name,
                                 const base::ListValue& args,
                                 bool user_gesture);
+  void OnAssignPortId(int port_id, int request_id);
 
   // Type of view associated with the RenderFrame.
   ViewType view_type_;
@@ -141,6 +149,12 @@ class ExtensionFrameHelper
 
   // Callbacks to be run at the next RunScriptsAtDocumentEnd notification.
   std::vector<base::Closure> document_load_finished_callbacks_;
+
+  // Counter for port requests.
+  int next_port_request_id_;
+
+  // Map of port requests to callbacks.
+  std::map<int, base::Callback<void(int)>> pending_port_requests_;
 
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
 

@@ -679,15 +679,20 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveFilteredListener,
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 
 // Open a channel to all listening contexts owned by the extension with
-// the given ID.  This always returns a valid port ID which can be used for
-// sending messages.  If an error occurred, the opener will be notified
-// asynchronously.
-IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtension,
-                            int /* frame_routing_id */,
-                            ExtensionMsg_ExternalConnectionInfo,
-                            std::string /* channel_name */,
-                            bool /* include_tls_channel_id */,
-                            int /* port_id */)
+// the given ID. This responds asynchronously with ExtensionMsg_AssignPortId.
+// If an error occurred, the opener will be notified asynchronously.
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToExtension,
+                     int /* frame_routing_id */,
+                     ExtensionMsg_ExternalConnectionInfo,
+                     std::string /* channel_name */,
+                     bool /* include_tls_channel_id */,
+                     int /* request_id */)
+
+// The response to a request to open an extension message port, including the
+// global port id and the request id.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_AssignPortId,
+                    int /*port_id */,
+                    int /* request_id */)
 
 IPC_SYNC_MESSAGE_CONTROL2_1(ExtensionHostMsg_OpenChannelToNativeApp,
                             int /* frame_routing_id */,

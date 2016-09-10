@@ -7,14 +7,25 @@
 // cleaned up, but, realistically, doesn't matter.
 function ResponseCounter() {
   this.responsesReceived = 0;
-  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  this.expectedResponses = -1;
+  var listenerFunction = function(request, sender, sendResponse) {
     if (request == 'fail') {
-      chrome.test.fail();
+      chrome.test.fail('Received bad message');
     } else {
       chrome.test.assertEq('complete', request);
       ++this.responsesReceived;
+      chrome.test.assertTrue(this.responsesReceived <= this.expectedResponses);
+      if (this.responsesReceived == this.expectedResponses &&
+          this.doneCallback) {
+        this.removeListener();
+        this.doneCallback();
+      }
     }
-  }.bind(this));
+  }.bind(this);
+  this.removeListener = function() {
+    chrome.runtime.onMessage.removeListener(listenerFunction);
+  }
+  chrome.runtime.onMessage.addListener(listenerFunction);
 }
 
 var waitForCommittedAndRun = function(functionToRun, numCommits, url) {
@@ -35,10 +46,10 @@ chrome.test.getConfig(function(config) {
             '/extensions/api_test/executescript/removed_frames/outer.html';
   // Regression tests for crbug.com/500574.
   chrome.test.runTests([
-   function() {
+   function testInjectAndDeleteIframeFromMainFrame() {
       waitForCommittedAndRun(injectAndDeleteIframeFromMainFrame, 2, url);
     },
-    function() {
+    function testInjectAndDeleteIframeFromIframe() {
       waitForCommittedAndRun(injectAndDeleteIframeFromIframe, 2, url);
     }
   ]);
@@ -48,6 +59,11 @@ function injectAndDeleteIframeFromMainFrame(counter, tabId) {
   // Inject code into each frame. If it's the parent frame, it removes the child
   // frame from the DOM (invalidating it). The child frame's code shouldn't
   // finish executing, since it's been removed.
+  counter.expectedResponses = 1;
+  counter.doneCallback = function() {
+    chrome.test.assertEq(1, counter.responsesReceived);
+    chrome.test.succeed();
+  };
   var injectFrameCode = [
       'if (window === window.top) {',
       '  iframe = document.getElementsByTagName("iframe")[0];',
@@ -57,16 +73,17 @@ function injectAndDeleteIframeFromMainFrame(counter, tabId) {
   ].join('\n');
   chrome.tabs.executeScript(
       tabId,
-      {code: injectFrameCode, allFrames: true, runAt: 'document_idle'},
-      function() {
-    chrome.test.assertEq(1, counter.responsesReceived);
-    chrome.test.succeed();
-  });
+      {code: injectFrameCode, allFrames: true, runAt: 'document_idle'});
 };
 
 function injectAndDeleteIframeFromIframe(counter, tabId) {
   // Inject code into each frame. Have the child frame remove itself, deleting
   // the frame while it's still executing.
+  counter.expectedResponses = 2;
+  counter.doneCallback = function() {
+    chrome.test.assertEq(2, counter.responsesReceived);
+    chrome.test.succeed();
+  };
   var injectFrameCode = [
       'if (window.self !== window.top) {',
       '  var iframe = window.top.document.getElementsByTagName("iframe")[0];',
@@ -85,11 +102,5 @@ function injectAndDeleteIframeFromIframe(counter, tabId) {
       {code: injectFrameCode, allFrames: true, runAt: 'document_idle'});
   chrome.tabs.executeScript(
       tabId,
-      {code: injectFrameCode, allFrames: true, runAt: 'document_idle'},
-      function() {
-    // Script execution, all other things equal, should happen in the order it
-    // was received, so we only need a check in the second callback.
-    chrome.test.assertEq(2, counter.responsesReceived);
-    chrome.test.succeed();
-  });
+      {code: injectFrameCode, allFrames: true, runAt: 'document_idle'});
 }

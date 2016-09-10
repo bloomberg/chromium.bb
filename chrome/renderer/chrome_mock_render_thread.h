@@ -38,7 +38,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
                                 bool include_tls_channel_id,
-                                int* port_id);
+                                int request_id);
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
