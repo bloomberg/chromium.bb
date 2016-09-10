@@ -275,24 +275,19 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     internal::WorkQueue* work_queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
-  internal::TaskQueueImpl::Task pending_task =
-      work_queue->TakeTaskFromWorkQueue();
-
-  // It's possible the task was canceled, if so bail out.
-  if (pending_task.task.IsCancelled())
-    return ProcessTaskResult::EXECUTED;
-
   internal::TaskQueueImpl* queue = work_queue->task_queue();
+
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
 
+  internal::TaskQueueImpl::Task pending_task =
+      work_queue->TakeTaskFromWorkQueue();
   if (!pending_task.nestable && delegate_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
     // task is associated with. See http://crbug.com/522843.
-    delegate_->PostNonNestableTask(pending_task.posted_from,
-                                   std::move(pending_task.task));
+    delegate_->PostNonNestableTask(pending_task.posted_from, pending_task.task);
     return ProcessTaskResult::DEFERRED;
   }
 

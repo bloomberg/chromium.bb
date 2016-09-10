@@ -38,9 +38,11 @@ class TaskQueueManagerPerfTest : public testing::Test {
 
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
+    message_loop_.reset(new base::MessageLoop());
+    run_loop_.reset(new base::RunLoop());
     manager_ = base::MakeUnique<TaskQueueManager>(
         TaskQueueManagerDelegateForTest::Create(
-            base::MessageLoop::current()->task_runner(),
+            message_loop_->task_runner(),
             base::WrapUnique(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug");
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
@@ -96,7 +98,6 @@ class TaskQueueManagerPerfTest : public testing::Test {
     unsigned long long num_iterations = 0;
     do {
       test_task.Run();
-      run_loop_.reset(new base::RunLoop());
       run_loop_->Run();
       now = base::ThreadTicks::Now();
       num_iterations++;
@@ -113,6 +114,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
   std::unique_ptr<TaskQueueManager> manager_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
   // TODO(alexclarke): parameterize so we can measure with and without a

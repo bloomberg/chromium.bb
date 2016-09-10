@@ -30,7 +30,9 @@ class WorkQueueSets;
 // throttling mechanisms.
 class BLINK_PLATFORM_EXPORT WorkQueue {
  public:
-  WorkQueue(TaskQueueImpl* task_queue, const char* name);
+  WorkQueue(TaskQueueImpl* task_queue,
+            const char* name,
+            TaskQueueImpl::Task::ComparatorFn queue_comparator);
   ~WorkQueue();
 
   // Associates this work queue with the given work queue sets. This must be
@@ -54,7 +56,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // method ignores any fences.
   const TaskQueueImpl::Task* GetFrontTask() const;
 
-  // Returns the last task in this queue or null if the queue is empty. This
+  // Returns the first task in this queue or null if the queue is empty. This
   // method ignores any fences.
   const TaskQueueImpl::Task* GetBackTask() const;
 
@@ -62,10 +64,20 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // informs the WorkQueueSets if the head changed.
   void Push(TaskQueueImpl::Task task);
 
+  // Removes a cancelled task from the |work_queue_|. Note |key| isn't required
+  // to be the original task posted, it can be a fake key constructed by
+  // TaskQueueImpl::Task::CreateFakeTaskFromHandle.
+  bool CancelTask(const TaskQueueImpl::Task& key);
+
+  // Returns true if |work_queue_| contains a task matching |key|. Note |key|
+  // isn't required to be the original task posted, it can be a fake key
+  // constructed by TaskQueueImpl::Task::CreateFakeTaskFromHandle.
+  bool IsTaskPending(const TaskQueueImpl::Task& key) const;
+
   // Swap the |work_queue_| with |incoming_queue| and if a fence hasn't been
   // reached it informs the WorkQueueSets if the head changed. Assumes
   // |task_queue_->any_thread_lock_| is locked.
-  void SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue);
+  void SwapLocked(TaskQueueImpl::ComparatorQueue& incoming_queue);
 
   size_t Size() const { return work_queue_.size(); }
 
@@ -108,7 +120,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   bool BlockedByFence() const;
 
  private:
-  std::queue<TaskQueueImpl::Task> work_queue_;
+  TaskQueueImpl::ComparatorQueue work_queue_;
   WorkQueueSets* work_queue_sets_;  // NOT OWNED.
   TaskQueueImpl* task_queue_;       // NOT OWNED.
   size_t work_queue_set_index_;

@@ -159,16 +159,14 @@ void TimeDomain::UpdateWorkQueues(LazyNow lazy_now) {
 
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
-  std::set<internal::TaskQueueImpl*>::iterator iter =
-      updatable_queue_set_.begin();
+  auto iter = updatable_queue_set_.begin();
   while (iter != updatable_queue_set_.end()) {
-    std::set<internal::TaskQueueImpl*>::iterator queue_it = iter++;
-    internal::TaskQueueImpl* queue = *queue_it;
-
-    // Update the queue and remove from the set if subsequent updates are not
-    // required.
-    if (!queue->MaybeUpdateImmediateWorkQueues())
-      updatable_queue_set_.erase(queue_it);
+    internal::TaskQueueImpl* queue = *iter++;
+    // NOTE Update work queue may erase itself from |updatable_queue_set_|.
+    // This is fine, erasing an element won't invalidate any interator, as long
+    // as the iterator isn't the element being delated.
+    if (queue->immediate_work_queue()->Empty())
+      queue->UpdateImmediateWorkQueue();
   }
 }
 
@@ -198,7 +196,7 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
     // in which EnqueueTaskLocks is called is respected when choosing which
     // queue to execute a task from.
     if (dedup_set.insert(next_wakeup->second).second) {
-      next_wakeup->second->MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
+      next_wakeup->second->UpdateDelayedWorkQueue(lazy_now);
     }
     delayed_wakeup_multimap_.erase(next_wakeup);
   }

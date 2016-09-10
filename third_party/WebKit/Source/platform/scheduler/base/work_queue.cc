@@ -10,25 +10,20 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-WorkQueue::WorkQueue(TaskQueueImpl* task_queue, const char* name)
-    : work_queue_sets_(nullptr),
+WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
+                     const char* name,
+                     TaskQueueImpl::Task::ComparatorFn comparator)
+    : work_queue_(comparator),
+      work_queue_sets_(nullptr),
       task_queue_(task_queue),
       work_queue_set_index_(0),
       name_(name),
       fence_(0) {}
 
 void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
-  // Remove const to search |work_queue_| in the destructive manner. Restore the
-  // content from |visited| later.
-  std::queue<TaskQueueImpl::Task>* mutable_queue =
-      const_cast<std::queue<TaskQueueImpl::Task>*>(&work_queue_);
-  std::queue<TaskQueueImpl::Task> visited;
-  while (!mutable_queue->empty()) {
-    TaskQueueImpl::TaskAsValueInto(mutable_queue->front(), state);
-    visited.push(std::move(mutable_queue->front()));
-    mutable_queue->pop();
+  for (const TaskQueueImpl::Task& task : work_queue_) {
+    TaskQueueImpl::TaskAsValueInto(task, state);
   }
-  *mutable_queue = std::move(visited);
 }
 
 WorkQueue::~WorkQueue() {
@@ -39,13 +34,13 @@ WorkQueue::~WorkQueue() {
 const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
   if (work_queue_.empty())
     return nullptr;
-  return &work_queue_.front();
+  return &*work_queue_.begin();
 }
 
 const TaskQueueImpl::Task* WorkQueue::GetBackTask() const {
   if (work_queue_.empty())
     return nullptr;
-  return &work_queue_.back();
+  return &*work_queue_.rbegin();
 }
 
 bool WorkQueue::BlockedByFence() const {
@@ -55,18 +50,18 @@ bool WorkQueue::BlockedByFence() const {
   // If the queue is empty then any future tasks will have a higher enqueue
   // order and will be blocked. The queue is also blocked if the head is past
   // the fence.
-  return work_queue_.empty() || work_queue_.front().enqueue_order() > fence_;
+  return work_queue_.empty() || work_queue_.begin()->enqueue_order() > fence_;
 }
 
 bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   if (work_queue_.empty() || BlockedByFence())
     return false;
   // Quick sanity check.
-  DCHECK_LE(work_queue_.front().enqueue_order(),
-            work_queue_.back().enqueue_order())
-      << task_queue_->GetName() << " : " << work_queue_sets_->name() << " : "
-      << name_;
-  *enqueue_order = work_queue_.front().enqueue_order();
+  DCHECK_LE(work_queue_.begin()->enqueue_order(),
+            work_queue_.rbegin()->enqueue_order())
+      << task_queue_->GetName() << " : "
+      << work_queue_sets_->name() << " : " << name_;
+  *enqueue_order = work_queue_.begin()->enqueue_order();
   return true;
 }
 
@@ -76,8 +71,15 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   DCHECK(task.enqueue_order_set());
 #endif
 
-  // Amoritized O(1).
-  work_queue_.push(std::move(task));
+  // We expect |task| to be inserted at the end. Amoritized O(1).
+  work_queue_.insert(work_queue_.end(), std::move(task));
+  DCHECK_EQ(task.enqueue_order(), work_queue_.rbegin()->enqueue_order())
+      << task_queue_->GetName() << " : "
+      << work_queue_sets_->name() << " : " << name_
+      << "task [scheduled_run_time_" << task.delayed_run_time << ", "
+      << task.sequence_num <<
+      "] rbegin() [" << work_queue_.rbegin()->delayed_run_time << ", "
+      << work_queue_.rbegin()->sequence_num << "]";
 
   if (!was_empty)
     return;
@@ -87,13 +89,37 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
     work_queue_sets_->OnPushQueue(this);
 }
 
+bool WorkQueue::CancelTask(const TaskQueueImpl::Task& key) {
+  TaskQueueImpl::ComparatorQueue::iterator it = work_queue_.find(key);
+  if (it == work_queue_.end())
+    return false;
+
+  if (it == work_queue_.begin()) {
+    EnqueueOrder erased_task_enqueue_order = it->enqueue_order();
+    work_queue_.erase(it);
+    // We can't guarantee this WorkQueue is the lowest value in the WorkQueueSet
+    // so we need to use OnQueueHeadChanged instead of OnPopQueue for
+    // correctness.
+    if (!BlockedByFence())
+      work_queue_sets_->OnQueueHeadChanged(this, erased_task_enqueue_order);
+  } else {
+    work_queue_.erase(it);
+  }
+  task_queue_->TraceQueueSize(false);
+  return true;
+}
+
+bool WorkQueue::IsTaskPending(const TaskQueueImpl::Task& key) const {
+  return work_queue_.find(key) != work_queue_.end();
+}
+
 void WorkQueue::PopTaskForTest() {
   if (work_queue_.empty())
     return;
-  work_queue_.pop();
+  work_queue_.erase(work_queue_.begin());
 }
 
-void WorkQueue::SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue) {
+void WorkQueue::SwapLocked(TaskQueueImpl::ComparatorQueue& incoming_queue) {
   DCHECK(work_queue_.empty());
   std::swap(work_queue_, incoming_queue);
   if (work_queue_.empty())
@@ -106,16 +132,10 @@ void WorkQueue::SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue) {
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!work_queue_.empty());
-
-  // Skip over canceled tasks, except for the last one since we always return
-  // something.
-  while (work_queue_.size() > 1u && work_queue_.front().task.IsCancelled()) {
-    work_queue_.pop();
-  }
-
+  TaskQueueImpl::ComparatorQueue::iterator it = work_queue_.begin();
   TaskQueueImpl::Task pending_task =
-      std::move(const_cast<TaskQueueImpl::Task&>(work_queue_.front()));
-  work_queue_.pop();
+      std::move(const_cast<TaskQueueImpl::Task&>(*it));
+  work_queue_.erase(it);
   work_queue_sets_->OnPopQueue(this);
   task_queue_->TraceQueueSize(false);
   return pending_task;

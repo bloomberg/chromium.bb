@@ -36,14 +36,6 @@ void WebTaskRunnerImpl::postDelayedTask(const blink::WebTraceLocation& location,
                                base::TimeDelta::FromMillisecondsD(delayMs));
 }
 
-void WebTaskRunnerImpl::postDelayedTask(const WebTraceLocation& location,
-                                        const base::Closure& task,
-                                        double delayMs) {
-  DCHECK_GE(delayMs, 0.0);
-  task_queue_->PostDelayedTask(location, task,
-                               base::TimeDelta::FromMillisecondsD(delayMs));
-}
-
 bool WebTaskRunnerImpl::runsTasksOnCurrentThread() {
   return task_queue_->RunsTasksOnCurrentThread();
 }

@@ -15,7 +15,6 @@ class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
   Data() : time_(0.0) {}
 
   std::unique_ptr<Task> task_;
-  base::Closure closure_;
   double time_;
 
  private:
@@ -46,12 +45,6 @@ void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
                                         Task* task,
                                         double) {
   data_->task_.reset(task);
-}
-
-void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
-                                        const base::Closure& closure,
-                                        double) {
-  data_->closure_ = closure;
 }
 
 bool FakeWebTaskRunner::runsTasksOnCurrentThread() {

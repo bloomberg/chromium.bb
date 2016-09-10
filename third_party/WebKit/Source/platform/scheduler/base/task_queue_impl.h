@@ -78,6 +78,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
          bool nestable,
          EnqueueOrder enqueue_order);
 
+    // Create a fake Task based on the handle, suitable for using as a search
+    // key.
+    static Task CreateFakeTaskFromHandle(const TaskHandle& handle);
+
     EnqueueOrder enqueue_order() const {
 #ifndef NDEBUG
       DCHECK(enqueue_order_set_);
@@ -96,6 +100,24 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 #ifndef NDEBUG
     bool enqueue_order_set() const { return enqueue_order_set_; }
 #endif
+
+    using ComparatorFn = bool (*)(const Task&, const Task&);
+
+    // Tasks are ordered by |delayed_run_time| smallest first then and by
+    // |sequence_num| in case of a tie.
+    class DelayedRunTimeComparator {
+     public:
+      bool operator()(const Task& a, const Task& b) const;
+    };
+
+    // Tasks are ordered by |enqueue_order_| smallest first.
+    static bool EnqueueOrderComparatorFn(const TaskQueueImpl::Task& a,
+                                         const TaskQueueImpl::Task& b);
+
+    // Tasks are ordered by |delayed_run_time| smallest first then and by
+    // |sequence_num| in case of a tie.
+    static bool DelayedRunTimeComparatorFn(const TaskQueueImpl::Task& a,
+                                           const TaskQueueImpl::Task& b);
 
    private:
 #ifndef NDEBUG
@@ -118,6 +140,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override;
+  TaskHandle PostCancellableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) override;
+  bool CancelTask(const TaskHandle& handle) override;
   void SetQueueEnabled(bool enabled) override;
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
@@ -134,9 +161,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void RemoveFence() override;
   bool BlockedByFence() const override;
 
-  // If this returns false then future updates for this queue are not needed
-  // unless requested.
-  bool MaybeUpdateImmediateWorkQueues();
+  bool IsTaskPending(const TaskHandle& handle) const;
+
+  void UpdateImmediateWorkQueue();
+  void UpdateDelayedWorkQueue(LazyNow* lazy_now);
 
   const char* GetName() const override;
 
@@ -171,13 +199,16 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     return should_report_when_execution_blocked_;
   }
 
-  // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|.  Must be called from the main thread.
-  void MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now);
-
  private:
   friend class WorkQueue;
   friend class WorkQueueTest;
+
+  // Note both DelayedRunTimeQueue and ComparatorQueue are sets for fast task
+  // cancellation. Typically queue sizes are well under 200 so the overhead of
+  // std::set vs std::priority_queue and std::queue is lost in the noise of
+  // everything else.
+  using DelayedRunTimeQueue = std::set<Task, Task::DelayedRunTimeComparator>;
+  using ComparatorQueue = std::set<Task, Task::ComparatorFn>;
 
   enum class TaskType {
     NORMAL,
@@ -195,7 +226,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     TaskQueueManager* task_queue_manager;
     TimeDomain* time_domain;
 
-    std::queue<Task> immediate_incoming_queue;
+    ComparatorQueue immediate_incoming_queue;
   };
 
   struct MainThreadOnly {
@@ -211,7 +242,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
-    std::priority_queue<Task> delayed_incoming_queue;
+    DelayedRunTimeQueue delayed_incoming_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
     bool is_enabled;
@@ -240,25 +271,24 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void ScheduleDelayedWorkTask(Task pending_task);
 
+  // Enqueues any delayed tasks which should be run now on the
+  // |delayed_work_queue|.  Must be called from the main thread.
+  void MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now);
+
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
-  void PushOntoImmediateIncomingQueueLocked(
-         const tracked_objects::Location& posted_from,
-         const base::Closure& task,
-         base::TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         bool nestable);
+  void PushOntoImmediateIncomingQueueLocked(Task pending_task);
 
   // As BlockedByFence but safe to be called while locked.
   bool BlockedByFenceLocked() const;
 
   void TraceQueueSize(bool is_locked) const;
-  static void QueueAsValueInto(const std::queue<Task>& queue,
+  static void QueueAsValueInto(const ComparatorQueue& queue,
                                base::trace_event::TracedValue* state);
-  static void QueueAsValueInto(const std::priority_queue<Task>& queue,
+  static void QueueAsValueInto(const DelayedRunTimeQueue& queue,
                                base::trace_event::TracedValue* state);
   static void TaskAsValueInto(const Task& task,
                               base::trace_event::TracedValue* state);
