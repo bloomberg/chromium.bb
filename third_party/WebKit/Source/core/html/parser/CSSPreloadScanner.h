@@ -107,6 +107,12 @@ protected:
 private:
     void scanCSS(const CSSStyleSheetResource*);
 
+    enum PreloadPolicy {
+        ScanOnly,
+        ScanAndPreload,
+    };
+
+    const PreloadPolicy m_policy;
     WeakMember<HTMLResourcePreloader> m_preloader;
 };
 

@@ -241,7 +241,8 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
 }
 
 CSSPreloaderResourceClient::CSSPreloaderResourceClient(Resource* resource, HTMLResourcePreloader* preloader)
-    : m_preloader(preloader)
+    : m_policy(preloader->document()->settings()->cssExternalScannerPreload() ? ScanAndPreload : ScanOnly)
+    , m_preloader(preloader)
 {
     DCHECK(resource->getType() == Resource::Type::CSSStyleSheet);
     setResource(toCSSStyleSheetResource(resource), Resource::DontMarkAsReferenced);
@@ -291,9 +292,7 @@ void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads)
         m_preloader->document()->loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
     }
 
-    Settings* settings = m_preloader->document()->settings();
-    DCHECK(settings);
-    if (settings->cssExternalScannerPreload()) {
+    if (m_policy == ScanAndPreload) {
         int currentPreloadCount = m_preloader->countPreloads();
         m_preloader->takeAndPreload(preloads);
         DEFINE_STATIC_LOCAL(CustomCountHistogram, cssImportHistogram, ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
