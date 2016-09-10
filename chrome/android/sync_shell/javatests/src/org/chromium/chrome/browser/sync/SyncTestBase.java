@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -85,6 +86,12 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Override
     protected void setUp() throws Exception {
         // This must be called before super.setUp() in order for test authentication to work.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProcessInitializationHandler.getInstance().initializePreNative();
+            }
+        });
         SigninTestUtil.setUpAuthForTest(getInstrumentation());
 
         super.setUp();

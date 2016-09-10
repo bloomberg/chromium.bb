@@ -14,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.gcm_driver.GCMDriver;
 
 /**
@@ -21,6 +22,12 @@ import org.chromium.components.gcm_driver.GCMDriver;
  */
 public class ChromeGcmListenerService extends GcmListenerService {
     private static final String TAG = "ChromeGcmListener";
+
+    @Override
+    public void onCreate() {
+        ProcessInitializationHandler.getInstance().initializePreNative();
+        super.onCreate();
+    }
 
     @Override
     public void onMessageReceived(String from, Bundle data) {

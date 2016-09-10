@@ -9,6 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+
+/**
+ * A Service that provides access to {@link ChromeBrowserSyncAdapter}.
+ */
 public class ChromeBrowserSyncAdapterService extends Service {
     private static ChromeBrowserSyncAdapter sSyncAdapter = null;
     private static final Object LOCK = new Object();
@@ -19,6 +24,7 @@ public class ChromeBrowserSyncAdapterService extends Service {
     private ChromeBrowserSyncAdapter getOrCreateSyncAdapter(Context applicationContext) {
         synchronized (LOCK) {
             if (sSyncAdapter == null) {
+                ProcessInitializationHandler.getInstance().initializePreNative();
                 sSyncAdapter = new ChromeBrowserSyncAdapter(applicationContext, getApplication());
             }
         }

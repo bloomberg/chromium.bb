@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -229,7 +230,9 @@ public class DeferredStartupHandler {
             }
         });
 
-        // This call will add its own tasks to the queue.
+        ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
+        // TODO(tedchoc): Remove this once all internal clients have moved to using
+        //                ProcessInitializationHandler.
         application.initializeSharedClasses();
     }
 

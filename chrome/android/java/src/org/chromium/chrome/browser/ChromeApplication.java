@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,16 +13,12 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
-
-import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
-import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ResourceExtractor;
@@ -44,19 +39,13 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
-import org.chromium.chrome.browser.download.DownloadController;
-import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
-import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
@@ -79,13 +68,10 @@ import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferen
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
-import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
-import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -95,17 +81,14 @@ import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.sync.signin.AccountManagerDelegate;
-import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.components.sync.signin.SystemAccountManagerDelegate;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintingController;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -124,8 +107,6 @@ public class ChromeApplication extends ContentApplication {
             "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
     private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
     private static final String PREF_LOCALE = "locale";
-    private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
-    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
     private static boolean sIsFinishedCachingNativeFlags;
     private static DocumentTabModelSelector sDocumentTabModelSelector;
@@ -134,8 +115,6 @@ public class ChromeApplication extends ContentApplication {
 
     // Used to trigger variation changes (such as seed fetches) upon application foregrounding.
     private VariationsSession mVariationsSession;
-
-    private DevToolsServer mDevToolsServer;
 
     private boolean mIsStarted;
     private boolean mInitializedSharedClasses;
@@ -167,41 +146,6 @@ public class ChromeApplication extends ContentApplication {
         super.onCreate();
         ContextUtils.initApplicationContext(this);
 
-        UiUtils.setKeyboardShowingDelegate(new UiUtils.KeyboardShowingDelegate() {
-            @Override
-            public boolean disableKeyboardCheck(Context context, View view) {
-                Activity activity = null;
-                if (context instanceof Activity) {
-                    activity = (Activity) context;
-                } else if (view != null && view.getContext() instanceof Activity) {
-                    activity = (Activity) view.getContext();
-                }
-
-                // For multiwindow mode we do not track keyboard visibility.
-                return activity != null
-                        && MultiWindowUtils.getInstance().isLegacyMultiWindow(activity);
-            }
-        });
-
-        // Initialize the AccountManagerHelper with the correct AccountManagerDelegate. Must be done
-        // only once and before AccountMangerHelper.get(...) is called to avoid using the
-        // default AccountManagerDelegate.
-        AccountManagerHelper.initializeAccountManagerHelper(this, createAccountManagerDelegate());
-
-        // Set the unique identification generator for invalidations.  The
-        // invalidations system can start and attempt to fetch the client ID
-        // very early.  We need this generator to be ready before that happens.
-        UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
-
-        // Set minimum Tango log level. This sets an in-memory static field, and needs to be
-        // set in the ApplicationContext instead of an activity, since Tango can be woken up
-        // by the system directly though messages from GCM.
-        AndroidLogger.setMinimumAndroidLogLevel(Log.WARN);
-
-        // Set up the identification generator for sync. The ID is actually generated
-        // in the SyncController constructor.
-        UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
-                new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY), false);
         TraceEvent.end("ChromeApplication.onCreate");
     }
 
@@ -378,64 +322,6 @@ public class ChromeApplication extends ContentApplication {
      * shared by Activities in the same process are properly initialized.
      */
     public void initializeSharedClasses() {
-        if (mInitializedSharedClasses) return;
-        mInitializedSharedClasses = true;
-
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                ForcedSigninProcessor.start(getApplicationContext());
-                AccountsChangedReceiver.addObserver(
-                        new AccountsChangedReceiver.AccountsChangedObserver() {
-                            @Override
-                            public void onAccountsChanged(Context context, Intent intent) {
-                                ThreadUtils.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ForcedSigninProcessor.start(getApplicationContext());
-                                    }
-                                });
-                            }
-                        });
-            }
-        });
-
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                GoogleServicesManager.get(getApplicationContext()).onMainActivityStart();
-                RevenueStats.getInstance();
-            }
-        });
-
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
-                mDevToolsServer.setRemoteDebuggingEnabled(
-                        true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
-
-                startApplicationActivityTracker();
-            }
-        });
-
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                // Add process check to diagnose http://crbug.com/606309. Remove this after the bug
-                // is fixed.
-                assert !CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE);
-                if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
-                    DownloadController.setDownloadNotificationService(
-                            DownloadManagerService.getDownloadManagerService(
-                                    getApplicationContext()));
-                }
-
-                if (ApiCompatibilityUtils.isPrintingSupported()) {
-                    mPrintingController = PrintingControllerFactory.create(getApplicationContext());
-                }
-            }
-        });
     }
 
     /**
@@ -641,6 +527,11 @@ public class ChromeApplication extends ContentApplication {
      *         return null if printing is not supported on the platform.
      */
     public PrintingController getPrintingController() {
+        if (mPrintingController != null) return mPrintingController;
+        if (ApiCompatibilityUtils.isPrintingSupported()) {
+            mPrintingController = PrintingControllerFactory.create(this);
+            assert mPrintingController != null;
+        }
         return mPrintingController;
     }
 
