@@ -32,7 +32,7 @@ class GitCL(object):
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
 
-    def wait_for_try_jobs(self, poll_delay_seconds=5, timeout_seconds=60):
+    def wait_for_try_jobs(self, poll_delay_seconds=600, timeout_seconds=7200):
         """Waits until all try jobs are finished.
 
         Args:
