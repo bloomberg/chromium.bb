@@ -25,6 +25,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
+#include "core/paint/ScrollRecorder.h"
 #include "core/paint/ThemePainter.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -58,11 +59,12 @@ void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffse
 void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutRect paintRect;
+    Optional<ScrollRecorder> scrollRecorder;
     if (isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&m_layoutBox, paintInfo)) {
         // For the case where we are painting the background into the scrolling contents layer
         // of a composited scroller we need to include the entire overflow rect.
         paintRect = m_layoutBox.layoutOverflowRect();
-        paintRect.move(-m_layoutBox.scrolledContentOffset());
+        scrollRecorder.emplace(paintInfo.context, m_layoutBox, paintInfo.phase, m_layoutBox.scrolledContentOffset());
 
         // The background painting code assumes that the borders are part of the paintRect so we
         // expand the paintRect by the border size when painting the background into the
