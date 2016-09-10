@@ -5,6 +5,11 @@
 #ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_DELEGATE_H_
 
+#include <memory>
+#include <vector>
+
+#include "content/common/content_export.h"
+
 namespace blink {
 class WebWidget;
 }
@@ -14,6 +19,10 @@ class BeginFrameSource;
 class CopyOutputRequest;
 class OutputSurface;
 class SwapPromise;
+}
+
+namespace gfx {
+class Vector2dF;
 }
 
 namespace content {
