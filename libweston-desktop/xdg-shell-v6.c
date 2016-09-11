@@ -284,6 +284,18 @@ static void
 weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface);
 
 static void
+weston_desktop_xdg_toplevel_ensure_added(struct weston_desktop_xdg_toplevel *toplevel)
+{
+	if (toplevel->added)
+		return;
+
+	weston_desktop_api_surface_added(toplevel->base.desktop,
+					 toplevel->base.desktop_surface);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	toplevel->added = true;
+}
+
+static void
 weston_desktop_xdg_toplevel_protocol_set_parent(struct wl_client *wl_client,
 						struct wl_resource *resource,
 						struct wl_resource *parent_resource)
@@ -296,6 +308,8 @@ weston_desktop_xdg_toplevel_protocol_set_parent(struct wl_client *wl_client,
 
 	if (parent_resource != NULL)
 		parent = wl_resource_get_user_data(parent_resource);
+
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_set_parent(toplevel->base.desktop, dsurface, parent);
 }
 
@@ -416,6 +430,7 @@ weston_desktop_xdg_toplevel_protocol_set_maximized(struct wl_client *wl_client,
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_maximized_requested(toplevel->base.desktop, dsurface, true);
 }
 
@@ -428,6 +443,7 @@ weston_desktop_xdg_toplevel_protocol_unset_maximized(struct wl_client *wl_client
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_maximized_requested(toplevel->base.desktop, dsurface, false);
 }
 
@@ -445,6 +461,7 @@ weston_desktop_xdg_toplevel_protocol_set_fullscreen(struct wl_client *wl_client,
 	if (output_resource != NULL)
 		output = wl_resource_get_user_data(output_resource);
 
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_fullscreen_requested(toplevel->base.desktop, dsurface,
 						true, output);
 }
@@ -458,6 +475,7 @@ weston_desktop_xdg_toplevel_protocol_unset_fullscreen(struct wl_client *wl_clien
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_fullscreen_requested(toplevel->base.desktop, dsurface,
 						false, NULL);
 }
@@ -471,6 +489,7 @@ weston_desktop_xdg_toplevel_protocol_set_minimized(struct wl_client *wl_client,
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	weston_desktop_xdg_toplevel_ensure_added(toplevel);
 	weston_desktop_api_minimized_requested(toplevel->base.desktop, dsurface);
 }
 
@@ -584,10 +603,7 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 	bool reconfigure = false;
 
 	if (!wsurface->buffer_ref.buffer && !toplevel->added) {
-		weston_desktop_api_surface_added(toplevel->base.desktop,
-					         toplevel->base.desktop_surface);
-		weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
-		toplevel->added = true;
+		weston_desktop_xdg_toplevel_ensure_added(toplevel);
 		return;
 	}
 	if (!wsurface->buffer_ref.buffer)
