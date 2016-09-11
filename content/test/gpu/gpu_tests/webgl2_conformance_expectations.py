@@ -43,12 +43,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-    self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-test.html', bug=634525)
 
     # Windows only.
-    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
-        ['win'], bug=638470)
+    # We are awesome!
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -69,8 +67,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=626068)
 
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6779)], bug=617290)
@@ -126,8 +122,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=614418)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel'], bug=614418)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
-        ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
         ['win', 'intel'], bug=483282)
@@ -154,6 +148,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'amd'], bug=483282)
 
     self.Fail('conformance2/rendering/' +
         'framebuffer-completeness-unaffected.html',
@@ -370,14 +366,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/' +
         'angle_and_trigonometry_03.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
-        ['mac', 'amd'], bug=644360)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac', 'amd'], bug=644360)
 
     # Mac Pro with AMD GPU
@@ -416,9 +408,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texsubimage3d_pbo_params.html',
         ['mac', 'intel'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texture.html',
-        ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturelod.html',
         ['mac', 'intel'], bug=483282)
