@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.96",
+  "version": "8.97",
   "entries": [
     {
       "id": 1,
@@ -301,7 +301,11 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "cr_bugs": [290391],
       "description": "Multisampled renderbuffer allocation must be validated on some Macs",
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.10"
+        }
       },
       "features": [
         "validate_multisample_buffer_allocation"
