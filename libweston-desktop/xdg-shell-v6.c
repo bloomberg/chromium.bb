@@ -349,6 +349,13 @@ weston_desktop_xdg_toplevel_protocol_show_window_menu(struct wl_client *wl_clien
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	if (!toplevel->base.configured) {
+		wl_resource_post_error(toplevel->resource,
+				       ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
+				       "Surface has not been configured yet");
+		return;
+	}
+
 	weston_desktop_api_show_window_menu(toplevel->base.desktop,
 					    dsurface, seat, x, y);
 }
@@ -366,6 +373,13 @@ weston_desktop_xdg_toplevel_protocol_move(struct wl_client *wl_client,
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
+	if (!toplevel->base.configured) {
+		wl_resource_post_error(toplevel->resource,
+				       ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
+				       "Surface has not been configured yet");
+		return;
+	}
+
 	weston_desktop_api_move(toplevel->base.desktop, dsurface, seat, serial);
 }
 
@@ -382,6 +396,13 @@ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
 		wl_resource_get_user_data(seat_resource);
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
+
+	if (!toplevel->base.configured) {
+		wl_resource_post_error(toplevel->resource,
+				       ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
+				       "Surface has not been configured yet");
+		return;
+	}
 
 	weston_desktop_api_resize(toplevel->base.desktop,
 				  dsurface, seat, serial, edges);
