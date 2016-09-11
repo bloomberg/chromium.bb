@@ -314,7 +314,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // This method is invoked when a redirect has been received for a resource
   // request.
   virtual void DidGetRedirectForResourceRequest(
-      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details) {}
 
   // This method is invoked when a new non-pending navigation entry is created.

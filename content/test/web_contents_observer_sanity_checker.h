@@ -74,9 +74,6 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
                    int error_code,
                    const base::string16& error_description,
                    bool was_ignored_by_handler) override;
-  void DidGetRedirectForResourceRequest(
-      RenderFrameHost* render_frame_host,
-      const ResourceRedirectDetails& details) override;
   void DidOpenRequestedURL(WebContents* new_contents,
                            RenderFrameHost* source_render_frame_host,
                            const GURL& url,

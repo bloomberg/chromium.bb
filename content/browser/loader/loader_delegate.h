@@ -11,6 +11,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/load_states.h"
 
 class GURL;
@@ -18,7 +19,7 @@ class GURL;
 namespace content {
 
 // Delegate from loader to the rest of content. Should be interacted with on the
-// IO thread.
+// IO thread unless otherwise noted.
 //
 // This is used for breaking dependencies between content at-large and
 // content/browser/loader which will eventually be moved to a separate
@@ -29,25 +30,23 @@ class CONTENT_EXPORT LoaderDelegate {
  public:
   virtual ~LoaderDelegate() {}
 
-  // Notification that the load state for the route identified by child_id and
-  // route_id has changed.
-  virtual void LoadStateChanged(int child_id,
-                                int route_id,
-                                const GURL& url,
-                                const net::LoadStateWithParam& load_state,
-                                uint64_t upload_position,
-                                uint64_t upload_size) = 0;
+  // Notification that the load state for the given WebContents has changed.
+  // NOTE: this method is called on the UI thread.
+  virtual void LoadStateChanged(
+      WebContents* web_contents,
+      const GURL& url,
+      const net::LoadStateWithParam& load_state,
+      uint64_t upload_position,
+      uint64_t upload_size) = 0;
 
   // Notification that a response has been received for a resource request.
   virtual void DidGetResourceResponseStart(
-      int render_process_id,
-      int render_frame_host,
+      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRequestDetails> details) = 0;
 
   // Notification that a redirect was received while requesting a resource.
   virtual void DidGetRedirectForResourceRequest(
-      int render_process_id,
-      int render_frame_host,
+      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRedirectDetails> details) = 0;
 };
 

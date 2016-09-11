@@ -151,6 +151,7 @@ specific_include_rules = {
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_dispatcher_host.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
+    "+content/public/browser/resource_request_info.h",
     "+content/public/browser/resource_throttle.h",
 
     # TODO: These all have to be removed.

@@ -801,14 +801,6 @@ void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   }
 }
 
-void RenderViewHostImpl::LoadStateChanged(
-    const GURL& url,
-    const net::LoadStateWithParam& load_state,
-    uint64_t upload_position,
-    uint64_t upload_size) {
-  delegate_->LoadStateChanged(url, load_state, upload_position, upload_size);
-}
-
 bool RenderViewHostImpl::SuddenTerminationAllowed() const {
   return sudden_termination_allowed_ ||
       GetProcess()->SuddenTerminationAllowed();

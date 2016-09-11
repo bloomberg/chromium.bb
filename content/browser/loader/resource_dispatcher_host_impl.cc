@@ -415,6 +415,11 @@ void NotifyForEachFrameFromUI(
 
 }  // namespace
 
+
+ResourceDispatcherHostImpl::LoadInfo::LoadInfo() {}
+ResourceDispatcherHostImpl::LoadInfo::LoadInfo(const LoadInfo& other) = default;
+ResourceDispatcherHostImpl::LoadInfo::~LoadInfo() {}
+
 ResourceDispatcherHostImpl::HeaderInterceptorInfo::HeaderInterceptorInfo() {}
 
 ResourceDispatcherHostImpl::HeaderInterceptorInfo::~HeaderInterceptorInfo() {}
@@ -747,10 +752,6 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
         new_url, loader->request(), info->GetContext(), response);
   }
 
-  int render_process_id, render_frame_host;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
-    return;
-
   net::URLRequest* request = loader->request();
   if (request->response_info().async_revalidation_required) {
     // Async revalidation is only supported for the first redirect leg.
@@ -785,7 +786,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
       !!request->ssl_info().cert,
       new_url));
   loader_delegate_->DidGetRedirectForResourceRequest(
-      render_process_id, render_frame_host, std::move(detail));
+      info->GetWebContentsGetterForRequest(), std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
@@ -820,7 +821,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   std::unique_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
       request, !!request->ssl_info().cert));
   loader_delegate_->DidGetResourceResponseStart(
-      render_process_id, render_frame_host, std::move(detail));
+      info->GetWebContentsGetterForRequest(), std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
@@ -2406,51 +2407,81 @@ bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
   return a.load_state.state > b.load_state.state;
 }
 
+// static
+void ResourceDispatcherHostImpl::UpdateLoadStateOnUI(
+    LoaderDelegate* loader_delegate, std::unique_ptr<LoadInfoList> infos) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<LoadInfoMap> info_map =
+      PickMoreInterestingLoadInfos(std::move(infos));
+  for (const auto& load_info: *info_map) {
+    loader_delegate->LoadStateChanged(
+        load_info.first,
+        load_info.second.url, load_info.second.load_state,
+        load_info.second.upload_position, load_info.second.upload_size);
+  }
+}
+
+// static
 std::unique_ptr<ResourceDispatcherHostImpl::LoadInfoMap>
+ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+    std::unique_ptr<LoadInfoList> infos) {
+  std::unique_ptr<LoadInfoMap> info_map(new LoadInfoMap);
+  for (const auto& load_info : *infos) {
+    WebContents* web_contents = load_info.web_contents_getter.Run();
+    if (!web_contents)
+      continue;
+
+    auto existing = info_map->find(web_contents);
+    if (existing == info_map->end() ||
+        LoadInfoIsMoreInteresting(load_info, existing->second)) {
+      (*info_map)[web_contents] = load_info;
+    }
+  }
+  return info_map;
+}
+
+std::unique_ptr<ResourceDispatcherHostImpl::LoadInfoList>
 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
-  // Populate this map with load state changes, and then send them on to the UI
-  // thread where they can be passed along to the respective RVHs.
-  std::unique_ptr<LoadInfoMap> info_map(new LoadInfoMap());
+  std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
 
   for (const auto& loader : pending_loaders_) {
     net::URLRequest* request = loader.second->request();
     net::UploadProgress upload_progress = request->GetUploadProgress();
 
     LoadInfo load_info;
+    load_info.web_contents_getter =
+        loader.second->GetRequestInfo()->GetWebContentsGetterForRequest();
     load_info.url = request->url();
     load_info.load_state = request->GetLoadState();
     load_info.upload_size = upload_progress.size();
     load_info.upload_position = upload_progress.position();
-
-    GlobalRoutingID id(loader.second->GetRequestInfo()->GetGlobalRoutingID());
-    LoadInfoMap::iterator existing = info_map->find(id);
-
-    if (existing == info_map->end() ||
-        LoadInfoIsMoreInteresting(load_info, existing->second)) {
-      (*info_map)[id] = load_info;
-    }
+    infos->push_back(load_info);
   }
-  return info_map;
+  return infos;
 }
 
 void ResourceDispatcherHostImpl::UpdateLoadInfo() {
-  std::unique_ptr<LoadInfoMap> info_map(GetLoadInfoForAllRoutes());
+  std::unique_ptr<LoadInfoList> infos(GetLoadInfoForAllRoutes());
 
   // Stop the timer if there are no more pending requests. Future new requests
   // will restart it as necessary.
   // Also stop the timer if there are no loading clients, to avoid waking up
   // unnecessarily when there is a long running (hanging get) request.
-  if (info_map->empty() || !scheduler_->HasLoadingClients()) {
+  if (infos->empty() || !scheduler_->HasLoadingClients()) {
     update_load_states_timer_->Stop();
     return;
   }
 
-  for (const auto& load_info : *info_map) {
-    loader_delegate_->LoadStateChanged(
-        load_info.first.child_id, load_info.first.route_id,
-        load_info.second.url, load_info.second.load_state,
-        load_info.second.upload_position, load_info.second.upload_size);
-  }
+  // We need to be able to compare all requests to find the most important one
+  // per tab. Since some requests may be navigation requests and we don't have
+  // their render frame routing IDs yet (which is what we have for subresource
+  // requests), we must go to the UI thread and compare the requests using their
+  // WebContents.
+  BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(UpdateLoadStateOnUI,
+                   loader_delegate_, base::Passed(&infos)));
 }
 
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(

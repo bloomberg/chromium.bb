@@ -15,19 +15,17 @@ class CONTENT_EXPORT LoaderDelegateImpl : public LoaderDelegate {
   ~LoaderDelegateImpl() override;
 
   // LoaderDelegate implementation:
-  void LoadStateChanged(int child_id,
-                        int route_id,
-                        const GURL& url,
-                        const net::LoadStateWithParam& load_state,
-                        uint64_t upload_position,
-                        uint64_t upload_size) override;
+  void LoadStateChanged(
+      WebContents* web_contents,
+      const GURL& url,
+      const net::LoadStateWithParam& load_state,
+      uint64_t upload_position,
+      uint64_t upload_size) override;
   void DidGetResourceResponseStart(
-      int render_process_id,
-      int render_frame_host,
+      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRequestDetails> details) override;
   void DidGetRedirectForResourceRequest(
-      int render_process_id,
-      int render_frame_host,
+      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRedirectDetails> details) override;
 };
 

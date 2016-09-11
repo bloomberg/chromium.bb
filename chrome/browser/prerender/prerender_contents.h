@@ -176,7 +176,6 @@ class PrerenderContents : public content::NotificationObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
   void DidGetRedirectForResourceRequest(
-      content::RenderFrameHost* render_frame_host,
       const content::ResourceRedirectDetails& details) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 

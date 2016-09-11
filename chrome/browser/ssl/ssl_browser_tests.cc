@@ -2634,7 +2634,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
   ASSERT_TRUE(https_server_.Start());
 
   std::string https_server_expired_host =
-      https_server_.GetURL("/ssl/google.html").host();
+      https_server_expired_.GetURL("/ssl/google.html").host();
   std::string https_server_host =
       https_server_.GetURL("/ssl/google.html").host();
   ASSERT_EQ(https_server_expired_host, https_server_host);

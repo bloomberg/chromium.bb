@@ -811,7 +811,6 @@ class TestWebContentsObserver : public WebContentsObserver {
         resource_response_start_count_(0) {}
 
   void DidGetRedirectForResourceRequest(
-      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details) override {
     ++resource_request_redirect_count_;
   }
@@ -830,15 +829,6 @@ class TestWebContentsObserver : public WebContentsObserver {
  private:
   int resource_request_redirect_count_;
   int resource_response_start_count_;
-};
-
-// Information used to create resource requests that use URLRequestLoadInfoJobs.
-// The child_id is just that of ResourceDispatcherHostTest::filter_.
-struct LoadInfoTestRequestInfo {
-  int route_id;
-  GURL url;
-  net::LoadState load_state;
-  net::UploadProgress upload_progress;
 };
 
 enum class TestConfig {
@@ -864,6 +854,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
                                    public IPC::Sender {
  public:
   typedef ResourceDispatcherHostImpl::LoadInfo LoadInfo;
+  typedef ResourceDispatcherHostImpl::LoadInfoList LoadInfoList;
   typedef ResourceDispatcherHostImpl::LoadInfoMap LoadInfoMap;
 
   ResourceDispatcherHostTest()
@@ -902,20 +893,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     // Do not release handles in it yet; the accumulator owns them now.
     delete msg;
     return true;
-  }
-
-  std::unique_ptr<LoadInfoMap> RunLoadInfoTest(
-      LoadInfoTestRequestInfo* request_info,
-      size_t num_requests) {
-    for (size_t i = 0; i < num_requests; ++i) {
-      loader_test_request_info_.reset(
-          new LoadInfoTestRequestInfo(request_info[i]));
-      wait_for_request_create_loop_.reset(new base::RunLoop());
-      MakeTestRequest(request_info[i].route_id, i + 1, request_info[i].url);
-      wait_for_request_create_loop_->Run();
-      wait_for_request_create_loop_.reset();
-    }
-    return ResourceDispatcherHostImpl::Get()->GetLoadInfoForAllRoutes();
   }
 
  protected:
@@ -1149,9 +1126,6 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     // The RequestComplete message should have had the expected error code.
     CheckRequestCompleteErrorCode(msgs[0][0], expected_error_code);
   }
-
-  std::unique_ptr<LoadInfoTestRequestInfo> loader_test_request_info_;
-  std::unique_ptr<base::RunLoop> wait_for_request_create_loop_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -3440,142 +3414,167 @@ TEST_P(ResourceDispatcherHostTest, DownloadToFile) {
       filter_->child_id(), response_head.download_file_path));
 }
 
-// Tests GetLoadInfoForAllRoutes when there are no pending requests.
-TEST_P(ResourceDispatcherHostTest, LoadInfoNoRequests) {
-  std::unique_ptr<LoadInfoMap> load_info_map = RunLoadInfoTest(nullptr, 0);
-  EXPECT_EQ(0u, load_info_map->size());
-}
+WebContents* WebContentsBinder(WebContents* rv) { return rv; }
 
 // Tests GetLoadInfoForAllRoutes when there are 3 requests from the same
 // RenderView.  The second one is farthest along.
 TEST_P(ResourceDispatcherHostTest, LoadInfo) {
-  const GlobalRoutingID kId(filter_->child_id(), 0);
-  LoadInfoTestRequestInfo request_info[] = {
-      {kId.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_SENDING_REQUEST,
-       net::UploadProgress(0, 0)},
-      {kId.route_id,
-       GURL("test://2/"),
-       net::LOAD_STATE_READING_RESPONSE,
-       net::UploadProgress(0, 0)},
-      {kId.route_id,
-       GURL("test://3/"),
-       net::LOAD_STATE_SENDING_REQUEST,
-       net::UploadProgress(0, 0)},
-  };
+  std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
+  LoadInfo info;
+  WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_SENDING_REQUEST,
+                                            base::string16());
+  info.url = GURL("test://1/");
+  info.upload_position = 0;
+  info.upload_size = 0;
+  infos->push_back(info);
+
+  info.url = GURL("test://2/");
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
+                                            base::string16());
+  infos->push_back(info);
+
+  info.url = GURL("test://3/");
+
   std::unique_ptr<LoadInfoMap> load_info_map =
-      RunLoadInfoTest(request_info, arraysize(request_info));
+      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+          std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
-  ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
-  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[kId].url);
+  ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
+  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[wc1].url);
   EXPECT_EQ(net::LOAD_STATE_READING_RESPONSE,
-            (*load_info_map)[kId].load_state.state);
-  EXPECT_EQ(0u, (*load_info_map)[kId].upload_position);
-  EXPECT_EQ(0u, (*load_info_map)[kId].upload_size);
+            (*load_info_map)[wc1].load_state.state);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_size);
 }
 
 // Tests GetLoadInfoForAllRoutes when there are 2 requests with the same
 // priority.  The first one (Which will have the lowest ID) should be returned.
 TEST_P(ResourceDispatcherHostTest, LoadInfoSamePriority) {
-  const GlobalRoutingID kId(filter_->child_id(), 0);
-  LoadInfoTestRequestInfo request_info[] = {
-      {kId.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_IDLE,
-       net::UploadProgress(0, 0)},
-      {kId.route_id,
-       GURL("test://2/"),
-       net::LOAD_STATE_IDLE,
-       net::UploadProgress(0, 0)},
-  };
+  std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
+  LoadInfo info;
+  WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
+                                            base::string16());
+  info.url = GURL("test://1/");
+  info.upload_position = 0;
+  info.upload_size = 0;
+  infos->push_back(info);
+
+  info.url = GURL("test://2/");
+  infos->push_back(info);
+
   std::unique_ptr<LoadInfoMap> load_info_map =
-      RunLoadInfoTest(request_info, arraysize(request_info));
+      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+          std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
-  ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
-  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[kId].url);
-  EXPECT_EQ(net::LOAD_STATE_IDLE, (*load_info_map)[kId].load_state.state);
-  EXPECT_EQ(0u, (*load_info_map)[kId].upload_position);
-  EXPECT_EQ(0u, (*load_info_map)[kId].upload_size);
+  ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
+  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[wc1].url);
+  EXPECT_EQ(net::LOAD_STATE_IDLE, (*load_info_map)[wc1].load_state.state);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_size);
 }
 
 // Tests GetLoadInfoForAllRoutes when a request is uploading a body.
 TEST_P(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
-  const GlobalRoutingID kId(filter_->child_id(), 0);
-  LoadInfoTestRequestInfo request_info[] = {
-      {kId.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_READING_RESPONSE,
-       net::UploadProgress(0, 0)},
-      {kId.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_READING_RESPONSE,
-       net::UploadProgress(1000, 1000)},
-      {kId.route_id,
-       GURL("test://2/"),
-       net::LOAD_STATE_SENDING_REQUEST,
-       net::UploadProgress(50, 100)},
-      {kId.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_READING_RESPONSE,
-       net::UploadProgress(1000, 1000)},
-      {kId.route_id,
-       GURL("test://3/"),
-       net::LOAD_STATE_READING_RESPONSE,
-       net::UploadProgress(0, 0)},
-  };
+  std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
+  LoadInfo info;
+  WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
+                                            base::string16());
+  info.url = GURL("test://1/");
+  info.upload_position = 0;
+  info.upload_size = 0;
+  infos->push_back(info);
+
+  info.upload_position = 1000;
+  info.upload_size = 1000;
+  infos->push_back(info);
+
+  info.url = GURL("test://2/");
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_SENDING_REQUEST,
+                                            base::string16());
+  info.upload_position = 50;
+  info.upload_size = 100;
+  infos->push_back(info);
+
+  info.url = GURL("test://1/");
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
+                                            base::string16());
+  info.upload_position = 1000;
+  info.upload_size = 1000;
+  infos->push_back(info);
+
+  info.url = GURL("test://3/");
+  info.upload_position = 0;
+  info.upload_size = 0;
+  infos->push_back(info);
+
   std::unique_ptr<LoadInfoMap> load_info_map =
-      RunLoadInfoTest(request_info, arraysize(request_info));
+      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+          std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
-  ASSERT_TRUE(load_info_map->find(kId) != load_info_map->end());
-  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[kId].url);
+  ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
+  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[wc1].url);
   EXPECT_EQ(net::LOAD_STATE_SENDING_REQUEST,
-            (*load_info_map)[kId].load_state.state);
-  EXPECT_EQ(50u, (*load_info_map)[kId].upload_position);
-  EXPECT_EQ(100u, (*load_info_map)[kId].upload_size);
+            (*load_info_map)[wc1].load_state.state);
+  EXPECT_EQ(50u, (*load_info_map)[wc1].upload_position);
+  EXPECT_EQ(100u, (*load_info_map)[wc1].upload_size);
 }
 
 // Tests GetLoadInfoForAllRoutes when there are 4 requests from 2 different
 // RenderViews.  Also tests the case where the first / last requests are the
 // most interesting ones.
 TEST_P(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
-  const GlobalRoutingID kId1(filter_->child_id(), 0);
-  const GlobalRoutingID kId2(filter_->child_id(), 1);
-  LoadInfoTestRequestInfo request_info[] = {
-      {kId1.route_id,
-       GURL("test://1/"),
-       net::LOAD_STATE_CONNECTING,
-       net::UploadProgress(0, 0)},
-      {kId2.route_id,
-       GURL("test://2/"),
-       net::LOAD_STATE_IDLE,
-       net::UploadProgress(0, 0)},
-      {kId1.route_id,
-       GURL("test://3/"),
-       net::LOAD_STATE_IDLE,
-       net::UploadProgress(0, 0)},
-      {kId2.route_id,
-       GURL("test://4/"),
-       net::LOAD_STATE_CONNECTING,
-       net::UploadProgress(0, 0)},
-  };
+  std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
+  LoadInfo info;
+  WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_CONNECTING,
+                                            base::string16());
+  info.url = GURL("test://1/");
+  info.upload_position = 0;
+  info.upload_size = 0;
+  infos->push_back(info);
+
+  WebContents* wc2 = reinterpret_cast<WebContents*>(0x2);
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc2);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
+                                            base::string16());
+  info.url = GURL("test://2/");
+  infos->push_back(info);
+
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
+  info.url = GURL("test://3/");
+  infos->push_back(info);
+
+  info.web_contents_getter = base::Bind(WebContentsBinder, wc2);
+  info.load_state = net::LoadStateWithParam(net::LOAD_STATE_CONNECTING,
+                                            base::string16());
+  info.url = GURL("test://4/");
+  infos->push_back(info);
+
   std::unique_ptr<LoadInfoMap> load_info_map =
-      RunLoadInfoTest(request_info, arraysize(request_info));
+      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+          std::move(infos));
   ASSERT_EQ(2u, load_info_map->size());
 
-  ASSERT_TRUE(load_info_map->find(kId1) != load_info_map->end());
-  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[kId1].url);
+  ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
+  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[wc1].url);
   EXPECT_EQ(net::LOAD_STATE_CONNECTING,
-            (*load_info_map)[kId1].load_state.state);
-  EXPECT_EQ(0u, (*load_info_map)[kId1].upload_position);
-  EXPECT_EQ(0u, (*load_info_map)[kId1].upload_size);
+            (*load_info_map)[wc1].load_state.state);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
+  EXPECT_EQ(0u, (*load_info_map)[wc1].upload_size);
 
-  ASSERT_TRUE(load_info_map->find(kId2) != load_info_map->end());
-  EXPECT_EQ(GURL("test://4/"), (*load_info_map)[kId2].url);
+  ASSERT_TRUE(load_info_map->find(wc2) != load_info_map->end());
+  EXPECT_EQ(GURL("test://4/"), (*load_info_map)[wc2].url);
   EXPECT_EQ(net::LOAD_STATE_CONNECTING,
-            (*load_info_map)[kId2].load_state.state);
-  EXPECT_EQ(0u, (*load_info_map)[kId2].upload_position);
-  EXPECT_EQ(0u, (*load_info_map)[kId2].upload_size);
+            (*load_info_map)[wc2].load_state.state);
+  EXPECT_EQ(0u, (*load_info_map)[wc2].upload_position);
+  EXPECT_EQ(0u, (*load_info_map)[wc2].upload_size);
 }
 
 // Confirm that resource response started notifications are correctly
@@ -3722,15 +3721,6 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const {
   url_request_jobs_created_count_++;
-  if (test_fixture_->wait_for_request_create_loop_)
-    test_fixture_->wait_for_request_create_loop_->Quit();
-  if (test_fixture_->loader_test_request_info_) {
-    DCHECK_EQ(test_fixture_->loader_test_request_info_->url, request->url());
-    std::unique_ptr<LoadInfoTestRequestInfo> info =
-        std::move(test_fixture_->loader_test_request_info_);
-    return new URLRequestLoadInfoJob(request, network_delegate,
-                                     info->load_state, info->upload_progress);
-  }
   if (hang_after_start_) {
     return new net::URLRequestFailedJob(request, network_delegate,
                                         net::ERR_IO_PENDING);

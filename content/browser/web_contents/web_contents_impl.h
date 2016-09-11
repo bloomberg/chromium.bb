@@ -180,13 +180,18 @@ class CONTENT_EXPORT WebContentsImpl
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
 
+  // Notification that the RenderViewHost's load state changed.
+  void LoadStateChanged(const GURL& url,
+                        const net::LoadStateWithParam& load_state,
+                        uint64_t upload_position,
+                        uint64_t upload_size);
+
   // A response has been received for a resource request.
   void DidGetResourceResponseStart(
       const ResourceRequestDetails& details);
 
   // A redirect was received while requesting a resource.
   void DidGetRedirectForResourceRequest(
-      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details);
 
   // Notify observers that the web contents has been focused.
@@ -504,10 +509,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnUserInteraction(RenderWidgetHostImpl* render_widget_host,
                          const blink::WebInputEvent::Type type) override;
   void OnIgnoredUIEvent() override;
-  void LoadStateChanged(const GURL& url,
-                        const net::LoadStateWithParam& load_state,
-                        uint64_t upload_position,
-                        uint64_t upload_size) override;
   void Activate() override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void CreateNewWindow(

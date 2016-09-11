@@ -277,12 +277,6 @@ void WebContentsObserverSanityChecker::DidFailLoad(
   AssertRenderFrameExists(render_frame_host);
 }
 
-void WebContentsObserverSanityChecker::DidGetRedirectForResourceRequest(
-    RenderFrameHost* render_frame_host,
-    const ResourceRedirectDetails& details) {
-  AssertRenderFrameExists(render_frame_host);
-}
-
 void WebContentsObserverSanityChecker::DidOpenRequestedURL(
     WebContents* new_contents,
     RenderFrameHost* source_render_frame_host,

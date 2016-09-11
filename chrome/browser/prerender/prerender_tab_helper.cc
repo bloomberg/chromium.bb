@@ -41,7 +41,6 @@ PrerenderTabHelper::~PrerenderTabHelper() {
 }
 
 void PrerenderTabHelper::DidGetRedirectForResourceRequest(
-    content::RenderFrameHost* render_frame_host,
     const content::ResourceRedirectDetails& details) {
   if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
     return;

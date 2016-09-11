@@ -33,6 +33,7 @@
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
@@ -40,8 +41,6 @@
 #include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
-
-class ResourceHandler;
 
 namespace base {
 class FilePath;
@@ -339,6 +338,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                            TestProcessCancelDetachableTimesOut);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessIgnoreCertErrorsBrowserTest,
                            CrossSiteRedirectCertificateStore);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfo);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoSamePriority);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoUploadProgress);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoTwoRenderViews);
 
   struct OustandingRequestsStats {
     int memory_cost;
@@ -349,15 +352,20 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   friend class ResourceMessageDelegate;
 
   // Information about status of a ResourceLoader.
-  struct LoadInfo {
+  struct CONTENT_EXPORT LoadInfo {
+    LoadInfo();
+    LoadInfo(const LoadInfo& other);
+    ~LoadInfo();
+    ResourceRequestInfo::WebContentsGetter web_contents_getter;
     GURL url;
     net::LoadStateWithParam load_state;
     uint64_t upload_position;
     uint64_t upload_size;
   };
 
-  // Map from ProcessID+RouteID pair to the "most interesting" LoadState.
-  typedef std::map<GlobalRoutingID, LoadInfo> LoadInfoMap;
+  // Map from WebContents* to the "most interesting" LoadState.
+  typedef std::map<WebContents*, LoadInfo> LoadInfoMap;
+  typedef std::vector<LoadInfo> LoadInfoList;
 
   // Information about a HTTP header interceptor.
   struct HeaderInterceptorInfo {
@@ -473,8 +481,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // waiting for a host name to resolve implies being stuck.
   static bool LoadInfoIsMoreInteresting(const LoadInfo& a, const LoadInfo& b);
 
-  // Gets the most interesting LoadInfo for each GlobalRoutingID.
-  std::unique_ptr<LoadInfoMap> GetLoadInfoForAllRoutes();
+  // Picks the most interesting LoadInfos from the given array per WebContents
+  // and calls the delegate with them.
+  static void UpdateLoadStateOnUI(LoaderDelegate* loader_delegate,
+                                  std::unique_ptr<LoadInfoList> infos);
+
+  // Returns the most interesting LoadInfos from the given array per
+  // WebContents.
+  static std::unique_ptr<LoadInfoMap> PickMoreInterestingLoadInfos(
+      std::unique_ptr<LoadInfoList> infos);
+
+  // Gets all the LoadInfos for each pending request.
+  std::unique_ptr<LoadInfoList> GetLoadInfoForAllRoutes();
 
   // Checks all pending requests and updates the load info if necessary.
   void UpdateLoadInfo();

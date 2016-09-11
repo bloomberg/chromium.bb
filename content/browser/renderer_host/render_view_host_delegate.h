@@ -136,12 +136,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // refocus on the modal dialog, flash title etc).
   virtual void OnIgnoredUIEvent() {}
 
-  // Notification that the RenderViewHost's load state changed.
-  virtual void LoadStateChanged(const GURL& url,
-                                const net::LoadStateWithParam& load_state,
-                                uint64_t upload_position,
-                                uint64_t upload_size) {}
-
   // The page wants the hosting window to activate itself (it called the
   // JavaScript window.focus() method).
   virtual void Activate() {}

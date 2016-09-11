@@ -203,7 +203,6 @@ void WebAuthFlow::DidFailProvisionalLoad(
 }
 
 void WebAuthFlow::DidGetRedirectForResourceRequest(
-    content::RenderFrameHost* render_frame_host,
     const content::ResourceRedirectDetails& details) {
   BeforeUrlLoaded(details.new_url);
 }
