@@ -210,14 +210,21 @@ update_manifests() {
     fi
   fi
 
+  # Trim any branches that have been deleted on the server.
+  git remote update --prune
+
   # Setup the fetch= field of the manifest to point to our local mirror.
   local b branches=(
-    $(git ls-remote | sed 's:.*/::' | egrep -v '\<(HEAD|^master)$')
+    $(git ls-remote | sed 's:.*refs/heads/::' | egrep -v '\<(HEAD|^master)$')
     "master"
   )
   info "rewriting ${checkout} branches to ${URL}"
   for b in "${branches[@]}"; do
     git checkout -q -f -B ${b} origin/${b} >/dev/null
+    if [[ -z $(find -name '*.xml' -type f) ]]; then
+      # Skip branches that don't have any manifests.
+      continue
+    fi
     find -name '*.xml' -type f \
       -exec sed -i "s|fetch=\"[^\"]*\"|fetch=\"${URL}\"|" {} +
     git commit -q -a -m 'set fetch references to local mirror'
