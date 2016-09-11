@@ -293,6 +293,7 @@ vs-chromium-project.txt
 /third_party/adobe/flash/symbols
 /third_party/amd/
 /third_party/android_protobuf/src
+/third_party/android_support_test_runner/lib/*.aar
 /third_party/android_support_test_runner/lib/*.jar
 /third_party/android_tools/
 /third_party/android_tools_internal/
