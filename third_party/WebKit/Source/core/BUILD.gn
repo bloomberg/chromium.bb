@@ -177,9 +177,11 @@ component("core") {
     "//third_party/WebKit/Source/core/xmlhttprequest",
   ]
 
-  if (is_win && is_debug && is_component_build) {
-    # Incremental linking doesn't work on this target in debug mode, even
-    # with symbol_level=1.
+  if (is_win && is_debug && is_component_build && current_cpu == "x64") {
+    # Incremental linking doesn't work on this target in debug mode for
+    # 64-bit builds - the .ilk file gets too large and the incremental
+    # link silently fails. Therefore 32-bit builds should be used for
+    # fastest incremental build performance.
     configs -= [ "//build/config/win:default_incremental_linking" ]
     configs += [ "//build/config/win:no_incremental_linking" ]
   }

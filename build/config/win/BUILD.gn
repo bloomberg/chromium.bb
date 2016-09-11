@@ -261,13 +261,6 @@ config("common_linker_setup") {
     "/ignore:4199",
     "/ignore:4221",
     "/NXCOMPAT",
-
-    # Suggested by Microsoft Devrel to avoid
-    #   LINK : fatal error LNK1248: image size (80000000)
-    #   exceeds maximum allowable size (80000000)
-    # which started happening more regularly after VS2013 Update 4.
-    # Needs to be a bit lower for VS2015, or else errors out.
-    "/maxilksize:0x7ff00000",
   ]
 
   ldflags += [
