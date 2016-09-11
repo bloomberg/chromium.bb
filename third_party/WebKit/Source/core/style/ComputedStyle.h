@@ -534,7 +534,6 @@ public:
     bool hasBackgroundImage() const { return m_background->background().hasImage(); }
     bool hasFixedBackgroundImage() const { return m_background->background().hasFixedImage(); }
     bool hasEntirelyFixedBackground() const;
-    bool hasEntirelyLocalBackground() const;
 
     // background-clip
     EFillBox backgroundClip() const { return static_cast<EFillBox>(m_background->background().clip()); }

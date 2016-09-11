@@ -167,7 +167,6 @@ Lorem Ipsum
           "name": "LayoutBlockFlow DIV id='container'",
           "position": [8, 80],
           "bounds": [300, 500],
-          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#0000FF",
@@ -180,6 +179,7 @@ Lorem Ipsum
                 {
                   "name": "Scrolling Contents Layer",
                   "bounds": [285, 665],
+                  "contentsOpaque": true,
                   "drawsContent": true
                 }
               ]
@@ -310,7 +310,6 @@ Lorem Ipsum
           "name": "LayoutBlockFlow DIV id='container'",
           "position": [8, 80],
           "bounds": [300, 500],
-          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#0000FF",
@@ -323,6 +322,7 @@ Lorem Ipsum
                 {
                   "name": "Scrolling Contents Layer",
                   "bounds": [285, 665],
+                  "contentsOpaque": true,
                   "drawsContent": true
                 }
               ]

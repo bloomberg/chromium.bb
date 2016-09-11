@@ -16,7 +16,6 @@
               "name": "LayoutBlockFlow DIV id='top'",
               "position": [8, 8],
               "bounds": [500, 500],
-              "contentsOpaque": true,
               "shouldFlattenTransform": false,
               "drawsContent": true,
               "backgroundColor": "#0000FF",
@@ -29,6 +28,7 @@
                     {
                       "name": "Scrolling Contents Layer",
                       "bounds": [485, 5000],
+                      "contentsOpaque": true,
                       "drawsContent": true
                     }
                   ]

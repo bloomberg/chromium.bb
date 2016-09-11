@@ -12,7 +12,6 @@
           "name": "LayoutBlockFlow DIV id='scroller'",
           "position": [8, 8],
           "bounds": [200, 200],
-          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#D3D3D3",
@@ -25,6 +24,7 @@
                 {
                   "name": "Scrolling Contents Layer",
                   "bounds": [200, 1620],
+                  "contentsOpaque": true,
                   "drawsContent": true,
                   "paintInvalidations": [
                     {

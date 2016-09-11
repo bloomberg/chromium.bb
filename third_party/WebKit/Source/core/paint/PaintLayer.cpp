@@ -2360,7 +2360,7 @@ bool PaintLayer::shouldPaintBackgroundOntoScrollingContentsLayer() const
 {
     return !isRootLayer()
         && scrollsOverflow()
-        && layoutObject()->style()->hasEntirelyLocalBackground()
+        && layoutObject()->hasLocalEquivalentBackground()
         && !stackingNode()->hasNegativeZOrderList();
 }
 
