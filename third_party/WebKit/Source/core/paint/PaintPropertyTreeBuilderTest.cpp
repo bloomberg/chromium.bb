@@ -8,6 +8,7 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -54,6 +55,14 @@ public:
         return document().view()->rootClip();
     }
 
+    const ScrollPaintPropertyNode* rootScroll()
+    {
+        FrameView* frameView = document().view();
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+            return frameView->layoutView()->objectPaintProperties()->scroll();
+        return frameView->rootScroll();
+    }
+
     const TransformPaintPropertyNode* framePreTranslation()
     {
         FrameView* frameView = document().view();
@@ -76,6 +85,14 @@ public:
         if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return frameView->layoutView()->objectPaintProperties()->overflowClip();
         return frameView->contentClip();
+    }
+
+    const ScrollPaintPropertyNode* frameScroll()
+    {
+        FrameView* frameView = document().view();
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+            return frameView->layoutView()->objectPaintProperties()->scroll();
+        return frameView->scroll();
     }
 
 private:
@@ -133,7 +150,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition)
 {
     loadTestData("fixed-position.html");
 
+    Element* positionedScroll = document().getElementById("positionedScroll");
+    positionedScroll->setScrollTop(3);
+    Element* transformedScroll = document().getElementById("transformedScroll");
+    transformedScroll->setScrollTop(5);
+
     FrameView* frameView = document().view();
+    frameView->updateAllLifecyclePhases();
 
     // target1 is a fixed-position element inside an absolute-position scrolling element.
     // It should be attached under the viewport to skip scrolling and offset of the parent.
@@ -145,20 +168,32 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target1Properties->overflowClip()->clipRect());
     // Likewise, it inherits clip from the viewport, skipping overflow clip of the scroller.
     EXPECT_EQ(frameContentClip(), target1Properties->overflowClip()->parent());
+    // target1 should not have it's own scroll node and instead should inherit positionedScroll's.
+    const ObjectPaintProperties* positionedScrollProperties = positionedScroll->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(rootScroll(), positionedScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -3), positionedScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(nullptr, target1Properties->scroll());
+
     CHECK_EXACT_VISUAL_RECT(LayoutRect(200, 150, 100, 100), target1->layoutObject(), frameView->layoutView());
 
     // target2 is a fixed-position element inside a transformed scrolling element.
     // It should be attached under the scrolled box of the transformed element.
     Element* target2 = document().getElementById("target2");
     const ObjectPaintProperties* target2Properties = target2->layoutObject()->objectPaintProperties();
-    Element* scroller = document().getElementById("scroller");
+    Element* scroller = document().getElementById("transformedScroll");
     const ObjectPaintProperties* scrollerProperties = scroller->layoutObject()->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate(200, 150), target2Properties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(scrollerProperties->scrollTranslation(), target2Properties->paintOffsetTranslation()->parent());
     EXPECT_EQ(target2Properties->paintOffsetTranslation(), target2Properties->overflowClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), target2Properties->overflowClip()->clipRect());
     EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(208, 158, 200, 100), target2->layoutObject(), frameView->layoutView());
+    // target2 should not have it's own scroll node and instead should inherit transformedScroll's.
+    const ObjectPaintProperties* transformedScrollProperties = transformedScroll->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(rootScroll(), transformedScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -5), transformedScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(nullptr, target2Properties->scroll());
+
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(208, 153, 200, 100), target2->layoutObject(), frameView->layoutView());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll)
@@ -173,11 +208,16 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(TransformationMatrix().translate(0, -100), scrollerProperties->scrollTranslation()->matrix());
     EXPECT_EQ(frameScrollTranslation(), scrollerProperties->scrollTranslation()->parent());
     EXPECT_EQ(frameScrollTranslation(), scrollerProperties->overflowClip()->localTransformSpace());
-    EXPECT_EQ(FloatRoundedRect(120, 340, 400, 300), scrollerProperties->overflowClip()->clipRect());
+    EXPECT_EQ(frameScroll(), scrollerProperties->scroll()->parent());
+    EXPECT_EQ(FloatSize(413, 317), scrollerProperties->scroll()->clip());
+    EXPECT_EQ(FloatSize(660, 10200), scrollerProperties->scroll()->bounds());
+    EXPECT_FALSE(scrollerProperties->scroll()->userScrollableHorizontal());
+    EXPECT_TRUE(scrollerProperties->scroll()->userScrollableVertical());
+    EXPECT_EQ(FloatRoundedRect(120, 340, 413, 317), scrollerProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameContentClip(), scrollerProperties->overflowClip()->parent());
     // http://crbug.com/638415
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-        CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 400, 300), scroller->layoutObject(), frameView->layoutView());
+        CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317), scroller->layoutObject(), frameView->layoutView());
     }
 
     // The relative-positioned element should have accumulated box offset (exclude scrolling),
@@ -1712,6 +1752,239 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsPropert
     PropertyTreeState contentsProperties;
     svgWithViewBoxProperties->getContentsProperties(contentsProperties);
     EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), contentsProperties.transform);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0px;"
+        "  }"
+        "  #overflowHidden {"
+        "    overflow: hidden;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 79px;"
+        "  }"
+        "</style>"
+        "<div id='overflowHidden'>"
+        "  <div class='forceScroll'></div>"
+        "</div>");
+
+    Element* overflowHidden = document().getElementById("overflowHidden");
+    overflowHidden->setScrollTop(37);
+
+    document().view()->updateAllLifecyclePhases();
+
+    const ObjectPaintProperties* overflowHiddenScrollProperties = overflowHidden->layoutObject()->objectPaintProperties();
+    // Because the frameView is does not scroll, overflowHidden's scroll should be under the root.
+    EXPECT_EQ(rootScroll(), overflowHiddenScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowHiddenScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    // This should match the overflow's dimensions.
+    EXPECT_EQ(IntSize(5, 3), overflowHiddenScrollProperties->scroll()->clip());
+    // The scrolling content's bounds should include both the overflow's dimensions (5x3) and the
+    // 0x79 "forceScroll" object.
+    EXPECT_EQ(IntSize(5, 79), overflowHiddenScrollProperties->scroll()->bounds());
+    // Although overflow: hidden is programmatically scrollable, it is not user scrollable.
+    EXPECT_FALSE(overflowHiddenScrollProperties->scroll()->userScrollableHorizontal());
+    EXPECT_FALSE(overflowHiddenScrollProperties->scroll()->userScrollableVertical());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * {"
+        "    margin: 0px;"
+        "  }"
+        "  #overflowA {"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  #overflowB {"
+        "    overflow: scroll;"
+        "    width: 9px;"
+        "    height: 7px;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 100px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div id='overflowB'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>");
+
+    Element* overflowA = document().getElementById("overflowA");
+    overflowA->setScrollTop(37);
+    Element* overflowB = document().getElementById("overflowB");
+    overflowB->setScrollTop(41);
+
+    document().view()->updateAllLifecyclePhases();
+
+    const ObjectPaintProperties* overflowAScrollProperties = overflowA->layoutObject()->objectPaintProperties();
+    // Because the frameView is does not scroll, overflowA's scroll should be under the root.
+    EXPECT_EQ(rootScroll(), overflowAScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(5, 3), overflowAScrollProperties->scroll()->clip());
+    // 107 is the forceScroll element plus the height of the overflow scroll child (overflowB).
+    EXPECT_EQ(IntSize(9, 107), overflowAScrollProperties->scroll()->bounds());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableHorizontal());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableVertical());
+
+    const ObjectPaintProperties* overflowBScrollProperties = overflowB->layoutObject()->objectPaintProperties();
+    // The overflow child's scroll node should be a child of the parent's (overflowA) scroll node.
+    EXPECT_EQ(overflowAScrollProperties->scroll(), overflowBScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -41), overflowBScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(9, 7), overflowBScrollProperties->scroll()->clip());
+    EXPECT_EQ(IntSize(9, 100), overflowBScrollProperties->scroll()->bounds());
+    EXPECT_TRUE(overflowBScrollProperties->scroll()->userScrollableHorizontal());
+    EXPECT_TRUE(overflowBScrollProperties->scroll()->userScrollableVertical());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * {"
+        "    margin: 0px;"
+        "  }"
+        "  #overflow {"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  #absposOverflow {"
+        "    position: absolute;"
+        "    top: 0;"
+        "    left: 0;"
+        "    overflow: scroll;"
+        "    width: 9px;"
+        "    height: 7px;"
+        "  }"
+        "  #fixedOverflow {"
+        "    position: fixed;"
+        "    top: 0;"
+        "    left: 0;"
+        "    overflow: scroll;"
+        "    width: 13px;"
+        "    height: 11px;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflow'>"
+        "  <div id='absposOverflow'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div id='fixedOverflow'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+
+    Element* overflow = document().getElementById("overflow");
+    overflow->setScrollTop(37);
+    Element* absposOverflow = document().getElementById("absposOverflow");
+    absposOverflow->setScrollTop(41);
+    Element* fixedOverflow = document().getElementById("fixedOverflow");
+    fixedOverflow->setScrollTop(43);
+
+    document().view()->updateAllLifecyclePhases();
+
+    // The frame should scroll due to the "forceScroll" element.
+    EXPECT_NE(nullptr, frameScroll());
+
+    const ObjectPaintProperties* overflowScrollProperties = overflow->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(frameScroll(), overflowScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(5, 3), overflowScrollProperties->scroll()->clip());
+    // The height should be 4000px because the (dom-order) overflow children are positioned and do not
+    // contribute to the height. Only the 4000px "forceScroll" height is present.
+    EXPECT_EQ(IntSize(5, 4000), overflowScrollProperties->scroll()->bounds());
+
+    const ObjectPaintProperties* absposOverflowScrollProperties = absposOverflow->layoutObject()->objectPaintProperties();
+    // The absolute position overflow scroll node is parented under the frame, not the dom-order parent.
+    EXPECT_EQ(frameScroll(), absposOverflowScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -41), absposOverflowScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(9, 7), absposOverflowScrollProperties->scroll()->clip());
+    EXPECT_EQ(IntSize(9, 4000), absposOverflowScrollProperties->scroll()->bounds());
+
+    const ObjectPaintProperties* fixedOverflowScrollProperties = fixedOverflow->layoutObject()->objectPaintProperties();
+    // The fixed position overflow scroll node is parented under the root, not the dom-order parent or frame's scroll.
+    EXPECT_EQ(rootScroll(), fixedOverflowScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -43), fixedOverflowScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(13, 11), fixedOverflowScrollProperties->scroll()->clip());
+    EXPECT_EQ(IntSize(13, 4000), fixedOverflowScrollProperties->scroll()->bounds());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * {"
+        "    margin: 0px;"
+        "  }"
+        "  #overflowA {"
+        "    position: absolute;"
+        "    top: 7px;"
+        "    left: 11px;"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  #overflowB {"
+        "    position: absolute;"
+        "    top: 1px;"
+        "    left: 3px;"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 100px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div id='overflowB'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>");
+
+    Element* overflowA = document().getElementById("overflowA");
+    overflowA->setScrollTop(37);
+    Element* overflowB = document().getElementById("overflowB");
+    overflowB->setScrollTop(41);
+
+    document().view()->updateAllLifecyclePhases();
+
+    const ObjectPaintProperties* overflowAScrollProperties = overflowA->layoutObject()->objectPaintProperties();
+    // Because the frameView is does not scroll, overflowA's scroll should be under the root.
+    EXPECT_EQ(rootScroll(), overflowAScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(20, 20), overflowAScrollProperties->scroll()->clip());
+    // 100 is the forceScroll element's height because the overflow child does not contribute to the height.
+    EXPECT_EQ(IntSize(20, 100), overflowAScrollProperties->scroll()->bounds());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableHorizontal());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableVertical());
+
+    const ObjectPaintProperties* overflowBScrollProperties = overflowB->layoutObject()->objectPaintProperties();
+    // The overflow child's scroll node should be a child of the parent's (overflowA) scroll node.
+    EXPECT_EQ(overflowAScrollProperties->scroll(), overflowBScrollProperties->scroll()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(0, -41), overflowBScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
+    EXPECT_EQ(IntSize(5, 3), overflowBScrollProperties->scroll()->clip());
+    EXPECT_EQ(IntSize(5, 100), overflowBScrollProperties->scroll()->bounds());
+    EXPECT_TRUE(overflowBScrollProperties->scroll()->userScrollableHorizontal());
+    EXPECT_TRUE(overflowBScrollProperties->scroll()->userScrollableVertical());
 }
 
 } // namespace blink

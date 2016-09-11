@@ -7,6 +7,7 @@
 
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -28,10 +29,10 @@ struct PaintChunkProperties {
 
     PaintChunkProperties() : backfaceHidden(false) { }
 
-    // TODO(pdr): Add scroll properties.
     RefPtr<const TransformPaintPropertyNode> transform;
     RefPtr<const ClipPaintPropertyNode> clip;
     RefPtr<const EffectPaintPropertyNode> effect;
+    RefPtr<const ScrollPaintPropertyNode> scroll;
     bool backfaceHidden;
 };
 
@@ -42,6 +43,7 @@ inline bool operator==(const PaintChunkProperties& a, const PaintChunkProperties
     return a.transform.get() == b.transform.get()
         && a.clip.get() == b.clip.get()
         && a.effect.get() == b.effect.get()
+        && a.scroll.get() == b.scroll.get()
         && a.backfaceHidden == b.backfaceHidden;
 }
 

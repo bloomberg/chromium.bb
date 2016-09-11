@@ -15,6 +15,9 @@ namespace blink {
 
 // Represents the combination of transform, clip and effect nodes for a particular coordinate space.
 // See GeometryMapper.
+// Scroll nodes (ScrollPaintPropertyNode) are not needed for mapping geometry and have been left off
+// of this structure.
+// TODO(pdr): Rename this GeometryPropertyTreeState.
 struct PropertyTreeState {
     PropertyTreeState() : PropertyTreeState(nullptr, nullptr, nullptr) {}
 

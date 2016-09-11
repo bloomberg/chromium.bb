@@ -994,6 +994,7 @@ component("platform") {
     "graphics/paint/ScopedPaintChunkProperties.h",
     "graphics/paint/ScrollDisplayItem.cpp",
     "graphics/paint/ScrollDisplayItem.h",
+    "graphics/paint/ScrollPaintPropertyNode.h",
     "graphics/paint/SkPictureBuilder.cpp",
     "graphics/paint/SkPictureBuilder.h",
     "graphics/paint/SubsequenceDisplayItem.h",

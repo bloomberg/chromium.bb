@@ -100,6 +100,14 @@ void PrintTo(const PaintChunkProperties& properties, std::ostream* os)
         printedProperty = true;
     }
 
+    if (properties.scroll) {
+        if (printedProperty)
+            *os << ", ";
+        *os << "scroll=";
+        PrintTo(*properties.scroll, os);
+        printedProperty = true;
+    }
+
     if (printedProperty)
         *os << ", ";
     *os << "backfaceHidden=" << properties.backfaceHidden;
@@ -119,6 +127,21 @@ void PrintTo(const TransformPaintPropertyNode& transformPaintProperty, std::ostr
 void PrintTo(const EffectPaintPropertyNode& effect, std::ostream* os)
 {
     *os << "EffectPaintPropertyNode(opacity=" << effect.opacity() << ")";
+}
+
+void PrintTo(const ScrollPaintPropertyNode& node, std::ostream* os)
+{
+    *os << "ScrollPaintPropertyNode(clip=";
+    PrintTo(node.clip(), os);
+    *os << ", bounds=";
+    PrintTo(node.bounds(), os);
+    *os << ", userScrollableHorizontal=" << node.userScrollableHorizontal();
+    *os << ", userScrollableVertical=" << node.userScrollableVertical();
+    *os << ", scrollOffsetTranslation=";
+    PrintPointer(node.scrollOffsetTranslation(), *os);
+    *os << ", parent=";
+    PrintPointer(node.parent(), *os);
+    *os << ")";
 }
 
 } // namespace blink

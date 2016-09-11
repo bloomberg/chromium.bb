@@ -31,6 +31,7 @@ public:
 
     void update(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
     {
+        DCHECK(parent != this);
         m_parent = parent;
         m_localTransformSpace = localTransformSpace;
         m_clipRect = clipRect;

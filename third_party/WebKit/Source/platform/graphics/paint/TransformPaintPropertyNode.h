@@ -33,6 +33,7 @@ public:
 
     void update(PassRefPtr<const TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)
     {
+        DCHECK(parent != this);
         m_parent = parent;
         m_matrix = matrix;
         m_origin = origin;

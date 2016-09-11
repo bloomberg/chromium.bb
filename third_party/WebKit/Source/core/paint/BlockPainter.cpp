@@ -159,9 +159,12 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         Optional<PaintInfo> scrolledPaintInfo;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             const auto* objectProperties = m_layoutBlock.objectPaintProperties();
-            if (auto* scrollTranslation = objectProperties ? objectProperties->scrollTranslation() : nullptr) {
+            if (auto* scroll = objectProperties ? objectProperties->scroll() : nullptr) {
                 PaintChunkProperties properties(paintInfo.context.getPaintController().currentPaintChunkProperties());
+                auto* scrollTranslation = objectProperties->scrollTranslation();
+                DCHECK(scrollTranslation);
                 properties.transform = scrollTranslation;
+                properties.scroll = scroll;
                 m_scopedScrollProperty.emplace(paintInfo.context.getPaintController(), m_layoutBlock, DisplayItem::paintPhaseToDrawingType(paintPhase), properties);
                 scrolledPaintInfo.emplace(paintInfo);
                 scrolledPaintInfo->updateCullRect(scrollTranslation->matrix().toAffineTransform());

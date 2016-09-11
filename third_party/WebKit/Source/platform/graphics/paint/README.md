@@ -93,6 +93,22 @@ The raster region defined by a node is the rounded rect transformed to the
 root space, intersects with the raster region defined by its parent clip node
 (if not root).
 
+### Scrolling
+
+Each paint chunk is associated with a [scroll node](ScrollPaintPropertyNode.h)
+which defines information about how a subtree scrolls so threads other than the
+main thread can perform scrolling. Scroll information includes:
+
+* Which directions, if any, are scrollable by the user.
+* A reference to a [transform node](TransformPaintPropertyNode.h) which contains
+a 2d scroll offset.
+* The extent that can be scrolled. For example, an overflow clip of size 7x9
+with scrolling contents of size 7x13 can scroll 4px vertically and none
+horizontally.
+
+To ensure geometry operations are simple and only deal with transforms, the
+scroll offset is stored as a 2d transform in the transform tree.
+
 ### Effects
 
 Each paint chunk is associated with an [effect node](EffectPaintPropertyNode.h),

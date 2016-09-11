@@ -193,6 +193,39 @@ public:
     }
 };
 
+template <>
+class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
+public:
+    static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<ScrollPaintPropertyNode>& printer)
+    {
+        if (const ScrollPaintPropertyNode* rootScroll = frameView.rootScroll())
+            printer.addPropertyNode(rootScroll, "RootScroll (FrameView)");
+        if (const ScrollPaintPropertyNode* scroll = frameView.scroll())
+            printer.addPropertyNode(scroll, "Scroll (FrameView)");
+    }
+
+    static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<ScrollPaintPropertyNode>& printer)
+    {
+        if (const ScrollPaintPropertyNode* scroll = paintProperties.scroll())
+            printer.addPropertyNode(scroll, "Scroll (" + object.debugName() + ")");
+    }
+
+    static void printNodeAsString(const ScrollPaintPropertyNode* node, StringBuilder& stringBuilder)
+    {
+        FloatSize scrollOffset = node->scrollOffsetTranslation()->matrix().to2DTranslation();
+        stringBuilder.append(" scrollOffsetTranslation=");
+        stringBuilder.append(scrollOffset.toString());
+        stringBuilder.append(" clip=");
+        stringBuilder.append(node->clip().toString());
+        stringBuilder.append(" bounds=");
+        stringBuilder.append(node->bounds().toString());
+        stringBuilder.append(" userScrollableHorizontal=");
+        stringBuilder.append(node->userScrollableHorizontal() ? "yes" : "no");
+        stringBuilder.append(" userScrollableVertical=");
+        stringBuilder.append(node->userScrollableVertical() ? "yes" : "no");
+    }
+};
+
 class PaintPropertyTreeGraphBuilder {
 public:
     PaintPropertyTreeGraphBuilder() { }
@@ -319,6 +352,11 @@ private:
             writeParentEdge(&node, node.parent(), s_effectNodeColor, os);
     }
 
+    void writePaintPropertyNode(const ScrollPaintPropertyNode&, const void*, const char*)
+    {
+        // TODO(pdr): fill this out.
+    }
+
     void writeObjectPaintPropertyNodes(const LayoutObject& object)
     {
         const ObjectPaintProperties* properties = object.objectPaintProperties();
@@ -357,6 +395,9 @@ private:
             if (object.isLayoutView() && overflowClip->parent())
                 writePaintPropertyNode(*overflowClip->parent(), nullptr, "rootClip");
         }
+        const ScrollPaintPropertyNode* scroll = properties->scroll();
+        if (scroll)
+            writePaintPropertyNode(*scroll, &object, "scroll");
     }
 
     void writeFrameViewPaintPropertyNodes(const FrameView& frameView)
@@ -379,6 +420,9 @@ private:
         ClipPaintPropertyNode* contentClip = frameView.contentClip();
         if (contentClip)
             writePaintPropertyNode(*contentClip, &frameView, "contentClip");
+        ScrollPaintPropertyNode* scroll = frameView.scroll();
+        if (scroll)
+            writePaintPropertyNode(*scroll, &frameView, "scroll");
     }
 
     void writeLayoutObjectNode(const LayoutObject& object)
@@ -457,6 +501,11 @@ void showEffectPropertyTree(const blink::FrameView& rootFrame)
     blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showTree(rootFrame);
 }
 
+void showScrollPropertyTree(const blink::FrameView& rootFrame)
+{
+    blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().showTree(rootFrame);
+}
+
 void showPaintPropertyPath(const blink::TransformPaintPropertyNode* node)
 {
     blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showPath(node);
@@ -470,6 +519,11 @@ void showPaintPropertyPath(const blink::ClipPaintPropertyNode* node)
 void showPaintPropertyPath(const blink::EffectPaintPropertyNode* node)
 {
     blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showPath(node);
+}
+
+void showPaintPropertyPath(const blink::ScrollPaintPropertyNode* node)
+{
+    blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().showPath(node);
 }
 
 String paintPropertyTreeGraph(const blink::FrameView& frameView)

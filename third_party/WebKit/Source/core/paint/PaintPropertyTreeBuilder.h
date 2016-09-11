@@ -8,6 +8,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/RefPtr.h"
 
@@ -43,6 +44,10 @@ struct PaintPropertyTreeBuilderContext {
         // the transform and paint offset above. Also the actual raster region may be affected
         // by layerization and occlusion tracking.
         const ClipPaintPropertyNode* clip = nullptr;
+        // The scroll node contains information for scrolling such as the parent scroll space, the
+        // extent that can be scrolled, etc. Because scroll nodes reference a scroll offset
+        // transform, scroll nodes should be updated if the transform tree changes.
+        const ScrollPaintPropertyNode* scroll = nullptr;
     };
 
     ContainingBlockContext current;
@@ -86,7 +91,7 @@ private:
     static void updateOverflowClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updatePerspective(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateSvgLocalToBorderBoxTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
-    static void updateScrollTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateScrollAndScrollTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateOutOfFlowContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 };
 

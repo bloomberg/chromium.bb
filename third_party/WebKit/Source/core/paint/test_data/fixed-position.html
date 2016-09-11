@@ -1,5 +1,6 @@
+<!DOCTYPE HTML>
 <style>
-.positioned-scroll {
+#positionedScroll {
     position: absolute;
     left: 100px;
     top: 50px;
@@ -22,18 +23,18 @@
     overflow: hidden;
 }
 
-.transformed-scroll {
+#transformedScroll {
     transform: scaleX(2);
     width: 400px;
     height: 300px;
     overflow: scroll;
 }
 </style>
-<div class="positioned-scroll">
+<div id="positionedScroll">
     <div class="bloat"></div>
     <div class="fixed" id="target1"></div>
 </div>
-<div class="transformed-scroll" id="scroller">
+<div id="transformedScroll">
     <div class="bloat"></div>
     <div class="fixed" id="target2"></div>
 </div>

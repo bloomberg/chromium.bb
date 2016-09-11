@@ -11,6 +11,7 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
@@ -55,6 +56,11 @@ public:
     const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
     const TransformPaintPropertyNode* scrollbarPaintOffset() const { return m_scrollbarPaintOffset.get(); }
 
+    // Auxiliary scrolling information. Includes information such as the hierarchy of scrollable
+    // areas, the extent that can be scrolled, etc. The actual scroll offset is stored in the
+    // transform tree (m_scrollTranslation).
+    const ScrollPaintPropertyNode* scroll() const { return m_scroll.get(); }
+
     const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
     // The hierarchy of the clip subtree created by a LayoutObject is as follows:
@@ -75,7 +81,9 @@ public:
     // at the right painting step.
     struct LocalBorderBoxProperties {
         LayoutPoint paintOffset;
+        // TODO(pdr): Rename this GeometryPropertyTreeState because it does not contain scroll.
         PropertyTreeState propertyTreeState;
+        const ScrollPaintPropertyNode* scroll;
     };
     const LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
     // ContentsProperties is the PropertyTreeState state that is the same as in localBorderBoxProperties, except that it is inside
@@ -92,6 +100,7 @@ public:
     void clearSvgLocalToBorderBoxTransform() { m_svgLocalToBorderBoxTransform = nullptr; }
     void clearScrollTranslation() { m_scrollTranslation = nullptr; }
     void clearScrollbarPaintOffset() { m_scrollbarPaintOffset = nullptr; }
+    void clearScroll() { m_scroll = nullptr; }
 
     template <typename... Args> TransformPaintPropertyNode* createOrUpdatePaintOffsetTranslation(Args&&... args) { return createOrUpdateProperty(m_paintOffsetTranslation, std::forward<Args>(args)...); }
     template <typename... Args> TransformPaintPropertyNode* createOrUpdateTransform(Args&&... args) { return createOrUpdateProperty(m_transform, std::forward<Args>(args)...); }
@@ -107,6 +116,7 @@ public:
         return createOrUpdateProperty(m_scrollTranslation, std::forward<Args>(args)...);
     }
     template <typename... Args> TransformPaintPropertyNode* createOrUpdateScrollbarPaintOffset(Args&&... args) { return createOrUpdateProperty(m_scrollbarPaintOffset, std::forward<Args>(args)...); }
+    template <typename... Args> ScrollPaintPropertyNode* createOrUpdateScroll(Args&&... args) { return createOrUpdateProperty(m_scroll, std::forward<Args>(args)...); }
     template <typename... Args> EffectPaintPropertyNode* createOrUpdateEffect(Args&&... args) { return createOrUpdateProperty(m_effect, std::forward<Args>(args)...); }
     template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClip(Args&&... args) { return createOrUpdateProperty(m_cssClip, std::forward<Args>(args)...); }
     template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClipFixedPosition(Args&&... args) { return createOrUpdateProperty(m_cssClipFixedPosition, std::forward<Args>(args)...); }
@@ -138,6 +148,7 @@ private:
     RefPtr<TransformPaintPropertyNode> m_svgLocalToBorderBoxTransform;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
     RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
+    RefPtr<ScrollPaintPropertyNode> m_scroll;
 
     std::unique_ptr<LocalBorderBoxProperties> m_localBorderBoxProperties;
 };

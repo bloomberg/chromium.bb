@@ -333,6 +333,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
             auto& localBorderBoxProperties = *objectPaintProperties->localBorderBoxProperties();
             properties.transform = localBorderBoxProperties.propertyTreeState.transform;
+            properties.scroll = localBorderBoxProperties.scroll;
             properties.clip = localBorderBoxProperties.propertyTreeState.clip;
             properties.effect = localBorderBoxProperties.propertyTreeState.effect;
             properties.backfaceHidden = m_paintLayer.layoutObject()->hasHiddenBackface();

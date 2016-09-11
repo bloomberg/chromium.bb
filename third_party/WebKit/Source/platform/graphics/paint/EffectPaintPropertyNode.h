@@ -26,6 +26,7 @@ public:
 
     void update(PassRefPtr<const EffectPaintPropertyNode> parent, float opacity)
     {
+        DCHECK(parent != this);
         m_parent = parent;
         m_opacity = opacity;
     }

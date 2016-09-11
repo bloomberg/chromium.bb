@@ -16,6 +16,7 @@ class ClipPaintPropertyNode;
 class FrameView;
 class EffectPaintPropertyNode;
 class TransformPaintPropertyNode;
+class ScrollPaintPropertyNode;
 
 } // namespace blink
 
@@ -23,9 +24,11 @@ class TransformPaintPropertyNode;
 CORE_EXPORT void showTransformPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showClipPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showEffectPropertyTree(const blink::FrameView& rootFrame);
+CORE_EXPORT void showScrollPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showPaintPropertyPath(const blink::TransformPaintPropertyNode*);
 CORE_EXPORT void showPaintPropertyPath(const blink::ClipPaintPropertyNode*);
 CORE_EXPORT void showPaintPropertyPath(const blink::EffectPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::ScrollPaintPropertyNode*);
 CORE_EXPORT String paintPropertyTreeGraph(const blink::FrameView&);
 
 #endif // ifndef NDEBUG

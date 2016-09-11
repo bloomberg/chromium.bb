@@ -14,6 +14,7 @@ struct PaintProperties;
 class ClipPaintPropertyNode;
 class TransformPaintPropertyNode;
 class EffectPaintPropertyNode;
+class ScrollPaintPropertyNode;
 
 // GTest print support for platform paint classes.
 //
@@ -31,6 +32,7 @@ void PrintTo(const PaintChunk&, std::ostream*);
 void PrintTo(const PaintProperties&, std::ostream*);
 void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
 void PrintTo(const EffectPaintPropertyNode&, std::ostream*);
+void PrintTo(const ScrollPaintPropertyNode&, std::ostream*);
 
 } // namespace blink
 
