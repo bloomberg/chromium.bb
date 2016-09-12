@@ -137,6 +137,13 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
       // Update web view frame immediately to make |topContentPadding|
       // animatable.
       [self updateWebViewFrame];
+      // Setting WKWebView frame can mistakenly reset contentOffset. Change it
+      // back to the initial value if necessary.
+      // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
+      // fixed.
+      if ([_scrollView contentOffset].y != contentOffset.y) {
+        [_scrollView setContentOffset:contentOffset];
+      }
     }
   } else {
     UIEdgeInsets inset = [_scrollView contentInset];
