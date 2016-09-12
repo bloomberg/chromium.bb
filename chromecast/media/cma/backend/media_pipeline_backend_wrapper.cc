@@ -75,8 +75,8 @@ bool MediaPipelineBackendWrapper::Start(int64_t start_pts) {
   return backend_->Start(start_pts);
 }
 
-bool MediaPipelineBackendWrapper::Stop() {
-  return backend_->Stop();
+void MediaPipelineBackendWrapper::Stop() {
+  backend_->Stop();
 }
 
 bool MediaPipelineBackendWrapper::Pause() {

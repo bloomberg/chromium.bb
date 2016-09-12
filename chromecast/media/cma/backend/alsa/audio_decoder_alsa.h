@@ -31,9 +31,9 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   explicit AudioDecoderAlsa(MediaPipelineBackendAlsa* backend);
   ~AudioDecoderAlsa() override;
 
-  bool Initialize();
+  void Initialize();
   bool Start(int64_t start_pts);
-  bool Stop();
+  void Stop();
   bool Pause();
   bool Resume();
 

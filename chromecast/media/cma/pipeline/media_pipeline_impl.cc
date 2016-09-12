@@ -280,7 +280,7 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
 
   // 2. Stop the backend, so that the backend won't push their pending buffer,
   // which may be invalidated later, to hardware. (b/25342604)
-  CHECK(media_pipeline_backend_->Stop());
+  media_pipeline_backend_->Stop();
   backend_state_ = BACKEND_STATE_INITIALIZED;
   metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
       "Cast.Platform.Ended");

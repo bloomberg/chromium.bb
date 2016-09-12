@@ -70,7 +70,7 @@ void AudioDecoderAlsa::SetDelegate(
   delegate_ = delegate;
 }
 
-bool AudioDecoderAlsa::Initialize() {
+void AudioDecoderAlsa::Initialize() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(delegate_);
   stats_ = Statistics();
@@ -79,7 +79,6 @@ bool AudioDecoderAlsa::Initialize() {
 
   last_known_delay_.timestamp_microseconds = kInvalidDelayTimestamp;
   last_known_delay_.delay_microseconds = 0;
-  return true;
 }
 
 bool AudioDecoderAlsa::Start(int64_t start_pts) {
@@ -96,11 +95,12 @@ bool AudioDecoderAlsa::Start(int64_t start_pts) {
   return true;
 }
 
-bool AudioDecoderAlsa::Stop() {
+void AudioDecoderAlsa::Stop() {
   TRACE_FUNCTION_ENTRY0();
   decoder_.reset();
   mixer_input_.reset();
-  return Initialize();
+
+  Initialize();
 }
 
 bool AudioDecoderAlsa::Pause() {

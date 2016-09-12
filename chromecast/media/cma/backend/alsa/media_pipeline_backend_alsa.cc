@@ -41,8 +41,8 @@ MediaPipelineBackendAlsa::CreateVideoDecoder() {
 
 bool MediaPipelineBackendAlsa::Initialize() {
   DCHECK_EQ(kStateUninitialized, state_);
-  if (audio_decoder_ && !audio_decoder_->Initialize())
-    return false;
+  if (audio_decoder_)
+    audio_decoder_->Initialize();
   state_ = kStateInitialized;
   return true;
 }
@@ -55,13 +55,13 @@ bool MediaPipelineBackendAlsa::Start(int64_t start_pts) {
   return true;
 }
 
-bool MediaPipelineBackendAlsa::Stop() {
+void MediaPipelineBackendAlsa::Stop() {
   DCHECK(state_ == kStatePlaying || state_ == kStatePaused) << "Invalid state "
                                                             << state_;
-  if (audio_decoder_ && !audio_decoder_->Stop())
-    return false;
+  if (audio_decoder_)
+    audio_decoder_->Stop();
+
   state_ = kStateInitialized;
-  return true;
 }
 
 bool MediaPipelineBackendAlsa::Pause() {

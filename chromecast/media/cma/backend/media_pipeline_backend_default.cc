@@ -48,10 +48,9 @@ bool MediaPipelineBackendDefault::Start(int64_t start_pts) {
   return true;
 }
 
-bool MediaPipelineBackendDefault::Stop() {
+void MediaPipelineBackendDefault::Stop() {
   start_pts_ = GetCurrentPts();
   running_ = false;
-  return true;
 }
 
 bool MediaPipelineBackendDefault::Pause() {

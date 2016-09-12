@@ -37,7 +37,7 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   VideoDecoder* CreateVideoDecoder() override;
   bool Initialize() override;
   bool Start(int64_t start_pts) override;
-  bool Stop() override;
+  void Stop() override;
   bool Pause() override;
   bool Resume() override;
   int64_t GetCurrentPts() override;

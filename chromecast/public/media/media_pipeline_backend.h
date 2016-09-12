@@ -205,7 +205,7 @@ class MediaPipelineBackend {
 
   // Returns pipeline to 'Initialized' state.  May be called while playing or
   // paused.  Buffers cannot be pushed in Initialized state.
-  virtual bool Stop() = 0;
+  virtual void Stop() = 0;
 
   // Pauses media playback.  Called only when in playing state.
   virtual bool Pause() = 0;

@@ -750,9 +750,8 @@ void AudioVideoPipelineDeviceTest::OnEndOfStream() {
   if ((!audio_feeder_ || audio_feeder_->eos()) &&
       (!video_feeder_ || video_feeder_->eos())) {
     RunPlaybackChecks();
-    bool success = backend_->Stop();
+    backend_->Stop();
     stopped_ = true;
-    ASSERT_TRUE(success);
     RunStoppedChecks();
 
     for (auto& feeder : effects_feeders_)
@@ -867,7 +866,7 @@ void AudioVideoPipelineDeviceTest::TestBackendStates() {
   base::RunLoop().RunUntilIdle();
   RunPlaybackChecks();
 
-  ASSERT_TRUE(backend()->Stop());
+  backend()->Stop();
   base::RunLoop().RunUntilIdle();
 
   RunStoppedChecks();
@@ -893,7 +892,7 @@ void AudioVideoPipelineDeviceTest::EndImmediateEosTest() {
   EXPECT_EQ(kStartPts, backend_->GetCurrentPts());
   RunPlaybackChecks();
 
-  ASSERT_TRUE(backend_->Stop());
+  backend_->Stop();
   base::RunLoop().RunUntilIdle();
 
   RunStoppedChecks();

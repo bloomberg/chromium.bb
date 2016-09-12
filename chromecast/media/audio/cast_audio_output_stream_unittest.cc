@@ -119,10 +119,9 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
     state_ = kStateRunning;
     return true;
   }
-  bool Stop() override {
+  void Stop() override {
     EXPECT_TRUE(state_ == kStateRunning || state_ == kStatePaused);
     state_ = kStateStopped;
-    return true;
   }
   bool Pause() override {
     EXPECT_EQ(kStateRunning, state_);
