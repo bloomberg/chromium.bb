@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -23,6 +24,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 /**
  * Tests for ScreenOrientationListener and its implementations.
  */
+@DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/646155")
 @RetryOnFailure
 public class ScreenOrientationProviderTest extends ContentShellTestBase {
 
