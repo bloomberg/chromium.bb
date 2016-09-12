@@ -6,16 +6,6 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 
-# Provides a way for the utility library to push ldflags to dependents.
-config("utility_ldflags") {
-  if (is_mac && safe_browsing_mode == 1) {
-    libs = [
-      "bz2",
-      "CoreFoundation.framework",
-    ]
-  }
-}
-
 static_library("utility") {
   sources = [
     "chrome_content_utility_client.cc",
@@ -42,7 +32,6 @@ static_library("utility") {
     "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",
   ]
-  all_dependent_configs = [ ":utility_ldflags" ]
 
   public_deps = []
   deps = [
@@ -182,43 +171,7 @@ static_library("utility") {
     ]
   }
 
-  if (safe_browsing_mode == 1) {
-    sources += [
-      "safe_browsing/mac/convert_big_endian.h",
-      "safe_browsing/mac/dmg_analyzer.cc",
-      "safe_browsing/mac/dmg_analyzer.h",
-      "safe_browsing/mac/dmg_iterator.cc",
-      "safe_browsing/mac/dmg_iterator.h",
-      "safe_browsing/mac/hfs.cc",
-      "safe_browsing/mac/hfs.h",
-      "safe_browsing/mac/read_stream.cc",
-      "safe_browsing/mac/read_stream.h",
-      "safe_browsing/mac/udif.cc",
-      "safe_browsing/mac/udif.h",
-    ]
-    deps += [ "//third_party/zlib" ]
-  }
-}
-
-if (is_mac) {
-  import("//testing/libfuzzer/fuzzer_test.gni")
-  fuzzer_test("safe_browsing_dmg_fuzzer") {
-    sources = [
-      "safe_browsing/mac/convert_big_endian.h",
-      "safe_browsing/mac/fuzzer.cc",
-      "safe_browsing/mac/hfs.cc",
-      "safe_browsing/mac/hfs.h",
-      "safe_browsing/mac/read_stream.cc",
-      "safe_browsing/mac/read_stream.h",
-      "safe_browsing/mac/udif.cc",
-      "safe_browsing/mac/udif.h",
-    ]
-
-    additional_configs = [ ":utility_ldflags" ]
-
-    deps = [
-      "//base",
-      "//third_party/zlib",
-    ]
+  if (is_mac && safe_browsing_mode == 1) {
+    deps += [ "//chrome/utility/safe_browsing/mac" ]
   }
 }
