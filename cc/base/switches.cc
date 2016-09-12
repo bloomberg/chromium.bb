@@ -44,6 +44,9 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 // Compress tile textures for GPUs supporting it.
 const char kEnableTileCompression[] = "enable-tile-compression";
 
+// Enable color space aware rasterization and compositing.
+const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
+
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 

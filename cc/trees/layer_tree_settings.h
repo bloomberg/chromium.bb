@@ -104,6 +104,7 @@ class CC_EXPORT LayerTreeSettings {
   // If set to true, the display item list will internally cache a SkPicture for
   // raster rather than directly using the display items.
   bool use_cached_picture_raster = true;
+  bool enable_color_correct_rendering = false;
 
   LayerTreeDebugState initial_debug_state;
 };

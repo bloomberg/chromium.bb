@@ -158,6 +158,9 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   settings.use_layer_lists =
       command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
+  settings.enable_color_correct_rendering =
+      command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering);
+
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;

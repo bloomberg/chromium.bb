@@ -365,9 +365,6 @@ const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
 const char kEnableCanvas2dDynamicRenderingModeSwitching[] =
     "enable-canvas-2d-dynamic-rendering-mode-switching";
 
-// Enable color space aware rasterization and compositing.
-const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
-
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =
     "enable-experimental-canvas-features";
