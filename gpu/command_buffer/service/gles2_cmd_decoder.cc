@@ -7547,6 +7547,51 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     return;
   }
 
+  // Check whether read framebuffer and draw framebuffer have identical image
+  // TODO(yunchao): consider doing something like CheckFramebufferStatus().
+  // We cache the validation results, and if read_framebuffer doesn't change,
+  // draw_framebuffer doesn't change, then use the cached status.
+  enum FeedbackLoopState {
+    FeedbackLoopTrue,
+    FeedbackLoopFalse,
+    FeedbackLoopUnknown
+  };
+
+  FeedbackLoopState is_feedback_loop = FeedbackLoopUnknown;
+  Framebuffer* read_framebuffer =
+      framebuffer_state_.bound_read_framebuffer.get();
+  Framebuffer* draw_framebuffer =
+      framebuffer_state_.bound_draw_framebuffer.get();
+  // If both read framebuffer and draw framebuffer are default framebuffer,
+  // They always have identical image. Otherwise, if one of read framebuffer
+  // and draw framebuffe is default framebuffer, but the other is fbo, they
+  // always have no identical image.
+  if (!read_framebuffer && !draw_framebuffer) {
+    is_feedback_loop = FeedbackLoopTrue;
+  } else if (!read_framebuffer || !draw_framebuffer) {
+    is_feedback_loop = FeedbackLoopFalse;
+  }
+  if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
+    const Framebuffer::Attachment* depth_buffer_read =
+        read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+    const Framebuffer::Attachment* depth_buffer_draw =
+        draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+    if (depth_buffer_draw &&
+        depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
+      is_feedback_loop = FeedbackLoopTrue;
+    }
+  }
+  if ((mask & GL_STENCIL_BUFFER_BIT) != 0) {
+    const Framebuffer::Attachment* stencil_buffer_read =
+        read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+    const Framebuffer::Attachment* stencil_buffer_draw =
+        draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+    if (stencil_buffer_draw &&
+        stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
+      is_feedback_loop = FeedbackLoopTrue;
+    }
+  }
+
   GLenum src_format = GetBoundReadFramebufferInternalFormat();
   GLenum src_type = GetBoundReadFramebufferTextureType();
 
@@ -7563,6 +7608,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
 
     GLenum src_sized_format =
         GLES2Util::ConvertToSizedFormat(src_format, src_type);
+    const Framebuffer::Attachment* read_buffer =
+        is_feedback_loop == FeedbackLoopUnknown ?
+        read_framebuffer->GetReadBufferAttachment() : nullptr;
     for (uint32_t ii = 0; ii < group_->max_draw_buffers(); ++ii) {
       GLenum dst_format = GetBoundColorDrawBufferInternalFormat(
           static_cast<GLint>(ii));
@@ -7585,7 +7633,25 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                            "incompatible src/dst color formats");
         return;
       }
+      // Check whether draw buffers have identical color image with read buffer
+      if (is_feedback_loop == FeedbackLoopUnknown) {
+        GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + ii);
+        const Framebuffer::Attachment* draw_buffer =
+            draw_framebuffer->GetAttachment(attachment);
+        if (!draw_buffer) {
+          continue;
+        }
+        if (draw_buffer->IsSameAttachment(read_buffer)) {
+          is_feedback_loop = FeedbackLoopTrue;
+          break;
+        }
+      }
     }
+  }
+  if (is_feedback_loop == FeedbackLoopTrue) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "source buffer and destination buffers are identical");
+    return;
   }
 
   if ((mask & (GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) != 0) {
