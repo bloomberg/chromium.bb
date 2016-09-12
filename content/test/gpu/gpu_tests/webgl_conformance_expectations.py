@@ -182,6 +182,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'amd', 'opengl'], bug=1506) # angle bug ID
 
+    # Mark ANGLE's OpenGL as flaky on Windows Amd
+    self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
+
     # Win / OpenGL / Intel failures
     self.Fail('conformance/glsl/functions/glsl-function-normalize.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
