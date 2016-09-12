@@ -52,16 +52,11 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
                                   public CloudPolicyStore::Observer,
                                   public gaia::GaiaOAuthClient::Delegate {
  public:
-  typedef DeviceCloudPolicyInitializer::AllowedDeviceModes
-      AllowedDeviceModes;
   typedef DeviceCloudPolicyInitializer::EnrollmentCallback
       EnrollmentCallback;
 
   // |store| and |install_attributes| must remain valid for the life time of the
-  // enrollment handler. |allowed_device_modes| determines what device modes
-  // are acceptable. If the mode specified by the server is not acceptable,
-  // enrollment will fail with an EnrollmentStatus indicating
-  // STATUS_REGISTRATION_BAD_MODE.
+  // enrollment handler.
   EnrollmentHandlerChromeOS(
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
@@ -73,7 +68,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       const std::string& auth_token,
       const std::string& client_id,
       const std::string& requisition,
-      const AllowedDeviceModes& allowed_device_modes,
       const EnrollmentCallback& completion_callback);
   ~EnrollmentHandlerChromeOS() override;
 
@@ -177,7 +171,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string auth_token_;
   std::string client_id_;
   std::string requisition_;
-  AllowedDeviceModes allowed_device_modes_;
   EnrollmentCallback completion_callback_;
 
   // The current state key provided by |state_keys_broker_|.

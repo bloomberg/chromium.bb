@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INITIALIZER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INITIALIZER_H_
 
-#include <bitset>
 #include <memory>
 #include <string>
 
@@ -50,7 +49,6 @@ class EnterpriseInstallAttributes;
 // handles the enrollment process.
 class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
  public:
-  typedef std::bitset<32> AllowedDeviceModes;
   typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
 
   // |background_task_runner| is used to execute long-running background tasks
@@ -74,13 +72,10 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // Starts enrollment or re-enrollment. Once the enrollment process completes,
   // |enrollment_callback| is invoked and gets passed the status of the
   // operation.
-  // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
-  // enrollment.
   virtual void StartEnrollment(
       DeviceManagementService* device_management_service,
       const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
-      const AllowedDeviceModes& allowed_modes,
       const EnrollmentCallback& enrollment_callback);
 
   // Get the enrollment configuration that has been set up via signals such as

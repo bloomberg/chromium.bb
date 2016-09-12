@@ -38,7 +38,6 @@ void FakeDeviceCloudPolicyInitializer::StartEnrollment(
     DeviceManagementService* device_management_service,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
-    const AllowedDeviceModes& allowed_modes,
     const EnrollmentCallback& enrollment_callback) {
   was_start_enrollment_called_ = true;
   enrollment_callback.Run(enrollment_status_);

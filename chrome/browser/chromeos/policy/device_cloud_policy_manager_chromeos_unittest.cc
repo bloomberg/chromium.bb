@@ -428,6 +428,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
     register_response_.mutable_register_response()->set_device_management_token(
         PolicyBuilder::kFakeToken);
+    register_response_.mutable_register_response()->set_enrollment_type(
+        em::DeviceRegisterResponse::ENTERPRISE);
     policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
         device_policy_.policy());
     robot_auth_fetch_response_.mutable_service_api_access_response()
@@ -481,8 +483,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Times(AtMost(1))
         .WillOnce(
             DoAll(SaveArg<4>(&client_id_), SaveArg<5>(&register_request_)));
-    DeviceCloudPolicyInitializer::AllowedDeviceModes modes;
-    modes[DEVICE_MODE_ENTERPRISE] = true;
 
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
@@ -496,7 +496,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
                                        : EnrollmentConfig::MODE_MANUAL;
     std::string token = with_cert ? "" : "auth token";
     initializer_->StartEnrollment(
-        &device_management_service_, enrollment_config, token, modes,
+        &device_management_service_, enrollment_config, token,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();

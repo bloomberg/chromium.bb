@@ -79,7 +79,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     const std::string& auth_token,
     const std::string& client_id,
     const std::string& requisition,
-    const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& completion_callback)
     : store_(store),
       install_attributes_(install_attributes),
@@ -91,7 +90,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       auth_token_(auth_token),
       client_id_(client_id),
       requisition_(requisition),
-      allowed_device_modes_(allowed_device_modes),
       completion_callback_(completion_callback),
       device_mode_(DEVICE_MODE_NOT_SET),
       skip_robot_auth_(false),
@@ -184,9 +182,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
     enrollment_step_ = STEP_POLICY_FETCH,
     device_mode_ = client_->device_mode();
-    if (device_mode_ == DEVICE_MODE_NOT_SET)
-      device_mode_ = DEVICE_MODE_ENTERPRISE;
-    if (!allowed_device_modes_.test(device_mode_)) {
+    if (device_mode_ != policy::DEVICE_MODE_ENTERPRISE) {
       LOG(ERROR) << "Bad device mode " << device_mode_;
       ReportResult(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE));

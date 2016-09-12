@@ -157,16 +157,12 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
     return;
   }
 
-  policy::DeviceCloudPolicyInitializer::AllowedDeviceModes device_modes;
-  device_modes[policy::DEVICE_MODE_ENTERPRISE] = true;
   connector->ScheduleServiceInitialization(0);
-
   policy::DeviceCloudPolicyInitializer* dcp_initializer =
       connector->GetDeviceCloudPolicyInitializer();
   CHECK(dcp_initializer);
   dcp_initializer->StartEnrollment(
       connector->device_management_service(), enrollment_config_, token,
-      device_modes,
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }

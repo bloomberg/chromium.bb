@@ -110,7 +110,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
     DeviceManagementService* device_management_service,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
-    const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& enrollment_callback) {
   DCHECK(is_initialized_);
   DCHECK(!enrollment_handler_);
@@ -121,7 +120,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, enrollment_config, auth_token,
       install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
-      allowed_device_modes,
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
   enrollment_handler_->StartEnrollment();

@@ -28,7 +28,6 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
       DeviceManagementService* device_management_service,
       const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
-      const AllowedDeviceModes& allowed_modes,
       const EnrollmentCallback& enrollment_callback) override;
 
   bool was_start_enrollment_called() {
