@@ -1364,8 +1364,16 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
-  const Referrer referrer(request_data.referrer, request_data.referrer_policy);
-  SetReferrerForRequest(new_request.get(), referrer);
+  // For PlzNavigate, this request has already been made and the referrer was
+  // checked previously. So don't set the referrer for this stream request, or
+  // else it will fail for SSL redirects since net/ will think the blob:https
+  // for the stream is not a secure scheme (specifically, in the call to
+  // ComputeReferrerForRedirect).
+  if (!is_navigation_stream_request) {
+    const Referrer referrer(
+        request_data.referrer, request_data.referrer_policy);
+    SetReferrerForRequest(new_request.get(), referrer);
+  }
 
   new_request->SetExtraRequestHeaders(headers);
 
