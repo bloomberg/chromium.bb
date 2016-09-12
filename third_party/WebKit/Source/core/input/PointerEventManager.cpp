@@ -180,6 +180,18 @@ void PointerEventManager::sendBoundaryEvents(
     EventTarget* enteredTarget,
     PointerEvent* pointerEvent)
 {
+    if (RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
+        if (exitedTarget == enteredTarget)
+            return;
+        if (EventTarget* capturingTarget = getCapturingNode(pointerEvent->pointerId())) {
+            if (capturingTarget == exitedTarget)
+                enteredTarget = nullptr;
+            else if (capturingTarget == enteredTarget)
+                exitedTarget = nullptr;
+            else
+                return;
+        }
+    }
     PointerEventBoundaryEventDispatcher boundaryEventDispatcher(this, pointerEvent);
     boundaryEventDispatcher.sendBoundaryEvents(exitedTarget, enteredTarget);
 }
@@ -290,7 +302,8 @@ void PointerEventManager::dispatchTouchPointerEvents(
         // that will be capturing this event. |m_pointerCaptureTarget| may not
         // have this target yet since the processing of that will be done right
         // before firing the event.
-        if (touchInfo.point.state() == PlatformTouchPoint::TouchPressed
+        if (RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()
+            || touchInfo.point.state() == PlatformTouchPoint::TouchPressed
             || !m_pendingPointerCaptureTarget.contains(pointerId)) {
             HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent | HitTestRequest::ReadOnly | HitTestRequest::Active;
             LayoutPoint pagePoint = roundedLayoutPoint(m_frame->view()->rootFrameToContents(touchInfo.point.pos()));
@@ -523,9 +536,11 @@ EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
     if (setPointerPosition) {
         processPendingPointerCapture(pointerEvent);
 
-        PointerCapturingMap::const_iterator it = m_pointerCaptureTarget.find(pointerEvent->pointerId());
-        if (EventTarget* pointercaptureTarget = (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
-            hitTestTarget = pointercaptureTarget;
+        if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
+            PointerCapturingMap::const_iterator it = m_pointerCaptureTarget.find(pointerEvent->pointerId());
+            if (EventTarget* pointercaptureTarget = (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
+                hitTestTarget = pointercaptureTarget;
+        }
 
         setNodeUnderPointer(pointerEvent, hitTestTarget);
     }
