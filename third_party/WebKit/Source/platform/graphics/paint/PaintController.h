@@ -214,8 +214,6 @@ private:
 
     void generateChunkRasterInvalidationRects(PaintChunk& newChunk);
     void generateChunkRasterInvalidationRectsComparingOldChunk(PaintChunk& newChunk, const PaintChunk& oldChunk);
-    void generateChunkRasterInvalidationRectsForReorderedItems(PaintChunk& newChunk, const PaintChunk& oldChunk,
-        Vector<size_t>::const_iterator, Vector<size_t>::const_iterator, Vector<size_t>::const_iterator, Vector<size_t>::const_iterator);
 
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).

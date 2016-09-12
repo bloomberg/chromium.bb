@@ -701,20 +701,24 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
         stringBuilder.append(String::format("{index: %zu, ", i));
 #ifndef NDEBUG
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
-#else
-        stringBuilder.append(String::format("clientDebugName: %s", displayItem.client().debugName().ascii().data()));
 #endif
+
         if (displayItem.hasValidClient()) {
-            do {
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-                if (!displayItem.client().isAlive()) {
-                    stringBuilder.append(", clientIsAlive: false");
-                    break;
-                }
+            if (!displayItem.client().isAlive()) {
+                stringBuilder.append(", clientIsAlive: false");
+            } else {
+#else
+            // debugName() and clientCacheIsValid() can only be called on alive client, so only output it for
+            // m_newDisplayItemList in which we are sure the clients are all alive.
+            if (&list == &m_newDisplayItemList) {
+#endif
+#ifdef NDEBUG
+                stringBuilder.append(String::format("clientDebugName: \"%s\"", displayItem.client().debugName().ascii().data()));
 #endif
                 stringBuilder.append(", cacheIsValid: ");
                 stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
-            } while (false);
+            }
 #ifndef NDEBUG
             if (showPictures && displayItem.isDrawing()) {
                 if (const SkPicture* picture = static_cast<const DrawingDisplayItem&>(displayItem).picture()) {
