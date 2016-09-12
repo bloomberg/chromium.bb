@@ -334,8 +334,4 @@ std::unique_ptr<base::DictionaryValue> PaymentResponse::ToDictionaryValue()
   return result;
 }
 
-void PaymentResponse::ToDictionaryValue(base::DictionaryValue* value) const {
-  value->MergeDictionary(ToDictionaryValue().get());
-}
-
 }  // namespace web

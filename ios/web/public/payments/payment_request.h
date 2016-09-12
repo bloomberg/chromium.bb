@@ -315,9 +315,6 @@ class PaymentResponse {
   // Populates |value| with the properties of this PaymentResponse.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
-  // TODO(jdonnelly): Remove this after removing downstream use.
-  void ToDictionaryValue(base::DictionaryValue* value) const;
-
   // The payment method identifier for the payment method that the user selected
   // to fulfil the transaction.
   base::string16 method_name;
