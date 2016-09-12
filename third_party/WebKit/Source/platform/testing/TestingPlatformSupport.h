@@ -110,7 +110,7 @@ public:
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
     WebThread* currentThread() override;
-    WebBlobRegistry* blobRegistry() override;
+    WebBlobRegistry* getBlobRegistry() override;
     WebClipboard* clipboard() override;
     WebFileUtilities* fileUtilities() override;
     WebIDBFactory* idbFactory() override;

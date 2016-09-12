@@ -41,7 +41,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   TestBlinkWebUnitTestSupport();
   ~TestBlinkWebUnitTestSupport() override;
 
-  blink::WebBlobRegistry* blobRegistry() override;
+  blink::WebBlobRegistry* getBlobRegistry() override;
   blink::WebClipboard* clipboard() override;
   blink::WebFileUtilities* fileUtilities() override;
   blink::WebIDBFactory* idbFactory() override;

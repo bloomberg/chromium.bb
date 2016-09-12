@@ -162,7 +162,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebMIDIAccessor* createMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
 
-  blink::WebBlobRegistry* blobRegistry() override;
+  blink::WebBlobRegistry* getBlobRegistry() override;
   void sampleGamepads(blink::WebGamepads&) override;
   blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client) override;

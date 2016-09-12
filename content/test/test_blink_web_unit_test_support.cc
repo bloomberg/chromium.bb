@@ -158,7 +158,7 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   base::FeatureList::ClearInstanceForTesting();
 }
 
-blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::blobRegistry() {
+blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::getBlobRegistry() {
   return &blob_registry_;
 }
 

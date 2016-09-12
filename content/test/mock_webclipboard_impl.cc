@@ -108,7 +108,7 @@ blink::WebBlobInfo MockWebClipboardImpl::readImage(
   }
   const WebString& uuid = base::ASCIIToUTF16(base::GenerateGUID());
   std::unique_ptr<blink::WebBlobRegistry::Builder> blob_builder(
-      blink::Platform::current()->blobRegistry()->createBuilder(
+      blink::Platform::current()->getBlobRegistry()->createBuilder(
           uuid, blink::WebString()));
   blob_builder->appendData(blink::WebThreadSafeData(
       reinterpret_cast<char*>(output.data()), output.size()));

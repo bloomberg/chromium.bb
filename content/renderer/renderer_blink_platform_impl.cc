@@ -848,7 +848,7 @@ blink::WebScrollbarBehavior* RendererBlinkPlatformImpl::scrollbarBehavior() {
 
 //------------------------------------------------------------------------------
 
-WebBlobRegistry* RendererBlinkPlatformImpl::blobRegistry() {
+WebBlobRegistry* RendererBlinkPlatformImpl::getBlobRegistry() {
   // blob_registry_ can be NULL when running some tests.
   return blob_registry_.get();
 }

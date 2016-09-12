@@ -185,7 +185,7 @@ public:
     // Blob ----------------------------------------------------------------
 
     // Must return non-null.
-    virtual WebBlobRegistry* blobRegistry() { return nullptr; }
+    virtual WebBlobRegistry* getBlobRegistry() { return nullptr; }
 
     // Database ------------------------------------------------------------
 

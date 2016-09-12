@@ -58,9 +58,9 @@ public:
     SecurityOrigin* getOrigin(const KURL&) override;
 };
 
-static WebBlobRegistry* blobRegistry()
+static WebBlobRegistry* getBlobRegistry()
 {
-    return Platform::current()->blobRegistry();
+    return Platform::current()->getBlobRegistry();
 }
 
 typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
@@ -94,34 +94,34 @@ static void removeFromOriginMap(const KURL& url)
 
 void BlobRegistry::registerBlobData(const String& uuid, std::unique_ptr<BlobData> data)
 {
-    blobRegistry()->registerBlobData(uuid, WebBlobData(std::move(data)));
+    getBlobRegistry()->registerBlobData(uuid, WebBlobData(std::move(data)));
 }
 
 void BlobRegistry::addBlobDataRef(const String& uuid)
 {
-    blobRegistry()->addBlobDataRef(uuid);
+    getBlobRegistry()->addBlobDataRef(uuid);
 }
 
 void BlobRegistry::removeBlobDataRef(const String& uuid)
 {
-    blobRegistry()->removeBlobDataRef(uuid);
+    getBlobRegistry()->removeBlobDataRef(uuid);
 }
 
 void BlobRegistry::registerPublicBlobURL(SecurityOrigin* origin, const KURL& url, PassRefPtr<BlobDataHandle> handle)
 {
     saveToOriginMap(origin, url);
-    blobRegistry()->registerPublicBlobURL(url, handle->uuid());
+    getBlobRegistry()->registerPublicBlobURL(url, handle->uuid());
 }
 
 void BlobRegistry::revokePublicBlobURL(const KURL& url)
 {
     removeFromOriginMap(url);
-    blobRegistry()->revokePublicBlobURL(url);
+    getBlobRegistry()->revokePublicBlobURL(url);
 }
 
 static void registerStreamURLTask(const KURL& url, const String& type)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->registerStreamURL(url, type);
 }
 
@@ -135,7 +135,7 @@ void BlobRegistry::registerStreamURL(const KURL& url, const String& type)
 
 static void registerStreamURLFromTask(const KURL& url, const KURL& srcURL)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->registerStreamURL(url, srcURL);
 }
 
@@ -151,7 +151,7 @@ void BlobRegistry::registerStreamURL(SecurityOrigin* origin, const KURL& url, co
 
 static void addDataToStreamTask(const KURL& url, PassRefPtr<RawData> streamData)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->addDataToStream(url, streamData->data(), streamData->length());
 }
 
@@ -165,7 +165,7 @@ void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamDa
 
 static void flushStreamTask(const KURL& url)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->flushStream(url);
 }
 
@@ -179,7 +179,7 @@ void BlobRegistry::flushStream(const KURL& url)
 
 static void finalizeStreamTask(const KURL& url)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->finalizeStream(url);
 }
 
@@ -193,7 +193,7 @@ void BlobRegistry::finalizeStream(const KURL& url)
 
 static void abortStreamTask(const KURL& url)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->abortStream(url);
 }
 
@@ -207,7 +207,7 @@ void BlobRegistry::abortStream(const KURL& url)
 
 static void unregisterStreamURLTask(const KURL& url)
 {
-    if (WebBlobRegistry* registry = blobRegistry())
+    if (WebBlobRegistry* registry = getBlobRegistry())
         registry->unregisterStreamURL(url);
 }
 

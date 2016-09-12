@@ -104,9 +104,9 @@ WebThread* TestingPlatformSupport::currentThread()
     return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
 }
 
-WebBlobRegistry* TestingPlatformSupport::blobRegistry()
+WebBlobRegistry* TestingPlatformSupport::getBlobRegistry()
 {
-    return m_oldPlatform ? m_oldPlatform->blobRegistry() : nullptr;
+    return m_oldPlatform ? m_oldPlatform->getBlobRegistry() : nullptr;
 }
 
 WebClipboard* TestingPlatformSupport::clipboard()
