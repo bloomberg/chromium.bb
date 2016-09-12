@@ -314,6 +314,11 @@ class VIEWS_EXPORT BridgedNativeWidget
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
 
+  // Whether the window's visibility is suppressed currently. For opaque non-
+  // modal windows, the window's alpha value is set to 0, till the frame from
+  // the compositor arrives to avoid "blinking".
+  bool initial_visibility_suppressed_ = false;
+
   AssociatedViews associated_views_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);

@@ -571,6 +571,19 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     return;
   }
 
+  // Non-modal windows are not animated. Hence opaque non-modal windows can
+  // appear with a "flash" if they are made visible before the frame from the
+  // compositor arrives. To get around this, set the alpha value of the window
+  // to 0, till we receive the correct frame from the compositor. Also, ignore
+  // mouse clicks till then.
+  // TODO(karandeepb): Investigate whether similar technique is needed for other
+  // dialog types.
+  if ([window_ isOpaque] && !native_widget_mac_->GetWidget()->IsModal()) {
+    initial_visibility_suppressed_ = true;
+    [window_ setAlphaValue:0.0];
+    [window_ setIgnoresMouseEvents:YES];
+  }
+
   if (new_state == SHOW_AND_ACTIVATE_WINDOW) {
     [window_ makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
@@ -1099,6 +1112,12 @@ void BridgedNativeWidget::AcceleratedWidgetSwapCompleted() {
   // should arrive soon.
   if (!compositor_widget_->HasFrameOfSize(GetClientAreaSize()))
     return;
+
+  if (initial_visibility_suppressed_) {
+    initial_visibility_suppressed_ = false;
+    [window_ setAlphaValue:1.0];
+    [window_ setIgnoresMouseEvents:NO];
+  }
 
   if (invalidate_shadow_on_frame_swap_) {
     invalidate_shadow_on_frame_swap_ = false;
