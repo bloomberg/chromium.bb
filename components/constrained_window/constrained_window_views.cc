@@ -87,6 +87,18 @@ void UpdateModalDialogPosition(views::Widget* widget,
   if (widget->HasCapture())
     return;
 
+  views::Widget* host_widget =
+      views::Widget::GetWidgetForNativeView(dialog_host->GetHostView());
+
+  // If the host view is not backed by a Views::Widget, just update the widget
+  // size. This can happen on MacViews under the Cocoa browser where the window
+  // modal dialogs are displayed as sheets, and their position is managed by a
+  // ConstrainedWindowSheetController instance.
+  if (!host_widget) {
+    widget->SetSize(size);
+    return;
+  }
+
   gfx::Point position = dialog_host->GetDialogPosition(size);
   views::Border* border = widget->non_client_view()->frame_view()->border();
   // Border may be null during widget initialization.
@@ -96,11 +108,8 @@ void UpdateModalDialogPosition(views::Widget* widget,
     position.set_y(position.y() - border->GetInsets().top());
   }
 
-  if (widget->is_top_level()) {
-    position +=
-        views::Widget::GetWidgetForNativeView(dialog_host->GetHostView())->
-            GetClientAreaBoundsInScreen().OffsetFromOrigin();
-  }
+  if (widget->is_top_level())
+    position += host_widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
 
   widget->SetBounds(gfx::Rect(position, size));
 }
