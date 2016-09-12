@@ -194,10 +194,12 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
     'target_bits': target_bits
   }
   if swarming:
-    waterfall['testers'][name]['swarming_dimensions'] = {
-      'gpu': swarming['gpu'],
-      'os': swarming['os']
-    }
+    waterfall['testers'][name]['swarming_dimensions'] = []
+    for dimension in swarming:
+      waterfall['testers'][name]['swarming_dimensions'].append({
+        'gpu': dimension['gpu'],
+        'os': dimension['os']
+      })
     waterfall['testers'][name]['swarming'] = True
 
   return waterfall
@@ -205,13 +207,10 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
 def get_fyi_waterfall_config():
   waterfall = {'builders':[], 'testers': {}}
   waterfall = add_tester(
-    waterfall, 'Win 10 Low-End 2 Core Perf',
+    waterfall, 'Win 10 Low-End Perf Tests',
     'win-low-end-2-core', 'win',
-    swarming={'gpu': '8086:22b1', 'os': 'Windows-10-10240'})
-  waterfall = add_tester(
-    waterfall, 'Win 10 Low-End 4 Core Perf',
-    'win-low-end-4-core', 'win',
-    swarming={'gpu': '1002:9830', 'os': 'Windows-10-10586'})
+    swarming=[{'gpu': '8086:22b1', 'os': 'Windows-10-10240'},
+    {'gpu': '1002:9830', 'os': 'Windows-10-10586'}])
   return waterfall
 
 def get_waterfall_config():
@@ -281,7 +280,7 @@ def get_waterfall_config():
 
   return waterfall
 
-def generate_telemetry_test(tester_config, benchmark_name, browser):
+def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
   # (At least, this was true some time ago.) Continue to use this
@@ -305,9 +304,7 @@ def generate_telemetry_test(tester_config, benchmark_name, browser):
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
-    'dimension_sets': [
-      tester_config['swarming_dimensions']
-    ]
+    'dimension_sets': swarming_dimensions
   }
 
   result = {
@@ -352,11 +349,11 @@ def generate_telemetry_tests(tester_config, benchmarks):
     browser_name ='release'
   for benchmark in benchmarks:
     test = generate_telemetry_test(
-      tester_config, benchmark.Name(), browser_name)
+      tester_config['swarming_dimensions'], benchmark.Name(), browser_name)
     isolated_scripts.append(test)
     # Now create another executable for this benchmark on the reference browser
     reference_test = generate_telemetry_test(
-      tester_config, benchmark.Name(),'reference')
+      tester_config['swarming_dimensions'], benchmark.Name(),'reference')
     isolated_scripts.append(reference_test)
   return isolated_scripts
 
