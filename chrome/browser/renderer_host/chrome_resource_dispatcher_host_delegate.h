@@ -56,8 +56,6 @@ class ChromeResourceDispatcherHostDelegate
   void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      int child_id,
-      int route_id,
       bool is_content_initiated,
       bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) override;

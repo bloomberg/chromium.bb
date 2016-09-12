@@ -2706,8 +2706,8 @@ ResourceDispatcherHostImpl::HandleDownloadStarted(
         ResourceRequestInfoImpl::ForRequest(request));
     ScopedVector<ResourceThrottle> throttles;
     delegate()->DownloadStarting(
-        request, request_info->GetContext(), request_info->GetChildID(),
-        request_info->GetRouteID(), is_content_initiated, true, &throttles);
+        request, request_info->GetContext(), is_content_initiated, true,
+        &throttles);
     if (!throttles.empty()) {
       handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
                                                   std::move(throttles)));

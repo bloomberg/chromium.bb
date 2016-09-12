@@ -267,8 +267,6 @@ void AwResourceDispatcherHostDelegate::RequestComplete(
 void AwResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    int child_id,
-    int route_id,
     bool is_content_initiated,
     bool must_download,
     ScopedVector<content::ResourceThrottle>* throttles) {
@@ -294,8 +292,10 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
+  // TODO(jam): http://crbug.com/645983 we will need to make this map work with
+  // both RFH IDs and FTN IDs.
   std::unique_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id,
+      AwContentsIoThreadClient::FromID(request_info->GetChildID(),
                                        request_info->GetRenderFrameID());
 
   // POST request cannot be repeated in general, so prevent client from

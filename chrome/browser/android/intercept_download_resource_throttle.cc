@@ -53,12 +53,10 @@ bool InterceptDownloadResourceThrottle::IsDownloadInterceptionEnabled() {
 
 InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
     net::URLRequest* request,
-    int render_process_id,
-    int render_view_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     bool must_download)
     : request_(request),
-      render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      wc_getter_(wc_getter),
       must_download_(must_download),
       weak_factory_(this) {
 }
@@ -156,7 +154,7 @@ void InterceptDownloadResourceThrottle::CheckCookiePolicy(
 void InterceptDownloadResourceThrottle::StartDownload(
     const DownloadInfo& info) {
   DownloadControllerBase::Get()->CreateGETDownload(
-      render_process_id_, render_view_id_, must_download_, info);
+      wc_getter_, must_download_, info);
   controller()->Cancel();
   RecordInterceptFailureReasons(NO_FAILURE);
 }

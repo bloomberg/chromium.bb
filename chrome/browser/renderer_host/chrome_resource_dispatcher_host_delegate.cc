@@ -132,15 +132,15 @@ namespace {
 
 ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate = NULL;
 
-void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                               render_view_id);
-  if (!rvh)
+void NotifyDownloadInitiatedOnUI(
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
+  content::WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
     return;
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DOWNLOAD_INITIATED,
-      content::Source<RenderViewHost>(rvh),
+      content::Source<content::WebContents>(web_contents),
       content::NotificationService::NoDetails());
 }
 
@@ -498,26 +498,25 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    int child_id,
-    int route_id,
     bool is_content_initiated,
     bool must_download,
     ScopedVector<content::ResourceThrottle>* throttles) {
+  const content::ResourceRequestInfo* info =
+        content::ResourceRequestInfo::ForRequest(request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NotifyDownloadInitiatedOnUI, child_id, route_id));
+      base::Bind(&NotifyDownloadInitiatedOnUI,
+      info->GetWebContentsGetterForRequest()));
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-    const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, info->GetWebContentsGetterForRequest(),
         request->url(), request->method()));
 #if BUILDFLAG(ANDROID_JAVA_UI)
     throttles->push_back(
         new chrome::InterceptDownloadResourceThrottle(
-            request, child_id, route_id, must_download));
+            request, info->GetWebContentsGetterForRequest(), must_download));
 #endif
   }
 

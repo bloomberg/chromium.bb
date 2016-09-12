@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_request_headers.h"
@@ -60,9 +61,10 @@ class DownloadControllerBase : public content::DownloadItem::Observer {
 
   // Starts a new download request with Android. Should be called on the
   // UI thread.
-  virtual void CreateGETDownload(int render_process_id, int render_view_id,
-                                 bool must_download,
-                                 const DownloadInfo& info) = 0;
+  virtual void CreateGETDownload(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      bool must_download,
+      const DownloadInfo& info) = 0;
 
   // Should be called when a download is started. It can be either a GET
   // request with authentication or a POST request. Notifies the embedding

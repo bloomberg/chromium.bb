@@ -235,7 +235,8 @@ bool DownloadController::HasFileAccessPermission(
 }
 
 void DownloadController::CreateGETDownload(
-    int render_process_id, int render_view_id, bool must_download,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    bool must_download,
     const DownloadInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -246,15 +247,15 @@ void DownloadController::CreateGETDownload(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadController::StartAndroidDownload,
                  base::Unretained(this),
-                 render_process_id, render_view_id, must_download, info));
+                 wc_getter, must_download, info));
 }
 
 void DownloadController::StartAndroidDownload(
-    int render_process_id, int render_view_id, bool must_download,
-    const DownloadInfo& info) {
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    bool must_download, const DownloadInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
+  WebContents* web_contents = wc_getter.Run();
   if (!web_contents) {
     // The view went away. Can't proceed.
     LOG(ERROR) << "Download failed on URL:" << info.url.spec();
@@ -264,18 +265,17 @@ void DownloadController::StartAndroidDownload(
   AcquireFileAccessPermission(
       web_contents,
       base::Bind(&DownloadController::StartAndroidDownloadInternal,
-                 base::Unretained(this), render_process_id, render_view_id,
-                 must_download, info));
+                 base::Unretained(this), wc_getter, must_download, info));
 }
 
 void DownloadController::StartAndroidDownloadInternal(
-    int render_process_id, int render_view_id, bool must_download,
-    const DownloadInfo& info, bool allowed) {
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    bool must_download, const DownloadInfo& info, bool allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!allowed)
     return;
 
-  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
+  WebContents* web_contents = wc_getter.Run();
   // The view went away. Can't proceed.
   if (!web_contents)
     return;

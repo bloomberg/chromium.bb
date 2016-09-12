@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/download/download_controller_base.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/cookies/cookie_store.h"
 
@@ -22,10 +23,10 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
  public:
   static bool IsDownloadInterceptionEnabled();
 
-  InterceptDownloadResourceThrottle(net::URLRequest* request,
-                                    int render_process_id,
-                                    int render_view_id,
-                                    bool must_download);
+  InterceptDownloadResourceThrottle(
+      net::URLRequest* request,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      bool must_download);
 
   // content::ResourceThrottle implementation:
   void WillProcessResponse(bool* defer) override;
@@ -40,8 +41,7 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
 
   // Set to true when if we want chrome to handle the download.
   const net::URLRequest* request_;
-  int render_process_id_;
-  int render_view_id_;
+  content::ResourceRequestInfo::WebContentsGetter wc_getter_;
   bool must_download_;
 
   base::WeakPtrFactory<InterceptDownloadResourceThrottle> weak_factory_;

@@ -324,7 +324,7 @@ enum NotificationType {
   // Sent when a download is initiated. It is possible that the download will
   // not actually begin due to the DownloadRequestLimiter cancelling it
   // prematurely.
-  // The source is the corresponding RenderViewHost. There are no details.
+  // The source is the corresponding WebContents. There are no details.
   NOTIFICATION_DOWNLOAD_INITIATED,
 
   // Misc --------------------------------------------------------------------

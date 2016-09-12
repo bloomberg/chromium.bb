@@ -18,7 +18,7 @@ MockDownloadController::MockDownloadController()
 MockDownloadController::~MockDownloadController() {}
 
 void MockDownloadController::CreateGETDownload(
-    int render_process_id, int render_view_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     bool must_download, const DownloadInfo& info) {
 }
 

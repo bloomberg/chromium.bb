@@ -82,8 +82,6 @@ class TestResourceDispatcherHostDelegate final
 
   void DownloadStarting(net::URLRequest* request,
                         ResourceContext* resource_context,
-                        int child_id,
-                        int route_id,
                         bool is_content_initiated,
                         bool must_download,
                         ScopedVector<ResourceThrottle>* throttles) override {
