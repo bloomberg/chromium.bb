@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka msimbo huu wa PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Njia ya mkato ya kutumia mbinu ya kuingiza data inayofuata imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
+<translation id="1127238861555034875">Hali ya lenzi</translation>
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
 <translation id="1252999807265626933">Inachaji kwenye <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Kibodi ya skrini imezimwa</translation>
@@ -84,6 +85,8 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3147142846278915599">Kifungua programu (inasawazisha programu...)</translation>
 <translation id="3157169093162779309">Washa kufuli la kuzungusha</translation>
 <translation id="3294437725009624529">Mgeni</translation>
+<translation id="3335772982573114336">Kidokezo kipya</translation>
+<translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3371140690572404006">Kifaa cha USB-C (mlango wa upande wa kulia mbele)</translation>
 <translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
@@ -97,6 +100,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3683428399328702079">Ubora wa <ph name="DISPLAY_NAME" /> ulibadilishwa hadi <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wezesha Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Piga picha eneo</translation>
 <translation id="372094107052732682">Bofya Ctrl + Shift + Q mara mbili ili kuacha.</translation>
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
 <translation id="3775358506042162758">Unaweza tu kuwa na hadi akaunti tatu zilizoingiwa kwa wakati mmoja</translation>
@@ -130,6 +134,8 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mipangilio ya Hifadhi ya Google...</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha midia vinapatikana</translation>
+<translation id="5170568018924773124">Onyesha katika folda</translation>
+<translation id="5191140942132549112">ONYESHA MASWALI</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="5238774010593222950">Huwezi kuingia katika akaunti nyingine.</translation>
 <translation id="532063867737390965">Msimamizi amezima mipangilio ya mtandao huu.</translation>
@@ -167,6 +173,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6203030746557259519">Onyesho Pepe</translation>
 <translation id="6248847161401822652">Bofya "Control" na "Shift" na Q kwa pamoja mara mbili ili kuacha.</translation>
+<translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ilizungushwa hadi <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS kutoka <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
@@ -176,6 +183,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6459472438155181876">Inapanua skrini kwenye <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Kifaa cha USB-C (mlango wa kulia)</translation>
 <translation id="6501401484702599040">Inatuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">Piga picha skrini</translation>
 <translation id="6550675742724504774">Chaguo</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Anwani ya IP</translation>
@@ -195,6 +203,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="7097613348211027502">ChromeVox (maoni yaliyotamkwa) yamewashwa. Bonyeza Ctrl+Alt+Z ili uzime.</translation>
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
+<translation id="7129360219436193655">Hali ya kielekezi leza</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK imeamilishwa. 
@@ -221,6 +230,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8077816382010018681">Kichwa cha arifa ya Kipengele cha QU huenda hapa</translation>
 <translation id="8103386449138765447">Ujumbe wa SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Tupe maoni yako kuhusu huduma yetu kwa kujibu maswali machache.</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8206859287963243715">Simu ya Mkononi</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
@@ -232,7 +242,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Bofya ili kutazama</translation>
 <translation id="8825534185036233643">Kuakisi ukitumia zaidi ya skrini mbili hakuruhusiwi.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

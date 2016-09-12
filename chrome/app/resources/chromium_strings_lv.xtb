@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Izmantot Chromium ģenerētu paroli</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>
 <translation id="390894725198123737">Operētājsistēmā Mac paroles var tikt saglabātas sistēmā Keychain, un citi Chromium lietotāji, kuri koplieto šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
-<translation id="3994125055863078356">Nevarēja iestatīt Chromium kā noklusējuma pārlūku.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4182290826692170034">Chromium ir jūsu noklusējuma pārlūks.</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>
 <translation id="5680901439334282664">pierakstieties pārlūkā Chromium</translation>
 <translation id="5698481217667032250">Rādīt Chromium šajā valodā</translation>
+<translation id="5726838626470692954">Jūsu konta pārzinim ir jānoņem jūs no pārlūka Chromium un atkal jāpievieno.</translation>
 <translation id="5768914737813585044">Rādīt Chromium OS šajā valodā</translation>
 <translation id="5772805321386874569">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> operētājsistēma Chromium)</translation>
 <translation id="5796460469508169315">Chromium ir gandrīz gatavs!</translation>
@@ -178,6 +178,7 @@
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai izmantojiet jaunāku Chromium versiju.</translation>
 <translation id="6734080038664603509">Atjaunināt &amp;Chromium</translation>
+<translation id="6734291798041940871">Pārlūks Chromium jau ir instalēts visiem lietotājiem jūsu datorā.</translation>
 <translation id="6757767188268205357">Netraucējiet mani</translation>
 <translation id="6810143991807788455">Palīdziet uzlabot pārlūku Chromium, ziņojot par pašreizējiem iestatījumiem.</translation>
 <translation id="6838494703713445896">Chromium verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza derīgu Certificate Transparency informāciju.</translation>
@@ -203,7 +204,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7223968959479464213">Uzdevumu pārvaldnieks — Chromium</translation>
 <translation id="722928257909516027">Rādīt Chromium izvēlni</translation>
 <translation id="731644333568559921">Atjaunināt &amp;Chromium OS</translation>
-<translation id="731795002583552498">Notiek Chromium atjaunināšana</translation>
 <translation id="7318036098707714271">Jūsu preferenču fails ir bojāts vai nederīgs. Chromium nespēj atkopt jūsu iestatījumus.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Jauns logs</translation>

@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
-<translation id="1014825444426747588">வெற்று</translation>
 <translation id="1018939186200882850">மெனு உருப்படி</translation>
 <translation id="1020833440720551630">ஆடியோ டிராக்கை முடக்கு</translation>
 <translation id="10623998915015855">நிலைமாற்றுதல் பொத்தான்</translation>
 <translation id="1088086359088493902">வினாடிகள்</translation>
 <translation id="1171774979989969504">ஒரு மின்னஞ்சல் முகவரியை உள்ளிடவும்.</translation>
+<translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1188858454923323853">ஈடுசெய்யக்கூடியது</translation>
 <translation id="1206619573307042055">மார்கியூ</translation>
 <translation id="1206693055195146388">ஸ்லைடர்</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">தொலைநிலைச் சாதனத்தில் இயக்கு</translation>
 <translation id="1842960171412779397">தேர்ந்தெடு</translation>
+<translation id="1854180393107901205">அனுப்புவதை நிறுத்து</translation>
 <translation id="1880518467580572141">சுற்றுவரி</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">நிலை</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">சொல்</translation>
 <translation id="3822383571486410024">இந்த உரையை <ph name="MIN_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் அதிகமாக (தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்) நீட்டிக்கவும்.</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ஐத் தொடர்ந்து வரும் பகுதியில் '<ph name="INVALIDCHARACTER" />' சின்னம் இருக்கக்கூடாது.</translation>
+<translation id="3846214748874656680">முழுத்திரை வேண்டாம்</translation>
 <translation id="3924558731517983934">பயன்பாடு</translation>
 <translation id="3960700977367013758">உருட்டல் பட்டி</translation>
 <translation id="4103419683916926126">மில்லிவினாடிகள்</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">Search</translation>
 <translation id="4812940957355064477">எண்ணை உள்ளிடுக.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> தேர்ந்தெடுக்கப்பட்டன</translation>
+<translation id="4992066212339426712">ஒலி இயக்கு</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' ஐத் தொடர்ந்து ஒரு பகுதியை உள்ளிடவும். '<ph name="INVALIDADDRESS" />' முழுமைப்பெறாமல் உள்ளது.</translation>
 <translation id="5034860022980953847">செயல்நிலை காட்டி</translation>
 <translation id="5048533449481078685">பட்டியல் குறிப்பான்</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">முழுத்திரையிலிருந்து வெளியேறு</translation>
 <translation id="5476505524087279545">தேர்வு நீக்கு</translation>
 <translation id="5516424706154626233">தேதி தேர்ந்தெடுப்பான்</translation>
+<translation id="5537725057119320332">அனுப்பு</translation>
 <translation id="5546461542133609677">ஒலி இயக்கு</translation>
 <translation id="561939826962581046">நேரம்</translation>
 <translation id="5641012560118721995">மறுஇயக்கத்தை இடைநிறுத்து</translation>
 <translation id="5643186887447432888">பொத்தான்</translation>
+<translation id="57838592816432529">ஒலியடக்கு</translation>
 <translation id="583281660410589416">தெரியாதது</translation>
 <translation id="5843503607508392247">மற்றவை…</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
+<translation id="588258955323874662">முழுத்திரை</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
 <translation id="5944544982112848342">2048 (உயர் தரம்)</translation>
 <translation id="5966707198760109579">வாரம்</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">ஸ்டெப்பர்</translation>
 <translation id="6739588121953935928">அளவுகோல்</translation>
 <translation id="6755330956360078551">உதவிக்குறிப்பு</translation>
+<translation id="6790428901817661496">இயக்கு</translation>
 <translation id="6820355525329141109">செருகுநிரல் ஏற்றப்படவில்லை.</translation>
 <translation id="6843725295806269523">ஒலியடக்கு</translation>
 <translation id="6845533974506654842">அழுத்துக</translation>

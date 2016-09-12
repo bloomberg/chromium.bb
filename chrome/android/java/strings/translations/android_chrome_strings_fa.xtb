@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1201402288615127009">بعدی</translation>
+<translation id="1204037785786432551">بارگیری پیوند</translation>
 <translation id="1206892813135768548">کپی نوشتار پیوند</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="1211530540767271776">‏هیچ دستگاه USB در اینجا وجود ندارد</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. دسترسی به مکان <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{حذف ۱ مورد انتخاب‌شده}one{حذف # مورد انتخاب‌شده}other{حذف # مورد انتخاب‌شده}}</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1641113438599504367">مرور ایمن</translation>
 <translation id="164269334534774161">شما در حال تماشای کپی آفلاین این صفحه از <ph name="CREATION_TIME" /> هستید</translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
 <translation id="2811892995384186721">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
+<translation id="2833899785646504169">اضافه نشد</translation>
 <translation id="2836148919159985482">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2870560284913253234">سایت</translation>
@@ -179,7 +182,7 @@
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
-<translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدیویی</translation>
+<translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3117051980354074377">‏برای دسترسی به نشانک‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3149891296864842641">گزینه ارسال</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">‏برای دسترسی به نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید.</translation>
 <translation id="3485544713029068372">‏Smart Lock برای گذرواژه‌ها</translation>
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
+<translation id="3493531032208478708">درباره محتوای پیشنهادی <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
 <translation id="3522247891732774234">به‌روزرسانی موجود است. گزینه‌های بیشتر</translation>
 <translation id="3527085408025491307">پوشه</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">صفحات وب در نزدیکی هستند</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="3810973564298564668">مدیریت</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4056223980640387499">سپیا</translation>
+<translation id="4060598801229743805">گزینه‌هایی در نزدیکی بالای صفحه دردسترس هستند</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به خدمات داده‌های برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
@@ -335,6 +341,7 @@
 <translation id="5131405117025179004">ویرایش حساب ذخیره‌شده</translation>
 <translation id="5138299137310274655">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="515227803646670480">پاک کردن داده ذخیره شده</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />فوری<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">این یک حساب کودک است</translation>
 <translation id="5161254044473106830">عنوان مورد نیاز است</translation>
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE" /> در این سایت را پیشنهاد دهد؟</translation>
@@ -386,7 +393,7 @@
 <translation id="5646376287012673985">مکان</translation>
 <translation id="5659593005791499971">رایانامه</translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
-<translation id="5676636989614905379">ویدیو در <ph name="SCREEN_NAME" /> پخش نمی‌شود.</translation>
+<translation id="5676636989614905379">ویدئو در <ph name="SCREEN_NAME" /> پخش نمی‌شود.</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5708031556037168012">داده‌های کنونی در دستگاه شما نگه‌داشته می‌شوند و داده‌ها به‌صورت دائم در <ph name="TO_ACCOUNT" /> وارد می‌شوند.</translation>
@@ -416,7 +423,7 @@
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
-<translation id="6010869025736512584">در حال دسترسی به ورودی ویدیویی</translation>
+<translation id="6010869025736512584">در حال دسترسی به ورودی ویدئویی</translation>
 <translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6031101910111098835">کوچک شده - برای بزرگ کردن کلیک کنید</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -454,8 +461,9 @@
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی وب</translation>
-<translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
+<translation id="6463070039183944536">درحال افزودن...</translation>
 <translation id="6464825623202322042">این دستگاه</translation>
+<translation id="6475951671322991020">بارگیری ویدیو</translation>
 <translation id="6477460825583319731">آدرس رایانامه نامعتبر</translation>
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
@@ -490,6 +498,7 @@
 <translation id="6846298663435243399">در حال بارگیری…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
 <translation id="6857778194843072568">‏ارسال فقط از طریق Wi-Fi</translation>
+<translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏%1$d برگه باز}one{‏%1$d برگه باز}other{‏%1$d برگه باز}}</translation>
@@ -499,6 +508,7 @@
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6978479750597523876">بازنشانی تنظیمات ترجمه</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
+<translation id="6985347914332179298">بارگیری‌هایی اینجا وجود ندارد</translation>
 <translation id="6990079615885386641">‏دریافت برنامه از فروشگاه Google Play: ‏<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
 <translation id="6992289844737586249">قبل از اجازه به سایت‌ها برای استفاده از میکروفون ابتدا سؤال شود (توصیه می‌شود)</translation>
@@ -525,6 +535,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
 <translation id="7327835590071894791">اکنون برگه‌تان در پس‌زمینه قرار دارد.</translation>
 <translation id="7347770551817603360">محتوای آفلاین</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">نوع:</translation>
 <translation id="7378627244592794276">نه</translation>
@@ -653,6 +664,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="885701979325669005">فضای ذخیره‌سازی</translation>
+<translation id="8872506776304248286">باز کردن در برنامه</translation>
 <translation id="8901170036886848654">نشانکی پیدا نشد</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>

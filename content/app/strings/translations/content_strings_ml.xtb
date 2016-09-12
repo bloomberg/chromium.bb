@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="1014825444426747588">ശൂന്യം</translation>
 <translation id="1018939186200882850">മെനു ഇനം</translation>
 <translation id="1020833440720551630">ഓഡിയോ ട്രാക്ക് നിശബ്‌ദമാക്കുക</translation>
 <translation id="10623998915015855">ടോഗിൾ ബട്ടൺ</translation>
 <translation id="1088086359088493902">സെക്കൻഡ്</translation>
 <translation id="1171774979989969504">ദയവായി ഒരു ഇമെയില്‍ വിലാസം നല്‍കുക.</translation>
+<translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
 <translation id="1188858454923323853">കോംപ്ലിമെന്ററി</translation>
 <translation id="1206619573307042055">മാർക്യൂ</translation>
 <translation id="1206693055195146388">സ്ലൈഡർ</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">വിദൂര ഉപകരണത്തിൽ പ്ലേ ചെയ്യുക</translation>
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
+<translation id="1854180393107901205">കാസ്റ്റ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="1880518467580572141">ഔട്ട്‌ലൈൻ</translation>
 <translation id="1921819250265091946">തീയതി</translation>
 <translation id="1930711995431081526">നില</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">പദം</translation>
 <translation id="3822383571486410024">ഈ ടെക്‌സ്റ്റിന്റെ ദൈർഘ്യം <ph name="MIN_CHARACTERS" /> അല്ലെങ്കിൽ അതിൽക്കൂടുതൽ പ്രതീകങ്ങൾ നൽകി കൂട്ടുക. (നിങ്ങൾ നിലവിൽ <ph name="CURRENT_LENGTH" /> പ്രതീകങ്ങളാണ് ഉപയോഗിക്കുന്നത്).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' എന്നതിനുശേഷം വരുന്ന ഒരു ഭാഗത്തിൽ '<ph name="INVALIDCHARACTER" />' ചിഹ്നം ഉണ്ടാകരുത്.</translation>
+<translation id="3846214748874656680">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="3924558731517983934">അപ്ലിക്കേഷൻ</translation>
 <translation id="3960700977367013758">സ്‌ക്രോൾ ബാർ</translation>
 <translation id="4103419683916926126">മില്ലിസെക്കൻഡ്</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">ഒരു നമ്പർ നൽകുക.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> തിരഞ്ഞെടുത്തു</translation>
+<translation id="4992066212339426712">അൺമ്യൂട്ടുചെയ്യുക</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
 <translation id="5034860022980953847">'പ്രോഗ്രസ്' ഇൻഡിക്കേറ്റർ</translation>
 <translation id="5048533449481078685">പട്ടിക മാര്‍ക്കര്‍</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="5476505524087279545">അണ്‍ചെക്ക് ചെയ്യുക</translation>
 <translation id="5516424706154626233">തീയതി പിക്കർ</translation>
+<translation id="5537725057119320332">കാസ്‌റ്റുചെയ്യുക</translation>
 <translation id="5546461542133609677">ശബ്‌ദമുള്ളതാക്കുക</translation>
 <translation id="561939826962581046">സമയം</translation>
 <translation id="5641012560118721995">പ്ലേബാക്ക് താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="5643186887447432888">ബട്ടൺ</translation>
+<translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
 <translation id="583281660410589416">അജ്ഞാതം</translation>
 <translation id="5843503607508392247">മറ്റുള്ളവ...</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
+<translation id="588258955323874662">പൂര്‍‌ണ്ണസ്‌ക്രീന്‍</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
 <translation id="5966707198760109579">ആഴ്‌ച</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">സ്റ്റെപ്പർ</translation>
 <translation id="6739588121953935928">റൂളർ</translation>
 <translation id="6755330956360078551">ടൂൾടിപ്പ്</translation>
+<translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="6820355525329141109">പ്ലഗിൻ ലോഡുചെയ്യാനായില്ല.</translation>
 <translation id="6843725295806269523">നിശബ്‌ദമാക്കുക</translation>
 <translation id="6845533974506654842">അമര്‍ത്തുക</translation>

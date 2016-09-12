@@ -102,7 +102,6 @@
 <translation id="3883381313049582448">Chromium દ્વારા બનાવેલ પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="3889543394854987837">Chromium ને ખોલવા માટે તમારા નામને ક્લિક કરો અને બ્રાઉઝ કરવાનું પ્રારંભ કરો.</translation>
 <translation id="390894725198123737">Mac પર, પાસવર્ડ્સ તમારા કીચેન પર સાચવી શકાય છે અને આ OS X એકાઉન્ટ શેર કરતાં અન્ય Chromium વપરાશકર્તાઓ દ્વારા ઍક્સેસ અથવા સમન્વયિત કરી શકાય છે.</translation>
-<translation id="3994125055863078356">Chromium ડિફૉલ્ટ બ્રાઉઝર બનવામાં સમર્થ ન હતું.</translation>
 <translation id="4050175100176540509">નવીનતમ સંસ્કરણમાં મહત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
 <translation id="4077262827416206768">કૃપા કરીને બધી Chromium વિંડોઝને બંધ કરો અને આ ફેરફારને પ્રભાવમાં લાવવા માટે Chromium ને ફરી શરૂ કરો.</translation>
 <translation id="4182290826692170034">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર છે. વાહ!</translation>
@@ -145,6 +144,7 @@
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5698481217667032250">આ ભાષામાં Chromium પ્રદર્શિત કરો</translation>
+<translation id="5726838626470692954">તમારા સંચાલકે તમને Chromium માંથી દૂર કરી અને તેના પર પાછા ઉમેરવા આવશ્યક છે.</translation>
 <translation id="5768914737813585044">આ ભાષામાં Chromium OS પ્રદર્શિત કરો</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />પુનઃપ્રારંભ કરવું<ph name="END_BUTTON" /> આવશ્યક છે)</translation>
 <translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
@@ -181,6 +181,7 @@
 
 કેટલીક સુવિધાઓ ઉપલબ્ધ થઈ શકે છે. કૃપા કરીને ભિન્ન પ્રોફાઇલ નિર્દેશિકાનો ઉલ્લેખ કરો અથવા Chromium નાં નવા સંસ્કરણનો ઉપયોગ કરો.</translation>
 <translation id="6734080038664603509">&amp;Chromium ને અપડેટ કરો</translation>
+<translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
 <translation id="6757767188268205357">મને બગ રીતે કરશો નહીં</translation>
 <translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="6838494703713445896">Chromium એ ચકાસ્યું કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે. સર્વરે માન્ય પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડેલી.</translation>
@@ -206,7 +207,6 @@
 <translation id="7223968959479464213">કાર્ય વ્યવસ્થાપક - Chromium</translation>
 <translation id="722928257909516027">Chromium મેનૂ દર્શાવો</translation>
 <translation id="731644333568559921">&amp;Chromium OS ને અપડેટ કરો</translation>
-<translation id="731795002583552498">Chromium ને અપડેટ કરી રહ્યું છે</translation>
 <translation id="7318036098707714271">તમારી પસંદગીઓ ફાઇલ દૂષિત અથવા અમાન્ય છે.
 
 Chromium તમારી સેટિંગ્સને પુનઃપ્રાપ્ત કરવામાં અક્ષમ છે.</translation>

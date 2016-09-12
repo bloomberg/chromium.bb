@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Gán không thành công.  Không có công cụ.</translation>
 <translation id="117738548141695034">Nút gạt Blimp</translation>
 <translation id="1416550906796893042">Phiên bản ứng dụng</translation>
+<translation id="1491042665327336022">Vui lòng khởi động lại ứng dụng.</translation>
 <translation id="1750179245464827362">Hiển thị thông tin gỡ lỗi</translation>
 <translation id="2004526128230838685">Gán không thành công. Sự cố không xác định.</translation>
 <translation id="2023631438558435272">Gán không thành công.  Phản hồi không hợp lệ.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Gán không thành công.  Yêu cầu mạng không thành công.</translation>
 <translation id="2789927415041640472">Vui lòng khởi động lại ứng dụng để sử dụng cấu hình trình gán mới.</translation>
 <translation id="3046825211487065480">Gán không thành công.  Yêu cầu thứ hai đã được gửi trước khi yêu cầu thứ nhất được phản hồi.</translation>
+<translation id="307654885162326571">Nhập văn bản</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
 <translation id="3346106862344060497">Đã kết nối công cụ.</translation>
 <translation id="3407245330823033366">Vui lòng chọn tài khoản để sử dụng với Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7795546637165553439">Cài đặt Blimp</translation>
 <translation id="7961542533680218955">Đã gán thành công.</translation>
+<translation id="8135971362156222300">Vui lòng đăng nhập vào tài khoản Google để bật Blimp.</translation>
 <translation id="8514856595257368555">Đã truy xuất mã thông báo.</translation>
 <translation id="8880704056643418312">Cam kết</translation>
 </translationbundle>

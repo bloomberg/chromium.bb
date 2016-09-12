@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Napalitan na ang shortcut para sa paglipat sa susunod na pamamaraan ng pag-input. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
+<translation id="1127238861555034875">Magnifying glass mode</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1252999807265626933">Nagcha-charge mula sa <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
@@ -84,6 +85,8 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="3157169093162779309">I-enable ang lock sa pag-rotate</translation>
 <translation id="3294437725009624529">Bisita</translation>
+<translation id="3335772982573114336">Bagong tala</translation>
+<translation id="3364721542077212959">Mga stylus tool</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
@@ -97,6 +100,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3683428399328702079">Ginawang <ph name="RESOLUTION" /> ang resolution ng <ph name="DISPLAY_NAME" /></translation>
 <translation id="370649949373421643">Paganahin ang Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">I-capture ang rehiyon</translation>
 <translation id="372094107052732682">Pindutin ang Ctrl+Shift+Q nang dalawang beses upang lumabas.</translation>
 <translation id="3742055079367172538">Nakakuha na ng screenshot</translation>
 <translation id="3775358506042162758">Maaari ka lang magkaroon ng hanggang sa tatlong account sa multiple na pag-sign-in.</translation>
@@ -130,6 +134,8 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mga setting ng Google Drive ...</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
+<translation id="5170568018924773124">Ipinakita sa folder</translation>
+<translation id="5191140942132549112">IPAKITA ANG MGA TANONG</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5238774010593222950">Hindi makapag-sign in sa ibang account.</translation>
 <translation id="532063867737390965">Na-disable ng administrator ang network setting na ito.</translation>
@@ -167,6 +173,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6203030746557259519">Virtual na Display</translation>
 <translation id="6248847161401822652">Pindutin ang Control Shift Q nang dalawang beses upang lumabas.</translation>
+<translation id="6297287540776456956">Gamitin ang stylus upang pumili ng rehiyon</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS mula kay <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
@@ -176,6 +183,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C device (port sa kanan)</translation>
 <translation id="6501401484702599040">Kina-cast ang screen sa <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">I-capture ang screen</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -196,6 +204,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).
 Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
+<translation id="7129360219436193655">Laser pointer mode</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Naka-on ang CAPS LOCK.
@@ -222,6 +231,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
 <translation id="8077816382010018681">Dito ilalagay ang pamagat ng notification ng Feature na QU</translation>
 <translation id="8103386449138765447">Mga mensaheng SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin sa pamamagitan ng pagsagot sa ilang tanong.</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8206859287963243715">Cellular</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
@@ -233,7 +243,6 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Nakakabit ang low-power charger</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">I-click upang tingnan</translation>
 <translation id="8825534185036233643">Hindi sinusuportahan ang pagmi-mirror sa mahigit sa dalawang display.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1014825444426747588">порожнє</translation>
 <translation id="1018939186200882850">пункт меню</translation>
 <translation id="1020833440720551630">вимкнути звукову доріжку</translation>
 <translation id="10623998915015855">перемикач</translation>
 <translation id="1088086359088493902">Секунди</translation>
 <translation id="1171774979989969504">Введіть електронну адресу.</translation>
+<translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">додатково</translation>
 <translation id="1206619573307042055">область виділення</translation>
 <translation id="1206693055195146388">повзунок</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">д.п./п.п.</translation>
 <translation id="1832974991323546415">відтворити на віддаленому пристрої</translation>
 <translation id="1842960171412779397">вибрати</translation>
+<translation id="1854180393107901205">Зупинити трансляцію</translation>
 <translation id="1880518467580572141">структура</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">термін</translation>
 <translation id="3822383571486410024">У тексті має бути на менше <ph name="MIN_CHARACTERS" /> символів (ви ввели <ph name="CURRENT_LENGTH" /> символів).</translation>
 <translation id="383465348367842624">Частина перед знаком "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
+<translation id="3846214748874656680">Вийти з повноекранного режиму</translation>
 <translation id="3924558731517983934">додаток</translation>
 <translation id="3960700977367013758">смуга прокрутки</translation>
 <translation id="4103419683916926126">Мілісекунди</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">пошук</translation>
 <translation id="4812940957355064477">Введіть число.</translation>
 <translation id="4975562563186953947">Вибрано <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
 <translation id="5034860022980953847">індикатор перебігу</translation>
 <translation id="5048533449481078685">маркер списку</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">вийти з повноекранного режиму</translation>
 <translation id="5476505524087279545">зняти прапорець</translation>
 <translation id="5516424706154626233">засіб вибору дати</translation>
+<translation id="5537725057119320332">Акторський склад</translation>
 <translation id="5546461542133609677">увімкнути звук</translation>
 <translation id="561939826962581046">час</translation>
 <translation id="5641012560118721995">призупинити відтворення</translation>
 <translation id="5643186887447432888">кнопка</translation>
+<translation id="57838592816432529">Вимкнути звук</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5843503607508392247">Інші...</translation>
 <translation id="5860033963881614850">Вимк.</translation>
+<translation id="588258955323874662">Повноекранний режим</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5944544982112848342">2048 (Високий рівень)</translation>
 <translation id="5966707198760109579">Тиждень</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">повторювач stepper</translation>
 <translation id="6739588121953935928">лінійка</translation>
 <translation id="6755330956360078551">підказка</translation>
+<translation id="6790428901817661496">Відтворити</translation>
 <translation id="6820355525329141109">Не вдалося завантажити плагін.</translation>
 <translation id="6843725295806269523">вимкнути звук</translation>
 <translation id="6845533974506654842">натиснути</translation>

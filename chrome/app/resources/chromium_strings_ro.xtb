@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Folosește parola generată de Chromium</translation>
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="390894725198123737">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care folosesc același cont de OS X.</translation>
-<translation id="3994125055863078356">Chromium nu a putut deveni browserul prestabilit.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="4077262827416206768">Închideți toate ferestrele Chromium și reporniți sistemul de operare pentru ca această modificare să aibă efect.</translation>
 <translation id="4182290826692170034">Chromium este browserul prestabilit. Ura!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>
 <translation id="5680901439334282664">conectează-te la Chromium</translation>
 <translation id="5698481217667032250">Afișează Chromium în această limbă</translation>
+<translation id="5726838626470692954">Administratorul trebuie să te elimine și să te adauge din nou în Chromium.</translation>
 <translation id="5768914737813585044">Afișează sistemul de operare Chromium în această limbă</translation>
 <translation id="5772805321386874569">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium este aproape configurat.</translation>
@@ -178,6 +178,7 @@
 
 Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune mai nouă de Chromium.</translation>
 <translation id="6734080038664603509">Actualizați &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="6757767188268205357">Nu mă mai întreba</translation>
 <translation id="6810143991807788455">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale</translation>
 <translation id="6838494703713445896">Chromium s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații valide privind Certificate Transparency.</translation>
@@ -203,7 +204,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="7223968959479464213">Manager de activități - Chromium</translation>
 <translation id="722928257909516027">Afișează meniul Chromium</translation>
 <translation id="731644333568559921">Actualizați sistemul de operare &amp;Chromium</translation>
-<translation id="731795002583552498">Chromium se actualizează</translation>
 <translation id="7318036098707714271">Fișierul de preferințe este fie deteriorat, fie nevalid.
 
 Chromium nu poate recupera setările.</translation>

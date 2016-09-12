@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1014825444426747588">空白</translation>
 <translation id="1018939186200882850">選單項目</translation>
 <translation id="1020833440720551630">將音軌設為靜音</translation>
 <translation id="10623998915015855">切換按鈕</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="1171774979989969504">請輸入電子郵件地址。</translation>
+<translation id="1178581264944972037">暫停</translation>
 <translation id="1188858454923323853">補充</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">滑桿</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">在遠端裝置上播放</translation>
 <translation id="1842960171412779397">選取</translation>
+<translation id="1854180393107901205">停止投放</translation>
 <translation id="1880518467580572141">大綱</translation>
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">狀態</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">字詞</translation>
 <translation id="3822383571486410024">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH" />)。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
+<translation id="3846214748874656680">結束全螢幕</translation>
 <translation id="3924558731517983934">應用程式</translation>
 <translation id="3960700977367013758">捲軸</translation>
 <translation id="4103419683916926126">毫秒</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">請輸入一個數字。</translation>
 <translation id="4975562563186953947">已選取 <ph name="SELECTED_COUNT" /> 個項目</translation>
+<translation id="4992066212339426712">取消靜音</translation>
 <translation id="49969490063480558">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
 <translation id="5034860022980953847">進度指標</translation>
 <translation id="5048533449481078685">清單標記</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">退出全螢幕</translation>
 <translation id="5476505524087279545">取消選取</translation>
 <translation id="5516424706154626233">日期選擇器</translation>
+<translation id="5537725057119320332">投放</translation>
 <translation id="5546461542133609677">取消靜音</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">暫停播放</translation>
 <translation id="5643186887447432888">按鈕</translation>
+<translation id="57838592816432529">靜音</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5843503607508392247">其他...</translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="588258955323874662">全螢幕</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5944544982112848342">2048 (高級)</translation>
 <translation id="5966707198760109579">週</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">步進器</translation>
 <translation id="6739588121953935928">尺規</translation>
 <translation id="6755330956360078551">工具提示</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="6820355525329141109">無法載入外掛程式。</translation>
 <translation id="6843725295806269523">靜音</translation>
 <translation id="6845533974506654842">按下</translation>

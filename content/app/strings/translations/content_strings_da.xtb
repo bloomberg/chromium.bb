@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1014825444426747588">tom</translation>
 <translation id="1018939186200882850">menupunkt</translation>
 <translation id="1020833440720551630">slå lydspor fra</translation>
 <translation id="10623998915015855">til/fra-knap</translation>
 <translation id="1088086359088493902">Sekunder</translation>
 <translation id="1171774979989969504">Angiv en e-mailadresse.</translation>
+<translation id="1178581264944972037">Pause</translation>
 <translation id="1188858454923323853">supplerende</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">skyder</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">f.m./e.m.</translation>
 <translation id="1832974991323546415">afspil på en enhed via fjernadgang</translation>
 <translation id="1842960171412779397">vælg</translation>
+<translation id="1854180393107901205">Stop med at caste</translation>
 <translation id="1880518467580572141">Oversigt</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Forlæng denne tekst til <ph name="MIN_CHARACTERS" /> eller flere tegn (du bruger i øjeblikket <ph name="CURRENT_LENGTH" /> tegn).</translation>
 <translation id="383465348367842624">Den del, der kommer før "<ph name="ATSIGN" />", må ikke indeholde "<ph name="INVALIDCHARACTER" />".</translation>
+<translation id="3846214748874656680">Afslut fuld skærm</translation>
 <translation id="3924558731517983934">applikation</translation>
 <translation id="3960700977367013758">rullepanel</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">søg</translation>
 <translation id="4812940957355064477">Angiv et nummer.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> er valgt</translation>
+<translation id="4992066212339426712">Slå lyden til</translation>
 <translation id="49969490063480558">Angiv den del, der kommer efter "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" er ufuldstændig.</translation>
 <translation id="5034860022980953847">statusindikator</translation>
 <translation id="5048533449481078685">listemarkering</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">afslut fuld skærm</translation>
 <translation id="5476505524087279545">fjern markering</translation>
 <translation id="5516424706154626233">datovælger</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">slå lyd til</translation>
 <translation id="561939826962581046">tidspunkt</translation>
 <translation id="5641012560118721995">pause</translation>
 <translation id="5643186887447432888">knap</translation>
+<translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="583281660410589416">Ukendt</translation>
 <translation id="5843503607508392247">Andet...</translation>
 <translation id="5860033963881614850">Fra</translation>
+<translation id="588258955323874662">Fuld skærm</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5944544982112848342">2048 (Høj klasse)</translation>
 <translation id="5966707198760109579">Uge</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">lineal</translation>
 <translation id="6755330956360078551">værktøjstip</translation>
+<translation id="6790428901817661496">Afspil</translation>
 <translation id="6820355525329141109">Pluginnet kunne ikke indlæses.</translation>
 <translation id="6843725295806269523">slå lyden fra</translation>
 <translation id="6845533974506654842">tryk</translation>

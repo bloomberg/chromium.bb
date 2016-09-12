@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1007441141628883408"><ph name="PRODUCT_NAME" /> sallii kaikkien siinä käytettävien osien päivityksen, kun tämän käytännön arvo on Tosi tai sitä ei ole määritetty.
+
+      Jos tämän käytännön arvo on Epätosi, osien päivittäminen poistetaan käytöstä. Tämä käytäntö ei kuitenkaan koske kaikkia osia: päivitys sallitaan, jos osa ei sisällä suoritettavaa koodia, muuta selaimen toimintaa merkittävästi tai jos osa on selaimen suojauksen kannalta kriittinen.
+      Tällaisia osia ovat esimerkiksi varmenteiden peruutusluettelot ja selaussuojan tiedot. </translation>
 <translation id="101438888985615157">Kierrä näyttöä 180 astetta.</translation>
 <translation id="1017967144265860778">Virran hallinta kirjautumisruudulla</translation>
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
@@ -28,6 +32,9 @@
           Jos tämä käytäntö on asetettu, etäkäytön isäntä käyttää tätä URL-osoitetta vahvistaessaan todennustunnukset, jotka se vastaanottaa etäkäytön asiakkailta. Tämä on yhteyksien hyväksymisen edellytys. Tämän käytännön kanssa täytyy käyttää myös käytäntöä RemoteAccessHostTokenUrl.
 
           Tämä ominaisuus on toistaiseksi poistettu käytöstä palvelimella.</translation>
+<translation id="1093082332347834239">Jos tämä asetus on käytössä, etätuen isäntä suoritetaan prosessissa, jonka käyttöoikeuksiin sisältyy <ph name="UIACCESS_PERMISSION_NAME" />. Tällöin etäkäyttäjä voi käyttää paikallisen käyttäjän työpöydällä olevia ikkunoita, jotka edellyttävät järjestelmänvalvojan käyttöoikeuksia.
+
+          Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, etätuen isäntä suoritetaan käyttäjän kontekstissa, jolloin etäkäyttäjä ei voi käyttää työpöydällä olevia järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita.</translation>
 <translation id="1096105751829466145">Oletushakupalvelu</translation>
 <translation id="1103860406762205913">Ottaa käyttöön vanhan verkkopohjaisen sisäänkirjautumisen</translation>
 <translation id="1128903365609589950">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa välimuistitiedostot.
@@ -53,6 +60,13 @@
       Pienin sallittu arvo on 60 sekuntia.</translation>
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
+<translation id="127699919157094139">Tämä poistaa käytöstä tuotteen <ph name="PRODUCT_NAME" /> tietojen synkronoinnin Googlen isännöimillä synkronointipalveluilla ja estää käyttäjiä muokkaamasta tätä asetusta.
+
+      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ei anna käyttäjien ohittaa tai muokata asetusta.
+
+      Jos tätä asetusta ei ole määritetty, käyttäjä voi päättää, käytetäänkö Google Synciä.
+
+      Jos haluat poistaa Google Syncin kokonaan käytöstä, poista Google Sync ‑palvelu käytöstä Google-hallintakonsolissa.</translation>
 <translation id="1291880496936992484">Varoitus: RC4 poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 52 jälkeen (arviolta syyskuussa 2016), eikä tämä käytäntö enää toimi sen jälkeen.
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
@@ -118,6 +132,14 @@
       poistetaan käytöstä. Tässä tapauksessa käyttäjä ei voi ottaa ominaisuutta käyttöön.</translation>
 <translation id="1474273443907024088">Poista TLS False Start käytöstä</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> ohittaa kaikki tässä annettujen isäntien välityspalvelimet.
+
+          Tämä käytäntö tulee voimaan vain, jos olet valinnut välityspalvelimen asetusten manuaalisen määrityksen kohdassa Valitse, miten välityspalvelimen asetukset määritetään.
+
+          Älä määritä tätä käytäntöä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan.
+
+          Löydät lisää esimerkkejä osoitteesta
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1509692106376861764">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien.</translation>
 <translation id="1522425503138261032">Anna sivustojen seurata käyttäjien fyysistä sijaintia</translation>
@@ -132,6 +154,7 @@
       yrityskäyttäjät eivät voi käyttää ARC:tä.</translation>
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
+<translation id="1606958238518590302">Kun tämän käytännön arvo on Tosi, käyttäjät eivät voi kirjoittaa mitään tietoja ulkoisille tallennustilalaitteille.</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="1617384279878333801">Salli profiilien luominen käyttäjäprofiilien hallinnassa</translation>
@@ -573,6 +596,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="2850122204195089673">Salli yhtenäisen työpöydän tilan käyttö ja pidä se oletuksena käytössä.</translation>
 <translation id="285480231336205327">Ota suuri kontrasti -tila käyttöön</translation>
 <translation id="2872961005593481000">Sammuta</translation>
+<translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
 <translation id="2884728160143956392">Salli vain käyttökerran evästeet näissä sivustoissa</translation>
 <translation id="2893546967669465276">Lähetä järjestelmälokeja hallintapalvelimelle</translation>
@@ -672,6 +696,24 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
           Tämä käytäntö ei ole vielä käyttövalmis, joten sitä ei tule käyttää.
           </translation>
+<translation id="3201273385265130876">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
+
+          Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.
+
+          Jos käytät järjestelmän välityspalvelinasetuksia, kaikki muut asetukset ohitetaan.
+
+          Jos välityspalvelin tunnistetaan automaattisesti, kaikki muut asetukset ohitetaan.
+
+          Jos otat käyttöön kiinteän välityspalvelimen tilan, voit määrittää lisäasetuksia kohdassa Välityspalvelimen osoite tai URL-osoite ja Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo. ARC-sovellukset voivat käyttää vain HTTP-välityspalvelinta, jolla on korkein prioriteetti.
+
+          Jos käytät .pac-välityspalvelinkomentosarjaa, sinun täytyy määrittää sen URL-osoite kohdassa Välityspalvelimen .pac-tiedoston URL-osoite.
+
+          Löydät esimerkkejä osoitteesta
+          <ph name="PROXY_HELP_URL" />.
+
+          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat kaikki komentorivin kautta määritetyt välityspalvelinasetukset.
+
+          Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3205825995289802549">Suurenna ensimmäinen selainikkuna käynnistyksen yhteydessä</translation>
 <translation id="3206731874112238027">Poista tulostuksen esikatselu käytöstä (vanhentunut)</translation>
 <translation id="3213821784736959823">Hallinnoi, käytetäänkö tuotteessa <ph name="PRODUCT_NAME" /> sisäänrakennettua DNS-asiakassovellusta.
@@ -776,6 +818,18 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
       Jos tämä asetus on pois käytöstä tai sille ei aseteta arvoa, YouTuben rajoitettua tilaa ei pakoteta käyttöön.</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
+<translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
+
+      Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.
+
+      Jos välityspalvelin tunnistetaan automaattisesti, kaikki muut asetukset ohitetaan.
+
+      Löydät esimerkkejä osoitteesta
+      <ph name="PROXY_HELP_URL" />.
+
+      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat kaikki komentorivin kautta määritetyt välityspalvelinasetukset.
+
+      Jos näitä käytäntöjä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3758249152301468420">Poista kehittäjätyökalut käytöstä</translation>
 <translation id="3765260570442823273">Käyttämättömän käyttökerran uloskirjausvaroituksen kesto</translation>
 <translation id="3768412594120638208">Hallinnoi, minkä tyyppisiä laajennuksia tai sovelluksia saa asentaa.
@@ -790,6 +844,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="3780152581321609624">Lisää standardista poikkeava portti Kerberos-SPN:ään</translation>
 <translation id="3788662722837364290">Virransäästöasetukset laitteen ollessa käyttämättä</translation>
 <translation id="3793095274466276777">Määrittää oletusselaimen tarkistukset tuotteelle <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta niitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> tarkistaa aina käynnistettäessä, onko se oletusselain, ja rekisteröi itsensä automaattisesti, jos mahdollista. Jos tämä asetus on pois käytöstä, <ph name="PRODUCT_NAME" /> ei koskaan tarkista, onko se oletusselain eikä anna käyttäjän muuttaa asetusta. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> antaa käyttäjän valita, onko tuote oletusselain ja näytetäänkö käyttäjälle ilmoitus, jos tuote ei ole oletusselain.</translation>
+<translation id="379659290574555063">Käytä ulkoisia tallennustilalaitteita vain luku ‑tilassa</translation>
 <translation id="3800626789999016379">Määrittää hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa ladattuja tiedostoja.
 
       Jos määrität tämän käytännön, <ph name="PRODUCT_NAME" /> käyttää annettua hakemistoa huolimatta siitä, onko käyttäjä määrittänyt hakemiston tai asettanut sovelluksen kysymään aina latausten tallennussijaintia.
@@ -981,7 +1036,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Vaikka itse käytäntöä tuetaan yllä mainituilla alustoilla, kaikilla alustoilla ei välttämättä ole käytettävissä kaikkia ominaisuuksia, jotka käytännön avulla voidaan palauttaa käyttöön. Kaikkia vanhentuneita Web Platform -ominaisuuksia ei voi palauttaa käyttöön. Vain alla mainitut ominaisuudet voidaan palauttaa käyttöön rajoitetuksi ajaksi, joka vaihtelee ominaisuuskohtaisesti. Merkkijonotagin yleinen muoto on [VanhentuneenOminaisuudenNimi]_EffectiveUntil[vvvvkkpp]. Lisätietoja Web Platform -ominaisuuksien muutoksista saat osoitteesta https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ota lukitus käyttöön, kun laite on käyttämättömänä tai virransäästötilassa</translation>
-<translation id="4445684791305970001">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin. Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä. Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.</translation>
 <translation id="4449545651113180484">Kierrä näyttöä 270 astetta myötäpäivään.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
@@ -1054,6 +1108,22 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos tätä käytäntöä ei ole määritetty, suuri osoitin ei ole käytössä aluksi, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="4807950475297505572">Kauimmin käyttämättä olleet käyttäjät poistetaan, kunnes vapaata tilaa on riittävästi</translation>
+<translation id="4815725774537609998">Tämä käytäntö on vanhentunut. Käytä tämän käytännön sijaan ProxyModea.
+
+          Voit valita välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
+
+          Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.
+
+          Jos käytät järjestelmän välityspalvelinasetuksia tai välityspalvelin tunnistetaan automaattisesti, kaikki muut asetukset ohitetaan.
+
+          Jos välityspalvelinasetukset määritetään manuaalisesti, voit määrittää lisäasetuksia kohdassa Välityspalvelimen osoite tai URL-osoite, Välityspalvelimen .pac-tiedoston URL-osoite ja Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo. ARC-sovellukset voivat käyttää vain HTTP-välityspalvelinta, jolla on korkein prioriteetti.
+
+          Löydät esimerkkejä osoitteesta
+          <ph name="PROXY_HELP_URL" />.
+
+          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivin kautta määritetyt välityspalvelinasetukset.
+
+          Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="4816674326202173458">Anna yrityskäyttäjän olla sekä ensisijainen että toissijainen käyttäjä (oletuskäyttäytyminen ei-hallinnoiduille käyttäjille)</translation>
 <translation id="4826326557828204741">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen käyttäessä akun virtaa</translation>
 <translation id="4834526953114077364">Kauimmin käyttämättä olleet käyttäjät, jotka eivät ole kirjautuneet sisään viimeisten kolmen kuukauden aikana, poistetaan, kunnes vapaata tilaa on riittävästi.</translation>
@@ -1276,6 +1346,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
           Kun tälle käytännölle ei ole asetettu arvoa, se käyttää ajan oletusarvoa.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
+<translation id="5795001131770861387">Sallii HTTP/0.9-tuen muilla kuin oletusarvoisilla porteilla.</translation>
 <translation id="5809728392451418079">Määritä laitteeseen lisättyjen tilien näyttönimi</translation>
 <translation id="5814301096961727113">Aseta äänipalautteen oletustila kirjautumisnäytössä</translation>
 <translation id="5815129011704381141">Käynnistä automaattisesti uudelleen päivityksen jälkeen</translation>
@@ -1366,6 +1437,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6076099373507468537">Tämä käytäntö määrittää USB-laitteet, joita voidaan irrottaa kernel-ajurista ja käyttää suoraan verkkosovelluksessa chrome.usb-sovellusliittymän kautta. Kukin merkintä sisältää USB-toimittajan tunnuksen ja tuotetunnuksen, joita käytetään laitteiden tunnistamiseen.
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
+<translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
           Jos arvo on suurempi kuin nolla, se tarkoittaa aikaa, joka käyttäjän on oltava toimettomana ennen kuin <ph name="PRODUCT_OS_NAME" /> lukitsee näytön.
@@ -1620,6 +1692,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, isäntiä voi jakaa kaikilla tileillä.
 
           Katso myös RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Ota käyttöön osien päivitykset tuotteessa <ph name="PRODUCT_NAME" /></translation>
 <translation id="6997592395211691850">Vaaditaanko paikallisilta luottamusankkureilta verkossa suoritettavat OCSP/CRL-tarkistukset vai ei</translation>
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>
@@ -1864,6 +1937,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Suosittelemme, että et estä sisäisiä chrome://*-URL-osoitteita, sillä se voi aiheuttaa odottamattomia virheitä.
 
       Jos tätä käytäntöä ei määritetä, URL-osoitteita ei lisätä selaimen mustalle listalle.</translation>
+<translation id="7724994675283793633">Tämä käytäntö sallii HTTP/0.9:n myös muille porteille kuin 80 (HTTP) ja 443 (HTTPS).
+
+      Käytäntö on oletuksena poissa käytöstä. Jos se otetaan käyttöön, käyttäjät altistuvat tälle tietoturvaongelmalle: https://crbug.com/600352.
+
+      Käytännön tarkoitus on antaa yrityksille tilaisuus jättää HTTP/0.9 pois käytöstä olemassa olevilla palvelimilla, ja se poistetaan tulevaisuudessa.
+
+      Jos käytäntöä ei ole määritetty, HTTP/0.9 ei ole käytössä muilla kuin oletusarvoisilla porteilla.</translation>
 <translation id="7749402620209366169">Ottaa etäisännille käyttöön kahden tekijän todennuksen käyttäjän määrittämän PIN-koodin sijaan.
 
           Jos tämä asetus on käytössä, käyttäjien täytyy antaa kelvollinen kahden tekijän koodi käyttäessään isäntää.

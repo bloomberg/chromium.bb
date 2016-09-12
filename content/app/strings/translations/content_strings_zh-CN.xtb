@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1014825444426747588">空白</translation>
 <translation id="1018939186200882850">菜单项</translation>
 <translation id="1020833440720551630">将音轨设为静音</translation>
 <translation id="10623998915015855">切换按钮</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="1171774979989969504">请输入电子邮件地址。</translation>
+<translation id="1178581264944972037">暂停</translation>
 <translation id="1188858454923323853">补充内容</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">滑块</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">上午/下午</translation>
 <translation id="1832974991323546415">在远程设备上播放</translation>
 <translation id="1842960171412779397">选中</translation>
+<translation id="1854180393107901205">停止投射</translation>
 <translation id="1880518467580572141">大纲</translation>
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">状态</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">字词</translation>
 <translation id="3822383571486410024">请将该文本增加为 <ph name="MIN_CHARACTERS" /> 个字符或更多（您当前使用的是 <ph name="CURRENT_LENGTH" /> 个字符）。</translation>
 <translation id="383465348367842624">“<ph name="ATSIGN" />”前面的内容不应包含符号“<ph name="INVALIDCHARACTER" />”。</translation>
+<translation id="3846214748874656680">退出全屏模式</translation>
 <translation id="3924558731517983934">应用</translation>
 <translation id="3960700977367013758">滚动条</translation>
 <translation id="4103419683916926126">毫秒</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">搜索</translation>
 <translation id="4812940957355064477">请输入一个数字。</translation>
 <translation id="4975562563186953947">选择了<ph name="SELECTED_COUNT" />项</translation>
+<translation id="4992066212339426712">取消静音</translation>
 <translation id="49969490063480558">请在“<ph name="ATSIGN" />”后面输入内容。“<ph name="INVALIDADDRESS" />”不完整。</translation>
 <translation id="5034860022980953847">进度指示器</translation>
 <translation id="5048533449481078685">列表标记</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">退出全屏模式</translation>
 <translation id="5476505524087279545">取消选中</translation>
 <translation id="5516424706154626233">日期选择器</translation>
+<translation id="5537725057119320332">投射</translation>
 <translation id="5546461542133609677">取消静音</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">暂停播放</translation>
 <translation id="5643186887447432888">按钮</translation>
+<translation id="57838592816432529">静音</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5843503607508392247">其他...</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="588258955323874662">全屏</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5944544982112848342">2048（高强度）</translation>
 <translation id="5966707198760109579">周</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">步进器</translation>
 <translation id="6739588121953935928">标尺</translation>
 <translation id="6755330956360078551">提示</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="6820355525329141109">无法加载插件。</translation>
 <translation id="6843725295806269523">静音</translation>
 <translation id="6845533974506654842">按</translation>

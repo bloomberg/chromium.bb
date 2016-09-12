@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Gunakan sandi yang dibuat oleh Chromium</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="390894725198123737">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chromium lain yang membagikan akun OS X ini.</translation>
-<translation id="3994125055863078356">Chromium tidak dapat menjadi browser default.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
 <translation id="4182290826692170034">Chromium adalah browser default Anda. Hore!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
+<translation id="5726838626470692954">Pengelola harus menghapus dan menambahkan Anda kembali ke Chromium.</translation>
 <translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON" />dimulai ulang<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
@@ -178,6 +178,7 @@
 
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="6734080038664603509">Pembaruan &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium sudah terpasang untuk semua pengguna di komputer Anda.</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="6810143991807788455">Bantu menjadikan Chromium lebih baik dengan melaporkan setelan saat ini</translation>
 <translation id="6838494703713445896">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat yang valid.</translation>
@@ -203,7 +204,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="7223968959479464213">Pengelola Tugas - Chromium</translation>
 <translation id="722928257909516027">Tampilkan menu Chromium</translation>
 <translation id="731644333568559921">Pembaruan &amp;Chromium OS</translation>
-<translation id="731795002583552498">Memperbarui Chromium</translation>
 <translation id="7318036098707714271">File preferensi Anda rusak atau tidak valid.
 
 Chromium tidak dapat memulihkan setelan Anda.</translation>

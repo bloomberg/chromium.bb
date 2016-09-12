@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1007441141628883408">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não estão definidas ou estão definidas como Verdadeiro.
+
+      Se estiverem definidas como Falso, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
+      Alguns exemplos desses componentes incluem os dados da navegação segura e as listas de revogação de certificados. </translation>
 <translation id="101438888985615157">Rodar o ecrã 180 graus</translation>
 <translation id="1017967144265860778">Gestão de energia no ecrã de início de sessão</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
@@ -28,6 +32,9 @@
           Se esta política estiver definida, o anfitrião de acesso remoto utiliza este URL para validar os símbolos de autenticação de clientes de acesso remoto, com o objetivo de aceitar ligações. Deve utilizá-la em conjunto com a política RemoteAccessHostTokenUrl.
 
           Atualmente, esta funcionalidade encontra-se desativada do lado do servidor.</translation>
+<translation id="1093082332347834239">Se esta definição estiver ativada, o anfitrião de assistência remota é executado num processo com autorizações <ph name="UIACCESS_PERMISSION_NAME" />. Isto permite que os utilizadores remotos interajam com janelas elevadas no ambiente de trabalho do utilizador local.
+
+          Se esta definição estiver desativada ou não estiver configurada, o anfitrião de assistência remota é executado no contexto do utilizador e os utilizadores remotos não conseguem interagir com janelas elevadas no ambiente de trabalho.</translation>
 <translation id="1096105751829466145">Motor de pesquisa predefinido</translation>
 <translation id="1103860406762205913">Ativa o antigo início de sessão baseado na Web</translation>
 <translation id="1128903365609589950">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar ficheiros em cache no disco.
@@ -53,6 +60,13 @@
       permitida é de 60 segundos.</translation>
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
+<translation id="127699919157094139">Desativa a sincronização de dados no <ph name="PRODUCT_NAME" /> com a utilização de serviços de sincronização alojados no Google e impede que os utilizadores alterem esta definição.
+
+      Se ativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
+
+      Se deixar esta política por definir, o Google Sync está disponível para o utilizador, que pode optar por utilizá-lo ou não.
+
+      Para desativar totalmente o Google Sync, recomenda-se que desative o serviço Google Sync na Consola do administrador do Google.</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
@@ -118,6 +132,14 @@
       desativado. Neste caso, o utilizador não pode ativar a funcionalidade.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071">O <ph name="PRODUCT_NAME" /> ignora qualquer proxy para a lista de anfitriões aqui indicados.
+
+          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
+
+          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
+
+          Para obter exemplos mais detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
@@ -132,6 +154,7 @@
       não podem utilizar o ARC.</translation>
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
+<translation id="1606958238518590302">Quando esta política está definida como verdadeira, os utilizadores não conseguem escrever nos dispositivos de armazenamento externo.</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="1617384279878333801">Ativar adicionar pessoa no gestor de perfis</translation>
@@ -577,6 +600,7 @@
 <translation id="2850122204195089673">Disponibilizar o Ambiente de trabalho unificado e ativá-lo por predefinição.</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
 <translation id="2884728160143956392">Permitir apenas cookies da sessão nestes sites</translation>
 <translation id="2893546967669465276">Enviar registos do sistema para o servidor de gestão</translation>
@@ -676,6 +700,24 @@
 
           Esta política ainda não está pronta para utilização, pelo que não a deve utilizar.
           </translation>
+<translation id="3201273385265130876">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
+
+          Se optar por nunca utilizar um servidor proxy e por estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar as definições de proxy do sistema, todas as outras opções são ignoradas.
+
+          Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+          Se optar pelo modo de servidor proxy fixo, pode especificar mais opções em "Endereço ou URL do servidor proxy" e em "Lista separada por vírgulas das regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
+
+          Se optar por utilizar um script de proxy .pac, tem de especificar o URL para o script em "URL para um ficheiro .pac de proxy".
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3206731874112238027">Desativar a pré-visualização de impressão (descontinuado)</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS incorporado é utilizado no <ph name="PRODUCT_NAME" />.
@@ -780,6 +822,18 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se desativar esta definição ou não definir um valor, o Modo de segurança do YouTube não é aplicado.</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
+<translation id="3758089716224084329">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
+
+      Se optar por nunca utilizar um servidor proxy e por estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+      Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+      Para obter exemplos detalhados, aceda a:
+      <ph name="PROXY_HELP_URL" />.
+
+      Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+      Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
 <translation id="3768412594120638208">Controla os tipos de aplicações/extensões que têm permissão para serem instalados.
@@ -794,6 +848,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3780152581321609624">Incluir porta não padrão no SPN do Kerberos</translation>
 <translation id="3788662722837364290">Definições de gestão de energia quando o utilizador fica inativo</translation>
 <translation id="3793095274466276777">Configura o navegador predefinido, verifica o <ph name="PRODUCT_NAME" /> e impede que os utilizadores as alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> verificará sempre, durante o arranque, se é o navegador predefinido e registar-se-á automaticamente, se possível. Se esta definição estiver desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se é o navegador predefinido e desativará os controlos dos utilizadors para definirem esta opção. Se a opção não for definida, o <ph name="PRODUCT_NAME" /> permitirá que os utilizadores controlem se é o navegador predefinido e se deverão ser mostradas as notificações de utilizador caso não o seja.</translation>
+<translation id="379659290574555063">Tratar os dispositivos de armazenamento externo como só de leitura.</translation>
 <translation id="3800626789999016379">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para transferir ficheiros.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utilizar o diretório fornecido, independentemente de o utilizador ter especificado um diretório ou ativado o sinalizador para que seja sempre pedida a localização da transferência.
@@ -984,7 +1039,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Embora a política em si seja suportada nas plataformas acima, a funcionalidade que está a ativar pode estar disponível em menos plataformas. Nem todas as funcionalidades de plataformas Web descontinuadas podem ser reativadas. Apenas podem ser reativadas por um período limitado de tempo as que estão indicadas explicitamente na lista abaixo, o que difere consoante a funcionalidade. O formato geral da etiqueta de string é [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Como referência, pode encontrar a intenção por detrás das alterações às funcionalidades de plataformas Web em https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
-<translation id="4445684791305970001">Desativa as Ferramentas do Programador e a Consola de JavaScript. Se ativar esta definição, não será possível aceder às Ferramentas do Programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do Programador ou a Consola de JavaScript serão desativados. Se desativar ou não definir esta opção, permitirá que o utilizador use as Ferramentas do Programador e a Consola de JavaScript.</translation>
 <translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
@@ -1057,6 +1111,22 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o cursor grande estará inicialmente desativado, mas poderá ser ativado a qualquer momento pelo utilizador.</translation>
 <translation id="4807950475297505572">Os utilizadores menos recentemente utilizados são removidos até existir espaço livre suficiente</translation>
+<translation id="4815725774537609998">Esta política está obsoleta; em alternativa, utilize o ProxyMode.
+
+          Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem as definições de proxy.
+
+          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar definições de proxy do sistema ou detetar automaticamente o servidor de proxy, todas as outras opções são ignoradas.
+
+          Se optar por definições de proxy manuais, pode especificar mais opções em "Endereço ou URL do servidor proxy", "URL para um ficheiro .pac de proxy" e "Lista separada por vírgulas das regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se ativar esta definição, <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="4816674326202173458">Permitir que o utilizador empresarial seja principal e secundário (comportamento predefinido para utilizadores não geridos)</translation>
 <translation id="4826326557828204741">Ação a executar quando o atraso de inatividade for atingido e estiver a ser utilizada a energia da bateria</translation>
 <translation id="4834526953114077364">Os utilizadores menos utilizados recentemente que não tenham iniciado sessão nos últimos 3 meses são removidos até existir espaço livre suficiente</translation>
@@ -1279,6 +1349,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="5795001131770861387">Ativa a compatibilidade com HTTP/0.9 em portas não predefinidas</translation>
 <translation id="5809728392451418079">Definir o nome a apresentar para contas locais do dispositivo</translation>
 <translation id="5814301096961727113">Definir o estado predefinido de respostas faladas no ecrã de início de sessão</translation>
 <translation id="5815129011704381141">Reiniciar automaticamente após uma atualização</translation>
@@ -1369,6 +1440,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
 
       Se esta política não estiver configurada, a lista de dispositivos USB amovíveis fica vazia.</translation>
+<translation id="6093156968240188330">Permitir que os utilizadores remotos interajam com janelas elevadas nas sessões de assistência remota</translation>
 <translation id="6095999036251797924">Especifica o período de tempo sem atividade do utilizador após o qual o ecrã é bloqueado durante o funcionamento com corrente alternada ou bateria.
 
           Quando o período de tempo é definido para um valor superior a zero, representa o período de tempo durante o qual o utilizador se tem de manter inativo até o <ph name="PRODUCT_OS_NAME" /> bloquear o ecrã.
@@ -1625,6 +1697,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta definição estiver desativada ou por definir, é possível partilhar os anfitriões através de qualquer conta.
 
           Consulte também RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Ativa as atualizações de componentes no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Se são necessárias verificações de OCSP/CRL online para âncoras fidedignas locais</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
@@ -1869,6 +1942,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Tenha em atenção que não é recomendado bloquear URLs "chrome://*" internos dado que isto pode causar erros inesperados.
 
       Se esta política não for definida, a lista negra do navegador não inclui qualquer URL.</translation>
+<translation id="7724994675283793633">Esta política ativa o protocolo HTTP/0.9 em portas que não sejam a porta 80 para HTTP e a porta 443 para HTTPS.
+
+      Esta política está desativada por predefinição e, se for ativada, deixa os utilizadores suscetíveis ao problema de segurança https://crbug.com/600352.
+
+      Esta política destina-se a permitir que as empresas possam migrar servidores existentes do protocolo HTTP/0.9 e será removida no futuro.
+
+      Se esta política não for definida, o protocolo HTTP/0.9 é desativado nas portas não predefinidas.</translation>
 <translation id="7749402620209366169">Ativa a autenticação de dois fatores para anfitriões de acesso remoto, em vez de um PIN especificado pelo utilizador.
 
           Se esta definição estiver ativada, os utilizadores terão de fornecer um código de dois fatores válido ao aceder a um anfitrião.

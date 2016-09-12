@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">割り当てが失敗しました。利用できるエンジンがありません。</translation>
 <translation id="117738548141695034">Blimp スイッチ</translation>
 <translation id="1416550906796893042">アプリケーションのバージョン</translation>
+<translation id="1491042665327336022">アプリを再起動してください。</translation>
 <translation id="1750179245464827362">デバッグ情報を表示</translation>
 <translation id="2004526128230838685">割り当てが失敗しました。不明なエラーが発生しました。</translation>
 <translation id="2023631438558435272">割り当てが失敗しました。無効な応答が返されました。</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">割り当てが失敗しました。ネットワーク リクエストが失敗しました。</translation>
 <translation id="2789927415041640472">新しい割り当て元の設定を使用するには、アプリケーションを再起動してください。</translation>
 <translation id="3046825211487065480">割り当てが失敗しました。最初のリクエストの応答がある前に、2 番目のリクエストが送信されました。</translation>
+<translation id="307654885162326571">テキストの入力</translation>
 <translation id="3286538390144397061">今すぐ再起動</translation>
 <translation id="3346106862344060497">エンジンに接続しました。</translation>
 <translation id="3407245330823033366">Blimp で使用するアカウントを選択してください。</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7795546637165553439">Blimp の設定</translation>
 <translation id="7961542533680218955">割り当てが成功しました。</translation>
+<translation id="8135971362156222300">Blimp を有効にするには Google アカウントにログインしてください。</translation>
 <translation id="8514856595257368555">トークンを取得しました。</translation>
 <translation id="8880704056643418312">確定</translation>
 </translationbundle>

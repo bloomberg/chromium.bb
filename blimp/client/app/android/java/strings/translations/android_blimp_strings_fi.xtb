@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Tehtävä epäonnistui. Koneita ei ole käytettävissä.</translation>
 <translation id="117738548141695034">Blimp-kytkin</translation>
 <translation id="1416550906796893042">Sovellusversio</translation>
+<translation id="1491042665327336022">Käynnistä sovellus uudelleen.</translation>
 <translation id="1750179245464827362">Näytä virheenkorjaustiedot</translation>
 <translation id="2004526128230838685">Tehtävä epäonnistui. Tapahtui tuntematon virhe.</translation>
 <translation id="2023631438558435272">Tehtävä epäonnistui. Vastaus on virheellinen.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Tehtävä epäonnistui. Verkon pyyntö epäonnistui.</translation>
 <translation id="2789927415041640472">Ota määrittäjän uudet asetukset käyttöön käynnistämällä sovellus uudelleen.</translation>
 <translation id="3046825211487065480">Tehtävä epäonnistui. Toinen pyyntö lähetettiin ennen kuin ensimmäiseen pyyntöön vastattiin.</translation>
+<translation id="307654885162326571">Kirjoita tekstiä</translation>
 <translation id="3286538390144397061">Käynnistä uudelleen</translation>
 <translation id="3346106862344060497">Yhteys muodostettiin.</translation>
 <translation id="3407245330823033366">Valitse Blimpin kanssa käytettävä tili.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7795546637165553439">Blimp-asetukset</translation>
 <translation id="7961542533680218955">Tehtävä onnistui.</translation>
+<translation id="8135971362156222300">Ota Blimp käyttöön kirjautumalla Google-tilillesi.</translation>
 <translation id="8514856595257368555">Tunnus noudettu.</translation>
 <translation id="8880704056643418312">Vahvistetut</translation>
 </translationbundle>

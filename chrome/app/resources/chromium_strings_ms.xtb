@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Gunakan kata laluan yang dijana oleh Chromium</translation>
 <translation id="3889543394854987837">Klik nama anda untuk membuka Chromium dan mula menyemak imbas.</translation>
 <translation id="390894725198123737">Pada Mac, kata laluan boleh disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chromium lain yang berkongsi akaun OS X ini.</translation>
-<translation id="3994125055863078356">Chromium tidak dapat dijadikan penyemak imbas lalai.</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
 <translation id="4182290826692170034">Chromium ialah penyemak imbas lalai anda. Yei!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">log masuk ke Chromium</translation>
 <translation id="5698481217667032250">Paparkan Chromium dalam bahasa ini</translation>
+<translation id="5726838626470692954">Pengurus anda mesti mengalih keluar dan menambahkan anda kembali pada Chromium.</translation>
 <translation id="5768914737813585044">Paparkan OS Chromium dalam bahasa ini</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON" />dimulakan semula<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir sedia.</translation>
@@ -178,6 +178,7 @@
 
 Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbeza atau gunakan versi Chromium yang lebih baharu.</translation>
 <translation id="6734080038664603509">Kemas kini &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium telah dipasang untuk semua pengguna pada komputer anda.</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="6810143991807788455">Bantu jadikan Chromium lebih baik dengan melaporkan tetapan semasa</translation>
 <translation id="6838494703713445896">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil yang sah.</translation>
@@ -203,7 +204,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="7223968959479464213">Pengurus Tugas - Chromium</translation>
 <translation id="722928257909516027">Paparkan menu Chromium</translation>
 <translation id="731644333568559921">Kemas kini &amp;Chromium OS</translation>
-<translation id="731795002583552498">Mengemas kini Chromium</translation>
 <translation id="7318036098707714271">Fail pilihan anda rosak atau tidak sah.
 
 Chromium tidak dapat mengembalikan tetapan anda.</translation>

@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया उस डिवाइस पर यह पिन कोड डालें: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">अगली इनपुट विधि में स्‍विच करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="112308213915226829">अलमारी को स्वत: छिपाएं</translation>
+<translation id="1127238861555034875">आवर्धक ग्लास मोड</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
 <translation id="1270290102613614947">ऑन-स्‍क्रीन कीबोर्ड अक्षम है</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="3157169093162779309">रोटेशन लॉक को सक्षम करें</translation>
 <translation id="3294437725009624529">अतिथि</translation>
+<translation id="3335772982573114336">नया नोट</translation>
+<translation id="3364721542077212959">स्टाइलस टूल</translation>
 <translation id="3371140690572404006">USB-C डिवाइस (दायां सामने वाला पोर्ट)</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> रिज़ॉल्यूशन को <ph name="RESOLUTION" /> में बदल दिया गया</translation>
 <translation id="370649949373421643">वाई-फ़ाई  सक्षम करें</translation>
 <translation id="3709443003275901162">9 से अधिक</translation>
+<translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="372094107052732682">छोड़ने के लिए Ctrl+Shift+Q दो बार दबाएं.</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
 <translation id="3775358506042162758">एकाधिक साइन-इन में आप तीन तक खाते रख सकते हैं.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google डिस्क सेटिंग...</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
+<translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
+<translation id="5191140942132549112">प्रश्न दिखाएं</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="5238774010593222950">किसी अन्य खाते में प्रवेश नहीं कर सकते.</translation>
 <translation id="532063867737390965">यह नेटवर्क सेटिंग व्‍यवस्‍थापक द्वारा अक्षम कर दी गई है.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6203030746557259519">वर्चुअल डिस्प्ले</translation>
 <translation id="6248847161401822652">छोड़ने के लिए Control Shift Q दो बार दबाएं.</translation>
+<translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> से SMS</translation>
 <translation id="639644700271529076">CAPS LOCK बंद है</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> पर स्क्रीन विस्तृत कर रहा है</translation>
 <translation id="6490471652906364588">USB-C डिवाइस (दायां पोर्ट)</translation>
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
+<translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
 <translation id="6596816719288285829">IP पता</translation>
@@ -195,6 +203,7 @@
 <translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
 <translation id="7097613348211027502">ChromeVox (बोला गया फ़ीडबैक) सक्षम है. अक्षम करने के लिए Ctrl+Alt+Z दबाएं.</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
+<translation id="7129360219436193655">लेज़र पॉइंटर मोड</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7209101170223508707">CAPS LOCK चालू है.
@@ -221,6 +230,7 @@
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
 <translation id="8077816382010018681">QU सुविधा नोटिफ़िकेशन का शीर्षक यहां आएगा</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">कुछ प्रश्नों के उत्तर देकर हमें बताएं कि हमारा प्रदर्शन कैसा है.</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8206859287963243715">सेलुलर</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
@@ -232,7 +242,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>
-<translation id="882279321799040148">देखने के लिए क्लिक करें</translation>
 <translation id="8825534185036233643">दो से अधिक प्रदर्शनों की मिररिंग समर्थित नहीं है.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

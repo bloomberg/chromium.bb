@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">ምደባ አልተሳካም። ምንም ፕሮግራም አይገኝም።</translation>
 <translation id="117738548141695034">Blimp ቀያሪ</translation>
 <translation id="1416550906796893042">የመተግበሪያ ስሪት</translation>
+<translation id="1491042665327336022">እባክዎ መተግበሪያውን ዳግም ያስጀምሩ።</translation>
 <translation id="1750179245464827362">የአርም መረጃ አሳይ</translation>
 <translation id="2004526128230838685">ምደባ አልተሳካም። ያልታወቀ ችግር።</translation>
 <translation id="2023631438558435272">ምደባ አልተሳካም። ልክ ያልሆነ ምላሽ።</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">ምደባ አልተሳካም። የአውታረ መረብ ጥያቄ አልተሳካም።</translation>
 <translation id="2789927415041640472">አዲሱን የመዳቢ ውቅረትን ለመጠቀም እባክዎ መተግበሪያውን ዳግም ያስጀምሩት።</translation>
 <translation id="3046825211487065480">ምደባ አልተሳካም። ሁለተኛው ጥያቄ ከመጀመሪያው ጥያቄ መልስ ከመስጠቱ በፊት ተልኳል።</translation>
+<translation id="307654885162326571">ጽሑፍ ያስገቡ</translation>
 <translation id="3286538390144397061">አሁን ዳግም አስጀምር</translation>
 <translation id="3346106862344060497">ሞተር ተገናኝቷል።</translation>
 <translation id="3407245330823033366">እባክዎ ከBlimp ጋር የሚጠቀሙበትን መለያ ይምረጡ።</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7795546637165553439">የBlimp ቅንብሮች</translation>
 <translation id="7961542533680218955">ምደባ ተሳክቷል።</translation>
+<translation id="8135971362156222300">Blimpን ለማንቃት እባክዎ ወደ google መለያ ይግቡ።</translation>
 <translation id="8514856595257368555">ማስመሰያ ተገኝቷል።</translation>
 <translation id="8880704056643418312">ገቢዎች</translation>
 </translationbundle>

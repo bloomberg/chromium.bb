@@ -79,6 +79,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
+<translation id="3180085900771989961">Pengelola harus menghapus dan menambahkan Anda kembali ke Chrome.</translation>
 <translation id="3251381707915721925">Untuk menyetel situs web mana saja yang dapat dilihat <ph name="NEW_PROFILE_NAME" />, Anda dapat mengonfigurasi batasan dan setelan dengan membuka <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jika Anda tidak mengubah setelan default, <ph name="NEW_PROFILE_NAME" /> dapat menjelajahi apa pun di web.
 
 Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan profil terkunci saat Anda tidak menggunakan Chrome. Untuk melakukannya, klik nama profil di pojok kanan atas browser, dan pilih "Keluar dan aktifkan kunci anak".
@@ -178,8 +179,8 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="61852838583753520">Pembaruan OS &amp;Chrome</translation>
 <translation id="6235018212288296708">Inbound rule untuk Google Chrome guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi Anda ini.</translation>
+<translation id="6291549208091401781">Google Chrome sudah terpasang untuk semua pengguna di komputer Anda.</translation>
 <translation id="629218512217695915">Gunakan sandi yang dibuat oleh Chrome</translation>
-<translation id="6338556085225130112">Memperbarui Google Chrome</translation>
 <translation id="6368805772029492593">Untuk keamanan tambahan, Google Chrome akan mengenkripsi data Anda.</translation>
 <translation id="6368958679917195344">Chrome OS terwujud karena <ph name="BEGIN_LINK_CROS_OSS" />perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="6400076122676892962">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena Mac OS X 10.6, 10.7, dan 10.8 sudah tidak didukung.</translation>
@@ -189,7 +190,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6626317981028933585">Sayangnya, setelan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="6634887557811630702">Google Chrome sudah diperbarui.</translation>
-<translation id="6648058004052854464">Google Chrome tidak dapat menjadi browser default.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>

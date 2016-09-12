@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1014825444426747588">रिक्त</translation>
 <translation id="1018939186200882850">मेनू आयटम</translation>
 <translation id="1020833440720551630">ऑडिओ ट्रॅक निःशब्द करा</translation>
 <translation id="10623998915015855">टॉगल बटण</translation>
 <translation id="1088086359088493902">सेकंद</translation>
 <translation id="1171774979989969504">कृपया एक ईमेल पत्ता प्रविष्ट करा.</translation>
+<translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1188858454923323853">पूरक</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">स्लायडर</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">दूरस्थ डिव्हाइसवर प्ले करा</translation>
 <translation id="1842960171412779397">निवडा</translation>
+<translation id="1854180393107901205">कास्ट करणे थांबवा</translation>
 <translation id="1880518467580572141">बाह्यरेखा</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिती</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">संज्ञा</translation>
 <translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (आपण सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
+<translation id="3846214748874656680">पूर्णस्क्रीनमधून बाहेर पडा</translation>
 <translation id="3924558731517983934">अनुप्रयोग</translation>
 <translation id="3960700977367013758">स्क्रोल बार</translation>
 <translation id="4103419683916926126">मिलिसेकंद</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">कृपया एक नंबर प्रविष्ट करा.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> निवडले</translation>
+<translation id="4992066212339426712">सशब्द करा</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' चे अनुसरण करणारा भाग प्रविष्ट करा. '<ph name="INVALIDADDRESS" />' अपूर्ण आहे.</translation>
 <translation id="5034860022980953847">प्रगती सूचक</translation>
 <translation id="5048533449481078685">सूची चिन्हक</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="5476505524087279545">अनचेक</translation>
 <translation id="5516424706154626233">तारीख निवडक</translation>
+<translation id="5537725057119320332">कास्ट करा</translation>
 <translation id="5546461542133609677">सशब्द करा</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">प्लेबॅकला विराम द्या</translation>
 <translation id="5643186887447432888">बटण</translation>
+<translation id="57838592816432529">निःशब्द करा</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5843503607508392247">अन्य...</translation>
 <translation id="5860033963881614850">बंद</translation>
+<translation id="588258955323874662">पूर्णस्क्रीन</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5944544982112848342">2048 (उच्च ग्रेड)</translation>
 <translation id="5966707198760109579">आठवडा</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">मोजपट्टी</translation>
 <translation id="6755330956360078551">टूलटिप</translation>
+<translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6820355525329141109">प्लगिन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6843725295806269523">नि:शब्द करा</translation>
 <translation id="6845533974506654842">दाबा</translation>

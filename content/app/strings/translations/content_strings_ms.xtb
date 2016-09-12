@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
-<translation id="1014825444426747588">kosong</translation>
 <translation id="1018939186200882850">item menu</translation>
 <translation id="1020833440720551630">redamkan runut audio</translation>
 <translation id="10623998915015855">butang togol</translation>
 <translation id="1088086359088493902">Saat</translation>
 <translation id="1171774979989969504">Sila masukkan alamat e-mel.</translation>
+<translation id="1178581264944972037">Jeda</translation>
 <translation id="1188858454923323853">pelengkap</translation>
 <translation id="1206619573307042055">marki</translation>
 <translation id="1206693055195146388">peluncur</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">PG / P/M</translation>
 <translation id="1832974991323546415">main pada peranti jauh</translation>
 <translation id="1842960171412779397">pilih</translation>
+<translation id="1854180393107901205">Berhenti menghantar</translation>
 <translation id="1880518467580572141">garis bentuk</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">istilah</translation>
 <translation id="3822383571486410024">Sila panjangkan teks ini kepada <ph name="MIN_CHARACTERS" /> aksara atau lebih (anda sedang menggunakan <ph name="CURRENT_LENGTH" /> aksara).</translation>
 <translation id="383465348367842624">Bahagian yang diikuti oleh '<ph name="ATSIGN" />' tidak boleh mengandungi simbol '<ph name="INVALIDCHARACTER" />'.</translation>
+<translation id="3846214748874656680">Keluar dari skrin penuh</translation>
 <translation id="3924558731517983934">aplikasi</translation>
 <translation id="3960700977367013758">bar tatal</translation>
 <translation id="4103419683916926126">Milisaat</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Sila masukkan nombor.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> dipilih</translation>
+<translation id="4992066212339426712">Nyahredam</translation>
 <translation id="49969490063480558">Sila masukkan bahagian selepas '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' tidak lengkap.</translation>
 <translation id="5034860022980953847">penunjuk kemajuan</translation>
 <translation id="5048533449481078685">penanda senarai</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">keluar daripada skrin penuh</translation>
 <translation id="5476505524087279545">nyahpilih</translation>
 <translation id="5516424706154626233">pemilih tarikh</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">nyahredam</translation>
 <translation id="561939826962581046">masa</translation>
 <translation id="5641012560118721995">jeda main balik</translation>
 <translation id="5643186887447432888">butang</translation>
+<translation id="57838592816432529">Redam</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5843503607508392247">Lain-lain...</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
+<translation id="588258955323874662">Skrin penuh</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5944544982112848342">2048 (Gred Tinggi)</translation>
 <translation id="5966707198760109579">Minggu</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">pelangkah</translation>
 <translation id="6739588121953935928">pembaris</translation>
 <translation id="6755330956360078551">tip alat</translation>
+<translation id="6790428901817661496">Mainkan</translation>
 <translation id="6820355525329141109">Tidak dapat memuatkan pemalam.</translation>
 <translation id="6843725295806269523">redam</translation>
 <translation id="6845533974506654842">tekan</translation>

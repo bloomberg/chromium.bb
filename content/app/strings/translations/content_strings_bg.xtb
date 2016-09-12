@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1014825444426747588">празно</translation>
 <translation id="1018939186200882850">елемент от меню</translation>
 <translation id="1020833440720551630">заглушаване на аудиозаписа</translation>
 <translation id="10623998915015855">бутон за превключване</translation>
 <translation id="1088086359088493902">Секунди</translation>
 <translation id="1171774979989969504">Моля, въведете имейл адрес.</translation>
+<translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">допълнение</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">плъзгач</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">възпроизвеждане на отдалечено устройство</translation>
 <translation id="1842960171412779397">Избиране</translation>
+<translation id="1854180393107901205">Спиране на предаването</translation>
 <translation id="1880518467580572141">структура</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">състояние</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">термин</translation>
 <translation id="3822383571486410024">Моля, удължете този текст поне до <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Текстът преди „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
+<translation id="3846214748874656680">Изход от цял екран</translation>
 <translation id="3924558731517983934">приложение</translation>
 <translation id="3960700977367013758">лента за превъртане</translation>
 <translation id="4103419683916926126">Милисекунди</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Моля, въведете номер.</translation>
 <translation id="4975562563186953947">Избрани: <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Включване на звука</translation>
 <translation id="49969490063480558">Моля, въведете текст след „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е непълно.</translation>
 <translation id="5034860022980953847">индикатор за напредък</translation>
 <translation id="5048533449481078685">списъчен показалец</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">изход от цял екран</translation>
 <translation id="5476505524087279545">премахване на отметката</translation>
 <translation id="5516424706154626233">инструмент за избор на дата</translation>
+<translation id="5537725057119320332">Предаване</translation>
 <translation id="5546461542133609677">пускане на звука</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">поставяне на възпроизвеждането на пауза</translation>
 <translation id="5643186887447432888">бутон</translation>
+<translation id="57838592816432529">Заглушаване</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5843503607508392247">Други...</translation>
 <translation id="5860033963881614850">Изключено</translation>
+<translation id="588258955323874662">Цял екран</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5944544982112848342">2048 (висока степен на сложност)</translation>
 <translation id="5966707198760109579">Седмица</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">линия</translation>
 <translation id="6755330956360078551">подсказка</translation>
+<translation id="6790428901817661496">Пускане</translation>
 <translation id="6820355525329141109">Приставката не можа да се зареди.</translation>
 <translation id="6843725295806269523">заглушаване</translation>
 <translation id="6845533974506654842">натискане</translation>

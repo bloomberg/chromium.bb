@@ -79,6 +79,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
+<translation id="3180085900771989961">Tu administrador debe quitarte y volverte a agregar en Chrome.</translation>
 <translation id="3251381707915721925">Para establecer qué sitios web puede ver <ph name="NEW_PROFILE_NAME" />, puedes configurar restricciones y definir opciones de configuración en <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no cambias las opciones de configuración predeterminadas, <ph name="NEW_PROFILE_NAME" /> podrá navegar en la Web sin restricciones.
 
 Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate de bloquear tu perfil cuando no uses Chrome. Para hacerlo, haz clic en tu nombre de perfil que se encuentra en la esquina superior derecha del navegador y selecciona "Salir y bloquear para niños".
@@ -178,8 +179,8 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="61852838583753520">Actualizar el &amp;sistema operativo de Chrome</translation>
 <translation id="6235018212288296708">Regla de entrada para que Google Chrome permita el tráfico mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome dejó de actualizarse y ya no admite esta versión de tu sistema operativo.</translation>
+<translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="629218512217695915">Utilizar una contraseña generada por Chrome</translation>
-<translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368805772029492593">Para mayor seguridad, Google Chrome encriptará los datos.</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque Mac OS X 10.6, 10.7 y 10.8 ya no se admitirán.</translation>
@@ -189,7 +190,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="6626317981028933585">Lamentablemente, las opciones de su Mozilla Firefox no están disponibles si el navegador se encuentra activado. Para importar esas opciones a Google Chrome, guarde su trabajo y cierre todas las ventanas de Firefox. Luego, haga clic en Continuar.</translation>
 <translation id="6634887557811630702">Google Chrome está actualizado.</translation>
-<translation id="6648058004052854464">Google Chrome no pudo establecerse como el navegador predeterminado.</translation>
 <translation id="6676384891291319759">Acceder a Internet</translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>

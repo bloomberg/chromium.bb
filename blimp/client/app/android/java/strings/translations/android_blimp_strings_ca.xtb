@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">No s'ha pogut obtenir l'assignació. No hi havia cap motor disponible.</translation>
 <translation id="117738548141695034">Commutador de Blimp</translation>
 <translation id="1416550906796893042">Versió de l'aplicació</translation>
+<translation id="1491042665327336022">Reinicia l'aplicació.</translation>
 <translation id="1750179245464827362">Mostra la informació de depuració</translation>
 <translation id="2004526128230838685">No s'ha pogut obtenir l'assignació. S'ha produït un error desconegut.</translation>
 <translation id="2023631438558435272">No s'ha pogut obtenir l'assignació. La resposta no era vàlida.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">No s'ha pogut obtenir l'assignació. S'ha produït un error a la sol·licitud de xarxa.</translation>
 <translation id="2789927415041640472">Reinicieu l'aplicació per poder utilitzar la nova configuració de l'eina d'assignació.</translation>
 <translation id="3046825211487065480">No s'ha pogut obtenir l'assignació. La segona sol·licitud s'ha enviat abans de rebre resposta per a la primera.</translation>
+<translation id="307654885162326571">Introdueix text</translation>
 <translation id="3286538390144397061">Reinicia ara</translation>
 <translation id="3346106862344060497">El motor s'ha connectat.</translation>
 <translation id="3407245330823033366">Trieu un compte per utilitzar-lo amb Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7795546637165553439">Configuració de Blimp</translation>
 <translation id="7961542533680218955">L'assignació s'ha obtingut correctament.</translation>
+<translation id="8135971362156222300">Inicia la sessió amb el compte de Google per activar Blimp.</translation>
 <translation id="8514856595257368555">S'ha recuperat el testimoni.</translation>
 <translation id="8880704056643418312">Canvis</translation>
 </translationbundle>

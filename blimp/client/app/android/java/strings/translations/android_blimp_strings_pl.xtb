@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Przypisanie się nie udało. Nie jest dostępna żadna wyszukiwarka.</translation>
 <translation id="117738548141695034">Przełącznik Blimp</translation>
 <translation id="1416550906796893042">Wersja aplikacji</translation>
+<translation id="1491042665327336022">Uruchom ponownie aplikację.</translation>
 <translation id="1750179245464827362">Pokaż informacje o debugowaniu</translation>
 <translation id="2004526128230838685">Przypisanie się nie udało. Nieznany problem.</translation>
 <translation id="2023631438558435272">Przypisanie się nie udało. Nieprawidłowa odpowiedź.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Przypisanie się nie udało. Błąd żądania sieciowego.</translation>
 <translation id="2789927415041640472">Uruchom ponownie aplikację, by korzystać z nowej konfiguracji przypisującego.</translation>
 <translation id="3046825211487065480">Przypisanie się nie udało. Drugie żądanie zostało wysłane przed otrzymaniem odpowiedzi na pierwsze.</translation>
+<translation id="307654885162326571">Wpisz tekst</translation>
 <translation id="3286538390144397061">Uruchom ponownie teraz</translation>
 <translation id="3346106862344060497">Połączono z mechanizmem.</translation>
 <translation id="3407245330823033366">Wybierz konto, którego chcesz używać w aplikacji Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7795546637165553439">Ustawienia Blimp</translation>
 <translation id="7961542533680218955">Przypisano.</translation>
+<translation id="8135971362156222300">Zaloguj się na konto Google, by włączyć Blimp.</translation>
 <translation id="8514856595257368555">Token został pobrany.</translation>
 <translation id="8880704056643418312">Zatwierdzenia</translation>
 </translationbundle>

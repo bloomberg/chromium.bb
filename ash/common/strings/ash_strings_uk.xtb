@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Комбінація клавіш для вибору наступного методу введення змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
+<translation id="1127238861555034875">Режим лупи</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="3157169093162779309">Заблокувати обертання</translation>
 <translation id="3294437725009624529">Гість</translation>
+<translation id="3335772982573114336">Нова нотатка</translation>
+<translation id="3364721542077212959">Інструменти стилуса</translation>
 <translation id="3371140690572404006">пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3473479545200714844">Лупа</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" />: установлено роздільну здатність <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Увімкнути Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Зробити знімок певної області</translation>
 <translation id="372094107052732682">Двічі натисніть комбінацію клавіш Ctrl+Shift+Q, щоб вийти.</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
 <translation id="3775358506042162758">Паралельно можна входити не більше ніж у три облікові записи.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+пробіл</translation>
 <translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
+<translation id="5170568018924773124">Показати в папці</translation>
+<translation id="5191140942132549112">ПОКАЗАТИ ЗАПИТАННЯ</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
 <translation id="532063867737390965">Адміністратор вимкнув налаштування мережі.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6203030746557259519">Віртуальний дисплей</translation>
 <translation id="6248847161401822652">Двічі натисніть комбінацію клавіш Control Shift Q, щоб вийти.</translation>
+<translation id="6297287540776456956">Виберіть область за допомогою стилуса</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> обернено на <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS-повідомлення від <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Пристрій із портом USB типу C (праворуч)</translation>
 <translation id="6501401484702599040">Вміст екрана транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="6537270692134705506">Зробити знімок екрана</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="6585808820553845416">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
+<translation id="7129360219436193655">Режим лазерного вказівника</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="8077816382010018681">Заголовок сповіщення функції швидкого розблокування</translation>
 <translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Поділіться з нами своїми враженнями, відповівши на кілька запитань.</translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
 <translation id="8206859287963243715">Мобільний</translation>
 <translation id="8308637677604853869">Попереднє меню</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Натисніть, щоб переглянути</translation>
 <translation id="8825534185036233643">Дзеркалювання на більше ніж двох дисплеях не підтримується.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>

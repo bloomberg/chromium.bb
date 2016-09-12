@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Genvejen til at skifte til den næste indtastningsmetode er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
+<translation id="1127238861555034875">Forstørrelsesglastilstand</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1252999807265626933">Oplader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
@@ -84,6 +85,8 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="3157169093162779309">Aktivér låsning af rotation</translation>
 <translation id="3294437725009624529">Gæst</translation>
+<translation id="3335772982573114336">Ny note</translation>
+<translation id="3364721542077212959">Penneværktøjer</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
@@ -97,6 +100,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME" /> er ændret til <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
 <translation id="3709443003275901162">9 eller flere</translation>
+<translation id="3712407551474845318">Tag et skærmbillede af området</translation>
 <translation id="372094107052732682">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
 <translation id="3742055079367172538">Skærmbilledet blev taget</translation>
 <translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
@@ -130,6 +134,8 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="5012744545445585468">Ctrl+Shift+mellemrum</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
 <translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
+<translation id="5170568018924773124">Vis i mappe</translation>
+<translation id="5191140942132549112">VIS SPØRGSMÅL</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
 <translation id="532063867737390965">Denne netværksindstilling er deaktiveret af administratoren.</translation>
@@ -167,6 +173,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6203030746557259519">Virtuel skærm</translation>
 <translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
+<translation id="6297287540776456956">Brug pennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
@@ -176,6 +183,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">Tag skærmbillede</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
@@ -196,6 +204,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
+<translation id="7129360219436193655">Laserpentilstand</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
@@ -222,6 +231,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8077816382010018681">Underretningstitlen for QU-funktionen angives her</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Fortæl os, hvordan vi klarer os, ved at svare på et par spørgsmål.</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
@@ -233,7 +243,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Klik for at se det</translation>
 <translation id="8825534185036233643">Spejling med mere end to skærme understøttes ikke.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Søg+Esc</translation>

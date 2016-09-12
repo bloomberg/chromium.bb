@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Falha na atribuição. Nenhum mecanismo disponível.</translation>
 <translation id="117738548141695034">Interruptor do Blimp</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
+<translation id="1491042665327336022">Reinicie o app.</translation>
 <translation id="1750179245464827362">Exibir informações de depuração</translation>
 <translation id="2004526128230838685">Falha na atribuição. Problema desconhecido.</translation>
 <translation id="2023631438558435272">Falha na atribuição. Resposta inválida.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Falha na atribuição. Falha na solicitação de rede.</translation>
 <translation id="2789927415041640472">Reinicie o aplicativo para usar a configuração do novo atribuidor.</translation>
 <translation id="3046825211487065480">Falha na atribuição. Segunda solicitação enviada antes de a primeira solicitação responder.</translation>
+<translation id="307654885162326571">Digitar texto</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
 <translation id="3346106862344060497">Mecanismo conectado.</translation>
 <translation id="3407245330823033366">Escolha uma conta para usar com o Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7795546637165553439">Configurações do Blimp</translation>
 <translation id="7961542533680218955">Atribuição concluída.</translation>
+<translation id="8135971362156222300">Faça login na Conta do Google para ativar o Blimp.</translation>
 <translation id="8514856595257368555">Token recuperado.</translation>
 <translation id="8880704056643418312">Commits</translation>
 </translationbundle>

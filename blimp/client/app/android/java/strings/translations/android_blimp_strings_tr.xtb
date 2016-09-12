@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Atama başarısız oldu. Kullanılabilir motor yok.</translation>
 <translation id="117738548141695034">Blimp Anahtarı</translation>
 <translation id="1416550906796893042">Uygulama sürümü</translation>
+<translation id="1491042665327336022">Lütfen uygulamayı yeniden başlatın.</translation>
 <translation id="1750179245464827362">Hata Ayıklama Bilgilerini Göster</translation>
 <translation id="2004526128230838685">Atama başarısız oldu. Bilinmeyen sorun.</translation>
 <translation id="2023631438558435272">Atama başarısız oldu. Geçersiz yanıt.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Atama başarısız oldu. Ağ isteği başarısız oldu.</translation>
 <translation id="2789927415041640472">Yeni atayan yapılandırmasını kullanmak için lütfen uygulamayı yeniden başlatın.</translation>
 <translation id="3046825211487065480">Atama başarısız oldu. Birinci isteğe yanıt verilmeden ikinci istek gönderildi.</translation>
+<translation id="307654885162326571">Metin Girin</translation>
 <translation id="3286538390144397061">Şimdi yeniden başlat</translation>
 <translation id="3346106862344060497">Motora bağlanıldı.</translation>
 <translation id="3407245330823033366">Lütfen Blimp ile kullanılacak bir hesap seçin.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7795546637165553439">Blimp Ayarları</translation>
 <translation id="7961542533680218955">Atama başarılı oldu.</translation>
+<translation id="8135971362156222300">Blimp'i etkinleştirmek için lütfen Google Hesabı'nda oturum açın.</translation>
 <translation id="8514856595257368555">Jeton alındı.</translation>
 <translation id="8880704056643418312">Gerçekleştirme sayısı</translation>
 </translationbundle>

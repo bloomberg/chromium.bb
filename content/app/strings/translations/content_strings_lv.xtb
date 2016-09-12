@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="1014825444426747588">tukšs</translation>
 <translation id="1018939186200882850">izvēlnes vienums</translation>
 <translation id="1020833440720551630">izslēgt audio ieraksta skaņu</translation>
 <translation id="10623998915015855">pārslēgšanas poga</translation>
 <translation id="1088086359088493902">Sekundes</translation>
 <translation id="1171774979989969504">Ievadiet e-pasta adresi.</translation>
+<translation id="1178581264944972037">Pauzēt</translation>
 <translation id="1188858454923323853">papildu</translation>
 <translation id="1206619573307042055">slīdošais teksts</translation>
 <translation id="1206693055195146388">slīdnis</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">priekšpusdienā/pēcpusdienā</translation>
 <translation id="1832974991323546415">atskaņot attālinātā ierīcē</translation>
 <translation id="1842960171412779397">Atlasiet</translation>
+<translation id="1854180393107901205">Apturēt apraidi</translation>
 <translation id="1880518467580572141">kontūra</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">statuss</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">vārds</translation>
 <translation id="3822383571486410024">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver <ph name="CURRENT_LENGTH" /> rakstzīmes).</translation>
 <translation id="383465348367842624">Daļā, kas atrodas pirms zīmes <ph name="ATSIGN" />, nedrīkst būt ietverts simbols <ph name="INVALIDCHARACTER" />.</translation>
+<translation id="3846214748874656680">Aizvērt pilnekrāna režīmu</translation>
 <translation id="3924558731517983934">lietojumprogramma</translation>
 <translation id="3960700977367013758">ritjosla</translation>
 <translation id="4103419683916926126">Milisekundes</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">meklēt</translation>
 <translation id="4812940957355064477">Lūdzu, ievadiet skaitli.</translation>
 <translation id="4975562563186953947">Atlasīti <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Ieslēgt skaņu</translation>
 <translation id="49969490063480558">Lūdzu, ievadiet daļu, kas atrodas aiz zīmes <ph name="ATSIGN" />. “<ph name="INVALIDADDRESS" />” ir nepilna adrese.</translation>
 <translation id="5034860022980953847">norises indikators</translation>
 <translation id="5048533449481078685">sarakstu marķieris</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">iziet no pilnekrāna režīma</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
 <translation id="5516424706154626233">datuma atlasītājs</translation>
+<translation id="5537725057119320332">Apraidīt</translation>
 <translation id="5546461542133609677">rādīt</translation>
 <translation id="561939826962581046">laiks</translation>
 <translation id="5641012560118721995">pauzēt atskaņošanu</translation>
 <translation id="5643186887447432888">poga</translation>
+<translation id="57838592816432529">Izslēgt skaņu</translation>
 <translation id="583281660410589416">Nezināms</translation>
 <translation id="5843503607508392247">Cits...</translation>
 <translation id="5860033963881614850">Izsl.</translation>
+<translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="5944544982112848342">2048 (Augsta Atzīme)</translation>
 <translation id="5966707198760109579">Nedēļa</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">pārslēdzējs</translation>
 <translation id="6739588121953935928">lineāls</translation>
 <translation id="6755330956360078551">rīka padoms</translation>
+<translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6820355525329141109">Nevarēja ielādēt spraudni.</translation>
 <translation id="6843725295806269523">izslēgt skaņu</translation>
 <translation id="6845533974506654842">nospiest</translation>

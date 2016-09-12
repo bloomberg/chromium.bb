@@ -97,7 +97,6 @@
 <translation id="3883381313049582448">Использовать пароль, сгенерированный Chromium</translation>
 <translation id="3889543394854987837">Нажмите на свое имя, чтобы войти в Chromium.</translation>
 <translation id="390894725198123737">Если пароли на Mac сохраняются с помощью функции "Связка ключей", их могут просматривать и синхронизировать все пользователи Chromium, у которых есть доступ к этому аккаунту OS X.</translation>
-<translation id="3994125055863078356">Не удалось сделать Chromium браузером по умолчанию.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4077262827416206768">Закройте все окна Chromium и перезапустите программу, чтобы изменения вступили в силу.</translation>
 <translation id="4182290826692170034">Chromium стал браузером по умолчанию. Ура!</translation>
@@ -140,6 +139,7 @@
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
+<translation id="5726838626470692954">Администратор устройства должен удалить ваш аккаунт из Chromium и добавить его снова</translation>
 <translation id="5768914737813585044">Отображать Chromium OS на этом языке</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium почти готов к работе</translation>
@@ -176,6 +176,7 @@
 
 Некоторые возможности могут быть недоступны. Укажите другой каталог профиля либо используйте более новую версию Chromium.</translation>
 <translation id="6734080038664603509">Обновить &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="6810143991807788455">Отправьте отчет о текущих настройках Chromium и помогите усовершенствовать работу браузера</translation>
 <translation id="6838494703713445896">Данные Chromium подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил действительные временные метки сертификата.</translation>
@@ -201,7 +202,6 @@
 <translation id="7223968959479464213">Диспетчер задач – Chromium</translation>
 <translation id="722928257909516027">Отображение меню Chromium</translation>
 <translation id="731644333568559921">Обновить &amp;Chromium OS</translation>
-<translation id="731795002583552498">Обновление Chromium…</translation>
 <translation id="7318036098707714271">Файл настроек поврежден или недействителен. Chromium не может восстановить ваши параметры.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Новое окно</translation>

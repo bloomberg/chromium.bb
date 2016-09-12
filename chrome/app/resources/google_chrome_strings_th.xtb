@@ -79,6 +79,7 @@
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
+<translation id="3180085900771989961">ผู้จัดการต้องนำคุณออกแล้วเพิ่มคุณกลับเข้าไปใน Chrome ใหม่</translation>
 <translation id="3251381707915721925">ในการตั้งค่าเว็บไซต์ที่ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าดูได้ คุณสามารถกำหนดค่าข้อจำกัดและการตั้งค่าโดยไปที่ <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> หากคุณไม่เปลี่ยนการตั้งค่าเริ่มต้น <ph name="NEW_PROFILE_NAME" /> จะสามารถเรียกดูทุกอย่างบนเว็บได้
 
 หากต้องการป้องกันไม่ให้ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าถึงบัญชีของคุณ โปรดตรวจสอบว่าคุณได้ล็อกโปรไฟล์เวลาที่ไม่ได้ใช้ Chrome โดยทำดังนี้ คลิกชื่อโปรไฟล์ของคุณที่มุมขวาบนของเบราว์เซอร์ แล้วเลือก "ออกและล็อกป้องกันเด็ก"
@@ -179,8 +180,8 @@
 <translation id="61852838583753520">อัปเดต &amp;Chrome OS</translation>
 <translation id="6235018212288296708">กฎขาเข้าสำหรับ Google Chrome เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="6236285698028833233">Google Chrome ได้หยุดการอัปเดต และไม่สนับสนุนระบบปฏิบัติการเวอร์ชันนี้อีกต่อไป</translation>
+<translation id="6291549208091401781">มีการติดตั้ง Google Chrome สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="629218512217695915">ใช้รหัสผ่านที่ Chrome สร้างขึ้น</translation>
-<translation id="6338556085225130112">กำลังอัปเดต Google Chrome</translation>
 <translation id="6368805772029492593">เพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น Google Chrome จะเข้ารหัสข้อมูลของคุณ</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
 <translation id="6400076122676892962">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Mac OS X 10.6, 10.7 และ 10.8 อีกต่อไป</translation>
@@ -190,7 +191,6 @@
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6626317981028933585">ขออภัย เราไม่สามารถเรียกข้อมูลการตั้งค่าของ Mozilla Firefox ได้ขณะที่เบราว์เซอร์ยังทำงานอยู่ หากต้องการนำเข้าข้อมูลการตั้งค่ามาที่ Google Chrome โปรดบันทึกงานที่คุณทำอยู่แล้วปิดหน้าต่าง Firefox ทั้งหมด จากนั้นคลิกดำเนินการต่อ</translation>
 <translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
-<translation id="6648058004052854464">ไม่สามารถทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้นได้</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>

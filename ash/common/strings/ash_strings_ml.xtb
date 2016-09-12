@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
+<translation id="1127238861555034875">മാഗ്‌നിഫൈയിംഗ് ഗ്ലാസ് മോഡ്</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> എന്നതിൽ നിന്നും ചാർജ്ജുചെയ്യുന്നു</translation>
 <translation id="1270290102613614947">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="3157169093162779309">റൊട്ടേഷൻ ലോക്ക് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
+<translation id="3335772982573114336">പുതിയ കുറിപ്പ്</translation>
+<translation id="3364721542077212959">സ്റ്റൈലസ് ടൂളുകൾ</translation>
 <translation id="3371140690572404006">USB-C ഉപകരണം (വലതുവശത്ത് മുന്നിലെ പോർട്ട്)</translation>
 <translation id="3445925074670675829">USB-C ഉപകരണം</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> മിഴിവ് <ph name="RESOLUTION" /> എന്നതിലേയ്‌ക്ക് മാറ്റി</translation>
 <translation id="370649949373421643">Wi-fi പ്രാപ്‌തമാക്കുക</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">ആവശ്യമുള്ള ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="372094107052732682">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="3742055079367172538">സ്‌ക്രീൻഷോട്ട് എടുത്തു</translation>
 <translation id="3775358506042162758">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് മൂന്ന് അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ഡ്രൈവ് ക്രമീകരണങ്ങൾ...</translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
+<translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="5191140942132549112">ചോദ്യങ്ങൾ കാണിക്കുക</translation>
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="5238774010593222950">മറ്റൊരു അക്കൗണ്ടിൽ സൈൻ ഇൻ ചെയ്യാനാകില്ല.</translation>
 <translation id="532063867737390965">അഡ്‌മിനിസ്‌ട്രേറ്റർ, ഈ നെറ്റ്‌വർക്ക് ക്രമീകരണം പ്രവർത്തനരഹിതമാക്കി.</translation>
@@ -166,6 +172,7 @@
 <translation id="6165508094623778733">കൂടുതൽ‍ മനസിലാക്കുക</translation>
 <translation id="6203030746557259519">വെർച്വൽ ഡിസ്‌പ്ലേ</translation>
 <translation id="6248847161401822652">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Control Shift Q അമർത്തുക.</translation>
+<translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> എന്നതില്‍ നിന്നുള്ള SMS</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
@@ -175,6 +182,7 @@
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
 <translation id="6490471652906364588">USB-C ഉപകരണം (വലത് പോർട്ട്)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
+<translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
@@ -194,6 +202,7 @@
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
+<translation id="7129360219436193655">ലേസർ പോയിന്റർ മോഡ്</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
 <translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
@@ -220,6 +229,7 @@
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
 <translation id="8077816382010018681">QU ഫീച്ചർ അറിയിപ്പ് പേര് ഇവിടെയുണ്ട്</translation>
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">കുറച്ച് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകിക്കൊണ്ട് ഞങ്ങളുടെ പ്രവർത്തനത്തെക്കുറച്ചുള്ള അഭിപ്രായം അറിയിക്കൂ.</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
@@ -231,7 +241,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">കാണുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="8825534185036233643">രണ്ടിലധികം ഡിസ്‌പ്ലേകളിൽ മിററിംഗ് ചെയ്യുന്നത് പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">തിരയൽ+Esc</translation>

@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Η ανάθεση απέτυχε. Δεν υπάρχει διαθέσιμη μηχανή.</translation>
 <translation id="117738548141695034">Διακόπτης Blimp</translation>
 <translation id="1416550906796893042">Έκδοση εφαρμογής</translation>
+<translation id="1491042665327336022">Επανεκκινήστε την εφαρμογή.</translation>
 <translation id="1750179245464827362">Εμφάνιση πληροφοριών αντιμετώπισης προβλημάτων</translation>
 <translation id="2004526128230838685">Η ανάθεση απέτυχε. Άγνωστη πρόβλημα.</translation>
 <translation id="2023631438558435272">Η ανάθεση απέτυχε. Μη έγκυρη απόκριση.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Η ανάθεση απέτυχε. Το αίτημα δικτύου απέτυχε.</translation>
 <translation id="2789927415041640472">Επανεκκινήστε την εφαρμογή για να χρησιμοποιήσετε τη νέα διαμόρφωση εκχώρησης.</translation>
 <translation id="3046825211487065480">Η ανάθεση απέτυχε. Εστάλη δεύτερο αίτημα πριν από την απόκριση στο πρώτο αίτημα.</translation>
+<translation id="307654885162326571">Εισαγωγή κειμένου</translation>
 <translation id="3286538390144397061">Άμεση επανεκκίνηση</translation>
 <translation id="3346106862344060497">Η μηχανή συνδέθηκε.</translation>
 <translation id="3407245330823033366">Επιλέξτε έναν λογαριασμό που θα χρησιμοποιήσετε με το Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7795546637165553439">Ρυθμίσεις Blimp</translation>
 <translation id="7961542533680218955">Η ανάθεση ήταν επιτυχής.</translation>
+<translation id="8135971362156222300">Συνδεθείτε στον λογαριασμό google για να ενεργοποιήσετε το Blimp.</translation>
 <translation id="8514856595257368555">Το διακριτικό ανακτήθηκε.</translation>
 <translation id="8880704056643418312">Υποβολές</translation>
 </translationbundle>

@@ -101,7 +101,6 @@
 <translation id="3883381313049582448">በChromium የመነጨ የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="3889543394854987837">Chromiumን ለመክፈት እና ማሰስ ለመጀመር ስምዎን ጠቅ ያድርጉት።</translation>
 <translation id="390894725198123737">Mac ላይ የይለፍ ቃላት በእርስዎ Keychain ላይ ሊቀመጡ ይችላሉ፣ እና ይህን የOS X መለያ በሚጋሩ ሌሎች የChromium ተጠቃሚዎች ሊደረስባቸው ወይም ሊሰመሩ ይችላሉ።</translation>
-<translation id="3994125055863078356">Chromium ነባሪው አሳሽ መሆን አልቻለም።</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
 <translation id="4077262827416206768">ይህ ለውጥ እንዲተገበር እባክዎ የChromium መስኮቶችን ይዝጉና Chromiumን ዳግም ያስጀምሩ።</translation>
 <translation id="4182290826692170034">Chromiumን የእርስዎ ነባሪ አሳሽ ነው። ወንዳታ!</translation>
@@ -144,6 +143,7 @@
 <translation id="5634636535844844681">Chromium Windows 7 ወይም ከዚያ በላይ ያስፈልገዋል።</translation>
 <translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
 <translation id="5698481217667032250">Chromiumን በዚህ ቋንቋ አሳይ</translation>
+<translation id="5726838626470692954">የእርስዎ አስተዳዳሪ እርስዎን አስወግደውና መልሰው ወደ Chromium ማከል አለባቸው።</translation>
 <translation id="5768914737813585044">Chromium OS በዚህ ቋንቋ አሳይ</translation>
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
@@ -180,6 +180,7 @@
 
 አንዳንድ ባህሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም ይበልጥ አዲስ የሆነ የChromium ስሪት ይጠቀሙ።</translation>
 <translation id="6734080038664603509">&amp;Chromiumን አዘምን</translation>
+<translation id="6734291798041940871">Chromium ለሁሉም በእርስዎ ኮምፒውተር ላይ ላሉ ተጠቃሚዎች አስቀድሞ ተጭኗል።</translation>
 <translation id="6757767188268205357">አታርመኝ</translation>
 <translation id="6810143991807788455">የአሁኖቹ ቅንብሮችን ሪፖርት በማድረግ Chromium የተሻለ እንዲሆን ያግዙ</translation>
 <translation id="6838494703713445896"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chromium አረጋግጧል። አገልጋዩ ልክ የሆነ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል።</translation>
@@ -205,7 +206,6 @@
 <translation id="7223968959479464213">ተግባር መሪ - Chromium</translation>
 <translation id="722928257909516027">የChromium ምናሌን አሳይ</translation>
 <translation id="731644333568559921">&amp;Chromium ስርዓተ ክወናን አዘምን</translation>
-<translation id="731795002583552498">Chromiumን በማዘመን ላይ...</translation>
 <translation id="7318036098707714271">የምርጫዎች ፋይልዎ የተበላሸ ወይም ልክ ያልሆነ ነው።
 
 Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>

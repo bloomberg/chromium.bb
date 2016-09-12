@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">أخفق التعيين.  لا يتوفر محرك.</translation>
 <translation id="117738548141695034">‏تبديل Blimp</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
+<translation id="1491042665327336022">يُرجى إعادة تشغيل التطبيق.</translation>
 <translation id="1750179245464827362">عرض معلومات تصحيح الأخطاء</translation>
 <translation id="2004526128230838685">أخفق التعيين. مشكلة غير معروفة.</translation>
 <translation id="2023631438558435272">أخفق التعيين.  استجابة غير صالحة.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">أخفق التعيين.  أخفق طلب الشبكة.</translation>
 <translation id="2789927415041640472">يُرجى إعادة تشغيل التطبيق لاستخدام تهيئة المعيّن الجديدة.</translation>
 <translation id="3046825211487065480">أخفق التعيين. تم إرسال الطلب الثاني قبل استجابة الطلب الأول.</translation>
+<translation id="307654885162326571">إدخال نص</translation>
 <translation id="3286538390144397061">إعادة التشغيل الآن</translation>
 <translation id="3346106862344060497">المحرك متصل.</translation>
 <translation id="3407245330823033366">‏يُرجى اختيار حساب لاستخدامه مع Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7795546637165553439">‏إعدادات Blimp</translation>
 <translation id="7961542533680218955">تم نجاح التعيين.</translation>
+<translation id="8135971362156222300">‏يُرجى تسجيل الدخول إلى حساب Google لتمكين Blimp.</translation>
 <translation id="8514856595257368555">تم استرداد الرمز المميز.</translation>
 <translation id="8880704056643418312">عمليات التنفيذ</translation>
 </translationbundle>

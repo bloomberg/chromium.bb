@@ -97,7 +97,6 @@
 <translation id="3883381313049582448">Chromium ద్వారా రూపొందించబడిన పాస్‌వర్డ్‌ని ఉపయోగించండి</translation>
 <translation id="3889543394854987837">Chromiumని తెరిచి, బ్రౌజింగ్‌ను ప్రారంభించడానికి మీ పేరుని క్లిక్ చేయండి.</translation>
 <translation id="390894725198123737">Macలో, పాస్‌వర్డ్‌లు మీ కీచెయిన్‌కి సేవ్ చేయబడవచ్చు మరియు ఈ OS X ఖాతాను భాగస్వామ్యం చేసుకునే ఇతర Chromium వినియోగదారులు వాటిని ప్రాప్యత చేయవచ్చు లేదా సమకాలీకరించవచ్చు.</translation>
-<translation id="3994125055863078356">Chromiumని డిఫాల్ట్ బ్రౌజర్‌గా చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త లక్షణాలు తాజా సంస్కరణలో అందుబాటులో ఉన్నాయి.</translation>
 <translation id="4077262827416206768">దయచేసి అన్ని Chromium విండోలను మూసివేసి, ఈ మార్పు ప్రభావాన్ని కావడం కోసం Chromiumని మళ్లీ ప్రారంభించండి.</translation>
 <translation id="4182290826692170034">మీ డిఫాల్ట్ బ్రౌజర్ Chromium. గమనించగలరు!</translation>
@@ -140,6 +139,7 @@
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
 <translation id="5680901439334282664">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
+<translation id="5726838626470692954">మీ నిర్వాహకులు తప్పనిసరిగా మిమ్మల్ని Chromium నుండి తీసివేసి, తిరిగి జోడించాలి.</translation>
 <translation id="5768914737813585044">Chromium OSను ఈ భాషలో ప్రదర్శించు</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
@@ -176,6 +176,7 @@
 
 కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chromium యొక్క క్రొత్త సంస్కరణని ఉపయోగించండి.</translation>
 <translation id="6734080038664603509">&amp;Chromiumని నవీకరించండి</translation>
+<translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumని మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="6838494703713445896">Chromium ఈ వెబ్‌సైట్ ప్రమాణపత్రాన్ని <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది. సర్వర్ చెల్లుబాటు అయ్యే ప్రమాణపత్ర పారదర్శకత సమాచారాన్ని అందించింది.</translation>
@@ -201,7 +202,6 @@
 <translation id="7223968959479464213">విధి నిర్వాహకుడు - Chromium</translation>
 <translation id="722928257909516027">Chromium మెనును చూపు</translation>
 <translation id="731644333568559921">&amp;Chromium OSని నవీకరించండి</translation>
-<translation id="731795002583552498">Chromiumని నవీకరిస్తోంది</translation>
 <translation id="7318036098707714271">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Chromium మీ సెట్టింగ్‌లను పునరుద్ధరించలేకపోయింది.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">క్రొత్త విండో</translation>

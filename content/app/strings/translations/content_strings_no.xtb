@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1014825444426747588">tom</translation>
 <translation id="1018939186200882850">menyelement</translation>
 <translation id="1020833440720551630">slå av lydsporet</translation>
 <translation id="10623998915015855">av/på-knapp</translation>
 <translation id="1088086359088493902">Sekunder</translation>
 <translation id="1171774979989969504">Skriv inn en e-postadresse.</translation>
+<translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1188858454923323853">komplementær</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">glidebryter</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">spill på ekstern enhet</translation>
 <translation id="1842960171412779397">velg</translation>
+<translation id="1854180393107901205">Stopp castingen</translation>
 <translation id="1880518467580572141">omriss</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Du må forlenge denne teksten til <ph name="MIN_CHARACTERS" /> tegn eller mer (for øyeblikket bruker du <ph name="CURRENT_LENGTH" /> tegn).</translation>
 <translation id="383465348367842624">En del etterfulgt av «<ph name="ATSIGN" />» kan ikke inneholde symbolet «<ph name="INVALIDCHARACTER" />».</translation>
+<translation id="3846214748874656680">Avslutt fullskjermmodus</translation>
 <translation id="3924558731517983934">program</translation>
 <translation id="3960700977367013758">rullefelt</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">søk</translation>
 <translation id="4812940957355064477">Skriv inn et tall.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> er valgt</translation>
+<translation id="4992066212339426712">Slå på lyden</translation>
 <translation id="49969490063480558">Skriv inn en del etterfulgt av «<ph name="ATSIGN" />». «<ph name="INVALIDADDRESS" />» er ufullstendig.</translation>
 <translation id="5034860022980953847">fremdriftsindikator</translation>
 <translation id="5048533449481078685">listemarkør</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">avslutt fullskjerm</translation>
 <translation id="5476505524087279545">fjern merke</translation>
 <translation id="5516424706154626233">datovelger</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">slå på lyden</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">stopp avspillingen midlertidig</translation>
 <translation id="5643186887447432888">knapp</translation>
+<translation id="57838592816432529">Kutt lyden</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5843503607508392247">Andre</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="588258955323874662">Fullskjerm</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5944544982112848342">2048 (sterk)</translation>
 <translation id="5966707198760109579">Uke</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">linjal</translation>
 <translation id="6755330956360078551">verktøytips</translation>
+<translation id="6790428901817661496">Spill av</translation>
 <translation id="6820355525329141109">Kunne ikke laste inn programtillegget.</translation>
 <translation id="6843725295806269523">kutt lyd</translation>
 <translation id="6845533974506654842">trykk</translation>

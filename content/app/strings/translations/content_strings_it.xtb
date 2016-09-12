@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1014825444426747588">vuoto</translation>
 <translation id="1018939186200882850">voce di menu</translation>
 <translation id="1020833440720551630">disattiva traccia audio</translation>
 <translation id="10623998915015855">pulsante di attivazione/disattivazione</translation>
 <translation id="1088086359088493902">Secondi</translation>
 <translation id="1171774979989969504">Inserisci un indirizzo email.</translation>
+<translation id="1178581264944972037">Pausa</translation>
 <translation id="1188858454923323853">elementi complementari</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">dispositivo di scorrimento</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">riproduci su dispositivo remoto</translation>
 <translation id="1842960171412779397">seleziona</translation>
+<translation id="1854180393107901205">Interrompi trasmissione</translation>
 <translation id="1880518467580572141">contorno</translation>
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">stato</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">termine</translation>
 <translation id="3822383571486410024">Prolunga questo testo a <ph name="MIN_CHARACTERS" /> o più caratteri (al momento stai utilizzando <ph name="CURRENT_LENGTH" /> caratteri).</translation>
 <translation id="383465348367842624">Una parte seguita da "<ph name="ATSIGN" />" non deve contenere il simbolo "<ph name="INVALIDCHARACTER" />".</translation>
+<translation id="3846214748874656680">Esci da schermo intero</translation>
 <translation id="3924558731517983934">applicazione</translation>
 <translation id="3960700977367013758">barra di scorrimento</translation>
 <translation id="4103419683916926126">Millisecondi</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4812940957355064477">Inserisci un numero.</translation>
 <translation id="4975562563186953947">Elementi selezionati: <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Riattiva audio</translation>
 <translation id="49969490063480558">Inserisci una parte dopo "<ph name="ATSIGN" />". Il valore "<ph name="INVALIDADDRESS" />" è incompleto.</translation>
 <translation id="5034860022980953847">indicatore di avanzamento</translation>
 <translation id="5048533449481078685">indicatore elenco</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">esci da schermo intero</translation>
 <translation id="5476505524087279545">deseleziona</translation>
 <translation id="5516424706154626233">selettore di data</translation>
+<translation id="5537725057119320332">Trasmetti</translation>
 <translation id="5546461542133609677">riattiva audio</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">sospendi riproduzione</translation>
 <translation id="5643186887447432888">pulsante</translation>
+<translation id="57838592816432529">Disattiva audio</translation>
 <translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5843503607508392247">Altro...</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="588258955323874662">Schermo intero</translation>
 <translation id="5939518447894949180">Ripristina</translation>
 <translation id="5944544982112848342">2048 (alta qualità)</translation>
 <translation id="5966707198760109579">Settimana</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">righello</translation>
 <translation id="6755330956360078551">descrizione comando</translation>
+<translation id="6790428901817661496">Play</translation>
 <translation id="6820355525329141109">Impossibile caricare il plug-in</translation>
 <translation id="6843725295806269523">disattiva audio</translation>
 <translation id="6845533974506654842">premi</translation>

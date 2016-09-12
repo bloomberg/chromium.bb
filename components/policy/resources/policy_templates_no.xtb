@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1007441141628883408">Slår på komponentoppdateringer for alle komponenter i <ph name="PRODUCT_NAME" /> når regelen ikke er angitt eller er angitt som «True» (sann).
+
+      Hvis regelen er angitt som «False» (usann), slås komponentoppdateringene av. Enkelte komponenter er imidlertid unntatt fra denne regelen og slås ikke av. Dette gjelder oppdateringer av komponenter som er avgjørende for sikkerheten, eller som ikke inneholder kjørbar kode eller endrer nettleserens atferd betydelig.
+      Slike komponenter kan for eksempel være Safe Browsing-data og lister over tilbaketrekking av sertifikater. </translation>
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
@@ -28,6 +32,9 @@
           Hvis denne regelen er spesifisert, bruker fjerntilgangsverten denne nettadressen til å validere autentiseringstoken fra fjerntilgangsklienter, for dermed å godta tilkoblinger. Den må brukes sammen med RemoteAccessHostTokenUrl.
 
           Denne funksjonen er for øyeblikket slått av på tjenersiden.</translation>
+<translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
+
+          Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="1103860406762205913">Slår på den tidligere nettbaserte påloggingen</translation>
 <translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke for å lagre bufrede filer på disken.
@@ -53,6 +60,13 @@
       Korteste tillatte frekvens er 60 sekunder.</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
+<translation id="127699919157094139">Slår av datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjelp av synkroniseringstjenester Google er vert for, og hindrer brukerne i å endre denne innstillingen.
+
+      Hvis du slår på denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne innstillingen ikke angis, kan brukerne selv velge om Google Synkronisering skal brukes eller ikke.
+
+      For å slå av Google Synkronisering fullstendig anbefaler vi at du slår av Google Synkronisering-tjenesten i Googles Administrasjonskonsoll.</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
@@ -120,6 +134,14 @@
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> går forbi alle proxy-tjenere for listen over verter som er angitt her.
+
+          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
+
+          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for å angi regler for proxy-tjenere.
+
+          Du finner mer detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
@@ -134,6 +156,7 @@
       ikke bruke ARC.</translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
+<translation id="1606958238518590302">Når denne regelen er angitt som «True» (sann), kan ikke brukere skrive noe til eksterne lagringsenheter.</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="1617384279878333801">Slå på «Legg til person» i profilbehandlingen</translation>
@@ -599,6 +622,7 @@
 <translation id="2850122204195089673">Gjør det enhetlige skrivebordet tilgjengelig, og slå det på som standard.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2872961005593481000">Slå av</translation>
+<translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
 <translation id="2884728160143956392">Tillat informasjonskapsler som kun gjelder for den aktuelle økten på disse nettstedene</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
@@ -703,6 +727,22 @@
 
           Denne regelen er ikke klar til bruk ennå, så ikke bruk den.
           </translation>
+<translation id="3201273385265130876">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
+
+          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
+
+          Hvis du velger å bruke systeminnstillingene for proxy-tjenere, ignoreres alle andre alternativer.
+
+          Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+          Hvis du velger modusen for fast proxy-tjener, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet. 
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-appene alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
 <translation id="3206731874112238027">Slå av forhåndsvisning av utskrifter (avviklet)</translation>
 <translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
@@ -803,6 +843,18 @@
       Hvis du slår av denne innstillingen eller ikke spesifiserer noen verdi, blir ikke sikkerhetsmodusen for YouTube slått på ved tvang.</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
+<translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
+
+      Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
+
+      Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+      Du finner detaljerte eksempler her:
+      <ph name="PROXY_HELP_URL" />
+
+      Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-appene alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+      Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
 <translation id="3768412594120638208">Kontrollerer hvilke apper/utvidelser som kan installeres.
@@ -817,6 +869,7 @@
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
 <translation id="3793095274466276777">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem. Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig. Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og deaktiverer brukerstyrt kontroll av dette alternativet. Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.</translation>
+<translation id="379659290574555063">Behandle eksterne lagringsenheter som skrivebeskyttet.</translation>
 <translation id="3800626789999016379">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker for å laste ned filer. 
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har angitt en annen katalog eller slått på flagget for å velge lagringsplass for hver nedlasting.
@@ -1010,11 +1063,6 @@
       Selv om selve regelen støttes på plattformene ovenfor, kan funksjonene som slås på, være tilgjengelige på færre plattformer. Ikke alle avviklede nettplattformfunksjoner kan slås på igjen. Bare funksjonene som uttrykkelig listes opp nedenfor, kan slås på igjen for en begrenset periode. Perioden varierer fra funksjon til funksjon. Det generelle formatet for streng-taggene er [NavnetPåDenAvvikledeFunksjonen]_EffectiveUntil[ååååmmdd]. Som referanse kan du gå til https://bit.ly/blinkintents for å se formålet med endringene av nettplattformfunksjonene.
       </translation>
 <translation id="4442582539341804154">Aktiver lås når enheten blir inaktiv eller suspendert</translation>
-<translation id="4445684791305970001">Deaktiverer utviklerverktøyene og JavaScript-konsollen.
-
-      Hvis du aktiverer denne innstillingen, har man ingen tilgang til utviklerverktøyene, og nettstedelementene kan ikke inspiseres lenger. Alle tastatursnarveier og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir deaktivert.
-
-      Hvis dette alternativet deaktiveres eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
 <translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
@@ -1100,6 +1148,22 @@
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren til å å begynne med, men brukere kan aktivere den når som helst.</translation>
 <translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
+<translation id="4815725774537609998">Denne regelen er avviklet. Bruk ProxyMode i stedet.
+
+          Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
+
+          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
+
+          Hvis du velger å bruke systeminnstillingene for proxy-tjenere eller at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+          Hvis du velger manuelle innstillinger for proxy-tjenere, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener», «Nettadresse til en .pac-fil for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet. 
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="4816674326202173458">Tillat at bedriftsbrukeren er både primær- og sekundærbruker (standardatferd for ikke-administrerte brukere)</translation>
 <translation id="4826326557828204741">Handling som skal utføres når inaktivitetsforsinkelsen blir overgått mens maskinen kjører på batteriet</translation>
 <translation id="4834526953114077364">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt og ikke pålogget de siste tre månedene»</translation>
@@ -1338,6 +1402,7 @@
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
+<translation id="5795001131770861387">Slår på støtte for HTTP/0.9 for andre porter enn standardportene</translation>
 <translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
 <translation id="5815129011704381141">Start automatisk på nytt etter oppdatering</translation>
@@ -1436,6 +1501,7 @@
 <translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er parvise leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
+<translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
 
           Hvis tidslengden er satt til en verdi større enn null, avgjør den hvor lenge brukeren kan være borte før skjermen på <ph name="PRODUCT_OS_NAME" /> låses.
@@ -1707,6 +1773,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne innstillingen er slått av eller ikke spesifisert, kan verter deles med en hvilken som helst konto.
 
           Se også RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Slår på komponentoppdateringer i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
@@ -1964,6 +2031,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Merk at du ikke bør blokkere interne «chrome://*»-nettadressr, siden det kan føre til uventede feil.
 
       Hvis denne regelen ikke er angitt, blir ingen nettadresser svartelistet i nettleseren.</translation>
+<translation id="7724994675283793633">Denne regelen slår på HTTP/0.9 for andre porter enn 80 for HTTP og 443 for HTTPS.
+
+      Denne regelen er slått av som standard. Hvis den slås på, kan brukere bli eksponert for følgende sikkerhetsproblem: https://crbug.com/600352.
+
+      Denne regelen åpner for at bedrifter kan migrere eksisterende tjenere fra HTTP/0.9, og kommer til å bli fjernet i fremtiden.
+
+      Hvis regelen ikke er angitt, slås HTTP/0.9 av for andre porter enn standardportene.</translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
           Hvis denne innstillingen er aktivert, må brukere oppgi en gyldig to-delt kode ved lesing av en vert.

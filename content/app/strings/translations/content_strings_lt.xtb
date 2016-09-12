@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1014825444426747588">tuščia</translation>
 <translation id="1018939186200882850">meniu elementas</translation>
 <translation id="1020833440720551630">nutildyti garso įrašo takelį</translation>
 <translation id="10623998915015855">perjungimo mygtukas</translation>
 <translation id="1088086359088493902">Sekundės</translation>
 <translation id="1171774979989969504">Įveskite el. pašto adresą.</translation>
+<translation id="1178581264944972037">Pristabdyti</translation>
 <translation id="1188858454923323853">papildomas</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">šliaužiklis</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">iki pietų / po pietų</translation>
 <translation id="1832974991323546415">leisti naudojant nuotolinį įrenginį</translation>
 <translation id="1842960171412779397">pasirinkti</translation>
+<translation id="1854180393107901205">Sustabdyti perdavimą</translation>
 <translation id="1880518467580572141">kontūras</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">būsena</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">terminas</translation>
 <translation id="3822383571486410024">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate <ph name="CURRENT_LENGTH" /> simb.).</translation>
 <translation id="383465348367842624">Prieš „<ph name="ATSIGN" />“ esančioje dalyje neturėtų būti simbolio „<ph name="INVALIDCHARACTER" />“.</translation>
+<translation id="3846214748874656680">Išjungti viso ekrano režimą</translation>
 <translation id="3924558731517983934">programa</translation>
 <translation id="3960700977367013758">slinkties juosta</translation>
 <translation id="4103419683916926126">Milisekundės</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4812940957355064477">Įveskite skaičių.</translation>
 <translation id="4975562563186953947">Pasirinkta: <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Įjungti garsą</translation>
 <translation id="49969490063480558">Įveskite dalį po „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ nėra visas el. pašto adresas.</translation>
 <translation id="5034860022980953847">eigos indikatorius</translation>
 <translation id="5048533449481078685">sąrašo žymeklis</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">išeiti iš viso ekrano režimo</translation>
 <translation id="5476505524087279545">Nuimti žymėjimą</translation>
 <translation id="5516424706154626233">datos rinkiklis</translation>
+<translation id="5537725057119320332">Perduoti</translation>
 <translation id="5546461542133609677">įjungti garsą</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">pristabdyti atkūrimą</translation>
 <translation id="5643186887447432888">mygtukas</translation>
+<translation id="57838592816432529">Nutildyti</translation>
 <translation id="583281660410589416">Nežinoma</translation>
 <translation id="5843503607508392247">Kita...</translation>
 <translation id="5860033963881614850">Išjungta</translation>
+<translation id="588258955323874662">Visas ekranas</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5944544982112848342">2048 (Aukšto laipsnio)</translation>
 <translation id="5966707198760109579">Savaitė</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">ėjimo aukštyn / žemyn valdiklis</translation>
 <translation id="6739588121953935928">liniuotė</translation>
 <translation id="6755330956360078551">patarimas</translation>
+<translation id="6790428901817661496">Žaisti</translation>
 <translation id="6820355525329141109">Nepavyko įkelti papildinio.</translation>
 <translation id="6843725295806269523">nutildyti</translation>
 <translation id="6845533974506654842">paspausti</translation>

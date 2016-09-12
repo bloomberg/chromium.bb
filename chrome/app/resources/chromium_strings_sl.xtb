@@ -101,7 +101,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3883381313049582448">Uporabite geslo, ki ga ustvari Chromium</translation>
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="390894725198123737">V računalnikih Mac so gesla morda shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chromiuma, s katerimi si delite ta račun v sistemu OS X.</translation>
-<translation id="3994125055863078356">Chromiuma ni bilo mogoče nastaviti kot privzeti brskalnik.</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
 <translation id="4182290826692170034">Chromium je privzeti brskalnik. Hura!</translation>
@@ -144,6 +143,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium v tem jeziku</translation>
+<translation id="5726838626470692954">Skrbnik vas mora odstraniti iz Chromiuma in vas znova dodati.</translation>
 <translation id="5768914737813585044">Prikaži Chromium OS v tem jeziku</translation>
 <translation id="5772805321386874569">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chromiuma)</translation>
 <translation id="5796460469508169315">Chromium je skoraj pripravljen.</translation>
@@ -180,6 +180,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 
 Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali uporabite novejšo različico Chromiuma.</translation>
 <translation id="6734080038664603509">Posodobi &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium je že nameščen za vse uporabnike v računalniku.</translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
 <translation id="6810143991807788455">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah</translation>
 <translation id="6838494703713445896">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal veljavne podatke o preglednosti potrdila.</translation>
@@ -205,7 +206,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="7223968959479464213">Upravitelj opravil – Chromium</translation>
 <translation id="722928257909516027">Prikaz Chromiumovega menija</translation>
 <translation id="731644333568559921">Posodobi sistem &amp;Chromium OS</translation>
-<translation id="731795002583552498">Posodabljanje Chromiuma</translation>
 <translation id="7318036098707714271">Datoteka z nastavitvami je poškodovana ali neveljavna.
 
 Chromium ne more obnoviti vaših nastavitev.</translation>

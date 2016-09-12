@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ PIN కోడ్‌ను నమోదు చేయండి: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">తదుపరి ఇన్‌పుట్ పద్ధతికి మార్చే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="112308213915226829">అరను స్వయంచాలకంగా దాచు</translation>
+<translation id="1127238861555034875">భూతద్దం మోడ్</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> నుండి ఛార్జ్ అవుతోంది</translation>
 <translation id="1270290102613614947">స్క్రీన్‌పై కనిపించే కీబోర్డ్ నిలిపివేయబడింది</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="3157169093162779309">రొటేషన్ లాక్‌ను ప్రారంభించండి</translation>
 <translation id="3294437725009624529">అతిథి</translation>
+<translation id="3335772982573114336">కొత్త గమనిక</translation>
+<translation id="3364721542077212959">స్టైలస్ సాధనాలు</translation>
 <translation id="3371140690572404006">USB-C పరికరం (కుడివైపు ముందు పోర్ట్)</translation>
 <translation id="3445925074670675829">USB-C పరికరం</translation>
 <translation id="3473479545200714844">స్క్రీన్ మాగ్నిఫైయర్</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> రిజల్యూషన్ <ph name="RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="370649949373421643">Wi-fiని ప్రారంభించు</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">ప్రాంతాన్ని సంగ్రహించు</translation>
 <translation id="372094107052732682">నిష్క్రమించడానికి రెండుసార్లు Ctrl+Shift+Q నొక్కండి.</translation>
 <translation id="3742055079367172538">స్క్రీన్‌షాట్ తీసినప్పుడు</translation>
 <translation id="3775358506042162758">మీరు బహుళ సైన్-ఇన్‌లో గరిష్టంగా మూడు ఖాతాలను మాత్రమే కలిగి ఉండవచ్చు.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
+<translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
+<translation id="5191140942132549112">ప్రశ్నలను చూపు</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5238774010593222950">మరొక ఖాతాకు సైన్ ఇన్ చేయడం సాధ్యపడదు.</translation>
 <translation id="532063867737390965">ఈ నెట్‌వర్క్ సెట్టింగ్‌ను నిర్వాహకుడు నిలిపివేసారు.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6203030746557259519">వర్చువల్ డిస్‌ప్లే</translation>
 <translation id="6248847161401822652">నిష్క్రమించడానికి రెండుసార్లు Control Shift Q నొక్కండి.</translation>
+<translation id="6297287540776456956">ప్రాంతాన్ని ఎంచుకోవడానికి స్టైలస్‌ను ఉపయోగించండి</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> నుండి SMS</translation>
 <translation id="639644700271529076">CAPS LOCK ఆపివేయబడింది</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" />కు స్క్రీన్‌ను విస్తరిస్తోంది</translation>
 <translation id="6490471652906364588">USB-C పరికరం (కుడి పోర్ట్)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేస్తున్నాము</translation>
+<translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
 నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
+<translation id="7129360219436193655">లేజర్ పాయింటర్ మోడ్</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
 <translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="8077816382010018681">QU లక్షణం నోటిఫికేషన్ శీర్షిక ఇక్కడ అందించబడుతుంది</translation>
 <translation id="8103386449138765447">SMS సందేశాలు: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">కొన్ని ప్రశ్నలకు సమాధానం చెప్పడం ద్వారా మా పనితీరు గురించిన అభిప్రాయాలను తెలియజేయండి.</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
 <translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="8308637677604853869">మునుపటి మెను</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">వీక్షించడానికి క్లిక్ చేసినప్పుడు</translation>
 <translation id="8825534185036233643">రెండింటి కంటే ఎక్కువ డిస్‌ప్లేలతో మిర్రరింగ్ చేయడానికి మద్దతు లేదు.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

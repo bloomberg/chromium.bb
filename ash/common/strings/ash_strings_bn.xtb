@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">পরবর্তী ইনপুট পদ্ধতিতে পরিবর্তন করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="112308213915226829">তাককে স্বয়ংক্রিয়ভাবে লুকান</translation>
+<translation id="1127238861555034875">বিবর্ধক কাচ মোড</translation>
 <translation id="1195412055398077112">ওভারস্ক্যান</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> থেকে চার্জ হচ্ছে</translation>
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
@@ -84,6 +85,8 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
 <translation id="3294437725009624529">অতিথি</translation>
+<translation id="3335772982573114336">নতুন টীকা</translation>
+<translation id="3364721542077212959">লেখনী সরঞ্জামগুলি</translation>
 <translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
@@ -97,6 +100,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION" /> করা হয়েছে</translation>
 <translation id="370649949373421643">Wi-fi সক্ষম করুন</translation>
 <translation id="3709443003275901162">৯+</translation>
+<translation id="3712407551474845318">অঞ্চল ক্যাপচার করুন</translation>
 <translation id="372094107052732682">প্রস্থান করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3742055079367172538">স্ক্রীনশট নেওয়া হয়েছে</translation>
 <translation id="3775358506042162758">একাধিক সাইন ইনে আপনার কেবলমাত্র তিনটি অ্যাকাউন্ট থাকতে পারে৷</translation>
@@ -130,6 +134,8 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
+<translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
+<translation id="5191140942132549112">প্রশ্নগুলি দেখান</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="5238774010593222950">অন্য অ্যাকাউন্টে প্রবেশ করুন করা যাবে না।</translation>
 <translation id="532063867737390965">এই নেটওয়ার্ক সেটিং প্রশাসকের দ্বারা অক্ষম করা হয়েছে।</translation>
@@ -167,6 +173,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
+<translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />-এর থেকে SMS...</translation>
 <translation id="639644700271529076">CAPS LOCK বন্ধ আছে</translation>
@@ -176,6 +183,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME" /> তে প্রসারিত হচ্ছে</translation>
 <translation id="6490471652906364588">USB-C ডিভাইস (ডান পোর্ট)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা হচ্ছে</translation>
+<translation id="6537270692134705506">স্ক্রীন ক্যাপচার করুন</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
@@ -195,6 +203,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
 <translation id="7097613348211027502">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাম পোর্ট)</translation>
+<translation id="7129360219436193655">লেজার পয়েন্টার মোড</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
 <translation id="7209101170223508707">CAPS LOCK চালু আছে৷
@@ -221,6 +230,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
 <translation id="8077816382010018681">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে</translation>
 <translation id="8103386449138765447">SMS বার্তা: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">আসুন, কয়েকটি প্রশ্নের উত্তর দিয়ে আমরা বুঝি যে আমরা কেমন আছি।</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
 <translation id="8206859287963243715">সেলুলার</translation>
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
@@ -232,7 +242,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
 <translation id="8814190375133053267">ওয়াই-ফাই</translation>
-<translation id="882279321799040148">দেখার জন্য ক্লিক করুন</translation>
 <translation id="8825534185036233643">দুটির বেশি প্রদর্শনের সাথে মিররিং সমর্থিত নয়।</translation>
 <translation id="8828714802988429505">৯০°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

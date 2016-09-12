@@ -100,7 +100,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3883381313049582448">Utiliser le mot de passe généré par Chromium</translation>
 <translation id="3889543394854987837">Cliquez sur votre nom pour ouvrir Chromium et commencer à naviguer.</translation>
 <translation id="390894725198123737">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chromium partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
-<translation id="3994125055863078356">Impossible de faire de Chromium le navigateur par défaut.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4077262827416206768">Pour que cette modification soit prise en compte, veuillez fermer toutes les fenêtres de Chromium, puis relancer le logiciel.</translation>
 <translation id="4182290826692170034">Chromium est votre navigateur par défaut. Félicitations !</translation>
@@ -143,6 +142,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5634636535844844681">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Chromium.</translation>
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
 <translation id="5698481217667032250">Afficher Chromium dans cette langue</translation>
+<translation id="5726838626470692954">Votre administrateur doit vous supprimer de Chromium et vous y rajouter.</translation>
 <translation id="5768914737813585044">Afficher Chromium OS dans cette langue</translation>
 <translation id="5772805321386874569">(nécessite le <ph name="BEGIN_BUTTON" />redémarrage<ph name="END_BUTTON" /> de Chromium)</translation>
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
@@ -179,6 +179,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier un autre répertoire de profil ou utiliser une version plus récente de Chromium.</translation>
 <translation id="6734080038664603509">Mettre à jour &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="6810143991807788455">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
 <translation id="6838494703713445896">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Les informations relatives à la transparence du certificat fournies via le serveur sont valides.</translation>
@@ -204,7 +205,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="7223968959479464213">Gestionnaire de tâches – Chromium</translation>
 <translation id="722928257909516027">Afficher le menu Chromium</translation>
 <translation id="731644333568559921">Mettre à jour &amp;Chromium OS</translation>
-<translation id="731795002583552498">Mise à jour de Chromium...</translation>
 <translation id="7318036098707714271">Le fichier des préférences est corrompu ou n'est pas valide. 
 
 Chromium ne peut pas récupérer vos paramètres.</translation>

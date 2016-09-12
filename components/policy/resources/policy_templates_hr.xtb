@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1007441141628883408">Omogućuje ažuriranja komponenti za sve komponente u proizvodu <ph name="PRODUCT_NAME" /> kada pravilo nije postavljeno ili je postavljeno na True.
+
+      Ako se postavi na False, ažuriranje komponenti je onemogućeno. No neke su komponente izuzete od tog pravila i dalje će se ažurirati, a to su komponente koje ne sadrže izvršni kôd, koje bitno ne mijenjaju ponašanje preglednika ili koje su važne za sigurnost.
+      Primjeri takvih komponenti uključuju popise opozvanih certifikata i podatke sigurnog pregledavanja. </translation>
 <translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
 <translation id="1017967144265860778">Upravljanje napajanjem na zaslonu za prijavu</translation>
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
@@ -28,6 +32,9 @@
           Ako se to pravilo postavi, host daljinskog pristupa upotrebljavat će taj URL za potvrdu autentifikacijskih oznaka s klijenata daljinskog pristupa radi prihvaćanja povezivanja. Pravilo se mora koristiti u kombinaciji s pravilom RemoteAccessHostTokenUrl.
 
           Ta je značajka trenutačno onemogućena na poslužitelju.</translation>
+<translation id="1093082332347834239">Ako se omogući ta postavka, host daljinske pomoći pokrenut će se u procesu s dopuštenjima <ph name="UIACCESS_PERMISSION_NAME" />. To će udaljenim korisnicima omogućiti interakciju s privilegiranim prozorima na računalu lokalnog korisnika.
+
+          Ako je ta postavka onemogućena ili nije konfigurirana, host daljinske pomoći pokrenut će se u kontekstu korisnika i udaljeni korisnici neće moći pristupiti privilegiranim prozorima na računalu.</translation>
 <translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
 <translation id="1103860406762205913">Omogućuje staru prijavu na temelju weba</translation>
 <translation id="1128903365609589950">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> koristiti za pohranu predmemoriranih datoteka na disku.
@@ -53,6 +60,13 @@
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
+<translation id="127699919157094139">Onemogućuje sinkronizaciju podataka u proizvodu <ph name="PRODUCT_NAME" /> pomoću usluga sinkronizacije hostiranih na Googleu i onemogućuje korisnicima promjenu te postavke.
+
+      Ako omogućite tu postavku, korisnici neće moći promijeniti ni nadjačati tu postavku u proizvodu <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, Google sinkronizacija bit će dostupna i korisnici će moći odlučiti žele li je upotrebljavati.
+
+      Da biste potpuno isključili Google sinkronizaciju, preporučujemo da onemogućite uslugu Google sinkronizacija na Google Admin consoleu.</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
 
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
@@ -118,6 +132,14 @@
       površina bit će onemogućena. U tom slučaju korisnik ne može omogućiti značajku.</translation>
 <translation id="1474273443907024088">Onemogući TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> zaobilazit će sve proxy poslužitelje na ovdje navedenom popisu hostova.
+
+          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
+
+          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
+
+          Detaljnije primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
@@ -132,6 +154,7 @@
       ne mogu upotrebljavati ARC.</translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
+<translation id="1606958238518590302">Kada se pravilo postavi na True, korisnici ne mogu zapisivati na vanjske uređaje za pohranu.</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="1617384279878333801">Omogućivanje dodavanja osobe u upravitelju profila</translation>
@@ -577,6 +600,7 @@
 <translation id="2850122204195089673">Omogućivanje i uključivanje Jedinstvene radne površine prema zadanim postavkama.</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
 <translation id="2872961005593481000">Isključi</translation>
+<translation id="2874209944580848064">Napomena za uređaje <ph name="PRODUCT_OS_NAME" /> koji podržavaju Androidove aplikacije:</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>
 <translation id="2884728160143956392">Omogući kolačiće na ovim web-lokacijama samo tijekom sesija</translation>
 <translation id="2893546967669465276">Šalji zapisinike sustava poslužitelju za upravljanje</translation>
@@ -676,6 +700,24 @@
 
           To pravilo još nije spremno za upotrebu i zato ga nemojte upotrebljavati.
           </translation>
+<translation id="3201273385265130876">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
+
+          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+          Ako odaberete upotrebu sistemskih proxy postavki, sve se ostale opcije zanemaruju.
+
+          Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+          Ako odaberete fiksni način proxy poslužitelja, dodatne opcije možete odrediti pod stavkama "Adresa ili URL proxy poslužitelja" ili "Popis pravila o zaobilaženju proxyja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj s najvišim prioritetom.
+
+          Ako odaberete da će se upotrebljavati .pac proxy skripta, morate navesti URL skripte u pravilu "URL prema proxy .pac datoteci".
+
+          Detaljne primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemaruju sve opcije koje se odnose na proxy navedene u naredbenom retku.
+
+          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3205825995289802549">Maksimiziraj prvi prozor preglednika pri prvom pokretanju</translation>
 <translation id="3206731874112238027">Onemogućivanje pregleda ispisa (obustavljeno)</translation>
 <translation id="3213821784736959823">Kontrolira primjenjuje li se ugrađeni DNS klijent u proizvodu <ph name="PRODUCT_NAME" />.
@@ -776,6 +818,18 @@
       Ako onemogućite tu postavku ili ne postavite vrijednost, Siguran način rada na YouTubeu neće se primijeniti.</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
+<translation id="3758089716224084329">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
+
+      Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+      Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+      Detaljne primjere možete pronaći ovdje:
+      <ph name="PROXY_HELP_URL" />.
+
+      Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije koje se odnose na proxy poslužitelj navedene u naredbenom retku.
+
+      Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3758249152301468420">Onemogući Razvojne alate</translation>
 <translation id="3765260570442823273">Trajanje poruke upozorenja za odjavu u stanju mirovanja</translation>
 <translation id="3768412594120638208">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati.
@@ -790,6 +844,7 @@
 <translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
 <translation id="3788662722837364290">Postavke upravljanja napajanjem kada korisnik postane neaktivan</translation>
 <translation id="3793095274466276777">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> će prilikom svakog pokretanja provjeriti je li zadani preglednik i automatski se registrirati ako je moguće. Ako je ova postavka onemogućena, <ph name="PRODUCT_NAME" /> neće nikad provjeravati je li zadani preglednik i onemogućit će korisničke kontrole za postavljanje ove opcije. Ako ova postavka nije podešena, korisnik će moći odrediti je li <ph name="PRODUCT_NAME" /> zadani preglednik i trebaju li korisničke obavijesti biti prikazane kada to nije slučaj.</translation>
+<translation id="379659290574555063">Postupaj s vanjskim uređajima za pohranu kao da su samo za čitanje.</translation>
 <translation id="3800626789999016379">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za preuzimanje datoteka.
 
       Ako postavite to pravilo, preglednik <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij bez obzira je li ga je korisnik naveo ili je označio okvir da se mjesto preuzimanja treba svaki put ponovo navesti.
@@ -980,7 +1035,6 @@
       Iako je pravilo podržano na prethodno navedenim platformama, značajka koju omogućuje može biti dostupna na manje platformi. Neke zastarjele značajke web-platformi ne mogu se ponovo omogućiti. Samo one koje su izričito navedene u nastavku mogu se ponovo omogućiti na ograničeno vrijeme koje se razlikuje od značajke do značajke. Općeniti oblik oznake niza bit će [Nazivzastarjeleznačajke]_EffectiveUntil[ggggmmdd]. Ako vas zanima, namjeru promjene značajke web-platforme možete pronaći na stranici https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
-<translation id="4445684791305970001">Onemogućuje Alate za razvojne programere i konzolu JavaScriptu. Ako omogućite ovu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovnički prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScriptu. Ako se ova opcija onemogući ili ne postavi, bit će dopuštena upotreba Alata za razvojne programere i konzole JavaScripta.</translation>
 <translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
@@ -1053,6 +1107,23 @@
 
           Ako se to pravilo ne postavi, veliki će pokazivač u početku biti onemogućen, ali korisnici ga mogu omogućiti u bilo kojem trenutku.</translation>
 <translation id="4807950475297505572">Uklanjaju se korisnici koji najdulje nisu upotrebljavani dok se ne oslobodi dovoljno prostora</translation>
+<translation id="4815725774537609998">Pravilo je obustavljeno, upotrijebite ProxyMode.
+
+          Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
+
+          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+          Ako odaberete upotrebu proxy postavki sustava ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+          Ako odaberete ručne postavke proxy poslužitelja, dodatne opcije možete navesti pod stavkama "Adresa ili URL proxy poslužitelja", 'URL prema .pac datoteci proxy poslužitelja" i "Popis pravila o zaobilaženju proxyja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj s najvišim prioritetom.
+
+          Detaljne primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" />.
+
+          
+Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcije koje se odnose na proxy poslužitelj navedene u naredbenom retku.
+
+      Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="4816674326202173458">Dopuštanje poslovnom korisniku da bude primarni i sekundarni (zadano ponašanje za korisnike kojima se ne upravlja)</translation>
 <translation id="4826326557828204741">Radnja koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok računalo pokreće baterija</translation>
 <translation id="4834526953114077364">Uklanjaju se korisnici koji najdulje nisu upotrebljavani, a koji se nisu prijavili u prethodna 3 mjeseca dok se ne oslobodi dovoljno prostora</translation>
@@ -1279,6 +1350,7 @@
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="5795001131770861387">Omogućuje podršku za HTTP/0.9 na priključcima koji nisu zadani</translation>
 <translation id="5809728392451418079">Postavlja naziv za prikaz za lokalne račune uređaja</translation>
 <translation id="5814301096961727113">Postavljanje zadanog stanja izgovaranja povratnih informacija na zaslonu za prijavu</translation>
 <translation id="5815129011704381141">Automatsko ponovno pokretanje nakon ažuriranja</translation>
@@ -1369,6 +1441,7 @@
 <translation id="6076099373507468537">Definira popis USB uređaja za koje je dopušteno odvajanje od upravljačkog programa jezgre radi upotrebe putem API-ja chrome.usb izravno unutar web-aplikacije. Unosi su parovi identifikatora dobavljača i identifikatora proizvoda USB uređaja, a služe za prepoznavanje određenog hardvera.
 
       Ako se pravilo ne konfigurira, popis uklonjivih USB uređaja ostaje prazan.</translation>
+<translation id="6093156968240188330">Dopusti udaljenim korisnicima da interakciju s privilegiranim prozorima u sesijama daljinske pomoći</translation>
 <translation id="6095999036251797924">Navodi koliko vremena treba proteći od posljednjeg korisničkog unosa da bi se zaslon zaključao dok radi na izmjeničnom napajanju ili bateriji.
 
           Kada je vrijeme postavljeno na vrijednost veću od nule, predstavlja koliko vremena korisnik mora mirovati da bi <ph name="PRODUCT_OS_NAME" /> zaključao zaslon.
@@ -1622,6 +1695,7 @@
           Ako se ta postavka onemogući ili ne postavi, hostovi se mogu dijeliti putem bilo kojeg računa.
 
           Pogledajte i RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Omogući ažuriranje komponenti u proizvodu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
@@ -1864,6 +1938,13 @@
       Napominjemo da se ne preporučuje blokiranje internih "chrome://*" URL-ova jer to može uzrokovati neočekivane pogreške.
 
       Ako se to pravilo ne postavi, svi će URL-ovi biti dopušteni u pregledniku.</translation>
+<translation id="7724994675283793633">To pravilo omogućuje HTTP/0.9 na priključcima osim priključka 80 za HTTP i 443 za HTTPS.
+
+      To je pravilo onemogućeno prema zadanim postavkama. Ako se omogući, korisnici mogu biti izloženi sigurnosnoj poteškoći https://crbug.com/600352.
+
+      Tim se pravilom organizacijama želi pružiti prilika da premjeste postojeće poslužitelje s HTTP-a/0.9. Pravilo će se ukloniti u budućnosti.
+
+      Ako se to pravilo ne postavi, HTTP/0.9 bit će onemogućeni na priključcima koji nisu zadani.</translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 
           Ako je ta postavka omogućena, korisnici moraju unijeti važeći kôd s dva čimbenika kada pristupaju hostu.

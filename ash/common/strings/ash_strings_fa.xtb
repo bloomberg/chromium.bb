@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">کلیدهای میان‌بر جابه‌جایی به روش ورودی بعدی تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
+<translation id="1127238861555034875">حالت ذره‌بین</translation>
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
@@ -83,6 +84,8 @@
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="3157169093162779309">قفل چرخش فعال شود</translation>
 <translation id="3294437725009624529">مهمان</translation>
+<translation id="3335772982573114336">یادداشت جدید</translation>
+<translation id="3364721542077212959">ابزارهای قلم</translation>
 <translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
@@ -96,6 +99,7 @@
 <translation id="3683428399328702079">وضوح <ph name="DISPLAY_NAME" /> به <ph name="RESOLUTION" /> تغییر یافت</translation>
 <translation id="370649949373421643">‏فعال کردن Wi-Fi</translation>
 <translation id="3709443003275901162">+۹</translation>
+<translation id="3712407551474845318">محدوده گرفتن عکس</translation>
 <translation id="372094107052732682">‏برای خروج Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3742055079367172538">عکس صفحه‌نمایش گرفته شد</translation>
 <translation id="3775358506042162758">در ورود چندگانه به سیستم حداکثر می‌توانید از سه حساب استفاده کنید.</translation>
@@ -129,6 +133,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">‏تنظیمات Google Drive...</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
+<translation id="5170568018924773124">نمایش در پوشه</translation>
+<translation id="5191140942132549112">نمایش سؤال‌ها</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5238774010593222950">نمی‌توانید وارد حساب دیگری شوید.</translation>
 <translation id="532063867737390965">سرپرست سیستم این تنظیم شبکه را غیرفعال کرده است.</translation>
@@ -165,6 +171,7 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6203030746557259519">نمایشگر مجازی</translation>
 <translation id="6248847161401822652">‏برای خروج Control‏، Shift و Q را دو بار فشار دهید.</translation>
+<translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="6359806961507272919">پیامک از <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
@@ -174,6 +181,7 @@
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">ضبط کردن صفحه‌نمایش</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
@@ -194,6 +202,7 @@
 <translation id="7097613348211027502">‏ChromeVox (بازخورد گفتاری) فعال است.
 برای غیرفعال کردن آن Ctrl+Alt+Z را فشار دهید.</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
+<translation id="7129360219436193655">حالت اشاره‌گر لیزری</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">‏CAPS LOCK روشن است.
@@ -220,6 +229,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="8077816382010018681">‏عنوان اعلان QU Feature اینجا می‌آید</translation>
 <translation id="8103386449138765447">پیامک‌ها: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">با پاسخ به چند سؤال، درمورد کیفیت عملکردمان را به ما نشان دهید.</translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8206859287963243715">سلولی</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
@@ -231,7 +241,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">برای مشاهده کلیک کنید</translation>
 <translation id="8825534185036233643">«نمایش صفحه‌نمایش روی دستگاه دیگر» با بیش از دو نمایشگر پشتیبانی نمی‌شود.</translation>
 <translation id="8828714802988429505">۹۰°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

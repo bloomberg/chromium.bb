@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Hindi naitalaga.  Walang available na engine.</translation>
 <translation id="117738548141695034">Blimp Switch</translation>
 <translation id="1416550906796893042">Bersyon ng application</translation>
+<translation id="1491042665327336022">Paki-restart ang application.</translation>
 <translation id="1750179245464827362">Ipakita ang Impormasyon sa Pag-debug</translation>
 <translation id="2004526128230838685">Hindi naitalaga.  May hindi matukoy na isyu.</translation>
 <translation id="2023631438558435272">Hindi naitalaga.  Di-wasto ang tugon.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Hindi naitalaga.  Hindi naisagawa ang kahilingan sa network.</translation>
 <translation id="2789927415041640472">Paki-restart ang application upang gamitin ang bagong assigner configuration.</translation>
 <translation id="3046825211487065480">Hindi naitalaga.  Nagpadala ng pangalawang kahilingan bago pa natugunan ang unang kahilingan.</translation>
+<translation id="307654885162326571">Ilagay ang Text</translation>
 <translation id="3286538390144397061">I-restart Ngayon</translation>
 <translation id="3346106862344060497">Nakakonekta na ang engine.</translation>
 <translation id="3407245330823033366">Mangyaring pumili ng account na gagamitin sa Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7795546637165553439">Mga Setting ng Blimp</translation>
 <translation id="7961542533680218955">Naging matagumpay ang pagtatalaga.</translation>
+<translation id="8135971362156222300">Mangyaring mag-sign in sa google account upang i-enable ang Blimp.</translation>
 <translation id="8514856595257368555">Nabawi ang token.</translation>
 <translation id="8880704056643418312">Mga Pag-commit</translation>
 </translationbundle>

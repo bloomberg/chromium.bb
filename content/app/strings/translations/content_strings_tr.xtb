@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="1014825444426747588">boş</translation>
 <translation id="1018939186200882850">menü öğesi</translation>
 <translation id="1020833440720551630">ses kanalını kapat</translation>
 <translation id="10623998915015855">geçiş düğmesi</translation>
 <translation id="1088086359088493902">Saniye</translation>
 <translation id="1171774979989969504">Lütfen e-posta adresi girin.</translation>
+<translation id="1178581264944972037">Duraklat</translation>
 <translation id="1188858454923323853">tamamlayıcı</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">kaydırma çubuğu</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">uzaktan cihazda oynat</translation>
 <translation id="1842960171412779397">seç</translation>
+<translation id="1854180393107901205">Yayını durdur</translation>
 <translation id="1880518467580572141">özet</translation>
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">durum</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">terim</translation>
 <translation id="3822383571486410024">Lütfen bu metni <ph name="MIN_CHARACTERS" /> karakter veya daha fazla olacak şekilde uzatın (şu anda <ph name="CURRENT_LENGTH" /> karakter kullanıyorsunuz).</translation>
 <translation id="383465348367842624">Başında "<ph name="ATSIGN" />" bulunan kısımda "<ph name="INVALIDCHARACTER" />" simgesi bulunmamalıdır.</translation>
+<translation id="3846214748874656680">Tam ekran modundan çık</translation>
 <translation id="3924558731517983934">uygulama</translation>
 <translation id="3960700977367013758">kaydırma çubuğu</translation>
 <translation id="4103419683916926126">Milisaniye</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">ara</translation>
 <translation id="4812940957355064477">Lütfen bir sayı girin.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> tane seçildi</translation>
+<translation id="4992066212339426712">Sesi aç</translation>
 <translation id="49969490063480558">Lütfen başına "<ph name="ATSIGN" />" ekleyin. "<ph name="INVALIDADDRESS" />" eksik.</translation>
 <translation id="5034860022980953847">ilerleme durumu göstergesi</translation>
 <translation id="5048533449481078685">liste işaretçisi</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">tam ekrandan çık</translation>
 <translation id="5476505524087279545">işareti kaldır</translation>
 <translation id="5516424706154626233">tarih seçici</translation>
+<translation id="5537725057119320332">Yayınla</translation>
 <translation id="5546461542133609677">sesi aç</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">oynatmayı duraklat</translation>
 <translation id="5643186887447432888">düğme</translation>
+<translation id="57838592816432529">Sesi kapat</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5843503607508392247">Diğer...</translation>
 <translation id="5860033963881614850">Kapalı</translation>
+<translation id="588258955323874662">Tam ekran</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5944544982112848342">2048 (Yüksek Düzey)</translation>
 <translation id="5966707198760109579">Hafta</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper (adımlayıcı)</translation>
 <translation id="6739588121953935928">cetvel</translation>
 <translation id="6755330956360078551">ipucu</translation>
+<translation id="6790428901817661496">Oynat</translation>
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>
 <translation id="6843725295806269523">sesi kapat</translation>
 <translation id="6845533974506654842">bas</translation>

@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1014825444426747588">ว่าง</translation>
 <translation id="1018939186200882850">รายการเมนู</translation>
 <translation id="1020833440720551630">ปิดไฟล์เสียง</translation>
 <translation id="10623998915015855">ปุ่มสลับ</translation>
 <translation id="1088086359088493902">วินาที</translation>
 <translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
+<translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1188858454923323853">ส่วนเสริม</translation>
 <translation id="1206619573307042055">ตัวอักษรวิ่ง</translation>
 <translation id="1206693055195146388">แถบเลื่อน</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">เล่นในอุปกรณ์ระยะไกล</translation>
 <translation id="1842960171412779397">เลือก</translation>
+<translation id="1854180393107901205">หยุดการแคสต์</translation>
 <translation id="1880518467580572141">เค้าโครง</translation>
 <translation id="1921819250265091946">วว</translation>
 <translation id="1930711995431081526">สถานะ</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">คำหลัก</translation>
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
 <translation id="383465348367842624">ส่วนที่ตามด้วย "<ph name="ATSIGN" />" ต้องไม่มีสัญลักษณ์ "<ph name="INVALIDCHARACTER" />"</translation>
+<translation id="3846214748874656680">ออกจากการแสดงเต็มหน้าจอ</translation>
 <translation id="3924558731517983934">แอปพลิเคชัน</translation>
 <translation id="3960700977367013758">แถบเลื่อน</translation>
 <translation id="4103419683916926126">มิลลิวินาที</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4812940957355064477">โปรดป้อนตัวเลข</translation>
 <translation id="4975562563186953947">เลือกไว้ <ph name="SELECTED_COUNT" /> รายการ</translation>
+<translation id="4992066212339426712">เปิดเสียง</translation>
 <translation id="49969490063480558">โปรดป้อนส่วนที่ต่อท้าย "<ph name="ATSIGN" />" "<ph name="INVALIDADDRESS" />" นั้นไม่สมบูรณ์</translation>
 <translation id="5034860022980953847">ตัวบอกสถานะความคืบหน้า</translation>
 <translation id="5048533449481078685">ผู้สร้างรายการ</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">ออกจากการแสดงแบบเต็มหน้าจอ</translation>
 <translation id="5476505524087279545">ยกเลิกการทำเครื่องหมาย</translation>
 <translation id="5516424706154626233">เครื่องมือเลือกวันที่</translation>
+<translation id="5537725057119320332">ส่ง</translation>
 <translation id="5546461542133609677">เปิดเสียง</translation>
 <translation id="561939826962581046">เวลา</translation>
 <translation id="5641012560118721995">หยุดเล่นชั่วคราว</translation>
 <translation id="5643186887447432888">ปุ่ม</translation>
+<translation id="57838592816432529">ปิดเสียง</translation>
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5843503607508392247">อื่นๆ...</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="588258955323874662">เต็มหน้าจอ</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5944544982112848342">2048 (เกรดสูง)</translation>
 <translation id="5966707198760109579">สัปดาห์</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">ตัวเพิ่ม/ลดระดับเสียง</translation>
 <translation id="6739588121953935928">ไม้บรรทัด</translation>
 <translation id="6755330956360078551">เคล็ดลับเครื่องมือ</translation>
+<translation id="6790428901817661496">เล่น</translation>
 <translation id="6820355525329141109">ไม่สามารถโหลดปลั๊กอิน</translation>
 <translation id="6843725295806269523">ปิดเสียง</translation>
 <translation id="6845533974506654842">กด</translation>

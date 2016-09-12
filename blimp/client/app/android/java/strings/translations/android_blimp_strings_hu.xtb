@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">A hozzárendelés nem sikerült. Nem áll rendelkezésre motor.</translation>
 <translation id="117738548141695034">Blimp kapcsoló</translation>
 <translation id="1416550906796893042">Alkalmazás verziószáma</translation>
+<translation id="1491042665327336022">Indítsa újra az alkalmazást.</translation>
 <translation id="1750179245464827362">Hibakeresési adatok megjelenítése</translation>
 <translation id="2004526128230838685">A hozzárendelés nem sikerült. Ismeretlen hiba történt.</translation>
 <translation id="2023631438558435272">A hozzárendelés nem sikerült. Érvénytelen válasz.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">A hozzárendelés nem sikerült. Sikertelen hálózati kérés.</translation>
 <translation id="2789927415041640472">Kérjük, indítsa újra az alkalmazást az új hozzárendelői konfiguráció használatához.</translation>
 <translation id="3046825211487065480">A hozzárendelés nem sikerült. Második kérést küldtek az első kérés megválaszolása előtt.</translation>
+<translation id="307654885162326571">Adja meg a szöveget</translation>
 <translation id="3286538390144397061">Újraindítás most</translation>
 <translation id="3346106862344060497">Motor csatlakoztatva.</translation>
 <translation id="3407245330823033366">Válassza ki a Blimp alkalmazással használni kívánt fiókot.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7795546637165553439">Blimp beállításai</translation>
 <translation id="7961542533680218955">A hozzárendelés sikerült.</translation>
+<translation id="8135971362156222300">Jelentkezzen be Google-fiókjába a Blimp engedélyezéséhez.</translation>
 <translation id="8514856595257368555">Token lekérve.</translation>
 <translation id="8880704056643418312">Végrehajtások</translation>
 </translationbundle>

@@ -79,6 +79,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
+<translation id="3180085900771989961">Administratorul trebuie să te elimine și să te adauge din nou în Chrome.</translation>
 <translation id="3251381707915721925">Pentru a stabili ce site-uri poate accesa utilizatorul <ph name="NEW_PROFILE_NAME" />, poți configura restricții și setări accesând <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Dacă nu modifici setările prestabilite, utilizatorul <ph name="NEW_PROFILE_NAME" /> poate naviga oriunde pe web.
 
 Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți acceseze contul, asigură-te că îți blochezi profilul când nu folosești Chrome. Pentru a face acest lucru, dă clic pe numele de profil din colțul din dreapta sus al browserului și selectează „Ieși și blochează”.
@@ -178,8 +179,8 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="61852838583753520">Actualizați sistemul de operare &amp;Chrome</translation>
 <translation id="6235018212288296708">Regula de intrare pentru Google Chrome pentru a permite traficul mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome nu se mai actualizează și nu mai acceptă această versiune a sistemului dvs. de operare.</translation>
+<translation id="6291549208091401781">Google Chrome este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="629218512217695915">Folosește parola generată de Chrome</translation>
-<translation id="6338556085225130112">Google Chrome se actualizează</translation>
 <translation id="6368805772029492593">Pentru un plus de securitate, Google Chrome îți va cripta datele.</translation>
 <translation id="6368958679917195344">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar.</translation>
 <translation id="6400076122676892962">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.6, 10.7 și 10.8 nu vor mai fi acceptate.</translation>
@@ -189,7 +190,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6626317981028933585">Din păcate, setările tale pentru Mozilla Firefox nu sunt disponibile în timp ce acesta rulează. Pentru a importa aceste setări în Google Chrome, salvează și închide toate ferestrele Firefox. Apoi dă clic pe Continue (Continuă).</translation>
 <translation id="6634887557811630702">Google Chrome este actualizat.</translation>
-<translation id="6648058004052854464">Google Chrome nu a putut deveni browserul prestabilit.</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="6757767188268205357">Nu mă mai întreba</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>

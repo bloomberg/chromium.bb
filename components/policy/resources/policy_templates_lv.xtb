@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1007441141628883408">Iespējo komponentu atjauninājumus visiem <ph name="PRODUCT_NAME" /> komponentiem, ja šī politika nav iestatīta vai tās iestatījums ir “Patiesa”.
+
+      Ja šīs politikas iestatījums ir “Nepatiesa”, komponentu atjauninājumi ir atspējoti. Tomēr uz dažiem komponentiem šī politika neattiecas: netiks atspējoti atjauninājumi jebkuram komponentam, kas nesatur izpildāmu kodu, būtiski nemaina pārlūka darbību vai ir kritiski nepieciešams.
+      Šādu komponentu piemēri: sertifikātu atsaukšanas saraksti un drošas pārlūkošanas dati. </translation>
 <translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
 <translation id="1017967144265860778">Barošanas pārvaldība pieteikšanās ekrānā</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
@@ -28,6 +32,9 @@
           Ja šī politika ir iestatīta, attālās piekļuves saimniekdators izmanto šo vietrādi URL, lai apstiprinātu autentifikācijas pilnvaras no attālās piekļuves klientiem un akceptētu savienojumus. Jāizmanto kopā ar politiku RemoteAccessHostTokenUrl.
 
           Šī funkcija pašlaik ir atspējota servera pusē.</translation>
+<translation id="1093082332347834239">Ja šis iestatījums ir iespējots, attālās palīdzības saimniekdators darbosies norises gaitā ar <ph name="UIACCESS_PERMISSION_NAME" /> atļaujām. Tādējādi attālie lietotāji varēs veikt darbības ar privileģētajiem logiem lokālā lietotāja darbvirsmā.
+
+          Ja šis iestatījums ir atspējots vai nav konfigurēts, attālās palīdzības saimniekdators darbosies lietotāja kontekstā un attālie lietotāji nevarēs veikt darbības ar privileģētajiem logiem darbvirsmā.</translation>
 <translation id="1096105751829466145">Noklusējuma meklētājprogramma</translation>
 <translation id="1103860406762205913">Iepriekšējās pierakstīšanās plūsmas (tīmeklī) iespējošana</translation>
 <translation id="1128903365609589950">Konfigurē direktoriju, kuru <ph name="PRODUCT_NAME" /> izmantos kešatmiņā ievietoto failu glabāšanai diskā.
@@ -53,6 +60,15 @@
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1221359380862872747">Ielādēt norādītos vietrāžus URL demonstrācijas pieteikšanās brīdī</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
+<translation id="127699919157094139">Atspējo <ph name="PRODUCT_NAME" /> datu sinhronizāciju, izmantojot Google mitinātos sinhronizācijas pakalpojumus, un neļauj lietotājiem mainīt šo iestatījumu.
+
+
+      Ja šis iestatījums ir iespējots, lietotāji nevar mainīt vai ignorēt šo <ph name="PRODUCT_NAME" /> iestatījumu.
+
+
+      Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, vai izmantot Google Sync.
+
+      Lai pilnībā atspējotu Google Sync, ieteicams atspējot Google Sync pakalpojumu Google Admin konsolē.</translation>
 <translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
 
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
@@ -120,6 +136,14 @@
       atspējota. Šādā gadījumā lietotājs nevar iespējot šo funkciju.</translation>
 <translation id="1474273443907024088">Funkcijas TLS False Start atspējošana</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
+
+          Šī politika ir spēkā tikai tad, ja sadaļā “Izvēlieties, kā norādīt starpniekservera iestatījumus” esat atlasījis manuālos starpniekservera iestatījumus.
+
+          Ja esat atlasījis jebkuru citu starpniekservera politiku iestatīšanas režīmu, atstājiet šo politiku neiestatītu.
+
+          Detalizētus piemērus skatiet šajā vietnē:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
 <translation id="1509692106376861764">Šīs politikas darbība tika pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29.</translation>
 <translation id="1522425503138261032">Atļaut vietnēm izsekot lietotāju fizisko atrašanās vietu</translation>
@@ -134,6 +158,7 @@
       nevar izmantot ARC.</translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1606958238518590302">Ja šī politika ir iestatīta kā patiesa, lietotāji nevar neko rakstīt ārējās atmiņas ierīcēs.</translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="1617384279878333801">Personas pievienošanas iespējošana profilu pārvaldniekā</translation>
@@ -612,6 +637,7 @@
 <translation id="2850122204195089673">Atļaut vienoto darbvirsmu un ieslēgt to pēc noklusējuma</translation>
 <translation id="285480231336205327">Iespējot augsta kontrasta režīmu</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
+<translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
 <translation id="2884728160143956392">Atļauj izmantot tikai sesijai lietojamos sīkfailus šajās vietnēs</translation>
 <translation id="2893546967669465276">Sistēmas žurnālu sūtīšana pārvaldības serverim</translation>
@@ -717,6 +743,24 @@
 
           Šī politika vēl nav gatava lietošanai. Lūdzu, neizmantojiet to.
           </translation>
+<translation id="3201273385265130876">Ļauj jums norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
+
+          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties izmantot sistēmas starpniekserveru iestatījumus, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties fiksētu starpniekservera režīmu, varat norādīt detalizētas opcijas sadaļās “Starpniekservera adrese vai URL” un “Ar komatiem atdalīts starpniekservera apiešanas kārtulu saraksts”. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar augstāko prioritāti.
+
+          Ja izvēlaties izmantot .pac starpniekservera skriptu, norādiet skripta vietrādi URL sadaļā “URL uz starpniekservera .pac failu”.
+
+          Detalizētus piemērus skatiet šajā vietnē:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+          Ja šīs politikas nav iestatītas, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3205825995289802549">Pirmā pārlūka loga maksimizēšana pirmajā palaišanas reizē</translation>
 <translation id="3206731874112238027">Drukas priekšskatījuma atspējošana (novecojusi)</translation>
 <translation id="3213821784736959823">Tiek noteikts, vai pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots iebūvētais DNS klients.
@@ -825,6 +869,18 @@
       Ja atspējojat šo iestatījumu vai neiestatāt vērtību, drošības režīms pakalpojumā YouTube netiek izmantots piespiedu kārtā.</translation>
 <translation id="3750220015372671395">Bloķēt atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="3756011779061588474">Bloķēt izstrādātāja režīmu</translation>
+<translation id="3758089716224084329">Ļauj norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
+
+      Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
+
+      Ja izvēlaties automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
+
+      Detalizētus piemērus skatiet šajā vietnē:
+      <ph name="PROXY_HELP_URL" />.
+
+      Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+      Ja šīs politikas nav iestatītas, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3758249152301468420">Atspējo izstrādātāja rīkus</translation>
 <translation id="3765260570442823273">Dīkstāves atteikšanās brīdinājuma ziņojuma ilgums</translation>
 <translation id="3768412594120638208">Kontrolējiet, kāda veida lietotnes/paplašinājumus var instalēt.
@@ -845,6 +901,7 @@
       Ja šis iestatījums ir atspējots, <ph name="PRODUCT_NAME" /> nekad nepārbauda, vai tas ir noklusējuma pārlūks, un lietotājam tiek atspējota iespēja iestatīt šo opciju.
 
       Ja šis iestatījums nav iestatīts, <ph name="PRODUCT_NAME" /> ļauj lietotājam noteikt, vai tas ir noklusējuma pārlūks un, ja tas nav, vai jāparāda lietotāja paziņojumi.</translation>
+<translation id="379659290574555063">Izmanto ārējās atmiņas ierīces kā tikai lasāmas.</translation>
 <translation id="3800626789999016379">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots failu lejupielādei.
 
       Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis direktoriju vai iespējojis karodziņu, lai ikreiz tiktu pieprasīts norādīt lejupielādes vietu.
@@ -1036,11 +1093,6 @@
       Lai gan šī politika ir atbalstīta iepriekš minētajās platformās, ne visas iespējotās funkcijas var būt pieejamas visās platformās. Ne visas novecojušās tīmekļa platformas funkcijas var iespējot atkārtoti. Var iespējot tikai tālāk norādītās funkcijas, un katrai funkcijai ir atšķirīgs derīguma laiks. Virknes taga vispārīgais formāts ir [NovecojušāsFunkcijasNosaukums]_SpēkāLīdz[ggggmmdd]. Ja vēlaties uzzināt vairāk, vietnē https://bit.ly/blinkintents ir minēti iemesli, kādēļ tīmekļa platformas funkcijās ir veiktas izmaiņas.
       </translation>
 <translation id="4442582539341804154">Bloķēšanas iespējošana, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta</translation>
-<translation id="4445684791305970001">Atspējo izstrādātāju rīkus un JavaScript konsoli.
-
-      Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
-
-      Ja šis iestatījums ir atspējots vai nav iestatīts, izstrādātāju rīkus un JavaScript konsoli varēs lietot.</translation>
 <translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
 <translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
@@ -1127,6 +1179,22 @@
 
           Ja šī politika nav iestatīta, lielais kursors sākotnēji ir atspējots, taču lietotājs var jebkurā brīdī to iespējot.</translation>
 <translation id="4807950475297505572">Pēdējie izmantotie lietotāji tiek noņemti, līdz ir pietiekami daudz brīvas vietas.</translation>
+<translation id="4815725774537609998">Šī politika ir novecojusi, tās vietā izmantojiet ProxyMode.
+
+          Ļauj jums norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
+
+          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties izmantot sistēmas starpniekserveru iestatījumus vai automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties manuālus starpniekservera iestatījumus, varat norādīt detalizētas opcijas sadaļās “Starpniekservera adrese vai URL” un “Ar komatiem atdalīts starpniekservera apiešanas kārtulu saraksts”. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar augstāko prioritāti.
+
+          Detalizētus piemērus skatiet šajā vietnē:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+          Ja šī politika nav iestatīta, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="4816674326202173458">Atļaut korporatīvajam lietotājam būt gan primārajam, gan sekundārajam (noklusējuma rīcība attiecībā uz nepārvaldītiem lietotājiem)</translation>
 <translation id="4826326557828204741">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei un ir zems akumulatora uzlādes līmenis</translation>
 <translation id="4834526953114077364">Pēdējie izmantotie lietotāji, kuri nav pieteikušies pēdējo 3 mēnešu laikā, tiek noņemti, līdz ir pietiekami daudz brīvas vietas.</translation>
@@ -1376,6 +1444,7 @@
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="5795001131770861387">Iespējo HTTP/0.9 atbalstu portos, kas nav noklusējuma porti</translation>
 <translation id="5809728392451418079">Ierīces lokālo kontu parādāmā vārda iestatīšana</translation>
 <translation id="5814301096961727113">Mutisko atsauksmju noklusējuma statusa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="5815129011704381141">Automātiski atsāknēt pēc atjaunināšanas</translation>
@@ -1474,6 +1543,7 @@
 <translation id="6076099373507468537">Definē USB ierīces, kuras ir atļauts atvienot no kodola draiveriem, lai tās izmantotu ar chrome.usb API tieši tīmekļa lietojumprogrammā. Katru ierakstu veido USB pakalpojumu sniedzēja identifikators un produkta identifikators, kas identificē aparatūru.
 
       Ja šī politika netiek konfigurēta, atvienojamo USB ierīču saraksts ir tukšs.</translation>
+<translation id="6093156968240188330">Atļaut attālajiem lietotājiem veikt darbības ar privileģētajiem logiem attālās palīdzības sesijās</translation>
 <translation id="6095999036251797924">Norāda lietotāja neaktivitātes laiku, pēc kura ekrāns tiek bloķēts, kad ierīce darbojas ar maiņstrāvas barošanu vai akumulatoru.
 
           Ja laikam ir iestatīta par nulli lielāka vērtība, tas apzīmē, cik ilgi lietotājam ir jābūt neaktīvam, pirms operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek bloķēts ekrāns.
@@ -1744,6 +1814,7 @@
           Ja šī politika ir atspējota vai nav iestatīta, saimniekdatorus var koplietot, izmantojot jebkuru kontu.
 
           Skatiet arī politiku RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Iespējo <ph name="PRODUCT_NAME" /> komponentu atjauninājumus.</translation>
 <translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
@@ -2008,6 +2079,13 @@
       Ņemiet vērā, ka nav ieteicams bloķēt iekšējos vietrāžus URL “chrome://*”, jo tādējādi var rasties neparedzētas kļūdas.
 
       Ja šī politika nav iestatīta, pārlūka melnajā sarakstā netiks ievietots neviens URL.</translation>
+<translation id="7724994675283793633">Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
+
+      Šī politika pēc noklusējuma ir atspējota. Ja tā tiek iespējota, lietotājiem var rasties drošības problēma: https://crbug.com/600352.
+
+      Šī politika ir paredzēta uzņēmumiem, kas vēlas migrēt esošos serverus no HTTP/0.9, un tā tiks noņemta.
+
+      Ja šī politika nav iestatīta, protokols HTTP/0.9 tiks atspējots portos, kas nav noklusējuma porti.</translation>
 <translation id="7749402620209366169">Iespējo divu faktoru autentifikāciju attālās piekļuves saimniekdatoriem, nevis izmanto lietotāja norādītu PIN.
 
           Ja šis iestatījums ir iespējots, lietotājiem ir jānorāda derīgs divu faktoru kods, kad tie piekļūst saimniekdatoram.

@@ -97,7 +97,6 @@
 <translation id="3883381313049582448">Chromium ನಿಂದ ರಚಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ ಬಳಸಿ</translation>
 <translation id="3889543394854987837">Chromium ತೆರೆಯಲು ಮತ್ತು ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಹೆಸರನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="390894725198123737">Mac ನಲ್ಲಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ ಕೀಚೈನ್‌ನಲ್ಲಿ ಉಳಿಸಬಹುದು ಹಾಗೂ ಈ OS X ಖಾತೆಯನ್ನು ಹಂಚಿಕೊಂಡಿರುವ ಇತರ Chromium ಬಳಕೆದಾರರು ಇದನ್ನು ಪ್ರವೇಶಿಸಬಹುದು ಅಥವಾ ಸಿಂಕ್‌ ಮಾಡಬಹುದು.</translation>
-<translation id="3994125055863078356">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಲು Chromium ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="4077262827416206768">ಎಲ್ಲಾ Chromium ವಿಂಡೋಗಳನ್ನು ದಯವಿಟ್ಟು ಮುಚ್ಚಿರಿ ಮತ್ತು ಈ ಬದಲಾವಣೆಯು ಪರಿಣಾಮವನ್ನು ಬೀರುವುದಕ್ಕಾಗಿ Chromium ಅನ್ನು ಮರುಸ್ಥಾಪಿಸಿ.</translation>
 <translation id="4182290826692170034">Chromium ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿದೆ. ವಾಹ್!</translation>
@@ -140,6 +139,7 @@
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="5698481217667032250">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸು</translation>
+<translation id="5726838626470692954">ನಿಮ್ಮ ಮ್ಯಾನೇಜರ್ ನಿಮ್ಮನ್ನು ತೆಗೆದುಹಾಕಿ ಮತ್ತು ಮರಳಿ Chromium ಗೆ ಸೇರಿಸಬೇಕು.</translation>
 <translation id="5768914737813585044">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />ಮರುಪ್ರಾರಂಭ<ph name="END_BUTTON" /> ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="5796460469508169315">Chromium ಬಹುತೇಕ ಸಿದ್ಧಗೊಂಡಿದೆ.</translation>
@@ -174,6 +174,7 @@
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="6717134281241384636">Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯಾಗಿರುವುದರಿಂದ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವೊಂದು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆ ಒಂದು ಪೊಫೈಲ್ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="6734080038664603509">&amp;Chromium ನವೀಕರಿಸಿ</translation>
+<translation id="6734291798041940871">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಈಗಾಗಲೇ Chromium ಸ್ಥಾಪಿತವಾಗಿದೆ.</translation>
 <translation id="6757767188268205357">ನನ್ನನ್ನು ಬಗ್ ಮಾಡಬೇಡ</translation>
 <translation id="6810143991807788455">ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯಮಾಡಿ</translation>
 <translation id="6838494703713445896">ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಪ್ರಮಾಣಪತ್ರವನ್ನು <ph name="ISSUER" /> ನೀಡಿದೆ ಎಂಬುದಾಗಿ Chromium ಪರಿಶೀಲಿಸಿದೆ. ಮಾನ್ಯವಾದ ಪ್ರಮಾಣಪತ್ರ ಪಾರದರ್ಶಕತೆ ಮಾಹಿತಿಯನ್ನು ಸರ್ವರ್ ಪೂರೈಸಿದೆ.</translation>
@@ -199,7 +200,6 @@
 <translation id="7223968959479464213">ಕಾರ್ಯನಿರ್ವಾಹಕ - Chromium</translation>
 <translation id="722928257909516027">Chromium ಮೆನು ತೋರಿಸಿ</translation>
 <translation id="731644333568559921">&amp;Chromium OS ಅನ್ನು ನವೀಕರಿಸಿ</translation>
-<translation id="731795002583552498">Chromium ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7318036098707714271">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ Chromium ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">ಹೊಸ ವಿಂಡೊ</translation>

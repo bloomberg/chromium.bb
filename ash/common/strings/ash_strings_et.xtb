@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Järgmise sisestusmeetodi aktiveerimise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Riiuli automaatne peitmine</translation>
+<translation id="1127238861555034875">Suurendusklaasi režiim</translation>
 <translation id="1195412055398077112">liighälvitus</translation>
 <translation id="1252999807265626933">Laadimine toiteallikast <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
@@ -84,6 +85,8 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="3157169093162779309">Luba pööramise lukustus</translation>
 <translation id="3294437725009624529">Külaline</translation>
+<translation id="3335772982573114336">Uus märge</translation>
+<translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
@@ -97,6 +100,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3683428399328702079">Ekraani <ph name="DISPLAY_NAME" /> eraldusvõimeks määrati <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Luba WiFi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Jäädvusta piirkond</translation>
 <translation id="372094107052732682">Väljumiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="3742055079367172538">Ekraanipilt on tehtud</translation>
 <translation id="3775358506042162758">Saate korraga sisse logida kuni kolmele kontole.</translation>
@@ -130,6 +134,8 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="5012744545445585468">Ctrl + Tõstuklahv + Tühik</translation>
 <translation id="5045002648206642691">Google Drive'i seaded ...</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
+<translation id="5170568018924773124">Kuva kaustas</translation>
+<translation id="5191140942132549112">KUVA KÜSIMUSED</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5238774010593222950">Teisele kontole ei saa sisse logida.</translation>
 <translation id="532063867737390965">Administraator on selle võrguseade keelanud.</translation>
@@ -167,6 +173,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6203030746557259519">Virtuaalne ekraan</translation>
 <translation id="6248847161401822652">Väljumiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
+<translation id="6297287540776456956">Valige piirkond elektronpliiatsiga</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> vahetati valikule <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS numbrilt <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">SUURTÄHELUKK on välja lülitatud</translation>
@@ -176,6 +183,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">C-tüüpi USB-seade (parempoolne port)</translation>
 <translation id="6501401484702599040">Ekraani ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-aadress</translation>
@@ -196,6 +204,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
+<translation id="7129360219436193655">Laserkursori režiim</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7209101170223508707">SUURTÄHELUKK on sisse lülitatud.
@@ -222,6 +231,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8077816382010018681">Siia läheb funktsiooni QU märguande pealkiri</translation>
 <translation id="8103386449138765447">SMS-id: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Andke teada, kuidas meil läheb, vastates mõnele küsimusele.</translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
 <translation id="8206859287963243715">Mobiil</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
@@ -233,7 +243,6 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
 <translation id="8814190375133053267">WiFi</translation>
-<translation id="882279321799040148">Vaatamiseks klõpsake</translation>
 <translation id="8825534185036233643">Rohkem kui kahe ekraaniga peegeldamist ei toetata.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Otsing + ESC</translation>

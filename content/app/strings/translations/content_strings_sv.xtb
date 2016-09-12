@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1014825444426747588">tomt</translation>
 <translation id="1018939186200882850">menyalternativ</translation>
 <translation id="1020833440720551630">stäng av ljudspår</translation>
 <translation id="10623998915015855">växlingsknapp</translation>
 <translation id="1088086359088493902">Sekunder</translation>
 <translation id="1171774979989969504">Ange en e-postadress.</translation>
+<translation id="1178581264944972037">Paus</translation>
 <translation id="1188858454923323853">kompletterande</translation>
 <translation id="1206619573307042055">markör</translation>
 <translation id="1206693055195146388">skjutreglage</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">FM/EM</translation>
 <translation id="1832974991323546415">spela på en fjärrenhet</translation>
 <translation id="1842960171412779397">välj</translation>
+<translation id="1854180393107901205">Sluta casta</translation>
 <translation id="1880518467580572141">översikt</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Lägg till minst <ph name="MIN_CHARACTERS" /> tecken (för närvarande har du angett <ph name="CURRENT_LENGTH" /> tecken).</translation>
 <translation id="383465348367842624">En del följt av <ph name="ATSIGN" /> får inte innehålla symbolen <ph name="INVALIDCHARACTER" />.</translation>
+<translation id="3846214748874656680">Avsluta helskärmsläge</translation>
 <translation id="3924558731517983934">program</translation>
 <translation id="3960700977367013758">rullningslist</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">sök</translation>
 <translation id="4812940957355064477">Ange ett nummer.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> valda</translation>
+<translation id="4992066212339426712">Slå på ljudet</translation>
 <translation id="49969490063480558">Ange en del följt av <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> är ofullständig.</translation>
 <translation id="5034860022980953847">förloppsindikator</translation>
 <translation id="5048533449481078685">listmarkör</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">avsluta helskärmsläge</translation>
 <translation id="5476505524087279545">kryssa av</translation>
 <translation id="5516424706154626233">datumväljare</translation>
+<translation id="5537725057119320332">Casta</translation>
 <translation id="5546461542133609677">visa</translation>
 <translation id="561939826962581046">tid</translation>
 <translation id="5641012560118721995">pausa uppspelning</translation>
 <translation id="5643186887447432888">knapp</translation>
+<translation id="57838592816432529">Stäng av ljudet</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5843503607508392247">Annat ...</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="588258955323874662">Helskärm</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5944544982112848342">2048 (hög)</translation>
 <translation id="5966707198760109579">Vecka</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">knappreglage</translation>
 <translation id="6739588121953935928">linjal</translation>
 <translation id="6755330956360078551">beskrivning</translation>
+<translation id="6790428901817661496">Spela</translation>
 <translation id="6820355525329141109">Det gick inte att läsa in plugin-programmet.</translation>
 <translation id="6843725295806269523">ljud av</translation>
 <translation id="6845533974506654842">tryck</translation>

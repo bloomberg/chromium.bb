@@ -83,6 +83,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="3080151273017101988">Endelea kuendesha programu zinazofanya kazi chini chini wakati Google Chrome imefungwa</translation>
 <translation id="3089968997497233615">Kuna toleo jipya na salama la Google Chrome.</translation>
 <translation id="3149510190863420837">Programu za Chrome</translation>
+<translation id="3180085900771989961">Lazima msimamizi wako akuondoe na kukuongeza tena kwenye Chrome.</translation>
 <translation id="3251381707915721925">Ili uweke tovuti ambazo <ph name="NEW_PROFILE_NAME" /> anaweza kuona, unaweza kuweka vizuizi na mipangilio kwa kutembelea <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Usipobadilisha mipangilio chaguo-msingi <ph name="NEW_PROFILE_NAME" /> anaweza kuvinjari kila kitu kwenye wavuti.
 
 Ili uzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa umefunga wasifu wako wakati hutumii Chrome. Ili ufunge wasifu wako, bofya jina lako la wasifu katika upande wa juu kulia mwa kivinjari, kisha uchague "Ondoka kwenye wasifu wa sasa."
@@ -186,8 +187,8 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="61852838583753520">Sasisha Chrome OS</translation>
 <translation id="6235018212288296708">Sheria ya ndani ya Google Chrome ili kuruhusu trafiki ya mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome imekoma kusasisha na haiwezi kutumiwa tena na toleo hili la mfumo wako wa uendeshaji.</translation>
+<translation id="6291549208091401781">Tayari Google Chrome imesakinishwa kwa watumiaji wote kwenye kompyuta yako.</translation>
 <translation id="629218512217695915">Tumia nenosiri lililozalishwa na Chrome</translation>
-<translation id="6338556085225130112">Inasasisha Google Chrome</translation>
 <translation id="6368805772029492593">Kwa usalama ulioongezwa, Google Chrome itasimba data yako kwa njia fiche.</translation>
 <translation id="6368958679917195344">Chrome OS imewezeshwa na programu ya ziada ya <ph name="BEGIN_LINK_CROS_OSS" />programu huria<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Kompyuta hii itaacha kupokea sasisho za Google Chrome hivi karibuni kwa sababu Mac OS X 10.6, 10.7, na 10.8 hazitatumika tena.</translation>
@@ -197,7 +198,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="6600954340915313787">Imenakiliwa kwenye Chrome</translation>
 <translation id="6626317981028933585">Yasikitisha, mipangilio ya Mozilla Firefox haipatikani kivinjari hicho kikiwa kinatumika. Kuingiza mipangilio hiyo kwa Google Chrome, hifadhi kazi yako na ufunge madirisha yote ya Firefox. Kisha bofya Endelea.</translation>
 <translation id="6634887557811630702">Google Chrome imesasishwa.</translation>
-<translation id="6648058004052854464">Google Chrome haikuwekwa kuwa kivinjari chaguo-msingi.</translation>
 <translation id="6676384891291319759">Fika kwenye wavuti</translation>
 <translation id="6757767188268205357">Usinisumbue</translation>
 <translation id="683440813066116847">Sheria ya ndani ya Google Chrome Canary ili kuruhusu trafiki ya mDNS.</translation>

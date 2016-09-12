@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1007441141628883408">如果此政策未设置或设为 true，则允许更新 <ph name="PRODUCT_NAME" /> 中的所有组件。
+
+      如果此政策设为 false，则禁止更新组件。不过，部分组件不受此政策限制：只要组件更新不含可执行的代码、不明显改变浏览器的行为，或对浏览器的安全性至关重要，系统就不会禁止此类组件更新。
+      此类组件包括证书撤消列表和安全浏览数据。 </translation>
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
@@ -28,6 +32,9 @@
           如果此政策已设置，远程访问主机将使用此网址验证来自远程访问客户端的身份验证令牌，以便确定是否允许建立连接。此政策必须与 RemoteAccessHostTokenUrl 结合使用。
 
           该功能目前在服务器端已停用。</translation>
+<translation id="1093082332347834239">启用此设置后，远程协助主机会在具有 <ph name="UIACCESS_PERMISSION_NAME" /> 权限的进程中运行。这样，远程用户就可以在本地用户桌面上操控提权后的窗口。
+
+          如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
 <translation id="1103860406762205913">启用旧版基于网络的登录流程</translation>
 <translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
@@ -52,6 +59,13 @@
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
+<translation id="127699919157094139">使用 Google 托管的同步服务停用 <ph name="PRODUCT_NAME" /> 中的数据同步功能，并禁止用户更改此设置。
+
+      如果您启用此设置，用户就无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。
+
+      如果未设置此政策，用户则可以自行决定是否要使用 Google Sync。
+
+      要完全停用 Google Sync，建议您在 Google 管理控制台中停用 Google Sync 服务。</translation>
 <translation id="1291880496936992484">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将彻底移除 RC4（2016 年 9 月左右）。届时，此政策将不再有效。
 
       如果此政策未设置或设为 false，系统将不会在 TLS 中启用 RC4 加密套件。您也可以将此政策设为 true，以便与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确之道。</translation>
@@ -114,6 +128,13 @@
       如果此政策设为 false 或未设置，系统将停用“统一桌面”功能。在这种情况下，用户将无法启用该功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> 将针对此处给定的主机列表绕过任何代理。
+
+          只有当您在“选择如何指定代理服务器设置”中选择手动代理设置后，此政策才会生效。
+
+          如果您选择了任何其他代理政策设置模式，请勿设置此政策。
+
+          要查看更多详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。</translation>
 <translation id="1504431521196476721">远程认证</translation>
 <translation id="1509692106376861764">此政策从 <ph name="PRODUCT_NAME" /> 版本 29 起开始弃用。</translation>
 <translation id="1522425503138261032">允许网站跟踪用户的地理位置</translation>
@@ -124,6 +145,7 @@
 如果停用或未配置此设置，那么企业用户将无法使用 ARC。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
+<translation id="1606958238518590302">如果此政策设为 true，则用户无法向外部存储设备写入任何内容。</translation>
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
 <translation id="1617384279878333801">允许通过个人资料管理器添加用户</translation>
@@ -552,6 +574,7 @@
 <translation id="2850122204195089673">使“统一桌面”功能可供用户使用，并使其在默认情况下处于启用状态。</translation>
 <translation id="285480231336205327">启用高反差模式</translation>
 <translation id="2872961005593481000">关机</translation>
+<translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>
 <translation id="2884728160143956392">在这些网站上允许仅限会话的 Cookie</translation>
 <translation id="2893546967669465276">将系统日志发送到管理服务器</translation>
@@ -651,6 +674,23 @@
 
           此政策尚无法使用，因此请勿使用此政策。
           </translation>
+<translation id="3201273385265130876">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
+
+          如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。
+
+          如果您选择使用系统代理设置，系统也将会忽略所有其他选项。
+
+          如果您选择自动检测代理服务器，系统同样会忽略所有其他选项。
+
+          如果您选择固定服务器代理模式，则可以进一步指定“代理服务器的地址或网址”和“代理绕过规则的逗号分隔列表”中的选项。ARC 应用将仅使用优先级最高的 HTTP 代理服务器。
+
+          如果您选择使用 .pac 代理脚本，则必须在“代理 .pac 文件的网址”中指定该脚本的网址。
+
+          要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
+
+          如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 和 ARC 应用将会忽略通过命令行指定的所有代理相关选项。
+
+          如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="3205825995289802549">首次运行时，将第一个浏览器窗口最大化</translation>
 <translation id="3206731874112238027">停用打印预览功能（已弃用）</translation>
 <translation id="3213821784736959823">控制是否在 <ph name="PRODUCT_NAME" /> 中使用内置 DNS 客户端。
@@ -755,6 +795,17 @@
       如果您停用了此设置或未指定值，YouTube 中将不会强制启用安全模式。</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
+<translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
+
+      如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。
+
+      如果您选择自动检测代理服务器，系统也将会忽略所有其他选项。
+
+      要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
+
+      如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 和 ARC 应用将会忽略通过命令行指定的所有代理相关选项。。
+
+      如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
 <translation id="3768412594120638208">控制可以安装哪些类型的应用/扩展程序。
@@ -769,6 +820,7 @@
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME" />”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME" />”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME" />”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME" />”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
+<translation id="379659290574555063">以只读模式处理外部存储设备。</translation>
 <translation id="3800626789999016379">配置 <ph name="PRODUCT_NAME" /> 将用于下载文件的目录。
 
       如果您设置了此政策，那么无论用户是指定了一个目录，还是启用了要求在每次下载文件时都提示指定下载位置的项，<ph name="PRODUCT_NAME" /> 都将使用通过此政策提供的目录。
@@ -949,7 +1001,6 @@
       尽管上述平台均支持此政策，但此政策启用的功能在其中的少数平台上可能无法使用。并非所有已弃用的网络平台功能都可重新启用。只有下面明确列出的功能才能在限定的时间（具体因功能而异）内重新发挥功效。字符串标记的常用格式为 [已弃用功能的名称]_EffectiveUntil[yyyymmdd]。要了解更改网络平台功能的意图，请访问 https://bit.ly/blinkintents。
       </translation>
 <translation id="4442582539341804154">当设备进入待机或暂停状态时启用锁定</translation>
-<translation id="4445684791305970001">停用开发者工具和 JavaScript 控制台。如果您启用了此设置，用户就无法再访问开发者工具和查看网站元素了。用于启动开发者工具和 JavaScript 控制台的任何键盘快捷键以及任何菜单或右键菜单条目都会停用。如果停用或未设置此选项，用户就可以使用开发者工具和 JavaScript 控制台。</translation>
 <translation id="4449545651113180484">将屏幕顺时针旋转 270 度</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
@@ -1022,6 +1073,21 @@
 
           如果未设置此政策，则大号光标最初处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="4807950475297505572">删除最近使用最少的用户，直到有足够的可用空间</translation>
+<translation id="4815725774537609998">此政策已弃用，请改用 ProxyMode。
+
+          可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
+
+          如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。
+
+          如果您选择使用系统代理设置或自动检测代理服务器，系统也将会忽略所有其他选项。
+
+          如果您选择手动代理设置，则可以进一步指定“代理服务器的地址或网址”、“代理 .pac 文件的网址”和“代理绕过规则的逗号分隔列表”中的选项。ARC 应用将仅使用优先级最高的 HTTP 代理服务器。
+
+          要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
+
+          如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 将会忽略通过命令行指定的所有代理相关选项。
+
+          如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="4816674326202173458">允许企业用户以主用户或次要用户的身份登录多个人资料会话（非托管用户的默认行为）</translation>
 <translation id="4826326557828204741">当闲置延迟时间已过且使用电池供电时应执行的操作</translation>
 <translation id="4834526953114077364">删除最近3个月内未登录且使用最少的用户，直到有足够的可用空间</translation>
@@ -1239,6 +1305,7 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位。</translation>
+<translation id="5795001131770861387">在非默认端口上启用 HTTP/0.9 支持</translation>
 <translation id="5809728392451418079">设置设备本地帐户的显示名称</translation>
 <translation id="5814301096961727113">设置登录屏幕上语音反馈的默认状态</translation>
 <translation id="5815129011704381141">更新后自动重启</translation>
@@ -1328,6 +1395,7 @@
 <translation id="6076099373507468537">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
 
       如果此政策未配置，则分离式 USB 设备列表为空。</translation>
+<translation id="6093156968240188330">允许远程用户在远程协助会话中操控提权后的窗口</translation>
 <translation id="6095999036251797924">指定在设备闲置多长时间后屏幕将锁定（使用交流电源或电池供电时）。
 
           如果该时间长度设为大于0的值，那么只要设备闲置时间达到指定时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
@@ -1578,6 +1646,7 @@
 如果停用或未配置此设置，则可以使用任何帐户共享主机。
 
 另请参阅 RemoteAccessHostClientDomain。</translation>
+<translation id="6979510692034647325">允许更新 <ph name="PRODUCT_NAME" /> 中的组件。</translation>
 <translation id="6997592395211691850">是否需要为本地信任锚执行在线 OCSP/CRL 检查</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME" />”偏好设置</translation>
@@ -1818,6 +1887,13 @@
       请注意：最好不要屏蔽内部“chrome://*”网址，否则可能会导致意外错误。
 
       如果未设置此政策，浏览器便不会将任何网址列入黑名单。</translation>
+<translation id="7724994675283793633">此政策用于在 80 (HTTP) 和 443 (HTTPS) 以外的端口上启用 HTTP/0.9。
+
+      此政策在默认情况下处于停用状态；启用后，会使用户面临安全问题 (https://crbug.com/600352)。
+
+      此政策旨在让企业能够使现有服务器弃用 HTTP/0.9。日后我们将会移除此政策。
+
+      如果此政策未设置，非默认端口上将会停用 HTTP/0.9。</translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
           如果启用该设置，那么用户在访问主机时必须提供有效的双重代码。

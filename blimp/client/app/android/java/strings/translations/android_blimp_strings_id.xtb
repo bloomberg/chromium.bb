@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Penugasan gagal.  Tidak ada mesin yang tersedia.</translation>
 <translation id="117738548141695034">Pengalih Blimp</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
+<translation id="1491042665327336022">Harap mulai ulang aplikasi.</translation>
 <translation id="1750179245464827362">Tampilkan Info Debug</translation>
 <translation id="2004526128230838685">Penugasan gagal.  Masalah tidak dikenal.</translation>
 <translation id="2023631438558435272">Penugasan gagal.  Tanggapan tidak valid.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Penugasan gagal.  Permintaan jaringan gagal.</translation>
 <translation id="2789927415041640472">Mulai ulang aplikasi untuk menggunakan konfigurasi pemberi tugas yang baru.</translation>
 <translation id="3046825211487065480">Penugasan gagal.  Permintaan kedua dikirim sebelum permintaan pertama ditanggapi.</translation>
+<translation id="307654885162326571">Masukkan Teks</translation>
 <translation id="3286538390144397061">Mulai Ulang Sekarang</translation>
 <translation id="3346106862344060497">Perangkat tersambung.</translation>
 <translation id="3407245330823033366">Pilih akun untuk digunakan dengan Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7795546637165553439">Setelan Blimp</translation>
 <translation id="7961542533680218955">Penugasan berhasil.</translation>
+<translation id="8135971362156222300">Harap masuk ke Akun Google untuk mengaktifkan Blimp.</translation>
 <translation id="8514856595257368555">Token telah diambil.</translation>
 <translation id="8880704056643418312">Pelaksanaan</translation>
 </translationbundle>

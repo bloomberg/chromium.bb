@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">使用 Chromium 產生的密碼</translation>
 <translation id="3889543394854987837">按一下您的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="390894725198123737">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chromium 使用者都能存取或同步處理這些密碼。</translation>
-<translation id="3994125055863078356">無法將 Chromium 設為預設瀏覽器。</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="4077262827416206768">請關閉所有 Chromium 視窗，並且重新啟用 Chromium，這項變更即會生效。</translation>
 <translation id="4182290826692170034">太好了！Chromium 現已成為您的預設瀏覽器。</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="5680901439334282664">登入 Chromium</translation>
 <translation id="5698481217667032250">將 Chromium 的介面文字設為這種語言</translation>
+<translation id="5726838626470692954">管理員必須先將你移除，再重新加入 Chromium 中。</translation>
 <translation id="5768914737813585044">將 Chromium 作業系統的介面文字設為這種語言</translation>
 <translation id="5772805321386874569">(必須<ph name="BEGIN_BUTTON" />重新啟動<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium 即將準備就緒。</translation>
@@ -178,6 +178,7 @@
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
+<translation id="6734291798041940871">電腦上的所有使用者都已經安裝 Chromium 了。</translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="6838494703713445896">Chromium 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了有效的 Certificate Transparency 資訊。</translation>
@@ -203,7 +204,6 @@
 <translation id="7223968959479464213">工作管理員 - Chromium</translation>
 <translation id="722928257909516027">顯示 Chromium 選單</translation>
 <translation id="731644333568559921">更新 Chromium 作業系統(&amp;C)</translation>
-<translation id="731795002583552498">正在更新 Chromium</translation>
 <translation id="7318036098707714271">您的偏好設定檔案已毀損或無效。
 
 Chromium 無法復原您的設定。</translation>

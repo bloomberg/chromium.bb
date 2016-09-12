@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="1014825444426747588">비어 있음</translation>
 <translation id="1018939186200882850">메뉴 항목</translation>
 <translation id="1020833440720551630">오디오 트랙 음소거</translation>
 <translation id="10623998915015855">전환 버튼</translation>
 <translation id="1088086359088493902">초</translation>
 <translation id="1171774979989969504">이메일 주소를 입력하세요.</translation>
+<translation id="1178581264944972037">일시중지</translation>
 <translation id="1188858454923323853">상호 보완</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">슬라이더</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">오전/오후</translation>
 <translation id="1832974991323546415">원격 기기에서 재생</translation>
 <translation id="1842960171412779397">선택</translation>
+<translation id="1854180393107901205">전송 중지</translation>
 <translation id="1880518467580572141">개요</translation>
 <translation id="1921819250265091946">일</translation>
 <translation id="1930711995431081526">상태</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">용어</translation>
 <translation id="3822383571486410024">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' 앞 부분에 '<ph name="INVALIDCHARACTER" />' 기호가 포함되면 안됩니다.</translation>
+<translation id="3846214748874656680">전체화면 종료</translation>
 <translation id="3924558731517983934">애플리케이션</translation>
 <translation id="3960700977367013758">스크롤바</translation>
 <translation id="4103419683916926126">밀리초</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">검색</translation>
 <translation id="4812940957355064477">숫자를 입력하세요.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />개 선택됨</translation>
+<translation id="4992066212339426712">음소거 해제</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' 뒷 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
 <translation id="5034860022980953847">진행률 표시기</translation>
 <translation id="5048533449481078685">목록 표시기</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">전체화면 닫기</translation>
 <translation id="5476505524087279545">선택취소</translation>
 <translation id="5516424706154626233">날짜 선택기</translation>
+<translation id="5537725057119320332">전송</translation>
 <translation id="5546461542133609677">음소거 해제</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">재생 일시중지</translation>
 <translation id="5643186887447432888">버튼</translation>
+<translation id="57838592816432529">음소거</translation>
 <translation id="583281660410589416">알 수 없음</translation>
 <translation id="5843503607508392247">다른 시간...</translation>
 <translation id="5860033963881614850">사용 안함</translation>
+<translation id="588258955323874662">전체화면</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5944544982112848342">2048(높은 등급)</translation>
 <translation id="5966707198760109579">주</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">증감자</translation>
 <translation id="6739588121953935928">눈금자</translation>
 <translation id="6755330956360078551">도움말</translation>
+<translation id="6790428901817661496">재생</translation>
 <translation id="6820355525329141109">플러그인을 로드할 수 없습니다.</translation>
 <translation id="6843725295806269523">음소거</translation>
 <translation id="6845533974506654842">누르기</translation>

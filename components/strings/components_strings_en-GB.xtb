@@ -5,6 +5,7 @@
 <translation id="1015730422737071372">Provide additional details.</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
 <translation id="1038842779957582377">unknown name</translation>
+<translation id="1053591932240354961">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Google Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1055184225775184556">&amp;Undo Add</translation>
 <translation id="10614374240317010">Never saved</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
@@ -46,6 +47,7 @@
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1442912890475371290">Blocked attempt <ph name="BEGIN_LINK" /> to visit a page on <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
+<translation id="1491663344921578213">You cannot visit <ph name="SITE" /> at the moment because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1506687042165942984">Show a saved (i.e. known to be out of date) copy of this page.</translation>
 <translation id="1519264250979466059">Build Date</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
@@ -115,12 +117,15 @@
 <translation id="2292556288342944218">Your Internet access is blocked</translation>
 <translation id="229702904922032456">A root or intermediate certificate has expired.</translation>
 <translation id="230155334948463882">New card?</translation>
+<translation id="2305919008529760154">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requires a username and password.</translation>
+<translation id="2318774815570432836">You cannot visit <ph name="SITE" /> at the moment because the website uses HSTS. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2328300916057834155">Ignored invalid bookmark at index <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Other bookmarks</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2365563543831475020">Crash report captured on <ph name="CRASH_TIME" /> was not uploaded</translation>
 <translation id="2367567093518048410">Level</translation>
+<translation id="2371153335857947666">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired yesterday. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired # days ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.}}</translation>
 <translation id="237718015863234333">No UI alternatives available</translation>
 <translation id="2384307209577226199">Enterprise default</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
@@ -149,10 +154,12 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
 <translation id="2677748264148917807">Leave</translation>
+<translation id="269990154133806163">The server presented a certificate that was not publicly disclosed using the Certificate Transparency policy. This is a requirement for some certificates, to ensure that they are trustworthy and protect against attackers. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2704951214193499422">Chromium was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
+<translation id="2712118517637785082">You attempted to reach <ph name="DOMAIN" />, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials the server presented absolutely should not be trusted. You may be communicating with an attacker. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Ask permission</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
@@ -237,6 +244,7 @@
 <translation id="3542684924769048008">Use password for:</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> more...</translation>
+<translation id="3555561725129903880">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is from <ph name="DOMAIN2" />. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="3566021033012934673">Your connection is not private</translation>
 <translation id="3583757800736429874">&amp;Redo Move</translation>
 <translation id="3586931643579894722">Hide details</translation>
@@ -248,10 +256,12 @@
 <translation id="3623476034248543066">Show value</translation>
 <translation id="3630155396527302611">If it is already listed as a program allowed to access the network, try
       removing it from the list and adding it again.</translation>
+<translation id="3638794133396384728">This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME" />. Does that look right? If not, you should correct your system's clock and then refresh this page. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="3648607100222897006">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Any experiments that you enable will be enabled for all users of this browser. Please proceed with caution.</translation>
 <translation id="3650584904733503804">Validation successful</translation>
 <translation id="3655670868607891010">If you're seeing this frequently, try these <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
+<translation id="3678029195006412963">Request could not be signed</translation>
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3693415264595406141">Password:</translation>
 <translation id="3696411085566228381">none</translation>
@@ -273,6 +283,8 @@
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3901925938762663762">The card is expired</translation>
+<translation id="3910267023907260648">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm. This means that the security credentials that the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="3933571093587347751">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from tomorrow. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from # days in the future. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.}}</translation>
 <translation id="3934680773876859118">Failed to load PDF document</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -285,7 +297,9 @@
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
+<translation id="4110615724604346410">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
+<translation id="4118212371799607889">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 other}other{# others}}</translation>
 <translation id="4130226655945681476">Checking the network cables, modem and router</translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -303,6 +317,7 @@
 <translation id="4269787794583293679">(No username)</translation>
 <translation id="4300246636397505754">Parent suggestions</translation>
 <translation id="4304224509867189079">Log In</translation>
+<translation id="432290197980158659">The server presented a certificate that doesn't match built-in expectations. These expectations are included for certain, high-security websites in order to protect you. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Failed to find article</translation>
 <translation id="4372948949327679948">Expected <ph name="VALUE_TYPE" /> value.</translation>
 <translation id="4381091992796011497">User Name:</translation>
@@ -320,6 +335,7 @@
 <translation id="4522570452068850558">Details</translation>
 <translation id="4558551763791394412">Try disabling your extensions.</translation>
 <translation id="4587425331216688090">Remove address from Chrome?</translation>
+<translation id="4589078953350245614">You attempted to reach <ph name="DOMAIN" />, but the server presented an invalid certificate. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Your connection to <ph name="DOMAIN" /> is encrypted using a modern cipher suite.</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4668929960204016307">,</translation>
@@ -347,6 +363,7 @@
 <translation id="4930497775425430760">You're seeing this message because your parent needs to approve new sites on your first visit.</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Expand list</translation>
+<translation id="4962322354953122629">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4986920000862467124">All Read</translation>
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
@@ -377,6 +394,7 @@
 <translation id="5308689395849655368">Crash reporting is disabled.</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5359637492792381994">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not valid at this time. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5421136146218899937">Clear browsing data...</translation>
 <translation id="5430298929874300616">Remove bookmark</translation>
@@ -416,6 +434,7 @@
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5814352347845180253">You may lose access to premium content from <ph name="SITE" /> and some other sites.</translation>
+<translation id="5843436854350372569">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate containing a weak key. An attacker could have broken the private key, and the server may not be the server you expected (you may be communicating with an attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5855235287355719921">You're seeing this message because your manager blocked this site.</translation>
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5869405914158311789">This site can’t be reached</translation>
@@ -459,11 +478,13 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="6387478394221739770">Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium ran out of memory while trying to display this web page.</translation>
+<translation id="6416403317709441254">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6417515091412812850">Unable to check whether the certificate has been revoked.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6445051938772793705">Country</translation>
 <translation id="6451458296329894277">Confirm Form Resubmission</translation>
 <translation id="6458467102616083041">Ignored because default search is disabled by policy.</translation>
+<translation id="6462969404041126431">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Device policies</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
@@ -473,6 +494,7 @@
 <translation id="662080504995468778">Stay</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
+<translation id="6652240803263749613">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
 <translation id="6660210980321319655">Automatically reported <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
@@ -499,6 +521,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
+<translation id="7009986207543992532">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate whose validity period is too long to be trustworthy. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7087282848513945231">County</translation>
@@ -542,6 +565,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7469372306589899959">Confirming card</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7485870689360869515">No data found.</translation>
+<translation id="7508255263130623398">Returned policy device ID is empty or doesn't match current device ID</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7518003948725431193">No web page was found for the web address: <ph name="URL" /></translation>
 <translation id="7537536606612762813">Mandatory</translation>
@@ -625,9 +649,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>
+<translation id="8459333855531264009">Not Secure</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8488350697529856933">Applies to</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
+<translation id="852346902619691059">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">This type of card is not supported by Google Payments. Please select a different card.</translation>
 <translation id="8550022383519221471">Sync service is not available for your domain.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
@@ -647,6 +673,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8741995161408053644">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8803639129939845298">Secure</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8834246243508017242">Enable Autofill using Contacts…</translation>

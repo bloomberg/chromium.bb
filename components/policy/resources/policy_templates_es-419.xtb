@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1007441141628883408">Habilita actualizaciones para todos los componentes en <ph name="PRODUCT_NAME" /> cuando no se establece o se establece como verdadera.
+
+      Si se establece como falsa, se inhabilitan las actualizaciones de los componentes. Sin embargo, algunos componentes no están contemplados en esta política: no se inhabilitarán las actualizaciones de cualquier componente que no contenga un código ejecutable, no modifique el comportamiento del navegador de forma significativa o sea fundamental para la seguridad.
+      Entre estos componentes, se incluyen las listas de revocación de certificados y los datos de navegación segura. </translation>
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
@@ -28,6 +32,9 @@
           Si esta política se establece, el host de acceso remoto usará esta URL para validar tokens de autenticación de clientes de acceso remoto para aceptar conexiones. Se debe usar junto con RemoteAccessHostTokenUrl.
 
           Actualmente, esta función está inhabilitada del lado del servidor.</translation>
+<translation id="1093082332347834239">Si esta opción de configuración está inhabilitada, el host de asistencia remota se ejecutará en un proceso con los permisos <ph name="UIACCESS_PERMISSION_NAME" />. De esta manera, los usuarios remotos podrán interactuar con las ventanas con permisos elevados en el escritorio del usuario local.
+
+          Si esta opción de configuración está inhabilitada o no se configura, el host de asistencia remota se ejecutará en el contexto del usuario, y los usuarios remotos no podrán interactuar con las ventanas con permisos elevados en el escritorio.</translation>
 <translation id="1096105751829466145">Proveedor de búsqueda predeterminado</translation>
 <translation id="1103860406762205913">Habilita la forma de acceso antigua basada en la Web.</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar archivos en caché en el disco.
@@ -52,6 +59,13 @@
       Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
 <translation id="1221359380862872747">Cargar las URL especificadas en el inicio de sesión del demo</translation>
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
+<translation id="127699919157094139">Inhabilita la sincronización de datos en <ph name="PRODUCT_NAME" /> a través de los servicios de sincronización alojados en Google y evita que los usuarios cambien esta configuración.
+
+      Si se habilita, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
+
+      Si esta política no se configura, Google Sync estará disponible para que el usuario elija si desea utilizarlo o no.
+
+      Para inhabilitar Google Sync por completo, se recomienda inhabilitar el servicio de Google Sync en la Consola del administrador de Google.</translation>
 <translation id="1291880496936992484">Advertencia: RC4 se eliminará por completo de <ph name="PRODUCT_NAME" /> después de la versión 52 (alrededor de septiembre de 2016) y esta política dejará de funcionar para entonces.
 
       Si la política no se configura o se configura en false, los conjuntos de cifrado de RC4 en TLS no se habilitarán. De lo contrario, se puede configurar en true para mantener la compatibilidad con un servidor obsoleto. Esta medida es provisional y el servidor se debería volver a configurar.</translation>
@@ -117,6 +131,14 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       En ese caso, el usuario no podrá habilitar la función.</translation>
 <translation id="1474273443907024088">Inhabilitar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy de la lista de hosts especificados aquí.
+
+          Esta política solo tiene efecto si seleccionaste la configuración manual de proxy en "Elegir cómo especificar la configuración del servidor proxy".
+
+          Si seleccionaste cualquier otro modo de configuración de las políticas de proxy, no debes establecer esta política.
+
+          Para ver ejemplos detallados, visita:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Atestación remota</translation>
 <translation id="1509692106376861764">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
@@ -131,6 +153,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       no podrán usar ARC.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
+<translation id="1606958238518590302">Cuando esta política se establece como verdadera, los usuarios no pueden escribir nada en los dispositivos de almacenamiento externo.</translation>
 <translation id="1608755754295374538">Las URL que recibirán acceso a dispositivos de captura de audio sin solicitarlo</translation>
 <translation id="1617235075406854669">Habilita la eliminación del historial de descargas y del navegador.</translation>
 <translation id="1617384279878333801">Habilitar opción para agregar persona al administrador de perfiles</translation>
@@ -566,6 +589,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2850122204195089673">Habilitar el modo de escritorio unificado y activarlo en la configuración predeterminada</translation>
 <translation id="285480231336205327">Habilitar el modo de contraste alto</translation>
 <translation id="2872961005593481000">Cerrar</translation>
+<translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>
 <translation id="2884728160143956392">Permitir cookies de sesión única en estos sitios</translation>
 <translation id="2893546967669465276">Enviar registros del sistema al servidor de administración</translation>
@@ -665,6 +689,24 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Esta política todavía no está lista para usarse; se solicita que no se use.
           </translation>
+<translation id="3201273385265130876">Te permite especificar el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración de proxy.
+
+          Si eliges no usar nunca un servidor proxy y conectarte siempre de forma directa, se ignorarán las demás opciones.
+
+          Si eliges usar la configuración de proxy del sistema, se ignorarán las demás opciones.
+
+          Si eliges detectar de forma automática el servidor proxy, se ignorarán las demás opciones.
+
+          Si eliges el modo fijo del servidor proxy, podrás especificar más opciones en "Dirección o URL del servidor proxy" y "Lista separada por comas de las normas de omisión de proxy". Solo el servidor proxy HTTP con la prioridad más alta está disponible para las apps de ARC.
+
+          Si eliges usar una secuencia de comandos de proxy .pac, deberás especificar la URL en la secuencia de comandos en "URL a un archivo proxy .pac".
+
+          Para obtener ejemplos detallados, visita:
+          <ph name="PROXY_HELP_URL" />
+
+          Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> y las apps de ARC ignorarán todas las opciones relacionadas con el proxy especificadas desde la línea de comandos.
+
+          Si no se establece esta política, los usuarios podrán elegir la configuración de proxy.</translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
 <translation id="3206731874112238027">Inhabilitar vista previa de impresión (dejó de estar disponible)</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
@@ -767,6 +809,18 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se inhabilita esta configuración o no se establece un valor, el modo de seguridad en YouTube no se fuerza.</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
+<translation id="3758089716224084329">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
+
+      Si eliges no utilizar un servidor proxy y conectarte siempre de forma directa, se ignorarán las demás opciones.
+
+      Si eliges detectar de forma automática el servidor proxy, se ignorarán las demás opciones.
+
+      Para obtener ejemplos detallados, visita:
+      <ph name="PROXY_HELP_URL" />
+
+      Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> y las apps de ARC ignorarán todas las opciones relacionadas con el proxy especificadas desde la línea de comandos.
+
+      Si no se establecen estas políticas, los usuarios podrán elegir la configuración de proxy.</translation>
 <translation id="3758249152301468420">Inhabilitar herramientas para desarrolladores</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario que saldrá del navegador porque se encuentra inactivo</translation>
 <translation id="3768412594120638208">Permite controlar el tipo de apps o extensiones que se pueden instalar.
@@ -781,6 +835,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3780152581321609624">Incluir puerto no estándar en el SPN de Kerberos</translation>
 <translation id="3788662722837364290">Configuración de la administración de energía cuando el usuario está inactivo</translation>
 <translation id="3793095274466276777">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> siempre comprobará al iniciarse si es el navegador predeterminado y se registrará automáticamente en caso de ser posible. Si esta opción está inhabilitada, <ph name="PRODUCT_NAME" /> nunca verificará si es el navegador predeterminado e inhabilitará los controles de usuario para poder configurar esta opción. Si no se ha establecido esta configuración, <ph name="PRODUCT_NAME" /> permitirá al usuario controlar si es el navegador predeterminado y si las notificaciones para el usuario deben mostrarse cuando no lo es.</translation>
+<translation id="379659290574555063">Tratar los dispositivos de almacenamiento externo como de solo lectura</translation>
 <translation id="3800626789999016379">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para descargar archivos.
 
       Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado, sin importar si el usuario especificó uno o si habilitó que la marca solicite una ubicación de descarga cada vez.
@@ -972,7 +1027,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si bien la política se admite en plataformas posteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform que dejaron de estar disponibles se pueden volver a habilitar; solo las que se indican explícitamente a continuación y durante un período limitado que varía según cada función. El formato general de la etiqueta de cadena será [NombreDeFunciónNoDisponible]_EffectiveUntil[aaaammdd]. Como referencia, se puede encontrar el propósito de los cambios de la función de Web Platform en https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
-<translation id="4445684791305970001">Inhabilita las herramientas del programador y la consola de JavaScript. Si se habilita esta configuración, no se podrá acceder a las herramientas del programador y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán todos los accesos directos del teclado y todas las entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript. Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
 <translation id="4449545651113180484">Rotar la pantalla hacia la derecha 270 grados</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
@@ -1045,6 +1099,22 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Si no se establece esta política, inicialmente el cursor grande estará inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4807950475297505572">Elimina los usuarios que más tiempo hace que no se utilizan hasta que se libere espacio suficiente.</translation>
+<translation id="4815725774537609998">Esta política ya no está disponible. En su lugar, usa ProxyMode.
+
+          Te permite especificar el servidor proxy que usa <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración de proxy.
+
+          Si eliges no usar nunca un servidor proxy y conectarte siempre de forma directa, se ignorarán las demás opciones.
+
+          Si eliges usar la configuración de proxy del sistema o detectar de forma automática el servidor proxy, se ignorarán las demás opciones.
+
+          Si eliges la configuración manual de proxy, podrás especificar más opciones en "Dirección o URL del servidor proxy", "URL a un archivo proxy .pac" y "Lista separada por comas de las normas de omisión de proxy". Solo el servidor proxy HTTP con la prioridad más alta estará disponible para las apps de ARC.
+
+          Para obtener ejemplos detallados, visita:
+          <ph name="PROXY_HELP_URL" />
+
+          Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy especificadas desde la línea de comandos.
+
+      Si no se establecen estas políticas, los usuarios podrán elegir la configuración de proxy.</translation>
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con batería</translation>
 <translation id="4834526953114077364">Elimina los usuarios que más tiempo hace que no se utilizan y que no accedieron en los últimos tres meses hasta que se libere suficiente espacio.</translation>
@@ -1266,6 +1336,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si no se establece esta política, se utilizará un período de tiempo predeterminado.
 
           El valor de la política debe especificarse en milisegundos.</translation>
+<translation id="5795001131770861387">Habilita la compatibilidad con HTTP/0.9 en puertos no predeterminados</translation>
 <translation id="5809728392451418079">Establecer el nombre para mostrar de las cuentas locales del dispositivo</translation>
 <translation id="5814301096961727113">Establece el estado predeterminado de los comentarios por voz en la pantalla de acceso.</translation>
 <translation id="5815129011704381141">Reinicia automáticamente después de la actualización.</translation>
@@ -1355,6 +1426,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="6076099373507468537">Define la lista de dispositivos USB que tienen autorización para separarse del controlador en modo kernel para usarse a través de la API chrome.usb directamente en la aplicación web. Las entradas son pares formados por el identificador del producto y del proveedor USB que permiten reconocer un hardware específico.
 
       Si esta política no se configura, la lista de dispositivos USB que se pueden separar está vacía.</translation>
+<translation id="6093156968240188330">Permitir que los usuarios remotos interactúen con las ventanas con permisos elevados en sesiones de asistencia remota</translation>
 <translation id="6095999036251797924">Especifica el tiempo que debe transcurrir sin que el usuario realice una acción antes de que la pantalla se bloquee cuando se utiliza CA o batería.
 
           Al establecer el tiempo en un valor mayor que cero, dicho valor equivale a la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -1607,6 +1679,7 @@ desactivarlo).</translation>
           Si esta configuración está inhabilitada o no está establecida, los hosts pueden compartirse utilizando cualquier cuenta.
 
           Consulta también la política RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Habilita las actualizaciones de componentes en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Establecer si es necesario realizar comprobaciones de OCSP/CRL en línea para los anclajes de confianza locales</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>
@@ -1853,6 +1926,13 @@ desactivarlo).</translation>
       Ten en cuenta que no se recomienda bloquear las URL internas "chrome://*", dado que se pueden generar errores inesperados.
 
       Si no se establece esta política, no se incluirá ninguna URL en la lista negra del navegador.</translation>
+<translation id="7724994675283793633">Esta política habilita el protocolo HTTP/0.9 en otros puertos además del puerto 80 para HTTP y el 443 para HTTPS.
+
+      De forma predeterminada, esta política está inhabilitada. Si se habilita, los usuarios quedan expuestos ante el problema de seguridad https://crbug.com/600352.
+
+      El objetivo de esta política es darle a las empresas una oportunidad para migrar servidores existentes con HTTP/0.9; en el futuro, se quitará.
+
+      Si la política no se establece, HTTP/0.9 se inhabilitará para los puertos no predeterminados.</translation>
 <translation id="7749402620209366169">Habilita la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
           Si esta configuración está habilitada, los usuarios deben proporcionar un código de dos factores válido al acceder a un host.

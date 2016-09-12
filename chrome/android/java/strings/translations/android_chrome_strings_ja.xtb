@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">ブックマークを移動</translation>
 <translation id="119944043368869598">すべてクリア</translation>
 <translation id="1201402288615127009">次へ</translation>
+<translation id="1204037785786432551">リンクをダウンロード</translation>
 <translation id="1206892813135768548">リンク テキストをコピー</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1211530540767271776">USB デバイスはありません</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でオフになっています<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{選択された 1 件のアイテムを削除します}other{選択された # 件のアイテムを削除します}}</translation>
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
 <translation id="2811892995384186721">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
+<translation id="2833899785646504169">追加できません</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">Google アカウントでログインすると、どの端末からでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
+<translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
 <translation id="3518985090088779359">同意して続行</translation>
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3527085408025491307">フォルダ</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">ウェブページが近くにあります</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 件のアイテムが選択されました}other{# 件のアイテムが選択されました}}</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">タイトル</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4056223980640387499">セピア</translation>
+<translation id="4060598801229743805">画面の上部にあるオプション</translation>
 <translation id="4062305924942672200">法的情報</translation>
 <translation id="4089831646916293264">この機能により、携帯通信会社が提供するプレミアム データサービスの利用に問題が発生する可能性があります。</translation>
 <translation id="4095146165863963773">アプリデータを削除しますか？</translation>
@@ -335,6 +341,7 @@
 <translation id="5131405117025179004">保存されているアカウントの編集</translation>
 <translation id="5138299137310274655"><ph name="SOURCE_LANGUAGE" />のページです。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
 <translation id="515227803646670480">保存したデータの消去</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />プレビュー<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">これは子供向けのアカウントです</translation>
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE" />ページの翻訳を表示しますか？</translation>
@@ -455,8 +462,9 @@
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">検索と URL 候補</translation>
-<translation id="6458785801851713928">お使いのドメインでは同期機能をご利用いただけません。</translation>
+<translation id="6463070039183944536">追加しています…</translation>
 <translation id="6464825623202322042">このデバイス</translation>
+<translation id="6475951671322991020">動画をダウンロード</translation>
 <translation id="6477460825583319731">無効なメールアドレスです</translation>
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6527303717912515753">共有</translation>
@@ -491,6 +499,7 @@
 <translation id="6846298663435243399">読み込み中...</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
 <translation id="6857778194843072568">Wi-Fi のみで送信</translation>
+<translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
@@ -500,6 +509,7 @@
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
+<translation id="6985347914332179298">ここにはダウンロードはありません</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
@@ -526,6 +536,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7327835590071894791">タブをバックグラウンドに保存しました。</translation>
 <translation id="7347770551817603360">オフライン コンテンツ</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />にキャストしています</translation>
 <translation id="7375125077091615385">タイプ:</translation>
 <translation id="7378627244592794276">いいえ</translation>
@@ -654,6 +665,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
+<translation id="8872506776304248286">アプリで開く</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>

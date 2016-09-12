@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1007441141628883408">Ine-enable ang mga pag-update ng bahagi para sa lahat ng bahagi sa <ph name="PRODUCT_NAME" /> kapag hindi nakatakda o nakatakda sa True.
+
+      Kung nakatakda sa False, idi-disable ang mga pag-update sa mga bahagi. Gayunpaman, nakabukod mula sa patakarang ito ang ilang bahagi: ang mga pag-update sa anumang bahagi na hindi naglalaman ng executable code, o hindi binabago ang pagkilos ng browser, o mahalaga para sa seguridad nito ay hindi idi-disable.
+      Kabilang sa mga halimbawa ng naturang mga bahagi ang mga listahan ng pagpapawalang-bisa ng certification at data ng ligtas na pagba-browse. </translation>
 <translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
 <translation id="1017967144265860778">Pamamahala ng power sa screen sa pag-log in</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
@@ -28,6 +32,9 @@
           Kung nakatakda ang patakarang ito, gagamitin ng host ng malayuang access ang URL na ito upang patunayan ang mga token ng pagpapatotoo mula sa mga client ng malayuang access, upang makatanggap ng mga koneksyon. Dapat na gamitin kasama ng RemoteAccessHostTokenUrl.
 
           Kasalukuyang naka-disable ang feature na ito sa panig ng server.</translation>
+<translation id="1093082332347834239">Kung naka-enable ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa isang prosesong may mga pahintulot ng <ph name="UIACCESS_PERMISSION_NAME" />.  Bibigyang-daan nito ang mga remote na user upang makipag-ugnayan sa mga elevated window sa desktop ng lokal na user.
+
+          Kung naka-disable o hindi naka-configure ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa konteksto ng user at hindi magagawa ng mga remote na user na makipag-ugnayan sa mga elevated window sa desktop.</translation>
 <translation id="1096105751829466145">Default na provider ng paghahanap</translation>
 <translation id="1103860406762205913">Ine-enable ang lumang web-based na pag-sign in</translation>
 <translation id="1128903365609589950">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng mga naka-cache na file sa disk.
@@ -53,6 +60,13 @@
       na pinapayagang dalas ay 60 segundo.</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
+<translation id="127699919157094139">Dini-disable ang pag-synchronize ng data sa <ph name="PRODUCT_NAME" /> gamit ang mga serbisyo ng pag-synchronize na hino-host ng Google at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kung i-e-enable mo ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
+
+      Kung hinahayaang hindi nakatakda ang patakarang ito, magiging available ang Google Sync upang makapili ang mga user kung gagamitin ito o hindi.
+
+      Upang ganap na ma-disable ang Google Sync, inirerekomendang i-disable mo ang serbisyo ng Google Sync sa Google Admin console.</translation>
 <translation id="1291880496936992484">Babala: Tuluyan nang maalis ang RC4 sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (tinatayang lalabas sa Setyembre 2016) at hindi na gagana ang patakarang ito.
 
       Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, hindi mae-enable ang mga RC4 na cipher suite sa TLS. Maaari itong itakda sa true upang manatili itong compatible sa isang lumang server. Isa lang itong pansamantalang solusyon at dapat pa ring i-configure ang server.</translation>
@@ -120,6 +134,14 @@
       Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
 <translation id="1474273443907024088">I-disable ang TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071">Iba-bypass ng <ph name="PRODUCT_NAME" /> ang anumang proxy para sa listahan ng mga host na ibinigay dito.
+
+          Nagkakaroon lang ng epekto ang patakarang ito kung napili mo ang mga manual na setting ng proxy sa 'Piliin kung paano tumukoy ng mga setting ng proxy server'.
+
+          Dapat mong hayaang hindi nakatakda ang patakarang ito, kung pumili ka ng anumang iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
+
+          Para sa higit pang mga detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
 <translation id="1509692106376861764">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29.</translation>
 <translation id="1522425503138261032">Payagan ang mga site na subaybayan ang aktwal na lokasyon ng mga user</translation>
@@ -134,6 +156,7 @@
       mga user ng enterprise ang ARC.</translation>
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
+<translation id="1606958238518590302">Kapag nakatakda sa true ang patakarang ito, hindi makakapag-write ang mga user ng kahit ano sa external na storage ng mga device.</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="1617384279878333801">I-enable ang magdagdag ng tao sa profile manager</translation>
@@ -607,6 +630,7 @@
 <translation id="2850122204195089673">Gawing available ang Unified Desktop at i-on bilang default.</translation>
 <translation id="285480231336205327">Paganahin ang mataas na contrast mode</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
 <translation id="2884728160143956392">Payagan ang mga cookies sa session lamang sa mga site na ito</translation>
 <translation id="2893546967669465276">Magpadala ng mga log ng system sa server sa pamamahala</translation>
@@ -712,6 +736,23 @@
 
           Hindi pa handang magamit ang patakarang ito, mangyaring huwag muna itong gamitin.
           </translation>
+<translation id="3201273385265130876">Binibigyang-daan ka na matukoy ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
+
+          Kung pipiliin mong hindi gumamit ng proxy server at palaging kumonekta nang direkta, babalewalain ang lahat ng iba pang opsyon.
+          Kung pipiliin mong gumamit ng mga setting ng proxy ng system, babalewalain ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mong awtomatikong ma-detect ang proxy server, babalewalain ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mo ang nakapirming server proxy mode, maaari mong matukoy ang higit pang mga opsyon sa 'Address o URL ng proxy server' at 'Mga panuntunan ng comma-separated list ng pag-bypass ng proxy.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
+
+          Kung pinili mong gumamit ng .pac proxy script, dapat mong tukuyin ang URL sa script sa 'URL sa proxy .pac file'.
+
+          Para sa higit pang detalyadong mga halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.
+
+          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC-app ang lahat ng opsyon na nauugnay sa proxy na tinukoy sa linya ng command.
+
+          Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3205825995289802549">I-maximize ang unang window ng browser sa unang pagtakbo</translation>
 <translation id="3206731874112238027">I-disable ang Preview ng Pag-print (hindi na ginagamit)</translation>
 <translation id="3213821784736959823">Kinokontrol kung gagamitin ang built-in na DNS client sa <ph name="PRODUCT_NAME" />.
@@ -820,6 +861,18 @@
       Kung i-disable mo ang setting na ito o hindi nagtakda ng value, hindi ipapatupad ang Safety Mode sa YouTube.</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
+<translation id="3758089716224084329">Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
+
+      Kung pipiliin mong hindi gumamit ng server ng proxy at palaging kumonekta nang direkta, babalewalain ang lahat ng iba pang opsyon.
+
+      Kung pipiliin mong awtomatikong ma-detect ang server ng proxy, babalewalain ang lahat ng iba pang opsyon.
+
+      Para sa mga detalyadong halimbawa, bisitahin ang:
+      <ph name="PROXY_HELP_URL" />.
+
+      Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC-app ang lahat ng opsyong nauugnay sa proxy na tinukoy sa linya ng command.
+
+      Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3758249152301468420">Huwag paganahin ang Mga Tool ng Nag-develop</translation>
 <translation id="3765260570442823273">Tagal ng babalang mensahe ng pag-log-out ng idle</translation>
 <translation id="3768412594120638208">Kinokontrol kung aling mga uri ng app/extension ang papayagang ma-install.
@@ -834,6 +887,7 @@
 <translation id="3780152581321609624">Isama sa Kerberos SPN ang port na hindi karaniwan</translation>
 <translation id="3788662722837364290">Mga setting ng pamamahala ng power kapag naging idle ang user</translation>
 <translation id="3793095274466276777">Kino-configure ang default na mga pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng mga ito. Kung pinagana mo ang setting na ito, palaging titingnan ng <ph name="PRODUCT_NAME" /> ang startup kahit na default na browser ito at awtomatikong irerehistro ang sarili nito kung posible. Kung hindi pinagana ang setting na ito, hindi kailanmang titingnan ng <ph name="PRODUCT_NAME" /> kung ito ang default na browser at hindi papaganahin ang mga kontrol ng user para sa pagtatakda ng pagpipiliang ito. Kung hindi nakatakda ang setting na ito, papayagan ng <ph name="PRODUCT_NAME" /> ang user na kontrolin kahit na ito ay default na browser at kahit na dapat maipakita ang mga notification ng user kapag hindi ito ipinapakita.</translation>
+<translation id="379659290574555063">Itinuturing ang mga external na storage ng device bilang read-only.</translation>
 <translation id="3800626789999016379">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pagda-download ng mga file.
 
       Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo, tumukoy man ang user ng isa o na-enable niya ang flag upang ma-prompt para sa lokasyon ng download sa bawat pagkakataon.
@@ -1034,11 +1088,6 @@
       Kahit ang mismong patakaran ay sinusuportahan sa mga platform sa itaas, maaaring available sa mas kaunting platform ang ine-enable nitong feature. Hindi lahat ng mga hindi na ginagamit na feature ng Web Platform ay maaaring i-enable muli. Sa mga feature lang na nakikitang nakalista sa ibaba ang maaaring maging sa limitadong yugto ng panahon, na magkakaiba para sa bawat feature. Ang pangkalahatang format ng string tag ay magiging [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Bilang sanggunian, makikita mo ang layunin sa likod ng mga pagbabago ng feature ng Web Platform sa https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
-<translation id="4445684791305970001">Hindi pinapagana ang Mga Tool ng Developer at ang console ng JavaScript.
-
-      Kung pinagana mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Hindi papaganahin ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang buksan ang Mga Tool ng Developer o ang Console ng JavaScript.
-
-      Bibigyang-daan ng pagtatakda sa pagpipiliang ito na hindi pinagana o pag-iwan ditong hindi nakatakda ang user na gamitin ang Mga Tool ng Developer at ang console ng JavaScript.</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
@@ -1125,6 +1174,22 @@
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang malaking cursor sa umpisa ngunit maaaring i-enable ng user anumang oras.</translation>
 <translation id="4807950475297505572">Inaalis ang mga user na pinakahindi nagagamit kamakailan hangga't mayroon nang sapat na espasyo</translation>
+<translation id="4815725774537609998">Hindi na ginagamit ang patakarang ito, gamitin na lang ang ProxyMode.
+
+          Binibigyang-daan kang tukuyin ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng mga setting ng proxy.
+
+          Kung pipiliin mong hindi gumamit ng proxy server at palaging direktang kumonekta, babalewalain ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mong gumamit ng mga setting ng proxy ng system o awtomatikong ma-detect ang proxy server, babalewalain ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mo ang mga manual na setting ng proxy, matutukoy mo ang mga karagdagang opsyon sa 'Address o URL ng proxy server', 'URL sa proxy .pac file' at 'Mga panuntunan ng comma-separated list ng pag-bypass ng proxy'. Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
+
+          Para sa higit na detalyadong mga halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.
+
+           Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> ang lahat ng opsyong kaugnay ng proxy na tinutukoy mula sa linya ng command.
+
+          Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="4816674326202173458">Payagan ang mga user ng enterprise na maging parehong pangunahin at pangalawa (Default na pag-uugali para sa mga user na hindi pinamamahalaan)</translation>
 <translation id="4826326557828204741">Pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang power ng baterya</translation>
 <translation id="4834526953114077364">Inaalis ang mga user na pinakahindi nagagamit kamakailan na hindi nag-log in sa loob ng nakalipas na 3 buwan hangga't magkaroon ng sapat na libreng espasyo</translation>
@@ -1371,6 +1436,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
+<translation id="5795001131770861387">Ini-enable ang suporta sa HTTP/0.9 sa mga hindi default na port</translation>
 <translation id="5809728392451418079">Itakda ang display name para sa mga account na lokal sa device</translation>
 <translation id="5814301096961727113">Itakda ang default na katayuan ng isinalitang feedback sa screen sa pag-login</translation>
 <translation id="5815129011704381141">Awtomatikong mag-reboot pagkatapos mag-update</translation>
@@ -1469,6 +1535,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6076099373507468537">Inilalarawan ang listahan ng mga USB device na pinahihintulutang i-detach mula sa kernel driver ng mga ito upang magamit sa chrome.usb API sa mismong web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto na magagamit sa pagtukoy ng isang partikular na hardware.
 
       Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
+<translation id="6093156968240188330">Binibigyang-daan ang mga remote na user na makipag-ugnayan sa mga elevated window sa mga session ng remote na tulong</translation>
 <translation id="6095999036251797924">Tinutukoy kung gaano katagal dapat na walang input mula sa user bago ma-lock ang screen kapag AC power o baterya ang ginagamit
 
           Kapag itinakda ang haba ng oras sa value na mas malaki sa zero, katumbas nito ang tagal ng pagiging idle ng user bago i-lock ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -1743,6 +1810,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung idi-disable o hindi itatakda ang setting na ito, maibabahagi ang mga host gamit ang anumang account.
 
           Tingnan din ang RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Ine-enable ang mga pag-update ng bahagi sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Kung kinakailangan ang mga online na pagsusuri sa OCSP/CRL para sa mga lokal na pinagkakatiwalaang anchor</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
 
@@ -2008,6 +2076,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaang hindi inirerekomendang i-block ang mga internal na 'chrome://*' URL dahil maaari itong magresulta sa mga hindi inaasahang error.
 
       Kung hindi nakatakda ang patakarang ito, walang maba-blacklist na URL sa browser.</translation>
+<translation id="7724994675283793633">Ini-enable ng patakarang ito ang HTTP/0.9 sa mga port maliban sa 80 para sa HTTP at 443 para sa HTTPS.
+
+      Naka-disable ang patakarang ito bilang default, at kung naka-enable, nagiging dahilan ito na maaaring maapektuhan ang mga user ng panseguridad na isyu https://crbug.com/600352.
+
+      Layunin ng patakarang ito na bigyan ang mga enterprise ng pagkakataong alisin ang mga kasalukuyang server sa HTTP/0.9 at aalisin ito sa hinaharap.
+
+      Kung hindi itatakda ang patakarang ito, idi-disable ang HTTP/0.9 sa mga hindi default na port.</translation>
 <translation id="7749402620209366169">Pinapagana ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access sa halip na isang PIN na tinukoy ng user.
 
           Kung pinapagana ang setting na ito, dapat magbigay ang mga user ng wastong code na may dalawang salik kapag nag-a-access ng host.

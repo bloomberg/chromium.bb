@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Ошибка. Поисковая система недоступна.</translation>
 <translation id="117738548141695034">Переключатель Blimp</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
+<translation id="1491042665327336022">Перезапустите приложение</translation>
 <translation id="1750179245464827362">Показать сведения об отладке</translation>
 <translation id="2004526128230838685">Неизвестная ошибка.</translation>
 <translation id="2023631438558435272">Ошибка. Недействительный ответ.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Ошибка. Не удалось обработать запрос.</translation>
 <translation id="2789927415041640472">Чтобы использовать новую конфигурацию, перезапустите приложение.</translation>
 <translation id="3046825211487065480">Ошибка. Второй запрос был отправлен раньше, чем пришел ответ на первый.</translation>
+<translation id="307654885162326571">Введите текст</translation>
 <translation id="3286538390144397061">Перезапустить сейчас</translation>
 <translation id="3346106862344060497">Соединение установлено.</translation>
 <translation id="3407245330823033366">Выберите аккаунт для входа в Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7795546637165553439">Настройки Blimp</translation>
 <translation id="7961542533680218955">Готово.</translation>
+<translation id="8135971362156222300">Чтобы включить Blimp, войдите в аккаунт Google</translation>
 <translation id="8514856595257368555">Токен получен.</translation>
 <translation id="8880704056643418312">Число фиксаций</translation>
 </translationbundle>

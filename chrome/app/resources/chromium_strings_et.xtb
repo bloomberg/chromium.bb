@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Kasuta Chromiumi loodud parooli</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="390894725198123737">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chromiumi kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
-<translation id="3994125055863078356">Chromiumit ei saanud vaikebrauseriks määrata.</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="4077262827416206768">Muudatuse rakendamiseks sulgege kõik Chromiumi aknad ja taaskäivitage Chromium.</translation>
 <translation id="4182290826692170034">Chromium on teie vaikebrauser. Jee!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
 <translation id="5680901439334282664">logige Chromiumi sisse</translation>
 <translation id="5698481217667032250">Kuva Chromium selles keeles</translation>
+<translation id="5726838626470692954">Haldur peab teid Chromiumist eemaldama ja uuesti lisama.</translation>
 <translation id="5768914737813585044">Kuva Chromium OS selles keeles</translation>
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on peaaegu valmis.</translation>
@@ -178,6 +178,7 @@
 
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
+<translation id="6734291798041940871">Chromium on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="6810143991807788455">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest</translation>
 <translation id="6838494703713445896">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse kehtiva teabe.</translation>
@@ -203,7 +204,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="7223968959479464213">Tegumihaldur – Chromium</translation>
 <translation id="722928257909516027">Kuva Chromiumi menüü</translation>
 <translation id="731644333568559921">Värskenda &amp;Chromium OS-i</translation>
-<translation id="731795002583552498">Chromiumi värskendamine</translation>
 <translation id="7318036098707714271">Teie eelistuste fail on rikutud või kehtetu.
 
 Chromium ei saa teie seadeid taastada.</translation>

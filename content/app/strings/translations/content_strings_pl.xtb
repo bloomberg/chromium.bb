@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1014825444426747588">puste</translation>
 <translation id="1018939186200882850">element menu</translation>
 <translation id="1020833440720551630">wycisz ścieżkę dźwiękową</translation>
 <translation id="10623998915015855">przycisk przełączania</translation>
 <translation id="1088086359088493902">Sekundy</translation>
 <translation id="1171774979989969504">Wprowadź adres e-mail.</translation>
+<translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1188858454923323853">pomocniczy</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">suwak</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">rano/po południu</translation>
 <translation id="1832974991323546415">odtwarzanie na urządzeniu zdalnym</translation>
 <translation id="1842960171412779397">wybierz</translation>
+<translation id="1854180393107901205">Zatrzymaj przesyłanie</translation>
 <translation id="1880518467580572141">schemat</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stan</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">termin</translation>
 <translation id="3822383571486410024">Wydłuż ten tekst przynajmniej do <ph name="MIN_CHARACTERS" /> znaków (teraz używasz <ph name="CURRENT_LENGTH" /> znaków).</translation>
 <translation id="383465348367842624">Część przed znakiem „<ph name="ATSIGN" />” nie może zawierać symbolu „<ph name="INVALIDCHARACTER" />”.</translation>
+<translation id="3846214748874656680">Zamknij pełny ekran</translation>
 <translation id="3924558731517983934">aplikacja</translation>
 <translation id="3960700977367013758">pasek przewijania</translation>
 <translation id="4103419683916926126">Milisekundy</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Wpisz liczbę.</translation>
 <translation id="4975562563186953947">Wybrano: <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Wyłącz wyciszenie</translation>
 <translation id="49969490063480558">Podaj część po znaku „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>
 <translation id="5034860022980953847">wskaźnik postępu</translation>
 <translation id="5048533449481078685">znacznik listy</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">zamknij pełny ekran</translation>
 <translation id="5476505524087279545">odznacz</translation>
 <translation id="5516424706154626233">selektor daty</translation>
+<translation id="5537725057119320332">Przesyłaj</translation>
 <translation id="5546461542133609677">wyłącz wyciszenie</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">wstrzymaj odtwarzanie</translation>
 <translation id="5643186887447432888">przycisk</translation>
+<translation id="57838592816432529">Wycisz</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5843503607508392247">Inny...</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
+<translation id="588258955323874662">Pełny ekran</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5944544982112848342">2048 (wysoki poziom)</translation>
 <translation id="5966707198760109579">Tydzień</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">element kroczący</translation>
 <translation id="6739588121953935928">linijka</translation>
 <translation id="6755330956360078551">etykietka</translation>
+<translation id="6790428901817661496">Odtwórz</translation>
 <translation id="6820355525329141109">Nie można załadować wtyczki.</translation>
 <translation id="6843725295806269523">wyciszenie</translation>
 <translation id="6845533974506654842">naciśnij</translation>

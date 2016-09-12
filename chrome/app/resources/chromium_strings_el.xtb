@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Χρήση κωδικού πρόσβασης που δημιουργείται από το Chromium</translation>
 <translation id="3889543394854987837">Κάντε κλικ στο όνομά σας, για να ανοίξετε το Chromium και να ξεκινήσετε την περιήγηση.</translation>
 <translation id="390894725198123737">Στο Mac, οι κωδικοί πρόσβασης μπορεί να αποθηκευτούν στο Keychain και ενδέχεται άλλοι χρήστες του Chromium, που μοιράζονται αυτόν τον λογαριασμό OS X, να αποκτήσουν πρόσβαση σε αυτούς ή να τους συγχρονίσουν.</translation>
-<translation id="3994125055863078356">Το Chromium δεν μπόρεσε να γίνει το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="4077262827416206768">Κλείστε όλα τα παράθυρα του Chromium και επανεκκινήστε το Chromium για την εφαρμογή αυτής της αλλαγής.</translation>
 <translation id="4182290826692170034">Το Chromium είναι το προεπιλεγμένο πρόγραμμα περιήγησης. Τέλεια!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
 <translation id="5698481217667032250">Να εμφανίζεται το Chromium σε αυτήν τη γλώσσα</translation>
+<translation id="5726838626470692954">Ο διαχειριστής πρέπει να σας αφαιρέσει και να σας προσθέσει ξανά στο Chromium.</translation>
 <translation id="5768914737813585044">Να εμφανίζεται το Chromium OS σε αυτήν τη γλώσσα</translation>
 <translation id="5772805321386874569">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chromium)</translation>
 <translation id="5796460469508169315">Το Chromium είναι σχεδόν έτοιμο.</translation>
@@ -178,6 +178,7 @@
 
 Ορισμένες λειτουργίες ενδέχεται να μην είναι διαθέσιμες. Καθορίστε έναν διαφορετικό κατάλογο προφίλ ή χρησιμοποιήστε μια νεότερη έκδοση του Chromium.</translation>
 <translation id="6734080038664603509">Ενημέρωση &amp;Chromium</translation>
+<translation id="6734291798041940871">Το Chromium είναι ήδη εγκατεστημένο για όλους τους χρήστες στον υπολογιστή σας.</translation>
 <translation id="6757767188268205357">Δεν με ενδιαφέρει</translation>
 <translation id="6810143991807788455">Συμβάλετε στη βελτίωση του Chromium αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
 <translation id="6838494703713445896">Το Chromium επαλήθευσε ότι το πιστοποιητικό του ιστότοπου εκδόθηκε από το <ph name="ISSUER" />. Παρασχέθηκαν έγκυρες πληροφορίες διαφάνειας πιστοποιητικού από το διακομιστή.</translation>
@@ -203,7 +204,6 @@
 <translation id="7223968959479464213">Διαχείριση Εργασιών - Chromium</translation>
 <translation id="722928257909516027">Εμφάνιση του μενού του Chromium</translation>
 <translation id="731644333568559921">Ενημέρωση &amp;Chromium OS</translation>
-<translation id="731795002583552498">Ενημέρωση του Chromium</translation>
 <translation id="7318036098707714271">Το αρχείο προτιμήσεών σας είναι κατεστραμμένο ή μη έγκυρο.
 
 Το Chromium δεν μπορεί να ανακτήσει τις ρυθμίσεις σας.</translation>

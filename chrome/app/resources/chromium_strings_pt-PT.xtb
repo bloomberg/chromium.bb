@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Utilizar palavra-passe gerada pelo Chromium</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="390894725198123737">No Mac, as palavras-passe podem ser guardadas no Porta-chaves e podem ser sincronizadas ou acedidas por outros utilizadores do Chromium que partilhem esta conta OS X.</translation>
-<translation id="3994125055863078356">Não foi possível definir o Chromium como o navegador predefinido.</translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que esta alteração seja aplicada.</translation>
 <translation id="4182290826692170034">O Chromium é o seu navegador predefinido. Viva!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou superior.</translation>
 <translation id="5680901439334282664">inicie sessão no Chromium</translation>
 <translation id="5698481217667032250">Apresentar o Chromium neste idioma</translation>
+<translation id="5726838626470692954">O seu gestor tem de o remover e adicionar novamente ao Chromium.</translation>
 <translation id="5768914737813585044">Apresentar o SO Chromium neste idioma</translation>
 <translation id="5772805321386874569">(é necessário <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> o Chromium)</translation>
 <translation id="5796460469508169315">O Chromium está quase pronto.</translation>
@@ -178,6 +178,7 @@
 
 Algumas funcionalidades podem não estar disponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Chromium.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
+<translation id="6734291798041940871">O Chromium já está instalado para todos os utilizadores no seu computador.</translation>
 <translation id="6757767188268205357">Não incomodar</translation>
 <translation id="6810143991807788455">Ajude a melhorar o Chromium ao comunicar as definições atuais</translation>
 <translation id="6838494703713445896">O Chromium confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor forneceu informações de Transparência do certificado válidas.</translation>
@@ -203,7 +204,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="7223968959479464213">Gestor de Tarefas - Chromium</translation>
 <translation id="722928257909516027">Mostrar menu do Chromium</translation>
 <translation id="731644333568559921">Atualizar o SO &amp;Chromium</translation>
-<translation id="731795002583552498">A atualizar o Chromium…</translation>
 <translation id="7318036098707714271">O ficheiro de preferências está danificado ou não é válido.
 
 O Chromium não consegue recuperar as suas definições.</translation>

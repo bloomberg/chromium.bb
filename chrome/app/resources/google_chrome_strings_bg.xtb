@@ -81,6 +81,7 @@
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
+<translation id="3180085900771989961">Мениджърът ви трябва да ви премахне от Chrome и да ви добави отново.</translation>
 <translation id="3251381707915721925">За да зададете кои уебсайтове може да преглежда <ph name="NEW_PROFILE_NAME" />, посетете <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> и конфигурирайте ограничения и настройки. Ако не промените стандартните опции, <ph name="NEW_PROFILE_NAME" /> ще е в състояние да сърфира навсякъде в мрежата.
 
 За да предотвратите достъпа на <ph name="NEW_PROFILE_NAME" /> до профила си, непременно заключвайте потребителския си профил, когато не използвате Chrome. За целта кликнете върху името на потребителския си профил в горния десен ъгъл на браузъра и изберете „Изход и заключване за деца“.
@@ -180,8 +181,8 @@
 <translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Правило за Google Chrome за допускане на входящия трафик за mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome спря да се актуализира и вече не поддържа тази версия на операционната ви система.</translation>
+<translation id="6291549208091401781">Google Chrome вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="629218512217695915">Използвайте парола, генерирана от Chrome</translation>
-<translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368805772029492593">За повишаване на сигурността Google Chrome ще шифрова данните ви.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече няма да се поддържат.</translation>
@@ -191,7 +192,6 @@
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
-<translation id="6648058004052854464">Google Chrome не можа да се зададе като браузър по подразбиране.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>

@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">การมอบหมายล้มเหลว ไม่มีเครื่องที่พร้อมใช้งาน</translation>
 <translation id="117738548141695034">สวิตช์ Blimp</translation>
 <translation id="1416550906796893042">เวอร์ชันของแอปพลิเคชัน</translation>
+<translation id="1491042665327336022">โปรดเริ่มต้นแอปพลิเคชันอีกครั้ง</translation>
 <translation id="1750179245464827362">แสดงข้อมูลการแก้ไขข้อบกพร่อง</translation>
 <translation id="2004526128230838685">การมอบหมายล้มเหลว ไม่ทราบปัญหา</translation>
 <translation id="2023631438558435272">การมอบหมายล้มเหลว การตอบกลับไม่ถูกต้อง</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">การมอบหมายล้มเหลว คำขอเครือข่ายล้มเหลว</translation>
 <translation id="2789927415041640472">โปรดรีสตาร์ทแอปพลิเคชันเพื่อใช้การกำหนดค่าใหม่ของผู้กำหนด</translation>
 <translation id="3046825211487065480">การมอบหมายล้มเหลว คำขอที่ 2 ถูกส่งออกไปก่อนที่จะมีการตอบกลับคำขอแรก</translation>
+<translation id="307654885162326571">ป้อนข้อความ</translation>
 <translation id="3286538390144397061">รีสตาร์ทเดี๋ยวนี้</translation>
 <translation id="3346106862344060497">เชื่อมต่อเครื่องมือแล้ว</translation>
 <translation id="3407245330823033366">โปรดเลือกบัญชีที่จะใช้กับ Blimp</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7795546637165553439">การตั้งค่า Blimp</translation>
 <translation id="7961542533680218955">การมอบหมายสำเร็จ</translation>
+<translation id="8135971362156222300">โปรดลงชื่อเข้าใช้บัญชี Google เพื่อเปิดใช้ Blimp</translation>
 <translation id="8514856595257368555">ดึงข้อมูลโทเค็นแล้ว</translation>
 <translation id="8880704056643418312">คอมมิต</translation>
 </translationbundle>

@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Borrar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
+<translation id="1204037785786432551">Descargar vínculo</translation>
 <translation id="1206892813135768548">Copiar texto del vínculo</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="1211530540767271776">No hay dispositivos USB aquí</translation>
@@ -55,6 +56,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1612196535745283361">Chrome debe acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1641113438599504367">Navegación segura</translation>
 <translation id="164269334534774161">Estás viendo una copia sin conexión de esta página del <ph name="CREATION_TIME" /></translation>
@@ -157,6 +159,7 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2811892995384186721">¿No ves el dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" /></translation>
+<translation id="2833899785646504169">No se puede agregar</translation>
 <translation id="2836148919159985482">Toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -212,6 +215,7 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="3452612588551937789">Accede con tu cuenta de Google para obtener tus marcadores, contraseñas, historial y otras opciones de configuración en todos tus dispositivos.</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
 <translation id="3522247891732774234">Actualización disponible. Mas opciones</translation>
 <translation id="3527085408025491307">Carpeta</translation>
@@ -231,6 +235,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3716158070938632480">Páginas web cercanas</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{Se seleccionó 1 elemento}other{Se seleccionaron # elementos}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrar</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
@@ -249,6 +254,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4002066346123236978">Título</translation>
 <translation id="4042870126885713738">Mostrar sugerencias cuando no se resuelve una dirección web o cuando no se puede establecer una conexión</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opciones disponibles cerca de la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
 <translation id="4095146165863963773">¿Borrar datos de app?</translation>
@@ -335,6 +341,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5131405117025179004">Editar cuenta guardada</translation>
 <translation id="5138299137310274655">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> (<ph name="STYLE_BEGIN" />Instantánea<ph name="STYLE_END" />)</translation>
 <translation id="5156656584247937086">Esta cuenta pertenece a un niño</translation>
 <translation id="5161254044473106830">Se requiere un título</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE" /> la próxima vez?</translation>
@@ -455,8 +462,9 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6433490469411711332">Editar la información de contacto</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
-<translation id="6458785801851713928">Tu dominio no admite la sincronización.</translation>
+<translation id="6463070039183944536">Agregando…</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
+<translation id="6475951671322991020">Descargar video</translation>
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
 <translation id="6527303717912515753">Compartir</translation>
@@ -491,6 +499,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Enviar solo con Wi-Fi</translation>
+<translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestaña abierta}other{%1$d pestañas abiertas}}</translation>
@@ -500,6 +509,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="6978479750597523876">Restablecer la configuración de traducción</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
+<translation id="6985347914332179298">No hay descargas disponibles</translation>
 <translation id="6990079615885386641">Descargar la aplicación desde Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Informar automáticamente detalles de posibles incidentes de seguridad a Google</translation>
 <translation id="6992289844737586249">Preguntar primero antes de permitir que los sitios usen tu micrófono (recomendado)</translation>
@@ -526,6 +536,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7327835590071894791">La pestaña ahora está en segundo plano.</translation>
 <translation id="7347770551817603360">Contenido sin conexión</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparte 1 elemento seleccionado}other{Comparte # elementos seleccionados}}</translation>
 <translation id="7366340029385295517">Transmitiendo a <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7378627244592794276">No</translation>
@@ -654,6 +665,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
+<translation id="8872506776304248286">Abrir en la app</translation>
 <translation id="8901170036886848654">No se encontraron marcadores</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>

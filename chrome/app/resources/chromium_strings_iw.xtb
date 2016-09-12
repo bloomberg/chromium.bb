@@ -97,7 +97,6 @@
 <translation id="3883381313049582448">‏השתמש בסיסמה שנוצרה על ידי Chromium</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="390894725198123737">‏אם אתה משתמש ב-Mac, ייתכן שסיסמאות יישמרו ב-Keychain שלך, ומשתמשי Chromium אחרים החולקים את חשבון OS X הזה יוכלו לגשת אליהן או לסנכרן אותן.</translation>
-<translation id="3994125055863078356">‏Chromium לא הצליח להפוך לדפדפן ברירת המחדל.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4077262827416206768">‏סגור את כל החלונות של Chromium והפעל אותו מחדש כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4182290826692170034">‏Chromium הוא דפדפן ברירת המחדל שלך. נהדר!</translation>
@@ -140,6 +139,7 @@
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
+<translation id="5726838626470692954">‏המנהל שלך צריך להסיר אותך מ-Chromium ולאחר מכן להוסיף אותך חזרה.</translation>
 <translation id="5768914737813585044">‏הצג את Chromium OS בשפה זו</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chromium)</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
@@ -176,6 +176,7 @@
 
 ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chromium.</translation>
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
+<translation id="6734291798041940871">‏Chromium כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="6838494703713445896">‏Chromium אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
@@ -201,7 +202,6 @@
 <translation id="7223968959479464213">‏מנהל המשימות - Chromium</translation>
 <translation id="722928257909516027">‏הצג את תפריט Chromium</translation>
 <translation id="731644333568559921">‏עדכן את &amp;מערכת ההפעלה של Chromium‏</translation>
-<translation id="731795002583552498">‏מעדכן את Chromium‏</translation>
 <translation id="7318036098707714271">‏קובץ ההעדפות שלך פגום או לא חוקי. 
 
 Chromium לא יכול לשחזר את ההגדרות שלך.</translation>

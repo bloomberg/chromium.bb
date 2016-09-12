@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Використовувати пароль, згенерований Chromium</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="390894725198123737">В ОС Mac паролі можуть зберігатися в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chromium, які спільно користуються цим обліковим записом ОС X.</translation>
-<translation id="3994125055863078356">Не вдалося зробити Chromium веб-переглядачем за умовчанням.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
 <translation id="4182290826692170034">Chromium установлено веб-переглядачем за умовчанням.</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Для роботи Chromium потрібно мати ОС Windows 7 або новішої версії.</translation>
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
 <translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
+<translation id="5726838626470692954">Вашому адміністратору потрібно вилучити й знову додати вас у Chromium.</translation>
 <translation id="5768914737813585044">Вибрати цю мову для ОС Chromium</translation>
 <translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
@@ -178,6 +178,7 @@
 
 Деякі функції можуть бути недоступними. Укажіть інший каталог профілю або скористайтеся новішою версією Chromium.</translation>
 <translation id="6734080038664603509">Оновити &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="6810143991807788455">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування</translation>
 <translation id="6838494703713445896">Chromium підтвердив, що компанія <ph name="ISSUER" /> видала сертифікат цього веб-сайту. Сервер надав дійсну інформацію про прозорість сертифіката.</translation>
@@ -203,7 +204,6 @@
 <translation id="7223968959479464213">Диспетчер завдань – Chromium</translation>
 <translation id="722928257909516027">Показати меню Chromium</translation>
 <translation id="731644333568559921">Оновити &amp;ОС Chromium</translation>
-<translation id="731795002583552498">Оновлення Chromium</translation>
 <translation id="7318036098707714271">Ваш файл налаштувань пошкоджений або недійсний.
 
 Chromium не може відновити ваші налаштування.</translation>

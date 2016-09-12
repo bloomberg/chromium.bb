@@ -82,6 +82,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3080151273017101988">Poursuivre l'exécution d'applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
+<translation id="3180085900771989961">Votre administrateur doit vous supprimer de Chrome et vous y rajouter.</translation>
 <translation id="3251381707915721925">Pour définir les sites Web que l'utilisateur <ph name="NEW_PROFILE_NAME" /> peut consulter, vous pouvez configurer des restrictions et des paramètres sur le site <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si vous conservez les paramètres par défaut, <ph name="NEW_PROFILE_NAME" /> peut parcourir l'ensemble des sites du Web.
 
 Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assurez-vous de verrouiller votre profil lorsque vous n'utilisez pas Chrome. Pour ce faire, cliquez sur le nom de votre profil dans l'angle supérieur droit du navigateur, puis sélectionnez "Fermer et activer le verrouillage enfant".
@@ -186,8 +187,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
 <translation id="6236285698028833233">Google Chrome n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
+<translation id="6291549208091401781">Google Chrome est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
 <translation id="629218512217695915">Utiliser le mot de passe généré par Chrome</translation>
-<translation id="6338556085225130112">Mise à jour de Google Chrome...</translation>
 <translation id="6368805772029492593">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome.</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
@@ -197,7 +198,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6626317981028933585">Vos paramètres Mozilla Firefox ne sont pas disponibles pendant l'utilisation de ce navigateur. Pour importer ces paramètres vers Google Chrome, enregistrez votre travail et fermez toutes les fenêtres Firefox. Ensuite, cliquez pour continuer.</translation>
 <translation id="6634887557811630702">Google Chrome est à jour.</translation>
-<translation id="6648058004052854464">Impossible de définir Google Chrome en tant que navigateur par défaut.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>

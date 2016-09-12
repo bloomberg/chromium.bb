@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Oppgaven kunne ikke utføres. Ingen motorer var tilgjengelige.</translation>
 <translation id="117738548141695034">Blimp-bryter</translation>
 <translation id="1416550906796893042">Programversjon</translation>
+<translation id="1491042665327336022">Start appen på nytt.</translation>
 <translation id="1750179245464827362">Vis feilsøkingsinformasjon</translation>
 <translation id="2004526128230838685">Oppgaven kunne ikke utføres. Ukjent problem.</translation>
 <translation id="2023631438558435272">Oppgaven kunne ikke utføres. Ugyldig svar.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Oppgaven kunne ikke utføres. Nettverksforespørselen mislyktes.</translation>
 <translation id="2789927415041640472">Start appen på nytt for å bruke den nye tildelerkonfigurasjonen.</translation>
 <translation id="3046825211487065480">Oppgaven kunne ikke utføres. Den andre forespørselen ble sendt før den første forespørselen svarte.</translation>
+<translation id="307654885162326571">Skriv inn tekst</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
 <translation id="3346106862344060497">Motoren er koblet til.</translation>
 <translation id="3407245330823033366">Velg en konto du vil bruke med Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7795546637165553439">Blimp-innstillinger</translation>
 <translation id="7961542533680218955">Oppgaven ble utført.</translation>
+<translation id="8135971362156222300">Logg på Google-kontoen din for å slå på Blimp.</translation>
 <translation id="8514856595257368555">Tokenet er hentet.</translation>
 <translation id="8880704056643418312">Gjennomføringer</translation>
 </translationbundle>

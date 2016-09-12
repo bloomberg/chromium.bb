@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">ההקצאה נכשלה. אין מנוע זמין.</translation>
 <translation id="117738548141695034">‏מתג Blimp</translation>
 <translation id="1416550906796893042">גרסת אפליקציה</translation>
+<translation id="1491042665327336022">הפעל את היישום מחדש.</translation>
 <translation id="1750179245464827362">הצג מידע של ניפוי באגים</translation>
 <translation id="2004526128230838685">ההקצאה נכשלה. בעיה לא ידועה.</translation>
 <translation id="2023631438558435272">ההקצאה נכשלה. תגובה לא חוקית.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">ההקצאה נכשלה. בקשת הרשת נכשלה.</translation>
 <translation id="2789927415041640472">הפעל מחדש את האפליקציה כדי להשתמש בהגדרות המקצה החדשות.</translation>
 <translation id="3046825211487065480">ההקצאה נכשלה. הבקשה השנייה נשלחה לפני התגובה לבקשה הראשונה.</translation>
+<translation id="307654885162326571">הזנת טקסט</translation>
 <translation id="3286538390144397061">הפעל מחדש כעת</translation>
 <translation id="3346106862344060497">המנוע מחובר.</translation>
 <translation id="3407245330823033366">‏בחר חשבון לשימוש עם Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7795546637165553439">‏הגדרות Blimp</translation>
 <translation id="7961542533680218955">ההקצאה הצליחה.</translation>
+<translation id="8135971362156222300">‏היכנס לחשבון Google כדי להפעיל את Blimp.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 <translation id="8880704056643418312">פעולות שבוצעו</translation>
 </translationbundle>

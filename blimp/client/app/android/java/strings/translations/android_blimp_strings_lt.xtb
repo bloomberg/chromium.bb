@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Priskirti nepavyko. Nėra jokių pasiekiamų variklių.</translation>
 <translation id="117738548141695034">„Blimp“ jungiklis</translation>
 <translation id="1416550906796893042">Programos versija</translation>
+<translation id="1491042665327336022">Iš naujo paleiskite programą.</translation>
 <translation id="1750179245464827362">Rodyti derinimo informaciją</translation>
 <translation id="2004526128230838685">Priskirti nepavyko. Nežinoma problema.</translation>
 <translation id="2023631438558435272">Priskirti nepavyko. Netinkamas atsakas.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Priskirti nepavyko. Nepavyko tinklo užklausa.</translation>
 <translation id="2789927415041640472">Norėdami naudoti naują priskyrimo priemonės konfigūraciją, paleiskite programą iš naujo.</translation>
 <translation id="3046825211487065480">Priskirti nepavyko. Antra užklausa išsiųsta prieš pateikiant atsaką į pirmą užklausą.</translation>
+<translation id="307654885162326571">Įveskite tekstą</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
 <translation id="3346106862344060497">Variklis prijungtas.</translation>
 <translation id="3407245330823033366">Pasirinkite paskyrą, kurią norite naudoti su „Blimp“.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7795546637165553439">„Blimp“ nustatymai</translation>
 <translation id="7961542533680218955">Priskirti pavyko.</translation>
+<translation id="8135971362156222300">Prisijunkite prie „Google“ paskyros ir įgalinkite „Blimp“.</translation>
 <translation id="8514856595257368555">Prieigos raktas gautas.</translation>
 <translation id="8880704056643418312">Pateikimai</translation>
 </translationbundle>

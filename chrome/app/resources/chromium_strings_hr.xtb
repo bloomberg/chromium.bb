@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Upotrijebite zaporku koju generira Chromium</translation>
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="390894725198123737">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromiuma koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
-<translation id="3994125055863078356">Chromium ne može biti zadani preglednik.</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="4077262827416206768">Zatvorite sve prozore preglednika Chromium i ponovo pokrenite Chromium da bi ta promjena postala aktivna.</translation>
 <translation id="4182290826692170034">Chromium je vaš zadani preglednik. To!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium zahtijeva Windows 7 ili noviju verziju.</translation>
 <translation id="5680901439334282664">prijavite se na Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium na tom jeziku</translation>
+<translation id="5726838626470692954">Upravitelj vas mora ukloniti i vratiti u Chromium.</translation>
 <translation id="5768914737813585044">Prikaži OS Chromium na tom jeziku</translation>
 <translation id="5772805321386874569">(potrebno je <ph name="BEGIN_BUTTON" />ponovo pokrenuti<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium će uskoro biti spreman.</translation>
@@ -178,6 +178,7 @@
 
 Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili upotrijebite noviju verziju Chromiuma.</translation>
 <translation id="6734080038664603509">Ažuriranje &amp;Chromiuma</translation>
+<translation id="6734291798041940871">Chromium je već instaliran za sve korisnike na računalu.</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="6810143991807788455">Doprinesite poboljšanju Chromiuma prijavljivanjem trenutačnih postavki</translation>
 <translation id="6838494703713445896">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj.</translation>
@@ -203,7 +204,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="7223968959479464213">Upravitelj zadataka – Chromium</translation>
 <translation id="722928257909516027">Prikaz izbornika Chromium</translation>
 <translation id="731644333568559921">Ažuriranje OS-a &amp;Chromium</translation>
-<translation id="731795002583552498">Ažuriranje Chromiuma</translation>
 <translation id="7318036098707714271">Datoteka vaših postavki oštećena je ili nevažeća.
 
 Chromium ne može oporaviti vaše postavke.</translation>

@@ -101,7 +101,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3883381313049582448">Naudokite „Chromium“ sugeneruotą slaptažodį</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390894725198123737">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chromium“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
-<translation id="3994125055863078356">Nepavyko nustatyti „Chromium“ kaip numatytosios naršyklės.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="4077262827416206768">Uždarykite visus „Chromium“ langus ir iš naujo paleiskite „Chromium“, kad šis pakeitimas pradėtų galioti.</translation>
 <translation id="4182290826692170034">„Chromium“ yra numatytoji naršyklė. Puiku!</translation>
@@ -144,6 +143,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5634636535844844681">Kad būtų galima naudoti „Chromium“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>
 <translation id="5680901439334282664">prisijunkite prie „Chromium“</translation>
 <translation id="5698481217667032250">Pateikti „Chromium“ šia kalba</translation>
+<translation id="5726838626470692954">Valdytojas turi jus pašalinti ir vėl pridėti prie „Chromium“.</translation>
 <translation id="5768914737813585044">Pateikti „Chromium“ OS šia kalba</translation>
 <translation id="5772805321386874569">(„Chromium“ būtina <ph name="BEGIN_BUTTON" />paleisti iš naujo<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">„Chromium“ beveik paruošta.</translation>
@@ -180,6 +180,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 
 Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalogą arba naudokite naujesnės versijos „Chromium“.</translation>
 <translation id="6734080038664603509">&amp;„Chromium“ naujinys</translation>
+<translation id="6734291798041940871">„Chromium“ jau įdiegta visiems kompiuterio naudotojams.</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="6810143991807788455">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie dabartinius nustatymus</translation>
 <translation id="6838494703713445896">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė galiojančią sertifikato skaidrumo informaciją.</translation>
@@ -205,7 +206,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7223968959479464213">Užduočių tvarkytuvė – „Chromium“</translation>
 <translation id="722928257909516027">Rodyti „Chromium“ menu</translation>
 <translation id="731644333568559921">&amp;„Chromium“ OS naujinys</translation>
-<translation id="731795002583552498">Atnaujinama „Chromium“</translation>
 <translation id="7318036098707714271">Nuostatų failas sugadintas ar netinkamas.
 
 „Chromium“ negali atkurti nustatymų.</translation>

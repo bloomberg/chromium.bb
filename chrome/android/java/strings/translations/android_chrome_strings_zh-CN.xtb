@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">移动书签</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
+<translation id="1204037785786432551">下载链接</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1211530540767271776">没有任何 USB 设备</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 个所选项}other{移除 # 个所选项}}</translation>
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="1641113438599504367">安全浏览</translation>
 <translation id="164269334534774161">您目前浏览的是此网页的离线副本（创建时间：<ph name="CREATION_TIME" />）</translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
 <translation id="2811892995384186721">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" /></translation>
+<translation id="2833899785646504169">无法添加</translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">在任意设备上登录 Google 帐户后，您即可获取自己的书签、历史记录、密码及其他设置。</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">打开新的隐身标签页</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3522247891732774234">有更新。更多选项</translation>
 <translation id="3527085408025491307">文件夹</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">附近有设备在播报网页</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3744111561329211289">后台同步</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{已选择 1 项内容}other{已选择 # 项内容}}</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">标题</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
+<translation id="4060598801229743805">选项位于屏幕顶部附近</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
@@ -335,6 +341,7 @@
 <translation id="5131405117025179004">修改已保存的帐户</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE" />网页，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="515227803646670480">清除存储的数据</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />免安装<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">这是一个未成年人帐户</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE" />网页吗？</translation>
@@ -455,8 +462,9 @@
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
-<translation id="6458785801851713928">您的网域不支持同步。</translation>
+<translation id="6463070039183944536">正在添加…</translation>
 <translation id="6464825623202322042">此设备</translation>
+<translation id="6475951671322991020">下载视频</translation>
 <translation id="6477460825583319731">电子邮件地址无效</translation>
 <translation id="6482749332252372425">未能成功下载 <ph name="FILE_NAME" />，因为存储空间不足。</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -491,6 +499,7 @@
 <translation id="6846298663435243399">正在加载...</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6857778194843072568">仅在使用 WLAN 网络时发送</translation>
+<translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
@@ -500,6 +509,7 @@
 <translation id="6973630695168034713">文件夹</translation>
 <translation id="6978479750597523876">重置翻译设置</translation>
 <translation id="6981982820502123353">无障碍</translation>
+<translation id="6985347914332179298">此处没有任何下载内容</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
@@ -526,6 +536,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7327835590071894791">您的标签页现已在后台。</translation>
 <translation id="7347770551817603360">离线内容</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">类型：</translation>
 <translation id="7378627244592794276">否</translation>
@@ -654,6 +665,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>
+<translation id="8872506776304248286">在应用中打开</translation>
 <translation id="8901170036886848654">未找到任何书签</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐户</translation>

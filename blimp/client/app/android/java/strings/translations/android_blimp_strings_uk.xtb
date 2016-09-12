@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Не вдалось отримати завдання. Немає доступних ресурсів.</translation>
 <translation id="117738548141695034">Перемикач Blimp</translation>
 <translation id="1416550906796893042">Версія додатка</translation>
+<translation id="1491042665327336022">Перезапустіть додаток.</translation>
 <translation id="1750179245464827362">Показати інформацію про налагодження</translation>
 <translation id="2004526128230838685">Не вдалось отримати завдання. Невідома проблема.</translation>
 <translation id="2023631438558435272">Не вдалось отримати завдання. Недійсна відповідь.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Не вдалось отримати завдання. Помилка мережі.</translation>
 <translation id="2789927415041640472">Перезапустіть додаток, щоб застосувати нову конфігурацію визначника.</translation>
 <translation id="3046825211487065480">Не вдалось отримати завдання. Другий запит надіслано до того, як надійшла відповідь на перший.</translation>
+<translation id="307654885162326571">Введіть текст</translation>
 <translation id="3286538390144397061">Перезапустити зараз</translation>
 <translation id="3346106862344060497">Систему під’єднано.</translation>
 <translation id="3407245330823033366">Виберіть обліковий запис для Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7795546637165553439">Налаштування Blimp</translation>
 <translation id="7961542533680218955">Завдання отримано.</translation>
+<translation id="8135971362156222300">Щоб увімкнути Blimp, увійдіть в обліковий запис Google.</translation>
 <translation id="8514856595257368555">Маркер отримано.</translation>
 <translation id="8880704056643418312">Підтвердження</translation>
 </translationbundle>

@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Tildelingen mislykkedes. Der var ingen tilgængelig maskine.</translation>
 <translation id="117738548141695034">Blimp-kontakten</translation>
 <translation id="1416550906796893042">Appversion</translation>
+<translation id="1491042665327336022">Genstart applikationen.</translation>
 <translation id="1750179245464827362">Vis oplysninger om fejlretning</translation>
 <translation id="2004526128230838685">Tildelingen mislykkedes. Ukendt problem.</translation>
 <translation id="2023631438558435272">Tildelingen mislykkedes. Ugyldigt svar.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Tildelingen mislykkedes. Netværksanmodningen mislykkedes.</translation>
 <translation id="2789927415041640472">Genstart applikationen for at bruge den nye tildelerkonfiguration.</translation>
 <translation id="3046825211487065480">Tildelingen mislykkedes. Anden anmodning blev sendt, før første anmodning reagerede.</translation>
+<translation id="307654885162326571">Indtast tekst</translation>
 <translation id="3286538390144397061">Genstart nu</translation>
 <translation id="3346106862344060497">Maskinen er tilsluttet.</translation>
 <translation id="3407245330823033366">Vælg en konto, som du vil bruge med Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7795546637165553439">Indstillinger for Blimp</translation>
 <translation id="7961542533680218955">Tildelingen lykkedes.</translation>
+<translation id="8135971362156222300">Log ind på din Google-konto for at aktivere Blimp.</translation>
 <translation id="8514856595257368555">Tokenet blev hentet.</translation>
 <translation id="8880704056643418312">Udfører</translation>
 </translationbundle>

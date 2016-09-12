@@ -97,7 +97,6 @@
 <translation id="3883381313049582448">Използвайте парола, генерирана от Chromium</translation>
 <translation id="3889543394854987837">Кликнете върху името си, за да отворите Chromium и да започнете да сърфирате.</translation>
 <translation id="390894725198123737">Под Mac паролите може да се запазват в Keychain и да се използват или синхронизират от други потребители на Chromium, споделящи този профил в OS X.</translation>
-<translation id="3994125055863078356">Chromium не можа да се зададе като браузър по подразбиране.</translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="4077262827416206768">Моля, затворете всички прозорци на Chromium и го стартирайте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4182290826692170034">Chromium е браузърът ви по подразбиране. Ура!</translation>
@@ -140,6 +139,7 @@
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
+<translation id="5726838626470692954">Мениджърът ви трябва да ви премахне от Chromium и да ви добави отново.</translation>
 <translation id="5768914737813585044">Показване на Chromium OS на този език</translation>
 <translation id="5772805321386874569">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chromium)</translation>
 <translation id="5796460469508169315">Chromium е почти готов.</translation>
@@ -174,6 +174,7 @@
 <translation id="6676384891291319759">Достъп до интернет</translation>
 <translation id="6717134281241384636">Потребителският ви профил не може да се използва, защото е от по-нова версия на Chromium. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chromium.</translation>
 <translation id="6734080038664603509">Актуализиране на &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
 <translation id="6838494703713445896">Chromium потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът предостави валидна информация за прозрачност на сертификата.</translation>
@@ -199,7 +200,6 @@
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
 <translation id="722928257909516027">Показване на менюто на Chromium</translation>
 <translation id="731644333568559921">Актуализиране на &amp;Chromium OS</translation>
-<translation id="731795002583552498">Chromium се актуализира</translation>
 <translation id="7318036098707714271">Файлът с предпочитанията ви е повреден или невалиден. Chromium не може да възстанови настройките ви.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Нов прозорец</translation>

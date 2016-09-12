@@ -101,7 +101,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3883381313049582448">Utilizar contraseña generada por Chromium</translation>
 <translation id="3889543394854987837">Haz clic en tu nombre para abrir Chromium y empezar a navegar.</translation>
 <translation id="390894725198123737">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chromium que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
-<translation id="3994125055863078356">No se ha podido establecer Chromium como navegador predeterminado.</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y vuelve a iniciarlo para que se aplique el cambio.</translation>
 <translation id="4182290826692170034">Chromium es tu navegador predeterminado.</translation>
@@ -144,6 +143,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5634636535844844681">Chromium requiere Windows 7 o una versión posterior.</translation>
 <translation id="5680901439334282664">iniciar sesión en Chromium</translation>
 <translation id="5698481217667032250">Mostrar Chromium en este idioma</translation>
+<translation id="5726838626470692954">Tu administrador debe quitarte de Chromium y volver a añadirte.</translation>
 <translation id="5768914737813585044">Mostrar Chromium OS en este idioma</translation>
 <translation id="5772805321386874569">(se debe <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium está casi listo.</translation>
@@ -180,6 +180,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 
 Es posible que algunas funciones no estén disponibles. Especifica un directorio de perfil diferente o utiliza una versión más actualizada de Chromium.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium ya está instalado para todos los usuarios en tu ordenador.</translation>
 <translation id="6757767188268205357">No volver a preguntarme</translation>
 <translation id="6810143991807788455">Ayuda a mejorar Chromium informando de la configuración actual</translation>
 <translation id="6838494703713445896">Chromium ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados válida.</translation>
@@ -206,7 +207,6 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="7223968959479464213">Administrador de tareas - Chromium</translation>
 <translation id="722928257909516027">Mostrar menú de Chromium</translation>
 <translation id="731644333568559921">Actualizar &amp;Chromium OS</translation>
-<translation id="731795002583552498">Actualizando Chromium</translation>
 <translation id="7318036098707714271">Tu archivo de preferencias está dañado o no es válido.
 
 Chromium no puede recuperar tu configuración.</translation>

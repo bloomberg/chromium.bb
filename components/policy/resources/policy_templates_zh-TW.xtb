@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1007441141628883408">未設定或設為 True 時，允許更新 <ph name="PRODUCT_NAME" /> 的所有元件。
+
+      如果設為 False，則禁止更新元件。不過，部分元件不受這項政策規範：只要元件更新不含可執行的程式碼、不大幅變更瀏覽器的行為，或是對元件安全性至關重要，就不會遭到禁止。
+      這類元件的範例包括憑證撤銷清單和安全瀏覽資料。 </translation>
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
@@ -28,6 +32,9 @@
           如果設定這項政策，遠端存取主機會使用這個網址，來驗證遠端存取用戶端提供的驗證憑證，據此決定是否接受連線 (必須和 RemoteAccessHostTokenUrl  配合使用)。
 
           伺服器端目前停用這項功能。</translation>
+<translation id="1093082332347834239">如果啟用這項設定，選端協助主機會在具備 <ph name="UIACCESS_PERMISSION_NAME" /> 的處理程序中執行，讓遠端使用者在本機使用者桌面上操控權限較高的視窗。
+
+          如果停用或未指定這項設定，遠端協助主機則會在使用者的作業環境中執行，遠端使用者將無法在桌面上操控權限較高的視窗。</translation>
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="1103860406762205913">啟用舊版網頁式登入功能</translation>
 <translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
@@ -53,6 +60,13 @@
       是 60 秒。</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
+<translation id="127699919157094139">使用 Google 代管的同步處理服務停用 <ph name="PRODUCT_NAME" /> 的資料同步處理功能，並禁止使用者變更這項設定。
+
+      如果你啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
+
+      如果未設定這項政策，使用者可以自行決定是否要使用 Google Sync。
+
+      如要全面停用 Google Sync，建議你在 Google 管理控制台中停用 Google Sync。</translation>
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
       如果未設定這項政策或將其設為 False，系統就不會在 TLS 中啟用 RC4 加密套件。您也可以將這項政策設為 True，以保持與過舊伺服器的相容性。這種方法是權宜之計，伺服器應重新設定，才是正確的做法。</translation>
@@ -118,6 +132,14 @@
       在這種情況下，使用者將無法啟用這項功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> 會略過這裡提供的主機清單中的任何 Proxy。
+
+          如果你在「選擇如何指定 Proxy 伺服器設定」選取了手動 Proxy 設定，這項政策才會生效。
+
+          如果你選取了任何其他 Proxy 政策設定模式，則不需設定這項政策。
+
+          如需參考更具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
@@ -132,6 +154,7 @@
       無法使用 ARC。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1606958238518590302">將這項政策設為 True 時，使用者無法對外部儲存裝置寫入任何內容。</translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
 <translation id="1617384279878333801">允許在設定檔管理員中新增使用者</translation>
@@ -574,6 +597,7 @@
 <translation id="2850122204195089673">允許使用整合桌面並預設為啟用。</translation>
 <translation id="285480231336205327">啟用高反差模式</translation>
 <translation id="2872961005593481000">關閉</translation>
+<translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
 <translation id="2884728160143956392">只有本次工作階段允許這些網站的 Cookie</translation>
 <translation id="2893546967669465276">將系統紀錄傳送到管理伺服器</translation>
@@ -673,6 +697,24 @@
 
           這項政策目前尚未開放使用，請勿直接使用。
           </translation>
+<translation id="3201273385265130876">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+          如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+          如果你選擇使用系統 Proxy 設定，系統會忽略其他所有選項。
+
+          如果你選擇自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+          如果你選擇固定的伺服器 Proxy 模式，則可進一步指定「Proxy 伺服器的位址或網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。ARC 應用程式只能使用優先程度最高的 HTTP Proxy 伺服器。
+
+          如果你選擇使用 .pac Proxy 指令碼，則必須在「Proxy .pac 檔案網址」中指定指令碼網址。
+
+          如需參考具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" />
+
+          如果你啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
+
+          如果未設定這項政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3206731874112238027">停用列印預覽 (已淘汰)</translation>
 <translation id="3213821784736959823">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
@@ -777,6 +819,18 @@
       如果停用這項設定或未指定設定值，則不會強制啟用 YouTube 安全模式。</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
+<translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+      如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+      如果你選擇自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+      如需參考具體的設定範例，請造訪以下網址：
+      <ph name="PROXY_HELP_URL" />
+
+      如果你啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
+
+      如果未設定這些政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
 <translation id="3768412594120638208">控制要允許安裝的應用程式/擴充功能類型。
@@ -791,6 +845,7 @@
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
 <translation id="3793095274466276777">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 會一律在起始時檢查是否為預設瀏覽器，並在情況許可下自動登錄。如果您停用這項設定，<ph name="PRODUCT_NAME" /> 就永遠不會檢查是否為預設瀏覽器，且會停用使用者控制這項設定的選項。如果您尚未設定這項設定，<ph name="PRODUCT_NAME" /> 會允許使用者控制是否為預設瀏覽器，並在不是預設瀏覽器時，允許使用者控制是否要顯示使用者通知。</translation>
+<translation id="379659290574555063">以唯讀模式處理外部儲存裝置。</translation>
 <translation id="3800626789999016379">設定 <ph name="PRODUCT_NAME" /> 下載檔案時所使用的目錄。
 
       如果設定這項政策，無論使用者是否指定政策或啟用每次均提示下載位置的標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
@@ -981,7 +1036,6 @@
       雖然以上平台支援政策本身，但這些平台不一定全部支援透過政策啟用的功能。部分已淘汰的網路平台功能無法重新啟用，只有下方明確列出者可在限定時間內啟用，啟用時限則視功能而異。字串標記的通用格式是 &lt;已淘汰的功能名稱&gt;_EffectiveUntil&lt;yyyymmdd&gt;。如需參考資訊，請前往 https://bit.ly/blinkintents 查看網路平台功能變更的意義。
       </translation>
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
-<translation id="4445684791305970001">停用「開發人員工具」和 JavaScript 控制台。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目。如果您停用或未設定這個選項，使用者即可使用「開發人員工具」和 JavaScript 控制台。</translation>
 <translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
@@ -1054,6 +1108,22 @@
 
           如果您未設定這項政策，系統預設會停用大型游標，但使用者隨時均可予以啟用。</translation>
 <translation id="4807950475297505572">移除近期登入次數最少的使用者，直到有足夠的可用空間</translation>
+<translation id="4815725774537609998">這項政策已淘汰，請改用 ProxyMode。
+
+          允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+          如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+          如果你選擇使用系統 Proxy 設定或自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+          如果你選擇手動 Proxy 設定，則可進一步指定「Proxy 伺服器位址或網址」、「Proxy .pac 檔案網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。ARC 應用程式只能使用優先程度最高的 HTTP Proxy 伺服器。
+
+          如需參考具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" />.
+
+          如果你啟用這項設定，<ph name="PRODUCT_NAME" /> 會忽略所有從命令列指定的 Proxy 相關選項。
+
+          如果未設定這項政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="4816674326202173458">允許企業使用者成為主要或次要使用者 (非管理化環境中使用者的預設行為)</translation>
 <translation id="4826326557828204741">使用電池電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="4834526953114077364">移除近期登入次數最少的使用者 (3 個月都未曾登入)，直到有足夠的可用空間</translation>
@@ -1276,6 +1346,7 @@
           如果您未設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。</translation>
+<translation id="5795001131770861387">在非預設通訊埠啟用 HTTP/0.9 支援功能</translation>
 <translation id="5809728392451418079">設定裝置本機帳戶的顯示名稱</translation>
 <translation id="5814301096961727113">設定互動朗讀在登入畫面的預設狀態</translation>
 <translation id="5815129011704381141">更新完成後自動重新啟動</translation>
@@ -1365,6 +1436,7 @@
 <translation id="6076099373507468537">定義可從核心驅動程式卸離的 USB 裝置 (以便直接在網路應用程式中透過 chrome.usb API 使用) 清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
 
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
+<translation id="6093156968240188330">允許遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
 <translation id="6095999036251797924">指定時間長度，如果系統在 AC 電源或電池供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
           如果您將時間長度設為大於 0 的值，表示使用者處於閒置狀態達到該時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會鎖定螢幕。
@@ -1619,6 +1691,7 @@
           如果停用或未設定這項政策，則可使用任何帳戶分享主機。
 
           另請參閱 RemoteAccessHostClientDomain。</translation>
+<translation id="6979510692034647325">允許更新 <ph name="PRODUCT_NAME" /> 的元件。</translation>
 <translation id="6997592395211691850">是否需要為本機信任錨點執行線上 OCSP/CRL 檢查。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
@@ -1862,6 +1935,13 @@
       請注意，我們不建議您封鎖內部「chrome://*」網址，以免發生未預期的錯誤。
 
       如未設定這項政策，瀏覽器就不會將任何網址列入黑名單。</translation>
+<translation id="7724994675283793633">這項政策可讓你在 80 (HTTP) 和 443 (HTTPS) 以外的通訊埠啟用 HTTP/0.9。
+
+      這項政策預設為停用，啟用後使用者可能會遇到安全性問題 https://crbug.com/600352。
+
+      這項政策的用意是讓企業自行遷移目前使用 HTTP/0.9 的伺服器，日後我們會移除這項政策。
+
+      如果未設定這項政策，則會在非預設通訊埠停用 HTTP/0.9。</translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
           如果您啟用這項設定，則使用者在存取主機時，必須提供有效的雙重驗證碼。

@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1007441141628883408">Keď toto pravidlo nenastavíte alebo nastavíte na možnosť True, umožňuje aktualizovať všetky komponenty prehliadača <ph name="PRODUCT_NAME" />.
+
+      Ak ho nastavíte na možnosť False, aktualizácie komponentov budú zakázané. Na niektoré komponenty sa však toto pravidlo nevzťahuje: aktualizácie komponentov, ktoré neobsahujú spustiteľný kód, podstatne nemenia správanie prehliadača alebo ktoré sú nevyhnutné z hľadiska zabezpečenia, nebudú zakázané.
+      Medzi príklady takýchto komponentov patria zoznamy zrušených certifikátov a údaje bezpečného prehliadania. </translation>
 <translation id="101438888985615157">Otočiť obrazovku o 180 stupňov</translation>
 <translation id="1017967144265860778">Správa možností napájania na prihlasovacej obrazovke</translation>
 <translation id="1019101089073227242">Nastaviť adresár používateľských údajov</translation>
@@ -27,6 +31,9 @@
           Ak nastavíte toto pravidlo, hostiteľ vzdialeného prístupu použije túto webovú adresu na overenie tokenov totožnosti od klientov so vzdialeným prístupom, aby bolo možné prijímať pripojenia. Musíte ho použiť v kombinácii s pravidlom RemoteAccessHostTokenUrl.
 
           Táto funkcia je momentálne zakázaná na strane servera.</translation>
+<translation id="1093082332347834239">Ak je toto nastavenie povolené, hostiteľ vzdialenej pomoci sa bude spúšťať v procesoch s povoleniami <ph name="UIACCESS_PERMISSION_NAME" />. Umožní tak vzdialeným používateľom interagovať s privilegovanými oknami na pracovnej ploche miestneho používateľa.
+
+          Ak je toto nastavenie zakázané alebo nie je nakonfigurované, hostiteľ vzdialenej pomoci bude spustený v kontexte daného používateľa a vzdialení používatelia nemôžu interagovať s privilegovanými oknami na pracovnej ploche.</translation>
 <translation id="1096105751829466145">Predvolený poskytovateľ vyhľadávania</translation>
 <translation id="1103860406762205913">Povoľuje staré webovské prihlásenie</translation>
 <translation id="1128903365609589950">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
@@ -52,6 +59,13 @@
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1221359380862872747">Po prihlásení v režime ukážky načítať zadané webové adresy</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
+<translation id="127699919157094139">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> synchronizáciu dát pomocou služieb synchronizácie hostených spoločnosťou Google a zabráni používateľom toto nastavenie meniť.
+
+      Ak toto nastavenie povolíte, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť ani prepísať.
+
+      Ak toto pravidlo ponecháte nenastavené, používatelia si budú môcť vybrať, či chcú Synchronizáciu Google použiť.
+
+      Ak chcete Synchronizáciu Google úplne deaktivovať, odporúčame ju zakázať v konzole služby Google Admin.</translation>
 <translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu False, v protokole TLS nebudú povolené šifrovacie súpravy RC4. Nastavením tohto pravidla na hodnotu True je možné zaistiť kompatibilitu so zastaraným serverom. Ide o krátkodobé riešenie, takže konfigurácia príslušného servera by mala byť upravená.</translation>
@@ -119,6 +133,14 @@
       bude vypnutý. V tomto prípade ho používateľ nemôže zapnúť.</translation>
 <translation id="1474273443907024088">Zakázať funkciu TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071">Pri hostiteľoch v uvedenom zozname prehliadač <ph name="PRODUCT_NAME" /> vynechá všetky proxy servery.
+
+          Toto pravidlo sa prejaví len v prípade, že ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ vybrali ručné nastavenia proxy servera.
+
+          Ak ste zvolili akýkoľvek iný režim nastavenia pravidiel proxy, mali by ste toto pravidlo ponechať nenastavené.
+
+          Ďalšie podrobné príklady nájdete na adrese
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Diaľkové overenie</translation>
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
 <translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
@@ -129,6 +151,7 @@
 Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť podnikoví používatelia používať funkciu ARC.</translation>
 <translation id="1561424797596341174">Prepísania pravidiel pre zostavy ladenia používané hostiteľom vzdialeného prístupu</translation>
 <translation id="1583248206450240930">Používať v predvolenom nastavení doplnok <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1606958238518590302">Ak je toto pravidlo nastavené na možnosť True, používatelia nemôžu zapisovať na externé úložné zariadenia.</translation>
 <translation id="1608755754295374538">Webové adresy, ktorým bude udelený prístup k zariadeniam na zachytávanie zvuku bez zobrazenia výzvy</translation>
 <translation id="1617235075406854669">Povoliť odstránenie histórie prehliadača a sťahovania</translation>
 <translation id="1617384279878333801">Povoliť pridanie osoby pomocou správcu profilov</translation>
@@ -604,6 +627,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2850122204195089673">Sprístupnenie režimu zjednotenej plochy a jeho zapnutie v predvolenom nastavení</translation>
 <translation id="285480231336205327">Povoliť režim s vysokým kontrastom</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
+<translation id="2874209944580848064">Poznámka pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" />, ktoré podporujú aplikácie pre Android:</translation>
 <translation id="2877225735001246144">Zakázať hľadanie záznamov CNAME pri absolvovaní overenia Kerberos</translation>
 <translation id="2884728160143956392">Povoliť na týchto stránkach súbory cookie platné len pre reláciu</translation>
 <translation id="2893546967669465276">Odosielanie denníkov systému na správcovský server</translation>
@@ -709,6 +733,24 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.
           </translation>
+<translation id="3201273385265130876">Umožňuje špecifikovať proxy server, ktorý bude <ph name="PRODUCT_NAME" /> používať. Zabraňuje používateľom zmeniť nastavenia proxy servera.
+
+          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.
+
+          Ak sa rozhodnete používať systémové nastavenia proxy servera, všetky ostatné možnosti budú ignorované.
+
+          Ak zvolíte možnosť automatického zisťovania proxy servera, všetky ostatné možnosti budú ignorované.
+
+          Ak zvolíte režim pevne daného proxy servera, môžete vybrať ďalšie možnosti v častiach „Adresa alebo webová adresa proxy servera“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“. Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prioritou.
+
+          Ak sa rozhodnete použiť skript .pac proxy servera, je potrebné zadať v časti „Webová adresa súboru .pac proxy servera“ webovú adresu.
+
+          Podrobné príklady nájdete na adrese
+          <ph name="PROXY_HELP_URL" />.
+
+          Ak toto nastavenie povolíte, <ph name="PRODUCT_NAME" /> a aplikácie ARC budú ignorovať všetky možnosti týkajúce sa proxy serverov zadané pomocou príkazového riadka.
+
+          Ak toto pravidlo nenastavíte, používateľom umožníte zvoliť vlastné nastavenia proxy servera.</translation>
 <translation id="3205825995289802549">Maximalizovať prvé okno prehliadača pri prvom spustení</translation>
 <translation id="3206731874112238027">Zakázať ukážku pred tlačou (zastarané)</translation>
 <translation id="3213821784736959823">Ovláda, či sa v prehliadači <ph name="PRODUCT_NAME" /> používa vstavaný klient DNS.
@@ -817,6 +859,18 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečnostný režim v službe YouTube nebude vynucovaný.</translation>
 <translation id="3750220015372671395">Blokovať generovanie kľúčov na týchto weboch</translation>
 <translation id="3756011779061588474">Blokovať režim pre vývojárov</translation>
+<translation id="3758089716224084329">Umožňuje špecifikovať proxy server, ktorý bude <ph name="PRODUCT_NAME" /> používať, a bráni používateľom zmeniť nastavenia proxy servera.
+
+      Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.
+
+      Ak zvolíte možnosť automatického zisťovania proxy servera, všetky ostatné možnosti budú ignorované.
+
+      Podrobné príklady nájdete na adrese
+      <ph name="PROXY_HELP_URL" />
+
+      Ak toto nastavenie povolíte, <ph name="PRODUCT_NAME" /> bude ignorovať všetky možnosti týkajúce sa proxy serverov zadané pomocou príkazového riadka.
+
+      Ak toto pravidlo nenastavíte, používateľom umožníte zvoliť vlastné nastavenia proxy servera.</translation>
 <translation id="3758249152301468420">Zakázať Nástroje pre vývojárov</translation>
 <translation id="3765260570442823273">Doba zobrazenia správy s upozornením na odhlásenie  z dôvodu nečinnosti</translation>
 <translation id="3768412594120638208">Kontroluje, ktoré typy inštalácií aplikácií alebo rozšírení sú povolené.
@@ -831,6 +885,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="3780152581321609624">Do hlavného názvu služby protokolu Kerberos zahrnúť neštandardný port</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
 <translation id="3793095274466276777">Slúži na konfiguráciu kontroly predvoleného prehliadača v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom toto nastavenie zmeniť. Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> pri spustení vždy skontroluje, či je predvoleným prehliadačom, a ak to bude možné, automaticky sa registruje. Ak je toto nastavenie zakázané, prehliadač <ph name="PRODUCT_NAME" /> nebude kontrolovať, či je predvoleným prehliadačom, a zakáže používateľské ovládacie prvky na nastavenie tejto možnosti. Ak toto nastavenie nebolo nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> umožní používateľovi určiť, či ho chce nastaviť ako predvolený prehliadač a či sa v prípade, ak ním nie je, majú používateľovi zobraziť upozornenia.</translation>
+<translation id="379659290574555063">Považovať externé úložné zariadenia za položky iba na čítanie</translation>
 <translation id="3800626789999016379">Umožňuje nakonfigurovať adresár, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať na sťahovanie súborov.
 
       Ak nastavíte toto pravidlo, prehliadač <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ určil takýto adresár alebo povolil príznak na zobrazenie výzvy na zadanie umiestnenia pre stiahnuté položky pri každom sťahovaní.
@@ -1030,11 +1085,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Zatiaľ čo samotné pravidlo podporujú platformy uvedené vyššie, funkcie, ktoré povoľuje, môžu byť k dispozícii na menšom množstve platforiem. Niektoré zastarané funkcie webovej platformy nie je možné znova povoliť. Je možné povoliť iba tie funkcie, ktoré sú výslovne uvedené nižšie (na obmedzený čas, ktorý sa líši podľa funkcie). Všeobecný formát značky reťazca je [NázovZastaranejFunkcie]_EffectiveUntil[rrrrmmdd]. Dôvody na zmenu funkcií webovej platformy nájdete na adrese https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Povoliť zámok, ak je zariadenie nečinné alebo pozastavené</translation>
-<translation id="4445684791305970001">Zakáže Nástroje pre vývojárov a konzolu JavaScript.
-
-      Ak toto nastavenie povolíte, nebude možné pristupovať k nástrojom pre vývojárov ani kontrolovať prvky webových stránok. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné nástroje pre vývojárov alebo konzolu kódu JavaScript otvoriť.
-
-      Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
 <translation id="4449545651113180484">Otočiť obrazovku v smere hodinových ručičiek o 270 stupňov</translation>
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
 <translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
@@ -1121,6 +1171,24 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Ak toto pravidlo ponecháte nenastavené, veľký kurzor bude spočiatku zakázaný, ale používateľ to bude môcť kedykoľvek zmeniť.</translation>
 <translation id="4807950475297505572">Odstránia sa najdlhšie neprihlásení používatelia, dokým sa neuvoľní dostatok voľného miesta</translation>
+<translation id="4815725774537609998">Toto pravidlo je zastarané, použite namiesto neho režim ProxyMode.
+
+          Umožňuje špecifikovať proxy server, ktorý bude <ph name="PRODUCT_NAME" /> používať, a bráni používateľom zmeniť nastavenia proxy servera.
+
+
+          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.
+
+          Ak sa rozhodnete používať systémové nastavenia proxy servera alebo proxy server zisťovať automaticky, všetky ostatné možnosti budú ignorované.
+
+          Ak zvolíte možnosť ručného nastavenia proxy servera, môžete vybrať ďalšie možnosti v častiach „Adresa alebo webová adresa proxy servera“, „Webová adresa súboru .pac servera proxy“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“.
+Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prioritou.
+
+          Podrobné príklady nájdete na adrese
+          <ph name="PROXY_HELP_URL" />.
+
+          Ak toto nastavenie povolíte, <ph name="PRODUCT_NAME" /> bude ignorovať všetky možnosti týkajúce sa proxy serverov zadané pomocou príkazového riadka.
+
+          Ak toto pravidlo nenastavíte, používateľom umožníte zvoliť vlastné nastavenia proxy servera.</translation>
 <translation id="4816674326202173458">Povoliť používateľovi v podnikovej sieti stať sa hlavným aj sekundárnym používateľom (predvolené správanie pre používateľov, ktorí nie sú spravovaní)</translation>
 <translation id="4826326557828204741">Akcia, ktorá sa má vykonať po uplynutí určitého času nečinnosti počas prevádzky na batérii</translation>
 <translation id="4834526953114077364">Odstránia sa najdlhšie neprihlásení používatelia (ktorí sa neprihlásili za posledné 3 mesiace), dokým sa neuvoľní dostatok voľného miesta</translation>
@@ -1367,6 +1435,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
+<translation id="5795001131770861387">Toto pravidlo povoľuje podporu protokolu HTTP/0.9 v portoch, ktoré nie sú predvolené</translation>
 <translation id="5809728392451418079">Nastaviť zobrazovaný názov pre miestne účty na zariadení</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
 <translation id="5815129011704381141">Automaticky reštartovať po aktualizácii</translation>
@@ -1465,6 +1534,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6076099373507468537">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Vstupné hodnoty sú páry identifikátor dodávateľa USB – identifikátor produktu na určenie konkrétneho hardvéru.
 
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
+<translation id="6093156968240188330">Umožnite vzdialeným používateľom interagovať počas relácií vzdialenej pomoci s privilegovanými oknami</translation>
 <translation id="6095999036251797924">Stanovuje čas, počas ktorého nebol zadaný žiadny vstup používateľa, a po ktorého uplynutí sa pri používaní napájacieho zdroja alebo batérie uzamkne obrazovka.
           Ak je tento čas nastavený na hodnotu väčšiu ako nula, stanovuje, ako dlho musí byť používateľ nečinný, než systém <ph name="PRODUCT_OS_NAME" /> uzamkne obrazovku.
 
@@ -1738,6 +1808,7 @@ Ak je toto nastavenie povolené, hostiteľov je možné zdieľať iba pomocou ú
 Ak je toto nastavenie zakázané alebo nie je nastavené, hostiteľov je možné zdieľať pomocou ľubovoľného účtu.
 
 Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Umožňuje aktualizácie komponentov v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Toto pravidlo určuje, či sa pre miestne dôveryhodné ukotvenia vyžadujú kontroly OCSP/CRL online</translation>
 <translation id="7003334574344702284">Ak je toto pravidlo povolené, uložené heslá sú importované z predchádzajúceho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -2001,6 +2072,13 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
 
       Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
+<translation id="7724994675283793633">Toto pravidlo povoľuje protokol HTTP/0.9 v portoch iných ako 80 (v prípade protokolu HTTP) a 443 (v prípade protokolu HTTPS).
+
+      Toto pravidlo je predvolene zakázané a po povolení vystavuje používateľov problému so zabezpečením – https://crbug.com/600352.
+
+      Jeho cieľom je poskytnúť podnikom možnosť migrovať existujúce servery z protokolu HTTP/0.9. V budúcnosti bude odstránené.
+
+      Ak toto pravidlo nie je nastavené, protokol HTTP/0.9 bude zakázaný na portoch, ktoré nie sú predvolené.</translation>
 <translation id="7749402620209366169">Povoľuje dvojfázové overenie totožnosti pre hostiteľov vzdialeného prístupu namiesto kódu PIN zadaného používateľom.
 
           Ak je toto nastavenie povolené, používatelia musia pri pristupovaní k hostiteľovi zadať platný dvojfázový kód.

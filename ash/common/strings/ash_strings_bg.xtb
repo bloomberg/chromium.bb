@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Комбинацията за превключване към следващия метод на въвеждане е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
+<translation id="1127238861555034875">Режим на лупа</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="3157169093162779309">Заключване на завъртането</translation>
 <translation id="3294437725009624529">Гост</translation>
+<translation id="3335772982573114336">Нова бележка</translation>
+<translation id="3364721542077212959">Инструменти за писане</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079">Променихте разделителната способност на „<ph name="DISPLAY_NAME" />“ на <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Активиране на Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Заснемане на област</translation>
 <translation id="372094107052732682">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Направена бе екранна снимка</translation>
 <translation id="3775358506042162758">В централизирания вход можете да имате най-много три профила.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl + Shift + Space</translation>
 <translation id="5045002648206642691">Настройки за Google Диск...</translation>
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
+<translation id="5170568018924773124">Показване в папката</translation>
+<translation id="5191140942132549112">ПОКАЗВАНЕ НА ВЪПРОСИТЕ</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="5238774010593222950">Не можете да влезете в друг профил</translation>
 <translation id="532063867737390965">Тази мрежова настройка е деактивирана от администратора.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6203030746557259519">Виртуален дисплей</translation>
 <translation id="6248847161401822652">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
+<translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS от <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="6537270692134705506">Заснемане на екрана</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP адрес</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.
 Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
+<translation id="7129360219436193655">Режим на лазерна показалка</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">„CAPS LOCK“ е включен.
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8077816382010018681">Място за заглавието на известието за функцията за бързо отключване</translation>
 <translation id="8103386449138765447">SMS съобщения: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Уведомете ни как се справяме, като отговорите на няколко въпроса.</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8206859287963243715">Клетъчно</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="8825534185036233643">Дублирането с повече от два екрана не се поддържа.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">търсене + Esc</translation>

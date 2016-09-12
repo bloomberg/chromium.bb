@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">切換至下一個輸入法的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
+<translation id="1127238861555034875">放大鏡模式</translation>
 <translation id="1195412055398077112">遮視區域</translation>
 <translation id="1252999807265626933">正在使用「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="3157169093162779309">啟用旋轉鎖定</translation>
 <translation id="3294437725009624529">訪客</translation>
+<translation id="3335772982573114336">新增記事</translation>
+<translation id="3364721542077212959">觸控筆工具</translation>
 <translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 的解析度已變更為 <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">啟用 Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">擷取部分畫面</translation>
 <translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
 <translation id="3775358506042162758">多帳戶登入功能一次只能登入最多 3 個帳戶。</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl + Shift + 空格鍵</translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
+<translation id="5170568018924773124">在資料夾中顯示</translation>
+<translation id="5191140942132549112">顯示問題</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5238774010593222950">無法登入其他帳戶。</translation>
 <translation id="532063867737390965">管理員停用了這項網路設定。</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6203030746557259519">虛擬顯示</translation>
 <translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
+<translation id="6297287540776456956">使用觸控筆選取擷取範圍</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER" /> 的簡訊</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
 <translation id="6490471652906364588">USB-C 裝置 (右側連接埠)</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
+<translation id="6537270692134705506">擷取整個畫面</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6596816719288285829">IP 位址</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">ChromeVox (互動朗讀) 已啟用。
 可按 Ctrl+Alt+Z 鍵停用。</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
+<translation id="7129360219436193655">雷射筆模式</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7209101170223508707">大寫鍵已啟用。
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8077816382010018681">在這裡顯示 QU 功能通知標題</translation>
 <translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">請回答幾個問題，讓我們瞭解你的滿意度。</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8206859287963243715">手機</translation>
 <translation id="8308637677604853869">前一個選單</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270 度</translation>
 <translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">按這裡瀏覽</translation>
 <translation id="8825534185036233643">鏡像處理作業最多支援兩部顯示器。</translation>
 <translation id="8828714802988429505">90 度</translation>
 <translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>

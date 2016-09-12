@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">ใช้รหัสผ่านที่ Chromium สร้างขึ้น</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="390894725198123737">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
-<translation id="3994125055863078356">ไม่สามารถทำให้ Chromium เป็นเบราว์เซอร์เริ่มต้นได้</translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
 <translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4182290826692170034">Chromium เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium ต้องใช้ Windows 7 ขึ้นไป</translation>
 <translation id="5680901439334282664">ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
+<translation id="5726838626470692954">ผู้จัดการต้องนำคุณออกแล้วเพิ่มคุณกลับเข้าไปใน Chromium ใหม่</translation>
 <translation id="5768914737813585044">แสดงระบบปฏิบัติการ Chromium ในภาษานี้</translation>
 <translation id="5772805321386874569">(จำเป็นต้อง <ph name="BEGIN_BUTTON" />รีสตาร์ท<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium เกือบจะพร้อมใช้งานแล้ว</translation>
@@ -178,6 +178,7 @@
 
 คุณลักษณะบางประการอาจไม่มี โปรดระบุไดเรกทอรีโปรไฟล์อื่น หรือใช้ Chromium รุ่นใหม่</translation>
 <translation id="6734080038664603509">อัปเดต &amp;Chromium</translation>
+<translation id="6734291798041940871">มีการติดตั้ง Chromium สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="6810143991807788455">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
 <translation id="6838494703713445896">Chromium ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้ และเซิร์ฟเวอร์ให้ข้อมูลความโปร่งใสของใบรับรองที่ถูกต้องแล้ว</translation>
@@ -203,7 +204,6 @@
 <translation id="7223968959479464213">ตัวจัดการงาน - Chromium</translation>
 <translation id="722928257909516027">แสดงเมนู Chromium</translation>
 <translation id="731644333568559921">อัปเดต &amp;Chromium OS</translation>
-<translation id="731795002583552498">กำลังอัปเดต Chromium</translation>
 <translation id="7318036098707714271">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง
 
 Chromium ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>

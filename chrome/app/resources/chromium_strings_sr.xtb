@@ -101,7 +101,6 @@
 <translation id="3883381313049582448">Користите лозинку коју је Chromium генерисао</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
-<translation id="3994125055863078356">Chromium не може да постане подразумевани прегледач.</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="4077262827416206768">Затворите све Chromium прозоре и рестартујте Chromium да би ова промена ступила на снагу.</translation>
 <translation id="4182290826692170034">Chromium је подразумевани прегледач. Јупи!</translation>
@@ -144,6 +143,7 @@
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
 <translation id="5680901439334282664">пријавите се на Chromium</translation>
 <translation id="5698481217667032250">Приказуј Chromium на овом језику</translation>
+<translation id="5726838626470692954">Менаџер мора да вас уклони из Chromium-а, па да вас поново дода.</translation>
 <translation id="5768914737813585044">Приказуј Chromium ОС на овом језику</translation>
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
@@ -180,6 +180,7 @@
 
 Неке функције ће можда бити недоступне. Наведите други директоријум профила или користите новију верзију Chromium-а.</translation>
 <translation id="6734080038664603509">Ажурирај &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium је већ инсталиран за све кориснике на рачунару.</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="6810143991807788455">Помозите да побољшамо Chromium тако што ћете послати извештај о актуелним подешавањима</translation>
 <translation id="6838494703713445896">Chromium је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао важеће информације о транспарентности сертификата.</translation>
@@ -205,7 +206,6 @@
 <translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
 <translation id="722928257909516027">Приказ Chromium менија</translation>
 <translation id="731644333568559921">Ажурирај &amp;Chromium ОС</translation>
-<translation id="731795002583552498">Ажурирање Chromium-а</translation>
 <translation id="7318036098707714271">Датотека подешавања је оштећена или неважећа.
 
 Chromium не може да врати подешавања.</translation>

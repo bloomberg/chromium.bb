@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1014825444426747588">prázdné</translation>
 <translation id="1018939186200882850">položka nabídky</translation>
 <translation id="1020833440720551630">ztlumit zvukovou stopu</translation>
 <translation id="10623998915015855">přepínací tlačítko</translation>
 <translation id="1088086359088493902">Sekundy</translation>
 <translation id="1171774979989969504">Zadejte prosím e-mailovou adresu.</translation>
+<translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1188858454923323853">doplňkové</translation>
 <translation id="1206619573307042055">běžící text</translation>
 <translation id="1206693055195146388">posuvník</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">přehrát ve vzdáleném zařízení</translation>
 <translation id="1842960171412779397">zvolit</translation>
+<translation id="1854180393107901205">Zastavit odesílání</translation>
 <translation id="1880518467580572141">osnova</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stav</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">výraz</translation>
 <translation id="3822383571486410024">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má <ph name="CURRENT_LENGTH" /> znaků.)</translation>
 <translation id="383465348367842624">Část před znakem <ph name="ATSIGN" /> nesmí obsahovat znak <ph name="INVALIDCHARACTER" />.</translation>
+<translation id="3846214748874656680">Ukončit režim na celou obrazovku</translation>
 <translation id="3924558731517983934">aplikace</translation>
 <translation id="3960700977367013758">posuvník</translation>
 <translation id="4103419683916926126">Milisekundy</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadejte prosím číslo.</translation>
 <translation id="4975562563186953947">Vybráno: <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Zapnout zvuk</translation>
 <translation id="49969490063480558">Zadejte část za znakem <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> není úplná.</translation>
 <translation id="5034860022980953847">indikátor průběhu</translation>
 <translation id="5048533449481078685">značka seznamu</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">ukončit režim celé obrazovky</translation>
 <translation id="5476505524087279545">odstranit zaškrtnutí</translation>
 <translation id="5516424706154626233">výběr data</translation>
+<translation id="5537725057119320332">Odeslat</translation>
 <translation id="5546461542133609677">zapnout zvuk</translation>
 <translation id="561939826962581046">čas</translation>
 <translation id="5641012560118721995">pozastavit přehrávání</translation>
 <translation id="5643186887447432888">tlačítko</translation>
+<translation id="57838592816432529">Ztlumit</translation>
 <translation id="583281660410589416">Neznámé</translation>
 <translation id="5843503607508392247">Jiné…</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
+<translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5944544982112848342">2048 (vysoká kvalita)</translation>
 <translation id="5966707198760109579">Týden</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">pravítko</translation>
 <translation id="6755330956360078551">popisek</translation>
+<translation id="6790428901817661496">Přehrát</translation>
 <translation id="6820355525329141109">Plugin se nepodařilo načíst.</translation>
 <translation id="6843725295806269523">ztlumit</translation>
 <translation id="6845533974506654842">zmáčknout</translation>

@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="1014825444426747588">空白</translation>
 <translation id="1018939186200882850">メニュー項目</translation>
 <translation id="1020833440720551630">音声トラックをミュート</translation>
 <translation id="10623998915015855">切り替えボタン</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="1171774979989969504">メール アドレスを入力してください。</translation>
+<translation id="1178581264944972037">一時停止</translation>
 <translation id="1188858454923323853">捕捉</translation>
 <translation id="1206619573307042055">マーキー</translation>
 <translation id="1206693055195146388">スライダ</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">リモート デバイスで再生</translation>
 <translation id="1842960171412779397">選択</translation>
+<translation id="1854180393107901205">キャストを停止</translation>
 <translation id="1880518467580572141">アウトライン</translation>
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">ステータス</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">用語</translation>
 <translation id="3822383571486410024">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在は <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」の前の文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
+<translation id="3846214748874656680">全画面表示を終了</translation>
 <translation id="3924558731517983934">アプリケーション</translation>
 <translation id="3960700977367013758">スクロールバー</translation>
 <translation id="4103419683916926126">ミリ秒</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">検索</translation>
 <translation id="4812940957355064477">数字を入力してください。</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> 件選択</translation>
+<translation id="4992066212339426712">ミュートを解除</translation>
 <translation id="49969490063480558">「<ph name="ATSIGN" />」に続く文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
 <translation id="5034860022980953847">プログレスバー</translation>
 <translation id="5048533449481078685">リスト マーカー</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">全画面表示を終了</translation>
 <translation id="5476505524087279545">チェックを外す</translation>
 <translation id="5516424706154626233">日付選択ツール</translation>
+<translation id="5537725057119320332">キャスト</translation>
 <translation id="5546461542133609677">ミュートを解除</translation>
 <translation id="561939826962581046">日時</translation>
 <translation id="5641012560118721995">再生を一時停止</translation>
 <translation id="5643186887447432888">ボタン</translation>
+<translation id="57838592816432529">ミュート</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5843503607508392247">その他...</translation>
 <translation id="5860033963881614850">オフ</translation>
+<translation id="588258955323874662">全画面表示</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5944544982112848342">2048 (高)</translation>
 <translation id="5966707198760109579">週</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">ステッパー</translation>
 <translation id="6739588121953935928">ルーラー</translation>
 <translation id="6755330956360078551">ツールチップ</translation>
+<translation id="6790428901817661496">再生</translation>
 <translation id="6820355525329141109">プラグインを読み込むことができませんでした。</translation>
 <translation id="6843725295806269523">ミュート</translation>
 <translation id="6845533974506654842">押す</translation>

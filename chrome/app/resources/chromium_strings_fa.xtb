@@ -98,7 +98,6 @@
 <translation id="3883381313049582448">‏استفاده از گذرواژه ایجاد شده توسط Chromium</translation>
 <translation id="3889543394854987837">‏برای باز کردن Chromium و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="390894725198123737">‏در Mac ممکن است گذرواژه‌ها در Keychain شما ذخیره شوند و سایر کاربران Chromium که این حساب OS X را دارند به آن دسترسی داشته باشند یا بتوانند همگام‌سازی کنند.</translation>
-<translation id="3994125055863078356">‏Chromium نمی‌تواند مرورگر پیش‌فرض شود.</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4077262827416206768">‏لطفاً همه پنجره‌های Chromium را ببندید و Chromium را برای اعمال این تغییر دوباره راه‌اندازی کنید.</translation>
 <translation id="4182290826692170034">‏Chromium مرورگر پیش‌فرضتان است. هورا!</translation>
@@ -141,6 +140,7 @@
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
+<translation id="5726838626470692954">‏مدیر شما باید شما را از Chromium حذف و دوباره به آن اضافه کند.</translation>
 <translation id="5768914737813585044">‏نمایش سیستم عامل Chromium به این زبان</translation>
 <translation id="5772805321386874569">‏(Chromium باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="5796460469508169315">‏Chromium تقریباً آماده است.</translation>
@@ -177,6 +177,7 @@
 
 برخی از ویژگی‌ها ممکن است موجود نباشند. لطفاً یک فهرست راهنمای نمایه دیگری را مشخص کنید یا از نسخه جدیدتری از Chromium استفاده کنید.</translation>
 <translation id="6734080038664603509">‏به‌روزرسانی &amp;Chromium</translation>
+<translation id="6734291798041940871">‏Chromium از قبل برای همه کاربران این رایانه نصب شده است.</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="6810143991807788455">‏با گزارش تنظیمات کنونی، به بهتر شدن Chromium کمک کنید</translation>
 <translation id="6838494703713445896">‏Chromium تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» معتبری ارائه کرد.</translation>
@@ -202,7 +203,6 @@
 <translation id="7223968959479464213">‏مدیر فعالیت‌ها - Chromium</translation>
 <translation id="722928257909516027">‏نمایش منوی Chromium</translation>
 <translation id="731644333568559921">‏به‌روزرسانی &amp;سیستم عامل Chromium</translation>
-<translation id="731795002583552498">‏در حال به‌روزرسانی Chromium</translation>
 <translation id="7318036098707714271">‏فایل تنظیمات برگزیده شما خراب یا نامعتبر است. 
 Chromium قادر به بازیابی تنظیمات شما نیست.</translation>
 <translation id="7337881442233988129">Chromium</translation>

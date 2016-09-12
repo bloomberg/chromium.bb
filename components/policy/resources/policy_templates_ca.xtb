@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1007441141628883408">Si no s'estableix cap valor o s'estableix en "true", activa les actualitzacions de tots els components a <ph name="PRODUCT_NAME" />.
+
+      Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador o els que són essencials per protegir-se.
+      Aquests components inclouen, entre d'altres, les llistes de revocació de certificats i les dades de navegació segura. </translation>
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
@@ -28,6 +32,9 @@
           Si aquesta política s'estableix, l'amfitrió d'accés remot utilitzarà aquest URL per validar els testimonis d'autenticació dels clients d'accés remot. Cal utilitzar la política juntament amb RemoteAccessHostTokenUrl.
 
           Actualment, aquesta funció està desactivada al servidor.</translation>
+<translation id="1093082332347834239">Si s'activa aquesta opció de configuració, l'amfitrió d'assistència remota s'executarà en un procés amb permisos <ph name="UIACCESS_PERMISSION_NAME" />. Això permetrà que els usuaris remots interaccionin amb les finestres amb privilegis restringits a l'ordinador de l'usuari local.
+
+          Si es desactiva o no es configura, l'amfitrió d'assistència remota s'executarà al context de l'usuari i els usuaris remots no podran interaccionar amb les finestres amb privilegis restringits a l'ordinador.</translation>
 <translation id="1096105751829466145">Proveïdor de cerca predeterminat</translation>
 <translation id="1103860406762205913">Activa l'inici de sessió basat en el web antic</translation>
 <translation id="1128903365609589950">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
@@ -53,6 +60,13 @@
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
+<translation id="127699919157094139">Desactiva la sincronització de dades a <ph name="PRODUCT_NAME" /> mitjançant els serveis de sincronització allotjats a Google i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      Si actives aquesta opció, els usuaris no la podran canviar ni substituir a <ph name="PRODUCT_NAME" />.
+
+      Si deixes la política sense establir, els usuaris podran triar si volen utilitzar Google Sync o no.
+
+      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la Consola d'administració de Google.</translation>
 <translation id="1291880496936992484">Advertiment: RC4 se suprimirà completament del producte <ph name="PRODUCT_NAME" /> a partir de la versió 52 (cap al setembre de 2016) i aquesta política deixarà de funcionar en aquell moment.
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
@@ -118,6 +132,14 @@
       es desactivarà. En aquest cas, l'usuari no pot activar la funció.</translation>
 <translation id="1474273443907024088">Desactiva False Start de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada.
+
+          Aquesta política només es fa efectiva si has seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
+
+          Deixa-la sense establir si has seleccionat qualsevol altra manera de definir les polítiques del servidor intermediari.
+
+          Per veure exemples més detallats, vés a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
@@ -132,6 +154,7 @@
       els usuaris d'empreses no poden utilitzar ARC.</translation>
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
+<translation id="1606958238518590302">Quan aquesta política s'estableix en "true", els usuaris no poden escriure res als dispositius d'emmagatzematge externs.</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="1617384279878333801">Permet que s'utilitzi l'opció Afegeix una persona al gestor de perfils</translation>
@@ -574,6 +597,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2850122204195089673">Establiu que l'escriptori unificat estigui disponible i activat de manera predeterminada.</translation>
 <translation id="285480231336205327">Activa el mode de contrast elevat</translation>
 <translation id="2872961005593481000">Apaga</translation>
+<translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
 <translation id="2884728160143956392">Permet les galetes només de sessió en aquests llocs</translation>
 <translation id="2893546967669465276">Envia registres del sistema al servidor de gestió</translation>
@@ -673,6 +697,24 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           No utilitzeu aquesta política, ja que encara no està preparada.
           </translation>
+<translation id="3201273385265130876">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
+
+          Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decideixes fer servir la configuració del servidor intermediari del sistema, la resta d'opcions s'ignoren.
+
+          Si decideixes detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si tries el mode de servidor intermediari fix, pots especificar més opcions a Adreça o URL del servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
+
+          Si decideixes fer servir un script de servidor intermediari .pac, has d'especificar l'URL de l'script a URL d'un fitxer .pac d'un servidor intermediari.
+
+          Per veure exemples detallats, vés a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
 <translation id="3206731874112238027">Desactiva la previsualització d'impressió (opció obsoleta)</translation>
 <translation id="3213821784736959823">Controla si el client DNS integrat s'utilitza a <ph name="PRODUCT_NAME" />.
@@ -778,6 +820,18 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
       Si la desactiveu o no hi establiu cap valor, el mode de seguretat de YouTube no s'aplica.</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
+<translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
+
+          Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decideixes detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+          Per veure exemples detallats, vés a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
 <translation id="3768412594120638208">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar.
@@ -792,6 +846,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
 <translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME" /> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME" /> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
+<translation id="379659290574555063">Utilitza els dispositius d'emmagatzematge externs com a només de lectura.</translation>
 <translation id="3800626789999016379">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per baixar fitxers.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari n'ha especificat cap o de si ha activat la marca perquè es demani la ubicació de baixada cada vegada.
@@ -982,7 +1037,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Tot i que la política s'admet en les plataformes anteriors, pot ser que la funció que activi no estigui disponible en totes les plataformes. No totes les funcions obsoletes de la plataforma web es poden tornar a activar; només les que s'indiquin explícitament a continuació durant un període de temps limitat, que varia segons la funció. El format general de l'etiqueta de cadena és el següent: [FuncióObsoleta]_EffectiveUntil[aaaammdd]. Com a referència, podeu consultar la finalitat dels canvis de la funció de la plataforma web a la pàgina https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
-<translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
 <translation id="4449545651113180484">Gira la pantalla 270 graus en el sentit de les agulles del rellotge</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
@@ -1055,6 +1109,22 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si no s'estableix aquesta política, el cursor gran es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
 <translation id="4807950475297505572">Els usuaris utilitzats fa més temps s'eliminen fins que hi ha prou espai lliure.</translation>
+<translation id="4815725774537609998">Aquesta política està obsoleta. Substitueix-la per ProxyMode.
+
+          Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
+
+          Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decideixes fer servir la configuració del servidor intermediari del sistema o detectar-lo automàticament, la resta d'opcions s'ignoren.
+
+          Si tries manualment la configuració del servidor intermediari, pots especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
+
+          Per veure exemples detallats, vés a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="4816674326202173458">Permet que un usuari empresarial sigui principal i secundari (comportament predeterminat per a usuaris no gestionats)</translation>
 <translation id="4826326557828204741">Acció que s'ha d'emprendre quan s'està inactiu mentre s'utilitza la bateria</translation>
 <translation id="4834526953114077364">Els usuaris utilitzats fa més temps i que no s'hagin utilitzat per iniciar la sessió en els últims tres mesos s'eliminen fins que hi hagi prou espai lliure.</translation>
@@ -1138,9 +1208,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Un valor de llista negra de "*" significa que tots els amfitrions de missatgeria s'inclouran a la llista negra llevat que s'indiquin explícitament a la llista blanca.
 
           Si aquesta política no es defineix, <ph name="PRODUCT_NAME" /> carregarà tots els amfitrions de missatgeria nativa instal·lats.</translation>
-<translation id="5288772341821359899">Si es defineix la política, els intervals de ports UDP que utilitza WebRTC estaran restringits a un interval de port específic (extrems inclosos).
+<translation id="5288772341821359899">Si es defineix la política, l'interval de ports UDP que utilitza WebRTC estarà restringit a un interval de ports específic (extrems inclosos).
 
-      Si la política no es defineix o es defineix a la cadena buida o en un interval de port no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
+      Si la política no es defineix o es defineix a la cadena buida o en un interval de ports no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
 <translation id="5290940294294002042">Especifica una llista dels connectors que l'usuari pot activar o desactivar</translation>
 <translation id="5302612588919538756">Aquesta política està obsoleta; substituïu-la per SyncDisabled.
 
@@ -1272,6 +1342,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="5795001131770861387">Activa la compatibilitat amb HTTP/0.9 als ports no predeterminats</translation>
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris per veu a la pantalla d'inici de sessió</translation>
 <translation id="5815129011704381141">Reinicia automàticament després d'actualitzar</translation>
@@ -1362,6 +1433,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del controlador de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells formats per l'identificador del producte i l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
       Si aquesta política no està configurada, la llista de dispositius USB que es poden separar està buida.</translation>
+<translation id="6093156968240188330">Permet que els usuaris remots interaccionin amb les finestres amb privilegis restringits en sessions d'assistència remota</translation>
 <translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
 
           Si aquesta quantitat de temps s'estableix en un valor més gran que zero, representa el temps d'inactivitat de l'usuari abans que no es bloquegi la pantalla de <ph name="PRODUCT_OS_NAME" />.
@@ -1618,6 +1690,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si està desactivada o es deixa sense establir, els amfitrions es poden compartir fent servir qualsevol compte.
 
           Consulteu també la política RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Activa les actualitzacions de components a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Si es requereixen comprovacions d'OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>
@@ -1809,9 +1882,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7567380065339179813">Permet els connectors en aquests llocs</translation>
 <translation id="757395965347379751">Quan s'aplica aquesta opció de configuració, <ph name="PRODUCT_NAME" /> admet certificats SHA-1 signats, sempre que estiguin correctament validats i encadenats a certificats de CA instal·lats localment.
 
-      Tingues en compte que aquesta política depèn que la pila de verificació de certificats del sistema operatiu admeti signatures SHA-1. Si una actualització del SO canvia la gestió de certificats SHA-1, és possible que aquesta política ja no tingui efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se de SHA-1. Aquesta política se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
+      Tingues en compte que aquesta política depèn que la pila de verificació de certificats del sistema operatiu admeti signatures SHA-1. Si una actualització del SO canvia la gestió de certificats SHA-1, és possible que aquesta política ja no tingui efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se d'SHA-1, i se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
 
-      Si aquesta política no es defineix o es defineix com a "false", <ph name="PRODUCT_NAME" /> seguirà el programa de desactivació de SHA-1 anunciat públicament.</translation>
+      Si aquesta política no es defineix o es defineix com a "false", <ph name="PRODUCT_NAME" /> seguirà el programa de desactivació d'SHA-1 anunciat públicament.</translation>
 <translation id="7593523670408385997">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers de la memòria cau al disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà la mida de memòria cau proporcionada, tant si l'usuari ha marcat "--disk-cache-size" com si no. El valor que s'especifica en aquesta política no és un límit estricte, és més aviat un suggeriment per al sistema de memòria cau; qualsevol valor per sota d'uns quants megabytes és massa petit i s'arrodonirà a l'alça per arribar a un mínim acceptable.
@@ -1859,6 +1932,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Tingueu en compte que no és recomanable bloquejar els URL interns del tipus "chrome://*", ja que es podrien produir errors imprevistos.
 
       Si aquesta política no s'estableix, no s'afegirà cap URL a la llista negra del navegador.</translation>
+<translation id="7724994675283793633">Aquesta política activa la compatibilitat amb HTTP/0.9 als ports que no són 80 per a HTTP ni 443 per a HTTPS.
+
+      Està desactivada de manera predeterminada i, si s'activa, els usuaris es poden trobar amb el problema de seguretat https://crbug.com/600352.
+
+      Aquesta política està dissenyada perquè les empreses puguin migrar els servidors que ja tenen a HTTP/0.9. Se suprimirà en el futur.
+
+      Si no s'estableix cap valor, es desactivarà la compatibilitat amb HTTP/0.9 en tots els ports no predeterminats.</translation>
 <translation id="7749402620209366169">Activa l'autenticació de dos factors per als amfitrions d'accés remot en lloc d'un PIN especificat per l'usuari.
 
           Si activeu aquest paràmetre, els usuaris hauran de proporcionar un codi de dos factors vàlid per accedir a un amfitrió.

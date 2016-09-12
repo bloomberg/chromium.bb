@@ -101,7 +101,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3883381313049582448">Använd lösenordet som genererats av Chromium</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="390894725198123737">På Mac kan lösenord sparas på nyckelringen. Andra Chromium-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
-<translation id="3994125055863078356">Det gick inte att ange Chromium som standardwebbläsare.</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4077262827416206768">Du måste stänga alla Chromium-fönster och starta om Chromium för att ändringen ska börja gälla.</translation>
 <translation id="4182290826692170034">Chromium är din standardwebbläsare.</translation>
@@ -144,6 +143,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5698481217667032250">Visa Chromium på det här språket</translation>
+<translation id="5726838626470692954">Den ansvariga måste ta bort och lägga till dig i Chromium på nytt.</translation>
 <translation id="5768914737813585044">Visa Chromium OS på det här språket</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
@@ -180,6 +180,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="6838494703713445896">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Giltiga certifikattransparensuppgifter har skickats från servern.</translation>
@@ -205,7 +206,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="7223968959479464213">Aktivitetshanteraren – Chromium</translation>
 <translation id="722928257909516027">Visa Chromium-menyn</translation>
 <translation id="731644333568559921">Uppdatera &amp;Chromium OS</translation>
-<translation id="731795002583552498">Chromium uppdateras</translation>
 <translation id="7318036098707714271">Inställningsfilen är skadad eller ogiltig.
 
 Chromium kan inte återställa dina inställningar.</translation>

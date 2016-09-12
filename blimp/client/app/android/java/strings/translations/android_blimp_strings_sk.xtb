@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Priradenie zlyhalo. Nie je k dispozícii žiadny nástroj.</translation>
 <translation id="117738548141695034">Spínač Blimp</translation>
 <translation id="1416550906796893042">Verzia aplikácie</translation>
+<translation id="1491042665327336022">Reštartujte aplikáciu.</translation>
 <translation id="1750179245464827362">Zobraziť informácie o ladení</translation>
 <translation id="2004526128230838685">Priradenie zlyhalo. Neznáma chyba.</translation>
 <translation id="2023631438558435272">Priradenie zlyhalo. Neplatná odpoveď.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Priradenie zlyhalo. Zlyhala žiadosť do siete.</translation>
 <translation id="2789927415041640472">Ak chcete použiť novú konfiguráciu postupiteľa, reštartujte aplikáciu.</translation>
 <translation id="3046825211487065480">Priradenie zlyhalo. Druhá žiadosť bola odoslaná ešte pred odpoveďou na prvú žiadosť.</translation>
+<translation id="307654885162326571">Zadávanie textu</translation>
 <translation id="3286538390144397061">Reštartovať</translation>
 <translation id="3346106862344060497">Nástroj bol pripojený.</translation>
 <translation id="3407245330823033366">Vyberte účet, ktorý chcete použiť so službou Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7795546637165553439">Nastavenia spínača Blimp</translation>
 <translation id="7961542533680218955">Priradenie bolo úspešné.</translation>
+<translation id="8135971362156222300">Prihláste sa do účtu Google a povoľte spínač Blimp.</translation>
 <translation id="8514856595257368555">Token bol načítaný.</translation>
 <translation id="8880704056643418312">Odoslania</translation>
 </translationbundle>

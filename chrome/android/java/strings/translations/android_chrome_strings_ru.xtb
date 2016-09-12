@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">Переместить закладки</translation>
 <translation id="119944043368869598">Удалить все</translation>
 <translation id="1201402288615127009">Далее</translation>
+<translation id="1204037785786432551">Сохранить данные по ссылке</translation>
 <translation id="1206892813135768548">Копировать текст ссылки</translation>
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="1211530540767271776">Нет USB-устройств</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Включить<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Удалить 1 выбранный объект}one{Удалить # выбранный объект}few{Удалить # выбранных объекта}many{Удалить # выбранных объектов}other{Удалить # выбранного объекта}}</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="1641113438599504367">Безопасный просмотр</translation>
 <translation id="164269334534774161">Эта офлайн-копия страницы была создана <ph name="CREATION_TIME" /></translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
 <translation id="2811892995384186721">Не можете найти устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
+<translation id="2833899785646504169">Произошла ошибка</translation>
 <translation id="2836148919159985482">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Подробнее<ph name="END_LINK" /> о рекомендованном контенте…</translation>
 <translation id="3518985090088779359">Продолжить</translation>
 <translation id="3522247891732774234">Доступно обновление. Другие параметры…</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">Название</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4056223980640387499">Сепия</translation>
+<translation id="4060598801229743805">Меню доступно в верхней части экрана</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
 <translation id="4089831646916293264">Эта функция может мешать доступу к премиум-службам, которые предоставляет ваш оператор связи.</translation>
 <translation id="4095146165863963773">Удалить данные приложения?</translation>
@@ -335,6 +341,7 @@
 <translation id="5131405117025179004">Изменить настройки аккаунта</translation>
 <translation id="5138299137310274655">Язык этой страницы – <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Удаление данных</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />мгновенный запуск<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Это аккаунт ребенка</translation>
 <translation id="5161254044473106830">Введите название</translation>
 <translation id="5164482624172255778">Хотите, чтобы Google Chrome всегда предлагал перевести этот сайт, когда на его страницах используется <ph name="LANGUAGE" />?</translation>
@@ -455,8 +462,9 @@
 <translation id="6433490469411711332">Изменить контактную информацию</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
-<translation id="6458785801851713928">В вашем домене синхронизация отключена</translation>
+<translation id="6463070039183944536">Добавление…</translation>
 <translation id="6464825623202322042">На этом устройстве</translation>
+<translation id="6475951671322991020">Скачать видео</translation>
 <translation id="6477460825583319731">Неверный адрес электронной почты</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
 <translation id="6527303717912515753">Поделиться</translation>
@@ -491,6 +499,7 @@
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Только через Wi-Fi</translation>
+<translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d открытая вкладка}one{%1$d открытая вкладка}few{%1$d открытые вкладки}many{%1$d открытых вкладок}other{%1$d открытой вкладки}}</translation>
@@ -500,6 +509,7 @@
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
+<translation id="6985347914332179298">Нет скачанных объектов</translation>
 <translation id="6990079615885386641">Приложение в Google Play Маркете: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Автоматически отправлять в Google информацию о возможных проблемах безопасности</translation>
 <translation id="6992289844737586249">Запрашивать разрешение на доступ к микрофону (рекомендуется)</translation>
@@ -526,6 +536,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7327835590071894791">Вкладка переведена в фоновый режим.</translation>
 <translation id="7347770551817603360">Офлайн-контент</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7378627244592794276">Нет</translation>
@@ -654,6 +665,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
+<translation id="8872506776304248286">Открыть в приложении</translation>
 <translation id="8901170036886848654">Ничего не найдено</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>

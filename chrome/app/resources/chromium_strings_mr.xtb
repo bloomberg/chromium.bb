@@ -100,7 +100,6 @@
 <translation id="3883381313049582448">Chromium द्वारे व्युत्पन्न केलेला संकेतशब्द वापरा</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
-<translation id="3994125055863078356">Chromium डीफॉल्ट ब्राउझर बनण्यात सक्षम नाही.</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
 <translation id="4182290826692170034">Chromium आपला डीफॉल्ट ब्राउझर आहे. हुर्रे!</translation>
@@ -143,6 +142,7 @@
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत प्रदर्शि‍त करा</translation>
+<translation id="5726838626470692954">आपल्या व्यवस्थापकाने आपल्याला Chromium वरून काढणे आणि  परत जोडणे आवश्यक आहे.</translation>
 <translation id="5768914737813585044">Chromium OS या भाषेत प्रदर्शि‍त करा</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />रीस्टार्ट<ph name="END_BUTTON" /> करणे आवश्यक)</translation>
 <translation id="5796460469508169315">Chromium जवळजवळ तयार आहे</translation>
@@ -179,6 +179,7 @@
 
 काही वैशिष्‍ट्ये अनुपलब्‍ध असू शकतील. कृपया एक भिन्न प्रोफाइल निर्देशिका निर्दिष्‍ट करा किंवा Chromium ची नवीन आवृत्ती वापरा.</translation>
 <translation id="6734080038664603509">&amp;Chromium अद्यतनित करा</translation>
+<translation id="6734291798041940871">आपल्या संगणकावर सर्व वापरकर्त्यांसाठी Chromium आधीच स्थापित केले आहे.</translation>
 <translation id="6757767188268205357">माझा बग नोंदवू नका</translation>
 <translation id="6810143991807788455">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="6838494703713445896">Chromium ने सत्यापित केले की <ph name="ISSUER" /> ने या वेबसाइटचे प्रमाणपत्र जारी केले. सर्व्हरने वैध प्रमाणपत्र पारदर्शकता माहिती पुरविली.</translation>
@@ -204,7 +205,6 @@
 <translation id="7223968959479464213">कार्य व्यवस्थापक- Chromium </translation>
 <translation id="722928257909516027">Chromium मेनू दर्शवा</translation>
 <translation id="731644333568559921">&amp;Chromium OS अद्यतनित करा</translation>
-<translation id="731795002583552498">Chromium अद्यतनित होत आहे</translation>
 <translation id="7318036098707714271">आपली प्राधान्ये फाइल दूषित किंवा अवैध आहे.
 
 Chromium आपली सेटिंग्ज पुनर्प्राप्त करण्‍यात अक्षम आहे.</translation>

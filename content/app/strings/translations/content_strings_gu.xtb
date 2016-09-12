@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="1014825444426747588">ખાલી</translation>
 <translation id="1018939186200882850">મેનૂ આઇટમ</translation>
 <translation id="1020833440720551630">ઑડિઓ ટ્રેક મ્યૂટ કરો</translation>
 <translation id="10623998915015855">ટોગલ બટન</translation>
 <translation id="1088086359088493902">સેકંડ</translation>
 <translation id="1171774979989969504">કૃપા કરી કોઈ ઇમેઇલ સરનામું દાખલ કરો.</translation>
+<translation id="1178581264944972037">થોભો</translation>
 <translation id="1188858454923323853">પૂરક</translation>
 <translation id="1206619573307042055">માર્કી</translation>
 <translation id="1206693055195146388">સ્લાઇડર</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">રિમોટ ઉપકરણ પર ચલાવો</translation>
 <translation id="1842960171412779397">પસંદ કરો</translation>
+<translation id="1854180393107901205">કાસ્ટ કરવાનું રોકો</translation>
 <translation id="1880518467580572141">રૂપરેખા</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">સ્થિતિ</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">ટર્મ</translation>
 <translation id="3822383571486410024">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અક્ષર અથવા તેથી વધુ સુધી લંબાવો (તમે હાલમાં <ph name="CURRENT_LENGTH" /> અક્ષરોનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' દ્વારા અનુસરાઈ રહેલા ભાગમાં '<ph name="INVALIDCHARACTER" />' પ્રતીક શામેલ હોવું જોઈએ નહીં.</translation>
+<translation id="3846214748874656680">પૂર્ણસ્ક્રીનથી બહાર નીકળો</translation>
 <translation id="3924558731517983934">ઍપ્લિકેશન</translation>
 <translation id="3960700977367013758">સ્ક્રોલ બાર</translation>
 <translation id="4103419683916926126">મીલીસેકન્ડ</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">કૃપા કરીને એક નંબર દાખલ કરો.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> પસંદ કર્યા</translation>
+<translation id="4992066212339426712">અનમ્યૂટ કરો</translation>
 <translation id="49969490063480558">કૃપા કરીને '<ph name="ATSIGN" />' ને અનુસરી રહેલો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
 <translation id="5034860022980953847">પ્રગતિ સૂચક</translation>
 <translation id="5048533449481078685">સૂચિ માર્કર</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">પૂર્ણ સ્ક્રીનથી બહાર નીકળો</translation>
 <translation id="5476505524087279545">અનચેક કરો</translation>
 <translation id="5516424706154626233">તારીખ પીકર</translation>
+<translation id="5537725057119320332">કાસ્ટ કરો</translation>
 <translation id="5546461542133609677">અનમ્યૂટ કરો</translation>
 <translation id="561939826962581046">સમય</translation>
 <translation id="5641012560118721995">પ્લેબેક થોભાવો</translation>
 <translation id="5643186887447432888">બટન</translation>
+<translation id="57838592816432529">અવાજ બંધ કરો</translation>
 <translation id="583281660410589416">અજ્ઞાત</translation>
 <translation id="5843503607508392247">અન્ય...</translation>
 <translation id="5860033963881614850">બંધ</translation>
+<translation id="588258955323874662">પૂર્ણસ્ક્રીન</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5944544982112848342">2048 (ઉચ્ચ ગ્રેડ)</translation>
 <translation id="5966707198760109579">અઠવાડિયું</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">સ્ટેપર</translation>
 <translation id="6739588121953935928">આંકણી</translation>
 <translation id="6755330956360078551">ટૂલટીપ</translation>
+<translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6820355525329141109">પ્લગિન લોડ કરી શક્યાં નથી.</translation>
 <translation id="6843725295806269523">બંધ કરો</translation>
 <translation id="6845533974506654842">દબાવો</translation>

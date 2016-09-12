@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">使用由Chromium生成的密码</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
-<translation id="3994125055863078356">无法将 Chromium 设为默认浏览器。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
 <translation id="4182290826692170034">太棒了！Chromium 已设为您的默认浏览器。</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="5680901439334282664">登录 Chromium</translation>
 <translation id="5698481217667032250">以这种语言显示 Chromium</translation>
+<translation id="5726838626470692954">您的管理员必须先将您移除，然后再将您重新添加到 Chromium。</translation>
 <translation id="5768914737813585044">以这种语言显示 Chromium 操作系统</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chromium）</translation>
 <translation id="5796460469508169315">Chromium 即将准备就绪。</translation>
@@ -178,6 +178,7 @@
 
 某些功能可能会无法使用。请指定其他个人资料目录或使用更高版本的 Chromium。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
+<translation id="6734291798041940871">已为您计算机上的所有用户都安装 Chromium。</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6838494703713445896">Chromium 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了有效的 Certificate Transparency 信息。</translation>
@@ -203,7 +204,6 @@
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
 <translation id="722928257909516027">显示 Chromium 菜单</translation>
 <translation id="731644333568559921">更新 Chromium 操作系统(&amp;C)</translation>
-<translation id="731795002583552498">正在更新 Chromium</translation>
 <translation id="7318036098707714271">您的偏好设置文件已损坏或无效。
 
 Chromium 无法恢复您的设置。</translation>

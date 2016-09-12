@@ -79,6 +79,7 @@
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
+<translation id="3180085900771989961">Администратор устройства должен удалить ваш аккаунт из Chrome и добавить его снова</translation>
 <translation id="3251381707915721925">Чтобы ограничить пользователю <ph name="NEW_PROFILE_NAME" /> доступ к каким-либо страницам, перейдите по этой ссылке: <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Если вы оставите настройки по умолчанию, <ph name="NEW_PROFILE_NAME" /> сможет открывать все сайты.
 
 Чтобы пользователь <ph name="NEW_PROFILE_NAME" /> не получил доступ к вашему аккаунту, при выходе из Chrome нажмите на свое имя профиля в правом верхнем углу экрана и выберите "Выйти и заблокировать".
@@ -178,8 +179,8 @@
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Разрешить в Google Chrome передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6236285698028833233">Google Chrome больше не обновляется и не поддерживается для этой версии операционной системы.</translation>
+<translation id="6291549208091401781">Google Chrome уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="629218512217695915">Использовать пароль, сгенерированный Chrome</translation>
-<translation id="6338556085225130112">Обновление Google Chrome…</translation>
 <translation id="6368805772029492593">В целях повышения безопасности Google Chrome шифрует ваши данные.</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Google Chrome скоро перестанет обновляться на этом компьютере, так как поддержка Mac OS X 10.6, 10.7 и 10.8 будет прекращена.</translation>
@@ -189,7 +190,6 @@
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
 <translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу, закройте все окна Firefox и нажмите "Далее".</translation>
 <translation id="6634887557811630702">Вы используете самую новую версию Chrome.</translation>
-<translation id="6648058004052854464">Не удалось сделать Google Chrome браузером по умолчанию.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>

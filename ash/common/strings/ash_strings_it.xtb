@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">La scorciatoia per passare al metodo di immissione successivo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
+<translation id="1127238861555034875">Modalità lente d'ingrandimento</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
@@ -84,6 +85,8 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
 <translation id="3294437725009624529">Ospite</translation>
+<translation id="3335772982573114336">Nuova nota</translation>
+<translation id="3364721542077212959">Strumenti per stilo</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
@@ -97,6 +100,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3683428399328702079">La risoluzione di <ph name="DISPLAY_NAME" /> è stata modificata in: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Attiva Wi-Fi</translation>
 <translation id="3709443003275901162">Più di 9</translation>
+<translation id="3712407551474845318">Acquisisci area</translation>
 <translation id="372094107052732682">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
 <translation id="3742055079367172538">Screenshot acquisito</translation>
 <translation id="3775358506042162758">Puoi avere massimo tre account per l'accesso simultaneo.</translation>
@@ -130,6 +134,8 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5012744545445585468">CTRL+MAIUSC+Barra spaziatrice</translation>
 <translation id="5045002648206642691">Impostazioni Google Drive...</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
+<translation id="5170568018924773124">Mostra nella cartella</translation>
+<translation id="5191140942132549112">MOSTRA DOMANDE</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5238774010593222950">Impossibile accedere a un altro account.</translation>
 <translation id="532063867737390965">Questa impostazione di rete è stata disattivata dall'amministratore.</translation>
@@ -167,6 +173,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6203030746557259519">Display virtuale</translation>
 <translation id="6248847161401822652">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
+<translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS da <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
@@ -176,6 +183,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
+<translation id="6537270692134705506">Acquisisci schermata</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Indirizzo IP</translation>
@@ -196,6 +204,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="7097613348211027502">ChromeVox (lettura vocale) attivo.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
+<translation id="7129360219436193655">Modalità puntatore laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">La funzione BLOC MAIUSC è attiva.
@@ -222,6 +231,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8077816382010018681">Inserisci qui il titolo della notifica della funzione di sblocco rapido</translation>
 <translation id="8103386449138765447">Messaggi SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Comunicaci la tua opinione sul nostro lavoro rispondendo ad alcune domande.</translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8206859287963243715">Cellulare</translation>
 <translation id="8308637677604853869">Menu precedente</translation>
@@ -233,7 +243,6 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Fai clic per visualizzare</translation>
 <translation id="8825534185036233643">Il mirroring con più di due display non è supportato.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>

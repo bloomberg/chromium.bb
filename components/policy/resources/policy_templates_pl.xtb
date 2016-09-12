@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1007441141628883408">Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, włączone są aktualizacje wszystkich komponentów <ph name="PRODUCT_NAME" />.
+
+      Jeśli zasada ma wartość fałsz, aktualizacje komponentów są wyłączone. Nie obejmuje to jednak niektórych komponentów: nie są wyłączane aktualizacje żadnych komponentów, które nie zawierają kodu wykonywalnego, nie mają znacznego wpływu na działanie przeglądarki lub mają kluczowe znaczenie dla bezpieczeństwa.
+      Przykładami takich komponentów są listy odwołanych certyfikatów i dane bezpiecznego przeglądania. </translation>
 <translation id="101438888985615157">Obróć ekran o 180 stopni</translation>
 <translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
@@ -28,6 +32,9 @@
           Jeśli ta zasada jest ustawiona, host dostępu zdalnego będzie używał tego adresu URL do weryfikowania tokenów uwierzytelniania z klientów dostępu zdalnego na potrzeby akceptowania połączeń. Musi być stosowana w połączeniu z zasadą RemoteAccessHostTokenUrl.
 
           Ta zasada jest aktualnie wyłączona po stronie serwera.</translation>
+<translation id="1093082332347834239">Jeśli to ustawienie jest włączone, host pomocy zdalnej będzie uruchamiany w procesie z uprawnieniami <ph name="UIACCESS_PERMISSION_NAME" />. Dzięki temu użytkownicy zdalni będą mieć dostęp do okien z podwyższonym poziomem uprawnień na komputerze użytkownika lokalnego.
+
+          Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="1103860406762205913">Włącza stary mechanizm logowania internetowego</translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
@@ -53,6 +60,13 @@
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
+<translation id="127699919157094139">Wyłącza w <ph name="PRODUCT_NAME" /> synchronizację danych za pomocą usług synchronizacji Google i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      W przypadku włączenia tego ustawienia użytkownicy nie mogą go zmieniać ani zastępować w <ph name="PRODUCT_NAME" />.
+
+      Jeśli ta zasada nie zostanie skonfigurowana, użytkownik będzie mógł wybrać, czy chce korzystać z Google Sync.
+
+      Aby całkowicie wyłączyć Google Sync, zalecane jest wyłączenie usługi Google Sync w konsoli administracyjnej Google.</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
@@ -118,6 +132,14 @@
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> będzie pomijać serwer proxy dla hostów z tej listy.
+
+          Ta zasada obowiązuje tylko wtedy, gdy w opcji „Wybierz sposób określenia ustawień serwera proxy” wybrano ręczne wprowadzanie ustawień serwera proxy.
+
+          Zasadę należy pozostawić nieskonfigurowaną, jeśli wybrano inny tryb ustawiania zasad serwera proxy.
+
+          Szczegółowe przykłady znajdziesz na:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
@@ -132,6 +154,7 @@
       nie mogą używać rozszerzenia ARC.</translation>
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1606958238518590302">Gdy ta zasada ma wartość prawda, użytkownicy nie mogą nic zapisywać na zewnętrznych urządzeniach pamięci.</translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="1617384279878333801">Włącz dodawanie osób w menedżerze profili</translation>
@@ -573,6 +596,7 @@
 <translation id="2850122204195089673">Udostępnij ujednolicony pulpit i włącz go domyślnie</translation>
 <translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
+<translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
 <translation id="2884728160143956392">Zezwalaj na pliki cookie w tych witrynach tylko na czas sesji</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
@@ -672,6 +696,24 @@
 
           Ta zasada nie jest jeszcze gotowa i nie można jej używać.
           </translation>
+<translation id="3201273385265130876">Umożliwia wskazanie serwera proxy używanego przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
+
+          Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
+
+          Jeśli wybierzesz używanie systemowych ustawień serwera proxy, wszystkie inne opcje będą ignorowane.
+
+          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie inne opcje będą ignorowane.
+
+          Jeśli wybierzesz tryb stałego serwera proxy, możesz określić też opcje „Adres IP lub URL serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC dostępny jest tylko serwer proxy HTTP o najwyższym priorytecie.
+
+          Jeśli wybierzesz używanie skryptu .pac, musisz podać jego URL w polu „Adres URL pliku PAC serwera proxy”.
+
+          Szczegółowe przykłady znajdziesz na:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC będą ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
+
+          Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
 <translation id="3206731874112238027">Wyłącz podgląd wydruku (wycofane)</translation>
 <translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
@@ -776,6 +818,18 @@
       Jeśli wyłączysz to ustawienie lub nie ustawisz wartości, tryb bezpieczny w YouTube nie będzie wymuszany.</translation>
 <translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>
 <translation id="3756011779061588474">Zablokuj tryb programisty</translation>
+<translation id="3758089716224084329">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
+
+      Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
+
+      Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie inne opcje będą ignorowane.
+
+      Szczegółowe przykłady znajdziesz na:
+      <ph name="PROXY_HELP_URL" />.
+
+      Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC będą ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
+
+      Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="3765260570442823273">Czas wyświetlania ostrzeżenia o wylogowaniu z powodu bezczynności</translation>
 <translation id="3768412594120638208">Określa typy aplikacji lub rozszerzeń, które można instalować.
@@ -790,6 +844,7 @@
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
 <translation id="3788662722837364290">Ustawienia zarządzania energią, gdy użytkownik jest nieaktywny</translation>
 <translation id="3793095274466276777">Pozwala skonfigurować w przeglądarce <ph name="PRODUCT_NAME" /> sprawdzanie przeglądarki domyślnej i uniemożliwia użytkownikom jej zmianę. Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> zawsze po uruchomieniu będzie sprawdzać, czy jest przeglądarką domyślną, oraz w miarę możliwości automatycznie przypisywać sobie tę rolę. W przypadku wyłączenia ustawienia <ph name="PRODUCT_NAME" /> nigdy nie sprawdza, czy jest przeglądarką domyślną, a opcje umożliwiające użytkownikowi zmianę ustawienia są nieaktywne. Jeśli ustawienie jest nieskonfigurowane, użytkownik może kontrolować funkcję sprawdzania, czy <ph name="PRODUCT_NAME" /> jest przeglądarką domyślną, oraz wyświetlanie odpowiednich powiadomień.</translation>
+<translation id="379659290574555063">Używaj zewnętrznych urządzeń pamięci tylko do odczytu.</translation>
 <translation id="3800626789999016379">Określa katalog, w którym <ph name="PRODUCT_NAME" /> zapisuje pobrane pliki.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> używa wskazanego katalogu niezależnie od tego, czy użytkownik podał własny katalog czy włączył opcję pytania o lokalizację przy każdym pobieraniu.
@@ -982,7 +1037,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Mimo że zasada działa na tych platformach, włączana przez nią funkcja może być dostępna tylko na niektórych z nich. Nie wszystkie wycofane funkcje platform internetowych można ponownie włączyć. Zasada pozwala włączyć tylko te wymienione poniżej – na określony czas, który różni się w zależności od funkcji. Ogólny format tagu z ciągiem znaków to [NazwaWycofanejFunkcji]_EffectiveUntil[rrrrmmdd]. Przyczyny zmian funkcji platform internetowych możesz w razie potrzeby znaleźć na https://bit.ly/blinkintents
       </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
-<translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
@@ -1055,6 +1109,22 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli zasada pozostanie nieustawiona, duży kursor jest początkowo wyłączony, ale użytkownik może go w każdej chwili włączyć.</translation>
 <translation id="4807950475297505572">Użytkownicy, którzy najdłużej byli nieaktywni, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
+<translation id="4815725774537609998">Ta zasada jest przestarzała. Zamiast niej użyj zasady ProxyMode.
+
+          Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
+
+          Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
+
+          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie inne opcje będą ignorowane.
+
+          Jeśli wybierzesz ręczne ustawienia serwera proxy, możesz też określić opcje „Adres IP lub URL serwera proxy”, „Adres URL pliku PAC serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC dostępny jest tylko serwer proxy HTTP o najwyższym priorytecie.
+
+          Szczegółowe przykłady znajdziesz na:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> będzie ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
+
+          Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="4816674326202173458">Zezwól, by użytkownik korporacyjny miał atrybut główny i drugorzędny (domyślne zachowanie w przypadku niezarządzanych użytkowników)</translation>
 <translation id="4826326557828204741">Czynność, jaka ma zostać podjęta po osiągnięciu opóźnienia bezczynności przy pracy na baterii</translation>
 <translation id="4834526953114077364">Najdłużej nieaktywni użytkownicy, którzy nie logowali się w ciągu ostatnich 3 miesięcy, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
@@ -1277,6 +1347,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="5795001131770861387">Włącza obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
 <translation id="5815129011704381141">Automatyczne ponowne uruchomienie po aktualizacji</translation>
@@ -1367,6 +1438,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6076099373507468537">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
+<translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
           Gdy ustawisz czas większy od zera, określa on, jak długo użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> zablokuje ekran.
@@ -1613,6 +1685,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, udostępnianie hostów jest możliwe z użyciem dowolnego konta.
 
           Zobacz też RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Włącza aktualizacje komponentów <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Określa, czy dla lokalnych kotwic zaufania są wymagane sprawdzenia online OCSP/CRL</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>
@@ -1857,6 +1930,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Nie zalecamy blokowania dostępu do wewnętrznych adresów „chrome://*”, bo może to prowadzić do wystąpienia nieoczekiwanych błędów.
 
       Jeśli nie ustawisz tej zasady, w przeglądarce nie będą blokowane żadne adresy URL.</translation>
+<translation id="7724994675283793633">Ta zasada włącza HTTP/0.9 w portach innych niż 80 dla HTTP i 443 dla HTTPS.
+
+      Domyślnie zasada jest wyłączona. Jeśli zostanie włączona, naraża to użytkowników na problem związany z bezpieczeństwem: https://crbug.com/600352
+
+      Ta zasada ma umożliwić firmom migrację istniejących serwerów z HTTP/0.9 i w przyszłości zostanie usunięta.
+
+      Jeśli zasada nie jest skonfigurowana, w portach innych niż domyślne protokół HTTP/0.9 jest wyłączony.</translation>
 <translation id="7749402620209366169">Pozwala włączyć uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu zamiast stosowania PIN-u określanego przez użytkownika.
 
           Jeśli to ustawienie jest włączone, podczas uzyskiwania dostępu do hosta użytkownicy muszą podać prawidłowy kod dwuskładnikowy.

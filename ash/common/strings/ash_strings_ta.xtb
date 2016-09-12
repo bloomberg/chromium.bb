@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">அடுத்த உள்ளீட்டு முறைக்கு மாறுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
+<translation id="1127238861555034875">உருப்பெருக்கிப் பயன்முறை</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> இலிருந்து சார்ஜ் செய்யப்படுகிறது</translation>
 <translation id="1270290102613614947">ஆன்ஸ்க்ரீன் விசைப்பலகை முடக்கப்பட்டது</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
+<translation id="3335772982573114336">புதிய குறிப்பு</translation>
+<translation id="3364721542077212959">ஸ்டைலஸ் கருவிகள்</translation>
 <translation id="3371140690572404006">USB-C சாதனம் (வலது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
 <translation id="3445925074670675829">USB-C சாதனம்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> தெளிவுத்திறன் <ph name="RESOLUTION" /> க்கு மாற்றப்பட்டது</translation>
 <translation id="370649949373421643">Wi-fi ஐ இயக்கு</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">பகுதியைப் படமெடு</translation>
 <translation id="372094107052732682">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="3742055079367172538">ஸ்கிரீன் ஷாட் எடுக்கப்பட்டது</translation>
 <translation id="3775358506042162758">பல உள்நுழைவில் மூன்று கணக்குகள் வரை மட்டுமே வைத்திருக்கலாம்.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
+<translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
+<translation id="5191140942132549112">கேள்விகளைக் காட்டு</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="5238774010593222950">மற்றொரு கணக்கில் உள்நுழைய முடியாது.</translation>
 <translation id="532063867737390965">இந்த நெட்வொர்க் அமைப்பு நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6203030746557259519">விர்ச்சுவல் காட்சி</translation>
 <translation id="6248847161401822652">வெளியேற Control Shift Q ஐ இருமுறை அழுத்தவும்.</translation>
+<translation id="6297287540776456956">பகுதியைத் தேர்ந்தெடுக்க, ஸ்டைஸைப் பயன்படுத்தவும்</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> என்ற எண்ணிலிருந்து வந்த SMS</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="6490471652906364588">USB-C சாதனம் (வலது போர்ட்)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புகிறது</translation>
+<translation id="6537270692134705506">திரையைப் படமெடு</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.
 முடக்குவதற்கு, Ctrl+Alt+Z ஐ அழுத்தவும்.</translation>
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
+<translation id="7129360219436193655">லேசர் பாயின்டர் பயன்முறை</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="8077816382010018681">QU அம்சத்தின் அறிவிப்புத் தலைப்பு இங்கே</translation>
 <translation id="8103386449138765447">SMS செய்திகள்: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">சில கேள்விகளுக்குப் பதிலளிப்பதன் மூலம் நாங்கள் எவ்வாறு செயல்படுகிறோம் என்பதை எங்களுக்குத் தெரிவிக்கவும்.</translation>
 <translation id="8190698733819146287">மொழிகள் மற்றும்  உள்ளீடைத் தனிப்பயனாக்கு...</translation>
 <translation id="8206859287963243715">செல்லுலர்</translation>
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">குறைந்த சக்தியிலான சார்ஜர் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="8814190375133053267">வைஃபை</translation>
-<translation id="882279321799040148">காண கிளிக் செய்க</translation>
 <translation id="8825534185036233643">இரண்டிற்கும் மேற்பட்ட திரைகளில் பிரதிபலிப்பது ஆதரிக்கப்படவில்லை.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

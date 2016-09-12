@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1201402288615127009">التالي</translation>
+<translation id="1204037785786432551">تنزيل الرابط</translation>
 <translation id="1206892813135768548">نسخ نص الرابط</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1211530540767271776">‏لا توجد أجهزة USB هنا</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{إزالة عنصر واحد محدد}zero{إزالة # عنصر محدد}two{إزالة عنصرين (#) محددين}few{إزالة # عناصر محددة}many{إزالة # عنصرًا محددًا}other{إزالة # عنصر محدد}}</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1641113438599504367">التصفح الآمن</translation>
 <translation id="164269334534774161">أنت تعرض نسخة بلا اتصال لهذه الصفحة من <ph name="CREATION_TIME" /></translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
 <translation id="2811892995384186721">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
+<translation id="2833899785646504169">تتعذر الإضافة</translation>
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
 <translation id="3485544713029068372">‏Smart Lock لكلمات المرور</translation>
 <translation id="3492207499832628349">علامة تبويب جديدة للتصفح المتخفي </translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
 <translation id="3522247891732774234">التحديث متاح. مزيد من الخيارات</translation>
 <translation id="3527085408025491307">المجلد</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">صفحات الويب المجاورة</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3744111561329211289">مزامنة الخلفية</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
 <translation id="3810838688059735925">فيديو</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4056223980640387499">بني داكن</translation>
+<translation id="4060598801229743805">الخيارات متاحة بالقرب من أعلى الشاشة</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4089831646916293264">قد تتداخل هذه الميزة مع إمكانية الوصول إلى خدمات البيانات المتميزة التي يقدّمها مشغّل شبكة الجوال.</translation>
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
@@ -336,6 +342,7 @@
 <translation id="5131405117025179004">تعديل حساب محفوظ</translation>
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" /> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="515227803646670480">محو البيانات المخزنة</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />فوري<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">هذا حساب طفل</translation>
 <translation id="5161254044473106830">العنوان مطلوب</translation>
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE" /> من هذا الموقع مرة أخرى؟</translation>
@@ -456,8 +463,9 @@
 <translation id="6433490469411711332">تعديل معلومات الاتصال</translation>
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="6448273550210938826">‏اقتراحات البحث وعناوين URL</translation>
-<translation id="6458785801851713928">المزامنة غير متاحة لنطاقك.</translation>
+<translation id="6463070039183944536">جارٍ الإضافة...</translation>
 <translation id="6464825623202322042">هذا الجهاز</translation>
+<translation id="6475951671322991020">تنزيل الفيديو</translation>
 <translation id="6477460825583319731">عنوان البريد الإلكتروني غير صالح</translation>
 <translation id="6482749332252372425">أخفق تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
 <translation id="6527303717912515753">مشاركة</translation>
@@ -492,6 +500,7 @@
 <translation id="6846298663435243399">جارٍ التحميل…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
 <translation id="6857778194843072568">‏الإرسال عبر Wi-Fi فقط</translation>
+<translation id="6864459304226931083">تنزيل الصورة</translation>
 <translation id="6865313869410766144">الملء التلقائي من البيانات</translation>
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏علامة تبويب واحدة (%1$d) مفتوحة}zero{‏%1$d علامة تبويب مفتوحة}two{‏علامتا تبويب (%1$d) مفتوحتان}few{‏%1$d علامات تبويب مفتوحة}many{‏%1$d علامة تبويب مفتوحة}other{‏%1$d علامة تبويب مفتوحة}}</translation>
@@ -501,6 +510,7 @@
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="6978479750597523876">إعادة تعيين إعدادات الترجمة</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
+<translation id="6985347914332179298">لا توجد تنزيلات هنا</translation>
 <translation id="6990079615885386641">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">‏إبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة</translation>
 <translation id="6992289844737586249">السؤال أولاً قبل السماح للمواقع باستخدام الميكروفون (موصى به)</translation>
@@ -527,6 +537,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7327835590071894791">توجد الآن علامة التبويب في الخلفية.</translation>
 <translation id="7347770551817603360">محتوى بلا اتصال</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7378627244592794276">لا</translation>
@@ -655,6 +666,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>
+<translation id="8872506776304248286">فتح في التطبيق</translation>
 <translation id="8901170036886848654">لا توجد إشارات مرجعية</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>

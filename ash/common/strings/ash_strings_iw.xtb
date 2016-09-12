@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. הזן את קוד ה-PIN הבא במכשיר הזה: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">מקש הקיצור המשמש למעבר לשיטת הקלט הבאה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
+<translation id="1127238861555034875">מצב זכוכית מגדלת</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">מפעיל היישומים (מסנכרן יישומים...)</translation>
 <translation id="3157169093162779309">הפעל נעילת סיבוב</translation>
 <translation id="3294437725009624529">אורח</translation>
+<translation id="3335772982573114336">הערה חדשה</translation>
+<translation id="3364721542077212959">כלי סטיילוס</translation>
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079">הרזולוציה של <ph name="DISPLAY_NAME" /> שונתה ל-<ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">‏הפעל Wi-Fi</translation>
 <translation id="3709443003275901162">‎9+‎</translation>
+<translation id="3712407551474845318">צילום אזור</translation>
 <translation id="372094107052732682">‏לחץ על Ctrl+Shift+Q פעמיים כדי לצאת.</translation>
 <translation id="3742055079367172538">צילום המסך בוצע</translation>
 <translation id="3775358506042162758">ניתן לכלול עד שלושה חשבונות בלבד בכניסה עם מספר חשבונות.</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">‏Ctrl‏+Shift+רווח</translation>
 <translation id="5045002648206642691">‏הגדרות Google Drive...</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
+<translation id="5170568018924773124">הצג בתיקייה</translation>
+<translation id="5191140942132549112">הצג שאלות</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5238774010593222950">לא ניתן להיכנס לחשבון אחר.</translation>
 <translation id="532063867737390965">מנהל המערכת השבית את הגדרת רשת זו.</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6203030746557259519">תצוגה וירטואלית</translation>
 <translation id="6248847161401822652">‏לחץ פעמיים על Control Shift Q כדי לצאת.</translation>
+<translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">‏SMS מאת <ph name="PHONE_NUMBER" /> </translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">‏מכשיר עם יציאת USB-C (יציאה ימנית)</translation>
 <translation id="6501401484702599040">מעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">צילום מסך</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">‏כתובת IP</translation>
@@ -195,6 +203,7 @@
 <translation id="7052914147756339792">הגדר טפט...</translation>
 <translation id="7097613348211027502">‏ChromeVox (משוב קולי) מופעל. הקש על Ctrl+Alt+Z כדי להשבית אותו.</translation>
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
+<translation id="7129360219436193655">מצב סמן לייזר</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">‏CAPS LOCK פועל.
@@ -221,6 +230,7 @@
 <translation id="8054466585765276473">מחשב זמן סוללה</translation>
 <translation id="8077816382010018681">‏כותרת ההודעה של תכונת QU תופיע כאן</translation>
 <translation id="8103386449138765447">‏הודעות SMS‏: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">ענה על כמה שאלות כדי לתת לנו משוב.</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8206859287963243715">סלולארי</translation>
 <translation id="8308637677604853869">התפריט הקודם</translation>
@@ -232,7 +242,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">לחץ להצגה</translation>
 <translation id="8825534185036233643">אין תמיכה בשיקוף מסך עם יותר משני מסכים.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

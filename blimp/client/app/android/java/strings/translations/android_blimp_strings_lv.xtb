@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Piešķires kļūme. Nav pieejamas programmas.</translation>
 <translation id="117738548141695034">Blimp slēdzis</translation>
 <translation id="1416550906796893042">Lietojumprogrammas versija</translation>
+<translation id="1491042665327336022">Lūdzu, restartējiet lietojumprogrammu.</translation>
 <translation id="1750179245464827362">Rādīt atkļūdošanas informāciju</translation>
 <translation id="2004526128230838685">Piešķires kļūme. Nezināma problēma.</translation>
 <translation id="2023631438558435272">Piešķires kļūme. Nederīga atbilde.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Piešķires kļūme. Tīkla pieprasījuma kļūme.</translation>
 <translation id="2789927415041640472">Lūdzu, restartējiet lietojumprogrammu, lai izmantotu jaunā piešķīrēja konfigurāciju.</translation>
 <translation id="3046825211487065480">Piešķires kļūme. Otrs pieprasījums nosūtīts, pirms tika saņemta atbilde uz pirmo pieprasījumu.</translation>
+<translation id="307654885162326571">Ievadiet tekstu</translation>
 <translation id="3286538390144397061">Restartēt tūlīt</translation>
 <translation id="3346106862344060497">Programma ir pievienota.</translation>
 <translation id="3407245330823033366">Lūdzu, izvēlieties kontu, kurš tiks izmantots ar Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7795546637165553439">Blimp iestatījumi</translation>
 <translation id="7961542533680218955">Piešķire bija veiksmīga.</translation>
+<translation id="8135971362156222300">Lūdzu, pierakstieties Google kontā, lai iespējotu Blimp.</translation>
 <translation id="8514856595257368555">Pilnvara ir iegūta.</translation>
 <translation id="8880704056643418312">Izpildes gadījumi</translation>
 </translationbundle>

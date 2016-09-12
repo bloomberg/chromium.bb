@@ -4,6 +4,7 @@
 <translation id="1091157412887719337">Přidružení se nezdařilo. Není k dispozici žádný modul.</translation>
 <translation id="117738548141695034">Přepínač jádra Blimp</translation>
 <translation id="1416550906796893042">Verze aplikace</translation>
+<translation id="1491042665327336022">Restartujte prosím aplikaci.</translation>
 <translation id="1750179245464827362">Zobrazit ladicí informace</translation>
 <translation id="2004526128230838685">Přidružení se nezdařilo. Neznámý problém.</translation>
 <translation id="2023631438558435272">Přidružení se nezdařilo. Neplatná odpověď.</translation>
@@ -13,6 +14,7 @@
 <translation id="2353984724370197742">Přidružení se nezdařilo. Síťový požadavek se nezdařil.</translation>
 <translation id="2789927415041640472">Chcete-li používat novou konfiguraci přiřazovače, restartujte aplikaci.</translation>
 <translation id="3046825211487065480">Přidružení se nezdařilo. Druhý požadavek byl odeslán ještě před přijetím odpovědi na první požadavek.</translation>
+<translation id="307654885162326571">Zadejte text</translation>
 <translation id="3286538390144397061">Restartovat</translation>
 <translation id="3346106862344060497">Vyhledávač byl připojen.</translation>
 <translation id="3407245330823033366">Vyberte účet, který chcete použít se službou Blimp.</translation>
@@ -39,6 +41,7 @@
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7795546637165553439">Nastavení jádra Blimp</translation>
 <translation id="7961542533680218955">Přidružení bylo úspěšné.</translation>
+<translation id="8135971362156222300">Chcete-li aktivovat Blimp, přihlaste se k účtu Google.</translation>
 <translation id="8514856595257368555">Token byl načten.</translation>
 <translation id="8880704056643418312">Odeslání</translation>
 </translationbundle>

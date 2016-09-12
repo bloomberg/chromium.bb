@@ -13,6 +13,7 @@
 <translation id="1197267115302279827">Перемістити закладки</translation>
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1201402288615127009">Далі</translation>
+<translation id="1204037785786432551">Завантажити посилання</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="1211530540767271776">Немає пристроїв USB</translation>
@@ -55,6 +56,7 @@
 <translation id="1612196535745283361">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Вилучити 1 вибраний елемент}one{Вилучити # вибраний елемент}few{Вилучити # вибрані елементи}many{Вилучити # вибраних елементів}other{Вилучити # вибраного елемента}}</translation>
 <translation id="1639239467298939599">Завантаження</translation>
 <translation id="1641113438599504367">Безпечний перегляд</translation>
 <translation id="164269334534774161">Ви переглядаєте офлайн-копію цієї сторінки, створену <ph name="CREATION_TIME" /></translation>
@@ -157,6 +159,7 @@
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
 <translation id="2811892995384186721">Немає вашого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
+<translation id="2833899785646504169">Не вдається додати</translation>
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -212,6 +215,7 @@
 <translation id="3452612588551937789">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="3485544713029068372">Smart Lock для паролів</translation>
 <translation id="3492207499832628349">Нова анонімна вкладка</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про пропонований вміст</translation>
 <translation id="3518985090088779359">Прийняти та продовж.</translation>
 <translation id="3522247891732774234">Доступне оновлення. Більше опцій</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -231,6 +235,7 @@
 <translation id="3716158070938632480">Поруч є веб-сторінки</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
+<translation id="380076759404194828">{NUM_SELECTED,plural, =1{Вибрано 1 елемент}one{Вибрано # елемент}few{Вибрано # елементи}many{Вибрано # елементів}other{Вибрано # елемента}}</translation>
 <translation id="3810838688059735925">Відео</translation>
 <translation id="3810973564298564668">Змінити</translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
@@ -249,6 +254,7 @@
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4042870126885713738">Показувати пропозиції, коли неможливо перейти за веб-адресою чи не вдається встановити з’єднання</translation>
 <translation id="4056223980640387499">Сепія</translation>
+<translation id="4060598801229743805">Панель інструментів розташовано вгорі екрана</translation>
 <translation id="4062305924942672200">Правова інформація</translation>
 <translation id="4089831646916293264">Ця функція може перешкоджати доступу до платних служб передавання даних, які надаються вашим оператором.</translation>
 <translation id="4095146165863963773">Видалити дані додатка?</translation>
@@ -335,6 +341,7 @@
 <translation id="5131405117025179004">Редагування збережених облікових даних</translation>
 <translation id="5138299137310274655">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE" />. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Очистити збережені дані</translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />миттєвий запуск<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Це обліковий запис дитини</translation>
 <translation id="5161254044473106830">Введіть назву</translation>
 <translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE" />?</translation>
@@ -455,8 +462,9 @@
 <translation id="6433490469411711332">Змінити контактні дані</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
 <translation id="6448273550210938826">Пропозиції пошуку та URL-адрес</translation>
-<translation id="6458785801851713928">Синхронізація не доступна для вашого домену.</translation>
+<translation id="6463070039183944536">Додавання…</translation>
 <translation id="6464825623202322042">Цей пристрій</translation>
+<translation id="6475951671322991020">Завантажити відео</translation>
 <translation id="6477460825583319731">Недійсна електронна адреса</translation>
 <translation id="6482749332252372425">Не вдалося завантажити файл <ph name="FILE_NAME" />. Замало місця.</translation>
 <translation id="6527303717912515753">Надіслати</translation>
@@ -491,6 +499,7 @@
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Надсилати лише через Wi-Fi</translation>
+<translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
 <translation id="6868088497967843822">Увійдіть в обліковий запис, щоб мати доступ до своїх закладок, історії, паролів та інших налаштувань на всіх своїх пристроях</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
@@ -500,6 +509,7 @@
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6978479750597523876">Скинути налаштування перекладу</translation>
 <translation id="6981982820502123353">Доступність</translation>
+<translation id="6985347914332179298">Немає завантажень</translation>
 <translation id="6990079615885386641">Завантажити додаток із магазину Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Автоматично повідомляти Google деталі щодо можливих порушень безпеки</translation>
 <translation id="6992289844737586249">Запитувати, перш ніж дозволити сайтам використовувати мікрофон (рекомендується)</translation>
@@ -526,6 +536,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
 <translation id="7327835590071894791">Ваша вкладка тепер у фоновому режимі.</translation>
 <translation id="7347770551817603360">Офлайн-вміст</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поділитись 1 вибраним елементом}one{Поділитися # вибраним елементом}few{Поділитися # вибраними елементами}many{Поділитися # вибраними елементами}other{Поділитися # вибраного елемента}}</translation>
 <translation id="7366340029385295517">Трансляція на екран "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7378627244592794276">Ні</translation>
@@ -654,6 +665,7 @@
 <translation id="8847988622838149491">Сповіщення щодо USB</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Обсяг пам’яті</translation>
+<translation id="8872506776304248286">Відкрити в додатку</translation>
 <translation id="8901170036886848654">Немає закладок</translation>
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>

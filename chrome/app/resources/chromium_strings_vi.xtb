@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Sử dụng mật khẩu do Chromium tạo</translation>
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>
 <translation id="390894725198123737">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chromium khác dùng chung tài khoản OS X này.</translation>
-<translation id="3994125055863078356">Chromium không thể trở thành trình duyệt mặc định.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và chạy lại Chromium để thay đổi này có hiệu lực.</translation>
 <translation id="4182290826692170034">Chromium là trình duyệt mặc định của bạn. Tuyệt vời!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium yêu cầu Windows 7 trở lên.</translation>
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
+<translation id="5726838626470692954">Người quản lý của bạn phải xóa và thêm lại bạn vào Chromium.</translation>
 <translation id="5768914737813585044">Hiển thị Chromium OS bằng ngôn ngữ này</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
@@ -178,6 +178,7 @@
 
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
 <translation id="6734080038664603509">Cập nhật &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium đã được cài đặt cho tất cả người dùng trên máy tính của bạn.</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="6838494703713445896">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin hợp lệ về Tính minh mạch của chứng chỉ.</translation>
@@ -203,7 +204,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7223968959479464213">Trình quản lý tác vụ - Chromium</translation>
 <translation id="722928257909516027">Hiển thị menu Chromium</translation>
 <translation id="731644333568559921">Cập nhật &amp;Chromium OS</translation>
-<translation id="731795002583552498">Đang cập nhật Chromium</translation>
 <translation id="7318036098707714271">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. 
 
 Chromium không thể khôi phục cài đặt của bạn.</translation>

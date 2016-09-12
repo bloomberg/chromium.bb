@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a PIN kódot azon az eszközön: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Megváltozott a következő beviteli módszerre váltás billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
+<translation id="1127238861555034875">Nagyító mód</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
@@ -84,6 +85,8 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3147142846278915599">Indító (alkalmazások szinkronizálása…)</translation>
 <translation id="3157169093162779309">Az elforgatás zárolásának engedélyezése</translation>
 <translation id="3294437725009624529">Vendég</translation>
+<translation id="3335772982573114336">Új jegyzet</translation>
+<translation id="3364721542077212959">Érintőceruza eszközök</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
@@ -97,6 +100,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> felbontása erre módosult: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wi-Fi engedélyezése</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Terület rögzítése</translation>
 <translation id="372094107052732682">A kilépéshez nyomja meg kétszer a Ctrl+Shift+Q billentyűkódot.</translation>
 <translation id="3742055079367172538">Képernyőkép elkészítve</translation>
 <translation id="3775358506042162758">Legfeljebb három fiókot használhat a többfiókos bejelentkezés során.</translation>
@@ -130,6 +134,8 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">A Google Drive beállításai...</translation>
 <translation id="5168181903108465623">Cast-eszközök állnak rendelkezésre</translation>
+<translation id="5170568018924773124">Megjelenítés mappában</translation>
+<translation id="5191140942132549112">KÉRDÉSEK MEGJELENÍTÉSE</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="5238774010593222950">Nem lehet bejelentkezni újabb fiókba.</translation>
 <translation id="532063867737390965">Ezt a hálózati beállítást letiltotta a rendszergazda.</translation>
@@ -167,6 +173,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6203030746557259519">Virtuális kijelző</translation>
 <translation id="6248847161401822652">A kilépéshez nyomja meg kétszer a Ctrl Shift Q billentyűkódot.</translation>
+<translation id="6297287540776456956">Terület kijelöléséhez használja az érintőceruzát</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS innen: <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
@@ -176,6 +183,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">C típusú USB-vel kompatibilis eszköz (jobb oldali port)</translation>
 <translation id="6501401484702599040">Képernyő átküldése ide: <ph name="RECEIVER_NAME" /></translation>
+<translation id="6537270692134705506">Képernyőkép rögzítése</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6596816719288285829">IP-cím</translation>
@@ -196,6 +204,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="7097613348211027502">A ChromeVox (hangos visszajelzés) engedélyezett. A
 letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
+<translation id="7129360219436193655">Lézermutató mód</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
 <translation id="7209101170223508707">A CAPS LOCK be van kapcsolva.
@@ -222,6 +231,7 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8077816382010018681">A gyorsfeloldás funkció értesítésének a címe ide kerül</translation>
 <translation id="8103386449138765447">SMS-üzenetek: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Néhány kérdés megválaszolásával ossza meg velünk, mennyire van megelégedve munkákkal.</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Előző menü</translation>
@@ -233,7 +243,6 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">Kattintson a megtekintéshez</translation>
 <translation id="8825534185036233643">A böngésző nem támogatja a tükrözést kettőnél több megjelenítő esetén.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>

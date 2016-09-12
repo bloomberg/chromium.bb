@@ -79,6 +79,7 @@
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित वर्शन उपलब्‍ध है.</translation>
 <translation id="3149510190863420837">Chrome ऐप्स</translation>
+<translation id="3180085900771989961">आपके प्रबंधक को आपको Chrome से निकालना और वापस जोड़ना होगा.</translation>
 <translation id="3251381707915721925">यह सेट करने के लिए कि <ph name="NEW_PROFILE_NAME" /> द्वारा कौन सी वेबसाइट देखी जा सकती है, आप <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> पर जाकर प्रतिबंध और सेटिंग कॉन्फ़िगर कर सकते हैं. यदि आप डिफ़ॉल्ट सेटिंग नहीं बदलते हैं, तो <ph name="NEW_PROFILE_NAME" /> द्वारा वेब प्रोफ़ाइल पर सब कुछ ब्राउज़ किया जा सकता है.
 
 <ph name="NEW_PROFILE_NAME" /> को अपना खाता एक्सेस करने से रोकने के लिए, जब आप क्रोमियम का उपयोग नहीं कर रहे हों तो अपनी प्रोफ़ाइल को अवश्य लॉक कर दें. ऐसा करने के लिए, ब्राउज़र के ऊपर-दाएं कोने में स्थित अपना प्रोफ़ाइल नाम क्लिक करें और "बाहर निकलें और चाइल्ड लॉक करें" चुनें.
@@ -180,8 +181,8 @@
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
 <translation id="6236285698028833233">Google Chrome ने अपडेट करना रोक दिया है और अब वह आपके ऑपरेटिंग सिस्टम के इस वर्शन का समर्थन नहीं करता.</translation>
+<translation id="6291549208091401781">Google Chrome आपके कंप्यूटर पर मौजूद सभी उपयोगकर्ताओं के लिए पहले से इंंस्टॉल है.</translation>
 <translation id="629218512217695915">Chrome द्वारा जनरेट किए गए पासवर्ड का उपयोग करें</translation>
-<translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368805772029492593">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपके डेटा को एन्‍क्रिप्‍ट करेगा.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
 <translation id="6400076122676892962">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि अब Mac OS X 10.6, 10.7, और 10.8 समर्थित नहीं रहेंगे.</translation>
@@ -191,7 +192,6 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
-<translation id="6648058004052854464">Google Chrome डिफ़ॉल्ट ब्राउज़र नहीं बन सका.</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
 <translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>

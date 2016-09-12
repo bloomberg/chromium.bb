@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1014825444426747588">trống</translation>
 <translation id="1018939186200882850">mục menu</translation>
 <translation id="1020833440720551630">tắt tiếng bản âm thanh</translation>
 <translation id="10623998915015855">nút chuyển đổi</translation>
 <translation id="1088086359088493902">Giây</translation>
 <translation id="1171774979989969504">Vui lòng nhập địa chỉ email.</translation>
+<translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1188858454923323853">bổ sung</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
 <translation id="1206693055195146388">thanh trượt</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">SA/CH</translation>
 <translation id="1832974991323546415">phát trên thiết bị từ xa</translation>
 <translation id="1842960171412779397">chọn</translation>
+<translation id="1854180393107901205">Dừng truyền</translation>
 <translation id="1880518467580572141">đường viền</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">trạng thái</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">cụm từ</translation>
 <translation id="3822383571486410024">Hãy kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng <ph name="CURRENT_LENGTH" /> ký tự).</translation>
 <translation id="383465348367842624">Phần đứng trước '<ph name="ATSIGN" />' không được chứa biểu tượng '<ph name="INVALIDCHARACTER" />'.</translation>
+<translation id="3846214748874656680">Thoát chế độ toàn màn hình</translation>
 <translation id="3924558731517983934">ứng dụng</translation>
 <translation id="3960700977367013758">thanh cuộn</translation>
 <translation id="4103419683916926126">Mili giây</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Vui lòng nhập một số.</translation>
 <translation id="4975562563186953947">Đã chọn <ph name="SELECTED_COUNT" /></translation>
+<translation id="4992066212339426712">Bật âm thanh</translation>
 <translation id="49969490063480558">Vui lòng nhập phần đứng sau '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' không hoàn chỉnh.</translation>
 <translation id="5034860022980953847">chỉ báo tiến trình</translation>
 <translation id="5048533449481078685">đánh dấu danh sách</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">thoát khỏi chế độ toàn màn hình</translation>
 <translation id="5476505524087279545">bỏ chọn</translation>
 <translation id="5516424706154626233">bộ chọn ngày</translation>
+<translation id="5537725057119320332">Truyền</translation>
 <translation id="5546461542133609677">bật tiếng</translation>
 <translation id="561939826962581046">thời gian</translation>
 <translation id="5641012560118721995">tạm dừng phát lại</translation>
 <translation id="5643186887447432888">nút</translation>
+<translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5843503607508392247">Khác...</translation>
 <translation id="5860033963881614850">Tắt</translation>
+<translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5944544982112848342">2048 (Cấp độ cao)</translation>
 <translation id="5966707198760109579">Tuần</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
 <translation id="6739588121953935928">thước</translation>
 <translation id="6755330956360078551">chú giải công cụ</translation>
+<translation id="6790428901817661496">Phát</translation>
 <translation id="6820355525329141109">Không thể tải plugin.</translation>
 <translation id="6843725295806269523">tắt tiếng</translation>
 <translation id="6845533974506654842">nhấn</translation>

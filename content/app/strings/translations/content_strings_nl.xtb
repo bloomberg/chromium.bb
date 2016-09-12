@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1014825444426747588">leeg</translation>
 <translation id="1018939186200882850">menu-item</translation>
 <translation id="1020833440720551630">audiotrack dempen</translation>
 <translation id="10623998915015855">schakelknop</translation>
 <translation id="1088086359088493902">Seconden</translation>
 <translation id="1171774979989969504">Geef een e-mailadres op.</translation>
+<translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1188858454923323853">aanvullend</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">schuifregelaar</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">a.m./p.m.</translation>
 <translation id="1832974991323546415">afspelen op extern apparaat</translation>
 <translation id="1842960171412779397">Selecteren</translation>
+<translation id="1854180393107901205">Casten stoppen</translation>
 <translation id="1880518467580572141">overzicht</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel <ph name="CURRENT_LENGTH" /> tekens).</translation>
 <translation id="383465348367842624">Het naamgedeelte vóór '<ph name="ATSIGN" />' mag niet het teken '<ph name="INVALIDCHARACTER" />' bevatten.</translation>
+<translation id="3846214748874656680">Volledig scherm sluiten</translation>
 <translation id="3924558731517983934">app</translation>
 <translation id="3960700977367013758">schuifbalk</translation>
 <translation id="4103419683916926126">Milliseconden</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4812940957355064477">Voer een getal in.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> geselecteerd</translation>
+<translation id="4992066212339426712">Dempen opheffen</translation>
 <translation id="49969490063480558">Geef een adresgedeelte op na '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is onvolledig.</translation>
 <translation id="5034860022980953847">voortgangsindicator</translation>
 <translation id="5048533449481078685">lijstmarkering</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">volledig scherm sluiten</translation>
 <translation id="5476505524087279545">Deselecteren</translation>
 <translation id="5516424706154626233">datumkiezer</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">dempen opheffen</translation>
 <translation id="561939826962581046">tijd</translation>
 <translation id="5641012560118721995">afspelen onderbreken</translation>
 <translation id="5643186887447432888">knop</translation>
+<translation id="57838592816432529">Dempen</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5843503607508392247">Anders...</translation>
 <translation id="5860033963881614850">Uit</translation>
+<translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="5944544982112848342">2048 (hoog niveau)</translation>
 <translation id="5966707198760109579">Week</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">stappenregelaar</translation>
 <translation id="6739588121953935928">liniaal</translation>
 <translation id="6755330956360078551">knopinfo</translation>
+<translation id="6790428901817661496">Spelen</translation>
 <translation id="6820355525329141109">Kan plug-in niet laden.</translation>
 <translation id="6843725295806269523">dempen</translation>
 <translation id="6845533974506654842">Indrukken</translation>

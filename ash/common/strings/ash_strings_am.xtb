@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">የግቤት ስልቱ የሚቀየርበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
+<translation id="1127238861555034875">የማጉያ መነጽር ሁነታ</translation>
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
 <translation id="1252999807265626933">ኃይል ከ<ph name="POWER_SOURCE" /> በመሙላት ላይ</translation>
 <translation id="1270290102613614947">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ተሰናክሏል</translation>
@@ -84,6 +85,8 @@
 <translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="3157169093162779309">ተሽከርካሪ መቆለፊያን አንቃ</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
+<translation id="3335772982573114336">አዲስ ማስታወሻ</translation>
+<translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
 <translation id="3371140690572404006">የUSB-C መሣሪያ (የቀኝ ጎን የፊት ወደብ)</translation>
 <translation id="3445925074670675829">USB-C መሣሪያ</translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
@@ -97,6 +100,7 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ጥራት ወደ <ph name="RESOLUTION" /> ተለውጧል</translation>
 <translation id="370649949373421643">Wi-Fi ያንቁ</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">ክልልን አንሳ</translation>
 <translation id="372094107052732682">ለመውጣት Ctrl+Shift+Qን ይጫኑ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
 <translation id="3775358506042162758">በአንድ ጊዜ ብዙ መግባት ላይ እስከ ሶስት መለያዎች ድረስ ብቻ ነው ሊኖርዎ የሚችለው።</translation>
@@ -130,6 +134,8 @@
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">የGoogle Drive ቅንብሮች...</translation>
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
+<translation id="5170568018924773124">በአቃፊ አሳይ</translation>
+<translation id="5191140942132549112">ጥያቄዎችን አሳይ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5238774010593222950">ወደሌላ መለያ በመለያ መግባት አይቻልም።</translation>
 <translation id="532063867737390965">ይህ የአውታረ መረብ ቅንብር በአስተዳዳሪው ተሰናክሏል።</translation>
@@ -167,6 +173,7 @@
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="6203030746557259519">ምናባዊ ማሳያ</translation>
 <translation id="6248847161401822652">ለመተው Control Shift Qን ሁለት ጊዜ ይጫኑ።</translation>
+<translation id="6297287540776456956">ክልል ለመምረጥ ስቲለሱን ይጠቀሙ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ወደ <ph name="ROTATION" /> ዞሯል</translation>
 <translation id="6359806961507272919">ኤስ ኤም ኤስ ከ<ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>
@@ -176,6 +183,7 @@
 <translation id="6459472438155181876">ማያ ገጽ ወደ <ph name="DISPLAY_NAME" /> በመቀጠል ላይ</translation>
 <translation id="6490471652906364588">USB-C መሣሪያ (የቀኝ ወደብ)</translation>
 <translation id="6501401484702599040">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
+<translation id="6537270692134705506">ማያ ገጽን አንሳ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
 <translation id="6596816719288285829">IP አድራሻ</translation>
@@ -196,6 +204,7 @@
 <translation id="7097613348211027502">ChromeVox (የቃል ግብረመልስ) ነቅቷል። 
 ለማሰናከል Ctrl+Alt+Z ይጫኑ።</translation>
 <translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
+<translation id="7129360219436193655">የሌዘር ጨረር ጠቋሚ ሁነታ</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7209101170223508707">CAPS LOCK በርቷል።
@@ -222,6 +231,7 @@
 <translation id="8054466585765276473">የባትሪ ጊዜን በማስላት ላይ።</translation>
 <translation id="8077816382010018681">የQU ባህሪ ማሳወቂያ ርዕስ እዚህ ነው የሚሆነው።</translation>
 <translation id="8103386449138765447">የኤስ ኤም ኤስ መልዕክቶች፦ <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">ለጥቂት ጥያቄዎች መልስ በመስጠት እኛ እንዴት እያደረግን እንዳለን ያሳውቁን።</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8206859287963243715">ሴሉላር</translation>
 <translation id="8308637677604853869">ቀዳሚ ምናሌ</translation>
@@ -233,7 +243,6 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">አነስተኛ ኃይል ያለው ባትሪ መሙያ ተገናኝቷል</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="882279321799040148">ለማየት ጠቅ ያድርጉ</translation>
 <translation id="8825534185036233643">ከሁለት ማሳያዎች በላይ ማንጸባረቅ አይደገፍም።</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>

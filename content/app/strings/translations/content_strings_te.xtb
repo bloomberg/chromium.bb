@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1014825444426747588">ఖాళీ</translation>
 <translation id="1018939186200882850">మెను అంశం</translation>
 <translation id="1020833440720551630">ఆడియో ట్రాక్‌ను మ్యూట్ చేయి</translation>
 <translation id="10623998915015855">టోగుల్ బటన్</translation>
 <translation id="1088086359088493902">సెకన్లు</translation>
 <translation id="1171774979989969504">దయచేసి ఇమెయిల్ చిరునామాను ఎంటర్ చెయ్యండి.</translation>
+<translation id="1178581264944972037">పాజ్ చేయి</translation>
 <translation id="1188858454923323853">బహుమానపూర్వకం</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">స్లయిడర్</translation>
@@ -25,6 +25,7 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">రిమోట్ పరికరంలో ప్లే చేస్తుంది</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
+<translation id="1854180393107901205">ప్రసారాన్ని ఆపివేయి</translation>
 <translation id="1880518467580572141">చుట్టుగీత</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">స్థితి</translation>
@@ -71,6 +72,7 @@
 <translation id="3808586225841795776">పదం</translation>
 <translation id="3822383571486410024">దయచేసి ఈ వచనాన్ని <ph name="MIN_CHARACTERS" /> లేదా అంతకంటే ఎక్కువ అక్షరాలకు పొడిగించండి (ప్రస్తుతం మీరు <ph name="CURRENT_LENGTH" /> అక్షరాలను ఉపయోగిస్తున్నారు).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />'కి ముందు ఉన్న భాగంలో '<ph name="INVALIDCHARACTER" />' చిహ్నం ఉండకూడదు.</translation>
+<translation id="3846214748874656680">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="3924558731517983934">అనువర్తనం</translation>
 <translation id="3960700977367013758">స్క్రోల్ పట్టీ</translation>
 <translation id="4103419683916926126">మిల్లీసెకన్లు</translation>
@@ -91,6 +93,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">దయచేసి సంఖ్యను నమోదు చేయండి.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ఎంచుకోబడ్డాయి</translation>
+<translation id="4992066212339426712">అన్‌మ్యూట్ చేయి</translation>
 <translation id="49969490063480558">దయచేసి '<ph name="ATSIGN" />'కి తర్వాత ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS" />' అసంపూర్ణంగా ఉంది.</translation>
 <translation id="5034860022980953847">ప్రోగ్రెస్ సూచిక</translation>
 <translation id="5048533449481078685">జాబితా మార్కర్</translation>
@@ -105,13 +108,16 @@
 <translation id="5468998798572797635">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
 <translation id="5516424706154626233">తేదీ ఎంపిక</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">అన్‌మ్యూట్ చేయి</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5641012560118721995">ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
 <translation id="5643186887447432888">బటన్</translation>
+<translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="583281660410589416">తెలియని</translation>
 <translation id="5843503607508392247">ఇతర...</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
+<translation id="588258955323874662">పూర్తితెర</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="5944544982112848342">2048 (ఉత్తమ గ్రేడ్)</translation>
 <translation id="5966707198760109579">వారం</translation>
@@ -134,6 +140,7 @@
 <translation id="6692633176391053278">స్టెప్పర్</translation>
 <translation id="6739588121953935928">రూలర్</translation>
 <translation id="6755330956360078551">సాధన చిట్కా</translation>
+<translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6820355525329141109">ప్లగిన్‌ను లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="6843725295806269523">మ్యూట్ చేయి</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>

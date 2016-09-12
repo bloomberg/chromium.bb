@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1007441141628883408">Se non impostata o impostata su true, consente gli aggiornamenti di tutti i componenti di <ph name="PRODUCT_NAME" />.
+
+      Se impostata su false, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questa norma: gli aggiornamenti dei componenti che non contengono codice eseguibile, che non alterano in modo significativo il comportamento del browser o che sono importanti per la sicurezza non vengono disattivati.
+      Esempi di tali componenti sono gli elenchi di revoche di certificati e i dati di Navigazione sicura. </translation>
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
@@ -28,6 +32,9 @@
           Se viene impostata questa norma, l'host di accesso remoto utilizzerà questo URL per convalidare i token di autenticazione dei client di accesso remoto, per accettare le connessioni. Deve essere utilizzato insieme a  RemoteAccessHostTokenUrl.
 
           Questa funzione è attualmente disattivata sul lato server.</translation>
+<translation id="1093082332347834239">Se l'impostazione viene attivata, l'host per l'assistenza remota viene eseguito in un processo con le autorizzazioni <ph name="UIACCESS_PERMISSION_NAME" />. In questo modo gli utenti remoti possono interagire con finestre con privilegi più elevati sul desktop dell'utente locale.
+
+          Se l'impostazione viene disattivata o non configurata, l'host dell'assistenza remota viene eseguito nel contesto dell'utente e gli utenti remoti non possono interagire con finestre con privilegi più elevati sul desktop.</translation>
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
 <translation id="1103860406762205913">Attiva il vecchio accesso basato sul Web</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
@@ -50,6 +57,13 @@
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
+<translation id="127699919157094139">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite i servizi di sincronizzazione ospitati da Google e impedisce gli utenti di modificare questa impostazione.
+
+      Se questa impostazione viene attivata, gli utenti non possono modificare o eseguire l'override dell'impostazione in <ph name="PRODUCT_NAME" />.
+
+      Se la norma non viene impostata, l'utente può scegliere se utilizzare Google Sync o meno.
+
+      Per disattivare completamente Google Sync, si consiglia di disabilitare il servizio Google Sync nella Console di amministrazione di Google.</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
@@ -115,6 +129,14 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
       sarà disattivata. In questo caso, l'utente non potrà attivare la funzione.</translation>
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> ignorerà i proxy relativi all'elenco di host specificato qui.
+
+          Questa norma viene applicata solo se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
+
+          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
+
+          Per esempi più dettagliati, visita il seguente indirizzo:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
@@ -125,6 +147,7 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendali non potranno utilizzare ARC.</translation>
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
+<translation id="1606958238518590302">Se la norma è impostata su true, gli utenti non possono scrivere su dispositivi di archiviazione esterni.</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="1617384279878333801">Attiva la funzione Aggiungi persona in Profile Manager</translation>
@@ -556,6 +579,7 @@ Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti pot
 <translation id="2850122204195089673">Rendi disponibile la modalità Desktop unificato e attivala per impostazione predefinita.</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
 <translation id="2872961005593481000">Spegni</translation>
+<translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
 <translation id="2884728160143956392">Consenti solo i cookie per la sessione su questi siti</translation>
 <translation id="2893546967669465276">Consente di inviare log di sistema al server di gestione</translation>
@@ -655,6 +679,24 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Questa norma non è ancora pronta per essere utilizzata, pertanto non deve essere utilizzata.
           </translation>
+<translation id="3201273385265130876">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
+
+          Se l'utente sceglie di non utilizzare mai un server proxy e connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+          Se l'utente sceglie di utilizzare le impostazioni proxy del sistema, tutte le altre opzioni vengono ignorate.
+
+          Se l'utente sceglie di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
+
+          Se l'utente sceglie di utilizzare uno script proxy .pac, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy" e "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
+
+          Se l'utente sceglie di utilizzare uno script proxy .pac, deve specificare l'URL per lo script in "URL di un file proxy .pac".
+
+          Per esempi dettagliati, visita il seguente indirizzo:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+          Se la norma non viene impostata gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3206731874112238027">Disattiva anteprima di stampa (ritirata)</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
@@ -759,6 +801,18 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se viene disattivata questa impostazione o se non viene impostato un valore, non viene applicata la Modalità di protezione di YouTube.</translation>
 <translation id="3750220015372671395">Blocca la generazione di chiavi su questi siti</translation>
 <translation id="3756011779061588474">Blocca modalità sviluppatore</translation>
+<translation id="3758089716224084329">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
+
+      Se l'utente sceglie di non utilizzare mai un server proxy e di connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+      Se l'utente sceglie di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
+
+      Per esempi dettagliati, visita il seguente indirizzo:
+      <ph name="PROXY_HELP_URL" />.
+
+      Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+      Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="3758249152301468420">Disabilita Strumenti per sviluppatori</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="3768412594120638208">Controlla quali tipi di app/estensioni possono essere installati.
@@ -773,6 +827,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
 <translation id="3788662722837364290">Impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo</translation>
 <translation id="3793095274466276777">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli. Se attivi questa impostazione, all'avvio <ph name="PRODUCT_NAME" /> verifica sempre di essere il browser predefinito e, se possibile, si registra automaticamente. Se l'impostazione è disattivata, <ph name="PRODUCT_NAME" /> non potrà mai verificare di essere il browser predefinitoe disattiva i controlli utente per rendere attiva l'opzione. Se l'impostazione non è configurata, <ph name="PRODUCT_NAME" /> consente all'utente di controllare se il browser predefinito è impostato e, in caso contrario, se devono essere visualizzate le notifiche per gli utenti.</translation>
+<translation id="379659290574555063">Considera i dispositivi di archiviazione esterni come di sola lettura.</translation>
 <translation id="3800626789999016379">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per il download dei file.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente ne abbia specificata una o abbia attivato il flag da attivare ogni volta per il percorso di download.
@@ -951,7 +1006,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       La norma stessa è supportata sulle piattaforme precedenti, ma la funzione attivata dalla norma potrebbe essere disponibile su meno piattaforme. Non è possibile riattivare tutte le funzioni ritirate della piattaforma web, ma soltanto quelle elencate esplicitamente di seguito e soltanto per un periodo di tempo limitato, che è diverso per ogni funzione. Il formato generico del tag string sarà [NomeFunzioneRitirata]_EffectiveUntil[aaaammgg]. È possibile conoscere lo scopo delle modifiche alle funzioni della piattaforma web all'indirizzo https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Attiva il blocco quando lo stato del dispositivo diventa inattivo o sospeso</translation>
-<translation id="4445684791305970001">Consente di disattivare gli Strumenti per sviluppatori e la Console JavaScript. Se attivi questa impostazione, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate. Se disattivi questa opzione o non la imposti sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.</translation>
 <translation id="4449545651113180484">Ruota lo schermo in senso orario di 270°</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
@@ -1022,6 +1076,22 @@ Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
 Se la norma non viene impostata, il puntatore grande sarà inizialmente disattivato ma gli utenti potranno attivarlo in qualsiasi momento.</translation>
 <translation id="4807950475297505572">Gli utenti utilizzati meno di recente vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
+<translation id="4815725774537609998">Questa norma è obsoleta, utilizza ProxyMode al suo posto.
+
+          Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
+
+          Se l'utente sceglie di non utilizzare mai un server proxy e di connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+          Se l'utente sceglie di utilizzare le impostazioni proxy di sistema o di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
+
+          Se l'utente sceglie le impostazioni proxy manuali, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy", "URL di un file proxy .pac" ed "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
+
+          Per esempi dettagliati visita il seguente indirizzo:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> ignora tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+          Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="4816674326202173458">Consenti all'utente aziendale di essere l'utente principale e secondario (comportamento predefinito per gli utenti non gestiti)</translation>
 <translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
 <translation id="4834526953114077364">Gli utenti utilizzati meno di recente che non hanno eseguito l'accesso negli ultimi tre mesi vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
@@ -1239,6 +1309,7 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="5795001131770861387">Consente di attivare il supporto HTTP/0.9 sulle porte non predefinite</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="5815129011704381141">Riavvia automaticamente dopo l'aggiornamento</translation>
@@ -1328,6 +1399,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="6076099373507468537">Definisce l'elenco di dispositivi USB che possono essere scollegati dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
 
       Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
+<translation id="6093156968240188330">Consente agli utenti remoti di interagire con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
 <translation id="6095999036251797924">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato durante l'utilizzo di alimentazione CA o batteria.
 
 Se il periodo di tempo viene impostato su un valore maggiore di zero, questo valore rappresenta il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
@@ -1575,6 +1647,7 @@ Se attivi questa impostazione, gli host potranno essere condivisi solo utilizzan
 Se disattivi o non definisci questa impostazione, gli host potranno essere condivisi da qualsiasi account.
 
 Vedi anche RemoteAccessHostClientDomain.</translation>
+<translation id="6979510692034647325">Consenti gli aggiornamenti dei componenti in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Se i controlli OCSP/CRL online sono obbligatori o meno per i trust anchor locali</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
@@ -1814,6 +1887,13 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       È sconsigliato bloccare gli URL "chrome://*" interni perché potrebbero essere generati errori imprevisti.
 
       Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
+<translation id="7724994675283793633">La norma consente di attivare HTTP/0.9 sulle porte diverse da 80 per HTTP e 443 per HTTPS.
+
+      Per impostazione predefinita, la norma è disattivata e, se attivata, espone gli utenti al problema di sicurezza https://crbug.com/600352.
+
+      La norma è pensata per dare alle aziende la possibilità di eseguire la migrazione dei server esistenti da HTTP/0.9 e in futuro sarà rimossa.
+
+      Se la norma non viene impostata, HTTP/0.9 sarà disattivato sulle porte non predefinite.</translation>
 <translation id="7749402620209366169">Consente di abilitare l'autenticazione a due fattori per gli host di accesso remoto invece di un PIN specificato dall'utente.
 
           Se questa impostazione è abilitata, gli utenti devono fornire un codice valido a due fattori quando accedono a un host.

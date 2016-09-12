@@ -101,7 +101,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3883381313049582448">Použít heslo vygenerované prohlížečem Chromium</translation>
 <translation id="3889543394854987837">Chcete-li otevřít Chromium a začít procházet Internet, klikněte na svoje jméno.</translation>
 <translation id="390894725198123737">V počítačích Mac se hesla mohou ukládat do úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chromium, kteří sdílejí tento účet systému OS X.</translation>
-<translation id="3994125055863078356">Chromium se nepodařilo nastavit jako výchozí prohlížeč.</translation>
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
 <translation id="4182290826692170034">Vaším výchozím prohlížečem je Chromium. Paráda!</translation>
@@ -144,6 +143,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5634636535844844681">Chromium vyžaduje systém Windows 7 nebo vyšší.</translation>
 <translation id="5680901439334282664">přihlaste se do prohlížeče Chromium</translation>
 <translation id="5698481217667032250">Zobrazit Chromium v tomto jazyce</translation>
+<translation id="5726838626470692954">Správce vás musí odebrat a poté vás do prohlížeče Chromium znovu přidat.</translation>
 <translation id="5768914737813585044">Zobrazit Chromium OS v tomto jazyce</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON" />restartování<ph name="END_BUTTON" /> prohlížeče Chromium)</translation>
 <translation id="5796460469508169315">Prohlížeč Chromium je téměř připraven.</translation>
@@ -180,6 +180,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi prohlížeče Chromium.</translation>
 <translation id="6734080038664603509">Aktualizovat &amp;Chromium</translation>
+<translation id="6734291798041940871">Prohlížeč Chromium je na tomto počítači již nainstalován pro všechny uživatele.</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="6810143991807788455">Pomoci s vylepšováním prohlížeče Chromium prostřednictvím nahlášení aktuálního nastavení</translation>
 <translation id="6838494703713445896">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl platné údaje Certificate Transparency.</translation>
@@ -205,7 +206,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="7223968959479464213">Správce úloh – Chromium</translation>
 <translation id="722928257909516027">Zobrazit nabídku Chromium</translation>
 <translation id="731644333568559921">Aktualizovat &amp;Chromium OS</translation>
-<translation id="731795002583552498">Aktualizace prohlížeče Chromium</translation>
 <translation id="7318036098707714271">Soubor nastavení je poškozený nebo neplatný.
 
 Chromium nemůže vaše nastavení obnovit.</translation>

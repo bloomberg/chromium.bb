@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
 <translation id="1021311941847921177">Die Tastenkombination für den Wechsel zur nächsten Eingabemethode hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
+<translation id="1127238861555034875">Lupenmodus</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
@@ -84,6 +85,8 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3335772982573114336">Neue Notiz</translation>
+<translation id="3364721542077212959">Tools für Eingabestifte</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3473479545200714844">Lupe</translation>
@@ -97,6 +100,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3683428399328702079">Auflösung von <ph name="DISPLAY_NAME" /> wurde zu <ph name="RESOLUTION" /> geändert.</translation>
 <translation id="370649949373421643">WLAN aktivieren</translation>
 <translation id="3709443003275901162">9+</translation>
+<translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="372094107052732682">Drücken Sie zum Beenden zweimal Strg+Shift+Q.</translation>
 <translation id="3742055079367172538">Screenshot erstellt</translation>
 <translation id="3775358506042162758">Bei der Mehrfachanmeldung sind maximal drei Konten zulässig.</translation>
@@ -130,6 +134,8 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5012744545445585468">Strg + Shift + Leer</translation>
 <translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
+<translation id="5170568018924773124">In Ordner anzeigen</translation>
+<translation id="5191140942132549112">FRAGEN EINBLENDEN</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5238774010593222950">Fehler bei der Anmeldung in einem anderen Konto</translation>
 <translation id="532063867737390965">Diese Netzwerkeinstellung wurde durch den Administrator deaktiviert.</translation>
@@ -167,6 +173,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6203030746557259519">Virtueller Bildschirm</translation>
 <translation id="6248847161401822652">Drücken Sie zum Beenden zweimal Steuerung-Shift-Q.</translation>
+<translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="6359806961507272919">SMS von <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">Feststelltaste Aus</translation>
@@ -176,6 +183,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME" /> erweitert...</translation>
 <translation id="6490471652906364588">USB-C-Gerät (Port rechts)</translation>
 <translation id="6501401484702599040">Bildschirm wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
+<translation id="6537270692134705506">Screenshot aufnehmen</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
@@ -196,6 +204,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="7097613348211027502">ChromeVox (gesprochenes Feedback) ist aktiviert.
 Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
+<translation id="7129360219436193655">Laserpointer-Modus</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7209101170223508707">Die Feststelltaste ist aktiviert.
@@ -222,6 +231,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="8077816382010018681">Titel der Benachrichtigung für schnelles Entsperren hier einfügen</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT" /></translation>
+<translation id="8185286464235484130">Bitte geben Sie uns Feedback, indem Sie ein paar Fragen beantworten.</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
@@ -233,7 +243,6 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
 <translation id="8814190375133053267">WLAN</translation>
-<translation id="882279321799040148">Zum Anzeigen klicken</translation>
 <translation id="8825534185036233643">Das Spiegeln mit mehr als zwei Displays wird nicht unterstützt.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Suche + Esc</translation>

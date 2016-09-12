@@ -99,7 +99,6 @@
 <translation id="3883381313049582448">Brug kodeord, der er genereret af Chromium</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="390894725198123737">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chromium-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
-<translation id="3994125055863078356">Chromium kunne ikke gøres til standardbrowser.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="4077262827416206768">Luk alle Chromium-vinduer, og genstart Chromium, før denne ændring kan træde i kraft.</translation>
 <translation id="4182290826692170034">Chromium er din standardbrowser. Juhu!</translation>
@@ -142,6 +141,7 @@
 <translation id="5634636535844844681">Chromium kræver Windows 7 eller nyere.</translation>
 <translation id="5680901439334282664">log ind på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette sprog</translation>
+<translation id="5726838626470692954">Din administrator skal fjerne dig fra Chromium og tilføje dig igen.</translation>
 <translation id="5768914737813585044">Vis Chromium OS på dette sprog</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON" />genstart<ph name="END_BUTTON" /> af Chromium)</translation>
 <translation id="5796460469508169315">Chromium er næsten klar.</translation>
@@ -178,6 +178,7 @@
 
 Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chromium.</translation>
 <translation id="6734080038664603509">Opdater &amp;Chromium</translation>
+<translation id="6734291798041940871">Chromium er allerede installeret for alle brugere på computeren.</translation>
 <translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="6810143991807788455">Hjælp med at gøre Chromium bedre ved at rapportere de aktuelle indstillinger</translation>
 <translation id="6838494703713445896">Chromium bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede gyldige Certificate Transparency-oplysninger.</translation>
@@ -203,7 +204,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="7223968959479464213">Jobliste – Chromium</translation>
 <translation id="722928257909516027">Vis Chromium-menuen</translation>
 <translation id="731644333568559921">Opdater &amp;Chromium OS</translation>
-<translation id="731795002583552498">Chromium opdateres</translation>
 <translation id="7318036098707714271">Din præferencefil er beskadiget eller ugyldig.
 
 Chromium kan ikke gendanne dine præferencer.</translation>
