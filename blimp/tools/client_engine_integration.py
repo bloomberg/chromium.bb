@@ -37,7 +37,7 @@ from devil.android.sdk import version_codes
 from devil.utils import cmd_helper
 
 _CLIENT_TOKEN_PATH = posixpath.join('/', 'data', 'data',
-                                    'org.chromium.blimp',
+                                    'org.chromium.chrome',
                                     'blimp_client_token')
 _TOKEN_FILE_PATH = os.path.join(SRC_PATH, 'blimp', 'test', 'data',
                                 'test_client_token')
@@ -69,8 +69,8 @@ def RunClient(device, optional_url):
   """
   run_client_intent = intent.Intent(
       action='android.intent.action.VIEW',
-      package='org.chromium.blimp',
-      activity='org.chromium.blimp.BlimpRendererActivity',
+      package='org.chromium.chrome',
+      activity='com.google.android.apps.chrome.Main',
       data=optional_url)
   device.StartActivity(run_client_intent, blocking=True)
 
@@ -120,7 +120,7 @@ def RunEngine(output_linux_directory, token_file_path, device):
 
 
 def SetCommandFlag(device, engine_ip, engine_port):
-  """Set up adb Blimp command line flags
+  """Set up adb Chrome command line flags
 
   Args:
     device: (str) Serial number of device we should use.
@@ -129,8 +129,9 @@ def SetCommandFlag(device, engine_ip, engine_port):
   """
   cmd_helper.GetCmdStatusAndOutput([
       os.path.join(SRC_PATH, 'build', 'android',
-                   'adb_blimp_command_line'),
+                   'adb_chrome_command_line'),
       '--device=' + str(device),
+      '--enable-blimp',
       '--engine-ip=' + engine_ip,
       '--engine-port=' + engine_port,
       '--engine-transport=tcp',
@@ -236,8 +237,8 @@ def _Load(args, json_file_path, device): # pylint: disable=unused-argument
                  reinstall=True)
   run_client_intent = intent.Intent(
       action='android.intent.action.VIEW',
-      package='org.chromium.blimp',
-      activity='org.chromium.blimp.BlimpRendererActivity',
+      package='org.chromium.chrome',
+      activity='com.google.android.apps.chrome.Main',
       data=args.optional_url)
   device.StartActivity(run_client_intent, blocking=True)
 
@@ -328,4 +329,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-

@@ -7,16 +7,16 @@ See [build](build.md) for instructions on how to build Blimp.
 
 ### Installing the client
 
-Install the Blimp APK with the following:
+Install the Chrome Public APK with the following:
 
 ```bash
-./build/android/adb_install_apk.py $(PRODUCT_DIR)/apks/Blimp.apk
+./build/android/adb_install_apk.py $(PRODUCT_DIR)/apks/ChromePublic.apk
 ```
 
-This is equivalent to just running:
+This is mostly equivalent to just running:
 
 ```bash
-adb install $(PRODUCT_DIR)/apks/Blimp.apk
+adb install $(PRODUCT_DIR)/apks/ChromePublic.apk
 ```
 
 ### Setting up command line flags
@@ -24,24 +24,39 @@ adb install $(PRODUCT_DIR)/apks/Blimp.apk
 Set up any command line flags with:
 
 ```bash
-./build/android/adb_blimp_command_line --your-flag-here
+./build/android/adb_chrome_public_command_line --your-flag-here
 ```
 
 To see your current command line, run `adb_blimp_command_line` without any
 arguments.
 
-The Blimp client reads command line arguments from the file
-`/data/local/blimp-command-line` and the above script reads/writes that file.
+The Chrome APK blimp client reads command line arguments from the file
+`/data/local/chrome-command-line` and the above script reads/writes that file.
 Typical format of the file is `chrome --your-flag-here`. So one can use `adb`
 directly to create the file:
 
 ```bash
 echo 'chrome --engine-ip=10.0.2.2 --engine-port=25467 --engine-transport=tcp' \
-  '--blimp-client-token-path=/data/data/org.chromium.blimp/blimp_client_token' \
-  '--vmodule="*=1""' > /tmp/blimp-command-line
-adb push /tmp/blimp-command-line /data/local/blimp-command-line
-adb shell start chmod 0664 /data/local/blimp-command-line
+  '--blimp-client-token-path=/data/data/org.chromium.chrome/blimp_client_token' \
+  '--vmodule="*=1""' > /tmp/chrome-command-line
+adb push /tmp/chrome-command-line /data/local/chrome-command-line
+adb shell start chmod 0664 /data/local/chrome-command-line
 ```
+
+### Forcefully enabling the blimp client
+
+Usually, the end user will have to manually enable blimp by using the Blimp
+panel in the application settings, but for developers it might be beneficial to
+skip this check by forcefully enabling the blimp client.
+
+You can do this by adding the command line flag:
+```
+--enable-blimp
+```
+
+*Note:* This still does not skip the authentication checks for the assigner. You
+will still have to either pass in the `--engine-ip=...` argument or sign in
+with a valid account.
 
 ### Instructing client to connect to specific host
 
@@ -68,26 +83,26 @@ the client. One can do this by running the following command:
 
 ```bash
 adb push /path/to/blimp_client_token \
-  /data/data/org.chromium.blimp/blimp_client_token
+  /data/data/org.chromium.chrome/blimp_client_token
 ```
 
 To have the client use the given client auth token file, use the
 `--blimp-client-token-path` flag (e.g.
-`--blimp-client-token-path=/data/data/org.chromium.blimp/blimp_client_token`)
+`--blimp-client-token-path=/data/data/org.chromium.chrome/blimp_client_token`)
 
 An example of a client token file is
 [test_client_token](https://code.google.com/p/chromium/codesearch#chromium/src/blimp/test/data/test_client_token).
 
 ### Start the Client
-Run the Blimp APK with:
+Run the Chrome Public APK with:
 
 ```bash
-./build/android/adb_run_blimp_client
+./build/android/adb_run_chrome_public
 ```
 The script under the cover uses adb to start the application:
 
 ```bash
-adb shell am start -a android.intent.action.VIEW -n org.chromium.blimp/org.chromium.blimp.BlimpRendererActivity
+adb shell am start -a android.intent.action.VIEW -n org.chromium.chrome/com.google.android.apps.chrome.Main
 ```
 
 ### Connecting to an Engine running on a workstation
@@ -223,8 +238,8 @@ One can use the script to set up engine and connect it with client, then start c
     e.g. the incremental install:
 
     ```bash
-    ninja -C out-android/Debug blimp && \
-        out-android/Debug/bin/install_blimp_apk_incremental
+    ninja -C out-android/Debug blimp chrome_public_apk_incremental && \
+        out-android/Debug/bin/install_chrome_public_apk_incremental
     ```
 
 3.  `{stop}` Stops the engine & the forwarder:

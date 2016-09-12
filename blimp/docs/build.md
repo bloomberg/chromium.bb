@@ -41,22 +41,22 @@ gn gen out-android/Debug
 To build:
 
 ```bash
-ninja -C out-android/Debug blimp
+ninja -C out-android/Debug blimp chrome_public_apk_incremental
 ```
 
 This will also generate an incremental APK, which you can install with this
 command:
 
 ```bash
-out-android/Debug/bin/install_blimp_apk_incremental
+out-android/Debug/bin/install_chrome_public_apk_incremental
 ```
 
 During development, it might be beneficial to put these two commands together
 like this:
 
 ```bash
-ninja -C out-android/Debug blimp && \
-    out-android/Debug/bin/install_blimp_apk_incremental
+ninja -C out-android/Debug blimp chrome_public_apk_incremental && \
+    out-android/Debug/bin/install_chrome_public_apk_incremental
 ```
 
 To add your own build preferences:

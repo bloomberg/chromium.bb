@@ -8,6 +8,11 @@ HTML.
 For the full reference guide for the version of Markdown used to render Chromium
 pages, see the [reference for Gitiles Markdown][gtref].
 
+## Google style guide
+
+Be sure to read the
+[Google style guide for Markdown](https://github.com/google/styleguide/blob/gh-pages/docguide/style.md).
+
 ## Local preview of changes
 
 To see how the pages you edit will look, run the following command from your
