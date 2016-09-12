@@ -7,8 +7,8 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "gpu_service_proxy.cc": [
-    "+services/ui/gpu/gpu_service_internal.h",
+  "gpu_service_proxy.h": [
+    "+services/ui/gpu/gpu_main.h",
   ],
   # This should be removed. crbug.com/637923
   "mus_gpu_memory_buffer_manager.cc": [

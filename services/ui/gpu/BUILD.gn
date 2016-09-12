@@ -10,6 +10,8 @@ source_set("gpu") {
   output_name = "mus_gpu"
 
   sources = [
+    "gpu_main.cc",
+    "gpu_main.h",
     "gpu_service_internal.cc",
     "gpu_service_internal.h",
   ]

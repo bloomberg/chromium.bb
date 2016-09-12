@@ -22,11 +22,6 @@
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferFactory;
@@ -40,6 +35,8 @@ class MediaService;
 
 namespace ui {
 
+class GpuMain;
+
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
 // the connection to clients, allocating/free'ing gpu memory etc.
@@ -47,17 +44,16 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                            public mojom::GpuServiceInternal,
                            public base::NonThreadSafe {
  public:
-  void Add(mojom::GpuServiceInternalRequest request);
+  ~GpuServiceInternal() override;
 
-  // TODO(sad): This should not be a singleton.
-  static GpuServiceInternal* GetInstance();
+  void Add(mojom::GpuServiceInternalRequest request);
 
   gpu::GpuChannelManager* gpu_channel_manager() const {
     return gpu_channel_manager_.get();
   }
 
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
-    return gpu_memory_buffer_factory_.get();
+    return gpu_memory_buffer_factory_;
   }
 
   // TODO(sad): These should be mojom API.
@@ -73,10 +69,11 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                               const gpu::SyncToken& sync_token);
 
  private:
-  friend struct base::DefaultSingletonTraits<GpuServiceInternal>;
+  friend class GpuMain;
 
-  GpuServiceInternal();
-  ~GpuServiceInternal() override;
+  GpuServiceInternal(const gpu::GPUInfo& gpu_info,
+                     gpu::GpuWatchdogThread* watchdog,
+                     gpu::GpuMemoryBufferFactory* memory_buffer_factory);
 
   void EstablishGpuChannelInternal(int32_t client_id,
                                    uint64_t client_tracing_id,
@@ -137,7 +134,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // The thread that handles IO events for GpuService.
   base::Thread io_thread_;
 
-  scoped_refptr<gpu::GpuWatchdogThread> watchdog_thread_;
+  gpu::GpuWatchdogThread* watchdog_thread_;
 
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
 
@@ -145,7 +142,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<media::MediaService> media_service_;
 
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
 
   gpu::GpuPreferences gpu_preferences_;
 
