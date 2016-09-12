@@ -13,7 +13,7 @@ layer at (57,84) size 240x180
     LayoutBlockFlow {DIV} at (0,132) size 240x48
 layer at (57,84) size 240x117
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x117
-layer at (57,216) size 240x48 scrollWidth 314 scrollHeight 60
+layer at (57,216) size 240x48 scrollWidth 271 scrollHeight 60
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x48 [bgcolor=#FAFAFA]
     LayoutButton {INPUT} at (0,0) size 48x48
     LayoutFlexibleBox {DIV} at (48,0) size 35.05x48 [color=#5A5A5A]
@@ -24,12 +24,9 @@ layer at (57,216) size 240x48 scrollWidth 314 scrollHeight 60
       LayoutFlexibleBox {DIV} at (0,0) size 37.50x3
         LayoutBlockFlow {DIV} at (-27,-34.50) size 91.50x72
           LayoutBlockFlow {DIV} at (0,0) size 54x72
-    LayoutSlider {INPUT} at (201.55,22.50) size 37.50x3
-      LayoutFlexibleBox {DIV} at (0,0) size 37.50x3
-        LayoutBlockFlow {DIV} at (-27,-34.50) size 91.50x72
-          LayoutBlockFlow {DIV} at (37.50,0) size 54x72
-layer at (323,216) size 48x48 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
-  LayoutButton {INPUT} at (266.05,0) size 48x48
+    LayoutButton {INPUT} at (174.55,0) size 48x48
+layer at (280,216) size 48x48 backgroundClip at (280,216) size 17x48 clip at (280,216) size 17x48
+  LayoutButton {INPUT} at (222.55,0) size 48x48
 layer at (57,309) size 240x180
   LayoutVideo {VIDEO} at (45,297) size 240x180
 layer at (57,309) size 240x180
@@ -37,7 +34,7 @@ layer at (57,309) size 240x180
     LayoutBlockFlow {DIV} at (0,132) size 240x48
 layer at (57,309) size 240x117
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x117
-layer at (57,441) size 240x48 scrollWidth 314 scrollHeight 60
+layer at (57,441) size 240x48 scrollWidth 271 scrollHeight 60
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x48 [bgcolor=#FAFAFA]
     LayoutButton {INPUT} at (0,0) size 48x48
     LayoutFlexibleBox {DIV} at (48,0) size 35.05x48 [color=#5A5A5A]
@@ -48,9 +45,6 @@ layer at (57,441) size 240x48 scrollWidth 314 scrollHeight 60
       LayoutFlexibleBox {DIV} at (0,0) size 37.50x3
         LayoutBlockFlow {DIV} at (-27,-34.50) size 91.50x72
           LayoutBlockFlow {DIV} at (0,0) size 54x72
-    LayoutSlider {INPUT} at (201.55,22.50) size 37.50x3
-      LayoutFlexibleBox {DIV} at (0,0) size 37.50x3
-        LayoutBlockFlow {DIV} at (-27,-34.50) size 91.50x72
-          LayoutBlockFlow {DIV} at (37.50,0) size 54x72
-layer at (323,441) size 48x48 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
-  LayoutButton {INPUT} at (266.05,0) size 48x48
+    LayoutButton {INPUT} at (174.55,0) size 48x48
+layer at (280,441) size 48x48 backgroundClip at (280,441) size 12x27 clip at (280,441) size 12x27
+  LayoutButton {INPUT} at (222.55,0) size 48x48
