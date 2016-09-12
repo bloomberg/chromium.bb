@@ -239,7 +239,6 @@ crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ 
 crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 
-crbug.com/601247 [ Mac ] media/video-zoom-controls.html [ NeedsRebaseline ]
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
 crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
