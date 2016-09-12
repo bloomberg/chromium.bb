@@ -1514,14 +1514,15 @@ void FrameView::scrollContentsSlowPath()
         DisablePaintInvalidationStateAsserts disabler;
         layoutViewItem().invalidatePaintRectangle(LayoutRect(updateRect));
     }
-    if (LayoutPart* frameLayoutObject = m_frame->ownerLayoutObject()) {
+    LayoutPartItem frameLayoutItem = m_frame->ownerLayoutItem();
+    if (!frameLayoutItem.isNull()) {
         if (isEnclosedInCompositingLayer()) {
-            LayoutRect rect(frameLayoutObject->borderLeft() + frameLayoutObject->paddingLeft(),
-                frameLayoutObject->borderTop() + frameLayoutObject->paddingTop(),
+            LayoutRect rect(frameLayoutItem.borderLeft() + frameLayoutItem.paddingLeft(),
+                frameLayoutItem.borderTop() + frameLayoutItem.paddingTop(),
                 LayoutUnit(visibleWidth()), LayoutUnit(visibleHeight()));
             // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
             DisablePaintInvalidationStateAsserts disabler;
-            frameLayoutObject->invalidatePaintRectangle(rect);
+            frameLayoutItem.invalidatePaintRectangle(rect);
             return;
         }
     }
