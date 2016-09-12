@@ -194,7 +194,7 @@ void TestDelegatingOutputSurface::SetBeginFrameSource(
 }
 
 void TestDelegatingOutputSurface::DisplayOutputSurfaceLost() {
-  DidLoseOutputSurface();
+  client_->DidLoseOutputSurface();
 }
 
 void TestDelegatingOutputSurface::DisplayWillDrawAndSwap(

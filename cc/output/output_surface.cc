@@ -137,32 +137,13 @@ OutputSurface::OutputSurface(
   client_thread_checker_.DetachFromThread();
 }
 
-// Forwarded to OutputSurfaceClient
-void OutputSurface::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
-  TRACE_EVENT0("cc", "OutputSurface::SetNeedsRedrawRect");
-  client_->SetNeedsRedrawRect(damage_rect);
-}
-
-void OutputSurface::ReclaimResources(const ReturnedResourceArray& resources) {
-  client_->ReclaimResources(resources);
-}
-
-void OutputSurface::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
-  client_->DidLoseOutputSurface();
-}
-
-void OutputSurface::SetExternalStencilTest(bool enabled) {
-  external_stencil_test_enabled_ = enabled;
-}
-
 OutputSurface::~OutputSurface() {
   if (client_)
     DetachFromClientInternal();
 }
 
 bool OutputSurface::HasExternalStencilTest() const {
-  return external_stencil_test_enabled_;
+  return false;
 }
 
 void OutputSurface::ApplyExternalStencil() {}
@@ -311,6 +292,11 @@ void OutputSurface::DetachFromClientInternal() {
   context_provider_ = nullptr;
   client_ = nullptr;
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void OutputSurface::DidLoseOutputSurface() {
+  TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
+  client_->DidLoseOutputSurface();
 }
 
 }  // namespace cc

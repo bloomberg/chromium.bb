@@ -145,7 +145,7 @@ void SurfaceDisplayOutputSurface::SetBeginFrameSource(
 
 void SurfaceDisplayOutputSurface::DisplayOutputSurfaceLost() {
   output_surface_lost_ = true;
-  DidLoseOutputSurface();
+  client_->DidLoseOutputSurface();
 }
 
 void SurfaceDisplayOutputSurface::DisplayWillDrawAndSwap(

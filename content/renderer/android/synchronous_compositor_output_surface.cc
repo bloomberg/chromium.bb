@@ -369,7 +369,7 @@ void SynchronousCompositorOutputSurface::OnReclaimResources(
   // (e.g. after a lost context).
   if (output_surface_id != output_surface_id_)
     return;
-  ReclaimResources(resources);
+  client_->ReclaimResources(resources);
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {

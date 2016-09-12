@@ -119,8 +119,8 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
 
-  virtual void ApplyExternalStencil();
   virtual bool HasExternalStencilTest() const;
+  virtual void ApplyExternalStencil();
 
   // ============== LAYER TREE COMPOSITOR ONLY ===================
 
@@ -180,34 +180,20 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void SwapBuffers(CompositorFrame frame) = 0;
   virtual void OnSwapBuffersComplete();
 
-  // This is how LayerTreeHostImpl hears about context loss when the Display
-  // is the one listening for context loss. Also used internally for the
-  // context provider to inform the LayerTreeHostImpl or Display about loss.
-  // It would become display-compositor-only when LayerTreeHostImpl receives
-  // its contexts independently from the "OutputSurface".
-  // TODO(danakj): Be private. Subclasses should just call the client directly.
-  virtual void DidLoseOutputSurface();
-
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  // ============== DISPLAY COMPOSITOR ONLY =======================
-
-  // Used by WebView for the display compositor only.
-  // TODO(danakj): This should go away, store the state in the subclass that
-  // uses this.
-  void SetExternalStencilTest(bool enabled);
-
-  // ============== BOTH TYPES OF COMPOSITOR ======================
-
   // This is used by both display and delegating implementations.
   void PostSwapBuffersComplete();
-  // TODO(danakj): Delete this. Subclasses should just call the client directly.
-  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
-  // TODO(danakj): Delete this. Subclasses should just call the client directly.
-  void ReclaimResources(const ReturnedResourceArray& resources);
+
+  // This is how LayerTreeHostImpl hears about context loss when the Display
+  // is the one listening for context loss. Also used internally for the
+  // context provider to inform the LayerTreeHostImpl or Display about loss.
+  // It would become display-compositor-only when LayerTreeHostImpl receives
+  // its contexts independently from the "OutputSurface".
+  virtual void DidLoseOutputSurface();
 
   OutputSurfaceClient* client_ = nullptr;
 
@@ -226,7 +212,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  private:
   void DetachFromClientInternal();
 
-  bool external_stencil_test_enabled_ = false;
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

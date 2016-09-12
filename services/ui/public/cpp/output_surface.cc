@@ -70,7 +70,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 void OutputSurface::OnResourcesReturned(
     ui::WindowSurface* surface,
     mojo::Array<cc::ReturnedResource> resources) {
-  ReclaimResources(resources.To<cc::ReturnedResourceArray>());
+  client_->ReclaimResources(resources.To<cc::ReturnedResourceArray>());
 }
 
 void OutputSurface::SwapBuffersComplete() {

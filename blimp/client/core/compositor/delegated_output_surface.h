@@ -49,7 +49,7 @@ class DelegatedOutputSurface : public cc::OutputSurface,
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  base::WeakPtr<BlimpOutputSurfaceClient> client_;
+  base::WeakPtr<BlimpOutputSurfaceClient> blimp_client_;
 
   bool bound_to_client_;
 

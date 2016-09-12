@@ -37,6 +37,10 @@ void ParentOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 
+bool ParentOutputSurface::HasExternalStencilTest() const {
+  return stencil_state_.stencil_test_enabled;
+}
+
 void ParentOutputSurface::ApplyExternalStencil() {
   DCHECK(stencil_state_.stencil_test_enabled);
   gpu::gles2::GLES2Interface* gl = context_provider()->ContextGL();
@@ -63,7 +67,6 @@ uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
 
 void ParentOutputSurface::SetGLState(const ScopedAppGLStateRestore& gl_state) {
   stencil_state_ = gl_state.stencil_state();
-  SetExternalStencilTest(stencil_state_.stencil_test_enabled);
 }
 
 }  // namespace android_webview

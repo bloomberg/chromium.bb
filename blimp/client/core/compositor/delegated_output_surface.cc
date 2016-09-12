@@ -27,7 +27,7 @@ DelegatedOutputSurface::DelegatedOutputSurface(
                         std::move(worker_context_provider),
                         nullptr),
       main_task_runner_(std::move(main_task_runner)),
-      client_(client),
+      blimp_client_(client),
       bound_to_client_(false),
       weak_factory_(this) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -39,7 +39,7 @@ DelegatedOutputSurface::~DelegatedOutputSurface() = default;
 void DelegatedOutputSurface::ReclaimCompositorResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
-  cc::OutputSurface::ReclaimResources(resources);
+  client_->ReclaimResources(resources);
 }
 
 uint32_t DelegatedOutputSurface::GetFramebufferCopyTextureFormat() {
@@ -57,7 +57,7 @@ bool DelegatedOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
 
     main_task_runner_->PostTask(
         FROM_HERE, base::Bind(&BlimpOutputSurfaceClient::BindToOutputSurface,
-                              client_, weak_factory_.GetWeakPtr()));
+                              blimp_client_, weak_factory_.GetWeakPtr()));
   }
   return success;
 }
@@ -67,7 +67,7 @@ void DelegatedOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&BlimpOutputSurfaceClient::SwapCompositorFrame,
-                            client_, base::Passed(&frame)));
+                            blimp_client_, base::Passed(&frame)));
   cc::OutputSurface::PostSwapBuffersComplete();
 }
 
@@ -77,8 +77,8 @@ void DelegatedOutputSurface::DetachFromClient() {
   if (bound_to_client_ == true) {
     bound_to_client_ = false;
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BlimpOutputSurfaceClient::UnbindOutputSurface, client_));
+        FROM_HERE, base::Bind(&BlimpOutputSurfaceClient::UnbindOutputSurface,
+                              blimp_client_));
   }
 
   weak_factory_.InvalidateWeakPtrs();
