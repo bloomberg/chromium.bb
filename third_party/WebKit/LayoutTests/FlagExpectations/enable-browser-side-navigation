@@ -104,13 +104,6 @@
   http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
 
-# https://crbug.com/576271: PlzNavigate: support insecure request upgrade
-  http/tests/security/upgrade-insecure-requests/https-header-auxiliary.html [ Failure ]
-  http/tests/security/upgrade-insecure-requests/https-header-nested.html [ Failure ]
-  http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Missing ]
-  http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Missing Timeout Timeout Timeout ]
-  http/tests/security/w3c/cross-origin-objects.html [ Crash Timeout Failure ]
-
 # https://crbug.com/638900: Failing due to flipped order of callbacks to
 # WebFrameClient::didStartProvisionalLoad() and
 # WebFrameClient::didFinishDocumentLoad().

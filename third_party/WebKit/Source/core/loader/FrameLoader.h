@@ -147,6 +147,7 @@ public:
 
     WebInsecureRequestPolicy getInsecureRequestPolicy() const;
     SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
+    void upgradeInsecureRequest(ResourceRequest&, Document*) const;
 
     Frame* opener();
     void setOpener(LocalFrame*);

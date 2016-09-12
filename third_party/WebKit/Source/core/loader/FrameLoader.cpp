@@ -1420,6 +1420,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
+    upgradeInsecureRequest(request, nullptr);
     if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
         return;
 
@@ -1448,7 +1449,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     if (m_provisionalDocumentLoader->isClientRedirect())
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
-    m_provisionalDocumentLoader->upgradeInsecureRequest();
     double triggeringEventTime = frameLoadRequest.triggeringEvent() ? frameLoadRequest.triggeringEvent()->platformTimeStamp() : 0;
     client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
     ASSERT(m_provisionalDocumentLoader);
@@ -1602,6 +1602,45 @@ SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgra
     ASSERT(toLocalFrame(parentFrame)->document());
     return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
 }
+
+void FrameLoader::upgradeInsecureRequest(ResourceRequest& resourceRequest, Document* document) const
+{
+    // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational requests, as described in
+    // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+    if (resourceRequest.frameType() != WebURLRequest::FrameTypeNone) {
+
+        // Early return if the request has already been upgraded.
+        if (resourceRequest.httpHeaderField("Upgrade-Insecure-Requests") == AtomicString("1"))
+            return;
+
+        resourceRequest.addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
+    }
+
+    KURL url = resourceRequest.url();
+
+    // If we don't yet have an |m_document| (because we're loading an iframe, for instance), check the FrameLoader's policy.
+    WebInsecureRequestPolicy relevantPolicy = document ? document->getInsecureRequestPolicy() : getInsecureRequestPolicy();
+    SecurityContext::InsecureNavigationsSet* relevantNavigationSet = document ? document->insecureNavigationsToUpgrade() : insecureNavigationsToUpgrade();
+
+    if (url.protocolIs("http") && relevantPolicy & kUpgradeInsecureRequests) {
+        // We always upgrade requests that meet any of the following criteria:
+        //
+        // 1. Are for subresources (including nested frames).
+        // 2. Are form submissions.
+        // 3. Whose hosts are contained in the document's InsecureNavigationSet.
+        if (resourceRequest.frameType() == WebURLRequest::FrameTypeNone
+            || resourceRequest.frameType() == WebURLRequest::FrameTypeNested
+            || resourceRequest.requestContext() == WebURLRequest::RequestContextForm
+            || (!url.host().isNull() && relevantNavigationSet->contains(url.host().impl()->hash()))) {
+            UseCounter::count(document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
+            url.setProtocol("https");
+            if (url.port() == 80)
+                url.setPort(443);
+            resourceRequest.setURL(url);
+        }
+    }
+}
+
 
 std::unique_ptr<TracedValue> FrameLoader::toTracedValue() const
 {
