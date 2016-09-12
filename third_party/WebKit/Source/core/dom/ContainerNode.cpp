@@ -400,6 +400,8 @@ Node* ContainerNode::replaceChild(Node* newChild, Node* oldChild, ExceptionState
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
+    if (targets.isEmpty())
+        return child;
 
     // Does this yet another check because collectChildrenAndRemoveFromOldParent() fires a MutationEvent.
     if (!checkAcceptChild(newChild, child, exceptionState)) {
