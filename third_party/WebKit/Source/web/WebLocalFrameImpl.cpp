@@ -2179,6 +2179,10 @@ void WebLocalFrameImpl::copyImageAt(const WebPoint& posInViewport)
         return;
     }
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     frame()->editor().copyImage(result);
 }
 

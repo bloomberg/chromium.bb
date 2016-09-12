@@ -461,7 +461,9 @@ void Editor::writeSelectionToPasteboard()
 
 static PassRefPtr<Image> imageFromNode(const Node& node)
 {
-    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!node.document().needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(node.document().lifecycle());
+
     LayoutObject* layoutObject = node.layoutObject();
     if (!layoutObject)
         return nullptr;
