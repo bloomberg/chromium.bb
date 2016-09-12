@@ -997,6 +997,8 @@ interface DOMMatrix : DOMMatrixReadOnly
     setter m43
     setter m44
 interface DOMMatrixReadOnly
+    static method fromFloat32Array
+    static method fromFloat64Array
     attribute @@toStringTag
     getter a
     getter b

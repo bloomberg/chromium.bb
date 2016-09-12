@@ -22,6 +22,29 @@ DOMMatrix* DOMMatrix::create(const SkMatrix44& matrix)
     return new DOMMatrix(transformationMatrix, transformationMatrix.isAffine());
 }
 
+DOMMatrix* DOMMatrix::fromFloat32Array(DOMFloat32Array* float32Array, ExceptionState& exceptionState)
+{
+    if (float32Array->length() != 6 && float32Array->length() != 16) {
+        exceptionState.throwTypeError("The sequence must contain 6 elements for a 2D matrix or 16 elements for a 3D matrix.");
+        return nullptr;
+    }
+    return new DOMMatrix(float32Array->data(), float32Array->length());
+}
+
+DOMMatrix* DOMMatrix::fromFloat64Array(DOMFloat64Array* float64Array, ExceptionState& exceptionState)
+{
+    if (float64Array->length() != 6 && float64Array->length() != 16) {
+        exceptionState.throwTypeError("The sequence must contain 6 elements for a 2D matrix or 16 elements for a 3D matrix.");
+        return nullptr;
+    }
+    return new DOMMatrix(float64Array->data(), float64Array->length());
+}
+
+template <typename T>
+DOMMatrix::DOMMatrix(T sequence, int size) : DOMMatrixReadOnly(sequence, size)
+{
+}
+
 DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
 {
     m_matrix = TransformationMatrix::create(matrix);

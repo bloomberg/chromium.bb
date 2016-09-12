@@ -15,6 +15,8 @@ public:
     static DOMMatrix* create();
     static DOMMatrix* create(DOMMatrixReadOnly*);
     static DOMMatrix* create(const SkMatrix44&);
+    static DOMMatrix* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
+    static DOMMatrix* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
 
     void setA(double value) { m_matrix->setM11(value); }
     void setB(double value) { m_matrix->setM12(value); }
@@ -53,6 +55,8 @@ public:
 
 private:
     DOMMatrix(const TransformationMatrix&, bool is2D = true);
+    template <typename T>
+    DOMMatrix(T sequence, int size);
 
     void setIs2D(bool value);
 };

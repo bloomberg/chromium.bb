@@ -40,6 +40,76 @@ test(function() {
 }, "DOMMatrixReadOnly constructor - 3D matrix");
 
 test(function() {
+    var float32Array = new Float32Array([1, 2, 3, 4, 5, 6]);
+    var matrix2d = DOMMatrixReadOnly.fromFloat32Array(float32Array);
+    assert_true(matrix2d.is2D);
+    assert_equals(matrix2d.a, 1);
+    assert_equals(matrix2d.b, 2);
+    assert_equals(matrix2d.c, 3);
+    assert_equals(matrix2d.d, 4);
+    assert_equals(matrix2d.e, 5);
+    assert_equals(matrix2d.f, 6);
+}, "DOMMatrixReadOnly fromFloat32Array - 2D matrix");
+
+test(function() {
+    // 3.1  is not representable as a 32-bit float
+    var float64Array = new Float64Array([1, 2, 3, 3.1, 4, 5]);
+    var matrix2d = DOMMatrixReadOnly.fromFloat64Array(float64Array);
+    assert_true(matrix2d.is2D);
+    assert_equals(matrix2d.a, 1);
+    assert_equals(matrix2d.b, 2);
+    assert_equals(matrix2d.c, 3);
+    assert_equals(matrix2d.d, 3.1);
+    assert_equals(matrix2d.e, 4);
+    assert_equals(matrix2d.f, 5);
+}, "DOMMatrixReadOnly fromFloat64Array - 2D matrix");
+
+test(function() {
+    var float32Array = new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+    var matrix3d = DOMMatrixReadOnly.fromFloat32Array(float32Array);
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.m11, 1);
+    assert_equals(matrix3d.m12, 2);
+    assert_equals(matrix3d.m13, 3);
+    assert_equals(matrix3d.m14, 4);
+    assert_equals(matrix3d.m21, 5);
+    assert_equals(matrix3d.m22, 6);
+    assert_equals(matrix3d.m23, 7);
+    assert_equals(matrix3d.m24, 8);
+    assert_equals(matrix3d.m31, 9);
+    assert_equals(matrix3d.m32, 10);
+    assert_equals(matrix3d.m33, 11);
+    assert_equals(matrix3d.m34, 12);
+    assert_equals(matrix3d.m41, 13);
+    assert_equals(matrix3d.m42, 14);
+    assert_equals(matrix3d.m43, 15);
+    assert_equals(matrix3d.m44, 16);
+}, "DOMMatrixReadOnly fromFloat32Array - 3D matrix");
+
+test(function() {
+    // 10.1 and 16.6 are not representable as a 32-bit float
+    var float64Array = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
+    var matrix3d = DOMMatrixReadOnly.fromFloat64Array(float64Array);
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.m11, 1);
+    assert_equals(matrix3d.m12, 2);
+    assert_equals(matrix3d.m13, 3);
+    assert_equals(matrix3d.m14, 4);
+    assert_equals(matrix3d.m21, 5);
+    assert_equals(matrix3d.m22, 6);
+    assert_equals(matrix3d.m23, 7);
+    assert_equals(matrix3d.m24, 8);
+    assert_equals(matrix3d.m31, 9);
+    assert_equals(matrix3d.m32, 10.1);
+    assert_equals(matrix3d.m33, 11);
+    assert_equals(matrix3d.m34, 12);
+    assert_equals(matrix3d.m41, 13);
+    assert_equals(matrix3d.m42, 14);
+    assert_equals(matrix3d.m43, 15);
+    assert_equals(matrix3d.m44, 16.6);
+}, "DOMMatrixReadOnly fromFloat64Array - 3D matrix");
+
+test(function() {
     var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]);
     assert_true(matrix2d.is2D);
     assert_equals(matrix2d.toString(), "matrix(1, 2, 3, 3.1, 2, 1)");
@@ -59,6 +129,44 @@ test(function() {
     assert_throws(new TypeError(), function() { new DOMMatrixReadOnly([1, 2, 3]); },
             "DOMMatrixReadOnly constructor only accepts 1 number sequence with 6 or 16 elements.");
 }, "DOMMatrixReadOnly constructor - invalid arguments");
+
+test(function() {
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+}, "DOMMatrixReadOnly fromFloat*Array - invalid array size of nearby 6");
+
+test(function() {
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+}, "DOMMatrixReadOnly fromFloat*Array - invalid array size of nearby 16");
+
+test(function() {
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array([1])); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array([1])); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat32Array(new Float32Array(65536)); },
+            "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
+    assert_throws(new TypeError(), function() { DOMMatrixReadOnly.fromFloat64Array(new Float64Array(65536)); },
+            "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
+}, "DOMMatrixReadOnly fromFloat*Array - invalid array size");
+
 </script>
 </body>
 </html>
