@@ -60,6 +60,15 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(cons
     if (positionWithAffinity.isNull())
         return VisiblePositionTemplate<Strategy>();
     DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
+
+    Document& document = *positionWithAffinity.position().document();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document.updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
+
     const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
     if (deepPosition.isNull())
         return VisiblePositionTemplate<Strategy>();

@@ -102,7 +102,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
         return PositionType();
 
     DCHECK(position.document());
-    position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!position.document()->needsLayoutTreeUpdate());
 
     Node* node = position.computeContainerNode();
 
@@ -1240,6 +1240,12 @@ bool inSameLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& position1
 {
     if (position1.isNull() || position2.isNull())
         return false;
+    DCHECK_EQ(position1.position().document(), position2.position().document());
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    position1.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     PositionWithAffinityTemplate<Strategy> startOfLine1 = startOfLine(position1);
     PositionWithAffinityTemplate<Strategy> startOfLine2 = startOfLine(position2);
     if (startOfLine1 == startOfLine2)
