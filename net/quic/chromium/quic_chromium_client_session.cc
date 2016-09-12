@@ -215,6 +215,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     const char* const connection_description,
+    base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     QuicClientPushPromiseIndex* push_promise_index,
     base::TaskRunner* task_runner,
@@ -230,7 +231,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLogSourceType::QUIC_SESSION)),
-      dns_resolution_end_time_(dns_resolution_end_time),
       logger_(new QuicConnectionLogger(this,
                                        connection_description,
                                        std::move(socket_performance_watcher),
@@ -264,6 +264,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     connection->SetMaxPacketLength(connection->max_packet_length() -
                                    kAdditionalOverheadForIPv6);
   }
+  connect_timing_.dns_start = dns_resolution_start_time;
+  connect_timing_.dns_end = dns_resolution_end_time;
 }
 
 QuicChromiumClientSession::~QuicChromiumClientSession() {
@@ -618,13 +620,15 @@ int QuicChromiumClientSession::CryptoConnect(
     bool require_confirmation,
     const CompletionCallback& callback) {
   require_confirmation_ = require_confirmation;
-  handshake_start_ = base::TimeTicks::Now();
+  connect_timing_.connect_start = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   DCHECK(flow_controller());
   crypto_stream_->CryptoConnect();
 
-  if (IsCryptoHandshakeConfirmed())
+  if (IsCryptoHandshakeConfirmed()) {
+    connect_timing_.connect_end = base::TimeTicks::Now();
     return OK;
+  }
 
   // Unless we require handshake confirmation, activate the session if
   // we have established initial encryption.
@@ -637,8 +641,10 @@ int QuicChromiumClientSession::CryptoConnect(
 
 int QuicChromiumClientSession::ResumeCryptoConnect(
     const CompletionCallback& callback) {
-  if (IsCryptoHandshakeConfirmed())
+  if (IsCryptoHandshakeConfirmed()) {
+    connect_timing_.connect_end = base::TimeTicks::Now();
     return OK;
+  }
 
   if (!connection()->connected())
     return ERR_QUIC_HANDSHAKE_FAILED;
@@ -789,8 +795,14 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     base::ResetAndReturn(&callback_).Run(OK);
   }
   if (event == HANDSHAKE_CONFIRMED) {
-    UMA_HISTOGRAM_TIMES("Net.QuicSession.HandshakeConfirmedTime",
-                        base::TimeTicks::Now() - handshake_start_);
+    // Update |connect_end| only when handshake is confirmed. This should also
+    // take care of any failed 0-RTT request.
+    connect_timing_.connect_end = base::TimeTicks::Now();
+    DCHECK(connect_timing_.connect_start < connect_timing_.connect_end);
+    UMA_HISTOGRAM_TIMES(
+        "Net.QuicSession.HandshakeConfirmedTime",
+        connect_timing_.connect_end - connect_timing_.connect_start);
+
     if (server_info_) {
       // TODO(rtenneti): Should we delete this histogram?
       // Track how long it has taken to finish handshake once we start waiting
@@ -807,10 +819,10 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     }
     // Track how long it has taken to finish handshake after we have finished
     // DNS host resolution.
-    if (!dns_resolution_end_time_.is_null()) {
+    if (!connect_timing_.dns_end.is_null()) {
       UMA_HISTOGRAM_TIMES(
           "Net.QuicSession.HostResolution.HandshakeConfirmedTime",
-          base::TimeTicks::Now() - dns_resolution_end_time_);
+          base::TimeTicks::Now() - connect_timing_.dns_end);
     }
 
     ObserverSet::iterator it = observers_.begin();
@@ -1259,6 +1271,13 @@ void QuicChromiumClientSession::DeletePromised(
   if (IsOpenStream(promised->id()))
     streams_pushed_and_claimed_count_++;
   QuicClientSessionBase::DeletePromised(promised);
+}
+
+const LoadTimingInfo::ConnectTiming&
+QuicChromiumClientSession::GetConnectTiming() {
+  connect_timing_.ssl_start = connect_timing_.connect_start;
+  connect_timing_.ssl_end = connect_timing_.connect_end;
+  return connect_timing_;
 }
 
 }  // namespace net

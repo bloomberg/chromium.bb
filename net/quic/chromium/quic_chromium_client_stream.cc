@@ -318,4 +318,8 @@ void QuicChromiumClientStream::DisableConnectionMigration() {
   can_migrate_ = false;
 }
 
+bool QuicChromiumClientStream::IsFirstStream() {
+  return id() == kHeadersStreamId + 2;
+}
+
 }  // namespace net
