@@ -1140,6 +1140,33 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
   EXPECT_FALSE(connection_.connected());
 }
 
+TEST_P(QuicConnectionTest, AllowSelfAddressChangeToMappedIpv4AddressAtServer) {
+  FLAGS_quic_allow_server_address_change_for_mapped_ipv4 = true;
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+
+  EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
+  EXPECT_TRUE(connection_.connected());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(3);
+  IPEndPoint self_address1(IPAddress(1, 1, 1, 1), 443);
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address1,
+                                  kPeerAddress);
+  // Cause self_address change to mapped Ipv4 address.
+  IPEndPoint self_address2(ConvertIPv4ToIPv4MappedIPv6(self_address1.address()),
+                           443);
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address2,
+                                  kPeerAddress);
+  EXPECT_TRUE(connection_.connected());
+  // self_address change back to Ipv4 address.
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address1,
+                                  kPeerAddress);
+  EXPECT_TRUE(connection_.connected());
+}
+
 TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   set_perspective(Perspective::IS_SERVER);

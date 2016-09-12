@@ -177,3 +177,6 @@ QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, true)
 // If true, lazy allocate and early release memeory used in
 // QuicStreamSequencerBuffer to buffer incoming data.
 QUIC_FLAG(bool, FLAGS_quic_reduce_sequencer_buffer_memory_life_time, true)
+
+// If true, allow server address change if it is because of mapped ipv4 address.
+QUIC_FLAG(bool, FLAGS_quic_allow_server_address_change_for_mapped_ipv4, true)
