@@ -1145,10 +1145,10 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
     Element* enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.anchorNode());
 
-    // Adjust insertionPos to prevent nesting.
-    // If the start was in a Mail blockquote, we will have already handled adjusting insertionPos above.
-    if (m_preventNesting && enclosingBlockOfInsertionPos && !isTableCell(enclosingBlockOfInsertionPos) && !startIsInsideMailBlockquote) {
-        DCHECK_NE(enclosingBlockOfInsertionPos, currentRoot);
+    // Adjust |enclosingBlockOfInsertionPos| to prevent nesting.
+    // If the start was in a Mail blockquote, we will have already handled
+    // adjusting |enclosingBlockOfInsertionPos| above.
+    if (m_preventNesting && enclosingBlockOfInsertionPos && enclosingBlockOfInsertionPos != currentRoot && !isTableCell(enclosingBlockOfInsertionPos) && !startIsInsideMailBlockquote) {
         VisiblePosition visibleInsertionPos = createVisiblePosition(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
             insertionPos = Position::inParentAfterNode(*enclosingBlockOfInsertionPos);

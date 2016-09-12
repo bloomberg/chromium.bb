@@ -7,9 +7,6 @@ test(() => {
     assert_not_equals(window.internals, undefined,
         'This test requires window.internals to access clipboard');
 
-    // TDOO(yosin): We should consolidate "paste-text-00[6-9].html" since
-    // they were commited in one patch.
-
     assert_selection(
         '<div contenteditable>foo ^bar| baz</div>',
         selection => {
@@ -187,5 +184,27 @@ test(() => {
             '</div>',
         ].join(''),
         '8 Paste with text crossing DIV twice');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                'one',
+                '<div>two^</div>',
+                't|hree',
+           '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                'one',
+                '<div>two</div>',
+                't<div>t|hree</div>',
+           '</div>',
+        ].join(''),
+        '9 Paste with text crossing start of DIV');
 }, 'Paste text');
 </script>
