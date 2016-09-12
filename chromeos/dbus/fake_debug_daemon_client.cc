@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
 
@@ -215,6 +216,30 @@ void FakeDebugDaemonClient::SetServiceIsAvailable(bool is_available) {
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i].Run(is_available);
+}
+
+void FakeDebugDaemonClient::CupsAddPrinter(
+    const std::string& name,
+    const std::string& uri,
+    const std::string& ppd_path,
+    bool ipp_everywhere,
+    const DebugDaemonClient::CupsAddPrinterCallback& callback,
+    const base::Closure& error_callback) {
+  printers_.insert(name);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
+}
+
+void FakeDebugDaemonClient::CupsRemovePrinter(
+    const std::string& name,
+    const DebugDaemonClient::CupsRemovePrinterCallback& callback,
+    const base::Closure& error_callback) {
+  const bool has_printer = base::ContainsKey(printers_, name);
+  if (has_printer)
+    printers_.erase(name);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, has_printer));
 }
 
 }  // namespace chromeos

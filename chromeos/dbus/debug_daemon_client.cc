@@ -468,6 +468,41 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void CupsAddPrinter(const std::string& name,
+                      const std::string& uri,
+                      const std::string& ppd_path,
+                      bool ipp_everywhere,
+                      const DebugDaemonClient::CupsAddPrinterCallback& callback,
+                      const base::Closure& error_callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kCupsAddPrinter);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+    writer.AppendString(uri);
+    writer.AppendString(ppd_path);
+    writer.AppendBool(ipp_everywhere);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnPrinterAdded,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  }
+
+  void CupsRemovePrinter(
+      const std::string& name,
+      const DebugDaemonClient::CupsRemovePrinterCallback& callback,
+      const base::Closure& error_callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kCupsRemovePrinter);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnPrinterRemoved,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -678,6 +713,30 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(true, output);
     else
       callback.Run(false, "");
+  }
+
+  void OnPrinterAdded(const CupsAddPrinterCallback& callback,
+                      const base::Closure& error_callback,
+                      dbus::Response* response) {
+    bool result = false;
+    dbus::MessageReader reader(response);
+    if (response && reader.PopBool(&result)) {
+      callback.Run(result);
+    } else {
+      error_callback.Run();
+    }
+  }
+
+  void OnPrinterRemoved(const CupsRemovePrinterCallback& callback,
+                        const base::Closure& error_callback,
+                        dbus::Response* response) {
+    bool result = false;
+    dbus::MessageReader reader(response);
+    if (response && reader.PopBool(&result)) {
+      callback.Run(result);
+    } else {
+      error_callback.Run();
+    }
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
