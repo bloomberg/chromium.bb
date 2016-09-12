@@ -194,9 +194,9 @@ inline float Font::tabWidth(const SimpleFontData& fontData, const TabSize& tabSi
         return getFontDescription().letterSpacing();
     float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
 
-    // The smallest allowable tab space is letterSpacing() (but must be at least one layout unit).
+    // Let the minimum width be the half of the space width so that it's always recognizable.
     // if the distance to the next tab stop is less than that, advance an additional tab stop.
-    if (distanceToTabStop < std::max(getFontDescription().letterSpacing(), LayoutUnit::epsilon()))
+    if (distanceToTabStop < fontData.spaceWidth() / 2)
         distanceToTabStop += baseTabWidth;
 
     return distanceToTabStop;

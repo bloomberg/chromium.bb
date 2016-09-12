@@ -362,4 +362,31 @@ void ShapeResult::insertRun(std::unique_ptr<ShapeResult::RunInfo> runToInsert,
         m_runs.append(std::move(run));
 }
 
+PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* font,
+    const TextRun& textRun, float positionOffset, unsigned count)
+{
+    const SimpleFontData* fontData = font->primaryFont();
+    std::unique_ptr<ShapeResult::RunInfo> run = wrapUnique(new ShapeResult::RunInfo(fontData,
+        // Tab characters are always LTR or RTL, not TTB, even when isVerticalAnyUpright().
+        textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
+        HB_SCRIPT_COMMON, 0, count, count));
+    float position = textRun.xPos() + positionOffset;
+    float startPosition = position;
+    for (unsigned i = 0; i < count; i++) {
+        float advance = font->tabWidth(*fontData, textRun.getTabSize(), position);
+        run->m_glyphData[i].characterIndex = i;
+        run->setGlyphAndPositions(i, fontData->spaceGlyph(), advance, 0, 0);
+        position += advance;
+    }
+    run->m_width = position - startPosition;
+
+    RefPtr<ShapeResult> result = ShapeResult::create(font, count, textRun.direction());
+    result->m_width = run->m_width;
+    result->m_numGlyphs = count;
+    DCHECK_EQ(result->m_numGlyphs, count); // no overflow
+    result->m_hasVerticalOffsets = fontData->platformData().isVerticalAnyUpright();
+    result->m_runs.append(std::move(run));
+    return result.release();
+}
+
 } // namespace blink
