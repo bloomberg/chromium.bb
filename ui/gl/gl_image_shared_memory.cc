@@ -30,6 +30,12 @@ bool GLImageSharedMemory::Initialize(
     gfx::BufferFormat format,
     size_t offset,
     size_t stride) {
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return false;
+
+  std::unique_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(handle, true));
+
   if (NumberOfPlanesForBufferFormat(format) != 1)
     return false;
 
@@ -37,19 +43,6 @@ bool GLImageSharedMemory::Initialize(
   checked_size *= GetSize().height();
   if (!checked_size.IsValid())
     return false;
-
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return false;
-
-  base::SharedMemory shared_memory(handle, true);
-
-  // Duplicate the handle.
-  base::SharedMemoryHandle duped_shared_memory_handle;
-  if (!shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
-                                    &duped_shared_memory_handle)) {
-    DVLOG(0) << "Failed to duplicate shared memory handle.";
-    return false;
-  }
 
   // Minimize the amount of adress space we use but make sure offset is a
   // multiple of page size as required by MapAt().
@@ -61,22 +54,20 @@ bool GLImageSharedMemory::Initialize(
   if (!checked_size.IsValid())
     return false;
 
-  std::unique_ptr<base::SharedMemory> duped_shared_memory(
-      new base::SharedMemory(duped_shared_memory_handle, true));
-  if (!duped_shared_memory->MapAt(static_cast<off_t>(map_offset),
-                                  checked_size.ValueOrDie())) {
+  if (!shared_memory->MapAt(static_cast<off_t>(map_offset),
+                            checked_size.ValueOrDie())) {
     DVLOG(0) << "Failed to map shared memory.";
     return false;
   }
 
   if (!GLImageMemory::Initialize(
-          static_cast<uint8_t*>(duped_shared_memory->memory()) + memory_offset,
+          static_cast<uint8_t*>(shared_memory->memory()) + memory_offset,
           format, stride)) {
     return false;
   }
 
   DCHECK(!shared_memory_);
-  shared_memory_ = std::move(duped_shared_memory);
+  shared_memory_ = std::move(shared_memory);
   shared_memory_id_ = shared_memory_id;
   return true;
 }
