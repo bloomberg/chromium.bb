@@ -50,17 +50,6 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release (ATI)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:6779',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Mac 10.10 Release (Intel)': {
       'swarming_dimensions': [
         {
@@ -193,7 +182,9 @@ FYI_WATERFALL = {
     'Win7 Release (ATI)': {
       'swarming_dimensions': [
         {
-          'gpu': '1002:6779',
+          # TODO(kbr): add device PCI ID 6613 once deployed
+          # http://crbug.com/639353
+          'gpu': '1002',
           'os': 'Windows-2008ServerR2-SP1'
         },
       ],
@@ -204,7 +195,9 @@ FYI_WATERFALL = {
     'Win7 Debug (ATI)': {
       'swarming_dimensions': [
         {
-          'gpu': '1002:6779',
+          # TODO(kbr): add device PCI ID 6613 once deployed
+          # http://crbug.com/639353
+          'gpu': '1002',
           'os': 'Windows-2008ServerR2-SP1'
         },
       ],
@@ -632,7 +625,9 @@ FYI_WATERFALL = {
     'Optional Win7 Release (ATI)': {
       'swarming_dimensions': [
         {
-          'gpu': '1002:6779',
+          # TODO(kbr): add device PCI ID 6613 once deployed
+          # http://crbug.com/639353
+          'gpu': '1002',
           'os': 'Windows-2008ServerR2-SP1'
         },
       ],
@@ -1045,7 +1040,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'swarming_dimension_sets': [
           # BUG 555545: Disable webgl_conformance_gl_tests on Win/AMD
           {
-            'gpu': '1002:6779',
+            # TODO(kbr): add device PCI ID 6613 once deployed
+            # http://crbug.com/639353
+            'gpu': '1002',
             'os': 'Windows-2008ServerR2-SP1'
           },
           # BUG 590951: Disable webgl_conformance_gl_tests on Win/Intel

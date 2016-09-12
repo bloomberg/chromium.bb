@@ -9161,7 +9161,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9179,7 +9179,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9198,7 +9198,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9214,7 +9214,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9243,7 +9243,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
@@ -9267,7 +9267,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9459,7 +9459,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9475,7 +9475,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9491,7 +9491,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9507,7 +9507,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9523,7 +9523,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9541,7 +9541,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9560,7 +9560,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9576,7 +9576,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9603,7 +9603,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9626,7 +9626,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9649,7 +9649,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9672,7 +9672,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9701,7 +9701,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9738,7 +9738,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9761,7 +9761,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9784,7 +9784,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9807,7 +9807,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -9830,7 +9830,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11114,7 +11114,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11130,7 +11130,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11146,7 +11146,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11162,7 +11162,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11178,7 +11178,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11196,7 +11196,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11215,7 +11215,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11231,7 +11231,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11247,7 +11247,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11274,7 +11274,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11297,7 +11297,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11320,7 +11320,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11343,7 +11343,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11372,7 +11372,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11409,7 +11409,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11432,7 +11432,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11455,7 +11455,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11480,7 +11480,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
@@ -11504,7 +11504,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
@@ -11527,7 +11527,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6779",
+              "gpu": "1002",
               "os": "Windows-2008ServerR2-SP1"
             }
           ]
