@@ -748,6 +748,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
+     {"cs-now-on-tap-bar-integration",
+      IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION,
+      IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION_DESCRIPTION,
+      kOsAndroid,
+      SINGLE_VALUE_TYPE(
+          switches::kEnableContextualSearchNowOnTapBarIntegration)},
 #endif
     {"show-autofill-type-predictions",
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,

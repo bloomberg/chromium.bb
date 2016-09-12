@@ -17,7 +17,8 @@ ResolvedSearchTerm::ResolvedSearchTerm(int response_code)
       selection_start_adjust(0),
       selection_end_adjust(0),
       context_language(""),
-      thumbnail_url("") {}
+      thumbnail_url(""),
+      caption("") {}
 
 ResolvedSearchTerm::ResolvedSearchTerm(bool is_invalid,
                                        int response_code,
@@ -29,7 +30,8 @@ ResolvedSearchTerm::ResolvedSearchTerm(bool is_invalid,
                                        int selection_start_adjust,
                                        int selection_end_adjust,
                                        const std::string& context_language,
-                                       const std::string& thumbnail_url)
+                                       const std::string& thumbnail_url,
+                                       const std::string& caption)
     : is_invalid(is_invalid),
       response_code(response_code),
       search_term(search_term),
@@ -40,6 +42,7 @@ ResolvedSearchTerm::ResolvedSearchTerm(bool is_invalid,
       selection_start_adjust(selection_start_adjust),
       selection_end_adjust(selection_end_adjust),
       context_language(context_language),
-      thumbnail_url(thumbnail_url) {}
+      thumbnail_url(thumbnail_url),
+      caption(caption) {}
 
 ResolvedSearchTerm::~ResolvedSearchTerm() {}

@@ -57,6 +57,10 @@ public abstract class ChromeSwitches {
     /** Enable Contextual Search. */
     public static final String ENABLE_CONTEXTUAL_SEARCH = "enable-contextual-search";
 
+    /** Contextual Search UI integration with Now on Tap data.*/
+    public static final String CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION =
+            "cs-now-on-tap-bar-integration";
+
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";
 

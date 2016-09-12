@@ -85828,6 +85828,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="BAD_FLAG_FORMAT">
     Command-line flag doesn't start with two dashes.
   </int>
+  <int value="2159633" label="cs-now-on-tap-bar-integration"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>

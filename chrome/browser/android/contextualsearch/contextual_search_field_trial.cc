@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -40,7 +41,9 @@ ContextualSearchFieldTrial::ContextualSearchFieldTrial()
       is_send_base_page_url_disabled_cached_(false),
       is_send_base_page_url_disabled_(false),
       is_decode_mentions_disabled_cached_(false),
-      is_decode_mentions_disabled_(false) {}
+      is_decode_mentions_disabled_(false),
+      is_now_on_tap_bar_integration_enabled_cached_(false),
+      is_now_on_tap_bar_integration_enabled_(false) {}
 
 ContextualSearchFieldTrial::~ContextualSearchFieldTrial() {}
 
@@ -78,6 +81,13 @@ bool ContextualSearchFieldTrial::IsDecodeMentionsDisabled() {
   return GetBooleanParam(kContextualSearchDecodeMentionsDisabledParamName,
                          &is_decode_mentions_disabled_cached_,
                          &is_decode_mentions_disabled_);
+}
+
+bool ContextualSearchFieldTrial::IsNowOnTapBarIntegrationEnabled() {
+  return GetBooleanParam(
+      switches::kEnableContextualSearchNowOnTapBarIntegration,
+      &is_now_on_tap_bar_integration_enabled_cached_,
+      &is_now_on_tap_bar_integration_enabled_);
 }
 
 bool ContextualSearchFieldTrial::GetBooleanParam(const std::string& name,

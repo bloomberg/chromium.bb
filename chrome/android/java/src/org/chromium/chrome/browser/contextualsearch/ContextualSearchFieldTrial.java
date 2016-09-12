@@ -73,9 +73,6 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
 
-    // UI integration with Now on Tap data.
-    private static final String NOW_ON_TAP_BAR_INTEGRATION = "now_on_tap_bar_integration";
-
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -371,7 +368,8 @@ public class ContextualSearchFieldTrial {
 
     static boolean isNowOnTapBarIntegrationEnabled() {
         if (sIsNowOnTapBarIntegrationEnabled == null) {
-            sIsNowOnTapBarIntegrationEnabled = getBooleanParam(NOW_ON_TAP_BAR_INTEGRATION);
+            sIsNowOnTapBarIntegrationEnabled = getBooleanParam(
+                    ChromeSwitches.CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION);
         }
         return sIsNowOnTapBarIntegrationEnabled;
     }

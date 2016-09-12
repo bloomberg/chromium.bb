@@ -61,6 +61,9 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
      *        e.g. a Quick Answer.
      */
     public void setCaption(String caption) {
+        // If the caption is visible it has already been set. Return early rather than changing it.
+        if (mIsVisible) return;
+
         mDidCapture = false;
 
         inflate();

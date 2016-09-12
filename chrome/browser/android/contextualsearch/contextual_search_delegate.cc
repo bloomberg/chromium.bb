@@ -165,11 +165,12 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   int end_adjust = 0;
   std::string context_language;
   std::string thumbnail_url = "";
+  std::string caption = "";
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url);
+      &thumbnail_url, &caption);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -190,7 +191,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
-      context_language, thumbnail_url));
+      context_language, thumbnail_url, caption));
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
@@ -439,7 +440,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     int* mention_start,
     int* mention_end,
     std::string* lang,
-    std::string* thumbnail_url) {
+    std::string* thumbnail_url,
+    std::string* caption) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -486,7 +488,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     }
   }
 
-  // TODO(donnd): extract thumbnail_url. Also extract caption and pipe through.
+  if (field_trial_->IsNowOnTapBarIntegrationEnabled()) {
+    // TODO(donnd): extract thumbnail_url and caption.
+  }
 }
 
 // Extract the Start/End of the mentions in the surrounding text

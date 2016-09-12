@@ -5495,6 +5495,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
           Whether or not Contextual Search is enabled.
         </message>
+       <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION" desc="Title for the flag to enable Contextual Search integration with Now on Tap data in the bar.">
+          Contextual Search Now on Tap Bar Integration
+        </message>
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION_DESCRIPTION" desc="Description for the flag to enable Contextual Search integration with Now on Tap data in the bar.">
+          Whether or not integration of Now on Tap data in the Contextual Search Bar is enabled.
+        </message>
       </if>
       <message name="IDS_FLAGS_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting

@@ -1024,7 +1024,7 @@ const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
 const char kDisableAppLink[] = "disable-app-link";
 
 // Disables Contextual Search.
-const char kDisableContextualSearch[]        = "disable-contextual-search";
+const char kDisableContextualSearch[] = "disable-contextual-search";
 
 // Disable VR UI if supported.
 const char kDisableVrShell[] = "disable-vr-shell";
@@ -1037,7 +1037,11 @@ const char kEnableAccessibilityTabSwitcher[] =
 const char kEnableAppLink[] = "enable-app-link";
 
 // Enables Contextual Search.
-const char kEnableContextualSearch[]        = "enable-contextual-search";
+const char kEnableContextualSearch[] = "enable-contextual-search";
+
+// Enables Contextual Search UI integration with Now on Tap data.
+const char kEnableContextualSearchNowOnTapBarIntegration[] =
+    "cs-now-on-tap-bar-integration";
 
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";

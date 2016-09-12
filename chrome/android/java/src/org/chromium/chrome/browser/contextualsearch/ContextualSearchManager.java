@@ -686,8 +686,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                     R.string.contextual_search_error, responseCode);
             doLiteralSearch = true;
         }
-        thumbnailUrl = ContextualSearchFieldTrial.isNowOnTapBarIntegrationEnabled()
-                ? thumbnailUrl : "";
+
         mSearchPanel.onSearchTermResolved(message, thumbnailUrl);
 
         // If there was an error, fall back onto a literal search for the selection.
