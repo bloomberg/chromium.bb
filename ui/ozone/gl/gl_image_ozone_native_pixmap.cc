@@ -100,6 +100,32 @@ EGLint FourCC(gfx::BufferFormat format) {
   return 0;
 }
 
+#if !defined(ARCH_CPU_X86_FAMILY)
+bool IsFormatCrCb(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::YVU_420:
+      return true;
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+#endif
+
 }  // namespace
 
 GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
@@ -148,22 +174,40 @@ bool GLImageOzoneNativePixmap::Initialize(NativePixmap* pixmap,
     bool has_dma_buf_import_modifier = gl::GLSurfaceEGL::HasEGLExtension(
         "EGL_EXT_image_dma_buf_import_modifiers");
 
-    for (size_t plane = 0;
-         plane < gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
-         ++plane) {
-      attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
-      attrs.push_back(
-          pixmap->GetDmaBufFd(plane < pixmap->GetDmaBufFdCount() ? plane : 0));
-      attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
-      attrs.push_back(pixmap->GetDmaBufOffset(plane));
-      attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
-      attrs.push_back(pixmap->GetDmaBufPitch(plane));
+    for (size_t attrs_plane = 0;
+         attrs_plane <
+         gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
+         ++attrs_plane) {
+      attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + attrs_plane * 3);
+
+      size_t pixmap_plane = attrs_plane;
+
+// TODO(dcastagna): Intel mesa flips V and U when the fourcc format is a
+// CrCb format therefore we don't need to.
+// Once crbug.com/646137 is addressed this ifdef (but not its content) can be
+// removed.
+#if !defined(ARCH_CPU_X86_FAMILY)
+      // EGL_EXT_image_dma_buf_import always expects U and V as plane 1 and 2 in
+      // case of a YUV/YVU format. We swap U and V plane indexes for CrCb
+      // multi-planar formats.
+      if (IsFormatCrCb(format) &&
+          gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat()) == 3 &&
+          attrs_plane) {
+        pixmap_plane = 3 - attrs_plane;
+      }
+#endif
+      attrs.push_back(pixmap->GetDmaBufFd(
+          pixmap_plane < pixmap->GetDmaBufFdCount() ? pixmap_plane : 0));
+      attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + attrs_plane * 3);
+      attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
+      attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + attrs_plane * 3);
+      attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
       if (has_dma_buf_import_modifier) {
-        uint64_t modifier = pixmap->GetDmaBufModifier(plane);
-        DCHECK(plane < arraysize(kLinuxDrmModifiers));
-        attrs.push_back(kLinuxDrmModifiers[plane]);
+        uint64_t modifier = pixmap->GetDmaBufModifier(pixmap_plane);
+        DCHECK(attrs_plane < arraysize(kLinuxDrmModifiers));
+        attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
         attrs.push_back(modifier & 0xffffffff);
-        attrs.push_back(kLinuxDrmModifiers[plane] + 1);
+        attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);
         attrs.push_back(static_cast<uint32_t>(modifier >> 32));
       }
     }
