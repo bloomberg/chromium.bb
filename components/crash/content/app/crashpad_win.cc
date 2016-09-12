@@ -107,8 +107,6 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       base::FilePath exe_dir = exe_file.DirName();
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
-    // TODO(scottmg): See https://crashpad.chromium.org/bug/23.
-    arguments.push_back("--no-rate-limit");
 
     result = g_crashpad_client.Get().StartHandler(
         exe_file, database_path, url, process_annotations, arguments, false);
