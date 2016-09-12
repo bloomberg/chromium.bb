@@ -196,10 +196,4 @@ NSTextField* MakeLabelTextField(NSRect frame) {
   return YES;
 }
 
-- (NSRange)textView:(NSTextView*)textView
-    willChangeSelectionFromCharacterRange:(NSRange)oldSelectedCharRange
-                         toCharacterRange:(NSRange)newSelectedCharRange {
-  return NSMakeRange(0, 0);
-}
-
 @end
