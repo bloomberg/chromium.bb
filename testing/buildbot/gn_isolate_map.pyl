@@ -704,7 +704,7 @@
     "type": "console_test_launcher",
   },
   "video_engine_tests": {
-    "label": "//webrtc:viceo_engine_tests",
+    "label": "//webrtc:video_engine_tests",
     "type": "console_test_launcher",
   },
   "views_mus_interactive_ui_tests": {
