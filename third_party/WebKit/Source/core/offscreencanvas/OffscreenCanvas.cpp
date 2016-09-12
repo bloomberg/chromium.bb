@@ -27,20 +27,24 @@ OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height)
     return new OffscreenCanvas(IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 
-void OffscreenCanvas::setWidth(unsigned width)
+void OffscreenCanvas::setWidth(unsigned width, ExceptionState& exceptionState)
 {
     // If this OffscreenCanvas is transferred control by an html canvas,
     // its size is determined by html canvas's size and cannot be resized.
-    if (m_canvasId >= 0)
+    if (m_canvasId >= 0) {
+        exceptionState.throwDOMException(InvalidStateError, "Resizing is not allowed on an OffscreenCanvas that has been transferred control from a canvas.");
         return;
+    }
     m_size.setWidth(clampTo<int>(width));
 }
 
-void OffscreenCanvas::setHeight(unsigned height)
+void OffscreenCanvas::setHeight(unsigned height, ExceptionState& exceptionState)
 {
     // Same comment as above.
-    if (m_canvasId >= 0)
+    if (m_canvasId >= 0) {
+        exceptionState.throwDOMException(InvalidStateError, "Resizing is not allowed on an OffscreenCanvas that has been transferred control from a canvas.");
         return;
+    }
     m_size.setHeight(clampTo<int>(height));
 }
 

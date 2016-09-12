@@ -30,8 +30,8 @@ public:
     // IDL attributes
     unsigned width() const { return m_size.width(); }
     unsigned height() const { return m_size.height(); }
-    void setWidth(unsigned);
-    void setHeight(unsigned);
+    void setWidth(unsigned, ExceptionState&);
+    void setHeight(unsigned, ExceptionState&);
 
     // API Methods
     ImageBitmap* transferToImageBitmap(ExceptionState&);

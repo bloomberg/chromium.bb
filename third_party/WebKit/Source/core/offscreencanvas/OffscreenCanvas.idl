@@ -7,8 +7,8 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffscreenCanvas {
-    [EnforceRange] attribute unsigned long width;
-    [EnforceRange] attribute unsigned long height;
+    [RaisesException=Setter, EnforceRange] attribute unsigned long width;
+    [RaisesException=Setter, EnforceRange] attribute unsigned long height;
 
     [RaisesException] ImageBitmap transferToImageBitmap();
 };

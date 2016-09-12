@@ -42,11 +42,9 @@ test(function() {
     var offscreenCanvas3 = canvas3.transferControlToOffscreen();
     assert_equals(offscreenCanvas3.width, 10);
     assert_equals(offscreenCanvas3.height, 10);
-    offscreenCanvas3.width = 20;
-    offscreenCanvas3.height = 20;
-    assert_equals(offscreenCanvas3.width, 10);
-    assert_equals(offscreenCanvas3.height, 10);
-}, "Test if resizing on offscreencanvas transferred from html canvas has no effect");
+    assert_throws("InvalidStateError", function() { offscreenCanvas3.width = 20; });
+    assert_throws("InvalidStateError", function() { offscreenCanvas3.height = 20; });
+}, "Test if resizing on offscreencanvas transferred from html canvas has thrown exceptions.");
 
 </script>
 </body>
