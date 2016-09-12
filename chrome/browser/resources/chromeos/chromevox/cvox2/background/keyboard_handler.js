@@ -74,21 +74,16 @@ BackgroundKeyboardHandler.prototype = {
           true, cvox.ChromeVox.isStickyPrefOn);
     }
 
-    // Switching out of next, force next, or uninitialized (on startup).
     if (newMode === ChromeVoxMode.NEXT ||
         newMode === ChromeVoxMode.FORCE_NEXT) {
+      // Switching out of classic, compat, or uninitialized (on startup).
       window['prefs'].switchToKeyMap('keymap_next');
-    } else {
-      // Moving from next to classic/compat should be the only case where
-      // keymaps get reset. Note the classic <-> compat switches should preserve
-      // keymaps especially if a user selected a different one.
-      if (oldMode &&
-          oldMode != ChromeVoxMode.CLASSIC &&
-          oldMode != ChromeVoxMode.COMPAT) {
-        // The user's configured key map gets wiped here; this is consistent
-        // with previous behavior when switching keymaps.
-        window['prefs'].switchToKeyMap('keymap_next');
-      }
+    } else if (oldMode &&
+        oldMode != ChromeVoxMode.CLASSIC &&
+        oldMode != ChromeVoxMode.COMPAT) {
+      // Switching out of next. Intentionally do nothing when switching out of
+      // an uninitialized |oldMode|.
+      window['prefs'].switchToKeyMap('keymap_classic');
     }
   }
 };
