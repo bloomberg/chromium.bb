@@ -161,8 +161,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
                               int* min_right,
                               int* max_right);
 
-  // Returns the target bounds of the currently selected item.
-  const gfx::Rect GetSelectionBounds() const;
+  // Sets up WindowSelectorItem to use masks or shapes based on command flags.
+  // TODO(varkha): remove this in the next patch and use shapes but not masks.
+  void PrepareForUsingMasksOrShapes(size_t windows_count) const;
 
   // Root window the grid is in.
   WmWindow* root_window_;

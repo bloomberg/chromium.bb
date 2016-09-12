@@ -195,6 +195,8 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(new OverlayView(header_view_));
+  frame_window->SetColorProperty(WmWindowProperty::TOP_VIEW_COLOR,
+                                 header_view_->GetInactiveFrameColor());
 
   // A delegate for a more complex way of fullscreening the window may already
   // be set. This is the case for packaged apps.
@@ -217,6 +219,9 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
+  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame_);
+  frame_window->SetColorProperty(WmWindowProperty::TOP_VIEW_COLOR,
+                                 header_view_->GetInactiveFrameColor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

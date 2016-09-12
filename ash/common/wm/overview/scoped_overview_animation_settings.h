@@ -5,6 +5,10 @@
 #ifndef ASH_COMMON_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_H_
 #define ASH_COMMON_WM_OVERVIEW_SCOPED_OVERVIEW_ANIMATION_SETTINGS_H_
 
+namespace ui {
+class ImplicitAnimationObserver;
+}  // namespace ui
+
 namespace ash {
 
 // ScopedOverviewAnimationSettings correctly configures the animation
@@ -12,6 +16,7 @@ namespace ash {
 class ScopedOverviewAnimationSettings {
  public:
   virtual ~ScopedOverviewAnimationSettings() {}
+  virtual void AddObserver(ui::ImplicitAnimationObserver* observer) = 0;
 };
 
 }  // namespace ash

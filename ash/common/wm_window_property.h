@@ -23,6 +23,9 @@ enum class WmWindowProperty {
   // Type int. See aura::client::kTopViewInset for details.
   TOP_VIEW_INSET,
 
+  // Type SkColor. See aura::client::kTopViewColor for details.
+  TOP_VIEW_COLOR,
+
   // Type bool. See aura::client:kExcludeFromMruKey for details.
   EXCLUDE_FROM_MRU,
 };
