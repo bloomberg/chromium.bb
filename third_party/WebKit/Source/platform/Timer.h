@@ -36,6 +36,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -58,8 +59,8 @@ public:
         start(interval, 0, caller);
     }
 
-    // Timer cancellation is supported but not free. Please be careful not to
-    // cause a flood of timer cancellations.
+    // Timer cancellation is fast enough that you shouldn't have to worry
+    // about it unless you're canceling tens of thousands of tasks.
     void stop();
     bool isActive() const;
     const WebTraceLocation& location() const { return m_location; }
@@ -95,46 +96,15 @@ private:
 
     void runInternal();
 
-    class CancellableTimerTask final : public WebTaskRunner::Task {
-        WTF_MAKE_NONCOPYABLE(CancellableTimerTask);
-    public:
-        explicit CancellableTimerTask(TimerBase* timer) : m_timer(timer) { }
-
-        NO_LAZY_SWEEP_SANITIZE_ADDRESS
-        ~CancellableTimerTask() override
-        {
-            if (m_timer)
-                m_timer->m_cancellableTimerTask = nullptr;
-        }
-
-        NO_LAZY_SWEEP_SANITIZE_ADDRESS
-        void run() override
-        {
-            if (m_timer) {
-                m_timer->m_cancellableTimerTask = nullptr;
-                m_timer->runInternal();
-                m_timer = nullptr;
-            }
-        }
-
-        void cancel()
-        {
-            m_timer = nullptr;
-        }
-
-    private:
-        TimerBase* m_timer; // NOT OWNED
-    };
-
     double m_nextFireTime; // 0 if inactive
     double m_repeatInterval; // 0 if not repeating
     WebTraceLocation m_location;
-    CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED
     std::unique_ptr<WebTaskRunner> m_webTaskRunner;
 
 #if DCHECK_IS_ON()
     ThreadIdentifier m_thread;
 #endif
+    WTF::WeakPtrFactory<TimerBase> m_weakPtrFactory;
 
     friend class ThreadTimers;
     friend class TimerHeapLessThanFunction;
@@ -227,7 +197,7 @@ NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const
 {
     ASSERT(m_thread == currentThread());
-    return m_cancellableTimerTask;
+    return m_weakPtrFactory.hasWeakPtrs();
 }
 
 } // namespace blink

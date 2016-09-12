@@ -91,49 +91,6 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     bool should_report_when_execution_blocked;
   };
 
-  // Intended to be used as an opaque handle to a task posted by
-  // PostCancellableDelayedTask.
-  class BLINK_PLATFORM_EXPORT TaskHandle {
-   public:
-    TaskHandle();
-
-    // Returns false if the handle is equivalent to TaskHandle(), i.e. the
-    // handle doesn't represent a task that got posted.
-    operator bool() const;
-
-   private:
-    friend internal::TaskQueueImpl;
-    friend FakeWebTaskRunner;
-
-    // For immediate tasks.
-    TaskHandle(TaskQueue* task_queue, uint64_t enqueue_order);
-
-    // For delayed tasks.
-    TaskHandle(TaskQueue* task_queue,
-               base::TimeTicks scheduled_run_time,
-               int sequence_number);
-
-    uint64_t enqueue_order_;
-    base::TimeTicks scheduled_run_time_;
-#if DCHECK_IS_ON()
-    TaskQueue* task_queue_;
-#endif
-    int sequence_number_;
-  };
-
-  // Posts the given task to be run after |delay| has passed. Returns a handle
-  // which can be passed to CancelTask to cancel the task before it has run.
-  // NOTE this must be called on the thread this TaskQueue was created by.
-  virtual TaskHandle PostCancellableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) = 0;
-
-  // Attempts to cancel a task posted by PostCancellableDelayedTask. Returns
-  // true on success or false otherwise. NOTE this must be called on the thread
-  // this TaskQueue was created by.
-  virtual bool CancelTask(const TaskHandle& handle) = 0;
-
   // Enable or disable task execution for this queue. NOTE this must be called
   // on the thread this TaskQueue was created by.
   virtual void SetQueueEnabled(bool enabled) = 0;

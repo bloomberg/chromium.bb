@@ -43,11 +43,11 @@ namespace blink {
 TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     : m_nextFireTime(0)
     , m_repeatInterval(0)
-    , m_cancellableTimerTask(nullptr)
     , m_webTaskRunner(webTaskRunner->clone())
 #if DCHECK_IS_ON()
     , m_thread(currentThread())
 #endif
+    , m_weakPtrFactory(this)
 {
     ASSERT(m_webTaskRunner);
 }
@@ -72,9 +72,7 @@ void TimerBase::stop()
 
     m_repeatInterval = 0;
     m_nextFireTime = 0;
-    if (m_cancellableTimerTask)
-        m_cancellableTimerTask->cancel();
-    m_cancellableTimerTask = nullptr;
+    m_weakPtrFactory.revokeAll();
 }
 
 double TimerBase::nextFireInterval() const
@@ -111,12 +109,12 @@ void TimerBase::setNextFireTime(double now, double delay)
 
     if (m_nextFireTime != newTime) {
         m_nextFireTime = newTime;
-        if (m_cancellableTimerTask)
-            m_cancellableTimerTask->cancel();
-        m_cancellableTimerTask = new CancellableTimerTask(this);
+
+        // Cancel any previously posted task.
+        m_weakPtrFactory.revokeAll();
 
         double delayMs = 1000.0 * (newTime - now);
-        timerTaskRunner()->postDelayedTask(m_location, m_cancellableTimerTask, delayMs);
+        timerTaskRunner()->postDelayedTask(m_location, base::Bind(&TimerBase::runInternal, m_weakPtrFactory.createWeakPtr()), delayMs);
     }
 }
 
@@ -125,6 +123,8 @@ void TimerBase::runInternal()
 {
     if (!canFire())
         return;
+
+    m_weakPtrFactory.revokeAll();
 
     TRACE_EVENT0("blink", "TimerBase::run");
 #if DCHECK_IS_ON()

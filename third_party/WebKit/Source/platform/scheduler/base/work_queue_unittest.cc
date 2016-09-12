@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
@@ -15,6 +16,9 @@
 namespace blink {
 namespace scheduler {
 namespace internal {
+namespace {
+void NopTask() {}
+}
 
 class WorkQueueTest : public testing::Test {
  public:
@@ -23,22 +27,19 @@ class WorkQueueTest : public testing::Test {
     task_queue_ = make_scoped_refptr(new TaskQueueImpl(
         nullptr, time_domain_.get(), TaskQueue::Spec("fake"), "", ""));
 
-    work_queue_.reset(
-        new WorkQueue(task_queue_.get(), "test",
-                      TaskQueueImpl::Task::EnqueueOrderComparatorFn));
+    work_queue_.reset(new WorkQueue(task_queue_.get(), "test"));
     work_queue_sets_.reset(new WorkQueueSets(1, "test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
 
-    incoming_queue_.reset(new TaskQueueImpl::ComparatorQueue(
-        TaskQueueImpl::Task::EnqueueOrderComparatorFn));
+    incoming_queue_.reset(new std::queue<TaskQueueImpl::Task>());
   }
 
   void TearDown() override { work_queue_sets_->RemoveQueue(work_queue_.get()); }
 
  protected:
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
-    TaskQueueImpl::Task fake_task(FROM_HERE, base::Closure(), base::TimeTicks(),
-                                  0, true);
+    TaskQueueImpl::Task fake_task(FROM_HERE, base::Bind(&NopTask),
+                                  base::TimeTicks(), 0, true);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
@@ -47,7 +48,7 @@ class WorkQueueTest : public testing::Test {
   scoped_refptr<TaskQueueImpl> task_queue_;
   std::unique_ptr<WorkQueue> work_queue_;
   std::unique_ptr<WorkQueueSets> work_queue_sets_;
-  std::unique_ptr<TaskQueueImpl::ComparatorQueue> incoming_queue_;
+  std::unique_ptr<std::queue<TaskQueueImpl::Task>> incoming_queue_;
 };
 
 TEST_F(WorkQueueTest, Empty) {
@@ -122,9 +123,9 @@ TEST_F(WorkQueueTest, PushAfterFenceHit) {
 }
 
 TEST_F(WorkQueueTest, SwapLocked) {
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(4));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(2));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(3));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
@@ -144,9 +145,9 @@ TEST_F(WorkQueueTest, SwapLocked) {
 
 TEST_F(WorkQueueTest, SwapLockedAfterFenceHit) {
   work_queue_->InsertFence(1);
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->insert(FakeTaskWithEnqueueOrder(4));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(2));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(3));
+  incoming_queue_->push(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
