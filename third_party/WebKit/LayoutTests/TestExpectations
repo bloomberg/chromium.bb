@@ -20,11 +20,11 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
 # Covered directories are:
-#  compositing subdirectories but not compositing itself or compositing/animations
+#  compositing except compositing/animations
+#  hittesting
 #  fast/images, css3/images,
 #  paint
 #  svg
-#  fast/svg
 # Some additional bugs that are caused by painting problems are also within this section.
 
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
@@ -51,6 +51,8 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
 
+crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
+
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 
@@ -67,6 +69,13 @@ crbug.com/598051 paint/invalidation/svg/absolute-sized-content-with-resources.xh
 crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
+
+crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
+
+crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
+
+crbug.com/613728 paint/invalidation/table/cached-69296.html [ Failure ]
+crbug.com/613728 paint/invalidation/table/cached-change-table-border-width.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
@@ -89,6 +98,9 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profil
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
+
+crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
+crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
@@ -382,8 +394,6 @@ crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Pass Crash 
 crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
-crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
-
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]
@@ -668,9 +678,6 @@ crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Crash Timeout ]
-
-crbug.com/613728 paint/invalidation/table/cached-69296.html [ Failure ]
-crbug.com/613728 paint/invalidation/table/cached-change-table-border-width.html [ Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -990,9 +997,6 @@ crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
-crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
-crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
-
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
 crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
@@ -1185,7 +1189,6 @@ crbug.com/487344 media/video-controls-with-cast-rendering.html [ Failure ]
 crbug.com/487344 media/video-display-toggle.html [ Failure ]
 crbug.com/487344 media/video-empty-source.html [ Failure ]
 crbug.com/487344 media/video-no-audio.html [ Failure ]
-crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 [ Mac ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout Failure ]
 crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Pass Failure ]
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
@@ -1193,7 +1196,6 @@ crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
-crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
