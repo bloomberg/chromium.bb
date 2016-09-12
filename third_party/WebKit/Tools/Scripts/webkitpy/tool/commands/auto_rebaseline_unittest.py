@@ -51,7 +51,6 @@ class TestAutoRebaseline(BaseTestCase):
         self.tool.builders = BuilderList({
             "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
             "MOCK Mac10.11 (dbg)": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Debug"]},
-            "MOCK Mac10.11 ASAN": {"port_name": "test-mac-mac10.11", "specifiers": ["Mac10.11", "Release"]},
         })
         self.assertEqual(self.command._release_builders(), ['MOCK Mac10.10'])
 

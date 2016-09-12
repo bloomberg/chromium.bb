@@ -243,12 +243,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         """
         release_builders = []
         for builder_name in self._tool.builders.all_continuous_builder_names():
-            # TODO(qyearsley): Remove this check. Explicitly excluding ASAN builders
-            # should be unnecessary, since there are no ASAN builders listed in
-            # webkitpy/common/config/builders.py. If we do want to keep this check,
-            # then we should probably also explicitly exclude MSAN builders.
-            if 'ASAN' in builder_name:
-                continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
             if port.test_configuration().build_type == 'release':
                 release_builders.append(builder_name)
