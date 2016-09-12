@@ -2570,14 +2570,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
 
 #if defined(OS_CHROMEOS)
 
-// Flaky http://crbug.com/476964
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DisableScreenshotsFile DISABLED_DisableScreenshotsFile
-#else
-#define MAYBE_DisableScreenshotsFile DisableScreenshotsFile
-#endif
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_DisableScreenshotsFile) {
+// Flaky on MSan (crbug.com/476964) and regular Chrome OS (crbug.com/645769).
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableScreenshotsFile) {
   int screenshot_count = CountScreenshots();
 
   // Make sure screenshots are counted correctly.
