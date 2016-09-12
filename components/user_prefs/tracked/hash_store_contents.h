@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 class DictionaryValue;
 class Value;
@@ -23,6 +25,11 @@ class Value;
 class HashStoreContents {
  public:
   virtual ~HashStoreContents() {}
+
+  // Returns the suffix to be appended to UMA histograms for this store type.
+  // The returned value must either be an empty string or one of the values in
+  // histograms.xml's TrackedPreferencesExternalValidators.
+  virtual base::StringPiece GetUMASuffix() const = 0;
 
   // Discards all data related to this hash store.
   virtual void Reset() = 0;

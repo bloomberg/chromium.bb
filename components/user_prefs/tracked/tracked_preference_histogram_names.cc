@@ -25,6 +25,7 @@ const char kTrackedPrefHistogramWantedReset[] =
 const char kTrackedPrefHistogramReset[] = "Settings.TrackedPreferenceReset";
 const char kTrackedSplitPrefHistogramChanged[] =
     "Settings.TrackedSplitPreferenceChanged.";
+const char kTrackedPrefRegistryValidationSuffix[] = "FromRegistry";
 
 }  // namespace tracked
 }  // namespace user_prefs

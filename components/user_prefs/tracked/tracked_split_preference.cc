@@ -56,7 +56,7 @@ bool TrackedSplitPreference::EnforceAndReport(
   if (value_state == PrefHashStoreTransaction::CHANGED)
     helper_.ReportSplitPreferenceChangedCount(invalid_keys.size());
 
-  helper_.ReportValidationResult(value_state);
+  helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);

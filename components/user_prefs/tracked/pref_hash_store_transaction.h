@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 class DictionaryValue;
 class Value;
@@ -40,6 +42,10 @@ class PrefHashStoreTransaction {
 
   // Finalizes any remaining work after the transaction has been performed.
   virtual ~PrefHashStoreTransaction() {}
+
+  // Returns the suffix to be appended to UMA histograms for the store contained
+  // in this transaction.
+  virtual base::StringPiece GetStoreUMASuffix() const = 0;
 
   // Checks |initial_value| against the existing stored value hash.
   virtual ValueState CheckValue(const std::string& path,

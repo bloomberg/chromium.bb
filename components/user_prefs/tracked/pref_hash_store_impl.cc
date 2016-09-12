@@ -22,6 +22,7 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   ~PrefHashStoreTransactionImpl() override;
 
   // PrefHashStoreTransaction implementation.
+  base::StringPiece GetStoreUMASuffix() const override;
   ValueState CheckValue(const std::string& path,
                         const base::Value* value) const override;
   void StoreHash(const std::string& path, const base::Value* value) override;
@@ -118,6 +119,11 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     const base::DictionaryValue* hashes_dict = contents_->GetContents();
     contents_->SetSuperMac(outer_->ComputeMac("", hashes_dict));
   }
+}
+
+base::StringPiece
+PrefHashStoreImpl::PrefHashStoreTransactionImpl::GetStoreUMASuffix() const {
+  return contents_->GetUMASuffix();
 }
 
 PrefHashStoreTransaction::ValueState

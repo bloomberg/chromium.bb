@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "components/user_prefs/tracked/tracked_preference_histogram_names.h"
 
 using base::win::RegistryValueIterator;
 
@@ -70,6 +71,10 @@ RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const base::string16& registry_path,
     const base::string16& store_key)
     : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key) {}
+
+base::StringPiece RegistryHashStoreContentsWin::GetUMASuffix() const {
+  return user_prefs::tracked::kTrackedPrefRegistryValidationSuffix;
+}
 
 void RegistryHashStoreContentsWin::Reset() {
   base::win::RegKey key;

@@ -31,6 +31,7 @@ class DictionaryHashStoreContents : public HashStoreContents {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // HashStoreContents implementation
+  base::StringPiece GetUMASuffix() const override;
   void Reset() override;
   bool GetMac(const std::string& path, std::string* out_value) override;
   bool GetSplitMacs(const std::string& path,

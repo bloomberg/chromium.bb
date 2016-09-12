@@ -55168,7 +55168,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference whose value has been changed since the last
-    time Chrome set it.
+    time Chrome set it. Without a prefix, this histogram stands for preference
+    validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55176,7 +55177,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference whose value has been cleared since the last
-    time Chrome set it.
+    time Chrome set it. Without a prefix, this histogram stands for preference
+    validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55187,6 +55189,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The id of a tracked preference whose last value isn't known. We may be just
     starting to track the preference, or local state may have been changed
     outside of Chrome. This should only happen once per pref per profile.
+    Without a prefix, this histogram stands for preference validation using MACs
+    in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55208,7 +55212,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The id of a tracked preference whose value has not changed since the last
     time Chrome set it, but which was last set using a legacy device ID. Each
     user should report this at most once per preference id and immediately be
-    migrated to the latest hashing model.
+    migrated to the latest hashing model. Without a prefix, this histogram
+    stands for preference validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55217,7 +55222,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference which was initialized despite the absence of
-    a MAC as its value was NULL.
+    a MAC as its value was NULL. Without a prefix, this histogram stands for
+    preference validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55281,8 +55287,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference which was initialized despite the absence of
-    a MAC as the current MACs are trusted, infering that this is a newly tracked
-    pref.
+    a MAC as the current MACs are trusted, inferring that this is a newly
+    tracked pref. Without a prefix, this histogram stands for preference
+    validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -55290,7 +55297,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference whose value has not changed since the last
-    time Chrome set it.
+    time Chrome set it. Without a prefix, this histogram stands for preference
+    validation using MACs in the JSON pref files.
   </summary>
 </histogram>
 
@@ -105646,6 +105654,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Fet6" label="FET6 on tps65090 (register 0x14)"/>
   <suffix name="Fet7" label="FET7 on tps65090 (register 0x15)"/>
   <affected-histogram name="Platform.Tps65090Retries"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="TrackedPreferencesExternalValidators" separator=".">
+  <suffix name="FromRegistry"
+      label="Validation using MACs in the Windows Registry."/>
+  <affected-histogram name="Settings.TrackedPreferenceChanged"/>
+  <affected-histogram name="Settings.TrackedPreferenceCleared"/>
+  <affected-histogram name="Settings.TrackedPreferenceInitialized"/>
+  <affected-histogram name="Settings.TrackedPreferenceMigratedLegacyDeviceId"/>
+  <affected-histogram name="Settings.TrackedPreferenceNullInitialized"/>
+  <affected-histogram name="Settings.TrackedPreferenceTrustedInitialized"/>
+  <affected-histogram name="Settings.TrackedPreferenceUnchanged"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="TrackedSplitPreferences" separator=".">

@@ -180,6 +180,7 @@ class MockPrefHashStore : public PrefHashStore {
     }
 
     // PrefHashStoreTransaction implementation.
+    base::StringPiece GetStoreUMASuffix() const override;
     PrefHashStoreTransaction::ValueState CheckValue(
         const std::string& path,
         const base::Value* value) const override;
@@ -299,6 +300,11 @@ void MockPrefHashStore::RecordStoreHash(
       stored_values_.insert(std::make_pair(path,
                                            std::make_pair(new_value, strategy)))
           .second);
+}
+
+base::StringPiece
+MockPrefHashStore::MockPrefHashStoreTransaction::GetStoreUMASuffix() const {
+  return "unused";
 }
 
 PrefHashStoreTransaction::ValueState

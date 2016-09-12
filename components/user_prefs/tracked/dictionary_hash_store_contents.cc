@@ -28,6 +28,12 @@ void DictionaryHashStoreContents::RegisterProfilePrefs(
   registry->RegisterStringPref(kSuperMACPref, std::string());
 }
 
+base::StringPiece DictionaryHashStoreContents::GetUMASuffix() const {
+  // To stay consistent with existing reported data, do not append a suffix
+  // when reporting UMA stats for this content.
+  return base::StringPiece();
+}
+
 void DictionaryHashStoreContents::Reset() {
   storage_->Remove(kPreferenceMACs, NULL);
 }

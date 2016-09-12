@@ -42,8 +42,9 @@ class TrackedPreferenceHelper {
   bool IsPersonal() const;
 
   // Reports |value_state| via UMA under |reporting_id_|.
-  void ReportValidationResult(
-      PrefHashStoreTransaction::ValueState value_state) const;
+  // |validation_type_suffix| is appended to the reported histogram's name.
+  void ReportValidationResult(PrefHashStoreTransaction::ValueState value_state,
+                              base::StringPiece validation_type_suffix) const;
 
   // Reports |reset_action| via UMA under |reporting_id_|.
   void ReportAction(ResetAction reset_action) const;

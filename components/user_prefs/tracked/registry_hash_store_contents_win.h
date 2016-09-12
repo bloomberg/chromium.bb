@@ -18,6 +18,7 @@ class RegistryHashStoreContentsWin : public HashStoreContents {
                                         const base::string16& store_key);
 
   // HashStoreContents overrides:
+  base::StringPiece GetUMASuffix() const override;
   void Reset() override;
   bool GetMac(const std::string& path, std::string* out_value) override;
   bool GetSplitMacs(const std::string& path,

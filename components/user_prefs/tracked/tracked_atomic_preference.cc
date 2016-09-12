@@ -38,7 +38,7 @@ bool TrackedAtomicPreference::EnforceAndReport(
   PrefHashStoreTransaction::ValueState value_state =
       transaction->CheckValue(pref_path_, value);
 
-  helper_.ReportValidationResult(value_state);
+  helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);
