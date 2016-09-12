@@ -604,6 +604,16 @@ bool MediaControlsPainter::paintMediaSubtitlesIcon(const LayoutObject& object, c
     return paintMediaButton(paintInfo.context, rect, mediaSubtitlesIcon);
 }
 
+bool MediaControlsPainter::paintMediaOverflowMenu(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
+{
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    if (!mediaElement)
+        return false;
+
+    static Image* mediaOverflowButton = platformResource("mediaplayerOverflowMenu");
+    return paintMediaButton(paintInfo.context, rect, mediaOverflowButton);
+}
+
 void MediaControlsPainter::adjustMediaSliderThumbSize(ComputedStyle& style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb",

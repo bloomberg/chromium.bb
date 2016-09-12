@@ -141,6 +141,8 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
         return MediaControlsPainter::paintMediaClosedCaptionsIcon(o, paintInfo, r);
     case MediaSubtitlesIconPart:
         return MediaControlsPainter::paintMediaSubtitlesIcon(o, paintInfo, r);
+    case MediaOverflowMenuButtonPart:
+        return MediaControlsPainter::paintMediaOverflowMenu(o, paintInfo, r);
     case MenulistButtonPart:
     case TextFieldPart:
     case TextAreaPart:

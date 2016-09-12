@@ -117,6 +117,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_volumeSlider(nullptr)
     , m_toggleClosedCaptionsButton(nullptr)
     , m_textTrackList(nullptr)
+    , m_overflowList(nullptr)
     , m_castButton(nullptr)
     , m_fullscreenButton(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
@@ -242,6 +243,21 @@ void MediaControls::initializeControls()
     MediaControlTextTrackListElement* textTrackList = MediaControlTextTrackListElement::create(*this);
     m_textTrackList = textTrackList;
     appendChild(textTrackList);
+
+    MediaControlOverflowMenuButtonElement* overflowMenu = MediaControlOverflowMenuButtonElement::create(*this);
+    m_overflowMenu = overflowMenu;
+    panel->appendChild(overflowMenu);
+
+    MediaControlOverflowMenuListElement* overflowList = MediaControlOverflowMenuListElement::create(*this);
+    m_overflowList = overflowList;
+    appendChild(overflowList);
+
+    // The order in which we append elements to the overflow list does matter.
+    m_overflowList->appendChild(m_muteButton->createOverflowElement(*this, MediaControlMuteButtonElement::create(*this)));
+    m_overflowList->appendChild(m_castButton->createOverflowElement(*this, MediaControlCastButtonElement::create(*this, false)));
+    m_overflowList->appendChild(m_toggleClosedCaptionsButton->createOverflowElement(*this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
+    m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(*this, MediaControlFullscreenButtonElement::create(*this)));
+    m_overflowList->appendChild(m_playButton->createOverflowElement(*this, MediaControlPlayButtonElement::create(*this)));
 }
 
 void MediaControls::reset()
@@ -688,7 +704,8 @@ void MediaControls::computeWhichControlsFit()
 
     // Controls that we'll hide / show, in order of decreasing priority.
     MediaControlElement* elements[] = {
-        // Exclude m_playButton; we handle it specially.
+        // Exclude m_overflowMenu; we handle it specially.
+        m_playButton.get(),
         m_fullscreenButton.get(),
         m_toggleClosedCaptionsButton.get(),
         m_timeline.get(),
@@ -702,20 +719,18 @@ void MediaControls::computeWhichControlsFit()
     int usedWidth = 0;
 
     // Assume that all controls require 48px, unless we can get the computed
-    // style for the play button.  Since the play button is always shown, it
-    // should be available the first time we're called after layout.  This will
+    // style for the play button.  Since the play button or overflow is always
+    // shown, one of the two buttons should be available the first time we're
+    // called after layout.  This will
     // also be the first time we have m_panelWidth!=0, so it won't matter if
     // we get this wrong before that.
     int minimumWidth = 48;
     if (m_playButton->layoutObject() && m_playButton->layoutObject()->style()) {
         const ComputedStyle* style = m_playButton->layoutObject()->style();
         minimumWidth = ceil(style->width().pixels() / style->effectiveZoom());
-    }
-
-    // Special-case the play button; it always fits.
-    if (m_playButton->isWanted()) {
-        m_playButton->setDoesFit(true);
-        usedWidth += minimumWidth;
+    } else if (m_overflowMenu->layoutObject() && m_overflowMenu->layoutObject()->style()) {
+        const ComputedStyle* style = m_overflowMenu->layoutObject()->style();
+        minimumWidth = ceil(style->width().pixels() / style->effectiveZoom());
     }
 
     if (!m_panelWidth) {
@@ -730,12 +745,21 @@ void MediaControls::computeWhichControlsFit()
         return;
     }
 
+    // Insert an overflow menu. However, if we see that the overflow menu
+    // doesn't end up containing at least two elements, we will not display it
+    // but instead make place for the first element that was dropped.
+    m_overflowMenu->setDoesFit(true);
+    m_overflowMenu->setIsWanted(true);
+    usedWidth = minimumWidth;
+
+    std::list<MediaControlElement*> overflowElements;
+    MediaControlElement* firstDisplacedElement = nullptr;
     // For each control that fits, enable it in order of decreasing priority.
     bool droppedCastButton = false;
     for (MediaControlElement* element : elements) {
         if (!element)
             continue;
-
+        element->shouldShowButtonInOverflowMenu(false);
         if (element->isWanted()) {
             if (usedWidth + minimumWidth <= m_panelWidth) {
                 element->setDoesFit(true);
@@ -744,8 +768,28 @@ void MediaControls::computeWhichControlsFit()
                 element->setDoesFit(false);
                 if (element == m_castButton.get())
                     droppedCastButton = true;
+                element->shouldShowButtonInOverflowMenu(true);
+                if (element->hasOverflowButton())
+                    overflowElements.push_front(element);
+                // We want a way to access the first media element that was
+                // removed. If we don't end up needing an overflow menu, we can
+                // use the space the overflow menu would have taken up to
+                // instead display that media element.
+                if (!element->hasOverflowButton() && !firstDisplacedElement)
+                    firstDisplacedElement = element;
             }
         }
+    }
+
+    // If we don't have at least two overflow elements, we will not show the
+    // overflow menu.
+    if (overflowElements.empty()) {
+        m_overflowMenu->setIsWanted(false);
+        if (firstDisplacedElement)
+            firstDisplacedElement->setDoesFit(true);
+    } else if (overflowElements.size() == 1) {
+        m_overflowMenu->setIsWanted(false);
+        overflowElements.front()->setDoesFit(true);
     }
 
     // Special case for cast: if we want a cast button but dropped it, then
@@ -784,6 +828,16 @@ void MediaControls::networkStateChanged()
     invalidate(m_volumeSlider);
 }
 
+bool MediaControls::overflowMenuVisible()
+{
+    return m_overflowList->isWanted();
+}
+
+void MediaControls::toggleOverflowMenu()
+{
+    m_overflowList->setIsWanted(!m_overflowList->isWanted());
+}
+
 DEFINE_TRACE(MediaControls)
 {
     visitor->trace(m_mediaElement);
@@ -800,6 +854,8 @@ DEFINE_TRACE(MediaControls)
     visitor->trace(m_durationDisplay);
     visitor->trace(m_enclosure);
     visitor->trace(m_textTrackList);
+    visitor->trace(m_overflowMenu);
+    visitor->trace(m_overflowList);
     visitor->trace(m_castButton);
     visitor->trace(m_overlayCastButton);
     HTMLDivElement::trace(visitor);

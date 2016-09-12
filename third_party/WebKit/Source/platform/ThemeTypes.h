@@ -51,7 +51,7 @@ enum ControlPart {
     MediaOverlayPlayButtonPart, MediaToggleClosedCaptionsButtonPart,
     MediaSliderPart, MediaSliderThumbPart, MediaVolumeSliderContainerPart, MediaVolumeSliderPart, MediaVolumeSliderThumbPart,
     MediaControlsBackgroundPart, MediaControlsFullscreenBackgroundPart, MediaCurrentTimePart, MediaTimeRemainingPart, MediaCastOffButtonPart,
-    MediaOverlayCastOffButtonPart, MediaTrackSelectionCheckmarkPart, MediaClosedCaptionsIconPart, MediaSubtitlesIconPart,
+    MediaOverlayCastOffButtonPart, MediaTrackSelectionCheckmarkPart, MediaClosedCaptionsIconPart, MediaSubtitlesIconPart, MediaOverflowMenuButtonPart,
     MenulistPart, MenulistButtonPart, MenulistTextPart, MenulistTextFieldPart, MeterPart, ProgressBarPart, ProgressBarValuePart,
     SliderHorizontalPart, SliderVerticalPart, SliderThumbHorizontalPart,
     SliderThumbVerticalPart, CaretPart, SearchFieldPart,

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<title>Ensure overflow menu buttons are visible when expected.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-controls.js"></script>
+<script src="media-file.js"></script>
+<script src="overflow-menu.js"></script>
+
+<!--Padding ensures the overflow menu is visible for the tests. -->
+<body style="padding-top: 200px; padding-left: 100px">
+<video controls></video>
+<script>
+async_test(function(t) {
+  // Set up video
+  var video = document.querySelector("video");
+  video.src = findMediaFile("video", "content/test");
+  video.setAttribute("width", "60");
+  // Add captions
+  var track = video.addTextTrack("captions");
+  // Pretend we have a cast device
+  internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
+
+  video.onloadeddata = t.step_func_done(function() {
+    var overflowList = getOverflowList(video);
+    var overflowMenu = getOverflowMenuButton(video);
+
+    // Overflow menu button should be visible
+    assert_not_equals(getComputedStyle(overflowMenu).display, "none");
+
+    // Overflow list shouldn't be visible until it's clicked on
+    assert_equals(getComputedStyle(overflowList).display, "none");
+
+    // Clicking on the overflow menu button should make the overflow list visible
+    var coords = elementCoordinates(overflowMenu);
+    clickAtCoordinates(coords[0], coords[1]);
+    assert_not_equals(getComputedStyle(overflowList).display, "none");
+
+    // Click on the overflow menu button, again. Should close overflow list.
+    var coords = elementCoordinates(overflowMenu);
+    clickAtCoordinates(coords[0], coords[1]);
+    assert_equals(getComputedStyle(overflowList).display, "none");
+  });
+});
+</script>
+</body>

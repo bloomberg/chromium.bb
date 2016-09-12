@@ -68,6 +68,7 @@ struct WebLocalizedString {
         AXMediaHideClosedCaptionsButtonHelp,
         AXMediaMuteButton,
         AXMediaMuteButtonHelp,
+        AxMediaOverflowButton,
         AXMediaPauseButton,
         AXMediaPauseButtonHelp,
         AXMediaPlayButton,
@@ -118,6 +119,15 @@ struct WebLocalizedString {
         OtherMonthLabel,
         OtherTimeLabel,
         OtherWeekLabel,
+        OverflowMenuCaptions,
+        OverflowMenuCast,
+        OverflowMenuEnterFullscreen,
+        OverflowMenuExitFullscreen,
+        OverflowMenuStopCast,
+        OverflowMenuMute,
+        OverflowMenuUnmute,
+        OverflowMenuPlay,
+        OverflowMenuPause,
         // PlaceholderForDayOfMonthField is for day placeholder text, e.g.
         // "dd", for date field used in multiple fields "date", "datetime", and
         // "datetime-local" input UI instead of "--".

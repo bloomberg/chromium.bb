@@ -31,6 +31,7 @@
 #define MediaControlElements_h
 
 #include "core/html/shadow/MediaControlElementTypes.h"
+#include "public/platform/WebLocalizedString.h"
 
 namespace blink {
 
@@ -94,6 +95,10 @@ public:
     bool willRespondToMouseClickEvents() override { return true; }
     void updateDisplayType() override;
 
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
+
 private:
     explicit MediaControlMuteButtonElement(MediaControls&);
 
@@ -108,6 +113,10 @@ public:
 
     bool willRespondToMouseClickEvents() override { return true; }
     void updateDisplayType() override;
+
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
 
 private:
     explicit MediaControlPlayButtonElement(MediaControls&);
@@ -139,6 +148,10 @@ public:
     bool willRespondToMouseClickEvents() override { return true; }
 
     void updateDisplayType() override;
+
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
 
 private:
     explicit MediaControlToggleClosedCaptionsButtonElement(MediaControls&);
@@ -173,6 +186,35 @@ private:
 };
 
 // ----------------------------
+// Represents the overflow menu which is displayed when the width of the media
+// player is small enough that at least two buttons are no longer visible.
+class MediaControlOverflowMenuButtonElement final : public MediaControlInputElement {
+public:
+    static MediaControlOverflowMenuButtonElement* create(MediaControls&);
+
+    // The overflow button should respond to mouse clicks since we want a click
+    // to open up the menu.
+    bool willRespondToMouseClickEvents() override { return true; }
+
+private:
+    explicit MediaControlOverflowMenuButtonElement(MediaControls&);
+
+    void defaultEventHandler(Event*) override;
+};
+
+// ----------------------------
+// Holds a list of elements within the overflow menu.
+class MediaControlOverflowMenuListElement final : public MediaControlDivElement {
+public:
+    static MediaControlOverflowMenuListElement* create(MediaControls&);
+
+private:
+    explicit MediaControlOverflowMenuListElement(MediaControls&);
+
+    void defaultEventHandler(Event*) override;
+};
+
+// ----------------------------
 
 class MediaControlTimelineElement final : public MediaControlInputElement {
 public:
@@ -202,6 +244,10 @@ public:
 
     void setIsFullscreen(bool);
 
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
+
 private:
     explicit MediaControlFullscreenButtonElement(MediaControls&);
 
@@ -217,6 +263,10 @@ public:
     bool willRespondToMouseClickEvents() override { return true; }
 
     void setIsPlayingRemotely(bool);
+
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
 
     // This will show a cast button if it is not covered by another element.
     // This MUST be called for cast button elements that are overlay elements.

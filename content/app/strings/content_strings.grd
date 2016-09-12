@@ -852,6 +852,36 @@ below:
         Please lengthen this text to <ph name="MIN_CHARACTERS">$2<ex>101</ex></ph> characters or more (you are currently using <ph name="CURRENT_LENGTH">$1<ex>100</ex></ph> characters).
       </message>
 
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON" desc="Media controls overflow menu.">
+        Overflow menu
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS" desc="Media controls overflow menu item label for a closed captions button. The text for this overflow menu should be short.">
+        Captions
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_CAST" desc="Media controls overflow menu item label for a cast button.">
+        Cast
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_ENTER_FULLSCREEN" desc="Media controls overflow menu item label for a button to enter fullscreen.">
+        Fullscreen
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_FULLSCREEN" desc="Media controls overflow menu item label for a button to exit fullscreen.">
+        Exit fullscreen
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_STOP_CAST" desc="Media controls overflow menu item label for a button to stop casting.">
+        Stop casting
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_MUTE" desc="Media controls overflow menu item label for a mute button.">
+        Mute
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_UNMUTE" desc="Media controls overflow menu item label for an unmute button.">
+        Unmute
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_PLAY" desc="Media controls overflow menu item label for a play button.">
+        Play
+      </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_PAUSE" desc="Media controls overflow menu item label for a pause button.">
+        Pause
+      </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified">
         Unknown
       </message>

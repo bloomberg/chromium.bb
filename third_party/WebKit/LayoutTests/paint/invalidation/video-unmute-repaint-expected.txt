@@ -63,6 +63,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutVideo VIDEO id='v'",
+      "reason": "style change"
+    },
+    {
       "object": "LayoutButton INPUT",
       "reason": "full"
     },

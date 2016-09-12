@@ -33,9 +33,12 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Text.h"
 #include "core/events/MouseEvent.h"
+#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace blink {
 
@@ -116,10 +119,34 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
         object->setShouldDoFullPaintInvalidation();
 }
 
+void MediaControlElement::shouldShowButtonInOverflowMenu(bool shouldShow)
+{
+    if (!hasOverflowButton())
+        return;
+    if (shouldShow) {
+        m_overflowMenuElement->removeInlineStyleProperty(CSSPropertyDisplay);
+    } else {
+        m_overflowMenuElement->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    }
+}
+
+String MediaControlElement::getOverflowMenuString()
+{
+    return mediaElement().locale().queryString(getOverflowStringName());
+}
+
+void MediaControlElement::updateOverflowString()
+{
+    if (m_overflowMenuElement && m_overflowMenuText)
+        m_overflowMenuText->replaceWholeText(getOverflowMenuString());
+}
+
 DEFINE_TRACE(MediaControlElement)
 {
     visitor->trace(m_mediaControls);
     visitor->trace(m_element);
+    visitor->trace(m_overflowMenuElement);
+    visitor->trace(m_overflowMenuText);
 }
 
 // ----------------------------
@@ -147,6 +174,26 @@ MediaControlInputElement::MediaControlInputElement(MediaControls& mediaControls,
 bool MediaControlInputElement::isMouseFocusable() const
 {
     return false;
+}
+
+HTMLElement* MediaControlInputElement::createOverflowElement(MediaControls& mediaControls, MediaControlInputElement* button)
+{
+    if (!button)
+        return nullptr;
+
+    // We don't want the button visible within the overflow menu.
+    button->setIsWanted(false);
+
+    m_overflowMenuText = Text::create(mediaControls.document(), button->getOverflowMenuString());
+
+    HTMLLabelElement* element = HTMLLabelElement::create(mediaControls.document());
+    element->setShadowPseudoId(AtomicString("-internal-media-controls-overflow-menu-list-item"));
+    // Appending a button to a label element ensures that clicks on the label
+    // are passed down to the button, performing the action we'd expect.
+    element->appendChild(button);
+    element->appendChild(m_overflowMenuText);
+    m_overflowMenuElement = element;
+    return element;
 }
 
 DEFINE_TRACE(MediaControlInputElement)

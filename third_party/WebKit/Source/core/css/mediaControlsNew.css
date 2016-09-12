@@ -359,7 +359,7 @@ audio::-webkit-media-controls-fullscreen-volume-max-button, video::-webkit-media
     display: none;
 }
 
-video::-internal-media-controls-text-track-list {
+video::-internal-media-controls-text-track-list, video::-internal-media-controls-overflow-menu-list, audio::-internal-media-controls-overflow-menu-list {
     position: absolute;
     bottom: 48px;
     right: 0px;
@@ -383,7 +383,7 @@ video::-internal-media-controls-text-track-list-item {
     text-overflow: ellipsis;
 }
 
-video::-internal-media-controls-text-track-list-item:hover {
+video::-internal-media-controls-text-track-list-item:hover, video::-internal-media-controls-overflow-menu-list-item:hover, audio::-internal-media-controls-overflow-menu-list-item:hover {
     background-color: #e0e0e0;
 }
 
@@ -416,6 +416,28 @@ video::-internal-media-controls-text-track-list-kind-subtitles {
     width: 20px;
     margin-left: 10px;
     vertical-align: middle;
+}
+
+video::-internal-overflow-menu-button, audio::-internal-overflow-menu-button {
+    -webkit-appearance: -internal-overflow-menu-button;
+    display: flex;
+    flex: none;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: initial;
+    color: inherit;
+}
+
+video::-internal-media-controls-overflow-menu-list-item, audio::-internal-media-controls-overflow-menu-list-item {
+    display: block;
+    color: #424242;
+    line-height: 40px;
+    padding-left: 28px;
 }
 
 video::-webkit-media-text-track-container {

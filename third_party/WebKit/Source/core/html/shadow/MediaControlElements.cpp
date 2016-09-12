@@ -300,6 +300,14 @@ void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
 void MediaControlMuteButtonElement::updateDisplayType()
 {
     setDisplayType(mediaElement().muted() ? MediaUnMuteButton : MediaMuteButton);
+    updateOverflowString();
+}
+
+WebLocalizedString::Name MediaControlMuteButtonElement::getOverflowStringName()
+{
+    if (mediaElement().muted())
+        return WebLocalizedString::OverflowMenuUnmute;
+    return WebLocalizedString::OverflowMenuMute;
 }
 
 // ----------------------------
@@ -342,6 +350,14 @@ void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 void MediaControlPlayButtonElement::updateDisplayType()
 {
     setDisplayType(mediaElement().paused() ? MediaPlayButton : MediaPauseButton);
+    updateOverflowString();
+}
+
+WebLocalizedString::Name MediaControlPlayButtonElement::getOverflowStringName()
+{
+    if (mediaElement().paused())
+        return WebLocalizedString::OverflowMenuPlay;
+    return WebLocalizedString::OverflowMenuPause;
 }
 
 // ----------------------------
@@ -407,12 +423,21 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        // If the user opens up the closed captions menu from the overfow menu,
+        // the overflow menu should no longer be visible.
+        if (mediaControls().overflowMenuVisible())
+            mediaControls().toggleOverflowMenu();
         mediaControls().toggleTextTrackList();
         updateDisplayType();
         event->setDefaultHandled();
     }
 
     HTMLInputElement::defaultEventHandler(event);
+}
+
+WebLocalizedString::Name MediaControlToggleClosedCaptionsButtonElement::getOverflowStringName()
+{
+    return WebLocalizedString::OverflowMenuCaptions;
 }
 
 // ----------------------------
@@ -551,6 +576,54 @@ void MediaControlTextTrackListElement::refreshTextTrackListMenu()
             continue;
         appendChild(createTextTrackListItem(track));
     }
+}
+
+// ----------------------------
+MediaControlOverflowMenuButtonElement::MediaControlOverflowMenuButtonElement(MediaControls& mediaControls)
+    : MediaControlInputElement(mediaControls, MediaOverflowButton)
+{
+}
+
+MediaControlOverflowMenuButtonElement* MediaControlOverflowMenuButtonElement::create(MediaControls& mediaControls)
+{
+    MediaControlOverflowMenuButtonElement* button = new MediaControlOverflowMenuButtonElement(mediaControls);
+    button->ensureUserAgentShadowRoot();
+    button->setType(InputTypeNames::button);
+    button->setShadowPseudoId(AtomicString("-internal-overflow-menu-button"));
+    button->setIsWanted(false);
+    return button;
+}
+
+void MediaControlOverflowMenuButtonElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::click) {
+        mediaControls().toggleOverflowMenu();
+        event->setDefaultHandled();
+    }
+
+    HTMLInputElement::defaultEventHandler(event);
+}
+
+// ----------------------------
+MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(MediaControls& mediaControls)
+    : MediaControlDivElement(mediaControls, MediaOverflowList)
+{
+}
+
+MediaControlOverflowMenuListElement* MediaControlOverflowMenuListElement::create(MediaControls& mediaControls)
+{
+    MediaControlOverflowMenuListElement* element = new MediaControlOverflowMenuListElement(mediaControls);
+    element->setIsWanted(false);
+    element->setShadowPseudoId(AtomicString("-internal-media-controls-overflow-menu-list"));
+    return element;
+}
+
+void MediaControlOverflowMenuListElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::click)
+        event->setDefaultHandled();
+
+    MediaControlDivElement::defaultEventHandler(event);
 }
 
 // ----------------------------
@@ -738,6 +811,13 @@ void MediaControlFullscreenButtonElement::setIsFullscreen(bool isFullscreen)
     setDisplayType(isFullscreen ? MediaExitFullscreenButton : MediaEnterFullscreenButton);
 }
 
+WebLocalizedString::Name MediaControlFullscreenButtonElement::getOverflowStringName()
+{
+    if (mediaElement().isFullscreen())
+        return WebLocalizedString::OverflowMenuExitFullscreen;
+    return WebLocalizedString::OverflowMenuEnterFullscreen;
+}
+
 // ----------------------------
 
 MediaControlCastButtonElement::MediaControlCastButtonElement(MediaControls& mediaControls, bool isOverlayButton)
@@ -799,6 +879,14 @@ void MediaControlCastButtonElement::setIsPlayingRemotely(bool isPlayingRemotely)
             setDisplayType(MediaCastOffButton);
         }
     }
+    updateOverflowString();
+}
+
+WebLocalizedString::Name MediaControlCastButtonElement::getOverflowStringName()
+{
+    if (mediaElement().isPlayingRemotely())
+        return WebLocalizedString::OverflowMenuStopCast;
+    return WebLocalizedString::OverflowMenuCast;
 }
 
 void MediaControlCastButtonElement::tryShowOverlay()

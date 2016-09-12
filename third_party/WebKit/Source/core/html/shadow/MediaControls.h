@@ -86,6 +86,10 @@ public:
     // Notify us that the media element's network state has changed.
     void networkStateChanged();
 
+    void toggleOverflowMenu();
+
+    bool overflowMenuVisible();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -143,6 +147,9 @@ private:
     Member<MediaControlVolumeSliderElement> m_volumeSlider;
     Member<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
     Member<MediaControlTextTrackListElement> m_textTrackList;
+    Member<MediaControlOverflowMenuButtonElement> m_overflowMenu;
+    Member<MediaControlOverflowMenuListElement> m_overflowList;
+
     Member<MediaControlCastButtonElement> m_castButton;
     Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
 

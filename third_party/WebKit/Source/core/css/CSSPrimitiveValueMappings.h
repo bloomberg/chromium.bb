@@ -465,6 +465,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case MediaSubtitlesIconPart:
         m_value.valueID = CSSValueInternalMediaSubtitlesIcon;
         break;
+    case MediaOverflowMenuButtonPart:
+        m_value.valueID = CSSValueInternalOverflowMenuButton;
+        break;
     case MenulistPart:
         m_value.valueID = CSSValueMenulist;
         break;

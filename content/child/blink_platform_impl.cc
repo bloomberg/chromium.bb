@@ -244,6 +244,26 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_OTHER_TIME_LABEL;
     case WebLocalizedString::OtherWeekLabel:
       return IDS_FORM_OTHER_WEEK_LABEL;
+    case WebLocalizedString::AxMediaOverflowButton:
+      return IDS_AX_MEDIA_OVERFLOW_BUTTON;
+    case WebLocalizedString::OverflowMenuCaptions:
+      return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS;
+    case WebLocalizedString::OverflowMenuCast:
+      return IDS_MEDIA_OVERFLOW_MENU_CAST;
+    case WebLocalizedString::OverflowMenuEnterFullscreen:
+      return IDS_MEDIA_OVERFLOW_MENU_ENTER_FULLSCREEN;
+    case WebLocalizedString::OverflowMenuExitFullscreen:
+      return IDS_MEDIA_OVERFLOW_MENU_EXIT_FULLSCREEN;
+    case WebLocalizedString::OverflowMenuStopCast:
+      return IDS_MEDIA_OVERFLOW_MENU_STOP_CAST;
+    case WebLocalizedString::OverflowMenuMute:
+      return IDS_MEDIA_OVERFLOW_MENU_MUTE;
+    case WebLocalizedString::OverflowMenuUnmute:
+      return IDS_MEDIA_OVERFLOW_MENU_UNMUTE;
+    case WebLocalizedString::OverflowMenuPlay:
+      return IDS_MEDIA_OVERFLOW_MENU_PLAY;
+    case WebLocalizedString::OverflowMenuPause:
+      return IDS_MEDIA_OVERFLOW_MENU_PAUSE;
     case WebLocalizedString::PlaceholderForDayOfMonthField:
       return IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD;
     case WebLocalizedString::PlaceholderForMonthField:
@@ -625,6 +645,9 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_100P},
     {"mediaplayerSubtitlesIconNew",
      IDR_MEDIAPLAYER_SUBTITLES_ICON_NEW,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerOverflowMenu",
+     IDR_MEDIAPLAYER_OVERFLOW_MENU_ICON,
      ui::SCALE_FACTOR_100P},
     {"searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P},
     {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P},
