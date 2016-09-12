@@ -102,7 +102,8 @@ class ChromeScreenshotGrabberTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabberTest);
 };
 
-TEST_F(ChromeScreenshotGrabberTest, TakeScreenshot) {
+// Flaky on "Linux ChromiumOS Tests (dbg)(1)". See http://crbug.com/645864.
+TEST_F(ChromeScreenshotGrabberTest, DISABLED_TakeScreenshot) {
   // Note that within the test framework the LoginState object will always
   // claim that the user did log in.
   ASSERT_FALSE(chromeos::LoginState::IsInitialized());
