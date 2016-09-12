@@ -32,20 +32,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate aggregate .cpp files that include multiple V8 binding .cpp files.
+"""Generates a .cpp file that includes all V8 binding .cpp files for interfaces.
 
-This can be a single output file, to preserve symbol space; or multiple output
-files, to reduce maximum compilation unit size and allow parallel compilation.
+It is expected to preserve symbol space, and to be acceptable to make static
+build on Windows.
 
 Usage:
-aggregate_generated_bindings.py --component-directory COMPONENT_DIR --input-file IDL_FILES_LIST OUTPUT_FILE1 OUTPUT_FILE2 ...
+ $ aggregate_generated_bindings.py --component COMPONENT IDL_FILES_LIST OUTPUT_FILE
 
-COMPONENT_DIR is the relative directory of a component, e.g., 'core', 'modules'.
-IDL_FILES_LIST is a text file containing the IDL file paths, so the command
-line doesn't exceed OS length limits.
-OUTPUT_FILE1 etc. are filenames of output files.
+ COMPONENT is the relative directory of a component, e.g., 'core', 'modules'.
+ IDL_FILES_LIST is a text file containing the IDL file paths
+ OUTPUT_FILE is the filename of output file.
 
-Design doc: http://www.chromium.org/developers/design-documents/idl-build
+ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 import errno
@@ -53,11 +52,8 @@ import optparse
 import os
 import re
 import sys
-
-from utilities import (should_generate_impl_file_from_idl,
-                       get_file_contents,
-                       idl_filename_to_interface_name,
-                       read_idl_files_list_from_file)
+from utilities import idl_filename_to_interface_name
+from utilities import read_idl_files_list_from_file
 
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
@@ -89,47 +85,25 @@ COPYRIGHT_TEMPLATE = """/*
  */
 """
 
+def parse_options():
+    parser = optparse.OptionParser()
+    parser.add_option('--component')
 
-def extract_meta_data(file_paths):
-    """Extracts interface name from each IDL file."""
-    meta_data_list = []
+    options, args = parser.parse_args()
+    if len(args) < 2:
+        raise Exception('Expected 2 filenames; one is for input, and the other is for output.')
 
-    for file_path in file_paths:
-        if not file_path.endswith('.idl'):
-            print 'WARNING: non-IDL file passed: "%s"' % file_path
-            continue
-        if not os.path.exists(file_path):
-            print 'WARNING: file not found: "%s"' % file_path
-            continue
-
-        idl_file_contents = get_file_contents(file_path)
-        if not should_generate_impl_file_from_idl(idl_file_contents):
-            continue
-
-        # Extract interface name from file name
-        interface_name = idl_filename_to_interface_name(file_path)
-
-        meta_data = {
-            'name': interface_name,
-        }
-        meta_data_list.append(meta_data)
-
-    return meta_data_list
+    return options, args
 
 
-def generate_content(component_dir, aggregate_partial_interfaces, files_meta_data_this_partition):
+def generate_content(component, interface_names):
     # Add fixed content.
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
-    # List all includes.
-    files_meta_data_this_partition.sort()
-    suffix = 'Partial' if aggregate_partial_interfaces else ''
-    for meta_data in files_meta_data_this_partition:
-        cpp_filename = 'V8%s%s.cpp' % (meta_data['name'], suffix)
-
-        output.append('#include "bindings/%s/v8/%s"\n' %
-                      (component_dir, cpp_filename))
+    interface_names.sort()
+    output.extend('#include "bindings/%s/v8/V8%s.cpp"\n' % (component, interface)
+                  for interface in interface_names)
 
     return ''.join(output)
 
@@ -143,45 +117,15 @@ def write_content(content, output_file_name):
         f.write(content)
 
 
-def parse_options():
-    parser = optparse.OptionParser()
-    parser.add_option('--component-directory')
-    parser.add_option('--input-file',
-                      help='A file name which lists up target IDL file names.',
-                      type='string')
-    parser.add_option('--partial',
-                      help='To parse partial IDLs, add this option.',
-                      action='store_true',
-                      dest='partial',
-                      default=False)
-
-    options, output_file_names = parser.parse_args()
-    if len(output_file_names) == 0:
-        raise Exception('Expected at least one output file name(s).')
-    if not options.input_file:
-        raise Exception('No input file is specified.')
-
-    return options, output_file_names
-
-
 def main():
-    options, output_file_names = parse_options()
-    component_dir = options.component_directory
-    input_file_name = options.input_file
-    aggregate_partial_interfaces = options.partial
-    idl_file_names = read_idl_files_list_from_file(input_file_name,
-                                                   is_gyp_format=True)
-
-    files_meta_data = extract_meta_data(idl_file_names)
-    total_partitions = len(output_file_names)
-    for partition, file_name in enumerate(output_file_names):
-        files_meta_data_this_partition = [
-                meta_data for meta_data in files_meta_data
-                if hash(meta_data['name']) % total_partitions == partition]
-        file_contents = generate_content(component_dir,
-                                         aggregate_partial_interfaces,
-                                         files_meta_data_this_partition)
-        write_content(file_contents, file_name)
+    options, filenames = parse_options()
+    component = options.component
+    idl_filenames = read_idl_files_list_from_file(filenames[0],
+                                                  is_gyp_format=False)
+    interface_names = [idl_filename_to_interface_name(file_path)
+                       for file_path in idl_filenames]
+    file_contents = generate_content(component, interface_names)
+    write_content(file_contents, filenames[1])
 
 
 if __name__ == '__main__':

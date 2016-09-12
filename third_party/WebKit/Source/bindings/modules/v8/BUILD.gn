@@ -13,24 +13,13 @@ visibility = [ "//third_party/WebKit/*" ]
 group("bindings_modules_generated") {
   public_deps = [
     ":bindings_modules_impl_generated",
-    ":bindings_modules_v8_generated_aggregate",
-    ":bindings_modules_v8_generated_individual",
     ":bindings_modules_v8_generated_init_partial",
-    ":bindings_modules_v8_generated_partial_aggregate",
-    ":bindings_modules_v8_generated_partial_individual",
+    ":generate_bindings_modules_v8_interfaces",
+    ":generate_bindings_modules_v8_partial_interfaces",
   ]
 }
 
-# bindings_modules_generated_aggregate in modules/v8/generated.gyp
-aggregate_generated_bindings("bindings_modules_v8_generated_aggregate") {
-  sources = modules_definition_idl_files
-  component_dir = "modules"
-  is_partial = false
-  outputs = bindings_modules_generated_aggregate_files
-}
-
-# bindings_modules_generated_individual in modules/v8/generated.gyp
-idl_compiler("bindings_modules_v8_generated_individual") {
+idl_compiler("generate_bindings_modules_v8_interfaces") {
   # Note in GYP this is modules_interface_idl_files but this variable is just
   # defined to modules_definition_idl_files.
   sources = modules_definition_idl_files
@@ -39,7 +28,6 @@ idl_compiler("bindings_modules_v8_generated_individual") {
   target_component = "modules"
 }
 
-# bindings_modules_impl_generated in modules/v8/generated.gyp
 idl_impl("bindings_modules_impl_generated") {
   sources = modules_dictionary_idl_files
   outputs = bindings_modules_generated_union_type_files +
@@ -48,8 +36,7 @@ idl_impl("bindings_modules_impl_generated") {
   target_component = "modules"
 }
 
-# bindings_modules_generated_individual in modules/v8/generated.gyp
-idl_compiler("bindings_modules_v8_generated_partial_individual") {
+idl_compiler("generate_bindings_modules_v8_partial_interfaces") {
   # Note in GYP this is modules_interface_idl_files but this variable is just
   # defined to modules_definition_idl_files.
   sources = core_idl_with_modules_dependency_files +
@@ -57,15 +44,6 @@ idl_compiler("bindings_modules_v8_generated_partial_individual") {
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
   target_component = "modules"
-}
-
-# bindings_modules_generated_aggregate in modules/v8/generated.gyp
-aggregate_generated_bindings(
-    "bindings_modules_v8_generated_partial_aggregate") {
-  sources = core_idl_with_modules_dependency_files
-  component_dir = "modules"
-  is_partial = true
-  outputs = bindings_modules_generated_partial_aggregate_files
 }
 
 # GYP version: Source/bindings/modules/v8/generated.gyp:bindings_modules_v8_generated_init_partial
