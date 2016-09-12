@@ -155,9 +155,6 @@ class CC_EXPORT SchedulerStateMachine {
   // TODO(sunnyps): Rename OnBeginImplFrameDeadline to OnDraw or similar.
   void OnBeginImplFrameDeadline();
   void OnBeginImplFrameIdle();
-
-  int current_frame_number() const { return current_frame_number_; }
-
   BeginImplFrameState begin_impl_frame_state() const {
     return begin_impl_frame_state_;
   }
