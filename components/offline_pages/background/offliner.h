@@ -20,6 +20,7 @@ class Offliner {
   // Status of processing an offline page request.
   // WARNING: You must update histograms.xml to match any changes made to
   // this enum (ie, OfflinePagesBackgroundOfflinerRequestStatus histogram enum).
+  // Also update related switch code in RequestCoordinatorEventLogger.
   enum RequestStatus {
     // No status determined/reported yet. Interim status, not sent in callback.
     UNKNOWN = 0,

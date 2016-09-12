@@ -12,6 +12,8 @@ class SavePageRequest;
 class RequestNotifier {
  public:
   // Status to return for failed notifications.
+  // NOTE: for any changes to the enum, please also update related switch code
+  // in RequestCoordinatorEventLogger.
   enum class BackgroundSavePageResult {
     SUCCESS,
     PRERENDER_FAILURE,

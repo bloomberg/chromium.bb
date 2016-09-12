@@ -94,7 +94,8 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
           policy_->GetSinglePageTimeLimitInSeconds())),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), this));
+  picker_.reset(
+      new RequestPicker(queue_.get(), policy_.get(), this, &event_logger_));
 }
 
 RequestCoordinator::~RequestCoordinator() {}
@@ -194,8 +195,11 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
 void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
   request->MarkAttemptAborted();
   if (request->started_attempt_count() >= policy_->GetMaxStartedTries()) {
-    RemoveAttemptedRequest(*request,
-                           BackgroundSavePageResult::START_COUNT_EXCEEDED);
+    const BackgroundSavePageResult result(
+        BackgroundSavePageResult::START_COUNT_EXCEEDED);
+    event_logger_.RecordDroppedSavePageRequest(request->client_id().name_space,
+                                               result, request->request_id());
+    RemoveAttemptedRequest(*request, result);
   } else {
     queue_->UpdateRequest(
         *request,
@@ -205,13 +209,14 @@ void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
 }
 
 void RequestCoordinator::RemoveAttemptedRequest(
-    const SavePageRequest& request, BackgroundSavePageResult status) {
+    const SavePageRequest& request,
+    BackgroundSavePageResult result) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(request.request_id());
   queue_->RemoveRequests(remove_requests,
                          base::Bind(&RequestCoordinator::HandleRemovedRequests,
-                                    weak_ptr_factory_.GetWeakPtr(), status));
-  RecordAttemptCount(request, status);
+                                    weak_ptr_factory_.GetWeakPtr(), result));
+  RecordAttemptCount(request, result);
 }
 
 void RequestCoordinator::RemoveRequests(
@@ -476,8 +481,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << ", status: " << static_cast<int>(status) << ", " << __func__;
   DCHECK_NE(status, Offliner::RequestStatus::UNKNOWN);
   DCHECK_NE(status, Offliner::RequestStatus::LOADED);
-  event_logger_.RecordSavePageRequestUpdated(request.client_id().name_space,
-                                             status, request.request_id());
+  event_logger_.RecordOfflinerResult(request.client_id().name_space, status,
+                                     request.request_id());
   last_offlining_status_ = status;
   RecordOfflinerResultUMA(request.client_id(), last_offlining_status_);
   watchdog_timer_.Stop();
@@ -502,8 +507,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // represents the request that just completed. Since we call
     // MarkAttemptCompleted within the if branches, the completed_attempt_count
     // has not yet been updated when we are checking the if condition.
-    RemoveAttemptedRequest(request,
-                           BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
+    const BackgroundSavePageResult result(
+        BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
+    event_logger_.RecordDroppedSavePageRequest(request.client_id().name_space,
+                                               result, request.request_id());
+    RemoveAttemptedRequest(request, result);
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
@@ -536,7 +544,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     default:
       // Make explicit choice about new status codes that actually reach here.
       // Their default is no further processing in this service window.
-      DCHECK(false);
+      NOTREACHED();
   }
 }
 

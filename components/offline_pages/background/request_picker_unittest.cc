@@ -109,6 +109,7 @@ class RequestPickerTest : public testing::Test {
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
   std::unique_ptr<OfflinerPolicy> policy_;
+  RequestCoordinatorEventLogger event_logger_;
   bool request_queue_not_picked_called_;
 
  private:
@@ -128,8 +129,8 @@ void RequestPickerTest::SetUp() {
   queue_.reset(new RequestQueue(std::move(store)));
   policy_.reset(new OfflinerPolicy());
   notifier_.reset(new RequestNotifierStub());
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
   request_queue_not_picked_called_ = false;
 }
 
@@ -194,8 +195,8 @@ TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
   policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
                                    kPreferRetryCount, kMaxStartedTries,
                                    kMaxCompletedTries + 1));
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(
@@ -230,8 +231,8 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
   policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
                                    !kPreferRetryCount, kMaxStartedTries,
                                    kMaxCompletedTries));
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
@@ -253,8 +254,8 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
   policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
                                    !kPreferRetryCount, kMaxStartedTries,
                                    kMaxCompletedTries + 1));
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -274,8 +275,8 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
   policy_.reset(new OfflinerPolicy(!kPreferUntried, kPreferEarlier,
                                    kPreferRetryCount, kMaxStartedTries,
                                    kMaxCompletedTries + 1));
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -295,8 +296,8 @@ TEST_F(RequestPickerTest, ChooseLaterRequest) {
   policy_.reset(new OfflinerPolicy(kPreferUntried, !kPreferEarlier,
                                    !kPreferRetryCount, kMaxStartedTries,
                                    kMaxCompletedTries));
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
+                                  &event_logger_));
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);

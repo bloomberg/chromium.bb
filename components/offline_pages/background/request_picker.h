@@ -11,6 +11,7 @@
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/background/request_queue.h"
 
 namespace offline_pages {
@@ -24,7 +25,8 @@ class RequestPicker {
  public:
   RequestPicker(RequestQueue* requestQueue,
                 OfflinerPolicy* policy,
-                RequestNotifier* notifier);
+                RequestNotifier* notifier,
+                RequestCoordinatorEventLogger* event_logger);
 
   ~RequestPicker();
 
@@ -86,6 +88,8 @@ class RequestPicker {
   OfflinerPolicy* policy_;
   // Unowned pointer to the request coordinator.
   RequestNotifier* notifier_;
+  // Unowned pointer to the event logger.
+  RequestCoordinatorEventLogger* event_logger_;
   // Current conditions on the device
   std::unique_ptr<DeviceConditions> current_conditions_;
   // True if we prefer less-tried requests

@@ -14,17 +14,19 @@ int signum(T t) {
   return (T(0) < t) - (t < T(0));
 }
 
-#define CALL_MEMBER_FUNCTION(object,ptrToMember)  ((object)->*(ptrToMember))
+#define CALL_MEMBER_FUNCTION(object, ptrToMember) ((object)->*(ptrToMember))
 }  // namespace
 
 namespace offline_pages {
 
 RequestPicker::RequestPicker(RequestQueue* requestQueue,
                              OfflinerPolicy* policy,
-                             RequestNotifier* notifier)
+                             RequestNotifier* notifier,
+                             RequestCoordinatorEventLogger* event_logger)
     : queue_(requestQueue),
       policy_(policy),
       notifier_(notifier),
+      event_logger_(event_logger),
       fewer_retries_better_(false),
       earlier_requests_better_(false),
       weak_ptr_factory_(this) {}
@@ -257,10 +259,14 @@ void RequestPicker::OnRequestExpired(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<std::unique_ptr<SavePageRequest>> requests) {
   std::vector<std::unique_ptr<SavePageRequest>>::const_iterator request;
-  for (request = requests.begin(); request != requests.end(); ++request)
-    notifier_->NotifyCompleted(
-        *(request->get()),
+  for (request = requests.begin(); request != requests.end(); ++request) {
+    const RequestCoordinator::BackgroundSavePageResult result(
         RequestCoordinator::BackgroundSavePageResult::EXPIRED);
+    event_logger_->RecordDroppedSavePageRequest(
+        request->get()->client_id().name_space, result,
+        request->get()->request_id());
+    notifier_->NotifyCompleted(*(request->get()), result);
+  }
 }
 
 }  // namespace offline_pages
