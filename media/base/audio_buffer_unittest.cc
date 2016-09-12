@@ -82,7 +82,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   buffer->TrimStart(trim_length);
   trim_start -= trim_length;
   EXPECT_EQ(frames - 2 * trim_length, buffer->frame_count());
-  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration - 2 * trim_duration, buffer->duration());
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -98,7 +98,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   // count.
   buffer->TrimEnd(trim_length);
   EXPECT_EQ(frames - 3 * trim_length, buffer->frame_count());
-  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration - 3 * trim_duration, buffer->duration());
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -113,7 +113,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   // Trim another 10ms from the inner portion of the buffer.
   buffer->TrimRange(trim_start, trim_start + trim_length);
   EXPECT_EQ(frames - 4 * trim_length, buffer->frame_count());
-  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration - 4 * trim_duration, buffer->duration());
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -128,7 +128,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   // Trim off the end using TrimRange() to ensure end index is exclusive.
   buffer->TrimRange(buffer->frame_count() - trim_length, buffer->frame_count());
   EXPECT_EQ(frames - 5 * trim_length, buffer->frame_count());
-  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration - 5 * trim_duration, buffer->duration());
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -144,7 +144,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   buffer->TrimRange(0, trim_length);
   trim_start -= trim_length;
   EXPECT_EQ(frames - 6 * trim_length, buffer->frame_count());
-  EXPECT_EQ(timestamp + trim_duration, buffer->timestamp());
+  EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration - 6 * trim_duration, buffer->duration());
   bus->Zero();
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -397,7 +397,7 @@ TEST(AudioBufferTest, Trim) {
 
   // Trim off 10ms of frames from the start.
   buffer->TrimStart(ten_ms_of_frames);
-  EXPECT_EQ(start_time + ten_ms, buffer->timestamp());
+  EXPECT_EQ(start_time, buffer->timestamp());
   EXPECT_EQ(frames - ten_ms_of_frames, buffer->frame_count());
   EXPECT_EQ(duration - ten_ms, buffer->duration());
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -405,7 +405,7 @@ TEST(AudioBufferTest, Trim) {
 
   // Trim off 10ms of frames from the end.
   buffer->TrimEnd(ten_ms_of_frames);
-  EXPECT_EQ(start_time + ten_ms, buffer->timestamp());
+  EXPECT_EQ(start_time, buffer->timestamp());
   EXPECT_EQ(frames - 2 * ten_ms_of_frames, buffer->frame_count());
   EXPECT_EQ(duration - 2 * ten_ms, buffer->duration());
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -413,7 +413,7 @@ TEST(AudioBufferTest, Trim) {
 
   // Trim off 40ms more from the start.
   buffer->TrimStart(4 * ten_ms_of_frames);
-  EXPECT_EQ(start_time + 5 * ten_ms, buffer->timestamp());
+  EXPECT_EQ(start_time, buffer->timestamp());
   EXPECT_EQ(frames - 6 * ten_ms_of_frames, buffer->frame_count());
   EXPECT_EQ(duration - 6 * ten_ms, buffer->duration());
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
@@ -422,7 +422,7 @@ TEST(AudioBufferTest, Trim) {
   // Trim off the final 40ms from the end.
   buffer->TrimEnd(4 * ten_ms_of_frames);
   EXPECT_EQ(0, buffer->frame_count());
-  EXPECT_EQ(start_time + 5 * ten_ms, buffer->timestamp());
+  EXPECT_EQ(start_time, buffer->timestamp());
   EXPECT_EQ(base::TimeDelta(), buffer->duration());
 }
 

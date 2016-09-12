@@ -176,7 +176,6 @@ class MEDIA_EXPORT AudioBuffer
   const int channel_count_;
   int sample_rate_;
   int adjusted_frame_count_;
-  int trim_start_;
   const bool end_of_stream_;
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;

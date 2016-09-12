@@ -631,6 +631,7 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
         buffer->TrimStart(buffer->frame_count() *
                           (static_cast<double>(trim_time.InMicroseconds()) /
                            buffer->duration().InMicroseconds()));
+        buffer->set_timestamp(start_timestamp_);
       }
       // If the entire buffer was trimmed, request a new one.
       if (!buffer->frame_count())
