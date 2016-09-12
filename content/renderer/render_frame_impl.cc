@@ -4055,6 +4055,12 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
       navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(std::move(stream_override));
+  bool is_prefetch =
+      GetContentClient()->renderer()->IsPrefetchOnly(this, request);
+  extra_data->set_is_prefetch(is_prefetch);
+  extra_data->set_download_to_network_cache_only(
+      is_prefetch &&
+      WebURLRequestToResourceType(request) != RESOURCE_TYPE_MAIN_FRAME);
   WebString error;
   extra_data->set_initiated_in_secure_context(
       frame->document().isSecureContext(error));

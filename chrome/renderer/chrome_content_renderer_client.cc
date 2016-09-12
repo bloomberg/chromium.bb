@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_permission_util.h"
+#include "chrome/common/prerender_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
@@ -1144,6 +1145,13 @@ bool ChromeContentRendererClient::WillSendRequest(
   }
 
   return false;
+}
+
+bool ChromeContentRendererClient::IsPrefetchOnly(
+    content::RenderFrame* render_frame,
+    const blink::WebURLRequest& request) {
+  return prerender::PrerenderHelper::GetPrerenderMode(render_frame) ==
+         prerender::PREFETCH_ONLY;
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(

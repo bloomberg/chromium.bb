@@ -133,6 +133,19 @@ class CONTENT_EXPORT RequestExtraData
     initiated_in_secure_context_ = secure;
   }
 
+  // The request is a prefetch and should use LOAD_PREFETCH network flags.
+  bool is_prefetch() const { return is_prefetch_; }
+  void set_is_prefetch(bool prefetch) { is_prefetch_ = prefetch; }
+
+  // The request is downloaded to the network cache, but not rendered or
+  // executed. The renderer will see this as an aborted request.
+  bool download_to_network_cache_only() const {
+    return download_to_network_cache_only_;
+  }
+  void set_download_to_network_cache_only(bool download_to_cache) {
+    download_to_network_cache_only_ = download_to_cache;
+  }
+
  private:
   blink::WebPageVisibilityState visibility_state_;
   int render_frame_id_;
@@ -151,6 +164,8 @@ class CONTENT_EXPORT RequestExtraData
   blink::WebString requested_with_;
   std::unique_ptr<StreamOverrideParameters> stream_override_;
   bool initiated_in_secure_context_;
+  bool is_prefetch_;
+  bool download_to_network_cache_only_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

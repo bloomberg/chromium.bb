@@ -870,6 +870,8 @@ std::unique_ptr<ResourceRequest> ResourceDispatcher::CreateRequest(
   request->resource_body_stream_url = request_info.resource_body_stream_url;
   request->initiated_in_secure_context =
       extra_data->initiated_in_secure_context();
+  request->download_to_network_cache_only =
+      extra_data->download_to_network_cache_only();
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();
   return request;

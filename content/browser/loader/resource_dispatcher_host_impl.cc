@@ -1556,12 +1556,19 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     }
   }
 
+  bool start_detached = request_data.download_to_network_cache_only;
+
   // Prefetches and <a ping> requests outlive their child process.
-  if (!sync_result && IsDetachableResourceType(request_data.resource_type)) {
-    handler.reset(new DetachableResourceHandler(
-        request,
-        base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
-        std::move(handler)));
+  if (!sync_result && (start_detached ||
+                       IsDetachableResourceType(request_data.resource_type))) {
+    std::unique_ptr<DetachableResourceHandler> detachable_handler =
+        base::MakeUnique<DetachableResourceHandler>(
+            request,
+            base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
+            std::move(handler));
+    if (start_detached)
+      detachable_handler->Detach();
+    handler = std::move(detachable_handler);
   }
 
   // PlzNavigate: If using --enable-browser-side-navigation, the

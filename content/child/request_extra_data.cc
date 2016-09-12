@@ -24,7 +24,9 @@ RequestExtraData::RequestExtraData()
       transferred_request_request_id_(-1),
       service_worker_provider_id_(kInvalidServiceWorkerProviderId),
       originated_from_service_worker_(false),
-      initiated_in_secure_context_(false) {}
+      initiated_in_secure_context_(false),
+      is_prefetch_(false),
+      download_to_network_cache_only_(false) {}
 
 RequestExtraData::~RequestExtraData() {
 }

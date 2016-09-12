@@ -1480,6 +1480,52 @@ TEST_P(ResourceDispatcherHostTest, Cancel) {
   EXPECT_EQ(0, network_delegate()->error_count());
 }
 
+TEST_P(ResourceDispatcherHostTest, DownloadToNetworkCache) {
+  // Normal request.
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2());
+
+  // Cache-only request.
+  ResourceRequest request_to_cache = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_IMAGE, net::URLRequestTestJob::test_url_3());
+  request_to_cache.download_to_network_cache_only = true;
+  ResourceHostMsg_RequestResource msg_to_cache(0, 2, request_to_cache);
+  host_.OnMessageReceived(msg_to_cache, filter_.get());
+
+  KickOffRequest();
+
+  // The handler for the cache-only request should have been detached now.
+  GlobalRequestID global_request_id(filter_->child_id(), 2);
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
+      host_.GetURLRequest(global_request_id));
+  ASSERT_TRUE(info->detachable_handler()->is_detached());
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Everything should be out now.
+  EXPECT_EQ(0, host_.pending_requests());
+
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // There are two requests, so we should have gotten them classified as such.
+  ASSERT_EQ(2U, msgs.size());
+
+  // The normal request succeeded.
+  CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_2());
+
+  // The cache-only request got canceled, as far as the renderer is concerned.
+  ASSERT_EQ(1U, msgs[1].size());
+  CheckRequestCompleteErrorCode(msgs[1][0], net::ERR_ABORTED);
+
+  // However, all requests should have actually gone to completion.
+  EXPECT_EQ(2, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->canceled_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+}
+
 // Shows that detachable requests will timeout if the request takes too long to
 // complete.
 TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {

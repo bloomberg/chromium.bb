@@ -248,6 +248,11 @@ class CONTENT_EXPORT ContentRendererClient {
                                const GURL& first_party_for_cookies,
                                GURL* new_url);
 
+  // Returns true if the request is associated with a document that is in
+  // ""prefetch only" mode, and will not be rendered.
+  virtual bool IsPrefetchOnly(RenderFrame* render_frame,
+                              const blink::WebURLRequest& request);
+
   // See blink::Platform.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length);

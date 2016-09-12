@@ -826,7 +826,6 @@ void HTMLDocumentParser::append(const String& inputSource)
             m_preloadScanner = createPreloadScanner();
 
         m_preloadScanner->appendToEnd(source);
-        // TODO(droger): Set the LOAD_PREFETCH flags on the requests.
         m_preloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
 
         // Return after the preload scanner, do not actually parse the document.

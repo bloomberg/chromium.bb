@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/child/request_extra_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
@@ -216,6 +217,13 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
 
   if (!request.allowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  if (request.getExtraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.getExtraData());
+    if (extra_data->is_prefetch())
+      load_flags |= net::LOAD_PREFETCH;
+  }
 
   return load_flags;
 }

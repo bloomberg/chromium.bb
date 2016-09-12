@@ -136,6 +136,12 @@ bool ContentRendererClient::WillSendRequest(
   return false;
 }
 
+bool ContentRendererClient::IsPrefetchOnly(
+    RenderFrame* render_frame,
+    const blink::WebURLRequest& request) {
+  return false;
+}
+
 unsigned long long ContentRendererClient::VisitedLinkHash(
     const char* canonical_url, size_t length) {
   return 0LL;
