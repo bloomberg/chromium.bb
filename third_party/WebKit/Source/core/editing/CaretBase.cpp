@@ -101,12 +101,12 @@ static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem, LayoutBlockIt
         caretRect = LayoutRect();
 }
 
-bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
+void CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
 {
     m_caretLocalRect = LayoutRect();
 
     if (caretPosition.position().isNull())
-        return false;
+        return;
 
     DCHECK(caretPosition.position().anchorNode()->layoutObject());
 
@@ -119,13 +119,11 @@ bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
     LayoutBlockItem caretPainterItem = LayoutBlockItem(caretLayoutObject(caretPosition.position().anchorNode()));
 
     mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem, m_caretLocalRect);
-
-    return true;
 }
 
-bool CaretBase::updateCaretRect(const VisiblePosition& caretPosition)
+void CaretBase::updateCaretRect(const VisiblePosition& caretPosition)
 {
-    return updateCaretRect(caretPosition.toPositionWithAffinity());
+    updateCaretRect(caretPosition.toPositionWithAffinity());
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const

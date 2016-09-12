@@ -53,8 +53,8 @@ public:
     // Creating VisiblePosition causes synchronous layout so we should use the
     // PositionWithAffinity version if possible.
     // A position in HTMLTextFromControlElement is a typical example.
-    bool updateCaretRect(const PositionWithAffinity& caretPosition);
-    bool updateCaretRect(const VisiblePosition& caretPosition);
+    void updateCaretRect(const PositionWithAffinity& caretPosition);
+    void updateCaretRect(const VisiblePosition& caretPosition);
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(Node&) const;
     bool shouldRepaintCaret(const LayoutViewItem) const;
