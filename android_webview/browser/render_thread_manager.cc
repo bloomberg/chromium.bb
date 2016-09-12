@@ -331,12 +331,14 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
 
-  client_->DetachFunctorFromView();
-
   // If the WebView gets onTrimMemory >= MODERATE twice in a row, the 2nd
   // onTrimMemory will result in an unnecessary Render Thread InvokeGL call.
   bool hardware_initialized = HasFrameOnUI();
   if (hardware_initialized) {
+    // The functor has only been attached to the view hierarchy if a compositor
+    // frame has been generated. Thus, it should only be detached in this case.
+    client_->DetachFunctorFromView();
+
     bool draw_functor_succeeded = client_->RequestInvokeGL(true);
     if (!draw_functor_succeeded) {
       LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
