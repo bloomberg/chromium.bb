@@ -375,7 +375,7 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object, 
             startColor = Color(60, 60, 60);
             endColor = Color(76, 76, 76);
         } else {
-            startColor = endColor = Color(0x9f, 0x9f, 0x9f); // light grey.
+            startColor = endColor = Color(0x5a, 0x5a, 0x5a); // dark grey
         }
 
         if (endPosition > currentPosition)
@@ -441,7 +441,7 @@ bool MediaControlsPainter::paintMediaVolumeSlider(const LayoutObject& object, co
     if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
         sliderBackgroundColor = Color(11, 11, 11);
     else
-        sliderBackgroundColor = Color(0x9f, 0x9f, 0x9f);
+        sliderBackgroundColor = Color(0x5a, 0x5a, 0x5a); // dark grey
     paintRoundedSliderBackground(rect, style, context, sliderBackgroundColor);
 
     // Calculate volume position for white background rectangle.
