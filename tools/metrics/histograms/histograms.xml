@@ -54565,9 +54565,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>chrisha@chromium.org</owner>
   <summary>
     The length of a session (launch/foregrounding to backgrounding). On desktop
-    it also takes into account user interaction and audio events. Starting from
-    M55 the session length is recorded by discounting for default inactivity
-    timeout on desktop.
+    it also takes into account user interaction and audio events.
   </summary>
 </histogram>
 
