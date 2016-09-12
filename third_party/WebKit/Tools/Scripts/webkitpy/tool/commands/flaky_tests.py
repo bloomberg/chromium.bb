@@ -44,7 +44,16 @@ class FlakyTests(Command):
 
     FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=%s'
 
-    BUG_TEMPLATE = 'https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&comment=XXXXXXX%20is%20flaky.%0A%0AIt%20failed%20twice%20and%20then%20passed%20on%20the%203rd%20or%204th%20retry.%20This%20is%20too%20flaky.%20The%20test%20will%20be%20skipped%20until%20it%27s%20fixed.%20If%20not%20fixed%20in%203%20months,%20it%20will%20be%20deleted%20or%20perma-skipped.%0A%0AIn%20the%20flakiness%20dashboard,%20the%20turquoise%20boxes%20are%20runs%20where%20the%20test%20failed%20and%20then%20passed%20on%20retry.%0A%0Ahttp://test-results.appspot.com/dashboards/flakiness_dashboard.html%23tests=XXXXXXX'
+    BUG_TEMPLATE = ('https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&'
+                    'labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&'
+                    'comment=XXXXXXX%20is%20flaky.%0A%0AIt%20failed%20twice%20and%20then'
+                    '%20passed%20on%20the%203rd%20or%204th%20retry.%20This%20is%20too%20'
+                    'flaky.%20The%20test%20will%20be%20skipped%20until%20it%27s%20fixed.'
+                    '%20If%20not%20fixed%20in%203%20months,%20it%20will%20be%20deleted%20'
+                    'or%20perma-skipped.%0A%0AIn%20the%20flakiness%20dashboard,%20the%20'
+                    'turquoise%20boxes%20are%20runs%20where%20the%20test%20failed%20and%20'
+                    'then%20passed%20on%20retry.%0A%0Ahttp://test-results.appspot.com'
+                    '/dashboards/flakiness_dashboard.html%23tests=XXXXXXX')
 
     HEADER = '''Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
 Look up the test in the flakiness dashboard first to see if the the platform

@@ -61,6 +61,7 @@ class MockFileSystem(object):
             while not d in self.dirs:
                 self.dirs.add(d)
                 d = self.dirname(d)
+
     def clear_written_files(self):
         # This function can be used to track what is written between steps in a test.
         self.written_files = {}

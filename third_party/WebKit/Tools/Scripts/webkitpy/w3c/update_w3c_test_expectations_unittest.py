@@ -158,7 +158,7 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase):
                     'is_unexpected': True,
                     'has_stderr': True
                 }
-        )]
+            )]
         self.assertEqual(line_adder.generate_results_dict('dummy_platform', layout_test_list), {
             'test/name.html': {
                 'dummy_platform': {

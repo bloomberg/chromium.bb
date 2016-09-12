@@ -36,7 +36,6 @@ _log = logging.getLogger(__name__)
 ANNOUNCE_PATH = "third_party/WebKit"
 
 
-
 class CommitAnnouncerCommand(Command):
     name = "commit-announcer"
     help_text = "Start an IRC bot for announcing new git commits."

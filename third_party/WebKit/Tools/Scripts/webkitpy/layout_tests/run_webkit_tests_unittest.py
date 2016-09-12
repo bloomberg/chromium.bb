@@ -293,8 +293,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                           ['failures/expected/exception.html', '--child-processes', '1'], tests_included=True)
 
         if self.should_test_processes:
-            self.assertRaises(BaseException, logging_run,
-                              ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'], tests_included=True, shared_port=False)
+            self.assertRaises(
+                BaseException,
+                logging_run,
+                ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
+                tests_included=True,
+                shared_port=False)
 
     def test_device_failure(self):
         # Test that we handle a device going offline during a test properly.
@@ -315,8 +319,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, test_run_results.INTERRUPTED_EXIT_STATUS)
 
         if self.should_test_processes:
-            _, regular_output, _ = logging_run(['failures/expected/keyboard.html', 'passes/text.html',
-                                                '--child-processes', '2', '--skipped=ignore'], tests_included=True, shared_port=False)
+            _, regular_output, _ = logging_run(
+                ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'],
+                tests_included=True, shared_port=False)
             self.assertTrue(any(['Interrupted, exiting' in line for line in regular_output.buflist]))
 
     def test_no_tests_found(self):
@@ -545,10 +550,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # is missing, update the expected generic location.
         host = MockHost()
         details, _, _ = logging_run(['--no-show-results', '--retry-failures',
-                                       'failures/expected/missing_image.html',
-                                       'failures/unexpected/missing_text.html',
-                                       'failures/unexpected/text-image-checksum.html'],
-                                      tests_included=True, host=host)
+                                     'failures/expected/missing_image.html',
+                                     'failures/unexpected/missing_text.html',
+                                     'failures/unexpected/text-image-checksum.html'],
+                                    tests_included=True, host=host)
         self.assertEqual(details.exit_code, 2)
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertTrue(json_string.find(
@@ -769,7 +774,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_retrying_uses_retry_directories(self):
         host = MockHost()
         details, _, _ = logging_run(['--debug-rwt-logging', '--retry-failures',
-                                       'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
+                                     'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 1)
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
         self.assertTrue(
@@ -1079,11 +1084,11 @@ Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
 Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
 """)
         details, _, _ = logging_run(['--no-show-results',
-                                       'failures/unexpected/missing_text.html',
-                                       'failures/unexpected/missing_image.html',
-                                       'failures/unexpected/missing_audio.html',
-                                       'failures/unexpected/missing_render_tree_dump.html'],
-                                      tests_included=True, host=host, new_results=True, port_obj=port)
+                                     'failures/unexpected/missing_text.html',
+                                     'failures/unexpected/missing_image.html',
+                                     'failures/unexpected/missing_audio.html',
+                                     'failures/unexpected/missing_render_tree_dump.html'],
+                                    tests_included=True, host=host, new_results=True, port_obj=port)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(file_list), 8)

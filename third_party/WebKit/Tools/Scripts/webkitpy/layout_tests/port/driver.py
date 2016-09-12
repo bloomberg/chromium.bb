@@ -132,8 +132,11 @@ class Driver(object):
         self._measurements = {}
         if self._port.get_option("profile"):
             profiler_name = self._port.get_option("profiler")
-            self._profiler = ProfilerFactory.create_profiler(self._port.host,
-                                                             self._port._path_to_driver(), self._port.results_directory(), profiler_name)
+            self._profiler = ProfilerFactory.create_profiler(
+                self._port.host,
+                self._port._path_to_driver(),  # pylint: disable=protected-access
+                self._port.results_directory(),
+                profiler_name)
         else:
             self._profiler = None
 

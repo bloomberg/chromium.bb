@@ -56,7 +56,8 @@ class PortTest(unittest.TestCase):
     def test_format_wdiff_output_as_html(self):
         output = "OUTPUT %s %s %s" % (Port._WDIFF_DEL, Port._WDIFF_ADD, Port._WDIFF_END)
         html = self.make_port()._format_wdiff_output_as_html(output)
-        expected_html = "<head><style>.del { background: #faa; } .add { background: #afa; }</style></head><pre>OUTPUT <span class=del> <span class=add> </span></pre>"
+        expected_html = ("<head><style>.del { background: #faa; } .add { background: #afa; }</style></head>"
+                         "<pre>OUTPUT <span class=del> <span class=add> </span></pre>")
         self.assertEqual(html, expected_html)
 
     def test_wdiff_command(self):
@@ -317,9 +318,10 @@ class PortTest(unittest.TestCase):
         # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
 
         reftest_list = Port._parse_reftest_list(port.host.filesystem, 'bar')
-        self.assertEqual(reftest_list, {'bar/test.html': [('==', 'bar/test-ref.html')],
-                                        'bar/test-2.html': [('!=', 'bar/test-notref.html')],
-                                        'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
+        self.assertEqual(reftest_list, {
+            'bar/test.html': [('==', 'bar/test-ref.html')],
+            'bar/test-2.html': [('!=', 'bar/test-notref.html')],
+            'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
 
     def test_reference_files(self):
         port = self.make_port(with_tests=True)

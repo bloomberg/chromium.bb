@@ -59,6 +59,7 @@ from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http
 from webkitpy.layout_tests.servers import pywebsocket
 from webkitpy.layout_tests.servers import wptserve
+from functools import reduce  # pylint: disable=redefined-builtin
 
 _log = logging.getLogger(__name__)
 
@@ -1569,7 +1570,8 @@ class Port(object):
             sanitizer_strip_path_prefix = 'Release/../../'
             if self._filesystem.exists(sanitizer_filter_path):
                 stderr = self._executive.run_command(
-                    ['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False, env=env)
+                    ['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix],
+                    input=stderr, decode_output=False, env=env)
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')

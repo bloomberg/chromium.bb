@@ -53,8 +53,16 @@ def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
 
 
 def run_results(port, extra_skipped_tests=[]):
-    tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/leak.html', 'failures/expected/keyboard.html',
-             'failures/expected/audio.html', 'failures/expected/text.html', 'passes/skipped/skip.html']
+    tests = [
+        'passes/text.html',
+        'failures/expected/timeout.html',
+        'failures/expected/crash.html',
+        'failures/expected/leak.html',
+        'failures/expected/keyboard.html',
+        'failures/expected/audio.html',
+        'failures/expected/text.html',
+        'passes/skipped/skip.html'
+    ]
     expectations = test_expectations.TestExpectations(port, tests)
     if extra_skipped_tests:
         expectations.add_extra_skipped_tests(extra_skipped_tests)
@@ -189,21 +197,76 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_num_failures_by_type(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 1, 'IMAGE': 1, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0,
-                                                            'PASS': 1, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 3, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
+        self.assertEquals(
+            summary['num_failures_by_type'],
+            {
+                'CRASH': 1,
+                'MISSING': 0,
+                'TEXT': 1,
+                'IMAGE': 1,
+                'NEEDSREBASELINE': 0,
+                'NEEDSMANUALREBASELINE': 0,
+                'PASS': 1,
+                'REBASELINE': 0,
+                'SKIP': 0,
+                'SLOW': 0,
+                'TIMEOUT': 3,
+                'IMAGE+TEXT': 0,
+                'LEAK': 0,
+                'FAIL': 0,
+                'AUDIO': 0,
+                'WONTFIX': 0
+            })
 
         summary = summarized_results(self.port, expected=True, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0,
-                                                            'PASS': 1, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'LEAK': 1, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 0})
+        self.assertEquals(
+            summary['num_failures_by_type'],
+            {
+                'CRASH': 1,
+                'MISSING': 0,
+                'TEXT': 0,
+                'IMAGE': 0,
+                'NEEDSREBASELINE': 0,
+                'NEEDSMANUALREBASELINE': 0,
+                'PASS': 1,
+                'REBASELINE': 0,
+                'SKIP': 0,
+                'SLOW': 0,
+                'TIMEOUT': 1,
+                'IMAGE+TEXT': 0,
+                'LEAK': 1,
+                'FAIL': 0,
+                'AUDIO': 1,
+                'WONTFIX': 0
+            })
 
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0,
-                                                            'PASS': 5, 'REBASELINE': 0, 'SKIP': 1, 'SLOW': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
+        self.assertEquals(
+            summary['num_failures_by_type'],
+            {
+                'CRASH': 0,
+                'MISSING': 0,
+                'TEXT': 0,
+                'IMAGE': 0,
+                'NEEDSREBASELINE': 0,
+                'NEEDSMANUALREBASELINE': 0,
+                'PASS': 5,
+                'REBASELINE': 0,
+                'SKIP': 1,
+                'SLOW': 0,
+                'TIMEOUT': 0,
+                'IMAGE+TEXT': 0,
+                'LEAK': 0,
+                'FAIL': 0,
+                'AUDIO': 0,
+                'WONTFIX': 0
+            })
 
     def test_chromium_revision(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertNotEquals(summary['chromium_revision'], '')
+        self.assertNotEquals(summary['chromium_revision'],
+                             '')
 
     def test_bug_entry(self):
         self.port._options.builder_name = 'dummy builder'

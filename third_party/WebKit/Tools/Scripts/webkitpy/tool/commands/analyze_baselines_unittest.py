@@ -35,7 +35,14 @@ class TestAnalyzeBaselines(BaseTestCase):
                           '  (generic): 123456'])
 
     def test_missing_baselines(self):
-        self.command.execute(optparse.Values(dict(suffixes='png,txt', missing=True, platform=None)), ['passes/text.html'], self.tool)
+        self.command.execute(
+            optparse.Values(
+                dict(
+                    suffixes='png,txt',
+                    missing=True,
+                    platform=None)),
+            ['passes/text.html'],
+            self.tool)
         self.assertEqual(self.lines,
                          ['passes/text-expected.png: (no baselines found)',
                           'passes/text-expected.txt:',

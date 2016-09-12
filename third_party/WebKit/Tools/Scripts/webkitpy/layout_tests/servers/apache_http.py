@@ -95,7 +95,8 @@ class ApacheHTTP(server_base.ServerBase):
             start_cmd += ['-c', "StartServers %d" % self._number_of_servers,
                           '-c', "MinSpareServers %d" % self._number_of_servers,
                           '-c', "MaxSpareServers %d" % self._number_of_servers,
-                          '-C', 'User "%s"' % self._port_obj.host.environ.get('USERNAME', self._port_obj.host.environ.get('USER', '')),
+                          '-C', 'User "%s"' % self._port_obj.host.environ.get('USERNAME',
+                                                                              self._port_obj.host.environ.get('USER', '')),
                           '-k', 'start']
 
         enable_ipv6 = self._port_obj.http_server_supports_ipv6()

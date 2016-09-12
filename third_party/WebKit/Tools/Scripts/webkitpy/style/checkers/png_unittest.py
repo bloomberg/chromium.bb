@@ -65,5 +65,6 @@ class PNGCheckerTest(unittest.TestCase):
         checker = PNGChecker(file_path, mock_handle_style_error, MockSystemHost(os_name='linux', filesystem=fs))
         checker.check()
         self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0], (0, 'image/png', 5,
-                                     'Image lacks a checksum. Generate pngs using run-webkit-tests to ensure they have a checksum.'))
+        self.assertEqual(
+            errors[0],
+            (0, 'image/png', 5, 'Image lacks a checksum. Generate pngs using run-webkit-tests to ensure they have a checksum.'))

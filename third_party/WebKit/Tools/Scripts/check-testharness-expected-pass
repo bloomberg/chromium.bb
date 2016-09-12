@@ -22,8 +22,8 @@ paths = []
 for path in sys.argv[1:]:
     content = open(path, 'r').read()
     if (testharness_results.is_testharness_output(content) and
-            testharness_results.is_testharness_output_passing(content) and
-            not testharness_results.is_testharness_output_with_console_errors_or_warnings(content)):
+        testharness_results.is_testharness_output_passing(content) and
+        not testharness_results.is_testharness_output_with_console_errors_or_warnings(content)):
         paths.append(path)
 
 if len(paths) > 0:

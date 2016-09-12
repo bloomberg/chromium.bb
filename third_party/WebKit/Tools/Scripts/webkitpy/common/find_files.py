@@ -82,6 +82,6 @@ def _normalized_find(filesystem, paths, skipped_directories, file_filter, direct
             files_list.sort(key=directory_sort_key)
         return files_list
 
-    all_files = itertools.chain(*(sort_by_directory_key(filesystem.files_under(path,
-                                                                               skipped_directories, file_filter)) for path in paths_to_walk))
+    all_files = itertools.chain(*(sort_by_directory_key(filesystem.files_under(path, skipped_directories, file_filter))
+                                  for path in paths_to_walk))
     return all_files

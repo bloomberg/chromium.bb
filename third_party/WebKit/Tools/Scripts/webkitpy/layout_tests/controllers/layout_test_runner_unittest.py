@@ -291,7 +291,7 @@ class SharderTests(unittest.TestCase):
 
         # But, with run_singly=True, we have to restart every time anyway, so we want full parallelism.
         _, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=True,
-                                           test_list=['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])
+                                      test_list=['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])
         self.assert_shards(unlocked,
                            [('.', ['virtual/foo/bar1.html']),
                             ('.', ['virtual/foo/bar2.html'])])

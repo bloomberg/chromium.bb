@@ -31,7 +31,7 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 def make_mock_crash_report_darwin(process_name, pid):
     return """Process:         {process_name} [{pid}]
-Path:            /Volumes/Data/slave/snowleopard-intel-release-tests/build/WebKitBuild/Release/{process_name}
+Path:            /Volumes/Data/slave/x-release-tests/build/WebKitBuild/Release/{process_name}
 Identifier:      {process_name}
 Version:         ??? (???)
 Code Type:       X86-64 (Native)
@@ -51,8 +51,8 @@ Exception Codes: 0x0000000000000002, 0x0000000000000000
 Crashed Thread:  0
 
 Dyld Error Message:
-  Library not loaded: /Volumes/Data/WebKit-BuildSlave/snowleopard-intel-release/build/WebKitBuild/Release/WebCore.framework/Versions/A/WebCore
-  Referenced from: /Volumes/Data/slave/snowleopard-intel-release/build/WebKitBuild/Release/WebKit.framework/Versions/A/WebKit
+  Library not loaded: /Volumes/Data/WebKit-BuildSlave/x-release/build/WebKitBuild/Release/WebCore.framework/Versions/A/WebCore
+  Referenced from: /Volumes/Data/slave/x-release/build/WebKitBuild/Release/WebKit.framework/Versions/A/WebKit
   Reason: image not found
 
 Binary Images:
@@ -80,13 +80,16 @@ class CrashLogsTest(unittest.TestCase):
         other_process_mock_crash_report = make_mock_crash_report_darwin('FooProcess', 28527)
         misformatted_mock_crash_report = 'Junk that should not appear in a crash report' + \
             make_mock_crash_report_darwin('DumpRenderTree', 28526)[200:]
-        files = {}
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150718_quadzen.crash'] = older_mock_crash_report
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150719_quadzen.crash'] = mock_crash_report
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150720_quadzen.crash'] = newer_mock_crash_report
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150721_quadzen.crash'] = None
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150722_quadzen.crash'] = other_process_mock_crash_report  # noqa
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150723_quadzen.crash'] = misformatted_mock_crash_report  # noqa
+        files = {
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150718_quadzen.crash': older_mock_crash_report,
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150719_quadzen.crash': mock_crash_report,
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150720_quadzen.crash': newer_mock_crash_report,
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150721_quadzen.crash': None,
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150722_quadzen.crash':
+                other_process_mock_crash_report,
+            '/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150723_quadzen.crash':
+                misformatted_mock_crash_report,
+        }
         filesystem = MockFileSystem(files)
         crash_logs = CrashLogs(MockSystemHost(filesystem=filesystem))
         log = crash_logs.find_newest_log("DumpRenderTree")

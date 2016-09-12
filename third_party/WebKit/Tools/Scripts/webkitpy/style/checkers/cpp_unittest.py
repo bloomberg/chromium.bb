@@ -204,7 +204,8 @@ class CppFunctionsTest(unittest.TestCase):
     def test_parameter_list(self):
         elided_lines = ['int blah(PassRefPtr<MyClass> paramName,',
                         'const Other1Class& foo,',
-                        'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),',
+                        ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
+                         'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
                         'int* myCount = 0);']
         start_position = cpp_style.Position(row=0, column=8)
         end_position = cpp_style.Position(row=3, column=16)
@@ -228,8 +229,9 @@ class CppFunctionsTest(unittest.TestCase):
         error_collector = ErrorCollector(self.assertTrue)
         parameter = cpp_style.Parameter('FooF ooF', 4, 1)
         self.assertFalse(cpp_style._check_parameter_name_against_text(parameter, 'FooF', error_collector))
-        self.assertEqual(error_collector.results(),
-                         'The parameter name "ooF" adds no information, so it should be removed.  [readability/parameter_name] [5]')
+        self.assertEqual(
+            error_collector.results(),
+            'The parameter name "ooF" adds no information, so it should be removed.  [readability/parameter_name] [5]')
 
 
 class CppStyleTestBase(unittest.TestCase):
@@ -590,7 +592,10 @@ class FunctionDetectionTest(CppStyleTestBase):
         # Some parameter type with modifiers and no parameter names.
         self.perform_function_detection(
             [
-                'virtual void determineARIADropEffects(Vector<String>*&, const unsigned long int*&, const MediaPlayer::Preload, Other<Other2, Other3<P1, P2> >, int);'],
+                'virtual void determineARIADropEffects(Vector<String>*&, '
+                'const unsigned long int*&, const MediaPlayer::Preload, '
+                'Other<Other2, Other3<P1, P2> >, int);'
+            ],
             {'name': 'determineARIADropEffects',
              'modifiers_and_return_type': 'virtual void',
              'parameter_start_position': (0, 37),
@@ -613,7 +618,8 @@ class FunctionDetectionTest(CppStyleTestBase):
              'virtual',
              'AnotherTemplate<Class1, Class2> aFunctionName(PassRefPtr<MyClass> paramName,',
              'const Other1Class& foo,',
-             'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),',
+             ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
+              'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
              'int* myCount = 0);'],
             {'name': 'aFunctionName',
              'modifiers_and_return_type': 'virtual AnotherTemplate<Class1, Class2>',
@@ -2819,7 +2825,8 @@ class OrderOfIncludesTest(CppStyleTestBase):
         self.assert_language_rules_check('foo.cpp',
                                          '#include "foo.h"\n'
                                          '#include "bar.h"\n',
-                                         'You should add a blank line after implementation file\'s own header.  [build/include_order] [4]')
+                                         ('You should add a blank line after implementation file\'s own header.'
+                                          '  [build/include_order] [4]'))
 
         self.assert_language_rules_check('foo.cpp',
                                          '#include "foo.h"\n'
@@ -4124,15 +4131,16 @@ class WebKitStyleTest(CppStyleTestBase):
             '}\n',
             '')
         self.assert_multi_line_lint(
-            '#define TEST_ASSERT(expression) do { if (!(expression)) { TestsController::shared().testFailed(__FILE__, __LINE__, #expression); return; } } while (0)\n',
+            '#define TEST_ASSERT(expression) do { if (!(expression)) { '
+            'TestsController::shared().testFailed(__FILE__, __LINE__, #expression); '
+            'return; } } while (0)\n',
             '')
         self.assert_multi_line_lint(
-            '#define TEST_ASSERT(expression) do { if ( !(expression)) { TestsController::shared().testFailed(__FILE__, __LINE__, #expression); return; } } while (0)\n',
+            '#define TEST_ASSERT(expression) do { if ( !(expression)) { '
+            'TestsController::shared().testFailed(__FILE__, __LINE__, #expression); '
+            'return; } } while (0)\n',
             'Extra space after ( in if  [whitespace/parens] [5]')
         # FIXME: currently we only check first conditional, so we cannot detect errors in next ones.
-        # self.assert_multi_line_lint(
-        # '#define TEST_ASSERT(expression) do { if (!(expression)) { TestsController::shared().testFailed(__FILE__, __LINE__, #expression); return; } } while (0 )\n',
-        #     'Mismatching spaces inside () in if  [whitespace/parens] [5]')
         self.assert_multi_line_lint(
             'WTF_MAKE_NONCOPYABLE(ClassName); WTF_MAKE_FAST_ALLOCATED;\n',
             '')
@@ -4897,8 +4905,10 @@ class WebKitStyleTest(CppStyleTestBase):
             'foo.cpp')
 
     def test_names(self):
-        name_underscore_error_message = " is incorrectly named. Don't use underscores in your identifier names.  [readability/naming/underscores] [4]"
-        name_tooshort_error_message = " is incorrectly named. Don't use the single letter 'l' as an identifier name.  [readability/naming] [4]"
+        name_underscore_error_message = (" is incorrectly named. Don't use underscores in your identifier names."
+                                         "  [readability/naming/underscores] [4]")
+        name_tooshort_error_message = (" is incorrectly named. Don't use the single letter 'l' as an identifier name."
+                                       "  [readability/naming] [4]")
 
         # Basic cases from WebKit style guide.
         self.assert_lint('struct Data;', '')
@@ -5043,9 +5053,10 @@ class WebKitStyleTest(CppStyleTestBase):
                          'webkit_web_view_load is incorrectly named. Don\'t use underscores in your identifier names.'
                          '  [readability/naming/underscores] [4]', 'Source/Webkit/webkit/foo.cpp')
         # Test that this doesn't also apply to names that don't start with 'webkit_'.
-        self.assert_lint_one_of_many_errors_re('void otherkit_web_view_load(int var1, int var2)',
-                                               'otherkit_web_view_load is incorrectly named. Don\'t use underscores in your identifier names.'
-                                               '  [readability/naming/underscores] [4]', 'Source/Webkit/webkit/foo.cpp')
+        self.assert_lint_one_of_many_errors_re(
+            'void otherkit_web_view_load(int var1, int var2)',
+            'otherkit_web_view_load is incorrectly named. Don\'t use underscores in your identifier names.'
+            '  [readability/naming/underscores] [4]', 'Source/Webkit/webkit/foo.cpp')
 
         # There is an exception for some unit tests that begin with "tst_".
         self.assert_lint('void tst_QWebFrame::arrayObjectEnumerable(int var1, int var2)', '')
@@ -5094,53 +5105,65 @@ class WebKitStyleTest(CppStyleTestBase):
 
     def test_parameter_names(self):
         # Leave meaningless variable names out of function declarations.
-        meaningless_variable_name_error_message = 'The parameter name "%s" adds no information, so it should be removed.  [readability/parameter_name] [5]'
+        # This variable name is very long.  # pylint: disable=invalid-name
+        meaningless_variable_name_error_message = ('The parameter name "%s" adds no information, '
+                                                   'so it should be removed.  [readability/parameter_name] [5]')
 
-        parameter_error_rules = ('-',
-                                 '+readability/parameter_name')
+        parameter_error_rules = ('-', '+readability/parameter_name')
         # No variable name, so no error.
-        self.assertEqual('',
-                         self.perform_lint('void func(int);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            '',
+            self.perform_lint('void func(int);', 'test.cpp', parameter_error_rules))
 
         # Verify that copying the name of the set function causes the error (with some odd casing).
-        self.assertEqual(meaningless_variable_name_error_message % 'itemCount',
-                         self.perform_lint('void setItemCount(size_t itemCount);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(meaningless_variable_name_error_message % 'abcCount',
-                         self.perform_lint('void setABCCount(size_t abcCount);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'itemCount',
+            self.perform_lint('void setItemCount(size_t itemCount);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'abcCount',
+            self.perform_lint('void setABCCount(size_t abcCount);', 'test.cpp', parameter_error_rules))
 
         # Verify that copying a type name will trigger the warning (even if the type is a template parameter).
-        self.assertEqual(meaningless_variable_name_error_message % 'context',
-                         self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'context',
+            self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context);', 'test.cpp', parameter_error_rules))
 
         # Verify that acronyms as variable names trigger the error (for both set functions and type names).
-        self.assertEqual(meaningless_variable_name_error_message % 'ec',
-                         self.perform_lint('void setExceptionCode(int ec);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(meaningless_variable_name_error_message % 'ec',
-                         self.perform_lint('void funct(ExceptionCode ec);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'ec',
+            self.perform_lint('void setExceptionCode(int ec);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'ec',
+            self.perform_lint('void funct(ExceptionCode ec);', 'test.cpp', parameter_error_rules))
 
         # 'object' alone, appended, or as part of an acronym is meaningless.
-        self.assertEqual(meaningless_variable_name_error_message % 'object',
-                         self.perform_lint('void funct(RenderView object);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(meaningless_variable_name_error_message % 'viewObject',
-                         self.perform_lint('void funct(RenderView viewObject);', 'test.cpp', parameter_error_rules))
-        self.assertEqual(meaningless_variable_name_error_message % 'rvo',
-                         self.perform_lint('void funct(RenderView rvo);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'object',
+            self.perform_lint('void funct(RenderView object);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'viewObject',
+            self.perform_lint('void funct(RenderView viewObject);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            meaningless_variable_name_error_message % 'rvo',
+            self.perform_lint('void funct(RenderView rvo);', 'test.cpp', parameter_error_rules))
 
         # Check that r, g, b, and a are allowed.
-        self.assertEqual('',
-                         self.perform_lint('void setRGBAValues(int r, int g, int b, int a);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            '',
+            self.perform_lint('void setRGBAValues(int r, int g, int b, int a);', 'test.cpp', parameter_error_rules))
 
         # Verify that a simple substring match isn't done which would cause false positives.
-        self.assertEqual('',
-                         self.perform_lint('void setNateLateCount(size_t elate);', 'test.cpp', parameter_error_rules))
-        self.assertEqual('',
-                         self.perform_lint('void funct(NateLate elate);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            '',
+            self.perform_lint('void setNateLateCount(size_t elate);', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            '',
+            self.perform_lint('void funct(NateLate elate);', 'test.cpp', parameter_error_rules))
 
         # Don't have generate warnings for functions (only declarations).
-        self.assertEqual('',
-                         self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context)\n'
-                                           '{\n'
-                                           '}\n', 'test.cpp', parameter_error_rules))
+        self.assertEqual(
+            '',
+            self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context)\n{\n}\n', 'test.cpp', parameter_error_rules))
 
     def test_comments(self):
         # A comment at the beginning of a line is ok.
@@ -5186,7 +5209,8 @@ class WebKitStyleTest(CppStyleTestBase):
                          self.perform_lint('WEBKIT_EXPORT int foo();\n',
                                            'WebKit/chromium/public/test.cpp',
                                            webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should only appear in the chromium public (or tests) directory.  [readability/webkit_export] [5]',
+        self.assertEqual('WEBKIT_EXPORT should only appear in the chromium public (or tests) directory.  '
+                         '[readability/webkit_export] [5]',
                          self.perform_lint('WEBKIT_EXPORT int foo();\n',
                                            'WebKit/chromium/src/test.h',
                                            webkit_export_error_rules))

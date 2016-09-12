@@ -114,8 +114,14 @@ class MainTest(unittest.TestCase):
         self._add_file(runner, 'inspector/resources', 'resource_file.html')
         self._add_file(runner, 'unsupported', 'unsupported_test2.html')
         port.skipped_perf_tests = lambda: ['inspector/unsupported_test1.html', 'unsupported']
-        self.assertItemsEqual(self._collect_tests_and_sort_test_name(runner), [
-                              'inspector/test1.html', 'inspector/test2.html', 'inspector/unsupported_test1.html', 'unsupported/unsupported_test2.html'])
+        self.assertItemsEqual(
+            self._collect_tests_and_sort_test_name(runner),
+            [
+                'inspector/test1.html',
+                'inspector/test2.html',
+                'inspector/unsupported_test1.html',
+                'unsupported/unsupported_test2.html'
+            ])
 
     def test_default_args(self):
         options, _ = PerfTestsRunner._parse_args([])
@@ -143,7 +149,8 @@ class MainTest(unittest.TestCase):
             '--additional-driver-flag=--awesomesauce',
             '--repeat=5',
             '--test-runner-count=5',
-            '--debug'])
+            '--debug'
+        ])
         self.assertTrue(options.build)
         self.assertEqual(options.build_directory, 'folder42')
         self.assertEqual(options.platform, 'platform42')
@@ -548,8 +555,9 @@ class IntegrationTest(unittest.TestCase):
         self.assertTrue(filesystem.isfile(filesystem.splitext(runner._output_json_path())[0] + '.html'))
 
     def test_run_with_description(self):
-        runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-                                                                           '--test-results-server=some.host', '--description', 'some description'])
+        runner, port = self.create_runner_and_setup_results_template(
+            args=['--output-json-path=/mock-checkout/output.json',
+                  '--test-results-server=some.host', '--description', 'some description'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "description": "some description",
@@ -559,9 +567,10 @@ class IntegrationTest(unittest.TestCase):
     def create_runner_and_setup_results_template(self, args=[]):
         runner, port = self.create_runner(args)
         filesystem = port.host.filesystem
-        filesystem.write_text_file(runner._base_path + '/resources/results-template.html',
-                                   'BEGIN<script src="%AbsolutePathToWebKitTrunk%/some.js"></script>'
-                                   '<script src="%AbsolutePathToWebKitTrunk%/other.js"></script><script>%PeformanceTestsResultsJSON%</script>END')
+        filesystem.write_text_file(
+            runner._base_path + '/resources/results-template.html',  # pylint: disable=protected-access
+            ('BEGIN<script src="%AbsolutePathToWebKitTrunk%/some.js"></script>'
+             '<script src="%AbsolutePathToWebKitTrunk%/other.js"></script><script>%PeformanceTestsResultsJSON%</script>END'))
         filesystem.write_text_file(runner._base_path + '/Dromaeo/resources/dromaeo/web/lib/jquery-1.6.4.js', 'jquery content')
         return runner, port
 
@@ -582,9 +591,15 @@ class IntegrationTest(unittest.TestCase):
 
         self._test_run_with_json_output(runner, port.host.filesystem)
 
-        self.assertEqual(self._load_output_json(runner), [{
-            "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
-            "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
+        self.assertEqual(
+            self._load_output_json(runner),
+            [
+                {
+                    "buildTime": "2013-02-08T15:19:37.460000",
+                    "tests": self._event_target_wrapper_and_inspector_results,
+                    "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}
+                }
+            ])
 
         self.assertTrue(filesystem.isfile(output_json_path))
         self.assertTrue(filesystem.isfile(results_page_path))
@@ -667,8 +682,10 @@ class IntegrationTest(unittest.TestCase):
         self._test_run_with_json_output(runner, port.host.filesystem, expected_exit_code=PerfTestsRunner.EXIT_CODE_BAD_MERGE)
 
     def test_run_with_slave_config_json(self):
-        runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-                                                                           '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
+        runner, port = self.create_runner_and_setup_results_template(
+            args=['--output-json-path=/mock-checkout/output.json',
+                  '--slave-config-json-path=/mock-checkout/slave-config.json',
+                  '--test-results-server=some.host'])
         port.host.filesystem.write_text_file('/mock-checkout/slave-config.json', '{"key": "value"}')
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
@@ -676,8 +693,10 @@ class IntegrationTest(unittest.TestCase):
             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}, "builderKey": "value"}])
 
     def test_run_with_bad_slave_config_json(self):
-        runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-                                                                           '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
+        runner, port = self.create_runner_and_setup_results_template(
+            args=['--output-json-path=/mock-checkout/output.json',
+                  '--slave-config-json-path=/mock-checkout/slave-config.json',
+                  '--test-results-server=some.host'])
         logs = self._test_run_with_json_output(runner, port.host.filesystem,
                                                expected_exit_code=PerfTestsRunner.EXIT_CODE_BAD_SOURCE_JSON)
         self.assertTrue('Missing slave configuration JSON file: /mock-checkout/slave-config.json' in logs)

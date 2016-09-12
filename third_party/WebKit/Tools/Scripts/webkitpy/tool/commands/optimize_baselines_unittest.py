@@ -46,7 +46,8 @@ class TestOptimizeBaselines(BaseTestCase):
             optparse.Values({'suffixes': 'txt', 'no_modify_scm': True, 'platform': 'test-mac-mac10.10'}),
             ['another/test.html'],
             self.tool,
-        ], expected_stdout='{"add": [], "remove-lines": [], "delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt"]}\n')
+        ], expected_stdout=('{"add": [], "remove-lines": [], '
+                            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt"]}\n'))
 
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
             test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
@@ -71,12 +72,20 @@ class TestOptimizeBaselines(BaseTestCase):
         finally:
             out, _, _ = oc.restore_output()
 
-        self.assertEquals(out, '{"add": [], "remove-lines": [], "delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt", "/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.png"]}\n')
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'platform/mac/another/test-expected.png')))
-        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'another/test-expected.txt')))
-        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'another/test-expected.png')))
+        self.assertEquals(
+            out,
+            '{"add": [], "remove-lines": [], '
+            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt", '
+            '"/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.png"]}\n')
+        self.assertFalse(
+            self.tool.filesystem.exists(self.tool.filesystem.join(
+                test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
+        self.assertFalse(
+            self.tool.filesystem.exists(self.tool.filesystem.join(
+                test_port.layout_tests_dir(), 'platform/mac/another/test-expected.png')))
+        self.assertTrue(
+            self.tool.filesystem.exists(self.tool.filesystem.join(
+                test_port.layout_tests_dir(), 'another/test-expected.txt')))
+        self.assertTrue(
+            self.tool.filesystem.exists(self.tool.filesystem.join(
+                test_port.layout_tests_dir(), 'another/test-expected.png')))

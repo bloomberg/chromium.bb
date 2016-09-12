@@ -441,7 +441,8 @@ class SingleLineView(object):
         """
         total_columns = 0
         row_offset = 0
-        while row_offset < len(self._row_lengths) - 1 and single_line_column_number >= total_columns + self._row_lengths[row_offset]:
+        while (row_offset < len(self._row_lengths) - 1 and
+               single_line_column_number >= total_columns + self._row_lengths[row_offset]):
             total_columns += self._row_lengths[row_offset]
             row_offset += 1
         return self._starting_row + row_offset
@@ -2026,7 +2027,8 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         matched = match(r'\s*\w+(?<!\breturn|\bdelete)\s+(?P<pointer_operator>\*|\&)\w+', line)
         if matched:
             error(line_number, 'whitespace/declaration', 3,
-                  'Declaration has space between type name and %s in %s' % (matched.group('pointer_operator'), matched.group(0).strip()))
+                  'Declaration has space between type name and %s in %s' % (
+                      matched.group('pointer_operator'), matched.group(0).strip()))
 
     elif file_extension == 'c':
         # C Pointer declaration should have the * beside the variable not the type name.
@@ -2290,7 +2292,8 @@ def check_ctype_functions(clean_lines, line_number, file_state, error):
     line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     ctype_function_search = search(
-        r'\b(?P<ctype_function>(isalnum|isalpha|isascii|isblank|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit|toascii|tolower|toupper))\s*\(', line)
+        (r'\b(?P<ctype_function>(isalnum|isalpha|isascii|isblank|iscntrl|isdigit|isgraph|'
+         r'islower|isprint|ispunct|isspace|isupper|isxdigit|toascii|tolower|toupper))\s*\('), line)
     if not ctype_function_search:
         return
 

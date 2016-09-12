@@ -96,7 +96,8 @@ class LinuxPortTest(port_testcase.PortTestCase):
 
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell'))
-        self.assertTrue(self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))._path_to_driver().endswith('OtherDriver'))
+        port = self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))
+        self.assertTrue(port._path_to_driver().endswith('OtherDriver'))  # pylint: disable=protected-access
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')

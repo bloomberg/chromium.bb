@@ -102,6 +102,7 @@ class BaseTestCase(unittest.TestCase):
                 }
             }))
 
+
 class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
 
@@ -316,8 +317,9 @@ class TestRebaselineTest(BaseTestCase):
     def test_rebaseline_reftest(self):
         self._write("userscripts/another-test.html", "test data")
         self._write("userscripts/another-test-expected.html", "generic result")
-        OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options(suffixes='png')],
-                                       expected_logs="Cannot rebaseline image result for reftest: userscripts/another-test.html\n")
+        OutputCapture().assert_outputs(
+            self, self.command._rebaseline_test_and_update_expectations, args=[self.options(suffixes='png')],
+            expected_logs="Cannot rebaseline image result for reftest: userscripts/another-test.html\n")
         self.assertDictEqual(self.command._scm_changes, {'add': [], 'remove-lines': [], "delete": []})
 
     def test_rebaseline_test_and_print_scm_changes(self):
@@ -649,7 +651,6 @@ class TestRebaseline(BaseTestCase):
                      '--builder', 'MOCK Win7', '--test', 'userscripts/second-test.html', '--verbose']
                 ]
             ])
-
 
 
 class TestRebaselineExpectations(BaseTestCase):

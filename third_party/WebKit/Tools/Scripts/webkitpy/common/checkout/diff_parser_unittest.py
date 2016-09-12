@@ -105,7 +105,8 @@ class DiffParserTest(unittest.TestCase):
         self.assertEqual(diff_parser.get_diff_converter(revision_lines + svn_diff_lines), diff_parser.svn_diff_to_svn_diff)
 
         git_diff_lines = [
-            "diff --git a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
+            ("diff --git a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py "
+             "b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n"),
             "index 3c5b45b..0197ead 100644\n",
             "--- a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "+++ b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",

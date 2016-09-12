@@ -47,7 +47,8 @@ def platform_options(use_globs=False):
                              help=('Alias for --platform=chromium*' if use_globs else 'Alias for --platform=chromium')),
 
         optparse.make_option('--platform', action='store',
-                             help=('Glob-style list of platform/ports to use (e.g., "mac*")' if use_globs else 'Platform to use (e.g., "mac-lion")')),
+                             help=('Glob-style list of platform/ports to use (e.g., "mac*")'
+                                   if use_globs else 'Platform to use (e.g., "mac-lion")')),
     ]
 
 

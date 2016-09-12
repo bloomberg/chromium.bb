@@ -294,7 +294,8 @@ class TestConfigurationConverter(object):
         macro_keys = set(self._configuration_macros.keys())
 
         # 5) Collapsing macros may have created combinations the can now be abbreviated.
-        #   (win7, release), (linux, x86, release), (linux, x86_64, release) --> (win7, release), (linux, release) --> (win7, linux, release)
+        #   (win7, release), (linux, x86, release), (linux, x86_64, release)
+        #   --> (win7, release), (linux, release) --> (win7, linux, release)
         while try_abbreviating([self._collapsing_sets_by_category['version'] | macro_keys]):
             pass
 

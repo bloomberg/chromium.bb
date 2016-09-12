@@ -32,6 +32,7 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.w3c.test_parser import TestParser
 
+
 class TestParserTest(unittest.TestCase):
 
     def test_analyze_test_reftest_one_match(self):

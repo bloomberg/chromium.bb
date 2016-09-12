@@ -12,7 +12,25 @@ testdata_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'testdata')
 _FILE = os.path.join(testdata_path, 'test_filepath.txt')
 _KEY_SET = set(['Operations', 'Name', 'FilePath', 'Inherit', 'Consts', 'ExtAttributes', 'Attributes'])
-_PARTIAL = {'Node': {'Operations': [], 'Name': 'Node', 'FilePath': 'Source/core/timing/WorkerGlobalScopePerformance.idl', 'Inherit': [], 'Consts': [], 'ExtAttributes': [], 'Attributes': [{'Static': False, 'Readonly': True, 'Type': 'WorkerPerformance', 'Name': 'performance', 'ExtAttributes': []}]}}
+_PARTIAL = {
+    'Node': {
+        'Operations': [],
+        'Name': 'Node',
+        'FilePath': 'Source/core/timing/WorkerGlobalScopePerformance.idl',
+        'Inherit': [],
+        'Consts': [],
+        'ExtAttributes': [],
+        'Attributes': [
+            {
+                'Static': False,
+                'Readonly': True,
+                'Type': 'WorkerPerformance',
+                'Name': 'performance',
+                'ExtAttributes': []
+            }
+        ]
+    }
+}
 
 
 class TestFunctions(unittest.TestCase):
@@ -105,8 +123,13 @@ class TestFunctions(unittest.TestCase):
 
     def test_merge_partial_dicts(self):
         key_name = self.definition.GetName()
-        merged = collect_idls_into_json.merge_partial_dicts({key_name: collect_idls_into_json.interface_node_to_dict(self.definition)}, _PARTIAL)[key_name]['Partial_FilePaths']
-        expected = ['Source/core/timing/WorkerGlobalScopePerformance.idl', 'Source/core/timing/WorkerGlobalScopePerformance.idl', 'Source/core/timing/WorkerGlobalScopePerformance.idl']
+        merged = collect_idls_into_json.merge_partial_dicts(
+            {key_name: collect_idls_into_json.interface_node_to_dict(self.definition)}, _PARTIAL)[key_name]['Partial_FilePaths']
+        expected = [
+            'Source/core/timing/WorkerGlobalScopePerformance.idl',
+            'Source/core/timing/WorkerGlobalScopePerformance.idl',
+            'Source/core/timing/WorkerGlobalScopePerformance.idl',
+        ]
         self.assertEqual(merged, expected)
 
 

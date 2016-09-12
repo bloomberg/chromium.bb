@@ -257,8 +257,10 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
 """, is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError as e:
-            warnings = """expectations:1 A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsrebaseline.html
-expectations:3 A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html"""
+            warnings = ('expectations:1 A reftest without text expectation cannot be marked as '
+                        'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsrebaseline.html\n'
+                        'expectations:3 A reftest without text expectation cannot be marked as '
+                        'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html')
             self.assertEqual(str(e), warnings)
 
     def test_parse_warning(self):
@@ -289,15 +291,21 @@ expectations:3 A reftest without text expectation cannot be marked as NeedsRebas
 
     def test_error_on_different_platform(self):
         # parse_exp uses a Windows port. Assert errors on Mac show up in lint mode.
-        self.assertRaises(ParseError, self.parse_exp,
-                          'Bug(test) [ Mac ] failures/expected/text.html [ Failure ]\nBug(test) [ Mac ] failures/expected/text.html [ Failure ]',
-                          is_lint_mode=True)
+        self.assertRaises(
+            ParseError,
+            self.parse_exp,
+            ('Bug(test) [ Mac ] failures/expected/text.html [ Failure ]\n'
+             'Bug(test) [ Mac ] failures/expected/text.html [ Failure ]'),
+            is_lint_mode=True)
 
     def test_error_on_different_build_type(self):
         # parse_exp uses a Release port. Assert errors on DEBUG show up in lint mode.
-        self.assertRaises(ParseError, self.parse_exp,
-                          'Bug(test) [ Debug ] failures/expected/text.html [ Failure ]\nBug(test) [ Debug ] failures/expected/text.html [ Failure ]',
-                          is_lint_mode=True)
+        self.assertRaises(
+            ParseError,
+            self.parse_exp,
+            ('Bug(test) [ Debug ] failures/expected/text.html [ Failure ]\n'
+             'Bug(test) [ Debug ] failures/expected/text.html [ Failure ]'),
+            is_lint_mode=True)
 
     def test_overrides(self):
         self.parse_exp("Bug(exp) failures/expected/text.html [ Failure ]",
@@ -489,14 +497,21 @@ class ExpectationSyntaxTests(Base):
                                  'Only SLOW expectations are allowed in SlowTests'], filename='SlowTests')
 
     def test_wontfix(self):
-        self.assert_tokenize_exp('foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
-                                 'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
-        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
-                                 'A test marked Skip or WontFix must not have other expectations.', 'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
-        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
-                                 'A test marked Skip or WontFix must not have other expectations.', 'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
-        self.assert_tokenize_exp('foo.html [ WontFix Timeout ]', specifiers=[], expectations=['WONTFIX', 'TIMEOUT'], warnings=[
-                                 'A test marked Skip or WontFix must not have other expectations.', 'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
+        self.assert_tokenize_exp(
+            'foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
+                'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
+        self.assert_tokenize_exp(
+            'foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
+                'A test marked Skip or WontFix must not have other expectations.',
+                'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
+        self.assert_tokenize_exp(
+            'foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=[
+                'A test marked Skip or WontFix must not have other expectations.',
+                'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
+        self.assert_tokenize_exp(
+            'foo.html [ WontFix Timeout ]', specifiers=[], expectations=['WONTFIX', 'TIMEOUT'], warnings=[
+                'A test marked Skip or WontFix must not have other expectations.',
+                'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
 
     def test_blank_line(self):
         self.assert_tokenize_exp('', name=None)
@@ -618,7 +633,8 @@ class RemoveConfigurationsTest(Base):
         test_port.test_isfile = lambda test: True
 
         test_config = test_port.test_configuration()
-        test_port.expectations_dict = lambda: {"expectations": """Bug(x) [ Linux Win Release ] failures/expected/foo.html [ Failure ]
+        test_port.expectations_dict = lambda: {
+            "expectations": """Bug(x) [ Linux Win Release ] failures/expected/foo.html [ Failure ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port, self.get_basic_tests())

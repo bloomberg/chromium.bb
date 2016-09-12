@@ -226,7 +226,8 @@ class DepsUpdater(object):
             return False
         return True
 
-    def is_baseline(self, fs, dirname, basename):  # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
+    # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
+    def is_baseline(self, fs, dirname, basename):
         return basename.endswith('-expected.txt')
 
     def is_not_baseline(self, fs, dirname, basename):

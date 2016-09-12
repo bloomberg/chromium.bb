@@ -224,8 +224,11 @@ CONTENT OF TEST
  </body>
  </html>
  """
-        test_reference_support_info = {'reference_relpath': '../', 'files': [
-            '../../some-script.js', '../../../some-style.css', '../../../../some-image.jpg'], 'elements': ['script', 'style', 'img']}
+        test_reference_support_info = {
+            'reference_relpath': '../',
+            'files': ['../../some-script.js', '../../../some-style.css', '../../../../some-image.jpg'],
+            'elements': ['script', 'style', 'img']
+        }
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, test_reference_support_info)
 
         oc = OutputCapture()

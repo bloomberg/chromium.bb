@@ -123,8 +123,8 @@ class MockDRTTest(unittest.TestCase):
         host = host or MockSystemHost()
         test.add_unit_tests_to_mock_filesystem(host.filesystem)
         port = PortFactory(host).get(port_name)
-        drt_input, drt_output = self.make_input_output(port, test_name,
-                                                       pixel_tests, expected_checksum, drt_output, drt_input=None, expected_text=expected_text)
+        drt_input, drt_output = self.make_input_output(
+            port, test_name, pixel_tests, expected_checksum, drt_output, drt_input=None, expected_text=expected_text)
 
         args = ['--run-layout-test', '--platform', port_name, '-']
         stdin = io.BytesIO(drt_input)

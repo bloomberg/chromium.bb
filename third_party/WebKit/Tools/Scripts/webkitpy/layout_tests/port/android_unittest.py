@@ -204,8 +204,12 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
         self._mock_executive = MockExecutive2(run_command_fn=self._mock_adb.run_command)
 
         self._port = android.AndroidPort(MockSystemHost(executive=self._mock_executive), 'android')
-        self._driver = android.ChromiumAndroidDriver(self._port, worker_number=0,
-                                                     pixel_tests=True, driver_details=android.ContentShellDriverDetails(), android_devices=self._port._devices)
+        self._driver = android.ChromiumAndroidDriver(
+            self._port,
+            worker_number=0,
+            pixel_tests=True,
+            driver_details=android.ContentShellDriverDetails(),
+            android_devices=self._port._devices)  # pylint: disable=protected-access
 
     # The cmd_line() method in the Android port is used for starting a shell, not the test runner.
     def test_cmd_line(self):
@@ -262,8 +266,12 @@ class ChromiumAndroidDriverTombstoneTest(unittest.TestCase):
         self._mock_executive = MockExecutive2(run_command_fn=self._mock_adb.run_command)
 
         self._port = android.AndroidPort(MockSystemHost(executive=self._mock_executive), 'android')
-        self._driver = android.ChromiumAndroidDriver(self._port, worker_number=0,
-                                                     pixel_tests=True, driver_details=android.ContentShellDriverDetails(), android_devices=self._port._devices)
+        self._driver = android.ChromiumAndroidDriver(
+            self._port,
+            worker_number=0,
+            pixel_tests=True,
+            driver_details=android.ContentShellDriverDetails(),
+            android_devices=self._port._devices)  # pylint: disable=protected-access
 
         self._errors = []
         self._driver._log_error = lambda msg: self._errors.append(msg)

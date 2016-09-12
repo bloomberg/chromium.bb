@@ -98,7 +98,8 @@ class ReflectionHandlerTest(unittest.TestCase):
         self.assert_handler_response(["/some.html"], set(["some.html"]), set(), set())
 
     def test_svn_log_non_ascii(self):
-        xmlChangelog = u'<?xml version="1.0"?>\n<log>\n<logentry revision="1">\n<msg>Patch from John Do\xe9.</msg>\n</logentry>\n</log>'
+        xml_change_log = (u'<?xml version="1.0"?>\n<log>\n<logentry revision="1">\n'
+                          u'<msg>Patch from John Do\xe9.</msg>\n</logentry>\n</log>')
         handler = TestReflectionHandlerServeXML()
-        handler.serve_xml(xmlChangelog)
-        self.assertEqual(handler.wfile.data, xmlChangelog.encode('utf-8'))
+        handler.serve_xml(xml_change_log)
+        self.assertEqual(handler.wfile.data, xml_change_log.encode('utf-8'))

@@ -301,7 +301,8 @@ def operation_node_to_dict(operation_node):
     """
     return {
         _NAME: get_operation_name(operation_node),
-        _ARGUMENTS: [argument_node_to_dict(argument) for argument in get_argument_node_list(operation_node) if argument_node_to_dict(argument)],
+        _ARGUMENTS: [argument_node_to_dict(argument) for argument in get_argument_node_list(operation_node)
+                     if argument_node_to_dict(argument)],
         _TYPE: get_operation_type(operation_node),
         _EXTATTRIBUTES: [extattr_node_to_dict(extattr) for extattr in get_extattribute_node_list(operation_node)],
         _STATIC: operation_node.GetProperty(_PROP_STATIC, default=False),

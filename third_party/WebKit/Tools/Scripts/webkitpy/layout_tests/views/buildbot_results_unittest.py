@@ -99,9 +99,14 @@ class BuildBotPrinterTests(unittest.TestCase):
             port, expected=False, passing=False, flaky=False, fail_on_retry=True)
         printer.print_unexpected_results(summary)
         output = out.getvalue()
-        self.assertIn('Regressions: Unexpected crashes (1)\n  failures/expected/audio.html [ Crash Leak Leak Leak ]', output)
         self.assertIn(
-            'Regressions: Unexpected text-only failures (1)\n  failures/expected/timeout.html [ Failure Failure Crash Leak ]', output)
+            'Regressions: Unexpected crashes (1)\n'
+            '  failures/expected/audio.html [ Crash Leak Leak Leak ]',
+            output)
+        self.assertIn(
+            'Regressions: Unexpected text-only failures (1)\n'
+            '  failures/expected/timeout.html [ Failure Failure Crash Leak ]',
+            output)
 
     def test_print_results(self):
         port = MockHost().port_factory.get('test')

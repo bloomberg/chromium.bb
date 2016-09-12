@@ -403,7 +403,9 @@ class AndroidDevices(object):
 
     def _is_device_screen_on(self, commands):
         power_status = commands.run(['shell', 'dumpsys', 'power'])
-        return 'mScreenOn=true' in power_status or 'mScreenOn=SCREEN_ON_BIT' in power_status or 'Display Power: state=ON' in power_status
+        return ('mScreenOn=true' in power_status or
+                'mScreenOn=SCREEN_ON_BIT' in power_status or
+                'Display Power: state=ON' in power_status)
 
 
 class AndroidPort(base.Port):
@@ -447,8 +449,8 @@ class AndroidPort(base.Port):
         self._devices = AndroidDevices(default_devices, self._debug_logging)
 
         # Tell AndroidCommands where to search for the "adb" command.
-        AndroidCommands.set_adb_command_path_options(['adb',
-                                                      self.path_from_chromium_base('third_party', 'android_tools', 'sdk', 'platform-tools', 'adb')])
+        AndroidCommands.set_adb_command_path_options(
+            ['adb', self.path_from_chromium_base('third_party', 'android_tools', 'sdk', 'platform-tools', 'adb')])
 
         prepared_devices = self.get_option('prepared_devices', [])
         for serial in prepared_devices:
@@ -1144,7 +1146,8 @@ class ChromiumAndroidDriver(driver.Driver):
 
         self._log_debug('Starting forwarder')
         self._forwarder_process = self._port._server_process_constructor(
-            self._port, 'Forwarder', self._android_commands.adb_command() + ['shell', '%s -no-spawn-daemon %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
+            self._port, 'Forwarder', self._android_commands.adb_command() +
+            ['shell', '%s -no-spawn-daemon %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
         self._forwarder_process.start()
 
         deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
@@ -1162,8 +1165,10 @@ class ChromiumAndroidDriver(driver.Driver):
             # command line during the run.
             self._android_commands.run(['shell', 'mv', cmd_line_file_path, original_cmd_line_file_path])
 
-        self._android_commands.run(['shell', 'echo'] + self._android_driver_cmd_line(pixel_tests,
-                                                                                     per_test_args) + ['>', self._driver_details.command_line_file()])
+        self._android_commands.run(
+            ['shell', 'echo'] +
+            self._android_driver_cmd_line(pixel_tests, per_test_args) +
+            ['>', self._driver_details.command_line_file()])
         self._created_cmd_line = True
 
         self._android_commands.run(['shell', 'rm', '-rf', self._driver_details.device_crash_dumps_directory()])
@@ -1214,8 +1219,10 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # Start a thread to kill the pipe reading/writing processes on deadlock of the fifos during startup.
         normal_startup_event = threading.Event()
-        threading.Thread(name='DeadlockDetector', target=deadlock_detector,
-                         args=([self._server_process, self._read_stdout_process, self._read_stderr_process], normal_startup_event)).start()
+        threading.Thread(
+            name='DeadlockDetector',
+            target=deadlock_detector,
+            args=([self._server_process, self._read_stdout_process, self._read_stderr_process], normal_startup_event)).start()
 
         # The test driver might crash during startup or when the deadlock detector hits
         # a deadlock and kills the fifo reading/writing processes.

@@ -65,11 +65,14 @@ class PrintExpectations(Command):
             make_option('--all', action='store_true', default=False,
                         help='display the expectations for *all* tests'),
             make_option('-x', '--exclude-keyword', action='append', default=[],
-                        help='limit to tests not matching the given keyword (for example, "skip", "slow", or "crash". May specify multiple times'),
+                        help='limit to tests not matching the given keyword (for example, '
+                             '"skip", "slow", or "crash". May specify multiple times'),
             make_option('-i', '--include-keyword', action='append', default=[],
-                        help='limit to tests with the given keyword (for example, "skip", "slow", or "crash". May specify multiple times'),
+                        help='limit to tests with the given keyword (for example, "skip", '
+                             '"slow", or "crash". May specify multiple times'),
             make_option('--csv', action='store_true', default=False,
-                        help='Print a CSV-style report that includes the port name, bugs, specifiers, tests, and expectations'),
+                        help='Print a CSV-style report that includes the port name, bugs, '
+                             'specifiers, tests, and expectations'),
             make_option('-f', '--full', action='store_true', default=False,
                         help='Print a full TestExpectations-style line for every match'),
             make_option('--paths', action='store_true', default=False,
@@ -154,7 +157,8 @@ class PrintBaselines(Command):
             make_option('--all', action='store_true', default=False,
                         help='display the baselines for *all* tests'),
             make_option('--csv', action='store_true', default=False,
-                        help='Print a CSV-style report that includes the port name, test_name, test platform, baseline type, baseline location, and baseline platform'),
+                        help='Print a CSV-style report that includes the port name, test_name, '
+                             'test platform, baseline type, baseline location, and baseline platform'),
             make_option('--include-virtual-tests', action='store_true',
                         help='Include virtual tests'),
         ] + platform_options(use_globs=True)
