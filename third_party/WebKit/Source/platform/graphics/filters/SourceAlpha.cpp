@@ -41,7 +41,7 @@ SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
     inputEffects().append(sourceEffect);
 }
 
-FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect)
+FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect) const
 {
     return inputEffect(0)->determineAbsolutePaintRect(requestedRect);
 }

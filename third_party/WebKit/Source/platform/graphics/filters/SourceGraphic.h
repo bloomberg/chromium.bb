@@ -32,7 +32,7 @@ public:
     static SourceGraphic* create(Filter*);
     ~SourceGraphic() override;
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
 
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
 

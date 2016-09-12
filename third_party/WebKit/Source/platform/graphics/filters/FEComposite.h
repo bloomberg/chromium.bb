@@ -58,7 +58,7 @@ public:
     float k4() const;
     bool setK4(float);
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 

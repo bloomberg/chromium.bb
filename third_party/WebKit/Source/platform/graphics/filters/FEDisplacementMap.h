@@ -52,7 +52,7 @@ public:
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
 
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);

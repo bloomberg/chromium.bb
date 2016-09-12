@@ -38,7 +38,7 @@ public:
     static FEImage* createWithImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
     static FEImage* createWithIRIReference(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
 
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeImage; }
 

@@ -32,7 +32,7 @@ public:
     static FEGaussianBlur* create(Filter*, float, float);
 
     FloatRect mapRect(const FloatRect&, bool forward = true) const final;
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
     static IntSize calculateKernelSize(const Filter*, const FloatPoint& std);
     static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
 

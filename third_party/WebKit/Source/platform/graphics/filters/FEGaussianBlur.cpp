@@ -87,7 +87,7 @@ FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool) const
     return result;
 }
 
-FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
 {
     FloatRect requestedRect = originalRequestedRect;
     if (clipsToBounds())
@@ -97,13 +97,11 @@ FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRe
     FloatRect inputRect = input->determineAbsolutePaintRect(mapRect(requestedRect, false));
     FloatRect outputRect = mapRect(inputRect, true);
     outputRect.intersect(requestedRect);
-    addAbsolutePaintRect(outputRect);
 
     // Blur needs space for both input and output pixels in the paint area.
     // Input is also clipped to subregion.
     if (clipsToBounds())
         inputRect.intersect(absoluteBounds());
-    addAbsolutePaintRect(inputRect);
     return outputRect;
 }
 

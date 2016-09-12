@@ -65,8 +65,6 @@ public:
         return m_imageFilters[0] || m_imageFilters[1] || m_imageFilters[2] || m_imageFilters[3];
     }
 
-    IntRect absolutePaintRect() const { return m_absolutePaintRect; }
-
     // Clipped primitive subregion in the coordinate space of the target.
     FloatRect absoluteBounds() const;
 
@@ -106,8 +104,10 @@ public:
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
 
-    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
-    virtual bool affectsTransparentPixels() { return false; }
+    // Compute the "paint rect" (which destination pixels will be affected) for
+    // the given rect. In the coordinate space of the target.
+    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect) const;
+    virtual bool affectsTransparentPixels() const { return false; }
 
     // Return false if the filter will only operate correctly on valid RGBA values, with
     // alpha in [0,255] and each color component in [0, alpha].
@@ -130,12 +130,8 @@ protected:
 
     SkImageFilter::CropRect getCropRect() const;
 
-    void addAbsolutePaintRect(const FloatRect& absolutePaintRect);
-
 private:
     FilterEffectVector m_inputEffects;
-
-    IntRect m_absolutePaintRect;
 
     Member<Filter> m_filter;
 

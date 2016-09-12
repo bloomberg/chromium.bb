@@ -153,7 +153,7 @@ static sk_sp<SkColorFilter> createColorFilter(ColorMatrixType type, const Vector
     return SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
 }
 
-bool FEColorMatrix::affectsTransparentPixels()
+bool FEColorMatrix::affectsTransparentPixels() const
 {
     // Because the input pixels are premultiplied, the only way clear pixels can be
     // painted is if the additive component for the alpha is not 0.

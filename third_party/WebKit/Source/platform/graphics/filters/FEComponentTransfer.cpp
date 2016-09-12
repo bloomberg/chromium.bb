@@ -106,7 +106,7 @@ static void gamma(unsigned char* values, const ComponentTransferFunction& transf
     }
 }
 
-bool FEComponentTransfer::affectsTransparentPixels()
+bool FEComponentTransfer::affectsTransparentPixels() const
 {
     double intercept = 0;
     switch (m_alphaFunc.type) {

@@ -113,16 +113,11 @@ bool FEComposite::setK4(float k4)
     return true;
 }
 
-FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
 {
     FloatRect requestedRect = originalRequestedRect;
     if (clipsToBounds())
         requestedRect.intersect(absoluteBounds());
-
-    // We may be called multiple times if result is used more than once. Return
-    // quickly if nothing new is required.
-    if (absolutePaintRect().contains(enclosingIntRect(requestedRect)))
-        return requestedRect;
 
     // No mapPaintRect required for FEComposite.
     FloatRect input1Rect = inputEffect(1)->determineAbsolutePaintRect(requestedRect);
@@ -166,7 +161,6 @@ FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalReque
     }
 
     affectedRect.intersect(requestedRect);
-    addAbsolutePaintRect(affectedRect);
     return affectedRect;
 }
 

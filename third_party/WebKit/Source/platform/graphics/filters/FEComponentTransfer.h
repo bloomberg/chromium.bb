@@ -73,7 +73,7 @@ private:
 
     sk_sp<SkImageFilter> createImageFilter() override;
 
-    bool affectsTransparentPixels() override;
+    bool affectsTransparentPixels() const override;
 
     void getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256]);
 

@@ -40,11 +40,9 @@ SourceGraphic* SourceGraphic::create(Filter* filter)
     return new SourceGraphic(filter);
 }
 
-FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect)
+FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect) const
 {
-    FloatRect srcRect = intersection(m_sourceRect, requestedRect);
-    addAbsolutePaintRect(srcRect);
-    return srcRect;
+    return intersection(m_sourceRect, requestedRect);
 }
 
 void SourceGraphic::setSourceRect(const IntRect& sourceRect)

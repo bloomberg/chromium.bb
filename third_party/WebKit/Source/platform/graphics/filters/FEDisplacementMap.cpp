@@ -156,21 +156,16 @@ TextStream& FEDisplacementMap::externalRepresentation(TextStream& ts, int indent
     return ts;
 }
 
-FloatRect FEDisplacementMap::determineAbsolutePaintRect(const FloatRect& requestedRect)
+FloatRect FEDisplacementMap::determineAbsolutePaintRect(const FloatRect& requestedRect) const
 {
     FloatRect rect = requestedRect;
     if (clipsToBounds())
         rect.intersect(absoluteBounds());
 
-    if (absolutePaintRect().contains(enclosingIntRect(rect)))
-        return rect;
-
     rect = mapPaintRect(rect, false);
     rect = inputEffect(0)->determineAbsolutePaintRect(rect);
     rect = mapPaintRect(rect, true);
     rect.intersect(requestedRect);
-
-    addAbsolutePaintRect(rect);
     return rect;
 }
 

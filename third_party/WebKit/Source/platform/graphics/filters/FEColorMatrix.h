@@ -56,7 +56,7 @@ private:
 
     sk_sp<SkImageFilter> createImageFilter() override;
 
-    bool affectsTransparentPixels() override;
+    bool affectsTransparentPixels() const override;
 
     ColorMatrixType m_type;
 

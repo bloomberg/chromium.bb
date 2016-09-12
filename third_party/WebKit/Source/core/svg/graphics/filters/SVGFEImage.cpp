@@ -90,7 +90,7 @@ AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& de
     return transform;
 }
 
-FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
 {
     LayoutObject* layoutObject = referencedLayoutObject();
     if (!m_image && !layoutObject)
@@ -124,7 +124,6 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
     }
 
     destRect.intersect(requestedRect);
-    addAbsolutePaintRect(destRect);
     return destRect;
 }
 

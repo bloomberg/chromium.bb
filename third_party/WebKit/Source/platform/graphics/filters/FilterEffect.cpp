@@ -56,17 +56,12 @@ FloatRect FilterEffect::absoluteBounds() const
     return getFilter()->mapLocalRectToAbsoluteRect(computedBounds);
 }
 
-FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
 {
     FloatRect requestedRect = originalRequestedRect;
     // Filters in SVG clip to primitive subregion, while CSS doesn't.
     if (clipsToBounds())
         requestedRect.intersect(absoluteBounds());
-
-    // We may be called multiple times if result is used more than once. Return
-    // quickly if if nothing new is required.
-    if (absolutePaintRect().contains(enclosingIntRect(requestedRect)))
-        return requestedRect;
 
     FloatRect inputRect = mapPaintRect(requestedRect, false);
     FloatRect inputUnion;
@@ -82,8 +77,6 @@ FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequ
         // Rect may have inflated. Re-intersect with request.
         inputUnion.intersect(requestedRect);
     }
-
-    addAbsolutePaintRect(inputUnion);
     return inputUnion;
 }
 
@@ -105,21 +98,10 @@ FilterEffect* FilterEffect::inputEffect(unsigned number) const
     return m_inputEffects.at(number).get();
 }
 
-void FilterEffect::addAbsolutePaintRect(const FloatRect& paintRect)
-{
-    IntRect intPaintRect(enclosingIntRect(paintRect));
-    if (m_absolutePaintRect.contains(intPaintRect))
-        return;
-    intPaintRect.unite(m_absolutePaintRect);
-    m_absolutePaintRect = intPaintRect;
-}
-
 void FilterEffect::clearResult()
 {
-    m_absolutePaintRect = IntRect();
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
         m_imageFilters[i] = nullptr;
-    }
 }
 
 Color FilterEffect::adaptColorToOperatingColorSpace(const Color& deviceColor)
