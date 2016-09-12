@@ -5,21 +5,28 @@
 // Some pointless code that will become a DLL with some exports and relocs.
 
 #include <windows.h>
+#include <intrin.h>
 
 namespace {
 
-void (*g_somestate)(int) = nullptr;
-volatile int g_somevalue = 0;
+void (*volatile g_somestate)() = nullptr;
 
 }  // namespace
 
-extern "C"
-void DummyExport(int foo) {
-  // The test will patch the code of this function. Do a volatile store to a
-  // global variable to defeat LLVM's dead store elimination and the linker's
-  // ICF. Otherwise the code patch affects code run during DLL unloading.
+extern "C" void DummyExport() {
+  // Emit 256 bytes of nops because the test modifies up to 256 bytes of code.
+  // Use nops instead of volatile stores to avoid relocation entries in this
+  // region. One of the tests measures the number of modified bytes between
+  // relocations, and extra relocations will cause the test to fail.
   // http://crbug.com/636157
-  g_somevalue = foo;
+  // http://crbug.com/645544
+#define T4(x) x; x; x; x
+#define NOP4 T4(__nop());
+#define NOP16 T4(NOP4);
+#define NOP64 T4(NOP16);
+#define NOP256 T4(NOP64);
+  NOP256;
+  g_somestate = nullptr;
 }
 
 extern "C"
