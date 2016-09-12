@@ -137,6 +137,7 @@ if (is_linux) {
     # "data_deps". Otherwise, GN assumes that the executable (and
     # everything it requires) is a build-time dependency only.
     data_deps = [
+      ":blimp_browsertests",
       ":blimp_unittests",
       "//base:base_unittests",
       "//content/test:content_unittests",
