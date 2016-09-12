@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/website_settings/permission_prompt_impl.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/controls/image_view.h"
 
 // The Views browser implementation of PermissionPromptImpl's
 // anchor methods. Views browsers have a native View to anchor the bubble to,
@@ -26,7 +27,9 @@ views::View* PermissionPromptImpl::GetAnchorView() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
   if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return browser_view->GetLocationBarView()->location_icon_view();
+    return browser_view->GetLocationBarView()
+        ->location_icon_view()
+        ->GetImageView();
 
   // Fall back to GetAnchorPoint().
   return nullptr;
