@@ -6321,4 +6321,7 @@ All users must sign out to continue.
   <message name="IDS_FLAGS_ENABLE_EHV_INPUT_DESCRIPTION" desc="Description of the about: flag enabling emoji, handwriting and voice input on opt-in IME menu.">
     Enable access to emoji, handwriting and voice input form opt-in IME menu.
   </message>
+  <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
+    Done
+  </message>
 </grit-part>

@@ -10,10 +10,12 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/system/version_loader.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -31,7 +33,8 @@ const int kDefaultHeight = 420;
 constexpr char kSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
 constexpr char kGooglerSiteID[] = "z56p2hjy7pegxh3gmmur4qlwha";
 
-constexpr char kReplacementToken[] = "$SCRIPT_SRC";
+constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
+constexpr char kDoneButtonLabelReplacementToken[] = "$DONE_BUTTON_LABEL";
 // Base URL to fetch the google consumer survey script.
 constexpr char kBaseFormatUrl[] =
     "https://www.google.com/insights/consumersurveys/"
@@ -55,10 +58,15 @@ std::string LoadLocalHtmlAsString(std::string site_id,
   ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_HATS_HTML)
       .CopyToString(&html_data);
-  size_t pos = html_data.find(kReplacementToken);
-  html_data.replace(pos, strlen(kReplacementToken),
+
+  size_t pos = html_data.find(kScriptSrcReplacementToken);
+  html_data.replace(pos, strlen(kScriptSrcReplacementToken),
                     base::StringPrintf(kBaseFormatUrl, site_id.c_str(),
                                        site_context.c_str()));
+
+  pos = html_data.find(kDoneButtonLabelReplacementToken);
+  html_data.replace(pos, strlen(kDoneButtonLabelReplacementToken),
+                    l10n_util::GetStringUTF8(IDS_HATS_DONE_BUTTON_LABEL));
   return html_data;
 }
 
