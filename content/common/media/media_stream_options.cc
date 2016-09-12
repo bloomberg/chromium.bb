@@ -39,21 +39,32 @@ StreamDeviceInfo::StreamDeviceInfo()
 
 StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
                                    const std::string& name_param,
+                                   const std::string& device_param,
+                                   const std::string& group_param)
+    : device(service_param, device_param, name_param, group_param),
+      session_id(kNoId) {}
+
+StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
+                                   const std::string& name_param,
                                    const std::string& device_param)
-    : device(service_param, device_param, name_param),
-      session_id(kNoId) {
+    : StreamDeviceInfo(service_param, name_param, device_param, std::string()) {
 }
 
 StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
                                    const std::string& name_param,
                                    const std::string& device_param,
+                                   const std::string& group_param,
                                    int sample_rate,
                                    int channel_layout,
                                    int frames_per_buffer)
-    : device(service_param, device_param, name_param, sample_rate,
-             channel_layout, frames_per_buffer),
-      session_id(kNoId) {
-}
+    : device(service_param,
+             device_param,
+             name_param,
+             group_param,
+             sample_rate,
+             channel_layout,
+             frames_per_buffer),
+      session_id(kNoId) {}
 
 // static
 bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,

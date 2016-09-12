@@ -177,12 +177,8 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
   for (media::AudioDeviceNames::iterator it = device_names.begin();
        it != device_names.end(); ++it) {
     // Add device information to device vector.
-    devices->push_back(StreamDeviceInfo(
-        stream_type, it->device_name, it->unique_id));
-  }
-  for (StreamDeviceInfo& device_info : *devices) {
-    device_info.device.group_id =
-        audio_manager_->GetGroupIDInput(device_info.device.id);
+    devices->emplace_back(stream_type, it->device_name, it->unique_id,
+                          audio_manager_->GetGroupIDInput(it->unique_id));
   }
 
   // Return the device list through the listener by posting a task on
@@ -201,7 +197,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   DCHECK(IsOnDeviceThread());
 
   StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,
-                       0, 0, 0);
+                       info.device.group_id, 0, 0, 0);
   out.session_id = session_id;
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;

@@ -765,10 +765,8 @@ void MediaStreamManager::AudioOutputDevicesEnumerated(
 
   if (device_enumeration.has_actual_devices) {
     for (const auto& entry : device_enumeration.devices) {
-      StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_OUTPUT, entry.device_name,
-                                   entry.unique_id);
-      device_info.device.group_id = entry.group_id;
-      device_infos.push_back(device_info);
+      device_infos.emplace_back(MEDIA_DEVICE_AUDIO_OUTPUT, entry.device_name,
+                                entry.unique_id, entry.group_id);
     }
   }
 

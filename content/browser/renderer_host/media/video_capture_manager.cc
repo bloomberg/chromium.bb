@@ -978,6 +978,8 @@ void VideoCaptureManager::OnDevicesInfoEnumerated(
                          media::VideoCaptureFormats>>
       descriptors_and_formats;
   for (const auto& it : devices_info_cache_) {
+    // TODO(guidou): Implement group IDs for video capture devices.
+    // http://crbug.com/627793
     devices.emplace_back(stream_type, it.descriptor.GetNameAndModel(),
                          it.descriptor.device_id);
     descriptors_and_formats.emplace_back(it.descriptor, it.supported_formats);

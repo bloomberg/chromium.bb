@@ -70,6 +70,11 @@ struct CONTENT_EXPORT StreamDeviceInfo {
   StreamDeviceInfo(MediaStreamType service_param,
                    const std::string& name_param,
                    const std::string& device_param,
+                   const std::string& group_param);
+  StreamDeviceInfo(MediaStreamType service_param,
+                   const std::string& name_param,
+                   const std::string& device_param,
+                   const std::string& group_param,
                    int sample_rate,
                    int channel_layout,
                    int frames_per_buffer);

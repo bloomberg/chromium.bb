@@ -33,7 +33,7 @@ class MockCDQualityAudioSource : public MediaStreamAudioSource {
         media::AudioParameters::kAudioCDSampleRate / 100));
     MediaStreamAudioSource::SetDeviceInfo(StreamDeviceInfo(
         MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device", "mock_audio_device_id",
-        media::AudioParameters::kAudioCDSampleRate,
+        "mock_group_id", media::AudioParameters::kAudioCDSampleRate,
         media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate / 100));
   }

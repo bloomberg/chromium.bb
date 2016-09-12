@@ -94,18 +94,22 @@ CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
 struct CONTENT_EXPORT MediaStreamDevice {
   MediaStreamDevice();
 
-  MediaStreamDevice(
-      MediaStreamType type,
-      const std::string& id,
-      const std::string& name);
+  MediaStreamDevice(MediaStreamType type,
+                    const std::string& id,
+                    const std::string& name);
 
-  MediaStreamDevice(
-      MediaStreamType type,
-      const std::string& id,
-      const std::string& name,
-      int sample_rate,
-      int channel_layout,
-      int frames_per_buffer);
+  MediaStreamDevice(MediaStreamType type,
+                    const std::string& id,
+                    const std::string& name,
+                    const std::string& group_id);
+
+  MediaStreamDevice(MediaStreamType type,
+                    const std::string& id,
+                    const std::string& name,
+                    const std::string& group_id,
+                    int sample_rate,
+                    int channel_layout,
+                    int frames_per_buffer);
 
   MediaStreamDevice(const MediaStreamDevice& other);
 
