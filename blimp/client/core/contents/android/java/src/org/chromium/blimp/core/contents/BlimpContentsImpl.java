@@ -26,7 +26,7 @@ public class BlimpContentsImpl implements BlimpContents {
     }
 
     // Light blue theme color on Blimp tab.
-    private static final int BLIMP_THEME_COLOR = 0xb3e5fc;
+    private static final int BLIMP_THEME_COLOR = 0xffb3e5fc;
 
     private long mNativeBlimpContentsImplAndroid;
 
