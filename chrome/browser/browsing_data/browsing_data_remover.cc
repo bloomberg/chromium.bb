@@ -519,14 +519,6 @@ void BrowsingDataRemover::RemoveImpl(
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      weak_ptr_factory_.GetWeakPtr()),
           &history_task_tracker_);
-
-#if defined(ENABLE_EXTENSIONS)
-      // The extension activity contains details of which websites extensions
-      // were active on. It therefore indirectly stores details of websites a
-      // user has visited so best clean from here as well.
-      extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(
-          std::set<GURL>());
-#endif
     }
 
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =
@@ -537,10 +529,23 @@ void BrowsingDataRemover::RemoveImpl(
     }
 
 #if defined(ENABLE_EXTENSIONS)
+    // The extension activity log contains details of which websites extensions
+    // were active on. It therefore indirectly stores details of websites a
+    // user has visited so best clean from here as well.
+    // TODO(msramek): Support all backends with filter (crbug.com/589586).
+    extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(
+        std::set<GURL>());
+
     // Clear launch times as they are a form of history.
-    extensions::ExtensionPrefs* extension_prefs =
-        extensions::ExtensionPrefs::Get(profile_);
-    extension_prefs->ClearLastLaunchTimes();
+    // BrowsingDataFilterBuilder currently doesn't support extension origins.
+    // Therefore, clearing history for a small set of origins (WHITELIST) should
+    // never delete any extension launch times, while clearing for almost all
+    // origins (BLACKLIST) should always delete all of extension launch times.
+    if (filter_builder.mode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      extensions::ExtensionPrefs* extension_prefs =
+          extensions::ExtensionPrefs::Get(profile_);
+      extension_prefs->ClearLastLaunchTimes();
+    }
 #endif
 
     // The power consumption history by origin contains details of websites

@@ -75,9 +75,10 @@ class BrowsingDataFilterBuilder {
   // everything.
   static base::Callback<bool(const GURL&)> BuildNoopFilter();
 
- protected:
+  // The mode of the filter.
   Mode mode() const { return mode_; }
 
+ protected:
   // Whether or not any URLs have been added to this builder.
   virtual bool IsEmpty() const = 0;
 
