@@ -59,6 +59,8 @@
 
 namespace blink {
 
+using ExitCode = WorkerThread::ExitCode;
+
 // TODO(nhiroki): Adjust the delay based on UMA.
 const long long kForceTerminationDelayInMs = 2000; // 2 secs
 
@@ -103,8 +105,7 @@ private:
         }
 
         m_workerThread->forciblyTerminateExecution();
-        DCHECK_EQ(WorkerThread::ExitCode::NotTerminated, m_workerThread->m_exitCode);
-        m_workerThread->m_exitCode = WorkerThread::ExitCode::AsyncForciblyTerminated;
+        m_workerThread->setExitCode(lock, ExitCode::AsyncForciblyTerminated);
     }
 
     WorkerThread* m_workerThread;
@@ -398,8 +399,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
                 DCHECK(m_scheduledForceTerminationTask);
                 m_scheduledForceTerminationTask.reset();
                 forciblyTerminateExecution();
-                DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-                m_exitCode = ExitCode::SyncForciblyTerminated;
+                setExitCode(lock, ExitCode::SyncForciblyTerminated);
             }
             return;
         }
@@ -409,36 +409,18 @@ void WorkerThread::terminateInternal(TerminationMode mode)
             // If the worker thread was never initialized, don't start another
             // shutdown, but still wait for the thread to signal when shutdown
             // has completed on initializeOnWorkerThread().
-            DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-            m_exitCode = ExitCode::GracefullyTerminated;
-        } else {
-            // Determine if we should synchronously terminate or schedule to
-            // terminate the worker execution so that the task can be handled
-            // by thread event loop. If script execution weren't forbidden,
-            // a while(1) loop in JS could keep the thread alive forever.
-            //
-            // (1) |m_threadState|: If this is ReadyToShutdown, the worker
-            // thread has already noticed that the thread is about to be
-            // terminated and the worker global scope is already disposed, so we
-            // don't have to explicitly terminate the worker execution.
-            //
-            // (2) |m_runningDebuggerTask|: Terminating during debugger task
-            // may lead to crash due to heavy use of v8 api in debugger. Any
-            // debugger task is guaranteed to finish, so we can wait for the
-            // completion.
-            bool shouldScheduleToTerminateExecution = (m_threadState != ThreadState::ReadyToShutdown) && !m_runningDebuggerTask;
-
-            if (shouldScheduleToTerminateExecution) {
-                if (mode == TerminationMode::Forcible) {
-                    forciblyTerminateExecution();
-                    DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-                    m_exitCode = ExitCode::SyncForciblyTerminated;
-                } else {
-                    DCHECK_EQ(TerminationMode::Graceful, mode);
-                    DCHECK(!m_scheduledForceTerminationTask);
-                    m_scheduledForceTerminationTask = ForceTerminationTask::create(this);
-                    m_scheduledForceTerminationTask->schedule();
-                }
+            setExitCode(lock, ExitCode::GracefullyTerminated);
+        } else if (shouldScheduleToTerminateExecution(lock)) {
+            switch (mode) {
+            case TerminationMode::Forcible:
+                forciblyTerminateExecution();
+                setExitCode(lock, ExitCode::SyncForciblyTerminated);
+                break;
+            case TerminationMode::Graceful:
+                DCHECK(!m_scheduledForceTerminationTask);
+                m_scheduledForceTerminationTask = ForceTerminationTask::create(this);
+                m_scheduledForceTerminationTask->schedule();
+                break;
             }
         }
     }
@@ -450,6 +432,30 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::prepareForShutdownOnWorkerThread, crossThreadUnretained(this)));
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::performShutdownOnWorkerThread, crossThreadUnretained(this)));
+}
+
+bool WorkerThread::shouldScheduleToTerminateExecution(const MutexLocker& lock)
+{
+    DCHECK(isMainThread());
+    DCHECK(isThreadStateMutexLocked(lock));
+
+    switch (m_threadState) {
+    case ThreadState::NotStarted:
+        // Shutdown sequence will surely start during initialization sequence
+        // on the worker thread. Don't have to schedule a termination task.
+        return false;
+    case ThreadState::Running:
+        // Terminating during debugger task may lead to crash due to heavy use
+        // of v8 api in debugger. Any debugger task is guaranteed to finish, so
+        // we can wait for the completion.
+        return !m_runningDebuggerTask;
+    case ThreadState::ReadyToShutdown:
+        // Shutdown sequence will surely start soon. Don't have to schedule a
+        // termination task.
+        return false;
+    }
+    NOTREACHED();
+    return false;
 }
 
 void WorkerThread::forciblyTerminateExecution()
@@ -531,7 +537,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
                 originTrialContext->initializePendingFeatures();
         }
 
-        m_threadState = ThreadState::Running;
+        setThreadState(lock, ThreadState::Running);
     }
 
     if (startMode == PauseWorkerGlobalScopeOnStart) {
@@ -566,9 +572,9 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
         MutexLocker lock(m_threadStateMutex);
         if (m_threadState == ThreadState::ReadyToShutdown)
             return;
-        m_threadState = ThreadState::ReadyToShutdown;
+        setThreadState(lock, ThreadState::ReadyToShutdown);
         if (m_exitCode == ExitCode::NotTerminated)
-            m_exitCode = ExitCode::GracefullyTerminated;
+            setExitCode(lock, ExitCode::GracefullyTerminated);
     }
 
     m_inspectorTaskRunner->kill();
@@ -587,7 +593,7 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
 void WorkerThread::performShutdownOnWorkerThread()
 {
     DCHECK(isCurrentThread());
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     {
         MutexLocker lock(m_threadStateMutex);
         DCHECK(m_requestedToTerminate);
@@ -668,7 +674,43 @@ void WorkerThread::performDebuggerTaskDontWaitOnWorkerThread()
         (*task)();
 }
 
-WorkerThread::ExitCode WorkerThread::getExitCodeForTesting()
+void WorkerThread::setThreadState(const MutexLocker& lock, ThreadState nextThreadState)
+{
+    DCHECK(isThreadStateMutexLocked(lock));
+    switch (nextThreadState) {
+    case ThreadState::NotStarted:
+        NOTREACHED();
+        return;
+    case ThreadState::Running:
+        DCHECK_EQ(ThreadState::NotStarted, m_threadState);
+        m_threadState = nextThreadState;
+        return;
+    case ThreadState::ReadyToShutdown:
+        DCHECK_EQ(ThreadState::Running, m_threadState);
+        m_threadState = nextThreadState;
+        return;
+    }
+}
+
+void WorkerThread::setExitCode(const MutexLocker& lock, ExitCode exitCode)
+{
+    DCHECK(isThreadStateMutexLocked(lock));
+    DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+    m_exitCode = exitCode;
+}
+
+bool WorkerThread::isThreadStateMutexLocked(const MutexLocker& /* unused */)
+{
+#if ENABLE(ASSERT)
+    // Mutex::locked() is available only if ENABLE(ASSERT) is true.
+    return m_threadStateMutex.locked();
+#else
+    // Otherwise, believe the given MutexLocker holds |m_threadStateMutex|.
+    return true;
+#endif
+}
+
+ExitCode WorkerThread::getExitCodeForTesting()
 {
     MutexLocker lock(m_threadStateMutex);
     return m_exitCode;

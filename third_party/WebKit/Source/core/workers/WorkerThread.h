@@ -165,6 +165,7 @@ protected:
 
 private:
     friend class WorkerThreadTest;
+    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, ShouldScheduleToTerminateExecution);
     FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebuggerTaskIsRunning);
     FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerTaskIsRunning);
 
@@ -183,7 +184,25 @@ private:
         Graceful,
     };
 
+    // Represents the state of this worker thread. A caller may need to acquire
+    // a lock |m_threadStateMutex| before accessing this:
+    //   - Only the worker thread can set this with the lock.
+    //   - The worker thread can read this without the lock.
+    //   - The main thread can read this with the lock.
+    enum class ThreadState {
+        NotStarted,
+        Running,
+        ReadyToShutdown,
+    };
+
     void terminateInternal(TerminationMode);
+
+    // Returns true if we should synchronously terminate or schedule to
+    // terminate the worker execution so that a shutdown task can be handled by
+    // the thread event loop. This must be called with |m_threadStateMutex|
+    // acquired.
+    bool shouldScheduleToTerminateExecution(const MutexLocker&);
+
     void forciblyTerminateExecution();
 
     // Returns true if termination or shutdown sequence has started. This is
@@ -199,6 +218,11 @@ private:
     void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void performDebuggerTaskDontWaitOnWorkerThread();
 
+    // These must be called with |m_threadStateMutex| acquired.
+    void setThreadState(const MutexLocker&, ThreadState);
+    void setExitCode(const MutexLocker&, ExitCode);
+    bool isThreadStateMutexLocked(const MutexLocker&);
+
     ExitCode getExitCodeForTesting();
 
     // Accessed only on the main thread.
@@ -207,16 +231,6 @@ private:
     // Set on the main thread and checked on both the main and worker threads.
     bool m_requestedToTerminate = false;
 
-    // Represents the state of this worker thread. A caller may need to acquire
-    // a lock |m_threadStateMutex| before accessing this:
-    //   - Only the worker thread can set this with the lock.
-    //   - The worker thread can read this without the lock.
-    //   - The main thread can read this with the lock.
-    enum class ThreadState {
-        NotStarted,
-        Running,
-        ReadyToShutdown,
-    };
     ThreadState m_threadState = ThreadState::NotStarted;
 
     // Accessed only on the worker thread.
