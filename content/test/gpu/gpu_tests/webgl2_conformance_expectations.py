@@ -334,6 +334,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=643866)
     self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
         ['mac', 'amd'], bug=643866)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'amd'], bug=643866)
 
