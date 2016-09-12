@@ -13,16 +13,6 @@
 
 uint64_t cros_gralloc_convert_flags(int flags)
 {
-	if (flags & GRALLOC_USAGE_FOREIGN_BUFFERS) {
-		cros_gralloc_error("Foreign buffers found: %d", flags);
-		return CROS_GRALLOC_ERROR_BAD_VALUE;
-	}
-
-	if ((flags & sw_access()) && (flags & GRALLOC_USAGE_PROTECTED)) {
-		cros_gralloc_error("Software access not allowed");
-		return CROS_GRALLOC_ERROR_BAD_VALUE;
-	}
-
 	uint64_t usage = DRV_BO_USE_NONE;
 
 	if (flags & GRALLOC_USAGE_CURSOR)
@@ -36,17 +26,19 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_OFTEN)
 		usage |= DRV_BO_USE_SW_WRITE_OFTEN;
 	if (flags & GRALLOC_USAGE_HW_TEXTURE)
-		usage |= DRV_BO_USE_HW_TEXTURE;
+		usage |= DRV_BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_RENDER)
-		usage |= DRV_BO_USE_HW_RENDER;
+		usage |= DRV_BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_2D)
-		usage |= DRV_BO_USE_HW_2D;
+		usage |= DRV_BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_COMPOSER)
-		usage |= DRV_BO_USE_HW_COMPOSER;
+	/* HWC wants to use display hardware, but can defer to OpenGL. */
+		usage |= DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_FB)
-		usage |= DRV_BO_USE_HW_FB;
+		usage |= DRV_BO_USE_SCANOUT;
 	if (flags & GRALLOC_USAGE_EXTERNAL_DISP)
-		usage |= DRV_BO_USE_EXTERNAL_DISP;
+	/* We're ignoring this flag until we decide what to with display link */
+		usage |= DRV_BO_USE_NONE;
 	if (flags & GRALLOC_USAGE_PROTECTED)
 		usage |= DRV_BO_USE_PROTECTED;
 	if (flags & GRALLOC_USAGE_HW_VIDEO_ENCODER)
