@@ -505,12 +505,14 @@ RuleFeatureSet::extractInvalidationSetFeaturesFromSelectorList(const CSSSelector
             features.forceSubtree = true;
             return &simpleSelector;
         }
-        if (allSubSelectorsHaveFeatures && !compoundFeatures.hasFeatures())
-            allSubSelectorsHaveFeatures = false;
-        else
-            anyFeatures.add(compoundFeatures);
         if (compoundFeatures.hasNthPseudo)
             features.hasNthPseudo = true;
+        if (!allSubSelectorsHaveFeatures)
+            continue;
+        if (compoundFeatures.hasFeatures())
+            anyFeatures.add(compoundFeatures);
+        else
+            allSubSelectorsHaveFeatures = false;
     }
     // Don't add any features if one of the sub-selectors of does not contain
     // any invalidation set features. E.g. :-webkit-any(*, span).
