@@ -408,6 +408,10 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 - (void)applicationWillFinishLaunching:(NSNotification*)notification {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::WILL_FINISH_LAUNCHING);
+
+  if ([NSWindow respondsToSelector:@selector(allowsAutomaticWindowTabbing)]) {
+    NSWindow.allowsAutomaticWindowTabbing = NO;
+  }
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {

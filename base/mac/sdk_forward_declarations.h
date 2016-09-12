@@ -38,6 +38,10 @@
 @protocol CALayerDelegate
 @end
 
+@interface NSWindow (SierraSDK)
+@property(class) BOOL allowsAutomaticWindowTabbing;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_12
 
 #if !defined(MAC_OS_X_VERSION_10_11) || \
