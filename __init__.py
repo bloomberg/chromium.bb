@@ -26,6 +26,7 @@ if os.path.basename(_containing_dir) == 'third_party':
 _paths = [
     'dpkt',
     os.path.join('gdata', 'src'),
+    'google',
     'pyelftools',
 ]
 
