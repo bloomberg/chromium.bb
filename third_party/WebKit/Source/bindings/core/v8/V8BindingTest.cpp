@@ -19,6 +19,22 @@ template<typename T> v8::Local<v8::Value> toV8(V8TestingScope* scope, T value)
     return blink::toV8(value, scope->context()->Global(), scope->isolate());
 }
 
+TEST(V8BindingTest, toImplSequence)
+{
+    V8TestingScope scope;
+    {
+        v8::Local<v8::Array> v8StringArray = v8::Array::New(scope.isolate(), 2);
+        v8StringArray->Set(scope.context(), toV8(&scope, 0), toV8(&scope, "Hello, World!")).ToChecked();
+        v8StringArray->Set(scope.context(), toV8(&scope, 1), toV8(&scope, "Hi, Mom!")).ToChecked();
+
+        NonThrowableExceptionState exceptionState;
+        Vector<String> stringVector = toImplSequence<Vector<String>>(scope.isolate(), v8StringArray, exceptionState);
+        EXPECT_EQ(2U, stringVector.size());
+        EXPECT_EQ("Hello, World!", stringVector[0]);
+        EXPECT_EQ("Hi, Mom!", stringVector[1]);
+    }
+}
+
 TEST(V8BindingTest, toImplArray)
 {
     V8TestingScope scope;

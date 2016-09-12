@@ -728,6 +728,9 @@ VectorType toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int 
     return result;
 }
 
+// Gets an iterator from an Object.
+CORE_EXPORT v8::MaybeLocal<v8::Object> getEsIterator(v8::Isolate*, v8::Local<v8::Object>, ExceptionState&);
+
 // Validates that the passed object is a sequence type per WebIDL spec
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
 inline bool toV8Sequence(v8::Local<v8::Value> value, uint32_t& length, v8::Isolate* isolate, ExceptionState& exceptionState)
@@ -879,6 +882,59 @@ CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Local<v8::Value>);
 // array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)
 // to allocate it using alloca() in the callers stack frame.
 CORE_EXPORT void toFlexibleArrayBufferView(v8::Isolate*, v8::Local<v8::Value>, FlexibleArrayBufferView&, void* storage = nullptr);
+
+// Converts a V8 value to an array (an IDL sequence) as per the WebIDL
+// specification: http://heycam.github.io/webidl/#es-sequence
+template <typename VectorType>
+VectorType toImplSequence(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
+{
+    using ValueType = typename VectorType::ValueType;
+
+    if (!value->IsObject() || value->IsRegExp()) {
+        exceptionState.throwTypeError("The provided value cannot be converted to a sequence.");
+        return VectorType();
+    }
+
+    v8::Local<v8::Object> iterator;
+    if (!getEsIterator(isolate, value.As<v8::Object>(), exceptionState).ToLocal(&iterator))
+        return VectorType();
+
+    v8::Local<v8::String> nextKey = v8String(isolate, "next");
+    v8::Local<v8::String> valueKey = v8String(isolate, "value");
+    v8::Local<v8::String> doneKey = v8String(isolate, "done");
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    VectorType result;
+    while (true) {
+        v8::Local<v8::Value> next;
+        if (!iterator->Get(context, nextKey).ToLocal(&next))
+            return VectorType();
+        // TODO(bashi): Support callable objects.
+        if (!next->IsObject() || !next.As<v8::Object>()->IsFunction()) {
+            exceptionState.throwTypeError("Iterator.next should be callable.");
+            return VectorType();
+        }
+        v8::Local<v8::Value> nextResult;
+        if (!V8ScriptRunner::callFunction(next.As<v8::Function>(), toExecutionContext(context), iterator, 0, nullptr, isolate).ToLocal(&nextResult))
+            return VectorType();
+        if (!nextResult->IsObject()) {
+            exceptionState.throwTypeError("Iterator.next() did not return an object.");
+            return VectorType();
+        }
+        v8::Local<v8::Object> resultObject = nextResult.As<v8::Object>();
+        v8::Local<v8::Value> element;
+        v8::Local<v8::Value> done;
+        if (!resultObject->Get(context, valueKey).ToLocal(&element)
+            || !resultObject->Get(context, doneKey).ToLocal(&done))
+            return VectorType();
+        v8::Local<v8::Boolean> doneBoolean;
+        if (!done->ToBoolean(context).ToLocal(&doneBoolean))
+            return VectorType();
+        if (doneBoolean->Value())
+            break;
+        result.append(NativeValueTraits<ValueType>::nativeValue(isolate, element, exceptionState));
+    }
+    return result;
+}
 
 // Installs all of the origin-trial-enabled V8 bindings for the given context
 // and world, based on the trial tokens which have been added to the

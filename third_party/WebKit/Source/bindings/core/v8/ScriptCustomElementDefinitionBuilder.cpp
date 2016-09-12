@@ -138,8 +138,8 @@ bool ScriptCustomElementDefinitionBuilder::retrieveObservedAttributes()
         return false;
     if (observedAttributesValue->IsUndefined())
         return true;
-    Vector<AtomicString> list = toImplArray<Vector<AtomicString>>(
-        observedAttributesValue, 0, m_scriptState->isolate(), m_exceptionState);
+    Vector<AtomicString> list = toImplSequence<Vector<AtomicString>>(
+        m_scriptState->isolate(), observedAttributesValue, m_exceptionState);
     if (m_exceptionState.hadException())
         return false;
     if (list.isEmpty())
