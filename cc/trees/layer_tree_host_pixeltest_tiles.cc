@@ -181,30 +181,15 @@ class LayerTreeHostTilesTestPartialInvalidation
   scoped_refptr<PictureLayer> picture_layer_;
 };
 
-// Fails flakily on Linux ASan (http://crbug.com/645898).
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PartialRaster_SingleThread_OneCopy \
-  DISABLED_PartialRaster_SingleThread_OneCopy
-#else
-#define MAYBE_PartialRaster_SingleThread_OneCopy \
-  PartialRaster_SingleThread_OneCopy
-#endif
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
-       MAYBE_PartialRaster_SingleThread_OneCopy) {
+       PartialRaster_SingleThread_OneCopy) {
   RunRasterPixelTest(
       false, PARTIAL_ONE_COPY, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
-// Fails flakily on Linux ASan (http://crbug.com/645898).
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_FullRaster_SingleThread_OneCopy \
-  DISABLED_FullRaster_SingleThread_OneCopy
-#else
-#define MAYBE_FullRaster_SingleThread_OneCopy FullRaster_SingleThread_OneCopy
-#endif
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
-       MAYBE_FullRaster_SingleThread_OneCopy) {
+       FullRaster_SingleThread_OneCopy) {
   RunRasterPixelTest(
       false, FULL_ONE_COPY, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
