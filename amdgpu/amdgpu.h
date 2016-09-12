@@ -1245,4 +1245,14 @@ int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
 */
 int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem);
 
+/**
+ *  Get the ASIC marketing name
+ *
+ * \param   dev         - \c [in] Device handle. See #amdgpu_device_initialize()
+ *
+ * \return  the constant string of the marketing name
+ *          "NULL" means the ASIC is not found
+*/
+const char *amdgpu_get_marketing_name(amdgpu_device_handle dev);
+
 #endif /* #ifdef _AMDGPU_H_ */

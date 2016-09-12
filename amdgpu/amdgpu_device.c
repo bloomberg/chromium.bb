@@ -44,6 +44,7 @@
 #include "amdgpu_internal.h"
 #include "util_hash_table.h"
 #include "util_math.h"
+#include "amdgpu_asic_id.h"
 
 #define PTR_TO_UINT(x) ((unsigned)((intptr_t)(x)))
 #define UINT_TO_PTR(x) ((void *)((intptr_t)(x)))
@@ -302,4 +303,18 @@ int amdgpu_device_deinitialize(amdgpu_device_handle dev)
 {
 	amdgpu_device_reference(&dev, NULL);
 	return 0;
+}
+
+const char *amdgpu_get_marketing_name(amdgpu_device_handle dev)
+{
+	const struct amdgpu_asic_id_table_t *t = amdgpu_asic_id_table;
+
+	while (t->did) {
+		if ((t->did == dev->info.asic_id) &&
+		    (t->rid == dev->info.pci_rev_id))
+			return t->marketing_name;
+		t++;
+	}
+
+	return NULL;
 }

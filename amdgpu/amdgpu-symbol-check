@@ -35,6 +35,7 @@ amdgpu_cs_submit
 amdgpu_cs_wait_semaphore
 amdgpu_device_deinitialize
 amdgpu_device_initialize
+amdgpu_get_marketing_name
 amdgpu_query_buffer_size_alignment
 amdgpu_query_crtc_from_id
 amdgpu_query_firmware_version
