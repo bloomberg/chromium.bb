@@ -245,7 +245,15 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 // Note: This test depends on the timing in cache backends and can be flaky
 // if those backends are slow. If this turns out to be a problem, consider
 // increasing the |timeout_ms| constant.
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, TimeAndURL) {
+//
+// Flakily timing out on Mac 10.11: https://crbug.com/646119
+#if defined(OS_MACOSX)
+#define MAYBE_TimeAndURL DISABLED_TimeAndURL
+#else
+#define MAYBE_TimeAndURL TimeAndURL
+#endif
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
+                       MAYBE_TimeAndURL) {
   const int64_t timeout_ms = 1;
 
   // Create some entries.
