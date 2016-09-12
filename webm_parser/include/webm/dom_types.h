@@ -901,6 +901,11 @@ enum class ProjectionType : std::uint64_t {
    Cube map.
    */
   kCubeMap = 2,
+
+  /**
+   Mesh.
+   */
+  kMesh = 3,
 };
 
 /**

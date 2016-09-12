@@ -126,4 +126,19 @@ TEST_F(ProjectionParserTest, CustomValues) {
   EXPECT_EQ(4.0, projection.pose_roll.value());
 }
 
+TEST_F(ProjectionParserTest, MeshProjection) {
+  SetReaderData({
+      0x76, 0x71,  // ID = 0x7671 (ProjectionType).
+      0x81,  // Size = 1.
+      0x03,  // Body (value = mesh).
+  });
+
+  ParseAndVerify();
+
+  const Projection projection = parser_.value();
+
+  EXPECT_TRUE(projection.type.is_present());
+  EXPECT_EQ(ProjectionType::kMesh, projection.type.value());
+}
+
 }  // namespace
