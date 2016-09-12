@@ -50,19 +50,18 @@ class URLIndexPrivateData
  public:
   URLIndexPrivateData();
 
-  // Given a base::string16 in |term_string|, scans the history index and
-  // returns a vector with all scored, matching history items. The
-  // |term_string| is broken down into individual terms (words), each of which
-  // must occur in the candidate history item's URL or page title for the item
-  // to qualify; however, the terms do not necessarily have to be adjacent. We
-  // also allow breaking |term_string| at |cursor_position| (if
-  // set). Once we have a set of candidates, they are filtered to ensure
-  // that all |term_string| terms, as separated by whitespace and the
-  // cursor (if set), occur within the candidate's URL or page title.
-  // Scores are then calculated on no more than |kItemsToScoreLimit|
-  // candidates, as the scoring of such a large number of candidates may
-  // cause perceptible typing response delays in the omnibox. This is
-  // likely to occur for short omnibox terms such as 'h' and 'w' which
+  // Given a |term_string|, scans the history index and returns a vector with
+  // all scored, matching history items. The |term_string| is broken down into
+  // individual terms (words), each of which must occur in the candidate
+  // history item's URL or page title for the item to qualify; however, the
+  // terms do not necessarily have to be adjacent. We also allow breaking
+  // |term_string| at |cursor_position| (if set). Once we have a set of
+  // candidates, they are filtered to ensure that all |term_string| terms, as
+  // separated by whitespace and the cursor (if set), occur within the
+  // candidate's URL or page title.  Scores are then calculated on no more than
+  // |kItemsToScoreLimit| candidates, as the scoring of such a large number of
+  // candidates may cause perceptible typing response delays in the omnibox.
+  // This is likely to occur for short omnibox terms such as 'h' and 'w' which
   // will be found in nearly all history candidates. Results are sorted by
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls

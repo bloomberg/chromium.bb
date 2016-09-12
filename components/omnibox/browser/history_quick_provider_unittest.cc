@@ -57,52 +57,53 @@ struct TestURLInfo {
   int typed_count;
   int days_from_now;
 } quick_test_db[] = {
-  {"http://www.google.com/", "Google", 3, 3, 0},
-  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
-  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 0},
-  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1, 0},
-  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
-  {"http://news.google.com/", "Google News", 1, 1, 0},
-  {"http://foo.com/", "Dir", 200, 100, 0},
-  {"http://foo.com/dir/", "Dir", 2, 1, 10},
-  {"http://foo.com/dir/another/", "Dir", 10, 5, 0},
-  {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
-  {"http://foo.com/dir/another/again/myfile.html", "File", 3, 1, 0},
-  {"http://visitedest.com/y/a", "VA", 10, 1, 20},
-  {"http://visitedest.com/y/b", "VB", 9, 1, 20},
-  {"http://visitedest.com/x/c", "VC", 8, 1, 20},
-  {"http://visitedest.com/x/d", "VD", 7, 1, 20},
-  {"http://visitedest.com/y/e", "VE", 6, 1, 20},
-  {"http://typeredest.com/y/a", "TA", 5, 5, 0},
-  {"http://typeredest.com/y/b", "TB", 5, 4, 0},
-  {"http://typeredest.com/x/c", "TC", 5, 3, 0},
-  {"http://typeredest.com/x/d", "TD", 5, 2, 0},
-  {"http://typeredest.com/y/e", "TE", 5, 1, 0},
-  {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
-  {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
-  {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
-  {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
-  {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
-  {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
-  {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
-   "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
-  {"https://monkeytrap.org/", "", 3, 1, 0},
-  {"http://popularsitewithpathonly.com/moo",
-   "popularsitewithpathonly.com/moo", 50, 50, 0},
-  {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
-  {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
-  {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
-  {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0},
-  // The encoded stuff between /wiki/ and the # is 第二次世界大戦
-  {"http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95"
-   "%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3."
-   "83.A6.E4.BD.93.E5.88.B6", "Title Unimportant", 2, 2, 0}
-};
+    {"http://www.google.com/", "Google", 3, 3, 0},
+    {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
+    {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 0},
+    {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1, 0},
+    {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
+    {"http://news.google.com/", "Google News", 1, 1, 0},
+    {"http://foo.com/", "Dir", 200, 100, 0},
+    {"http://foo.com/dir/", "Dir", 2, 1, 10},
+    {"http://foo.com/dir/another/", "Dir", 10, 5, 0},
+    {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
+    {"http://foo.com/dir/another/again/myfile.html", "File", 3, 1, 0},
+    {"http://visitedest.com/y/a", "VA", 10, 1, 20},
+    {"http://visitedest.com/y/b", "VB", 9, 1, 20},
+    {"http://visitedest.com/x/c", "VC", 8, 1, 20},
+    {"http://visitedest.com/x/d", "VD", 7, 1, 20},
+    {"http://visitedest.com/y/e", "VE", 6, 1, 20},
+    {"http://typeredest.com/y/a", "TA", 5, 5, 0},
+    {"http://typeredest.com/y/b", "TB", 5, 4, 0},
+    {"http://typeredest.com/x/c", "TC", 5, 3, 0},
+    {"http://typeredest.com/x/d", "TD", 5, 2, 0},
+    {"http://typeredest.com/y/e", "TE", 5, 1, 0},
+    {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
+    {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
+    {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
+    {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
+    {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
+    {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
+    {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
+    {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
+    {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+    {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+    {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+    {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
+     "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
+    {"https://monkeytrap.org/", "", 3, 1, 0},
+    {"http://popularsitewithpathonly.com/moo",
+     "popularsitewithpathonly.com/moo", 50, 50, 0},
+    {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
+    {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
+    {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
+    {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0},
+    // The encoded stuff between /wiki/ and the # is 第二次世界大戦
+    {"http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95"
+     "%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3."
+     "83.A6.E4.BD.93.E5.88.B6",
+     "Title Unimportant", 2, 2, 0},
+    {"https://twitter.com/fungoodtimes", "relatable!", 1, 1, 0}};
 
 // Waits for OnURLsDeletedNotification and when run quits the supplied run loop.
 class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
@@ -493,6 +494,16 @@ TEST_F(HistoryQuickProviderTest, SingleMatchWithCursor) {
   RunTestWithCursor(ASCIIToUTF16("slashfavorite_page.html"), 5, false,
                     expected_urls, false,
                     ASCIIToUTF16("slashdot.org/favorite_page.html"),
+                    base::string16());
+}
+
+TEST_F(HistoryQuickProviderTest, MatchWithAndWithoutCursorWordBreak) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("https://twitter.com/fungoodtimes");
+  // With cursor after "good", we should retrieve the desired result but it
+  // should not be allowed to be the default match.
+  RunTestWithCursor(ASCIIToUTF16("fungoodtimes"), 7, false, expected_urls,
+                    false, ASCIIToUTF16("https://twitter.com/fungoodtimes"),
                     base::string16());
 }
 

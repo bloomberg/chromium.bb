@@ -81,7 +81,6 @@ bool LengthGreater(const base::string16& string_a,
   return string_a.length() > string_b.length();
 }
 
-
 // UpdateRecentVisitsFromHistoryDBTask -----------------------------------------
 
 // HistoryDBTask used to update the recent visit data for a particular
@@ -158,14 +157,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t max_matches,
     bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service) {
-  // If cursor position is set and useful (not at either end of the
-  // string), allow the search string to be broken at cursor position.
-  // We do this by pretending there's a space where the cursor is.
-  if ((cursor_position != base::string16::npos) &&
-      (cursor_position < search_string.length()) &&
-      (cursor_position > 0)) {
-    search_string.insert(cursor_position, base::ASCIIToUTF16(" "));
-  }
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;
@@ -178,6 +169,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
       net::UnescapeURLComponent(lower_raw_string,
           net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
           net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+
   // Extract individual 'words' (as opposed to 'terms'; see below) from the
   // search string. When the user types "colspec=ID%20Mstone Release" we get
   // four 'words': "colspec", "id", "mstone" and "release".
@@ -240,6 +232,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   String16Vector lower_raw_terms = base::SplitString(
       lower_raw_string, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
       base::SPLIT_WANT_NONEMPTY);
+
   if (lower_raw_terms.empty()) {
     // Don't score matches when there are no terms to score against.  (It's
     // possible that the word break iterater that extracts words to search
@@ -250,21 +243,88 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     // but this is such a rare edge case that it's not worth the time.
     return scored_items;
   }
+
   scored_items =
       std::for_each(
           history_id_set.begin(), history_id_set.end(),
           AddHistoryMatch(bookmark_model, template_url_service, *this,
-                          lower_raw_string, lower_raw_terms,
-                          base::Time::Now())).ScoredMatches();
+                          lower_raw_string, lower_raw_terms, base::Time::Now()))
+          .ScoredMatches();
 
+  // If cursor position is set and useful (not at either end of the string),
+  // allow the search string to be broken at cursor position. We do this by
+  // pretending there's a space where the cursor is.
+  // This phenomena will be referred to as space ghosting.
+  // Going forward we perform a similar process for obtaining
+  // scored items as above.  In fact all of the variable names are the same
+  // except that they are prepended with 'transformed_' reflecting that these
+  // variables are related to space ghosting.
+  if ((cursor_position != base::string16::npos) &&
+      (cursor_position < search_string.length()) && (cursor_position > 0)) {
+    // The original search_string broken at cursor position.
+    base::string16 transformed_search_string(search_string);
+    transformed_search_string.insert(cursor_position, base::ASCIIToUTF16(" "));
+
+    // The same as lower_raw_string and defined for the same reasons.
+    base::string16 transformed_lower_raw_string(
+        base::i18n::ToLower(transformed_search_string));
+    String16Vector transformed_lower_raw_terms =
+        base::SplitString(transformed_lower_raw_string, base::kWhitespaceUTF16,
+                          base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (!transformed_lower_raw_terms.empty()) {
+      base::string16 transormed_lower_unescaped_string =
+          net::UnescapeURLComponent(
+              transformed_lower_raw_string,
+              net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      String16Vector transformed_lower_words(String16VectorFromString16(
+          transormed_lower_unescaped_string, false, nullptr));
+      HistoryIDSet transformed_history_id_set =
+          HistoryIDSetFromWords(transformed_lower_words);
+
+      if (history_id_set != transformed_history_id_set) {
+        pre_filter_item_count_ = history_id_set.size();
+        // Trim the candidate pool if it is large as above.
+        was_trimmed = (pre_filter_item_count_ > kItemsToScoreLimit);
+        if (was_trimmed) {
+          HistoryIDVector transformed_history_ids;
+          std::copy(transformed_history_id_set.begin(),
+                    transformed_history_id_set.end(),
+                    std::back_inserter(transformed_history_ids));
+          // Trim down the set by sorting by typed-count, visit-count, and last
+          // visit.
+          HistoryItemFactorGreater item_factor_functor(history_info_map_);
+          std::partial_sort(
+              transformed_history_ids.begin(),
+              transformed_history_ids.begin() + kItemsToScoreLimit,
+              transformed_history_ids.end(), item_factor_functor);
+          transformed_history_id_set.clear();
+          std::copy(transformed_history_ids.begin(),
+                    transformed_history_ids.begin() + kItemsToScoreLimit,
+                    std::inserter(transformed_history_id_set,
+                                  transformed_history_id_set.end()));
+        }
+        history_id_set.insert(transformed_history_id_set.begin(),
+                              transformed_history_id_set.end());
+        ScoredHistoryMatches transformed_scored_items =
+            std::for_each(
+                history_id_set.begin(), history_id_set.end(),
+                AddHistoryMatch(bookmark_model, template_url_service, *this,
+                                transformed_lower_raw_string,
+                                transformed_lower_raw_terms, base::Time::Now()))
+                .ScoredMatches();
+        scored_items.insert(scored_items.end(),
+                            transformed_scored_items.begin(),
+                            transformed_scored_items.end());
+      }
+    }
+  }
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
-    std::partial_sort(scored_items.begin(),
-                      scored_items.begin() +
-                          max_matches,
+    std::partial_sort(scored_items.begin(), scored_items.begin() + max_matches,
                       scored_items.end(),
                       ScoredHistoryMatch::MatchScoreGreater);
-      scored_items.resize(max_matches);
+    scored_items.resize(max_matches);
   } else {
     std::sort(scored_items.begin(), scored_items.end(),
               ScoredHistoryMatch::MatchScoreGreater);
@@ -1250,7 +1310,6 @@ bool URLIndexPrivateData::URLSchemeIsWhitelisted(
     const std::set<std::string>& whitelist) {
   return whitelist.find(gurl.scheme()) != whitelist.end();
 }
-
 
 // SearchTermCacheItem ---------------------------------------------------------
 
