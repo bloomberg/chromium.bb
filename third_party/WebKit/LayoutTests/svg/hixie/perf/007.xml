@@ -1,5 +1,5 @@
  <svg viewBox="0 0 800 400" width="200" xmlns="http://www.w3.org/2000/svg" xmlns:country="http://example.com/" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
- <script xlink:href="../resources/text-based-repaint.js"></script>
+ <script xlink:href="../../../paint/invalidation/resources/text-based-repaint.js"></script>
  <script type="text/javascript">
   window.testIsAsync = true;
   window.outputRepaintRects = false;

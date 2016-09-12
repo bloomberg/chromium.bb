@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
- <script xlink:href="../resources/text-based-repaint.js"></script>
+ <script xlink:href="../../../paint/invalidation/resources/text-based-repaint.js"></script>
  <script type="text/javascript">
   window.testIsAsync = true;
   window.outputRepaintRects = false;
@@ -8,12 +8,6 @@
  <text x="10" y="15" font-weight="900" font-size="5">SVG Performance test.</text>
  <text x="10" y="95" font-weight="900" font-size="5">Test not started.</text>
  <rect x="0" y="0" height="100" width="100" stroke="black" fill="none"/>
- <linearGradient id="gradient">
-  <stop offset="0%" stop-color="#00F" />
-  <stop offset="10%" stop-color="#F60" />
-  <stop offset="90%" stop-color="#FF6" />
-  <stop offset="100%" stop-color="#00F" />
- </linearGradient>
  <script type="text/javascript"><![CDATA[
   var svg = document.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'svg')[0];
   var t = document.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'text')[1];
@@ -57,14 +51,14 @@
   function repaintTest() {
     for (var subcount = 0; subcount < maxPerBlock; subcount += 1) {
       var index = count * maxPerBlock + subcount;
-      var newI = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      var newI = document.createElementNS('http://www.w3.org/2000/svg', 'image');
       newI.setAttribute('x', Xs[index] - (99 / Ss[index]) / 2);
       newI.setAttribute('y', Ys[index] - (195 / Ss[index]) / 2);
       newI.setAttribute('height', 195 / Ss[index]);
       newI.setAttribute('width', 99 / Ss[index]);
-      newI.setAttribute('fill', 'url(#gradient)');
+      newI.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'resources/smallcats.gif');
       newI.setAttribute('transform', 'translate(50, 50) rotate(' + Rs[index] + ') translate(-50, -50)');
-      newI.appendChild(document.createTextNode(index));
+      newI.appendChild(document.createTextNode(index)); // 'TEST'));
       svg.insertBefore(newI, t);
     }
     ++count;

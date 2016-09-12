@@ -22,7 +22,6 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # Covered directories are:
 #  compositing subdirectories but not compositing itself or compositing/animations
 #  fast/images, css3/images,
-#  fast/repaint
 #  paint
 #  svg
 #  fast/svg
@@ -56,7 +55,6 @@ crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentag
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
-crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
@@ -541,8 +539,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-0
 crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Pass Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
-
-crbug.com/529938 virtual/spv2/fast/block/positioning/absolute-length-of-neg-666666.html [ Skip ]
 
 crbug.com/617785 fast/borders/block-mask-overlay-image-outset.html [ Skip ]
 
