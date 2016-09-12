@@ -2956,7 +2956,7 @@ Element* LayoutObject::offsetParent(const Element* base) const
             continue;
         }
 
-        if (ancestor->isPositioned())
+        if (ancestor->canContainAbsolutePositionObjects())
             break;
 
         if (isHTMLBodyElement(*node))
