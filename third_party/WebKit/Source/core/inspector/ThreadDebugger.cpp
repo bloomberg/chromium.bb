@@ -248,7 +248,7 @@ static Vector<String> normalizeEventTypes(const v8::FunctionCallbackInfo<v8::Val
     Vector<String> outputTypes;
     for (size_t i = 0; i < types.size(); ++i) {
         if (types[i] == "mouse")
-            outputTypes.appendVector(Vector<String>({ "click", "dblclick", "mousedown", "mouseeenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "mouseleave", "mousewheel" }));
+            outputTypes.appendVector(Vector<String>({ "auxclick", "click", "dblclick", "mousedown", "mouseeenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "mouseleave", "mousewheel" }));
         else if (types[i] == "key")
             outputTypes.appendVector(Vector<String>({ "keydown", "keyup", "keypress", "textInput" }));
         else if (types[i] == "touch")
