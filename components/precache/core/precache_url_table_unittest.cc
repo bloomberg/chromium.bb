@@ -149,7 +149,7 @@ TEST_F(PrecacheURLTableTest, TableMigration) {
     actual_urls.insert(statement.ColumnString(0));
     EXPECT_EQ(0, statement.ColumnInt(1));
     EXPECT_EQ(0, statement.ColumnInt(2));
-    EXPECT_EQ(0, statement.ColumnInt(3));
+    EXPECT_EQ(1, statement.ColumnInt(3));
   }
   EXPECT_THAT(std::set<std::string>(begin(old_urls), end(old_urls)),
               ::testing::ContainerEq(actual_urls));

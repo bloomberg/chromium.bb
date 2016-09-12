@@ -158,7 +158,8 @@ bool PrecacheURLTable::CreateTableIfNonExistent() {
       return false;
     if (!db_->DoesColumnExist("precache_urls", "is_precached") &&
         !db_->Execute(
-            "ALTER TABLE precache_urls ADD COLUMN is_precached INTEGER"))
+            "ALTER TABLE precache_urls ADD COLUMN is_precached "
+            "INTEGER default 1"))
       return false;
     if (!db_->DoesColumnExist("precache_urls", "referrer_host_id") &&
         !db_->Execute(
