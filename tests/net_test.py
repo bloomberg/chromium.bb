@@ -87,6 +87,7 @@ class HttpServiceTest(RetryLoopMockedTest):
       login=None):
 
     class MockedAuthenticator(authenticators.Authenticator):
+      supports_login = True
       def authorize(self, request):
         return authorize(request) if authorize else None
       def login(self, allow_user_interaction):

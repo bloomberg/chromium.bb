@@ -241,7 +241,10 @@ def get_http_service(urlhost, allow_cached=True):
     is_gs = GS_STORAGE_HOST_URL_RE.match(urlhost)
     conf = get_oauth_config()
     if not engine_cls.provides_auth and not is_gs and not conf.disabled:
-      authenticator = authenticators.OAuthAuthenticator(urlhost, conf)
+      authenticator = (
+          authenticators.LuciContextAuthenticator(conf)
+          if conf.luci_context_json else
+          authenticators.OAuthAuthenticator(urlhost, conf))
     return HttpService(
         urlhost,
         engine=engine_cls(),
@@ -349,13 +352,13 @@ class HttpService(object):
     """
     # Use global lock to ensure two authentication flows never run in parallel.
     with _auth_lock:
-      if self.authenticator:
+      if self.authenticator and self.authenticator.supports_login:
         return self.authenticator.login(allow_user_interaction)
       return False
 
   def logout(self):
     """Purges access credentials from local cache."""
-    if self.authenticator:
+    if self.authenticator and self.authenticator.supports_login:
       self.authenticator.logout()
 
   def request(
@@ -487,7 +490,7 @@ class HttpService(object):
           logging.error(
               'Unable to authenticate to %s (%s).',
               self.urlhost, self._format_error(e))
-          if self.authenticator:
+          if self.authenticator and self.authenticator.supports_login:
             logging.error(
                 'Use auth.py to login: python auth.py login --service=%s',
                 self.urlhost)

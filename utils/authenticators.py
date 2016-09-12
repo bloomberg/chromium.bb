@@ -13,6 +13,8 @@ from utils import oauth
 class Authenticator(object):
   """Base class for objects that know how to authenticate into http services."""
 
+  supports_login = False
+
   def authorize(self, request):
     """Add authentication information to the request."""
 
@@ -26,6 +28,8 @@ class Authenticator(object):
 
 class OAuthAuthenticator(Authenticator):
   """Uses OAuth Authorization header to authenticate requests."""
+
+  supports_login = True
 
   def __init__(self, urlhost, config):
     super(OAuthAuthenticator, self).__init__()
@@ -68,3 +72,31 @@ class OAuthAuthenticator(Authenticator):
     with self._lock:
       self._access_token = None
       oauth.purge_access_token(self.urlhost, self.config)
+
+
+class LuciContextAuthenticator(Authenticator):
+  """Uses local server for providing header to authenticate requests.
+
+  Local server is identified by parameters of file specified in LUCI_CONTEXT.
+  """
+
+  def __init__(self, config):
+    super(LuciContextAuthenticator, self).__init__()
+    assert isinstance(config, oauth.OAuthConfig)
+    self.config = config
+    self._lock = threading.Lock()
+    self._access_token = None
+
+  def authorize(self, request):
+    with self._lock:
+      if self._access_token:
+        request.headers['Authorization'] = (
+            'Bearer %s' % self._access_token.token)
+
+  def login(self, allow_user_interaction):
+    """Run interactive authentication flow refreshing the token."""
+    raise RuntimeError('Interactive login not supported.')
+
+  def logout(self):
+    """Purges access credentials from local cache."""
+    raise RuntimeError('Interactive logout not supported.')

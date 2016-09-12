@@ -63,6 +63,7 @@ OAuthConfig = collections.namedtuple('OAuthConfig', [
   'no_local_webserver',
   'webserver_port',
   'service_account_json',
+  'luci_context_json',
 ])
 
 
@@ -104,7 +105,8 @@ def make_oauth_config(
     tokens_cache=None,
     no_local_webserver=None,
     webserver_port=None,
-    service_account_json=None):
+    service_account_json=None,
+    luci_context_json=None):
   """Returns new instance of OAuthConfig.
 
   If some config option is not provided or None, it will be set to a reasonable
@@ -118,6 +120,7 @@ def make_oauth_config(
         handles redirects. Use copy-pasted verification code instead.
     webserver_port: port to run local webserver on.
     service_account_json: path to JSON file with service account credentials.
+    luci_context_json: path to JSON file with local auth proxy details.
   """
   if tokens_cache is None:
     tokens_cache = os.environ.get(
@@ -129,14 +132,23 @@ def make_oauth_config(
     webserver_port = 8090
   if service_account_json is None:
     service_account_json = os.environ.get('SWARMING_AUTH_SERVICE_ACCOUNT_JSON')
+  if luci_context_json is None:
+    luci_context_json = os.environ.get('LUCI_CONTEXT')
+  if service_account_json and luci_context_json:
+    raise ValueError('Cannot use both service account and luci context options')
   if disabled is None:
-    disabled = tools.is_headless() and not service_account_json
+    disabled = (tools.is_headless()
+                and not service_account_json and not luci_context_json)
+  if disabled:
+    service_account_json = None
+    luci_context_json = None
   return OAuthConfig(
       disabled,
       tokens_cache,
       no_local_webserver,
       webserver_port,
-      service_account_json)
+      service_account_json,
+      luci_context_json)
 
 
 def add_oauth_options(parser):
@@ -148,7 +160,8 @@ def add_oauth_options(parser):
       type=int,
       default=int(default_config.disabled),
       help='Set to 1 to disable OAuth and rely only on IP whitelist for '
-           'authentication. Currently used from bots. [default: %default]')
+           'authentication. Currently used from bots. Setting this option '
+           'supercedes any other auth option. [default: %default]')
   parser.oauth_group.add_option(
       '--auth-tokens-cache',
       default=default_config.tokens_cache,
@@ -178,6 +191,12 @@ def add_oauth_options(parser):
           'section of any Cloud Console project. The value can also be set '
           'with SWARMING_AUTH_SERVICE_ACCOUNT_JSON environment variable. '
           '[default: %default]')
+  parser.oauth_group.add_option(
+      '--auth-luci-context-json',
+      default=default_config.luci_context_json,
+      help='Path to a JSON file with LUCI auth parameters to use for querying '
+          'a local server for an access token. The value can also be set with '
+          'the LUCI_CONTEXT environment variable. [default: %default]')
   parser.add_option_group(parser.oauth_group)
 
 
@@ -194,13 +213,12 @@ def extract_oauth_config_from_options(options):
   except BadServiceAccountCredentials as exc:
     raise ValueError('Bad service account credentials: %s' % exc)
   return make_oauth_config(
-      disabled=(
-          bool(options.auth_disabled) and
-          not options.auth_service_account_json),
+      disabled=bool(options.auth_disabled),
       tokens_cache=options.auth_tokens_cache,
       no_local_webserver=options.auth_no_local_webserver,
       webserver_port=options.auth_host_port,
-      service_account_json=options.auth_service_account_json)
+      service_account_json=options.auth_service_account_json,
+      luci_context_json=options.auth_luci_context_json)
 
 
 def load_access_token(urlhost, config):
