@@ -75,7 +75,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   AddChildView(description_label_);
 
   const SkColor bg_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_MenuBackgroundColor);
+      ui::NativeTheme::kColorId_DialogBackground);
 
   if (screen_list) {
     source_types_.push_back(DesktopMediaID::TYPE_SCREEN);

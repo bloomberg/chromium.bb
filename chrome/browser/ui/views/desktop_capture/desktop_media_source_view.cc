@@ -10,7 +10,6 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -95,7 +94,7 @@ void DesktopMediaSourceView::SetSelected(bool selected) {
     }
 
     const SkColor border_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+        ui::NativeTheme::kColorId_FocusedBorderColor);
     image_view_->SetBorder(views::Border::CreateSolidBorder(
         style_.selection_border_thickness, border_color));
     label_->SetFontList(label_->font_list().Derive(0, gfx::Font::NORMAL,
@@ -110,19 +109,6 @@ void DesktopMediaSourceView::SetSelected(bool selected) {
   SchedulePaint();
 }
 
-void DesktopMediaSourceView::SetHovered(bool hovered) {
-  if (hovered) {
-    // Use background color to show mouse hover.
-    const SkColor bg_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
-    set_background(views::Background::CreateSolidBackground(bg_color));
-  } else {
-    set_background(nullptr);
-  }
-
-  SchedulePaint();
-}
-
 const char* DesktopMediaSourceView::GetClassName() const {
   return DesktopMediaSourceView::kDesktopMediaSourceViewClassName;
 }
@@ -132,7 +118,7 @@ void DesktopMediaSourceView::SetStyle(DesktopMediaSourceViewStyle style) {
   image_view_->SetBoundsRect(style_.image_rect);
   if (selected_) {
     const SkColor border_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+        ui::NativeTheme::kColorId_FocusedBorderColor);
     image_view_->SetBorder(views::Border::CreateSolidBorder(
         style_.selection_border_thickness, border_color));
   }
@@ -194,14 +180,6 @@ bool DesktopMediaSourceView::OnMousePressed(const ui::MouseEvent& event) {
     parent_->OnDoubleClick();
   }
   return true;
-}
-
-void DesktopMediaSourceView::OnMouseEntered(const ui::MouseEvent& event) {
-  SetHovered(true);
-}
-
-void DesktopMediaSourceView::OnMouseExited(const ui::MouseEvent& event) {
-  SetHovered(false);
 }
 
 void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
