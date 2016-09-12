@@ -13,8 +13,6 @@
 #include <new.h>
 #include <windows.h>
 
-#include "base/bits.h"
-
 namespace base {
 namespace allocator {
 
@@ -71,7 +69,7 @@ size_t WinHeapGetSizeEstimate(void* ptr) {
   const size_t kAllocationGranularity = 8;
 #endif
 
-  return base::bits::Align(size, kAllocationGranularity);
+  return (size + kAllocationGranularity - 1) & ~(kAllocationGranularity - 1);
 }
 
 // Call the new handler, if one has been set.
