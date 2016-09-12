@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -162,7 +163,9 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             base::MakeUnique<NTPSnippetsFetcher>(
                 signin_manager, token_service, request_context, prefs,
                 service->category_factory(), base::Bind(&ParseJson),
-                GetChannel() == version_info::Channel::STABLE),
+                GetChannel() == version_info::Channel::STABLE
+                    ? google_apis::GetAPIKey()
+                    : google_apis::GetNonStableAPIKey()),
             base::MakeUnique<ImageFetcherImpl>(
                 request_context.get(), web::WebThread::GetBlockingPool()),
             base::MakeUnique<IOSImageDecoderImpl>(),

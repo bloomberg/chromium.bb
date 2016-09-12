@@ -37,7 +37,6 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/variations/variations_associated_data.h"
-#include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,9 +77,10 @@ const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
 const char kTestContentSuggestionsServerEndpoint[] =
     "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
     "suggestions/fetch";
-const char kTestContentSuggestionsServerFormat[] =
+const char kAPIKey[] = "fakeAPIkey";
+const char kTestContentSuggestionsServerWithAPIKey[] =
     "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
-    "suggestions/fetch?key=%s";
+    "suggestions/fetch?key=fakeAPIkey";
 
 const char kSnippetUrl[] = "http://localhost/foobar";
 const char kSnippetTitle[] = "Title";
@@ -348,8 +348,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                           kTestContentSuggestionsServerEndpoint}}),
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
-        test_url_(base::StringPrintf(kTestContentSuggestionsServerFormat,
-                                     google_apis::GetAPIKey().c_str())),
+        test_url_(kTestContentSuggestionsServerWithAPIKey),
 
         observer_(base::MakeUnique<FakeContentSuggestionsProviderObserver>()) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
@@ -382,8 +381,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         base::MakeUnique<NTPSnippetsFetcher>(
             utils_.fake_signin_manager(), fake_token_service_.get(),
             std::move(request_context_getter), utils_.pref_service(),
-            &category_factory_, base::Bind(&ParseJson),
-            /*is_stable_channel=*/true);
+            &category_factory_, base::Bind(&ParseJson), kAPIKey);
 
     utils_.fake_signin_manager()->SignIn("foo@bar.com");
     snippets_fetcher->SetPersonalizationForTesting(

@@ -29,7 +29,6 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -191,7 +190,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     PrefService* pref_service,
     CategoryFactory* category_factory,
     const ParseJSONCallback& parse_json_callback,
-    bool is_stable_channel)
+    const std::string& api_key)
     : OAuth2TokenService::Consumer("ntp_snippets"),
       signin_manager_(signin_manager),
       token_service_(token_service),
@@ -203,7 +202,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
                      ? CHROME_CONTENT_SUGGESTIONS_API
                      : CHROME_READER_API),
-      is_stable_channel_(is_stable_channel),
+      api_key_(api_key),
       interactive_request_(false),
       tick_clock_(new base::DefaultTickClock()),
       request_throttler_(
@@ -441,11 +440,8 @@ bool NTPSnippetsFetcher::UsesAuthentication() const {
 
 void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   // When not providing OAuth token, we need to pass the Google API key.
-  const std::string& key = is_stable_channel_
-                               ? google_apis::GetAPIKey()
-                               : google_apis::GetNonStableAPIKey();
   GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
-                              fetch_url_.spec().c_str(), key.c_str()));
+                              fetch_url_.spec().c_str(), api_key_.c_str()));
 
   RequestParams params;
   params.fetch_api = fetch_api_;

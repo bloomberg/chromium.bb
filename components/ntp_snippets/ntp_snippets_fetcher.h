@@ -96,7 +96,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       PrefService* pref_service,
       CategoryFactory* category_factory,
       const ParseJSONCallback& parse_json_callback,
-      bool is_stable_channel);
+      const std::string& api_key);
   ~NTPSnippetsFetcher() override;
 
   // Set a callback that is called when a new set of snippets are downloaded,
@@ -243,8 +243,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // The callback to notify when new snippets get fetched.
   SnippetsAvailableCallback snippets_available_callback_;
 
-  // Flag for picking the right (stable/non-stable) API key for Chrome Reader.
-  bool is_stable_channel_;
+  // API key to use for non-authenticated requests.
+  const std::string api_key_;
 
   // The variant of the fetching to use, loaded from variation parameters.
   Personalization personalization_;

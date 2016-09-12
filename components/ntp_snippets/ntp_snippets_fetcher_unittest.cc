@@ -25,7 +25,6 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
-#include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,11 +46,12 @@ using testing::SizeIs;
 using testing::StartsWith;
 using testing::WithArg;
 
-const char kTestChromeReaderUrlFormat[] =
-    "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
-const char kTestChromeContentSuggestionsUrlFormat[] =
+const char kAPIKey[] = "fakeAPIkey";
+const char kTestChromeReaderUrl[] =
+    "https://chromereader-pa.googleapis.com/v1/fetch?key=fakeAPIkey";
+const char kTestChromeContentSuggestionsUrl[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-    "fetch?key=%s";
+    "fetch?key=fakeAPIkey";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -139,16 +139,12 @@ void ParseJsonDelayed(
       base::TimeDelta::FromMilliseconds(kTestJsonParsingLatencyMs));
 }
 
-GURL GetFetcherUrl(const char* url_format) {
-  return GURL(base::StringPrintf(url_format, google_apis::GetAPIKey().c_str()));
-}
-
 }  // namespace
 
 class NTPSnippetsFetcherTest : public testing::Test {
  public:
   NTPSnippetsFetcherTest()
-      : NTPSnippetsFetcherTest(GetFetcherUrl(kTestChromeReaderUrlFormat),
+      : NTPSnippetsFetcherTest(GURL(kTestChromeReaderUrl),
                                std::map<std::string, std::string>()) {}
 
   NTPSnippetsFetcherTest(const GURL& gurl,
@@ -171,7 +167,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
         scoped_refptr<net::TestURLRequestContextGetter>(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())),
         pref_service_.get(), &category_factory_, base::Bind(&ParseJsonDelayed),
-        /*is_stable_channel=*/true);
+        kAPIKey);
 
     snippets_fetcher_->SetCallback(
         base::Bind(&MockSnippetsAvailableCallback::WrappedRun,
@@ -240,14 +236,14 @@ class NTPSnippetsContentSuggestionsFetcherTest : public NTPSnippetsFetcherTest {
  public:
   NTPSnippetsContentSuggestionsFetcherTest()
       : NTPSnippetsFetcherTest(
-            GetFetcherUrl(kTestChromeContentSuggestionsUrlFormat),
+            GURL(kTestChromeContentSuggestionsUrl),
             {{"content_suggestions_backend", kContentSuggestionsServer}}) {}
 };
 
 class NTPSnippetsFetcherHostRestrictedTest : public NTPSnippetsFetcherTest {
  public:
   NTPSnippetsFetcherHostRestrictedTest()
-      : NTPSnippetsFetcherTest(GetFetcherUrl(kTestChromeReaderUrlFormat),
+      : NTPSnippetsFetcherTest(GURL(kTestChromeReaderUrl),
                                {{"fetching_host_restrict", "on"}}) {}
 };
 

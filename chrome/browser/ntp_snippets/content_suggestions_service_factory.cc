@@ -41,6 +41,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
@@ -156,7 +157,8 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
           base::MakeUnique<NTPSnippetsFetcher>(
               signin_manager, token_service, request_context, pref_service,
               category_factory, base::Bind(&safe_json::SafeJsonParser::Parse),
-              is_stable_channel),
+              is_stable_channel ? google_apis::GetAPIKey()
+                                : google_apis::GetNonStableAPIKey()),
           base::MakeUnique<ImageFetcherImpl>(
               base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
           base::MakeUnique<ImageDecoderImpl>(),
