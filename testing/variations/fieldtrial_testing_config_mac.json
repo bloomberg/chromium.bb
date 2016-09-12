@@ -287,6 +287,14 @@
             }
         }
     ],
+    "RafAlignedInput": [
+        {
+            "enable_features": [
+                "RafAlignedInput"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "RefreshTokenDeviceId": [
         {
             "group_name": "Enabled"

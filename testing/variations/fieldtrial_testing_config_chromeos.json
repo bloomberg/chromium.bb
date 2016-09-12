@@ -203,6 +203,14 @@
             }
         }
     ],
+    "RafAlignedInput": [
+        {
+            "enable_features": [
+                "RafAlignedInput"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "group_name": "ShowAndPossiblySend",
