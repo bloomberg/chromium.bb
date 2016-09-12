@@ -94,9 +94,11 @@ kept up to date by `gclient runhooks`.
 
 Current brokenness:
 
-*   Debug info is very limited.
 *   To get colored diagnostics, you need to be running
     [ansicon](https://github.com/adoxa/ansicon/releases).
+*   Debug info does now work, but support for it is new.  If you see something
+    not working right, please file a bug and mark it as blocking the
+    [clang/win debug info tracking bug](https://crbug.com/636111).
 
 ## Using a custom clang binary
 
