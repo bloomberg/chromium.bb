@@ -13,6 +13,10 @@
 #include "components/arc/common/bluetooth.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace device {
+class BluetoothUUID;
+}
+
 namespace arc {
 
 class FakeBluetoothInstance : public mojom::BluetoothInstance {
@@ -123,7 +127,7 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   void OnGetSdpRecords(
       mojom::BluetoothStatus status,
       mojom::BluetoothAddressPtr remove_addr,
-      mojom::BluetoothUUIDPtr target_uuid,
+      const device::BluetoothUUID& target_uuid,
       mojo::Array<mojom::BluetoothSdpRecordPtr> records) override;
 
   const std::vector<mojo::Array<mojom::BluetoothPropertyPtr>>&

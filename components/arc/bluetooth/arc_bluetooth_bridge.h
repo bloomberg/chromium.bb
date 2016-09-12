@@ -167,7 +167,7 @@ class ArcBluetoothBridge
   void SetRemoteDeviceProperty(mojom::BluetoothAddressPtr remote_addr,
                                mojom::BluetoothPropertyPtr property) override;
   void GetRemoteServiceRecord(mojom::BluetoothAddressPtr remote_addr,
-                              mojom::BluetoothUUIDPtr uuid) override;
+                              const device::BluetoothUUID& uuid) override;
 
   void GetRemoteServices(mojom::BluetoothAddressPtr remote_addr) override;
 
@@ -242,14 +242,14 @@ class ArcBluetoothBridge
                   const AddServiceCallback& callback) override;
   // Add a characteristic to a service and pass the characteristic handle back.
   void AddCharacteristic(int32_t service_handle,
-                         mojom::BluetoothUUIDPtr uuid,
+                         const device::BluetoothUUID& uuid,
                          int32_t properties,
                          int32_t permissions,
                          const AddCharacteristicCallback& callback) override;
   // Add a descriptor to the last characteristic added to the given service
   // and pass the descriptor handle back.
   void AddDescriptor(int32_t service_handle,
-                     mojom::BluetoothUUIDPtr uuid,
+                     const device::BluetoothUUID& uuid,
                      int32_t permissions,
                      const AddDescriptorCallback& callback) override;
   // Start a local service.
@@ -270,7 +270,7 @@ class ArcBluetoothBridge
 
   // Bluetooth Mojo host interface - Bluetooth SDP functions
   void GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
-                     mojom::BluetoothUUIDPtr target_uuid) override;
+                     const device::BluetoothUUID& target_uuid) override;
   void CreateSdpRecord(mojom::BluetoothSdpRecordPtr record_mojo,
                        const CreateSdpRecordCallback& callback) override;
   void RemoveSdpRecord(uint32_t service_handle,
@@ -375,11 +375,11 @@ class ArcBluetoothBridge
 
   void OnGetServiceRecordsDone(
       mojom::BluetoothAddressPtr remote_addr,
-      mojom::BluetoothUUIDPtr target_uuid,
+      const device::BluetoothUUID& target_uuid,
       const std::vector<bluez::BluetoothServiceRecordBlueZ>& records_bluez);
   void OnGetServiceRecordsError(
       mojom::BluetoothAddressPtr remote_addr,
-      mojom::BluetoothUUIDPtr target_uuid,
+      const device::BluetoothUUID& target_uuid,
       bluez::BluetoothServiceRecordBlueZ::ErrorCode error_code);
 
   bool CalledOnValidThread();

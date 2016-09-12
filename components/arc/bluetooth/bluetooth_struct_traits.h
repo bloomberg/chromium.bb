@@ -93,6 +93,13 @@ struct EnumTraits<arc::mojom::BluetoothSdpAttributeType,
   }
 };
 
+template <>
+struct StructTraits<arc::mojom::BluetoothUUIDDataView, device::BluetoothUUID> {
+  static std::vector<uint8_t> uuid(const device::BluetoothUUID& input);
+  static bool Read(arc::mojom::BluetoothUUIDDataView data,
+                   device::BluetoothUUID* output);
+};
+
 }  // namespace mojo
 
 #endif  // COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_

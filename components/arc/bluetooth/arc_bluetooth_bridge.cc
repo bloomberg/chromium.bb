@@ -107,7 +107,7 @@ arc::mojom::BluetoothGattDBElementPtr CreateGattDBElement(
   arc::mojom::BluetoothGattDBElementPtr element =
       arc::mojom::BluetoothGattDBElement::New();
   element->type = type;
-  element->uuid = arc::mojom::BluetoothUUID::From(attribute->GetUUID());
+  element->uuid = attribute->GetUUID();
   element->id = element->attribute_handle = element->start_handle =
       element->end_handle =
           ConvertGattIdentifierToId(attribute->GetIdentifier());
@@ -526,11 +526,11 @@ void ArcBluetoothBridge::GattCharacteristicValueChanged(
   service_id->is_primary = service->IsPrimary();
   service_id->id = mojom::BluetoothGattID::New();
   service_id->id->inst_id = ConvertGattIdentifierToId(service->GetIdentifier());
-  service_id->id->uuid = mojom::BluetoothUUID::From(service->GetUUID());
+  service_id->id->uuid = service->GetUUID();
 
   mojom::BluetoothGattIDPtr char_id = mojom::BluetoothGattID::New();
   char_id->inst_id = ConvertGattIdentifierToId(characteristic->GetIdentifier());
-  char_id->uuid = mojom::BluetoothUUID::From(characteristic->GetUUID());
+  char_id->uuid = characteristic->GetUUID();
 
   arc_bridge_service()->bluetooth()->instance()->OnGattNotify(
       std::move(address), std::move(service_id), std::move(char_id),
@@ -798,7 +798,7 @@ void ArcBluetoothBridge::SetRemoteDeviceProperty(
 
 void ArcBluetoothBridge::GetRemoteServiceRecord(
     mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothUUIDPtr uuid) {
+    const BluetoothUUID& uuid) {
   // TODO(smbarber): Implement GetRemoteServiceRecord
 }
 
@@ -1200,13 +1200,12 @@ BluetoothRemoteGattCharacteristic* ArcBluetoothBridge::FindGattCharacteristic(
   if (!device)
     return nullptr;
 
-  BluetoothRemoteGattService* service = FindGattAttributeByUuid(
-      device->GetGattServices(), service_id->id->uuid.To<BluetoothUUID>());
+  BluetoothRemoteGattService* service =
+      FindGattAttributeByUuid(device->GetGattServices(), service_id->id->uuid);
   if (!service)
     return nullptr;
 
-  return FindGattAttributeByUuid(service->GetCharacteristics(),
-                                 char_id->uuid.To<BluetoothUUID>());
+  return FindGattAttributeByUuid(service->GetCharacteristics(), char_id->uuid);
 }
 
 BluetoothRemoteGattDescriptor* ArcBluetoothBridge::FindGattDescriptor(
@@ -1220,7 +1219,7 @@ BluetoothRemoteGattDescriptor* ArcBluetoothBridge::FindGattDescriptor(
     return nullptr;
 
   return FindGattAttributeByUuid(characteristic->GetDescriptors(),
-                                 desc_id->uuid.To<BluetoothUUID>());
+                                 desc_id->uuid);
 }
 
 void ArcBluetoothBridge::ReadGattCharacteristic(
@@ -1420,7 +1419,7 @@ void ArcBluetoothBridge::AddService(mojom::BluetoothGattServiceIDPtr service_id,
   }
   base::WeakPtr<BluetoothLocalGattService> service =
       BluetoothLocalGattService::Create(
-          bluetooth_adapter_.get(), service_id->id->uuid.To<BluetoothUUID>(),
+          bluetooth_adapter_.get(), service_id->id->uuid,
           service_id->is_primary, nullptr /* included_service */,
           this /* delegate */);
   callback.Run(CreateGattAttributeHandle(service.get()));
@@ -1428,7 +1427,7 @@ void ArcBluetoothBridge::AddService(mojom::BluetoothGattServiceIDPtr service_id,
 
 void ArcBluetoothBridge::AddCharacteristic(
     int32_t service_handle,
-    mojom::BluetoothUUIDPtr uuid,
+    const BluetoothUUID& uuid,
     int32_t properties,
     int32_t permissions,
     const AddCharacteristicCallback& callback) {
@@ -1440,7 +1439,7 @@ void ArcBluetoothBridge::AddCharacteristic(
   }
   base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic =
       BluetoothLocalGattCharacteristic::Create(
-          uuid.To<BluetoothUUID>(), properties, permissions,
+          uuid, properties, permissions,
           bluetooth_adapter_->GetGattService(gatt_identifier_[service_handle]));
   int32_t characteristic_handle =
       CreateGattAttributeHandle(characteristic.get());
@@ -1449,7 +1448,7 @@ void ArcBluetoothBridge::AddCharacteristic(
 }
 
 void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
-                                       mojom::BluetoothUUIDPtr uuid,
+                                       const BluetoothUUID& uuid,
                                        int32_t permissions,
                                        const AddDescriptorCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -1459,7 +1458,7 @@ void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
   }
   // Chrome automatically adds a CCC Descriptor to a characteristic when needed.
   // We will generate a bogus handle for Android.
-  if (uuid.To<BluetoothUUID>() ==
+  if (uuid ==
       BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
     int32_t handle = GetNextGattServerAttributeHandle();
     callback.Run(handle);
@@ -1486,8 +1485,7 @@ void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
   DCHECK(characteristic);
 
   base::WeakPtr<BluetoothLocalGattDescriptor> descriptor =
-      BluetoothLocalGattDescriptor::Create(uuid.To<BluetoothUUID>(),
-                                           permissions, characteristic);
+      BluetoothLocalGattDescriptor::Create(uuid, permissions, characteristic);
   callback.Run(CreateGattAttributeHandle(descriptor.get()));
 }
 
@@ -1534,7 +1532,7 @@ void ArcBluetoothBridge::SendIndication(
     const SendIndicationCallback& callback) {}
 
 void ArcBluetoothBridge::GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
-                                       mojom::BluetoothUUIDPtr target_uuid) {
+                                       const BluetoothUUID& target_uuid) {
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
 
@@ -1542,15 +1540,14 @@ void ArcBluetoothBridge::GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
       static_cast<bluez::BluetoothDeviceBlueZ*>(device);
 
   mojom::BluetoothAddressPtr remote_addr_clone = remote_addr.Clone();
-  mojom::BluetoothUUIDPtr target_uuid_clone = target_uuid.Clone();
 
   device_bluez->GetServiceRecords(
       base::Bind(&ArcBluetoothBridge::OnGetServiceRecordsDone,
                  weak_factory_.GetWeakPtr(), base::Passed(&remote_addr),
-                 base::Passed(&target_uuid)),
+                 target_uuid),
       base::Bind(&ArcBluetoothBridge::OnGetServiceRecordsError,
                  weak_factory_.GetWeakPtr(), base::Passed(&remote_addr_clone),
-                 base::Passed(&target_uuid_clone)));
+                 target_uuid));
 }
 
 void ArcBluetoothBridge::CreateSdpRecord(
@@ -1662,16 +1659,7 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
       type == mojom::BluetoothPropertyType::UUIDS) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
-    mojo::Array<mojom::BluetoothUUIDPtr> uuid_results =
-        mojo::Array<mojom::BluetoothUUIDPtr>::New(uuids.size());
-
-    size_t i = 0;
-    for (const auto& uuid : uuids) {
-      uuid_results[i] = mojom::BluetoothUUID::From(uuid);
-      i++;
-    }
-
-    btp->set_uuids(std::move(uuid_results));
+    btp->set_uuids(std::vector<BluetoothUUID>(uuids.begin(), uuids.end()));
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1934,7 +1922,7 @@ void ArcBluetoothBridge::SendCachedPairedDevices() const {
 
 void ArcBluetoothBridge::OnGetServiceRecordsDone(
     mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothUUIDPtr target_uuid,
+    const BluetoothUUID& target_uuid,
     const std::vector<bluez::BluetoothServiceRecordBlueZ>& records_bluez) {
   if (!CheckBluetoothInstanceVersion(kMinSdpSupportVersion))
     return;
@@ -1943,14 +1931,13 @@ void ArcBluetoothBridge::OnGetServiceRecordsDone(
     return;
 
   arc_bridge_service()->bluetooth()->instance()->OnGetSdpRecords(
-      mojom::BluetoothStatus::SUCCESS, std::move(remote_addr),
-      std::move(target_uuid),
+      mojom::BluetoothStatus::SUCCESS, std::move(remote_addr), target_uuid,
       mojo::Array<mojom::BluetoothSdpRecordPtr>::From(records_bluez));
 }
 
 void ArcBluetoothBridge::OnGetServiceRecordsError(
     mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothUUIDPtr target_uuid,
+    const BluetoothUUID& target_uuid,
     bluez::BluetoothServiceRecordBlueZ::ErrorCode error_code) {
   if (!HasBluetoothInstance())
     return;
@@ -1974,7 +1961,7 @@ void ArcBluetoothBridge::OnGetServiceRecordsError(
   }
 
   arc_bridge_service()->bluetooth()->instance()->OnGetSdpRecords(
-      status, std::move(remote_addr), std::move(target_uuid),
+      status, std::move(remote_addr), target_uuid,
       mojo::Array<mojom::BluetoothSdpRecordPtr>::New(0));
 }
 

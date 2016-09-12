@@ -110,7 +110,7 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_TRUE(prop[2]->is_uuids());
   EXPECT_EQ(1u, prop[2]->get_uuids().size());
   EXPECT_EQ(bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID,
-            prop[2]->get_uuids()[0].To<device::BluetoothUUID>().value());
+            prop[2]->get_uuids()[0].value());
   EXPECT_TRUE(prop[3]->is_device_class());
   EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kLowEnergyClass,
             prop[3]->get_device_class());
@@ -176,13 +176,13 @@ TEST_F(ArcBluetoothBridgeTest, GetGattDB) {
 
   EXPECT_EQ(device::BluetoothUUID(
                 bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-            db[0]->uuid.To<device::BluetoothUUID>());
+            db[0]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_PRIMARY_SERVICE,
             db[0]->type);
 
   EXPECT_EQ(device::BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
                                       kHeartRateMeasurementUUID),
-            db[1]->uuid.To<device::BluetoothUUID>());
+            db[1]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
             db[1]->type);
   EXPECT_EQ(device::BluetoothGattCharacteristic::PROPERTY_NOTIFY,
@@ -190,13 +190,13 @@ TEST_F(ArcBluetoothBridgeTest, GetGattDB) {
 
   EXPECT_EQ(device::BluetoothUUID(bluez::FakeBluetoothGattDescriptorClient::
                                       kClientCharacteristicConfigurationUUID),
-            db[2]->uuid.To<device::BluetoothUUID>());
+            db[2]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR,
             db[2]->type);
 
   EXPECT_EQ(device::BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
                                       kBodySensorLocationUUID),
-            db[3]->uuid.To<device::BluetoothUUID>());
+            db[3]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
             db[3]->type);
   EXPECT_EQ(device::BluetoothGattCharacteristic::PROPERTY_READ,
@@ -204,7 +204,7 @@ TEST_F(ArcBluetoothBridgeTest, GetGattDB) {
 
   EXPECT_EQ(device::BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
                                       kHeartRateControlPointUUID),
-            db[4]->uuid.To<device::BluetoothUUID>());
+            db[4]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
             db[4]->type);
   EXPECT_EQ(device::BluetoothGattCharacteristic::PROPERTY_WRITE,

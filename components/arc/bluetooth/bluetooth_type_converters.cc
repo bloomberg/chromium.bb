@@ -21,7 +21,6 @@
 namespace {
 
 constexpr size_t kAddressSize = 6;
-constexpr size_t kUUIDSize = 16;
 constexpr char kInvalidAddress[] = "00:00:00:00:00:00";
 
 // SDP Service attribute IDs.
@@ -80,44 +79,6 @@ std::string TypeConverter<std::string, arc::mojom::BluetoothAddress>::Convert(
   }
 
   return addr_stream.str();
-}
-
-// static
-arc::mojom::BluetoothUUIDPtr
-TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID>::Convert(
-    const device::BluetoothUUID& uuid) {
-  std::string uuid_str = StripNonHex(uuid.canonical_value());
-
-  std::vector<uint8_t> address_bytes;
-  base::HexStringToBytes(uuid_str, &address_bytes);
-
-  arc::mojom::BluetoothUUIDPtr uuidp = arc::mojom::BluetoothUUID::New();
-  uuidp->uuid = mojo::Array<uint8_t>::From(address_bytes);
-
-  return uuidp;
-}
-
-// static
-device::BluetoothUUID
-TypeConverter<device::BluetoothUUID, arc::mojom::BluetoothUUIDPtr>::Convert(
-    const arc::mojom::BluetoothUUIDPtr& uuid) {
-  std::vector<uint8_t> address_bytes = uuid->uuid.To<std::vector<uint8_t>>();
-
-  if (address_bytes.size() != kUUIDSize)
-    return device::BluetoothUUID();
-
-  // BluetoothUUID expects the format below with the dashes inserted.
-  // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  std::string uuid_str =
-      base::HexEncode(address_bytes.data(), address_bytes.size());
-  const size_t uuid_dash_pos[] = {8, 13, 18, 23};
-  for (auto pos : uuid_dash_pos)
-    uuid_str = uuid_str.insert(pos, "-");
-
-  device::BluetoothUUID result(uuid_str);
-
-  DCHECK(result.IsValid());
-  return result;
 }
 
 // static

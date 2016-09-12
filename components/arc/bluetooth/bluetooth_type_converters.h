@@ -16,10 +16,6 @@
 #include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
-namespace device {
-class BluetoothUUID;
-}
-
 namespace arc {
 // The design of SDP attribute allows the attributes in the sequence of an
 // attribute to be of sequence type. To prevent a malicious party from sending
@@ -42,18 +38,6 @@ struct TypeConverter<arc::mojom::BluetoothAddressPtr, std::string> {
 template <>
 struct TypeConverter<std::string, arc::mojom::BluetoothAddress> {
   static std::string Convert(const arc::mojom::BluetoothAddress& ptr);
-};
-
-template <>
-struct TypeConverter<arc::mojom::BluetoothUUIDPtr, device::BluetoothUUID> {
-  static arc::mojom::BluetoothUUIDPtr Convert(
-      const device::BluetoothUUID& uuid);
-};
-
-template <>
-struct TypeConverter<device::BluetoothUUID, arc::mojom::BluetoothUUIDPtr> {
-  static device::BluetoothUUID Convert(
-      const arc::mojom::BluetoothUUIDPtr& uuid);
 };
 
 template <>

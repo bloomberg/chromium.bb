@@ -115,7 +115,7 @@ void FakeBluetoothInstance::RequestGattWrite(
 void FakeBluetoothInstance::OnGetSdpRecords(
     mojom::BluetoothStatus status,
     mojom::BluetoothAddressPtr remove_addr,
-    mojom::BluetoothUUIDPtr target_uuid,
+    const device::BluetoothUUID& target_uuid,
     mojo::Array<mojom::BluetoothSdpRecordPtr> records) {}
 
 }  // namespace arc
