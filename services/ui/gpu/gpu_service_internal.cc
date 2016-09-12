@@ -5,6 +5,7 @@
 #include "services/ui/gpu/gpu_service_internal.h"
 
 #include "base/memory/shared_memory.h"
+#include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -44,18 +45,12 @@ void EstablishGpuChannelDone(
 
 }  // namespace
 
-GpuServiceInternal::GpuServiceInternal(
-    const gpu::GPUInfo& gpu_info,
-    gpu::GpuWatchdogThread* watchdog_thread,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+GpuServiceInternal::GpuServiceInternal()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread"),
-      watchdog_thread_(watchdog_thread),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      gpu_info_(gpu_info),
       binding_(this) {}
 
 GpuServiceInternal::~GpuServiceInternal() {
@@ -164,6 +159,20 @@ void GpuServiceInternal::InitializeOnGpuThread(base::WaitableEvent* event) {
   gpu_info_.jpeg_decode_accelerator_supported =
       media::GpuJpegDecodeAccelerator::IsSupported();
 
+#if defined(USE_OZONE)
+  // TODO(rjkroege): Must plumb the shell::Connector* to here and pass into
+  // ozone.
+  ui::OzonePlatform::InitializeForGPU();
+#endif
+
+  if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER) {
+    gpu_memory_buffer_factory_ =
+        gpu::GpuMemoryBufferFactory::CreateNativeType();
+  }
+
+  if (!gl::init::InitializeGLOneOff())
+    VLOG(1) << "gl::init::InitializeGLOneOff failed";
+
   DCHECK(!owned_sync_point_manager_);
   const bool allow_threaded_wait = false;
   owned_sync_point_manager_.reset(
@@ -172,11 +181,12 @@ void GpuServiceInternal::InitializeOnGpuThread(base::WaitableEvent* event) {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
+  watchdog_thread_ = gpu::GpuWatchdogThread::Create();
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
-      gpu_preferences_, this, watchdog_thread_,
+      gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(), io_thread_.task_runner().get(),
       &shutdown_event_, owned_sync_point_manager_.get(),
-      gpu_memory_buffer_factory_));
+      gpu_memory_buffer_factory_.get()));
 
   media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
   event->Signal();
@@ -220,6 +230,7 @@ void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
                             base::Unretained(this), &event));
   event.Wait();
 
+  // TODO(sad): Get the real GPUInfo.
   callback.Run(gpu_info_);
 }
 
@@ -234,6 +245,12 @@ void GpuServiceInternal::EstablishGpuChannel(
   EstablishGpuChannelInternal(client_id, client_tracing_id, preempts,
                               allow_view_command_buffers,
                               allow_real_time_streams, callback);
+}
+
+// static
+GpuServiceInternal* GpuServiceInternal::GetInstance() {
+  return base::Singleton<GpuServiceInternal,
+                         base::LeakySingletonTraits<GpuServiceInternal>>::get();
 }
 
 }  // namespace ui

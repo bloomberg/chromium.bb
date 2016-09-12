@@ -12,7 +12,6 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/ui/gpu/gpu_main.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
@@ -78,7 +77,6 @@ class GpuServiceProxy : public mojom::GpuService,
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  GpuMain gpu_main_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceProxy);
 };
