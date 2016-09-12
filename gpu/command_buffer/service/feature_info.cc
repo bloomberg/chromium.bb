@@ -1044,6 +1044,12 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
     feature_flags_.chromium_image_ycbcr_420v = true;
   }
+
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+  // TODO(dcastagna): Determine this feature at runtime querying minigbm.
+  // crbug.com/646148
+  AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
+  feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
   if (extensions.Contains("GL_APPLE_ycbcr_422")) {

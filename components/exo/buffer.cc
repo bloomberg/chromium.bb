@@ -52,7 +52,7 @@ GLenum GLInternalFormat(gfx::BufferFormat format) {
       GL_RGB,                              // BGRX_8888
       GL_BGRA_EXT,                         // BGRA_8888
       GL_RGB_YCRCB_420_CHROMIUM,           // YVU_420
-      GL_INVALID_ENUM,                     // YUV_420_BIPLANAR
+      GL_RGB_YCBCR_420V_CHROMIUM,          // YUV_420_BIPLANAR
       GL_RGB_YCBCR_422_CHROMIUM,           // UYVY_422
   };
   static_assert(arraysize(kGLInternalFormats) ==
