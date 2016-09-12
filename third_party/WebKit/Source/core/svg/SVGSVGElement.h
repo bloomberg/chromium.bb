@@ -50,8 +50,6 @@ public:
     DECLARE_NODE_FACTORY(SVGSVGElement);
 
     // 'SVGSVGElement' functions
-    SVGRectTearOff* viewport() const;
-
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
 

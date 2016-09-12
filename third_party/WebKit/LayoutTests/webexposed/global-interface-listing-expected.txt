@@ -5664,7 +5664,6 @@ interface SVGSVGElement : SVGGraphicsElement
     getter preserveAspectRatio
     getter useCurrentView
     getter viewBox
-    getter viewport
     getter width
     getter x
     getter y

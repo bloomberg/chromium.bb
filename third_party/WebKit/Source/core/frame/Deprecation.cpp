@@ -367,9 +367,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8SVGSVGElement_CurrentView_AttributeGetter:
         return willBeRemoved("SVGSVGElement.currentView", 56, "4511711998509056");
 
-    case UseCounter::V8SVGSVGElement_Viewport_AttributeGetter:
-        return willBeRemoved("SVGSVGElement.viewport", 55, "5686865248124928");
-
     case UseCounter::V8SVGViewElement_ViewTarget_AttributeGetter:
         return willBeRemoved("SVGViewElement.viewTarget", 56, "5665473114931200");
 

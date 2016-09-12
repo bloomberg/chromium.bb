@@ -88,13 +88,6 @@ SVGSVGElement::~SVGSVGElement()
 {
 }
 
-SVGRectTearOff* SVGSVGElement::viewport() const
-{
-    // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
-    // As we have no test coverage for this, we're going to disable it completly for now.
-    return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
-}
-
 SVGViewSpec* SVGSVGElement::currentView()
 {
     if (!m_viewSpec)
