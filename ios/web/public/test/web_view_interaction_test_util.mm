@@ -64,17 +64,11 @@ CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
       element_id +
       " not found'};"
       "  var rect = element.getBoundingClientRect();"
-      "  var top = rect.top + document.body.scrollTop;"
-      "  var bottom = rect.bottom + document.body.scrollTop;"
-      "  var left = rect.left + document.body.scrollLeft;"
-      "  var right = rect.right + document.body.scrollLeft;"
       "  return {"
-      "      'left': left,"
-      "      'top': top,"
-      "      'width': right - left,"
-      "      'height': bottom - top,"
-      "      'document_width' : document.documentElement.scrollWidth,"
-      "      'document_height' : document.documentElement.scrollHeight,"
+      "      'left': rect.left,"
+      "      'top': rect.top,"
+      "      'width': rect.right - rect.left,"
+      "      'height': rect.bottom - rect.top,"
       "    };"
       "})();";
 
