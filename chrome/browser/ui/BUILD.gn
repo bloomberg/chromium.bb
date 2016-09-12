@@ -1544,7 +1544,7 @@ split_static_library("ui") {
         ]
       }
     }
-    if (!is_mac) {
+    if (!is_mac || mac_views_browser) {
       sources += [
         # This test header is included because it contains forward declarations
         # needed for "friend" statements for use in tests.
@@ -1839,7 +1839,12 @@ split_static_library("ui") {
           "views/tabs/window_finder_mus.h",
         ]
       }
-      deps += [ "//ui/views/mus" ]
+
+      # TODO(ellyjones): This target fails to build on Mac because of
+      # incompatible uses of gpu::AcceleratedWidget vs gpu::SurfaceHandle.
+      if (!is_mac) {
+        deps += [ "//ui/views/mus" ]
+      }
     }
     if (use_ash) {
       sources += [
