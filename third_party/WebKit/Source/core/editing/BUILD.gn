@@ -9,6 +9,7 @@ blink_core_sources("editing") {
   sources = [
     "CaretBase.cpp",
     "CaretBase.h",
+    "CompositionUnderline.cpp",
     "CompositionUnderline.h",
     "DOMSelection.cpp",
     "DOMSelection.h",

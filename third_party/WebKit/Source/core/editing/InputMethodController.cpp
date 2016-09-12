@@ -415,12 +415,12 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         return;
     }
     for (const auto& underline : underlines) {
-        unsigned underlineStart = baseOffset + underline.startOffset;
-        unsigned underlineEnd = baseOffset + underline.endOffset;
+        unsigned underlineStart = baseOffset + underline.startOffset();
+        unsigned underlineEnd = baseOffset + underline.endOffset();
         EphemeralRange ephemeralLineRange = EphemeralRange(Position(baseNode, underlineStart), Position(baseNode, underlineEnd));
         if (ephemeralLineRange.isNull())
             continue;
-        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color, underline.thick, underline.backgroundColor);
+        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color(), underline.thick(), underline.backgroundColor());
     }
 }
 
@@ -447,12 +447,12 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     clear();
 
     for (const auto& underline : underlines) {
-        unsigned underlineStart = compositionStart + underline.startOffset;
-        unsigned underlineEnd = compositionStart + underline.endOffset;
+        unsigned underlineStart = compositionStart + underline.startOffset();
+        unsigned underlineEnd = compositionStart + underline.endOffset();
         EphemeralRange ephemeralLineRange = PlainTextRange(underlineStart, underlineEnd).createRange(*editable);
         if (ephemeralLineRange.isNull())
             continue;
-        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color, underline.thick, underline.backgroundColor);
+        frame().document()->markers().addCompositionMarker(ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(), underline.color(), underline.thick(), underline.backgroundColor());
     }
 
     m_hasComposition = true;

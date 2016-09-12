@@ -11,10 +11,10 @@
 
 namespace blink {
 
-struct CompositionUnderline;
 struct PaintInfo;
 
 class Color;
+class CompositionUnderline;
 class ComputedStyle;
 class DocumentMarker;
 class FloatPoint;

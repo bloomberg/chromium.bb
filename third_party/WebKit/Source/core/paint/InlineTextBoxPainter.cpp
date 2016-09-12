@@ -265,12 +265,12 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
 
 unsigned InlineTextBoxPainter::underlinePaintStart(const CompositionUnderline& underline)
 {
-    return std::max(static_cast<unsigned>(m_inlineTextBox.start()), underline.startOffset);
+    return std::max(static_cast<unsigned>(m_inlineTextBox.start()), underline.startOffset());
 }
 
 unsigned InlineTextBoxPainter::underlinePaintEnd(const CompositionUnderline& underline)
 {
-    unsigned paintEnd = std::min(m_inlineTextBox.end() + 1, underline.endOffset); // end() points at the last char, not past it.
+    unsigned paintEnd = std::min(m_inlineTextBox.end() + 1, underline.endOffset()); // end() points at the last char, not past it.
     if (m_inlineTextBox.truncation() != cNoTruncation)
         paintEnd = std::min(paintEnd, static_cast<unsigned>(m_inlineTextBox.start() + m_inlineTextBox.truncation()));
     return paintEnd;
@@ -347,7 +347,7 @@ void InlineTextBoxPainter::paintDocumentMarkers(const PaintInfo& paintInfo, cons
             {
                 CompositionUnderline underline(marker->startOffset(), marker->endOffset(), marker->underlineColor(), marker->thick(), marker->backgroundColor());
                 if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
-                    paintSingleCompositionBackgroundRun(paintInfo.context, boxOrigin, style, font, underline.backgroundColor, underlinePaintStart(underline), underlinePaintEnd(underline));
+                    paintSingleCompositionBackgroundRun(paintInfo.context, boxOrigin, style, font, underline.backgroundColor(), underlinePaintStart(underline), underlinePaintEnd(underline));
                 else
                     paintCompositionUnderline(paintInfo.context, boxOrigin, underline);
             }
@@ -791,7 +791,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
 void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, const LayoutPoint& boxOrigin, const CompositionUnderline& underline)
 {
-    if (underline.color == Color::transparent)
+    if (underline.color() == Color::transparent)
         return;
 
     if (m_inlineTextBox.truncation() == cFullTruncation)
@@ -825,7 +825,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     // If there's not enough space the underline will touch or overlap characters.
     int lineThickness = 1;
     int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->getFontMetrics().ascent();
-    if (underline.thick && m_inlineTextBox.logicalHeight() - baseline >= 2)
+    if (underline.thick() && m_inlineTextBox.logicalHeight() - baseline >= 2)
         lineThickness = 2;
 
     // We need to have some space between underlines of subsequent clauses, because some input methods do not use different underline styles for those.
@@ -833,7 +833,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     start += 1;
     width -= 2;
 
-    context.setStrokeColor(underline.color);
+    context.setStrokeColor(underline.color());
     context.setStrokeThickness(lineThickness);
     context.drawLineForText(FloatPoint(boxOrigin.x() + start, (boxOrigin.y() + m_inlineTextBox.logicalHeight() - lineThickness).toFloat()), width, m_inlineTextBox.getLineLayoutItem().document().printing());
 }
