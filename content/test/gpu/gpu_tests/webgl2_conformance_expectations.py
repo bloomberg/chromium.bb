@@ -39,11 +39,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     # All platforms.
-    self.Fail('conformance/misc/object-deletion-behaviour.html', bug=644957)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/rendering/blitframebuffer-test.html', bug=634525)
+    self.Fail('conformance2/buffers/uniform-buffers.html', bug=644957)
+    self.Fail('conformance2/state/gl-object-get-calls.html', bug=644957)
 
     # Windows only.
     # We are awesome!
@@ -131,8 +132,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win', 'intel'], bug=483282)
 
-    self.Fail('conformance2/buffers/uniform-buffers.html',
-        ['win7', 'intel'], bug=593024)
+    # self.Fail('conformance2/buffers/uniform-buffers.html',
+    #     ['win7', 'intel'], bug=593024)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win7', 'intel'], bug=593024)
 

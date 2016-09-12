@@ -101,7 +101,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Conformance expectations
     # ========================
     # Fails on all platforms
-    self.Fail('conformance/misc/object-deletion-behaviour.html', bug=644957)
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.

@@ -2414,8 +2414,10 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, Web
     bool deleted;
     if (!checkObjectToBeBound("bindBufferBase", buffer, deleted))
         return;
-    if (deleted)
-        buffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase", "attempt to bind a deleted buffer");
+        return;
+    }
     if (!validateAndUpdateBufferBindBaseTarget("bindBufferBase", target, index, buffer))
         return;
 
@@ -2429,8 +2431,10 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, We
     bool deleted;
     if (!checkObjectToBeBound("bindBufferRange", buffer, deleted))
         return;
-    if (deleted)
-        buffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindBufferRange", "attempt to bind a deleted buffer");
+        return;
+    }
     if (!validateValueFitNonNegInt32("bindBufferRange", "offset", offset)
         || !validateValueFitNonNegInt32("bindBufferRange", "size", size)) {
         return;
@@ -2731,8 +2735,10 @@ void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer
     if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
         return;
 
-    if (deleted)
-        buffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindFramebuffer", "attempt to bind a deleted framebuffer");
+        return;
+    }
 
     switch (target) {
     case GL_DRAW_FRAMEBUFFER:

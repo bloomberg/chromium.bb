@@ -1520,8 +1520,10 @@ void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer)
     bool deleted;
     if (!checkObjectToBeBound("bindBuffer", buffer, deleted))
         return;
-    if (deleted)
-        buffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindBuffer", "attempt to bind a deleted buffer");
+        return;
+    }
     if (!validateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
         return;
 
@@ -1536,9 +1538,10 @@ void WebGLRenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer*
     bool deleted;
     if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
         return;
-
-    if (deleted)
-        buffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindFramebuffer", "attempt to bind a deleted framebuffer");
+        return;
+    }
 
     if (target != GL_FRAMEBUFFER) {
         synthesizeGLError(GL_INVALID_ENUM, "bindFramebuffer", "invalid target");
@@ -1553,8 +1556,10 @@ void WebGLRenderingContextBase::bindRenderbuffer(GLenum target, WebGLRenderbuffe
     bool deleted;
     if (!checkObjectToBeBound("bindRenderbuffer", renderBuffer, deleted))
         return;
-    if (deleted)
-        renderBuffer = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindRenderbuffer", "attempt to bind a deleted renderbuffer");
+        return;
+    }
     if (target != GL_RENDERBUFFER) {
         synthesizeGLError(GL_INVALID_ENUM, "bindRenderbuffer", "invalid target");
         return;
@@ -1573,8 +1578,10 @@ void WebGLRenderingContextBase::bindTexture(GLenum target, WebGLTexture* texture
     bool deleted;
     if (!checkObjectToBeBound("bindTexture", texture, deleted))
         return;
-    if (deleted)
-        texture = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindTexture", "attempt to bind a deleted texture");
+        return;
+    }
     if (texture && texture->getTarget() && texture->getTarget() != target) {
         synthesizeGLError(GL_INVALID_OPERATION, "bindTexture", "textures can not be used with multiple targets");
         return;
