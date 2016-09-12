@@ -409,8 +409,8 @@ class BidirectionalStreamQuicImplTest
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
-        &push_promise_index_, base::ThreadTaskRunnerHandle::Get().get(),
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &push_promise_index_,
+        base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
     session_->GetCryptoStream()->CryptoConnect();

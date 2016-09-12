@@ -22,7 +22,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/proxy/proxy_server.h"
@@ -134,7 +133,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const QuicConfig& config,
       QuicCryptoClientConfig* crypto_config,
       const char* const connection_description,
-      base::TimeTicks dns_resolution_start_time,
       base::TimeTicks dns_resolution_end_time,
       QuicClientPushPromiseIndex* push_promise_index,
       base::TaskRunner* task_runner,
@@ -288,8 +286,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   void DeletePromised(QuicClientPromisedInfo* promised) override;
 
-  const LoadTimingInfo::ConnectTiming& GetConnectTiming();
-
  protected:
   // QuicSession methods:
   bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
@@ -356,7 +352,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
   std::vector<std::unique_ptr<QuicChromiumPacketReader>> packet_readers_;
-  LoadTimingInfo::ConnectTiming connect_timing_;
+  base::TimeTicks dns_resolution_end_time_;
+  base::TimeTicks handshake_start_;  // Time the handshake was started.
   std::unique_ptr<QuicConnectionLogger> logger_;
   // True when the session is going away, and streams may no longer be created
   // on this session. Existing stream will continue to be processed.

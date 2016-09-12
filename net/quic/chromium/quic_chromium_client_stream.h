@@ -121,9 +121,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
   bool can_migrate() { return can_migrate_; }
 
-  // True if this stream is the first data stream created on this session.
-  bool IsFirstStream();
-
   using QuicSpdyStream::HasBufferedData;
 
  private:
