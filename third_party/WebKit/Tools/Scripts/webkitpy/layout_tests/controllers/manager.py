@@ -253,11 +253,8 @@ class Manager(object):
         if self._options.order == 'natural':
             tests_to_run.sort(key=self._port.test_key)
         elif self._options.order == 'random':
-            random.shuffle(tests_to_run)
-        elif self._options.order == 'random-seeded':
-            rnd = random.Random()
-            rnd.seed(4)  # http://xkcd.com/221/
-            rnd.shuffle(tests_to_run)
+            tests_to_run.sort()
+            random.Random(self._options.seed).shuffle(tests_to_run)
 
         tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
         self._expectations.add_extra_skipped_tests(tests_in_other_chunks)

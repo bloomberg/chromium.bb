@@ -126,11 +126,14 @@ class Testprinter(unittest.TestCase):
 
     def test_print_config(self):
         printer, err = self.get_printer()
-        # FIXME: it's lame that i have to set these options directly.
+        # FIXME: Make it so these options don't have to be set directly.
+        # pylint: disable=protected-access
         printer._options.pixel_tests = True
         printer._options.new_baseline = True
         printer._options.time_out_ms = 6000
         printer._options.slow_time_out_ms = 12000
+        printer._options.order = 'random'
+        printer._options.seed = 1234
         printer.print_config('/tmp')
         self.assertIn("Using port 'test-mac-mac10.10'", err.getvalue())
         self.assertIn('Test configuration: <mac10.10, x86, release>', err.getvalue())
@@ -141,6 +144,7 @@ class Testprinter(unittest.TestCase):
         self.assertIn('Pixel tests enabled', err.getvalue())
         self.assertIn('Command line:', err.getvalue())
         self.assertIn('Regular timeout: ', err.getvalue())
+        self.assertIn('Using random order with seed: 1234', err.getvalue())
 
         self.reset(err)
         printer._options.quiet = True
