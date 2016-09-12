@@ -13,6 +13,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
 
@@ -21,12 +22,17 @@ namespace test {
 
 class ScreenDimmerTest : public AshTestBase {
  public:
-  ScreenDimmerTest() : dimmer_(nullptr) {}
+  ScreenDimmerTest() {}
   ~ScreenDimmerTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();
-    dimmer_ = ScreenDimmer::GetForRoot();
+    dimmer_ = base::MakeUnique<ScreenDimmer>(ScreenDimmer::Container::ROOT);
+  }
+
+  void TearDown() override {
+    dimmer_.reset();
+    AshTestBase::TearDown();
   }
 
   aura::Window* GetDimWindow() {
@@ -42,7 +48,7 @@ class ScreenDimmerTest : public AshTestBase {
   }
 
  protected:
-  ScreenDimmer* dimmer_;  // not owned
+  std::unique_ptr<ScreenDimmer> dimmer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmerTest);
@@ -91,19 +97,11 @@ TEST_F(ScreenDimmerTest, MAYBE_ResizeLayer) {
   EXPECT_EQ(kNewBounds.ToString(), dimming_layer->bounds().ToString());
 }
 
-TEST_F(ScreenDimmerTest, RootDimmer) {
-  ScreenDimmer* root_dimmer = ScreenDimmer::GetForRoot();
-  // -100 is the magic number for root window.
-  EXPECT_EQ(root_dimmer, ScreenDimmer::FindForTest(-100));
-  EXPECT_EQ(nullptr, ScreenDimmer::FindForTest(-1));
-}
-
 TEST_F(ScreenDimmerTest, DimAtBottom) {
-  ScreenDimmer* root_dimmer = ScreenDimmer::GetForRoot();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(1, root_window));
-  root_dimmer->SetDimming(true);
+  dimmer_->SetDimming(true);
   std::vector<aura::Window*>::const_iterator dim_iter =
       std::find(root_window->children().begin(), root_window->children().end(),
                 GetDimWindow());
@@ -111,9 +109,9 @@ TEST_F(ScreenDimmerTest, DimAtBottom) {
   // Dim layer is at top.
   EXPECT_EQ(*dim_iter, *root_window->children().rbegin());
 
-  root_dimmer->SetDimming(false);
-  root_dimmer->set_at_bottom(true);
-  root_dimmer->SetDimming(true);
+  dimmer_->SetDimming(false);
+  dimmer_->set_at_bottom(true);
+  dimmer_->SetDimming(true);
 
   dim_iter = std::find(root_window->children().begin(),
                        root_window->children().end(), GetDimWindow());

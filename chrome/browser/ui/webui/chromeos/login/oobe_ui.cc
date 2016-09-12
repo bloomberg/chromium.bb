@@ -8,11 +8,11 @@
 
 #include <memory>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/wm/screen_dimmer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -361,11 +361,9 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(error_screen_handler_);
-  if (!chrome::IsRunningInMash()) {
-    ash::ScreenDimmer::GetForContainer(
-        ash::kShellWindowId_LockScreenContainersContainer)
-        ->SetDimming(false);
-  } else {
+  if (chrome::IsRunningInMash()) {
+    // TODO: Ash needs to expose screen dimming api. See
+    // http://crbug.com/646034.
     NOTIMPLEMENTED();
   }
 }
@@ -590,11 +588,15 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
                 std::end(kDimOverlayScreenIds),
                 new_screen) != std::end(kDimOverlayScreenIds);
   if (!chrome::IsRunningInMash()) {
-    ash::ScreenDimmer* screen_dimmer = ash::ScreenDimmer::GetForContainer(
-        ash::kShellWindowId_LockScreenContainersContainer);
-    screen_dimmer->set_at_bottom(true);
-    screen_dimmer->SetDimming(should_dim);
+    if (!screen_dimmer_) {
+      screen_dimmer_ = base::MakeUnique<ash::ScreenDimmer>(
+          ash::ScreenDimmer::Container::LOCK_SCREEN);
+    }
+    screen_dimmer_->set_at_bottom(true);
+    screen_dimmer_->SetDimming(should_dim);
   } else {
+    // TODO: Ash needs to expose screen dimming api. See
+    // http://crbug.com/646034.
     NOTIMPLEMENTED();
   }
 
