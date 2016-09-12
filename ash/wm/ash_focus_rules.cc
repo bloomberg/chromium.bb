@@ -6,6 +6,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/focus_rules.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
@@ -117,13 +118,15 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
 aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     int index,
     aura::Window* ignore) const {
-  aura::Window* window = NULL;
-  aura::Window* root = ignore ? ignore->GetRootWindow() : NULL;
-  aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
-      kActivatableShellWindowIds[index], root);
-  for (aura::Window::Windows::const_iterator iter = containers.begin();
-       iter != containers.end() && !window; ++iter) {
-    window = GetTopmostWindowToActivateInContainer((*iter), ignore);
+  aura::Window* window = nullptr;
+  aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
+  WmWindow::Windows containers = GetContainersFromAllRootWindows(
+      kActivatableShellWindowIds[index], WmWindowAura::Get(root));
+  for (WmWindow* container : containers) {
+    window = GetTopmostWindowToActivateInContainer(
+        WmWindowAura::GetAuraWindow(container), ignore);
+    if (window)
+      return window;
   }
   return window;
 }

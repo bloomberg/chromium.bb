@@ -18,6 +18,7 @@ namespace ash {
 
 class AlwaysOnTopController;
 class AnimatingWallpaperWidgetController;
+class SystemModalContainerLayoutManager;
 class WallpaperWidgetController;
 class WmShelf;
 class WmShell;
@@ -55,6 +56,16 @@ class ASH_EXPORT WmRootWindowController {
 
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
+  // Returns the layout manager for the appropriate modal-container. If the
+  // window is inside the lockscreen modal container, then the layout manager
+  // for that is returned. Otherwise the layout manager for the default modal
+  // container is returned.
+  // If no window is specified (i.e. |window| is null), then the lockscreen
+  // modal container is used if the screen is currently locked. Otherwise, the
+  // default modal container is used.
+  SystemModalContainerLayoutManager* GetSystemModalLayoutManager(
+      WmWindow* window);
+
   virtual bool HasShelf() = 0;
 
   virtual WmShell* GetShell() = 0;
@@ -65,6 +76,10 @@ class ASH_EXPORT WmRootWindowController {
 
   // Returns the window associated with this WmRootWindowController.
   virtual WmWindow* GetWindow() = 0;
+
+  // Gets the WmWindow whose shell window id is |container_id|.
+  WmWindow* GetContainer(int container_id);
+  const WmWindow* GetContainer(int container_id) const;
 
   // Configures |init_params| prior to initializing |widget|.
   // |shell_container_id| is the id of the container to parent |widget| to.

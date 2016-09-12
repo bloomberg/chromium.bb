@@ -31,7 +31,9 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_cycle_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -200,6 +202,10 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
 
 WmShell::~WmShell() {}
 
+WmRootWindowController* WmShell::GetPrimaryRootWindowController() {
+  return GetPrimaryRootWindow()->GetRootWindowController();
+}
+
 WmWindow* WmShell::GetRootWindowForNewWindows() {
   if (scoped_root_window_for_new_windows_)
     return scoped_root_window_for_new_windows_;
@@ -224,6 +230,30 @@ bool WmShell::IsSystemModalWindowOpen() {
     }
   }
   return false;
+}
+
+void WmShell::CreateModalBackground(WmWindow* window) {
+  for (WmWindow* root_window : GetAllRootWindows()) {
+    root_window->GetRootWindowController()
+        ->GetSystemModalLayoutManager(window)
+        ->CreateModalBackground();
+  }
+}
+
+void WmShell::OnModalWindowRemoved(WmWindow* removed) {
+  WmWindow::Windows root_windows = GetAllRootWindows();
+  for (WmWindow* root_window : root_windows) {
+    if (root_window->GetRootWindowController()
+            ->GetSystemModalLayoutManager(removed)
+            ->ActivateNextModalWindow()) {
+      return;
+    }
+  }
+  for (WmWindow* root_window : root_windows) {
+    root_window->GetRootWindowController()
+        ->GetSystemModalLayoutManager(removed)
+        ->DestroyModalBackground();
+  }
 }
 
 void WmShell::ShowAppList() {

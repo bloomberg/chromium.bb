@@ -9,6 +9,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
@@ -16,7 +17,6 @@
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_user_data.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -32,9 +32,8 @@ std::vector<WmWindow*> GetSystemModalWindowsExceptPinned(
   WmWindow* pinned_root = pinned_window->GetRootWindow();
 
   std::vector<WmWindow*> result;
-  for (WmWindow* system_modal :
-       WmWindowAura::FromAuraWindows(Shell::GetContainersFromAllRootWindows(
-           kShellWindowId_SystemModalContainer, nullptr))) {
+  for (WmWindow* system_modal : wm::GetContainersFromAllRootWindows(
+           kShellWindowId_SystemModalContainer)) {
     if (system_modal->GetRootWindow() == pinned_root)
       continue;
     result.push_back(system_modal);

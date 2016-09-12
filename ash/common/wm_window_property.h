@@ -9,10 +9,13 @@ namespace ash {
 
 enum class WmWindowProperty {
   // Type bool.
-  SNAP_CHILDREN_TO_PIXEL_BOUNDARY,
-
-  // Type bool.
   ALWAYS_ON_TOP,
+
+  // Type bool. See aura::client:kExcludeFromMruKey for details.
+  EXCLUDE_FROM_MRU,
+
+  // Type int, but cast to ui::ModalType.
+  MODAL_TYPE,
 
   // Type int.
   SHELF_ID,
@@ -20,14 +23,14 @@ enum class WmWindowProperty {
   // Type ShelfItemDetails.
   SHELF_ITEM_DETAILS,
 
-  // Type int. See aura::client::kTopViewInset for details.
-  TOP_VIEW_INSET,
+  // Type bool.
+  SNAP_CHILDREN_TO_PIXEL_BOUNDARY,
 
   // Type SkColor. See aura::client::kTopViewColor for details.
   TOP_VIEW_COLOR,
 
-  // Type bool. See aura::client:kExcludeFromMruKey for details.
-  EXCLUDE_FROM_MRU,
+  // Type int. See aura::client::kTopViewInset for details.
+  TOP_VIEW_INSET,
 };
 
 }  // namespace ash

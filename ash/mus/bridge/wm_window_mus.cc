@@ -380,6 +380,13 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
     return 0;
   }
 
+  if (key == WmWindowProperty::MODAL_TYPE) {
+    // TODO: WindowTree::SetModalWindow() needs to route through WindowManager
+    // so wm can position. http://crbug.com/645996.
+    NOTIMPLEMENTED();
+    return static_cast<int>(ui::MODAL_TYPE_NONE);
+  }
+
   NOTREACHED();
   return 0;
 }

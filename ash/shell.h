@@ -192,13 +192,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   static const aura::Window* GetContainer(const aura::Window* root_window,
                                           int container_id);
 
-  // Returns the list of containers that match |container_id| in
-  // all root windows. If |priority_root| is given, the container
-  // in the |priority_root| will be inserted at the top of the list.
-  static std::vector<aura::Window*> GetContainersFromAllRootWindows(
-      int container_id,
-      aura::Window* priority_root);
-
   // Shows the context menu for the wallpaper and shelf at the screen location.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
@@ -332,15 +325,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
-
-  // Creates a modal background (a partially-opaque fullscreen window)
-  // on all displays for |window|.
-  void CreateModalBackground(aura::Window* window);
-
-  // Called when a modal window is removed. It will activate
-  // another modal window if any, or remove modal screens
-  // on all displays.
-  void OnModalWindowRemoved(aura::Window* removed);
 
   // Returns WebNotificationTray on the primary root window.
   WebNotificationTray* GetWebNotificationTray();

@@ -2,120 +2,122 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 
 #include <cmath>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/wm/window_util.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/capture_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
-#include "ui/compositor/layer.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
 
 // The center point of the window can diverge this much from the center point
-// If this is set to true, the window will get centered.
-DEFINE_WINDOW_PROPERTY_KEY(bool, kCenteredKey, false);
-
-// The center point of the window can diverge this much from the center point
 // of the container to be kept centered upon resizing operations.
 const int kCenterPixelDelta = 32;
+
+ui::ModalType GetModalType(WmWindow* window) {
+  return static_cast<ui::ModalType>(
+      window->GetIntProperty(WmWindowProperty::MODAL_TYPE));
+}
+
+bool HasTransientAncestor(const WmWindow* window, const WmWindow* ancestor) {
+  const WmWindow* transient_parent = window->GetTransientParent();
+  if (transient_parent == ancestor)
+    return true;
+  return transient_parent ? HasTransientAncestor(transient_parent, ancestor)
+                          : false;
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, public:
 
 SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
-    aura::Window* container)
-    : SnapToPixelLayoutManager(container), container_(container) {}
+    WmWindow* container)
+    : container_(container) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager, aura::LayoutManager implementation:
+// SystemModalContainerLayoutManager, WmLayoutManager implementation:
 
 void SystemModalContainerLayoutManager::OnWindowResized() {
   PositionDialogsAfterWorkAreaResize();
 }
 
-void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
-    aura::Window* child) {
-  DCHECK(child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-         child->type() == ui::wm::WINDOW_TYPE_POPUP);
-  DCHECK(
-      container_->id() != kShellWindowId_LockSystemModalContainer ||
-      WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked());
-  // Since this is for SystemModal, there is no goodd reason to add
-  // these window other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM.
-  // DCHECK to avoid simple mistake.
-  DCHECK_NE(child->GetProperty(aura::client::kModalKey), ui::MODAL_TYPE_CHILD);
-  DCHECK_NE(child->GetProperty(aura::client::kModalKey), ui::MODAL_TYPE_WINDOW);
+void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
+  DCHECK(child->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
+         child->GetType() == ui::wm::WINDOW_TYPE_POPUP);
+  DCHECK(container_->GetShellWindowId() !=
+             kShellWindowId_LockSystemModalContainer ||
+         WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked());
+  // Since this is for SystemModal, there is no good reason to add windows
+  // other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM. DCHECK to avoid simple
+  // mistake.
+  DCHECK_NE(GetModalType(child), ui::MODAL_TYPE_CHILD);
+  DCHECK_NE(GetModalType(child), ui::MODAL_TYPE_WINDOW);
 
   child->AddObserver(this);
-  if (child->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM &&
-      child->IsVisible()) {
+  if (GetModalType(child) == ui::MODAL_TYPE_SYSTEM && child->IsVisible())
     AddModalWindow(child);
-  }
 }
 
 void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
-    aura::Window* child) {
+    WmWindow* child) {
   child->RemoveObserver(this);
-  if (child->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM)
+  windows_to_center_.erase(child);
+  if (GetModalType(child) == ui::MODAL_TYPE_SYSTEM)
     RemoveModalWindow(child);
 }
 
 void SystemModalContainerLayoutManager::SetChildBounds(
-    aura::Window* child,
+    WmWindow* child,
     const gfx::Rect& requested_bounds) {
-  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
-  child->SetProperty(kCenteredKey, DialogIsCentered(requested_bounds));
+  WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  if (IsBoundsCentered(requested_bounds))
+    windows_to_center_.insert(child);
+  else
+    windows_to_center_.erase(child);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager, aura::WindowObserver implementation:
+// SystemModalContainerLayoutManager, WmWindowObserver implementation:
 
 void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
-    aura::Window* window,
-    const void* key,
-    intptr_t old) {
-  if (key != aura::client::kModalKey || !window->IsVisible())
+    WmWindow* window,
+    WmWindowProperty property) {
+  if (property != WmWindowProperty::MODAL_TYPE || !window->IsVisible())
     return;
 
-  ui::ModalType new_modal = window->GetProperty(aura::client::kModalKey);
-  if (static_cast<ui::ModalType>(old) == new_modal)
-    return;
-
-  if (new_modal == ui::MODAL_TYPE_SYSTEM) {
+  if (GetModalType(window) == ui::MODAL_TYPE_SYSTEM) {
+    if (base::ContainsValue(modal_windows_, window))
+      return;
     AddModalWindow(window);
   } else {
-    RemoveModalWindow(window);
-    Shell::GetInstance()->OnModalWindowRemoved(window);
+    if (RemoveModalWindow(window))
+      WmShell::Get()->OnModalWindowRemoved(window);
   }
 }
 
 void SystemModalContainerLayoutManager::OnWindowVisibilityChanged(
-    aura::Window* window,
+    WmWindow* window,
     bool visible) {
-  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_SYSTEM)
+  if (GetModalType(window) != ui::MODAL_TYPE_SYSTEM)
     return;
+
   if (window->IsVisible()) {
     AddModalWindow(window);
   } else {
     RemoveModalWindow(window);
-    Shell::GetInstance()->OnModalWindowRemoved(window);
+    WmShell::Get()->OnModalWindowRemoved(window);
   }
 }
 
@@ -129,24 +131,23 @@ void SystemModalContainerLayoutManager::OnKeyboardBoundsChanging(
 }
 
 bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
-    aura::Window* window) {
+    WmWindow* window) {
   return modal_window() &&
          (modal_window()->Contains(window) ||
-          ::wm::HasTransientAncestor(::wm::GetToplevelWindow(window),
-                                     modal_window()));
+          HasTransientAncestor(window->GetToplevelWindowForFocus(),
+                               modal_window()));
 }
 
 bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
   if (modal_windows_.empty())
     return false;
-  wm::ActivateWindow(modal_window());
+  modal_window()->Activate();
   return true;
 }
 
 void SystemModalContainerLayoutManager::CreateModalBackground() {
   if (!window_dimmer_) {
-    window_dimmer_ =
-        base::MakeUnique<WindowDimmer>(WmWindowAura::Get(container_));
+    window_dimmer_ = base::MakeUnique<WindowDimmer>(container_);
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // There isn't always a keyboard controller.
@@ -166,25 +167,24 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
 }
 
 // static
-bool SystemModalContainerLayoutManager::IsModalBackground(
-    aura::Window* window) {
-  int id = window->parent()->id();
+bool SystemModalContainerLayoutManager::IsModalBackground(WmWindow* window) {
+  int id = window->GetParent()->GetShellWindowId();
   if (id != kShellWindowId_SystemModalContainer &&
       id != kShellWindowId_LockSystemModalContainer)
     return false;
   SystemModalContainerLayoutManager* layout_manager =
       static_cast<SystemModalContainerLayoutManager*>(
-          window->parent()->layout_manager());
+          window->GetParent()->GetLayoutManager());
   return layout_manager->window_dimmer_ &&
-         layout_manager->window_dimmer_->window() == WmWindowAura::Get(window);
+         layout_manager->window_dimmer_->window() == window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, private:
 
-void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
+void SystemModalContainerLayoutManager::AddModalWindow(WmWindow* window) {
   if (modal_windows_.empty()) {
-    aura::Window* capture_window = aura::client::GetCaptureWindow(container_);
+    WmWindow* capture_window = WmShell::Get()->GetCaptureWindow();
     if (capture_window)
       capture_window->ReleaseCapture();
   }
@@ -192,36 +192,35 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   DCHECK(!base::ContainsValue(modal_windows_, window));
 
   modal_windows_.push_back(window);
-  Shell::GetInstance()->CreateModalBackground(window);
-  window->parent()->StackChildAtTop(window);
+  WmShell::Get()->CreateModalBackground(window);
+  window->GetParent()->StackChildAtTop(window);
 
-  gfx::Rect target_bounds = window->bounds();
+  gfx::Rect target_bounds = window->GetBounds();
   target_bounds.AdjustToFit(GetUsableDialogArea());
   window->SetBounds(target_bounds);
 }
 
-void SystemModalContainerLayoutManager::RemoveModalWindow(
-    aura::Window* window) {
-  aura::Window::Windows::iterator it =
-      std::find(modal_windows_.begin(), modal_windows_.end(), window);
-  if (it != modal_windows_.end())
-    modal_windows_.erase(it);
+bool SystemModalContainerLayoutManager::RemoveModalWindow(WmWindow* window) {
+  auto it = std::find(modal_windows_.begin(), modal_windows_.end(), window);
+  if (it == modal_windows_.end())
+    return false;
+  modal_windows_.erase(it);
+  return true;
 }
 
 void SystemModalContainerLayoutManager::PositionDialogsAfterWorkAreaResize() {
-  if (!modal_windows_.empty()) {
-    for (aura::Window::Windows::iterator it = modal_windows_.begin();
-         it != modal_windows_.end(); ++it) {
-      (*it)->SetBounds(GetCenteredAndOrFittedBounds(*it));
-    }
-  }
+  if (modal_windows_.empty())
+    return;
+
+  for (WmWindow* window : modal_windows_)
+    window->SetBounds(GetCenteredAndOrFittedBounds(window));
 }
 
-gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
+gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   // Instead of resizing the system modal container, we move only the modal
   // windows. This way we avoid flashing lines upon resize animation and if the
   // keyboard will not fill left to right, the background is still covered.
-  gfx::Rect valid_bounds = container_->bounds();
+  gfx::Rect valid_bounds = container_->GetBounds();
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
@@ -235,30 +234,30 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
 }
 
 gfx::Rect SystemModalContainerLayoutManager::GetCenteredAndOrFittedBounds(
-    const aura::Window* window) {
+    const WmWindow* window) {
   gfx::Rect target_bounds;
   gfx::Rect usable_area = GetUsableDialogArea();
-  if (window->GetProperty(kCenteredKey)) {
+  if (windows_to_center_.count(window) > 0) {
     // Keep the dialog centered if it was centered before.
     target_bounds = usable_area;
-    target_bounds.ClampToCenteredSize(window->bounds().size());
+    target_bounds.ClampToCenteredSize(window->GetBounds().size());
   } else {
     // Keep the dialog within the usable area.
-    target_bounds = window->bounds();
+    target_bounds = window->GetBounds();
     target_bounds.AdjustToFit(usable_area);
   }
-  if (usable_area != container_->bounds()) {
+  if (usable_area != container_->GetBounds()) {
     // Don't clamp the dialog for the keyboard. Keep the size as it is but make
     // sure that the top remains visible.
     // TODO(skuhne): M37 should add over scroll functionality to address this.
-    target_bounds.set_size(window->bounds().size());
+    target_bounds.set_size(window->GetBounds().size());
   }
   return target_bounds;
 }
 
-bool SystemModalContainerLayoutManager::DialogIsCentered(
-    const gfx::Rect& window_bounds) {
-  gfx::Point window_center = window_bounds.CenterPoint();
+bool SystemModalContainerLayoutManager::IsBoundsCentered(
+    const gfx::Rect& bounds) const {
+  gfx::Point window_center = bounds.CenterPoint();
   gfx::Point container_center = GetUsableDialogArea().CenterPoint();
   return std::abs(window_center.x() - container_center.x()) <
              kCenterPixelDelta &&

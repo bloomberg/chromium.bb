@@ -108,5 +108,22 @@ WmWindow* GetDefaultParent(WmWindow* context,
   return nullptr;
 }
 
+std::vector<WmWindow*> GetContainersFromAllRootWindows(
+    int container_id,
+    WmWindow* priority_root) {
+  std::vector<WmWindow*> containers;
+  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+    WmWindow* container = root->GetChildByShellWindowId(container_id);
+    if (!container)
+      continue;
+
+    if (priority_root && priority_root->Contains(container))
+      containers.insert(containers.begin(), container);
+    else
+      containers.push_back(container);
+  }
+  return containers;
+}
+
 }  // namespace wm
 }  // namespace ash

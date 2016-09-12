@@ -71,6 +71,7 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
+class WmRootWindowController;
 class WmWindow;
 class WorkspaceEventHandler;
 
@@ -174,6 +175,9 @@ class ASH_EXPORT WmShell {
 
   virtual WmWindow* GetCaptureWindow() = 0;
 
+  // Convenience for GetPrimaryRootWindow()->GetRootWindowController().
+  WmRootWindowController* GetPrimaryRootWindowController();
+
   virtual WmWindow* GetPrimaryRootWindow() = 0;
 
   // Returns the root window for the specified display.
@@ -214,6 +218,14 @@ class ASH_EXPORT WmShell {
 
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen();
+
+  // Creates a modal background (a partially-opaque fullscreen window) on all
+  // displays for |window|.
+  void CreateModalBackground(WmWindow* window);
+
+  // Called when a modal window is removed. It will activate another modal
+  // window if any, or remove modal screens on all displays.
+  void OnModalWindowRemoved(WmWindow* removed);
 
   // For testing only: set simulation that a modal window is open
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {

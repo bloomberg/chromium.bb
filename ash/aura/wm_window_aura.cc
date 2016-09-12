@@ -306,6 +306,9 @@ void WmWindowAura::SetColorProperty(WmWindowProperty key, SkColor value) {
 }
 
 int WmWindowAura::GetIntProperty(WmWindowProperty key) {
+  if (key == WmWindowProperty::MODAL_TYPE)
+    return window_->GetProperty(aura::client::kModalKey);
+
   if (key == WmWindowProperty::SHELF_ID)
     return GetShelfIDForWindow(window_);
 
@@ -798,18 +801,20 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     return;
   }
   WmWindowProperty wm_property;
-  if (key == kSnapChildrenToPixelBoundary) {
-    wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY;
-  } else if (key == aura::client::kAlwaysOnTopKey) {
+  if (key == aura::client::kAlwaysOnTopKey) {
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;
+  } else if (key == aura::client::kExcludeFromMruKey) {
+    wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
+  } else if (key == aura::client::kModalKey) {
+    wm_property = WmWindowProperty::MODAL_TYPE;
   } else if (key == kShelfID) {
     wm_property = WmWindowProperty::SHELF_ID;
   } else if (key == kShelfItemDetailsKey) {
     wm_property = WmWindowProperty::SHELF_ITEM_DETAILS;
+  } else if (key == kSnapChildrenToPixelBoundary) {
+    wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY;
   } else if (key == aura::client::kTopViewInset) {
     wm_property = WmWindowProperty::TOP_VIEW_INSET;
-  } else if (key == aura::client::kExcludeFromMruKey) {
-    wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else {
     return;
   }

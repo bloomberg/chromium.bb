@@ -5,6 +5,8 @@
 #ifndef ASH_COMMON_WM_CONTAINER_FINDER_H_
 #define ASH_COMMON_WM_CONTAINER_FINDER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 
 namespace gfx {
@@ -26,6 +28,13 @@ ASH_EXPORT WmWindow* GetContainerForWindow(WmWindow* window);
 ASH_EXPORT WmWindow* GetDefaultParent(WmWindow* context,
                                       WmWindow* window,
                                       const gfx::Rect& bounds);
+
+// Returns the list of containers that match |container_id| in all root windows.
+// If |priority_root| is non-null, the container in |priority_root| is placed at
+// the front of the list.
+ASH_EXPORT std::vector<WmWindow*> GetContainersFromAllRootWindows(
+    int container_id,
+    WmWindow* priority_root = nullptr);
 
 }  // namespace wm
 }  // namespace ash

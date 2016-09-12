@@ -34,6 +34,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
@@ -52,7 +53,6 @@
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/stacking_controller.h"
-#include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/system_wallpaper_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
@@ -185,7 +185,8 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       aura::Window::Windows::const_iterator iter =
           src_container->children().begin();
       while (iter != src_container->children().end() &&
-             SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
+             SystemModalContainerLayoutManager::IsModalBackground(
+                 WmWindowAura::Get(*iter))) {
         ++iter;
       }
       // If the entire window list is modal background windows then stop.
@@ -392,7 +393,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* modal_container = GetContainer(modal_container_id);
   SystemModalContainerLayoutManager* modal_layout_manager = nullptr;
   modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
-      modal_container->layout_manager());
+      WmWindowAura::Get(modal_container)->GetLayoutManager());
 
   if (modal_layout_manager->has_window_dimmer())
     blocking_container = modal_container;
@@ -409,33 +410,10 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   // If the window is in the target modal container, only allow the top most
   // one.
   if (modal_container && modal_container->Contains(window))
-    return modal_layout_manager->IsPartOfActiveModalWindow(window);
+    return modal_layout_manager->IsPartOfActiveModalWindow(
+        WmWindowAura::Get(window));
 
   return true;
-}
-
-SystemModalContainerLayoutManager*
-RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
-  aura::Window* modal_container = NULL;
-  if (window) {
-    aura::Window* window_container = WmWindowAura::GetAuraWindow(
-        wm::GetContainerForWindow(WmWindowAura::Get(window)));
-    if (window_container &&
-        window_container->id() >= kShellWindowId_LockScreenContainer) {
-      modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
-    } else {
-      modal_container = GetContainer(kShellWindowId_SystemModalContainer);
-    }
-  } else {
-    int modal_window_id =
-        WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()
-            ? kShellWindowId_LockSystemModalContainer
-            : kShellWindowId_SystemModalContainer;
-    modal_container = GetContainer(modal_window_id);
-  }
-  return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
-                               modal_container->layout_manager())
-                         : NULL;
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {
@@ -732,10 +710,12 @@ void RootWindowController::Init(RootWindowType root_window_type,
   InitLayoutManagers();
   InitTouchHuds();
 
-  if (Shell::GetPrimaryRootWindowController()
+  if (WmShell::Get()
+          ->GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
           ->has_window_dimmer()) {
-    GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
+    wm_root_window_controller_->GetSystemModalLayoutManager(nullptr)
+        ->CreateModalBackground();
   }
 
   WmShell::Get()->AddShellObserver(this);
@@ -767,22 +747,10 @@ void RootWindowController::InitLayoutManagers() {
 
   aura::Window* root_window = GetRootWindow();
 
-  aura::Window* modal_container =
-      root_window->GetChildById(kShellWindowId_SystemModalContainer);
-  DCHECK(modal_container);
-  modal_container->SetLayoutManager(
-      new SystemModalContainerLayoutManager(modal_container));
-
   aura::Window* lock_container =
       root_window->GetChildById(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
   lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
-
-  aura::Window* lock_modal_container =
-      root_window->GetChildById(kShellWindowId_LockSystemModalContainer);
-  DCHECK(lock_modal_container);
-  lock_modal_container->SetLayoutManager(
-      new SystemModalContainerLayoutManager(lock_modal_container));
 
   WmWindow* always_on_top_container =
       WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 
 #include <memory>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -45,13 +48,12 @@ aura::Window* GetModalContainer() {
 }
 
 bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
-  std::vector<aura::Window*> containers =
-      Shell::GetContainersFromAllRootWindows(container_id, NULL);
+  WmWindow::Windows containers =
+      wm::GetContainersFromAllRootWindows(container_id);
   bool has_modal_screen = !containers.empty();
-  for (std::vector<aura::Window*>::iterator iter = containers.begin();
-       iter != containers.end(); ++iter) {
+  for (WmWindow* container : containers) {
     has_modal_screen &= static_cast<SystemModalContainerLayoutManager*>(
-                            (*iter)->layout_manager())
+                            container->GetLayoutManager())
                             ->has_window_dimmer();
   }
   return has_modal_screen;
@@ -771,8 +773,9 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
                                              CurrentContext())
           ->GetNativeWindow());
   SystemModalContainerLayoutManager* layout_manager =
-      Shell::GetPrimaryRootWindowController()->GetSystemModalLayoutManager(
-          modal_window.get());
+      WmShell::Get()
+          ->GetPrimaryRootWindowController()
+          ->GetSystemModalLayoutManager(WmWindowAura::Get(modal_window.get()));
 
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());

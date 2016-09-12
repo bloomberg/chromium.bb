@@ -4,10 +4,13 @@
 
 #include "ash/common/wm_root_window_controller.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/root_window_layout_manager.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
@@ -54,6 +57,38 @@ void WmRootWindowController::SetAnimatingWallpaperWidgetController(
 wm::WorkspaceWindowState WmRootWindowController::GetWorkspaceWindowState() {
   return workspace_controller_ ? workspace_controller()->GetWindowState()
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
+}
+
+SystemModalContainerLayoutManager*
+WmRootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
+  WmWindow* modal_container = nullptr;
+  if (window) {
+    WmWindow* window_container = wm::GetContainerForWindow(window);
+    if (window_container &&
+        window_container->GetShellWindowId() >=
+            kShellWindowId_LockScreenContainer) {
+      modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
+    } else {
+      modal_container = GetContainer(kShellWindowId_SystemModalContainer);
+    }
+  } else {
+    int modal_window_id =
+        WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()
+            ? kShellWindowId_LockSystemModalContainer
+            : kShellWindowId_SystemModalContainer;
+    modal_container = GetContainer(modal_window_id);
+  }
+  return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
+                               modal_container->GetLayoutManager())
+                         : nullptr;
+}
+
+WmWindow* WmRootWindowController::GetContainer(int container_id) {
+  return root_->GetChildByShellWindowId(container_id);
+}
+
+const WmWindow* WmRootWindowController::GetContainer(int container_id) const {
+  return root_->GetChildByShellWindowId(container_id);
 }
 
 void WmRootWindowController::OnInitialWallpaperAnimationStarted() {}
@@ -255,9 +290,20 @@ void WmRootWindowController::CreateLayoutManagers() {
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root_);
   root_->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 
-  WmWindow* default_container =
-      root_->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
+  WmWindow* default_container = GetContainer(kShellWindowId_DefaultContainer);
   workspace_controller_.reset(new WorkspaceController(default_container));
+
+  WmWindow* modal_container = GetContainer(kShellWindowId_SystemModalContainer);
+  DCHECK(modal_container);
+  modal_container->SetLayoutManager(
+      base::MakeUnique<SystemModalContainerLayoutManager>(modal_container));
+
+  WmWindow* lock_modal_container =
+      GetContainer(kShellWindowId_LockSystemModalContainer);
+  DCHECK(lock_modal_container);
+  lock_modal_container->SetLayoutManager(
+      base::MakeUnique<SystemModalContainerLayoutManager>(
+          lock_modal_container));
 }
 
 void WmRootWindowController::DeleteWorkspaceController() {

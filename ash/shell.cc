@@ -30,10 +30,12 @@
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -69,7 +71,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
-#include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
@@ -263,25 +264,6 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
   return root_window->GetChildById(container_id);
 }
 
-// static
-std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
-    int container_id,
-    aura::Window* priority_root) {
-  std::vector<aura::Window*> containers;
-  aura::Window::Windows root_windows = GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it) {
-    aura::Window* container = (*it)->GetChildById(container_id);
-    if (container) {
-      if (priority_root && priority_root->Contains(container))
-        containers.insert(containers.begin(), container);
-      else
-        containers.push_back(container);
-    }
-  }
-  return containers;
-}
-
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                             ui::MenuSourceType source_type) {
   // No context menus if there is no session with an active user.
@@ -339,12 +321,11 @@ void Shell::OnLockStateChanged(bool locked) {
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
-    std::vector<aura::Window*> containers = GetContainersFromAllRootWindows(
-        kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
-    for (std::vector<aura::Window*>::const_iterator iter = containers.begin();
-         iter != containers.end(); ++iter) {
-      DCHECK_EQ(0u, (*iter)->children().size());
-    }
+    std::vector<WmWindow*> containers = wm::GetContainersFromAllRootWindows(
+        kShellWindowId_LockSystemModalContainer,
+        WmWindowAura::Get(GetPrimaryRootWindow()));
+    for (WmWindow* container : containers)
+      DCHECK(container->GetChildren().empty());
   }
 #endif
 }
@@ -416,29 +397,6 @@ bool Shell::ShouldSaveDisplaySettings() {
 void Shell::UpdateShelfVisibility() {
   for (WmWindow* root : wm_shell_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
-}
-
-void Shell::CreateModalBackground(aura::Window* window) {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->GetSystemModalLayoutManager(window)->CreateModalBackground();
-}
-
-void Shell::OnModalWindowRemoved(aura::Window* removed) {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  bool activated = false;
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end() && !activated; ++iter) {
-    activated = (*iter)
-                    ->GetSystemModalLayoutManager(removed)
-                    ->ActivateNextModalWindow();
-  }
-  if (!activated) {
-    for (RootWindowControllerList::iterator iter = controllers.begin();
-         iter != controllers.end(); ++iter)
-      (*iter)->GetSystemModalLayoutManager(removed)->DestroyModalBackground();
-  }
 }
 
 WebNotificationTray* Shell::GetWebNotificationTray() {

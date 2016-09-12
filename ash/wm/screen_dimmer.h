@@ -61,8 +61,6 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
 
   explicit ScreenDimmer(int container_id);
 
-  static aura::Window* FindContainer(int container_id);
-
   // ShellObserver:
   void OnRootWindowAdded(WmWindow* root_window) override;
 

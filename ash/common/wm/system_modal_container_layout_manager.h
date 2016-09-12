@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
-#define ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#ifndef ASH_COMMON_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#define ASH_COMMON_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/snap_to_pixel_layout_manager.h"
-#include "base/compiler_specific.h"
+#include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace aura {
-class Window;
-class EventFilter;
-}
 namespace gfx {
 class Rect;
 }
@@ -30,34 +26,33 @@ class WindowDimmer;
 // System modal windows which are centered on the screen will be kept centered
 // when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
-    : public SnapToPixelLayoutManager,
-      public aura::WindowObserver,
+    : public wm::WmSnapToPixelLayoutManager,
+      public WmWindowObserver,
       public keyboard::KeyboardControllerObserver {
  public:
-  explicit SystemModalContainerLayoutManager(aura::Window* container);
+  explicit SystemModalContainerLayoutManager(WmWindow* container);
   ~SystemModalContainerLayoutManager() override;
 
   bool has_window_dimmer() const { return window_dimmer_ != nullptr; }
 
-  // Overridden from SnapToPixelLayoutManager:
+  // Overridden from WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(aura::Window* child) override;
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  void SetChildBounds(aura::Window* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  // Overridden from WmWindowObserver:
+  void OnWindowPropertyChanged(WmWindow* window,
+                               WmWindowProperty property) override;
+  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // True if the window is either contained by the top most modal window,
   // or contained by its transient children.
-  bool IsPartOfActiveModalWindow(aura::Window* window);
+  bool IsPartOfActiveModalWindow(WmWindow* window);
 
   // Activates next modal window if any. Returns false if there
   // are no more modal windows in this layout manager.
@@ -71,42 +66,49 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   void DestroyModalBackground();
 
   // Is the |window| modal background?
-  static bool IsModalBackground(aura::Window* window);
+  static bool IsModalBackground(WmWindow* window);
 
  private:
-  void AddModalWindow(aura::Window* window);
-  void RemoveModalWindow(aura::Window* window);
+  void AddModalWindow(WmWindow* window);
+
+  // Removes |window| from |modal_windows_|. Returns true if |window| was in
+  // |modal_windows_|.
+  bool RemoveModalWindow(WmWindow* window);
 
   // Reposition the dialogs to become visible after the work area changes.
   void PositionDialogsAfterWorkAreaResize();
 
   // Get the usable bounds rectangle for enclosed dialogs.
-  gfx::Rect GetUsableDialogArea();
+  gfx::Rect GetUsableDialogArea() const;
 
   // Gets the new bounds for a |window| to use which are either centered (if the
   // window was previously centered) or fitted to the screen.
-  gfx::Rect GetCenteredAndOrFittedBounds(const aura::Window* window);
+  gfx::Rect GetCenteredAndOrFittedBounds(const WmWindow* window);
 
-  // Returns true if |window_bounds| is centered.
-  bool DialogIsCentered(const gfx::Rect& window_bounds);
+  // Returns true if |bounds| is considered centered.
+  bool IsBoundsCentered(const gfx::Rect& window_bounds) const;
 
-  aura::Window* modal_window() {
-    return !modal_windows_.empty() ? modal_windows_.back() : NULL;
+  WmWindow* modal_window() {
+    return !modal_windows_.empty() ? modal_windows_.back() : nullptr;
   }
 
   // The container that owns the layout manager.
-  aura::Window* container_;
+  WmWindow* container_;
 
   // WindowDimmer used to dim windows behind the modal window(s) being shown in
   // |container_|.
   std::unique_ptr<WindowDimmer> window_dimmer_;
 
   // A stack of modal windows. Only the topmost can receive events.
-  std::vector<aura::Window*> modal_windows_;
+  std::vector<WmWindow*> modal_windows_;
+
+  // Windows contained in this set are centered. Windows are automatically
+  // added to this based on IsBoundsCentered().
+  std::set<const WmWindow*> windows_to_center_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemModalContainerLayoutManager);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#endif  // ASH_COMMON_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_

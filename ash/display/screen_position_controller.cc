@@ -6,13 +6,13 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -181,7 +181,8 @@ void ScreenPositionController::SetBounds(aura::Window* window,
       // All containers that uses screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal background.
-      if (!SystemModalContainerLayoutManager::IsModalBackground(window))
+      if (!SystemModalContainerLayoutManager::IsModalBackground(
+              WmWindowAura::Get(window)))
         dst_container = Shell::GetContainer(dst_root, container_id);
     }
 
