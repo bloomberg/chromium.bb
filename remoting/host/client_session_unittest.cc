@@ -185,11 +185,10 @@ void ClientSessionTest::CreateClientSession() {
   connection->set_client_stub(&client_stub_);
   connection_ = connection.get();
 
-  client_session_.reset(new ClientSession(
-      &session_event_handler_,
-      task_runner_,  // Audio thread.
-      std::move(connection), desktop_environment_factory_.get(),
-      base::TimeDelta(), nullptr, extensions_));
+  client_session_.reset(
+      new ClientSession(&session_event_handler_, std::move(connection),
+                        desktop_environment_factory_.get(), base::TimeDelta(),
+                        nullptr, extensions_));
 }
 
 void ClientSessionTest::ConnectClientSession() {
@@ -205,7 +204,7 @@ void ClientSessionTest::ConnectClientSession() {
   EXPECT_TRUE(connection_->clipboard_stub());
   EXPECT_TRUE(connection_->input_stub());
 
-  client_session_->CreateVideoStreams(client_session_->connection());
+  client_session_->CreateMediaStreams(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 }
 

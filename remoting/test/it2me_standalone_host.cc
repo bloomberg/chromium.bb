@@ -59,7 +59,6 @@ It2MeStandaloneHost::It2MeStandaloneHost()
       .WillRepeatedly(testing::ReturnRef(session_jid_));
   EXPECT_CALL(*static_cast<MockSession*>(connection_.session()), config())
       .WillRepeatedly(testing::ReturnRef(*config_));
-  connection_.set_audio_stub(event_logger_.audio_stub());
   connection_.set_video_stub(event_logger_.video_stub());
   connection_.set_client_stub(event_logger_.client_stub());
   connection_.set_host_stub(event_logger_.host_stub());
@@ -84,16 +83,12 @@ void It2MeStandaloneHost::StartOutputTimer() {
 
 void It2MeStandaloneHost::Connect() {
   session_.reset(new ClientSession(
-      &handler_,
-      context_->audio_task_runner(),
-      std::unique_ptr<protocol::ConnectionToClient>(&connection_),
-      &factory_,
-      base::TimeDelta(),
-      scoped_refptr<protocol::PairingRegistry>(),
+      &handler_, std::unique_ptr<protocol::ConnectionToClient>(&connection_),
+      &factory_, base::TimeDelta(), scoped_refptr<protocol::PairingRegistry>(),
       std::vector<HostExtension*>()));
   session_->OnConnectionAuthenticated(&connection_);
   session_->OnConnectionChannelsConnected(&connection_);
-  session_->CreateVideoStreams(&connection_);
+  session_->CreateMediaStreams(&connection_);
 }
 
 }  // namespace test

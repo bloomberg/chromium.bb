@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "remoting/codec/video_encoder.h"
+#include "remoting/protocol/audio_source.h"
+#include "remoting/protocol/audio_stream.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_frame_pump.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -62,8 +64,10 @@ std::unique_ptr<VideoStream> FakeConnectionToClient::StartVideoStream(
   return std::move(result);
 }
 
-AudioStub* FakeConnectionToClient::audio_stub() {
-  return audio_stub_;
+std::unique_ptr<AudioStream> FakeConnectionToClient::StartAudioStream(
+    std::unique_ptr<AudioSource> audio_source) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 ClientStub* FakeConnectionToClient::client_stub() {

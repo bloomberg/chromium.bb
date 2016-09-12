@@ -43,7 +43,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnInputEventReceived(int64_t timestamp) override;
   std::unique_ptr<VideoStream> StartVideoStream(
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
-  AudioStub* audio_stub() override;
+  std::unique_ptr<AudioStream> StartAudioStream(
+      std::unique_ptr<AudioSource> audio_source) override;
   ClientStub* client_stub() override;
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_host_stub(HostStub* host_stub) override;

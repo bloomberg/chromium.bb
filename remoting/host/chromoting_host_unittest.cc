@@ -127,8 +127,7 @@ class ChromotingHostTest : public testing::Test {
         (connection_index == 0) ? owned_connection1_ : owned_connection2_);
     protocol::ConnectionToClient* connection_ptr = connection.get();
     std::unique_ptr<ClientSession> client(new ClientSession(
-        host_.get(), task_runner_ /* audio_task_runner */,
-        std::move(connection), desktop_environment_factory_.get(),
+        host_.get(), std::move(connection), desktop_environment_factory_.get(),
         base::TimeDelta(), nullptr, std::vector<HostExtension*>()));
     ClientSession* client_ptr = client.get();
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/audio_pump.h"
+#include "remoting/protocol/audio_pump.h"
 
 #include <stddef.h>
 
@@ -14,12 +14,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/codec/audio_encoder.h"
-#include "remoting/host/audio_capturer.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/audio_source.h"
 #include "remoting/protocol/audio_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 
@@ -32,10 +33,10 @@ std::unique_ptr<AudioPacket> MakeAudioPacket() {
 
 }  // namespace
 
-class FakeAudioCapturer : public AudioCapturer {
+class FakeAudioSource : public AudioSource {
  public:
-  FakeAudioCapturer() {}
-  ~FakeAudioCapturer() override {}
+  FakeAudioSource() {}
+  ~FakeAudioSource() override {}
 
   bool Start(const PacketCapturedCallback& callback) override {
     callback_ = callback;
@@ -47,7 +48,7 @@ class FakeAudioCapturer : public AudioCapturer {
  private:
   PacketCapturedCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAudioCapturer);
+  DISALLOW_COPY_AND_ASSIGN(FakeAudioSource);
 };
 
 class FakeAudioEncoder : public AudioEncoder {
@@ -59,9 +60,7 @@ class FakeAudioEncoder : public AudioEncoder {
       std::unique_ptr<AudioPacket> packet) override {
     return packet;
   }
-  int GetBitrate() override {
-    return 160000;
-  }
+  int GetBitrate() override { return 160000; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAudioEncoder);
@@ -81,8 +80,8 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
  protected:
   base::MessageLoop message_loop_;
 
-  // |capturer_| and |encoder_| are owned by the |pump_|.
-  FakeAudioCapturer* capturer_;
+  // |source_| and |encoder_| are owned by the |pump_|.
+  FakeAudioSource* source_;
   FakeAudioEncoder* encoder_;
 
   std::unique_ptr<AudioPump> pump_;
@@ -95,10 +94,10 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
 };
 
 void AudioPumpTest::SetUp() {
-  capturer_ = new FakeAudioCapturer();
+  source_ = new FakeAudioSource();
   encoder_ = new FakeAudioEncoder();
   pump_.reset(new AudioPump(message_loop_.task_runner(),
-                            base::WrapUnique(capturer_),
+                            base::WrapUnique(source_),
                             base::WrapUnique(encoder_), this));
 }
 
@@ -120,12 +119,12 @@ void AudioPumpTest::ProcessAudioPacket(
 TEST_F(AudioPumpTest, BufferSizeLimit) {
   // Run message loop to let the pump start the capturer.
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(capturer_->callback().is_null());
+  ASSERT_FALSE(source_->callback().is_null());
 
   // Try sending 100 packets, 1k each. The pump should stop pumping and start
   // dropping the data at some point.
   for (size_t i = 0; i < 100; ++i) {
-    capturer_->callback().Run(MakeAudioPacket());
+    source_->callback().Run(MakeAudioPacket());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -139,9 +138,10 @@ TEST_F(AudioPumpTest, BufferSizeLimit) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that the pump continues to send captured audio.
-  capturer_->callback().Run(MakeAudioPacket());
+  source_->callback().Run(MakeAudioPacket());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(num_sent_packets + 1, sent_packets_.size());
 }
 
+}  // namespace protocol
 }  // namespace remoting

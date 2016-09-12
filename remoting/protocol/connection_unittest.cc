@@ -126,7 +126,7 @@ class ConnectionTest : public testing::Test,
       host_connection_.reset(new IceConnectionToClient(
           base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
-          message_loop_.task_runner()));
+          message_loop_.task_runner(), message_loop_.task_runner()));
       client_connection_.reset(new IceConnectionToHost());
     }
 

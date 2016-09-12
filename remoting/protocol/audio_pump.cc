@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/audio_pump.h"
+#include "remoting/protocol/audio_pump.h"
 
 #include <utility>
 
@@ -13,54 +13,55 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/codec/audio_encoder.h"
-#include "remoting/host/audio_capturer.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/audio_source.h"
 #include "remoting/protocol/audio_stub.h"
 
 namespace remoting {
+namespace protocol {
 
 // Limit the data stored in the pending send buffers to 250ms.
 const int kMaxBufferedIntervalMs = 250;
 
 class AudioPump::Core {
-   public:
-    Core(base::WeakPtr<AudioPump> pump,
-         std::unique_ptr<AudioCapturer> audio_capturer,
-         std::unique_ptr<AudioEncoder> audio_encoder);
-    ~Core();
+ public:
+  Core(base::WeakPtr<AudioPump> pump,
+       std::unique_ptr<AudioSource> audio_source,
+       std::unique_ptr<AudioEncoder> audio_encoder);
+  ~Core();
 
-    void Start();
-    void Pause(bool pause);
+  void Start();
+  void Pause(bool pause);
 
-    void OnPacketSent(int size);
+  void OnPacketSent(int size);
 
-   private:
-    void EncodeAudioPacket(std::unique_ptr<AudioPacket> packet);
+ private:
+  void EncodeAudioPacket(std::unique_ptr<AudioPacket> packet);
 
-    base::ThreadChecker thread_checker_;
+  base::ThreadChecker thread_checker_;
 
-    base::WeakPtr<AudioPump> pump_;
+  base::WeakPtr<AudioPump> pump_;
 
-    scoped_refptr<base::SingleThreadTaskRunner> pump_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> pump_task_runner_;
 
-    std::unique_ptr<AudioCapturer> audio_capturer_;
-    std::unique_ptr<AudioEncoder> audio_encoder_;
+  std::unique_ptr<AudioSource> audio_source_;
+  std::unique_ptr<AudioEncoder> audio_encoder_;
 
-    bool enabled_;
+  bool enabled_;
 
-    // Number of bytes in the queue that have been encoded but haven't been sent
-    // yet.
-    int bytes_pending_;
+  // Number of bytes in the queue that have been encoded but haven't been sent
+  // yet.
+  int bytes_pending_;
 
-    DISALLOW_COPY_AND_ASSIGN(Core);
+  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 AudioPump::Core::Core(base::WeakPtr<AudioPump> pump,
-                      std::unique_ptr<AudioCapturer> audio_capturer,
+                      std::unique_ptr<AudioSource> audio_source,
                       std::unique_ptr<AudioEncoder> audio_encoder)
     : pump_(pump),
       pump_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      audio_capturer_(std::move(audio_capturer)),
+      audio_source_(std::move(audio_source)),
       audio_encoder_(std::move(audio_encoder)),
       enabled_(true),
       bytes_pending_(0) {
@@ -74,7 +75,7 @@ AudioPump::Core::~Core() {
 void AudioPump::Core::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  audio_capturer_->Start(
+  audio_source_->Start(
       base::Bind(&Core::EncodeAudioPacket, base::Unretained(this)));
 }
 
@@ -87,7 +88,7 @@ void AudioPump::Core::Pause(bool pause) {
 void AudioPump::Core::OnPacketSent(int size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  bytes_pending_-= size;
+  bytes_pending_ -= size;
   DCHECK_GE(bytes_pending_, 0);
 }
 
@@ -117,15 +118,15 @@ void AudioPump::Core::EncodeAudioPacket(std::unique_ptr<AudioPacket> packet) {
 
 AudioPump::AudioPump(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    std::unique_ptr<AudioCapturer> audio_capturer,
+    std::unique_ptr<AudioSource> audio_source,
     std::unique_ptr<AudioEncoder> audio_encoder,
-    protocol::AudioStub* audio_stub)
+    AudioStub* audio_stub)
     : audio_task_runner_(audio_task_runner),
       audio_stub_(audio_stub),
       weak_factory_(this) {
   DCHECK(audio_stub_);
 
-  core_.reset(new Core(weak_factory_.GetWeakPtr(), std::move(audio_capturer),
+  core_.reset(new Core(weak_factory_.GetWeakPtr(), std::move(audio_source),
                        std::move(audio_encoder)));
 
   audio_task_runner_->PostTask(
@@ -161,4 +162,5 @@ void AudioPump::OnPacketSent(int size) {
       base::Bind(&Core::OnPacketSent, base::Unretained(core_.get()), size));
 }
 
+}  // namespace protocol
 }  // namespace remoting

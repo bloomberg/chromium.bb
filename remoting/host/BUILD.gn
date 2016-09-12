@@ -108,8 +108,6 @@ static_library("host") {
     "audio_capturer_mac.cc",
     "audio_capturer_win.cc",
     "audio_capturer_win.h",
-    "audio_pump.cc",
-    "audio_pump.h",
     "audio_silence_detector.cc",
     "audio_silence_detector.h",
     "backoff_timer.cc",
@@ -562,7 +560,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "audio_pump_unittest.cc",
     "audio_silence_detector_unittest.cc",
     "backoff_timer_unittest.cc",
     "chromeos/aura_desktop_capturer_unittest.cc",

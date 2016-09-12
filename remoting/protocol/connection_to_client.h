@@ -21,7 +21,8 @@ class VideoEncoder;
 
 namespace protocol {
 
-class AudioStub;
+class AudioStream;
+class AudioSource;
 class ClientStub;
 class ClipboardStub;
 class HostStub;
@@ -43,7 +44,7 @@ class ConnectionToClient {
 
     // Called to request creation of video streams. May be called before or
     // after OnConnectionChannelsConnected().
-    virtual void CreateVideoStreams(ConnectionToClient* connection) = 0;
+    virtual void CreateMediaStreams(ConnectionToClient* connection) = 0;
 
     // Called when the network connection is authenticated and all
     // channels are connected.
@@ -91,11 +92,14 @@ class ConnectionToClient {
   virtual std::unique_ptr<VideoStream> StartVideoStream(
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) = 0;
 
-  // Get the stubs used by the host to transmit messages to the client.
-  // The stubs must not be accessed before OnConnectionAuthenticated(), or
+  // Starts an audio stream. Returns nullptr if audio is not supported by the
+  // client.
+  virtual std::unique_ptr<AudioStream> StartAudioStream(
+      std::unique_ptr<AudioSource> audio_source) = 0;
+
+  // The client stubs used by the host to send control messages to the client.
+  // The stub must not be accessed before OnConnectionAuthenticated(), or
   // after OnConnectionClosed().
-  // Note that the audio stub will be nullptr if audio is not enabled.
-  virtual AudioStub* audio_stub() = 0;
   virtual ClientStub* client_stub() = 0;
 
   // Set the stubs which will handle messages we receive from the client. These

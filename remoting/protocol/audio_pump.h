@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_AUDIO_PUMP_H_
-#define REMOTING_HOST_AUDIO_PUMP_H_
+#ifndef REMOTING_PROTOCOL_AUDIO_PUMP_H_
+#define REMOTING_PROTOCOL_AUDIO_PUMP_H_
 
 #include <memory>
 
@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "remoting/protocol/audio_stream.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,32 +19,30 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-namespace protocol {
-class AudioStub;
-}  // namespace protocol
-
-class AudioCapturer;
 class AudioEncoder;
 class AudioPacket;
+
+namespace protocol {
+
+class AudioStub;
+class AudioSource;
 
 // AudioPump is responsible for fetching audio data from the AudioCapturer
 // and encoding it before passing it to the AudioStub for delivery to the
 // client. Audio is captured and encoded on the audio thread and then passed to
 // AudioStub on the network thread.
-class AudioPump {
+class AudioPump : public AudioStream {
  public:
   // The caller must ensure that the |audio_stub| is not destroyed until the
   // pump is destroyed.
   AudioPump(scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-            std::unique_ptr<AudioCapturer> audio_capturer,
+            std::unique_ptr<AudioSource> audio_source,
             std::unique_ptr<AudioEncoder> audio_encoder,
-            protocol::AudioStub* audio_stub);
-  virtual ~AudioPump();
+            AudioStub* audio_stub);
+  ~AudioPump() override;
 
-  // Pauses or resumes audio on a running session. This leaves the audio
-  // capturer running, and only affects whether or not the captured audio is
-  // encoded and sent on the wire.
-  void Pause(bool pause);
+  // AudioStream interface.
+  void Pause(bool pause) override;
 
  private:
   class Core;
@@ -57,7 +56,7 @@ class AudioPump {
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  protocol::AudioStub* audio_stub_;
+  AudioStub* audio_stub_;
 
   std::unique_ptr<Core> core_;
 
@@ -66,6 +65,7 @@ class AudioPump {
   DISALLOW_COPY_AND_ASSIGN(AudioPump);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_AUDIO_PUMP_H_
+#endif  // REMOTING_PROTOCOL_AUDIO_PUMP_H_

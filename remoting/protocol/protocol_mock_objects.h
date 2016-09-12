@@ -73,7 +73,7 @@ class MockConnectionToClientEventHandler
   MOCK_METHOD1(OnConnectionAuthenticating,
                void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionAuthenticated, void(ConnectionToClient* connection));
-  MOCK_METHOD1(CreateVideoStreams, void(ConnectionToClient* connection));
+  MOCK_METHOD1(CreateMediaStreams, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionChannelsConnected,
                void(ConnectionToClient* connection));
   MOCK_METHOD2(OnConnectionClosed,

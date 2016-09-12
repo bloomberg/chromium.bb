@@ -12,7 +12,8 @@
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
-#include "remoting/protocol/audio_writer.h"
+#include "remoting/protocol/audio_source.h"
+#include "remoting/protocol/audio_stream.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
 #include "remoting/protocol/host_event_dispatcher.h"
@@ -89,8 +90,9 @@ std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
   return std::move(stream);
 }
 
-AudioStub* WebrtcConnectionToClient::audio_stub() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+std::unique_ptr<AudioStream> WebrtcConnectionToClient::StartAudioStream(
+    std::unique_ptr<AudioSource> audio_source) {
+  NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -139,7 +141,7 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       // OnConnectionAuthenticated() call above may result in the connection
       // being torn down.
       if (self)
-        event_handler_->CreateVideoStreams(this);
+        event_handler_->CreateMediaStreams(this);
       break;
     }
 

@@ -23,7 +23,6 @@ message AudioPacket {
     ENCODING_INVALID = -1;
     ENCODING_RAW = 0;  // Uncompressed encoding
     ENCODING_OPUS = 1;
-    ENCODING_SPEEX = 2;
   }
 
   optional Encoding encoding = 3 [default = ENCODING_INVALID];
