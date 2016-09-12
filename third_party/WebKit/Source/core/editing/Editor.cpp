@@ -194,6 +194,10 @@ bool Editor::handleTextEvent(TextEvent* event)
     if (event->isDrop())
         return false;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     if (event->isPaste()) {
         if (event->pastingFragment())
             replaceSelectionWithFragment(event->pastingFragment(), false, event->shouldSmartReplace(), event->shouldMatchStyle());
@@ -535,7 +539,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
 {
-    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!frame().document()->needsLayoutTreeUpdate());
     if (frame().selection().isNone() || !frame().selection().isContentEditable() || !fragment)
         return;
 

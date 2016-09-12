@@ -938,6 +938,10 @@ unsigned WebLocalFrameImpl::unloadListenerCount() const
 
 void WebLocalFrameImpl::replaceSelection(const WebString& text)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     bool selectReplacement = frame()->editor().behavior().shouldSelectReplacement();
     bool smartReplace = true;
     frame()->editor().replaceSelectionWithText(text, selectReplacement, smartReplace);

@@ -699,6 +699,11 @@ void SpellChecker::replaceMisspelledRange(const String& text)
     if (markerRange.isNull())
         return;
     frame().selection().setSelection(VisibleSelection(markerRange), CharacterGranularity);
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     frame().editor().replaceSelectionWithText(text, false, false);
 }
 
