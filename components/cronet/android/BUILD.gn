@@ -402,7 +402,8 @@ android_apk("cronet_sample_apk") {
     proguard_configs = [
       "proguard.cfg",
       "sample/javatests/proguard.cfg",
-      "//base/android/base_proguard_config.flags",
+      "//base/android/proguard/chromium_apk.flags",
+      "//base/android/proguard/chromium_code.flags",
     ]
   }
 }
@@ -718,7 +719,8 @@ android_apk("cronet_perf_test_apk") {
   proguard_configs = [
     "proguard.cfg",
     "test/javaperftests/proguard.cfg",
-    "//base/android/base_proguard_config.flags",
+    "//base/android/proguard/chromium_apk.flags",
+    "//base/android/proguard/chromium_code.flags",
   ]
 }
 
@@ -922,7 +924,7 @@ action("cronet_combine_proguard_flags") {
   args = [
     "--output-file",
     rebase_path("$_package_dir/proguard.cfg", root_build_dir),
-    rebase_path("//base/android/base_proguard_config.flags", root_build_dir),
+    rebase_path("//base/android/proguard/chromium_code.flags", root_build_dir),
     rebase_path("//components/cronet/android/proguard.cfg", root_build_dir),
   ]
 }

@@ -1,3 +1,30 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags that we'd like all Chromium .apks to use.
+
+# Keep line number information, useful for stack traces.
+-keepattributes SourceFile,LineNumberTable
+
+# Keep all CREATOR fields within Parcelable that are kept.
+-keepclassmembers class * implements android.os.Parcelable {
+  public static *** CREATOR;
+}
+
+# Don't obfuscate Parcelables as they might be marshalled outside Chrome.
+# If we annotated all Parcelables that get put into Bundles other than
+# for saveInstanceState (e.g. PendingIntents), then we could actually keep the
+# names of just those ones. For now, we'll just keep them all.
+-keepnames class * implements android.os.Parcelable
+
+# Keep all enum values and valueOf methods. See
+# http://proguard.sourceforge.net/index.html#manual/examples.html
+# for the reason for this. Also, see http://crbug.com/248037.
+-keepclassmembers enum * {
+    public static **[] values();
+}
+
 # Allows Proguard freedom in removing these log related calls. We ask for debug
 # and verbose logs to be stripped out in base.Log, so we are just ensuring we
 # get rid of all other debug/verbose logs.

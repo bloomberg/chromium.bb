@@ -33,8 +33,8 @@ template("system_webview_apk_tmpl") {
       }
       proguard_configs += [
         "//android_webview/apk/java/proguard.flags",
-        "//base/android/base_proguard_config.flags",
-        "//base/android/release_proguard_config.flags",
+        "//base/android/proguard/chromium_apk.flags",
+        "//base/android/proguard/chromium_code.flags",
       ]
     }
   }

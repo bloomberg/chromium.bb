@@ -1,5 +1,9 @@
-# Keep line number information, useful for stack traces.
--keepattributes SourceFile,LineNumberTable
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags that can be safely shared with Cronet, and thus would be
+# appropriate for third-party apps to include.
 
 # Keep all annotation related attributes that can affect runtime
 -keepattributes RuntimeVisible*Annotations
@@ -34,8 +38,13 @@
   native <methods>;
 }
 
+# Remove methods annotated with this if their return value is unused.
+-assumenosideeffects class ** {
+  @org.chromium.base.annotations.RemovableInRelease <methods>;
+}
+
 # Keep all CREATOR fields within Parcelable that are kept.
--keepclassmembers class * implements android.os.Parcelable {
+-keepclassmembers class org.chromium.** implements android.os.Parcelable {
   public static *** CREATOR;
 }
 
@@ -43,17 +52,11 @@
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class * implements android.os.Parcelable
-
-# Remove methods annotated with this if their return value is unused
--assumenosideeffects class ** {
-  @org.chromium.base.annotations.RemovableInRelease <methods>;
-}
+-keepnames class org.chromium.** implements android.os.Parcelable
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
 # for the reason for this. Also, see http://crbug.com/248037.
--keepclassmembers enum * {
+-keepclassmembers enum org.chromium.** {
     public static **[] values();
 }
-
