@@ -94,6 +94,11 @@ void ProcessPowerCollector::StartTimer() {
                &ProcessPowerCollector::HandleUpdateTimeout);
 }
 
+// Work around VS 2015 code-gen bug, seen in Update 2 and Update 3.
+// crbug.com/640588
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+#endif
 double ProcessPowerCollector::UpdatePowerConsumption() {
   double total_cpu_percent = SynchronizeProcesses();
 
@@ -108,6 +113,9 @@ double ProcessPowerCollector::UpdatePowerConsumption() {
 void ProcessPowerCollector::HandleUpdateTimeout() {
   UpdatePowerConsumption();
 }
+#if defined(COMPILER_MSVC)
+#pragma optimize("", on)
+#endif
 
 double ProcessPowerCollector::SynchronizeProcesses() {
   // Update all tabs.
