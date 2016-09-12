@@ -45,7 +45,6 @@ namespace blink {
 class KURL;
 class MHTMLArchive;
 class ResourceError;
-class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
 class ResourceTimingInfo;

@@ -6,7 +6,6 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/workers/Worklet.h"
 
 namespace blink {
@@ -20,10 +19,7 @@ WorkletScriptLoader::WorkletScriptLoader(ScriptPromiseResolver* resolver, Workle
 
 void WorkletScriptLoader::cancel()
 {
-    if (resource()) {
-        resource()->loader()->cancel();
-        clearResource();
-    }
+    clearResource();
 }
 
 void WorkletScriptLoader::notifyFinished(Resource* resource)

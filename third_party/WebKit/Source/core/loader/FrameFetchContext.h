@@ -45,7 +45,6 @@ class Document;
 class DocumentLoader;
 class LocalFrame;
 class ResourceError;
-class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
 

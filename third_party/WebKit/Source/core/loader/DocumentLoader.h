@@ -59,7 +59,6 @@ class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
 class FrameLoader;
-class ResourceLoader;
 class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
 
@@ -172,7 +171,6 @@ private:
 
     void commitIfReady();
     void commitData(const char* bytes, size_t length);
-    ResourceLoader* mainResourceLoader() const;
     void clearMainResourceHandle();
 
     bool maybeCreateArchive();

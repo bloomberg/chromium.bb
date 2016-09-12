@@ -99,6 +99,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebCache.h"

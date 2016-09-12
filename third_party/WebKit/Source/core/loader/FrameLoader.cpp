@@ -48,7 +48,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"

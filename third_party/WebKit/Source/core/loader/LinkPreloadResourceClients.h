@@ -9,7 +9,6 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/RawResource.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"

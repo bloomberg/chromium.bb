@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ClientHintsPreferences.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"

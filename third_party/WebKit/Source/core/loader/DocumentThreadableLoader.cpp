@@ -894,7 +894,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             return;
         }
 
-        if (resource()->loader()) {
+        if (resource()->isLoading()) {
             unsigned long identifier = resource()->identifier();
             InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
         } else {

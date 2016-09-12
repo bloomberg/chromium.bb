@@ -40,7 +40,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -122,11 +121,6 @@ FrameLoader* DocumentLoader::frameLoader() const
     if (!m_frame)
         return nullptr;
     return &m_frame->loader();
-}
-
-ResourceLoader* DocumentLoader::mainResourceLoader() const
-{
-    return m_mainResource ? m_mainResource->loader() : nullptr;
 }
 
 DocumentLoader::~DocumentLoader()
@@ -673,9 +667,9 @@ void DocumentLoader::startLoadingMainResource()
         maybeLoadEmpty();
         return;
     }
-    // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.
+    // A bunch of headers are set when the underlying resource load begins, and m_request needs to include those.
     // Even when using a cached resource, we may make some modification to the request, e.g. adding the referer header.
-    m_request = mainResourceLoader() ? m_mainResource->resourceRequest() : fetchRequest.resourceRequest();
+    m_request = m_mainResource->isLoading() ? m_mainResource->resourceRequest() : fetchRequest.resourceRequest();
     m_mainResource->addClient(this);
 }
 
