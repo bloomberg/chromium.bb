@@ -19,7 +19,7 @@ PASS context.createMediaElementSource(null) threw exception TypeError: Failed to
 PASS context.createMediaStreamSource(null) threw exception TypeError: Failed to execute 'createMediaStreamSource' on 'BaseAudioContext': parameter 1 is not of type 'MediaStream'..
 PASS context.createScriptProcessor(1, 1, 1) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'BaseAudioContext': buffer size (1) must be 0 or a power of two between 256 and 16384..
 PASS context.createScriptProcessor(4096, 100, 1) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'BaseAudioContext': number of input channels (100) exceeds maximum (32)..
-PASS context.createScriptProcessor(4096, 1, 100) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'BaseAudioContext': number of output channels (1) exceeds maximum (32)..
+PASS context.createScriptProcessor(4096, 1, 100) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'BaseAudioContext': number of output channels (100) exceeds maximum (32)..
 PASS context.createScriptProcessor() did not throw exception.
 PASS context.createScriptProcessor(0) did not throw exception.
 PASS context.createChannelSplitter(0) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'BaseAudioContext': The number of outputs provided (0) is outside the range [1, 32]..

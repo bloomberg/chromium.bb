@@ -380,7 +380,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(
     if (numberOfOutputChannels > BaseAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             IndexSizeError,
-            "number of output channels (" + String::number(numberOfInputChannels)
+            "number of output channels (" + String::number(numberOfOutputChannels)
             + ") exceeds maximum ("
             + String::number(BaseAudioContext::maxNumberOfChannels()) + ").");
         return nullptr;
