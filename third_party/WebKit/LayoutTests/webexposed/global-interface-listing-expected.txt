@@ -3694,6 +3694,14 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
+interface MediaDeviceInfo
+    attribute @@toStringTag
+    getter deviceId
+    getter groupId
+    getter kind
+    getter label
+    method constructor
+    method toJSON
 interface MediaDevices : EventTarget
     attribute @@toStringTag
     getter ondevicechange

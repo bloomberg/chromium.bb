@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/mediacapture-main/#device-info
+
 enum MediaDeviceKind {
     "audioinput",
     "audiooutput",
     "videoinput"
 };
 
-[
-    NoInterfaceObject
-] interface MediaDeviceInfo {
+interface MediaDeviceInfo {
     readonly attribute DOMString deviceId;
     readonly attribute MediaDeviceKind kind;
     readonly attribute DOMString label;
