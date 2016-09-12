@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -264,8 +265,12 @@ void DecryptingAudioDecoder::DeliverFrame(
   }
 
   if (status == Decryptor::kNoKey) {
-    DVLOG(2) << "DeliverFrame() - kNoKey";
-    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no key";
+    std::string key_id =
+        scoped_pending_buffer_to_decode->decrypt_config()->key_id();
+    std::string missing_key_id = base::HexEncode(key_id.data(), key_id.size());
+    DVLOG(1) << "DeliverFrame() - no key for key ID " << missing_key_id;
+    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no key for key ID "
+                                 << missing_key_id;
 
     // Set |pending_buffer_to_decode_| back as we need to try decoding the
     // pending buffer again when new key is added to the decryptor.
