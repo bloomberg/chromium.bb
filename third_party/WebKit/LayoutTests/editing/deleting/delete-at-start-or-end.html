@@ -1,15 +1,17 @@
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function editingTest() {
-    var selection = window.getSelection();
-    var s = document.getElementById("test");
-    selection.collapse(s, 0);
-    execDeleteCommand();
-    execForwardDeleteCommand();
-}
-</script>
-<div contenteditable="true" id="test">
-</div>
-<script>
-runEditingTest();
+test(() => assert_selection(
+    '<div contenteditable>|</div>',
+    'delete',
+    '<div contenteditable>|</div>'),
+    'Backward delete in an empty editable DIV');
+
+test(() => assert_selection(
+    '<div contenteditable>|</div>',
+    'forwardDelete',
+    '<div contenteditable>|</div>'),
+    'Forward delete in an empty editable DIV');
 </script>
