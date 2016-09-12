@@ -81,16 +81,11 @@ crbug.com/613728 paint/invalidation/table/cached-change-table-border-width.html 
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/619103 paint/invalidation/hover-invalidation-table.html [ Failure ]
-crbug.com/619103 paint/invalidation/selected-replaced.html [ Failure ]
-crbug.com/619103 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
+crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
+crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 crbug.com/619103 [ Win ] paint/invalidation/svg/text-viewbox-rescale.html [ Pass Failure ]
-crbug.com/619103 paint/overflow/interest-rect-change-scroll-down.html [ Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
-crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
-crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
-crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
-crbug.com/619103 paint/invalidation/compositing/updating-scrolling-container-and-content.html [ Crash Timeout ]
+crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 
 # TODO(fmalita): re-enable
 # crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]

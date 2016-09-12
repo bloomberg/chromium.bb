@@ -92,6 +92,7 @@ struct PaintInvalidationTracking {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     Vector<PaintInvalidationInfo> trackedPaintInvalidations;
     sk_sp<SkPicture> lastPaintedPicture;
+    IntRect lastInterestRect;
     Region paintInvalidationRegionSinceLastPaint;
     Vector<UnderPaintInvalidation> underPaintInvalidations;
 };
@@ -337,6 +338,7 @@ void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::Disabled
             checkPaintUnderInvalidations(*newPicture);
             PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
             tracking.lastPaintedPicture = std::move(newPicture);
+            tracking.lastInterestRect = m_previousInterestRect;
             tracking.paintInvalidationRegionSinceLastPaint = Region();
         }
     }
@@ -1285,21 +1287,25 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
     if (!tracking.lastPaintedPicture)
         return;
 
+    IntRect rect = intersection(tracking.lastInterestRect, interestRect());
+    if (rect.isEmpty())
+        return;
+
     SkBitmap oldBitmap;
-    int width = static_cast<int>(ceilf(std::min(tracking.lastPaintedPicture->cullRect().width(), newPicture.cullRect().width())));
-    int height = static_cast<int>(ceilf(std::min(tracking.lastPaintedPicture->cullRect().height(), newPicture.cullRect().height())));
-    oldBitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
+    oldBitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
     {
         SkCanvas canvas(oldBitmap);
         canvas.clear(SK_ColorTRANSPARENT);
+        canvas.translate(-rect.x(), -rect.y());
         canvas.drawPicture(tracking.lastPaintedPicture.get());
     }
 
     SkBitmap newBitmap;
-    newBitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
+    newBitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
     {
         SkCanvas canvas(newBitmap);
         canvas.clear(SK_ColorTRANSPARENT);
+        canvas.translate(-rect.x(), -rect.y());
         canvas.drawPicture(&newPicture);
     }
 
@@ -1307,34 +1313,35 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
     newBitmap.lockPixels();
     int mismatchingPixels = 0;
     static const int maxMismatchesToReport = 50;
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            SkColor oldPixel = oldBitmap.getColor(x, y);
-            SkColor newPixel = newBitmap.getColor(x, y);
-            if (pixelsDiffer(oldPixel, newPixel) && !tracking.paintInvalidationRegionSinceLastPaint.contains(IntPoint(x, y))) {
+    for (int bitmapY = 0; bitmapY < rect.height(); ++bitmapY) {
+        int layerY = bitmapY + rect.y();
+        for (int bitmapX = 0; bitmapX < rect.width(); ++bitmapX) {
+            int layerX = bitmapX + rect.x();
+            SkColor oldPixel = oldBitmap.getColor(bitmapX, bitmapY);
+            SkColor newPixel = newBitmap.getColor(bitmapX, bitmapY);
+            if (pixelsDiffer(oldPixel, newPixel) && !tracking.paintInvalidationRegionSinceLastPaint.contains(IntPoint(layerX, layerY))) {
                 if (mismatchingPixels < maxMismatchesToReport) {
-                    UnderPaintInvalidation underPaintInvalidation = { x, y, oldPixel, newPixel };
+                    UnderPaintInvalidation underPaintInvalidation = { layerX, layerY, oldPixel, newPixel };
                     tracking.underPaintInvalidations.append(underPaintInvalidation);
-                    LOG(ERROR) << debugName() << " Uninvalidated old/new pixels mismatch at " << x << "," << y << " old:" << std::hex << oldPixel << " new:" << newPixel;
+                    LOG(ERROR) << debugName() << " Uninvalidated old/new pixels mismatch at " << layerX << "," << layerY << " old:" << std::hex << oldPixel << " new:" << newPixel;
                 } else if (mismatchingPixels == maxMismatchesToReport) {
                     LOG(ERROR) << "and more...";
                 }
                 ++mismatchingPixels;
-                *newBitmap.getAddr32(x, y) = SkColorSetARGB(0xFF, 0xA0, 0, 0); // Dark red.
+                *newBitmap.getAddr32(bitmapX, bitmapY) = SkColorSetARGB(0xFF, 0xA0, 0, 0); // Dark red.
             } else {
-                *newBitmap.getAddr32(x, y) = SK_ColorTRANSPARENT;
+                *newBitmap.getAddr32(bitmapX, bitmapY) = SK_ColorTRANSPARENT;
             }
         }
     }
-
     oldBitmap.unlockPixels();
     newBitmap.unlockPixels();
 
     // Visualize under-invalidations by overlaying the new bitmap (containing red pixels indicating under-invalidations,
     // and transparent pixels otherwise) onto the painting.
     SkPictureRecorder recorder;
-    recorder.beginRecording(width, height);
-    recorder.getRecordingCanvas()->drawBitmap(newBitmap, 0, 0);
+    recorder.beginRecording(rect);
+    recorder.getRecordingCanvas()->drawBitmap(newBitmap, rect.x(), rect.y());
     sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     getPaintController().appendDebugDrawingAfterCommit(*this, picture, offsetFromLayoutObjectWithSubpixelAccumulation());
 }
