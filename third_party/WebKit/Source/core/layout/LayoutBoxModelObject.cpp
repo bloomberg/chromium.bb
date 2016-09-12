@@ -132,6 +132,11 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const
         }
     }
 
+    // TODO(flackr): We should be able to paint locally attached borders with a border-radius
+    // but these currently do not paint correctly. https://crbug.com/645949
+    if (style()->hasBorderRadius())
+        return false;
+
     const FillLayer* layer = &(style()->backgroundLayers());
     for (; layer; layer = layer->next()) {
         if (layer->attachment() == LocalBackgroundAttachment)

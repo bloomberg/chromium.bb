@@ -34,6 +34,7 @@ TEST_F(PaintLayerScrollableAreaTest, ShouldPaintBackgroundOntoScrollingContentsL
         "<div id='scroller13' class='scroller' style='background: white border-box;'><div class='spacer'></div></div>"
         "<div id='scroller14' class='scroller' style='background: white; border: 1px solid black; outline: 1px solid blue; outline-offset: -1px;'><div class='spacer'></div></div>"
         "<div id='scroller15' class='scroller' style='background: white; border: 1px solid black; outline: 1px solid blue; outline-offset: -2px;'><div class='spacer'></div></div>"
+        "<div id='scroller16' class='scroller' style='background: white; border 1px solid black; border-radius: 2px;'><div class='spacer'></div></div>"
         );
 
     // #scroller1 cannot paint background into scrolling contents layer because it has a negative z-index child.
@@ -90,6 +91,10 @@ TEST_F(PaintLayerScrollableAreaTest, ShouldPaintBackgroundOntoScrollingContentsL
     // #scroller15 cannot paint background into scrolling contents layer because the outline is drawn inside
     // the padding box.
     EXPECT_FALSE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller15"));
+
+    // #scroller16 cannot paint background into scrolling contents layer because it has a
+    // border radius.
+    EXPECT_FALSE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller16"));
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromoted)
