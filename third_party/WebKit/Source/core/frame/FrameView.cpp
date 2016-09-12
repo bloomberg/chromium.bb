@@ -756,8 +756,8 @@ bool FrameView::isEnclosedInCompositingLayer() const
     // FIXME: It's a bug that compositing state isn't always up to date when this is called. crbug.com/366314
     DisableCompositingQueryAsserts disabler;
 
-    LayoutObject* frameOwnerLayoutObject = m_frame->ownerLayoutObject();
-    return frameOwnerLayoutObject && frameOwnerLayoutObject->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+    LayoutItem frameOwnerLayoutItem = m_frame->ownerLayoutItem();
+    return !frameOwnerLayoutItem.isNull() && frameOwnerLayoutItem.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
 }
 
 void FrameView::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isSubtree)
