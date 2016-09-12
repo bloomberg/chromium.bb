@@ -6,7 +6,6 @@
 #define NGLayoutOpportunityIterator_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"

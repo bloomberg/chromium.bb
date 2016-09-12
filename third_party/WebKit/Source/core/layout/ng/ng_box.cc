@@ -4,7 +4,6 @@
 
 #include "core/layout/ng/ng_box.h"
 
-#include "core/layout/LayoutObject.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -12,8 +11,6 @@
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_writing_mode.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
 
 namespace blink {
 NGBox::NGBox(LayoutObject* layout_object)

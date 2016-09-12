@@ -4,9 +4,6 @@
 
 #include "core/layout/ng/ng_physical_constraint_space.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/style/ComputedStyle.h"
-
 namespace blink {
 
 NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(

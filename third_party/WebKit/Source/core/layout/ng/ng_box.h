@@ -5,7 +5,6 @@
 #ifndef NGBox_h
 #define NGBox_h
 
-#include "core/layout/LayoutBox.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
@@ -13,6 +12,7 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutBox;
+class LayoutObject;
 class NGBlockLayoutAlgorithm;
 class NGConstraintSpace;
 class NGFragment;
