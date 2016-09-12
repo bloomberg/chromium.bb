@@ -1141,7 +1141,6 @@
       'browser/push_messaging/push_messaging_router.h',
       'browser/quota_dispatcher_host.cc',
       'browser/quota_dispatcher_host.h',
-      'browser/renderer_data_memoizing_store.h',
       'browser/renderer_host/clipboard_message_filter.cc',
       'browser/renderer_host/clipboard_message_filter.h',
       'browser/renderer_host/clipboard_message_filter_mac.mm',
