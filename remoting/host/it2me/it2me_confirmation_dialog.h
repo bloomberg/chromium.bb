@@ -30,7 +30,8 @@ class It2MeConfirmationDialog {
 
   // Shows the dialog. |callback| will be called with the user's selection.
   // |callback| will not be called if the dialog is destroyed.
-  virtual void Show(const ResultCallback& callback) = 0;
+  virtual void Show(const std::string& remote_user_email,
+                    const ResultCallback& callback) = 0;
 };
 
 // Used to create an platform specific instance of It2MeConfirmationDialog.

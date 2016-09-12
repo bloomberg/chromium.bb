@@ -99,7 +99,7 @@ void It2MeHost::Connect() {
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ShowConfirmationPrompt, this));
+      FROM_HERE, base::Bind(&It2MeHost::ReadPolicyAndConnect, this));
 }
 
 void It2MeHost::Disconnect() {
@@ -150,56 +150,18 @@ void It2MeHost::RequestNatPolicy() {
     UpdateNatPolicy(nat_traversal_enabled_);
 }
 
-void It2MeHost::ShowConfirmationPrompt() {
+void It2MeHost::ReadPolicyAndConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(kDisconnected, state_);
 
   SetState(kStarting, "");
 
-  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog =
-      confirmation_dialog_factory_->Create();
-
-  // TODO(dcaiafa): Remove after dialog implementations for all platforms exist.
-  if (!confirmation_dialog) {
-    ReadPolicyAndConnect();
-    return;
-  }
-
-  confirmation_dialog_proxy_.reset(
-      new It2MeConfirmationDialogProxy(host_context_->ui_task_runner(),
-                                       std::move(confirmation_dialog)));
-
-  confirmation_dialog_proxy_->Show(
-      base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this)));
-}
-
-void It2MeHost::OnConfirmationResult(It2MeConfirmationDialog::Result result) {
-  switch (result) {
-    case It2MeConfirmationDialog::Result::OK:
-      ReadPolicyAndConnect();
-      break;
-
-    case It2MeConfirmationDialog::Result::CANCEL:
-      DisconnectOnNetworkThread();
-      break;
-
-    default:
-      NOTREACHED();
-      return;
-  }
-}
-
-void It2MeHost::ReadPolicyAndConnect() {
-  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK_EQ(kStarting, state_);
-
   // Only proceed to FinishConnect() if at least one policy update has been
-  // received.
+  // received.  Otherwise, create the policy watcher and thunk the connect.
   if (policy_received_) {
     FinishConnect();
   } else {
-    // Otherwise, create the policy watcher, and thunk the connect.
-    pending_connect_ =
-        base::Bind(&It2MeHost::FinishConnect, this);
+    pending_connect_ = base::Bind(&It2MeHost::FinishConnect, this);
   }
 }
 
@@ -311,10 +273,11 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
   // host is destroyed in OnClientDisconnected() after the first connection.
   CHECK_NE(state_, kConnected);
 
-  std::string client_username = jid;
-  size_t pos = client_username.find('/');
-  if (pos != std::string::npos)
-    client_username.replace(pos, std::string::npos, "");
+  std::string client_username;
+  if (!SplitJidResource(jid, &client_username, /*resource=*/nullptr)) {
+    LOG(WARNING) << "Incorrectly formatted JID received: " << jid;
+    client_username = jid;
+  }
 
   HOST_LOG << "Client " << client_username << " connected.";
 
@@ -522,15 +485,25 @@ void It2MeHost::OnReceivedSupportID(
 void It2MeHost::ValidateConnectionDetails(
     const std::string& remote_jid,
     const protocol::ValidatingAuthenticator::ResultCallback& result_callback) {
+  // First ensure the JID we received is valid.
+  std::string client_username;
+  if (!SplitJidResource(remote_jid, &client_username, /*resource=*/nullptr)) {
+    LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
+               << ": Invalid JID.";
+    result_callback.Run(
+        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    return;
+  }
+
+  if (client_username.empty()) {
+    LOG(ERROR) << "Invalid user name passed in: " << remote_jid;
+    result_callback.Run(
+        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    return;
+  }
+
   // Check the client domain policy.
   if (!required_client_domain_.empty()) {
-    std::string client_username;
-    if (!SplitJidResource(remote_jid, &client_username, /*resource=*/nullptr)) {
-      LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
-                 << ": Invalid JID.";
-      result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
-      return;
-    }
     if (!base::EndsWith(client_username,
                         std::string("@") + required_client_domain_,
                         base::CompareCase::INSENSITIVE_ASCII)) {
@@ -541,7 +514,36 @@ void It2MeHost::ValidateConnectionDetails(
     }
   }
 
-  result_callback.Run(ValidationResult::SUCCESS);
+  // Show a confirmation dialog to the user to allow them to confirm/reject it.
+  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog =
+      confirmation_dialog_factory_->Create();
+
+  // TODO(joedow): Remove this once confirmation dialog exists on all platforms.
+  if (!confirmation_dialog) {
+    result_callback.Run(ValidationResult::SUCCESS);
+    return;
+  }
+
+  confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
+      host_context_->ui_task_runner(), std::move(confirmation_dialog)));
+
+  confirmation_dialog_proxy_->Show(
+      client_username, base::Bind(&It2MeHost::OnConfirmationResult,
+                                  base::Unretained(this), result_callback));
+}
+
+void It2MeHost::OnConfirmationResult(
+    const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
+    It2MeConfirmationDialog::Result result) {
+  switch (result) {
+    case It2MeConfirmationDialog::Result::OK:
+      result_callback.Run(ValidationResult::SUCCESS);
+      break;
+
+    case It2MeConfirmationDialog::Result::CANCEL:
+      result_callback.Run(ValidationResult::ERROR_REJECTED_BY_USER);
+      break;
+  }
 }
 
 It2MeHostFactory::It2MeHostFactory() {}

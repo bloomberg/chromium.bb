@@ -122,12 +122,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Returns true if the host is connected.
   bool IsConnected() const;
 
-  // Presents a confirmation dialog to the user before starting the connection
-  // process.
-  void ShowConfirmationPrompt();
-
   // Processes the result of the confirmation dialog.
-  void OnConfirmationResult(It2MeConfirmationDialog::Result result);
+  void OnConfirmationResult(
+      const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
+      It2MeConfirmationDialog::Result result);
 
   // Called by Connect() to check for policies and start connection process.
   void ReadPolicyAndConnect();

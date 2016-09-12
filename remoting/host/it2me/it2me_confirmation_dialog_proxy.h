@@ -28,7 +28,8 @@ class It2MeConfirmationDialogProxy : public It2MeConfirmationDialog {
   ~It2MeConfirmationDialogProxy() override;
 
   // It2MeConfirmationDialog implementation.
-  void Show(const It2MeConfirmationDialog::ResultCallback& callback) override;
+  void Show(const std::string& remote_user_email,
+            const It2MeConfirmationDialog::ResultCallback& callback) override;
 
  private:
   class Core;

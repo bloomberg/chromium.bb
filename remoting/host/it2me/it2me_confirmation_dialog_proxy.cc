@@ -23,7 +23,7 @@ class It2MeConfirmationDialogProxy::Core {
   ~Core();
 
   // Shows the wrapped dialog. Must be called on the UI thread.
-  void Show();
+  void Show(const std::string& remote_user_email);
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
@@ -59,10 +59,12 @@ It2MeConfirmationDialogProxy::Core::~Core() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 }
 
-void It2MeConfirmationDialogProxy::Core::Show() {
+void It2MeConfirmationDialogProxy::Core::Show(
+    const std::string& remote_user_email) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  dialog_->Show(base::Bind(&It2MeConfirmationDialogProxy::Core::ReportResult,
+  dialog_->Show(remote_user_email,
+                base::Bind(&It2MeConfirmationDialogProxy::Core::ReportResult,
                            base::Unretained(this)));
 }
 
@@ -90,13 +92,14 @@ It2MeConfirmationDialogProxy::~It2MeConfirmationDialogProxy() {
 }
 
 void It2MeConfirmationDialogProxy::Show(
+    const std::string& remote_user_email,
     const It2MeConfirmationDialog::ResultCallback& callback) {
   DCHECK(core_->caller_task_runner()->BelongsToCurrentThread());
 
   callback_ = callback;
-  core_->ui_task_runner()->PostTask(FROM_HERE,
-                                    base::Bind(&Core::Show,
-                                               base::Unretained(core_.get())));
+  core_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Core::Show, base::Unretained(core_.get()),
+                            remote_user_email));
 }
 
 void It2MeConfirmationDialogProxy::ReportResult(
