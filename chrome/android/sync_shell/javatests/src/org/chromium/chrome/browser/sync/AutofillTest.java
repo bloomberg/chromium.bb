@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.AutofillProfileSpecifics;
@@ -24,6 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the autofill profile sync data type.
  */
+@RetryOnFailure  // crbug.com/637448
 public class AutofillTest extends SyncTestBase {
     private static final String TAG = "AutofillTest";
 

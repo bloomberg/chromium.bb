@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -27,6 +28,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Tests for the first run experience.
  */
 @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@RetryOnFailure  // crbug.com/637448
 public class FirstRunTest extends SyncTestBase {
     private static final String TAG = "FirstRunTest";
 

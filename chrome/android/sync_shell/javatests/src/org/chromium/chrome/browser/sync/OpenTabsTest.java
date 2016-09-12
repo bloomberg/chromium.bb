@@ -10,6 +10,7 @@ import android.util.Pair;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -35,6 +36,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the open tabs (sessions) sync data type.
  */
+@RetryOnFailure  // crbug.com/637448
 public class OpenTabsTest extends SyncTestBase {
     private static final String TAG = "OpenTabsTest";
 

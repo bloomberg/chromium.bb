@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.EntitySpecifics;
@@ -28,6 +29,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the typed URLs sync data type.
  */
+@RetryOnFailure  // crbug.com/637448
 public class TypedUrlsTest extends SyncTestBase {
     private static final String TAG = "TypedUrlsTest";
 

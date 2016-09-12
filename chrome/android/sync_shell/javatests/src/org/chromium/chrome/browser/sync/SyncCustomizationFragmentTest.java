@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -46,6 +47,7 @@ import java.util.concurrent.Callable;
  * Tests for SyncCustomizationFragment.
  */
 @SuppressLint("UseSparseArrays")
+@RetryOnFailure  // crbug.com/637448
 public class SyncCustomizationFragmentTest extends SyncTestBase {
     private static final String TAG = "SyncCustomizationFragmentTest";
 

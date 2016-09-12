@@ -14,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
@@ -30,6 +31,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 /**
  * Test suite for Sync.
  */
+@RetryOnFailure  // crbug.com/637448
 public class SyncTest extends SyncTestBase {
     private static final String TAG = "SyncTest";
 

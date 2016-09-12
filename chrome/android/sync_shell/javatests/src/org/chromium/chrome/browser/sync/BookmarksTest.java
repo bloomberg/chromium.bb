@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -27,6 +28,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the bookmarks sync data type.
  */
+@RetryOnFailure  // crbug.com/637448
 public class BookmarksTest extends SyncTestBase {
     private static final String TAG = "BookmarksTest";
 
