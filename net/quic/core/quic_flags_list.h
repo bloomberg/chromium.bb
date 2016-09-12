@@ -173,3 +173,7 @@ QUIC_FLAG(bool, FLAGS_quic_send_scfg_ttl, true)
 // rest to next event. This flag can be turned on only if
 // --quic_buffer_packet_till_chlo is true.
 QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, true)
+
+// If true, lazy allocate and early release memeory used in
+// QuicStreamSequencerBuffer to buffer incoming data.
+QUIC_FLAG(bool, FLAGS_quic_reduce_sequencer_buffer_memory_life_time, true)

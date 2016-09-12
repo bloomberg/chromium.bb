@@ -353,6 +353,8 @@ void ReliableQuicStream::CloseReadSide() {
   DVLOG(1) << ENDPOINT << "Done reading from stream " << id();
 
   read_side_closed_ = true;
+  sequencer_.ReleaseBuffer();
+
   if (write_side_closed_) {
     DVLOG(1) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
