@@ -105666,6 +105666,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="WebFont.DecodeSpeed"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="WebFontMissedCache" separator="." ordering="prefix">
+  <owner>toyoshim@chromium.org</owner>
+  <suffix name="MissedCache" label="On missed cache"/>
+  <affected-histogram name="WebFont.DownloadTime.0.Under10KB"/>
+  <affected-histogram name="WebFont.DownloadTime.1.10KBTo50KB"/>
+  <affected-histogram name="WebFont.DownloadTime.2.50KBTo100KB"/>
+  <affected-histogram name="WebFont.DownloadTime.3.100KBTo1MB"/>
+  <affected-histogram name="WebFont.DownloadTime.4.Over1MB"/>
+  <affected-histogram name="WebFont.DownloadTime.LoadError"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="WebRTCMediaType" separator=".">
   <suffix name="Audio" label="Audio"/>
   <suffix name="Video" label="Video"/>

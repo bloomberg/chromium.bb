@@ -61,24 +61,33 @@ private:
     class FontLoadHistograms {
         DISALLOW_NEW();
     public:
-        FontLoadHistograms() : m_loadStartTime(0), m_blankPaintTime(0), m_isLongLimitExceeded(false) { }
+        // Should not change following order in CacheHitMetrics to be used for metrics values.
+        enum CacheHitMetrics { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
+        enum DataSource { FromUnknown, FromDataURL, FromMemoryCache, FromDiskCache, FromNetwork };
+
+        FontLoadHistograms(DataSource dataSource) : m_loadStartTime(0), m_blankPaintTime(0), m_isLongLimitExceeded(false), m_dataSource(dataSource) { }
         void loadStarted();
         void fallbackFontPainted(DisplayPeriod);
-        void fontLoaded(bool isInterventionTriggered, bool isLoadedFromNetwork);
+        void fontLoaded(bool isInterventionTriggered);
         void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
-        void recordRemoteFont(const FontResource*, bool isLoadedFromMemoryCache);
+        void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_blankPaintTime; }
+        DataSource dataSource() { return m_dataSource; }
+        void maySetDataSource(DataSource dataSource) { m_dataSource = (m_dataSource != FromUnknown) ? m_dataSource : dataSource; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);
-        void recordInterventionResult(bool isTriggered, bool isLoadedFromNetwork);
+        void recordInterventionResult(bool isTriggered);
+        CacheHitMetrics dataSourceMetricsValue();
         double m_loadStartTime;
         double m_blankPaintTime;
         bool m_isLongLimitExceeded;
+        DataSource m_dataSource;
     };
 
     void switchToSwapPeriod();
     void switchToFailurePeriod();
+    bool shouldTriggerWebFontsIntervention();
 
     Member<FontResource> m_font;
     Member<CSSFontSelector> m_fontSelector;
@@ -86,7 +95,6 @@ private:
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;
     bool m_isInterventionTriggered;
-    bool m_isLoadedFromMemoryCache;
 };
 
 } // namespace blink

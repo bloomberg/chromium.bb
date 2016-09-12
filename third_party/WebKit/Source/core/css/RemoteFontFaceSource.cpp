@@ -40,20 +40,6 @@ bool isConnectionTypeSlow()
     return networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
 }
 
-bool shouldTriggerWebFontsIntervention(Document* document, FontDisplay display, bool isLoadedFromMemoryCache, bool isLoadedFromDataURL)
-{
-    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled())
-        return true;
-    if (isLoadedFromMemoryCache || isLoadedFromDataURL)
-        return false;
-
-    bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
-
-    bool networkIsSlow = isV2Enabled ? isEffectiveConnectionTypeSlowFor(document) : isConnectionTypeSlow();
-
-    return networkIsSlow && display == FontDisplayAuto;
-}
-
 } // namespace
 
 RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* fontSelector, FontDisplay display)
@@ -61,14 +47,13 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     , m_fontSelector(fontSelector)
     , m_display(display)
     , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
+    , m_histograms(font->url().protocolIsData() ? FontLoadHistograms::FromDataURL : font->isLoaded() ? FontLoadHistograms::FromMemoryCache : FontLoadHistograms::FromUnknown)
     , m_isInterventionTriggered(false)
-    , m_isLoadedFromMemoryCache(font->isLoaded())
 {
     ThreadState::current()->registerPreFinalizer(this);
     m_font->addClient(this);
 
-    if (shouldTriggerWebFontsIntervention(m_fontSelector->document(), display, m_isLoadedFromMemoryCache, m_font->url().protocolIsData())) {
-
+    if (shouldTriggerWebFontsIntervention()) {
         m_isInterventionTriggered = true;
         m_period = SwapPeriod;
         m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, InfoMessageLevel, "Slow network is detected. Fallback font will be used while loading: " + m_font->url().elidedString()));
@@ -116,8 +101,9 @@ bool RemoteFontFaceSource::isValid() const
 
 void RemoteFontFaceSource::notifyFinished(Resource*)
 {
-    m_histograms.recordRemoteFont(m_font.get(), m_isLoadedFromMemoryCache);
-    m_histograms.fontLoaded(m_isInterventionTriggered, !m_isLoadedFromMemoryCache && !m_font->url().protocolIsData() && !m_font->response().wasCached());
+    m_histograms.maySetDataSource(m_font->response().wasCached() ? FontLoadHistograms::FromDiskCache : FontLoadHistograms::FromNetwork);
+    m_histograms.recordRemoteFont(m_font.get());
+    m_histograms.fontLoaded(m_isInterventionTriggered);
 
     m_font->ensureCustomFontData();
     // FIXME: Provide more useful message such as OTS rejection reason.
@@ -176,6 +162,21 @@ void RemoteFontFaceSource::switchToFailurePeriod()
     ASSERT(m_period == SwapPeriod);
     m_period = FailurePeriod;
 }
+
+bool RemoteFontFaceSource::shouldTriggerWebFontsIntervention()
+{
+    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled())
+        return true;
+    if (m_histograms.dataSource() == FontLoadHistograms::FromMemoryCache || m_histograms.dataSource() == FontLoadHistograms::FromDataURL)
+        return false;
+
+    bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
+
+    bool networkIsSlow = isV2Enabled ? isEffectiveConnectionTypeSlowFor(m_fontSelector->document()) : isConnectionTypeSlow();
+
+    return networkIsSlow && m_display == FontDisplayAuto;
+}
+
 
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(const FontDescription& fontDescription)
 {
@@ -238,16 +239,18 @@ void RemoteFontFaceSource::FontLoadHistograms::fallbackFontPainted(DisplayPeriod
         m_blankPaintTime = currentTimeMS();
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered, bool isLoadedFromNetwork)
+void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered)
 {
     if (!m_isLongLimitExceeded)
-        recordInterventionResult(isInterventionTriggered, isLoadedFromNetwork);
+        recordInterventionResult(isInterventionTriggered);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterventionTriggered)
 {
     m_isLongLimitExceeded = true;
-    recordInterventionResult(isInterventionTriggered, true);
+    if (m_dataSource == FromUnknown)
+        m_dataSource = FromNetwork;
+    recordInterventionResult(isInterventionTriggered);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontResource* font)
@@ -260,20 +263,16 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontReso
     m_blankPaintTime = -1;
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font, bool isLoadedFromMemoryCache)
+void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
+        enum { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
+        cacheHitHistogram.count(dataSourceMetricsValue());
+
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
         recordLoadTimeHistogram(font, duration);
         m_loadStartTime = -1;
-
-        enum { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
-        int histogramValue = font->url().protocolIsData() ? DataUrl
-            : isLoadedFromMemoryCache ? MemoryHit
-            : font->response().wasCached() ? DiskHit
-            : Miss;
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
-        cacheHitHistogram.count(histogramValue);
 
         enum { CORSFail, CORSSuccess, CORSEnumMax };
         int corsValue = font->isCORSFailed() ? CORSFail : CORSSuccess;
@@ -284,39 +283,61 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
 
 void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(const FontResource* font, int duration)
 {
+    CHECK_NE(FromUnknown, m_dataSource);
+
     if (font->errorOccurred()) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, loadErrorHistogram, ("WebFont.DownloadTime.LoadError", 0, 10000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheLoadErrorHistogram, ("WebFont.MissedCache.DownloadTime.LoadError", 0, 10000, 50));
         loadErrorHistogram.count(duration);
+        if (m_dataSource == FromNetwork)
+            missedCacheLoadErrorHistogram.count(duration);
         return;
     }
 
     unsigned size = font->encodedSize();
     if (size < 10 * 1024) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, under10kHistogram, ("WebFont.DownloadTime.0.Under10KB", 0, 10000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheUnder10kHistogram, ("WebFont.MissedCache.DownloadTime.0.Under10KB", 0, 10000, 50));
         under10kHistogram.count(duration);
+        if (m_dataSource == FromNetwork)
+            missedCacheUnder10kHistogram.count(duration);
         return;
     }
     if (size < 50 * 1024) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, under50kHistogram, ("WebFont.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheUnder50kHistogram, ("WebFont.MissedCache.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
         under50kHistogram.count(duration);
+        if (m_dataSource == FromNetwork)
+            missedCacheUnder50kHistogram.count(duration);
         return;
     }
     if (size < 100 * 1024) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, under100kHistogram, ("WebFont.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheUnder100kHistogram, ("WebFont.MissedCache.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
         under100kHistogram.count(duration);
+        if (m_dataSource == FromNetwork)
+            missedCacheUnder100kHistogram.count(duration);
         return;
     }
     if (size < 1024 * 1024) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, under1mbHistogram, ("WebFont.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheUnder1mbHistogram, ("WebFont.MissedCache.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
         under1mbHistogram.count(duration);
+        if (m_dataSource == FromNetwork)
+            missedCacheUnder1mbHistogram.count(duration);
         return;
     }
     DEFINE_STATIC_LOCAL(CustomCountHistogram, over1mbHistogram, ("WebFont.DownloadTime.4.Over1MB", 0, 10000, 50));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, missedCacheOver1mbHistogram, ("WebFont.MissedCache.DownloadTime.4.Over1MB", 0, 10000, 50));
     over1mbHistogram.count(duration);
+    if (m_dataSource == FromNetwork)
+        missedCacheOver1mbHistogram.count(duration);
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isTriggered, bool isLoadedFromNetwork)
+void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isTriggered)
 {
+    CHECK_NE(FromUnknown, m_dataSource);
+
     // interventionResult takes 0-3 values.
     int interventionResult = 0;
     if (m_isLongLimitExceeded)
@@ -328,8 +349,27 @@ void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isT
     DEFINE_STATIC_LOCAL(EnumerationHistogram, interventionHistogram, ("WebFont.InterventionResult", boundary));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, missedCacheInterventionHistogram, ("WebFont.InterventionResult.MissedCache", boundary));
     interventionHistogram.count(interventionResult);
-    if (isLoadedFromNetwork)
+    if (m_dataSource == FromNetwork)
         missedCacheInterventionHistogram.count(interventionResult);
+}
+
+RemoteFontFaceSource::FontLoadHistograms::CacheHitMetrics RemoteFontFaceSource::FontLoadHistograms::dataSourceMetricsValue()
+{
+    switch (m_dataSource) {
+    case FromDataURL:
+        return DataUrl;
+    case FromMemoryCache:
+        return MemoryHit;
+    case FromDiskCache:
+        return DiskHit;
+    case FromNetwork:
+        return Miss;
+    case FromUnknown:
+        // Fall through.
+    default:
+        NOTREACHED();
+    }
+    return Miss;
 }
 
 } // namespace blink
