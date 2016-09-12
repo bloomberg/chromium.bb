@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function appendIframe()
+{
+    var frame = document.createElement("iframe");
+    frame.src = "resources/console-log-navigate.html";
+    document.body.appendChild(frame);
+    return new Promise((resolve) => frame.onload = resolve);
+}
+
+function createIframeAndRunTest()
+{
+    var frame = document.createElement("iframe");
+    frame.id = "iframe";
+    frame.src = "resources/console-log-navigate-on-load.html";
+    frame.onload = () => runTest();
+    document.body.appendChild(frame);
+}
+
+function test()
+{
+    InspectorTest.sendCommandPromise("Runtime.enable", {})
+        .then(() => checkExpression("logArray()"))
+        .then(() => checkExpression("logDate()"))
+        .then(() => checkExpression("logDateWithArg()"))
+        .then(() => InspectorTest.completeTest());
+
+    function checkExpression(expression)
+    {
+        var contextId;
+        InspectorTest.waitForEventPromise("Runtime.executionContextCreated")
+            .then((result) => contextId = result.params.context.id);
+        return InspectorTest.sendCommandPromise("Runtime.evaluate", { expression: "appendIframe()", awaitPromise: true})
+            .then(() => InspectorTest.sendCommandPromise("Runtime.evaluate", { expression: expression, contextId: contextId }))
+            .then((r) => logObject(r));
+    }
+
+    function logObject(result)
+    {
+        result.id = 0;
+        InspectorTest.logObject(result);
+    }
+}
+</script>
+</head>
+<body onload="createIframeAndRunTest()">
+This tests how navigation is handled from inside debugger code (console.log).
+</body>
+</html>
