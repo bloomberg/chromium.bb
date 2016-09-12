@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Do not add any imports to non-//build directories here.
+# Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
 import("//build/config/dcheck_always_on.gni")
@@ -141,7 +143,6 @@ template("wrapper_script") {
 
 if (enable_java_templates) {
   import("//build/config/sanitizers/sanitizers.gni")
-  import("//third_party/android_platform/config.gni")
   import("//tools/grit/grit_rule.gni")
 
   # Declare a jni target
@@ -1424,6 +1425,9 @@ if (enable_java_templates) {
   #   shared_libraries: List shared_library targets to bundle. If these
   #     libraries depend on other shared_library targets, those dependencies will
   #     also be included in the apk (e.g. for is_component_build).
+  #   secondary_abi_shared_libraries: secondary abi shared_library targets to
+  #     bundle. If these libraries depend on other shared_library targets, those
+  #     dependencies will also be included in the apk (e.g. for is_component_build).
   #   native_lib_placeholders: List of placeholder filenames to add to the apk
   #     (optional).
   #   apk_under_test: For an instrumentation test apk, this is the target of the
@@ -1438,7 +1442,8 @@ if (enable_java_templates) {
   #   requires_sdk_api_level_23: If defined and true, the apk is intended for
   #     installation only on Android M or later. In these releases the system
   #     linker does relocation unpacking, so we can enable it unconditionally.
-  #   secondary_native_libs: The path of native libraries for secondary app abi.
+  #   secondary_native_libs (deprecated): The path of native libraries for secondary
+  #     app abi.
   #   run_findbugs_override: Forces run_findbugs on or off. If undefined, the
   #     default will use the build arg run_findbugs.
   #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
@@ -1554,13 +1559,25 @@ if (enable_java_templates) {
 
     # The dependency that makes the chromium linker, if any is needed.
     _native_libs_deps = []
+    _shared_libraries_is_valid =
+        defined(invoker.shared_libraries) && invoker.shared_libraries != []
+    _secondary_abi_native_libs_deps = []
+    assert(_secondary_abi_native_libs_deps == [])  # mark as used.
+    _secondary_abi_shared_libraries_is_valid =
+        defined(invoker.secondary_abi_shared_libraries) &&
+        invoker.secondary_abi_shared_libraries != []
 
-    if (defined(invoker.shared_libraries) && invoker.shared_libraries != []) {
-      _native_libs_deps += invoker.shared_libraries
-
-      if (is_component_build || is_asan) {
+    if (is_component_build || is_asan) {
+      if (_shared_libraries_is_valid) {
         _native_libs_deps += [ "//build/android:cpplib_stripped" ]
       }
+      if (_secondary_abi_shared_libraries_is_valid) {
+        _secondary_abi_native_libs_deps += [ "//build/android:cpplib_stripped($android_secondary_abi_toolchain)" ]
+      }
+    }
+
+    if (_shared_libraries_is_valid) {
+      _native_libs_deps += invoker.shared_libraries
 
       # To determine the filenames of all dependent shared libraries, write the
       # runtime deps of |shared_libraries| to a file during "gn gen".
@@ -1580,6 +1597,21 @@ if (enable_java_templates) {
       _native_lib_version_arg = "\"\""
       if (defined(invoker.native_lib_version_arg)) {
         _native_lib_version_arg = invoker.native_lib_version_arg
+      }
+    }
+
+    if (_secondary_abi_shared_libraries_is_valid) {
+      _secondary_abi_native_libs_deps += invoker.secondary_abi_shared_libraries
+
+      # To determine the filenames of all dependent shared libraries, write the
+      # runtime deps of |shared_libraries| to a file during "gn gen".
+      # write_build_config.py will then grep this file for *.so to obtain the
+      # complete list.
+      _secondary_abi_runtime_deps_file =
+          "$target_gen_dir/${_template_name}.secondary.abi.native.runtimedeps"
+      group("${_template_name}_secondary_abi__runtime_deps") {
+        deps = _secondary_abi_native_libs_deps
+        write_runtime_deps = _secondary_abi_runtime_deps_file
       }
     }
 
@@ -1660,6 +1692,10 @@ if (enable_java_templates) {
       # and the runtime_deps file is added to write_build_config.py's depfile.
       if (_native_libs_deps != []) {
         shared_libraries_runtime_deps_file = _runtime_deps_file
+      }
+      if (_secondary_abi_native_libs_deps != []) {
+        secondary_abi_shared_libraries_runtime_deps_file =
+            _secondary_abi_runtime_deps_file
       }
     }
 
@@ -1928,51 +1964,62 @@ if (enable_java_templates) {
 
     _native_libs_file_arg_dep = ":$build_config_target"
     _native_libs_file_arg = "@FileArg($_rebased_build_config:native:libraries)"
+    _secondary_abi_native_libs_file_arg_dep = ":$build_config_target"
+    _secondary_abi_native_libs_file_arg =
+        "@FileArg($_rebased_build_config:native:secondary_abi_libraries)"
+    assert(_secondary_abi_native_libs_file_arg != "" &&
+           _secondary_abi_native_libs_file_arg_dep != "")  # Mark as used.
 
     if (_native_libs_deps != [] && _enable_relocation_packing) {
       _prepare_native_target_name = "${_template_name}__prepare_native"
-      _native_libs_dir = "$gen_dir/packed-libs"
       _native_libs_json = "$gen_dir/packed-libs/filelist.json"
       _rebased_native_libs_json = rebase_path(_native_libs_json, root_build_dir)
-
       _native_libs_file_arg_dep = ":$_prepare_native_target_name"
       _native_libs_file_arg = "@FileArg($_rebased_native_libs_json:files)"
 
-      action(_prepare_native_target_name) {
+      pack_relocation_section(_prepare_native_target_name) {
         forward_variables_from(invoker,
                                [
                                  "deps",
                                  "public_deps",
                                ])
-        script = "//build/android/gyp/pack_relocations.py"
-        depfile = "$target_gen_dir/$target_name.d"
-        outputs = [
-          _native_libs_json,
-        ]
-
+        file_list_json = _native_libs_json
+        libraries_filearg =
+            "@FileArg(${_rebased_build_config}:native:libraries)"
         inputs = [
           _build_config,
         ]
 
         deps += _native_libs_deps
-        deps += [
-          ":$build_config_target",
-          relocation_packer_target,
-        ]
+        deps += [ ":$build_config_target" ]
+      }
+      if (_secondary_abi_native_libs_deps != []) {
+        _prepare_native_target_name =
+            "${_template_name}_secondary_abi__prepare_native"
+        _native_libs_json =
+            "$gen_dir/packed-libs/$android_secondary_abi_cpu/filelist.json"
+        _rebased_native_libs_json =
+            rebase_path(_native_libs_json, root_build_dir)
+        _secondary_abi_native_libs_file_arg_dep =
+            ":$_prepare_native_target_name"
+        _secondary_abi_native_libs_file_arg =
+            "@FileArg($_rebased_native_libs_json:files)"
 
-        args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
-          "--enable-packing=1",
-          "--android-pack-relocations",
-          rebase_path(relocation_packer_exe, root_build_dir),
-          "--stripped-libraries-dir",
-          rebase_path(root_build_dir, root_build_dir),
-          "--packed-libraries-dir",
-          rebase_path(_native_libs_dir, root_build_dir),
-          "--libraries=@FileArg(${_rebased_build_config}:native:libraries)",
-          "--filelistjson=$_rebased_native_libs_json",
-        ]
+        pack_relocation_section(_prepare_native_target_name) {
+          forward_variables_from(invoker,
+                                 [
+                                   "deps",
+                                   "public_deps",
+                                 ])
+          file_list_json = _native_libs_json
+          libraries_filearg = "@FileArg(${_rebased_build_config}:native:secondary_abi_libraries)"
+          inputs = [
+            _build_config,
+          ]
+
+          deps += _secondary_abi_native_libs_deps
+          deps += [ ":$build_config_target" ]
+        }
       }
     }
 
@@ -2065,6 +2112,12 @@ if (enable_java_templates) {
         native_libs = _extra_native_libs
         native_libs_even_when_incremental =
             _extra_native_libs_even_when_incremental
+      }
+
+      if (_secondary_abi_native_libs_deps != [] && !_create_abi_split) {
+        deps += _secondary_abi_native_libs_deps +
+                [ _secondary_abi_native_libs_file_arg_dep ]
+        secondary_abi_native_libs_filearg = _secondary_abi_native_libs_file_arg
       }
 
       # Placeholders necessary for some older devices.

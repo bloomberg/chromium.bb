@@ -209,6 +209,11 @@ def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files):
   ret.reverse()
   return ret
 
+def _CreateJavaLibrariesList(library_paths):
+  """ Create a java literal array with the "base" library names:
+  e.g. libfoo.so -> foo
+  """
+  return ('{%s}' % ','.join(['"%s"' % s[3:-3] for s in library_paths]))
 
 def main(argv):
   parser = optparse.OptionParser()
@@ -264,6 +269,9 @@ def main(argv):
   parser.add_option('--shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for shared '
                          'libraries.')
+  parser.add_option('--secondary-abi-shared-libraries-runtime-deps',
+                    help='Path to file containing runtime deps for secondary '
+                         'abi shared libraries.')
 
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
@@ -629,15 +637,24 @@ def main(argv):
         options.shared_libraries_runtime_deps or '[]')
     if runtime_deps_files:
       library_paths = _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files)
-      # Create a java literal array with the "base" library names:
-      # e.g. libfoo.so -> foo
-      java_libraries_list = ('{%s}' % ','.join(
-          ['"%s"' % s[3:-3] for s in library_paths]))
+      java_libraries_list = _CreateJavaLibrariesList(library_paths)
+
+    secondary_abi_library_paths = []
+    secondary_abi_java_libraries_list = None
+    secondary_abi_runtime_deps_files = build_utils.ParseGnList(
+        options.secondary_abi_shared_libraries_runtime_deps or '[]')
+    if secondary_abi_runtime_deps_files:
+      secondary_abi_library_paths = _ExtractSharedLibsFromRuntimeDeps(
+          secondary_abi_runtime_deps_files)
+      secondary_abi_java_libraries_list = _CreateJavaLibrariesList(
+          secondary_abi_library_paths)
 
     all_inputs.extend(runtime_deps_files)
     config['native'] = {
       'libraries': library_paths,
+      'secondary_abi_libraries': secondary_abi_library_paths,
       'java_libraries_list': java_libraries_list,
+      'secondary_abi_java_libraries_list': secondary_abi_java_libraries_list,
     }
     config['assets'], config['uncompressed_assets'] = (
         _MergeAssets(deps.All('android_assets')))
