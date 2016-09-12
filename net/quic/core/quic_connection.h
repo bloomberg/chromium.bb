@@ -174,6 +174,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                             TransmissionType transmission_type,
                             QuicTime sent_time) {}
 
+  // Called when an PING frame has been sent.
+  virtual void OnPingSent() {}
+
   // Called when a packet has been received, but before it is
   // validated or parsed.
   virtual void OnPacketReceived(const IPEndPoint& self_address,

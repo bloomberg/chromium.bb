@@ -860,6 +860,8 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
                     TransmissionType,
                     QuicTime));
 
+  MOCK_METHOD0(OnPingSent, void());
+
   MOCK_METHOD3(OnPacketReceived,
                void(const IPEndPoint&,
                     const IPEndPoint&,

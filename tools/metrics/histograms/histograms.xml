@@ -31234,6 +31234,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PacketGapReceivedNearPing" units="count">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The number of missing packets between the last received packet before a PING
+    frame sent and the first packet received after PING sent.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PacketGapSent">
   <owner>rch@chromium.org</owner>
   <summary>

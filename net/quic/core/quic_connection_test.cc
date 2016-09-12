@@ -4931,12 +4931,11 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
 TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
   QuicPacketHeader header;
 
-  std::unique_ptr<MockQuicConnectionDebugVisitor> debug_visitor(
-      new MockQuicConnectionDebugVisitor());
-  connection_.set_debug_visitor(debug_visitor.get());
-  EXPECT_CALL(*debug_visitor, OnPacketHeader(Ref(header))).Times(1);
+  MockQuicConnectionDebugVisitor debug_visitor;
+  connection_.set_debug_visitor(&debug_visitor);
+  EXPECT_CALL(debug_visitor, OnPacketHeader(Ref(header))).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_)).Times(1);
-  EXPECT_CALL(*debug_visitor, OnSuccessfulVersionNegotiation(_)).Times(1);
+  EXPECT_CALL(debug_visitor, OnSuccessfulVersionNegotiation(_)).Times(1);
   connection_.OnPacketHeader(header);
 }
 
@@ -5039,8 +5038,13 @@ TEST_P(QuicConnectionTest, SendAcksImmediately) {
 }
 
 TEST_P(QuicConnectionTest, SendPingImmediately) {
+  MockQuicConnectionDebugVisitor debug_visitor;
+  connection_.set_debug_visitor(&debug_visitor);
+
   CongestionBlockWrites();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(debug_visitor, OnPingSent()).Times(1);
   connection_.SendPing();
   EXPECT_FALSE(connection_.HasQueuedData());
 }

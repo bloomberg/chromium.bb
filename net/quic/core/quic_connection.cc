@@ -1922,6 +1922,9 @@ void QuicConnection::SendPing() {
   packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
   // Send PING frame immediately, without checking for congestion window bounds.
   packet_generator_.FlushAllQueuedFrames();
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnPingSent();
+  }
 }
 
 void QuicConnection::SendAck() {
