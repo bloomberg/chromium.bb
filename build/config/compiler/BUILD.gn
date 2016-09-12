@@ -443,18 +443,31 @@ config("compiler") {
   # TODO(pcc): Make this conditional on is_official_build rather than on gn
   # flags for specific features.
   if (!is_debug && (allow_posix_link_time_opt || is_cfi) && !is_nacl) {
-    cflags += [ "-flto" ]
-    ldflags += [ "-flto" ]
+    if (use_thin_lto) {
+      cflags += [ "-flto=thin" ]
+      ldflags += [ "-flto=thin" ]
+    } else {
+      # Note: ThinLTO does not currently have this feature implemented
+      # For Full LTO, it provides a measurable runtime speedup of Chrome.
+      cflags += [
+        "-flto",
+        "-fwhole-program-vtables",
+      ]
+      ldflags += [
+        "-flto",
+        "-fwhole-program-vtables",
+      ]
 
-    # Apply a lower LTO optimization level as the default is too slow.
-    if (is_linux) {
-      if (use_lld) {
-        ldflags += [ "-Wl,--lto-O1" ]
-      } else {
-        ldflags += [ "-Wl,-plugin-opt,O1" ]
+      # Apply a lower LTO optimization level as the default is too slow.
+      if (is_linux) {
+        if (use_lld) {
+          ldflags += [ "-Wl,--lto-O1" ]
+        } else {
+          ldflags += [ "-Wl,-plugin-opt,O1" ]
+        }
+      } else if (is_mac) {
+        ldflags += [ "-Wl,-mllvm,-O1" ]
       }
-    } else if (is_mac) {
-      ldflags += [ "-Wl,-mllvm,-O1" ]
     }
 
     # Work-around for http://openradar.appspot.com/20356002
@@ -469,9 +482,6 @@ config("compiler") {
     if (is_linux) {
       ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
     }
-
-    cflags += [ "-fwhole-program-vtables" ]
-    ldflags += [ "-fwhole-program-vtables" ]
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.
