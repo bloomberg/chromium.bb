@@ -59,12 +59,11 @@ class CORE_EXPORT UseCounter {
     WTF_MAKE_NONCOPYABLE(UseCounter);
 public:
     UseCounter();
-    ~UseCounter();
 
     enum Feature {
         // Do not change assigned numbers of existing items: add new features
         // to the end of the list.
-        PageDestruction = 0,
+        OBSOLETE_PageDestruction = 0,
         PrefixedIndexedDB = 3,
         WorkerStart = 4,
         SharedWorkerStart = 5,
@@ -1340,11 +1339,26 @@ public:
     bool hasRecordedMeasurement(Feature) const;
 
 protected:
-    friend class UseCounterTest;
+    // Encapsulates the work to preserve the old "FeatureObserver" histogram with original semantics
+    // TODO(rbyers): remove this - http://crbug.com/597963
+    class LegacyCounter {
+    public:
+        LegacyCounter();
+        ~LegacyCounter();
+        void countFeature(Feature);
+        void countCSS(CSSPropertyID);
+        void updateMeasurements();
+    private:
+        // Tracks what features/properties need to be reported to the legacy histograms.
+        BitVector m_featureBits;
+        BitVector m_CSSBits;
+    } m_legacyCounter;
+
     unsigned m_muteCount;
 
-    BitVector m_featureBits;
-    BitVector m_CSSFeatureBits;
+    // Track what features/properties have been reported to the (non-legacy) histograms.
+    BitVector m_featuresRecorded;
+    BitVector m_CSSRecorded;
 };
 
 } // namespace blink

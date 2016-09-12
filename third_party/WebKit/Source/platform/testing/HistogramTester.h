@@ -21,6 +21,7 @@ public:
     ~HistogramTester();
 
     void expectUniqueSample(const std::string& name, base::HistogramBase::Sample, base::HistogramBase::Count) const;
+    void expectBucketCount(const std::string& name, base::HistogramBase::Sample, base::HistogramBase::Count) const;
     void expectTotalCount(const std::string& name, base::HistogramBase::Count) const;
 
 private:

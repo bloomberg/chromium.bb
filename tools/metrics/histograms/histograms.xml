@@ -65858,12 +65858,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.FeatureObserver" enum="FeatureObserver">
-  <owner>dglazkov@chromium.org</owner>
+  <owner>rbyers@chromium.org</owner>
   <summary>
-    Count of how many instances of WebCore::Page use various features. Each
-    WebCore::Page instance has a WebCore::UseCounter instance. It records and
-    reports feature usage (e.g. via UseCounter::count() method). NOTE: dev
-    numbers from 34.0.1800.1 to 34.0.1833.4 are wrong (see crbug.com/341631).
+    NOTE: This is in the process of being superseded by
+    WebCore.UseCounter.Features which fixes a number of issues.  See
+    https://crbug.com/597963.
+
+    Count of how many page loads use various features. The PageVisits bucket is
+    incremented for each page load, and the other buckets incremented at most
+    once per PageVisit via the WebCore::UseCounter class.
   </summary>
 </histogram>
 
@@ -65871,6 +65874,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="MappedCSSProperties">
   <owner>mikelawther@chromium.org</owner>
   <summary>
+    NOTE: This is in the process of being superseded by
+    WebCore.UseCounter.CSSProperties which fixes a number of issues.  See
+    https://crbug.com/597963.
+
     Records usage of CSS properties used on a page, either statically or
     dynamically, from the time the page is initialised to when it is closed or
     navigated away from. Each property is counted at most once per page per
@@ -66440,6 +66447,54 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time between the events &quot;script is loaded&quot; and &quot;script is
     compiled&quot; for parsing blocking scripts.
   </summary>
+</histogram>
+
+<histogram name="WebCore.UseCounter_TEST.CSSProperties"
+    enum="MappedCSSProperties">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    NOTE: This is in the process of replacing
+    WebCore.FeatureObserver.CSSProperties which fixes a number of issues.  See
+    https://crbug.com/597963.
+
+    Records usage of CSS properties used on a page, either statically or
+    dynamically, from the time the page is initialised to when it is closed or
+    navigated away from. Each property is counted at most once per page per
+    view.
+  </summary>
+  <details>
+    The first time a CSS property is parsed on a page, the histogram is updated
+    to increment the counter.  Each histogram bucket corresponds to a CSS
+    property (eg. width, border-radius). The exception is the bucket numbered
+    '1' - this counts the number of pages that CSS properties were counted on.
+    When a page navigation occurs the page count bucket is incremented and
+    tracking of the set of which properties have been seen is reset.
+
+    These numbers give the percentage of pages that use a CSS property. For
+    example, if the 'border-radius' histogram bucket has a count of 250, and the
+    page count bucket (i.e. bucket number 1) has a count of 1000 - this means
+    that 1000 pages were recorded, and border-radius was used on 25% of those
+    pages.
+
+    TODO: The exact definition of &quot;page load&quot; is still
+    incorrect/fuzzy. https://crbug.com/236262
+  </details>
+</histogram>
+
+<histogram name="WebCore.UseCounter_TEST.Features" enum="FeatureObserver">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    NOTE: This is in the process of replacing WebCore.FeatureObserver which
+    fixes a number of issues.  See https://crbug.com/597963.
+
+    Count of how many page loads use various features. The PageVisits bucket is
+    incremented for each page load, and the other buckets incremented at most
+    once per PageVisit via the WebCore::UseCounter class.
+  </summary>
+  <details>
+    TODO: The exact definition of &quot;page load&quot; is still
+    incorrect/fuzzy. https://crbug.com/236262
+  </details>
 </histogram>
 
 <histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
@@ -79211,7 +79266,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="FeatureObserver" type="int">
 <!-- Generated from third_party/WebKit/Source/core/frame/UseCounter.h -->
 
-  <int value="0" label="PageDestruction"/>
+  <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
   <int value="2" label="MultipartMainResource"/>
   <int value="3" label="PrefixedIndexedDB"/>

@@ -90,7 +90,7 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
     // (http://crbug.com/376039)
 
     DCHECK(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope() || isCompositorWorkerGlobalScope());
-    DCHECK(feature != UseCounter::PageDestruction);
+    DCHECK(feature != UseCounter::OBSOLETE_PageDestruction);
     DCHECK(feature < UseCounter::NumberOfFeatures);
 
     // For each deprecated feature, send console message at most once

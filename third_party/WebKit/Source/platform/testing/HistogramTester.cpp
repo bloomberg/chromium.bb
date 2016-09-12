@@ -18,6 +18,11 @@ void HistogramTester::expectUniqueSample(const std::string& name, base::Histogra
     m_histogramTester->ExpectUniqueSample(name, sample, count);
 }
 
+void HistogramTester::expectBucketCount(const std::string& name, base::HistogramBase::Sample sample, base::HistogramBase::Count count) const
+{
+    m_histogramTester->ExpectBucketCount(name, sample, count);
+}
+
 void HistogramTester::expectTotalCount(const std::string& name, base::HistogramBase::Count count) const
 {
     m_histogramTester->ExpectTotalCount(name, count);

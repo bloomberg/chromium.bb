@@ -21,9 +21,9 @@ def _RunUseCounterChecks(input_api, output_api):
     maximumBucket = 0
     # Looking for a line like "case CSSPropertyGrid: return 453;"
     bucketFinder = input_api.re.compile(r'.*CSSProperty.*return\s*([0-9]+).*')
-    # Looking for a line like "static int maximumCSSSampleId() { return 452; }"
+    # Looking for a line like "int maximumCSSSampleId() { return 452; }"
     maximumFinder = input_api.re.compile(
-        r'static int maximumCSSSampleId\(\) { return ([0-9]+)')
+        r'int maximumCSSSampleId\(\) { return ([0-9]+)')
     for line in useCounterCpp.NewContents():
         bucketMatch = bucketFinder.match(line)
         if bucketMatch:

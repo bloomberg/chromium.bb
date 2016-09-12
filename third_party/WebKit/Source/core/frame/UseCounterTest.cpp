@@ -6,81 +6,172 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/UseCounter.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+// Note that the new histogram names will change once the semantics stabilize;
+const char* const kFeaturesHistogramName = "WebCore.UseCounter_TEST.Features";
+const char* const kCSSHistogramName = "WebCore.UseCounter_TEST.CSSProperties";
+const char* const kLegacyFeaturesHistogramName = "WebCore.FeatureObserver";
+const char* const kLegacyCSSHistogramName = "WebCore.FeatureObserver.CSSProperties";
+}
 
 namespace blink {
 
-class UseCounterTest : public ::testing::Test {
-protected:
-    bool hasRecordedMeasurement(const UseCounter& useCounter, UseCounter::Feature feature)
-    {
-        return useCounter.hasRecordedMeasurement(feature);
-    }
-
-    void recordMeasurement(UseCounter& useCounter, UseCounter::Feature feature)
-    {
-        useCounter.recordMeasurement(feature);
-    }
-};
-
-TEST_F(UseCounterTest, RecordingMeasurements)
+TEST(UseCounterTest, RecordingFeatures)
 {
     UseCounter useCounter;
-    for (unsigned feature = 0; feature < UseCounter::NumberOfFeatures; feature++) {
-        if (feature != UseCounter::Feature::PageDestruction) {
-            EXPECT_FALSE(hasRecordedMeasurement(useCounter, static_cast<UseCounter::Feature>(feature)));
-            recordMeasurement(useCounter, static_cast<UseCounter::Feature>(feature));
-            EXPECT_TRUE(hasRecordedMeasurement(useCounter, static_cast<UseCounter::Feature>(feature)));
-        }
-    }
+    HistogramTester histogramTester;
+
+    // Test recording a single (arbitrary) counter
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+    useCounter.recordMeasurement(UseCounter::Fetch);
+    EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+    histogramTester.expectUniqueSample(kFeaturesHistogramName, UseCounter::Fetch, 1);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
+
+    // Test that repeated measurements have no effect
+    useCounter.recordMeasurement(UseCounter::Fetch);
+    histogramTester.expectUniqueSample(kFeaturesHistogramName, UseCounter::Fetch, 1);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
+
+    // Test recording a different sample
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::FetchBodyStream));
+    useCounter.recordMeasurement(UseCounter::FetchBodyStream);
+    EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::FetchBodyStream));
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch, 1);
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::FetchBodyStream, 1);
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 2);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
+
+    // Test the impact of page load on the new histogram
+    useCounter.didCommitLoad();
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch, 1);
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::FetchBodyStream, 1);
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::PageVisits, 1);
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 3);
+
+    // And verify the legacy histogram now looks the same
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::Fetch, 1);
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::FetchBodyStream, 1);
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::PageVisits, 1);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 3);
+
+    // Now a repeat measurement should get recorded again, exactly once
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+    useCounter.recordMeasurement(UseCounter::Fetch);
+    useCounter.recordMeasurement(UseCounter::Fetch);
+    EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+    histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch, 2);
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 4);
+
+    // And on the next page load, the legacy histogram will again be updated
+    useCounter.didCommitLoad();
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::Fetch, 2);
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::FetchBodyStream, 1);
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::PageVisits, 2);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 5);
 }
 
-TEST_F(UseCounterTest, MultipleMeasurements)
+TEST(UseCounterTest, RecordingCSSProperties)
 {
     UseCounter useCounter;
-    for (unsigned feature = 0; feature < UseCounter::NumberOfFeatures; feature++) {
-        if (feature != UseCounter::Feature::PageDestruction) {
-            recordMeasurement(useCounter, static_cast<UseCounter::Feature>(feature));
-            recordMeasurement(useCounter, static_cast<UseCounter::Feature>(feature));
-            EXPECT_TRUE(hasRecordedMeasurement(useCounter, static_cast<UseCounter::Feature>(feature)));
-        }
-    }
+    HistogramTester histogramTester;
+
+    // Test recording a single (arbitrary) property
+    EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
+    useCounter.count(HTMLStandardMode, CSSPropertyFont);
+    EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
+    histogramTester.expectUniqueSample(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
+
+    // Test that repeated measurements have no effect
+    useCounter.count(HTMLStandardMode, CSSPropertyFont);
+    histogramTester.expectUniqueSample(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
+
+    // Test recording a different sample
+    EXPECT_FALSE(useCounter.isCounted(CSSPropertyZoom));
+    useCounter.count(HTMLStandardMode, CSSPropertyZoom);
+    EXPECT_TRUE(useCounter.isCounted(CSSPropertyZoom));
+    histogramTester.expectBucketCount(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectBucketCount(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom), 1);
+    histogramTester.expectTotalCount(kCSSHistogramName, 2);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
+
+    // Test the impact of page load on the new histogram
+    useCounter.didCommitLoad();
+    histogramTester.expectBucketCount(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectBucketCount(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom), 1);
+    histogramTester.expectBucketCount(kCSSHistogramName, 1, 1);
+    histogramTester.expectTotalCount(kCSSHistogramName, 3);
+
+    // And verify the legacy histogram now looks the same
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom), 1);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 1);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 3);
+
+    // Now a repeat measurement should get recorded again, exactly once
+    EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
+    useCounter.count(HTMLStandardMode, CSSPropertyFont);
+    useCounter.count(HTMLStandardMode, CSSPropertyFont);
+    EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
+    histogramTester.expectBucketCount(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 2);
+    histogramTester.expectTotalCount(kCSSHistogramName, 4);
+
+    // And on the next page load, the legacy histogram will again be updated
+    useCounter.didCommitLoad();
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 2);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom), 1);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 2);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 5);
 }
 
-TEST_F(UseCounterTest, InspectorDisablesMeasurement)
+TEST(UseCounterTest, InspectorDisablesMeasurement)
 {
     UseCounter useCounter;
+    HistogramTester histogramTester;
 
     // The specific feature we use here isn't important.
     UseCounter::Feature feature = UseCounter::Feature::SVGSMILElementInDocument;
     CSSPropertyID property = CSSPropertyFontWeight;
     CSSParserMode parserMode = HTMLStandardMode;
 
-    EXPECT_FALSE(hasRecordedMeasurement(useCounter, feature));
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(feature));
 
     useCounter.muteForInspector();
-    recordMeasurement(useCounter, feature);
-    EXPECT_FALSE(hasRecordedMeasurement(useCounter, feature));
+    useCounter.recordMeasurement(feature);
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(feature));
     useCounter.count(parserMode, property);
     EXPECT_FALSE(useCounter.isCounted(property));
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 0);
+    histogramTester.expectTotalCount(kCSSHistogramName, 0);
 
     useCounter.muteForInspector();
-    recordMeasurement(useCounter, feature);
-    EXPECT_FALSE(hasRecordedMeasurement(useCounter, feature));
+    useCounter.recordMeasurement(feature);
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(feature));
     useCounter.count(parserMode, property);
     EXPECT_FALSE(useCounter.isCounted(property));
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 0);
+    histogramTester.expectTotalCount(kCSSHistogramName, 0);
 
     useCounter.unmuteForInspector();
-    recordMeasurement(useCounter, feature);
-    EXPECT_FALSE(hasRecordedMeasurement(useCounter, feature));
+    useCounter.recordMeasurement(feature);
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(feature));
     useCounter.count(parserMode, property);
     EXPECT_FALSE(useCounter.isCounted(property));
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 0);
+    histogramTester.expectTotalCount(kCSSHistogramName, 0);
 
     useCounter.unmuteForInspector();
-    recordMeasurement(useCounter, feature);
-    EXPECT_TRUE(hasRecordedMeasurement(useCounter, feature));
+    useCounter.recordMeasurement(feature);
+    EXPECT_TRUE(useCounter.hasRecordedMeasurement(feature));
     useCounter.count(parserMode, property);
     EXPECT_TRUE(useCounter.isCounted(property));
+    histogramTester.expectUniqueSample(kFeaturesHistogramName, feature, 1);
+    histogramTester.expectUniqueSample(kCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property), 1);
 }
 
 class DeprecationTest : public ::testing::Test {
