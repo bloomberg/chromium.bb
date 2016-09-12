@@ -335,6 +335,10 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
         else
             alignment = (align == CursorAlignOnScroll::Always) ? ScrollAlignment::alignTopAlways : ScrollAlignment::alignToEdgeIfNeeded;
 
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
+
         revealSelection(alignment, RevealExtent);
     }
 
@@ -1152,10 +1156,7 @@ HTMLFormElement* FrameSelection::currentForm() const
 void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
 {
     DCHECK(isAvailable());
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!document().needsLayoutTreeUpdate());
 
     LayoutRect rect;
 

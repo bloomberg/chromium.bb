@@ -137,8 +137,13 @@ Editor::RevealSelectionScope::~RevealSelectionScope()
 {
     DCHECK(m_editor->m_preventRevealSelection);
     --m_editor->m_preventRevealSelection;
-    if (!m_editor->m_preventRevealSelection)
+    if (!m_editor->m_preventRevealSelection) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        m_editor->frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         m_editor->frame().selection().revealSelection(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
+    }
 }
 
 // When an event handler has moved the selection outside of a text control
@@ -827,8 +832,15 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
 
     // Reveal the current selection
     if (LocalFrame* editedFrame = selection.start().document()->frame()) {
-        if (Page* page = editedFrame->page())
-            toLocalFrame(page->focusController().focusedOrMainFrame())->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
+        if (Page* page = editedFrame->page()) {
+            LocalFrame* focusedOrMainFrame = toLocalFrame(page->focusController().focusedOrMainFrame());
+
+            // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+            // needs to be audited.  See http://crbug.com/590369 for more details.
+            focusedOrMainFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+            focusedOrMainFrame->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
+        }
     }
 
     return true;
@@ -1081,6 +1093,10 @@ void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignme
 {
     if (m_preventRevealSelection)
         return;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     frame().selection().revealSelection(alignment, revealExtentOption);
 }

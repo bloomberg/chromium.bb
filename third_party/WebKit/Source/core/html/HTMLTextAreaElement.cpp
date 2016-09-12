@@ -254,8 +254,13 @@ void HTMLTextAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selecti
     case SelectionBehaviorOnFocus::None:
         return;
     }
-    if (document().frame())
+    if (document().frame()) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
+
         document().frame()->selection().revealSelection();
+    }
 }
 
 void HTMLTextAreaElement::defaultEventHandler(Event* event)
