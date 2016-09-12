@@ -39,6 +39,9 @@ const char* FlagsModeToString(FlagsMode mode) {
       return "CHEAP_DISABLED";
     case BOTH_DISABLED:
       return "BOTH_DISABLED";
+    default:
+      DLOG(FATAL) << "Unexpected FlagsMode";
+      return nullptr;
   }
 }
 
