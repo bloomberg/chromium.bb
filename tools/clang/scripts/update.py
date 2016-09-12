@@ -762,6 +762,7 @@ def UpdateClang(args):
       RunCommand([
           make_toolchain,
           '--api=' + ('21' if target_arch == 'aarch64' else '19'),
+          '--force',
           '--install-dir=%s' % toolchain_dir,
           '--stl=stlport',
           '--arch=' + {
