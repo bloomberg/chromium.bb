@@ -43,6 +43,9 @@ const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 // Disable the Payment Request API.
 const char kDisablePaymentRequest[] = "disable-payment-request";
 
+// Disables the QR Code scanner.
+const char kDisableQRScanner[] = "disable-qr-scanner";
+
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 

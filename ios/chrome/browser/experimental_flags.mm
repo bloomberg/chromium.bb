@@ -28,7 +28,6 @@ NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableReadingList = @"EnableReadingList";
 NSString* const kUpdatePasswordUIDisabled = @"UpdatePasswordUIDisabled";
-NSString* const kEnableQRCodeReader = @"EnableQRCodeReader";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 }  // namespace
 
@@ -146,12 +145,17 @@ bool IsUpdatePasswordUIEnabled() {
 
 bool IsQRCodeReaderEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableQRScanner))
+  if (command_line->HasSwitch(switches::kEnableQRScanner)) {
     return true;
+  } else if (command_line->HasSwitch(switches::kDisableQRScanner)) {
+    return false;
+  }
 
   // Check if the finch experiment is turned on.
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:kEnableQRCodeReader];
+  std::string group_name =
+      base::FieldTrialList::FindFullName("QRScannerEnabled");
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsNewClearBrowsingDataUIEnabled() {
