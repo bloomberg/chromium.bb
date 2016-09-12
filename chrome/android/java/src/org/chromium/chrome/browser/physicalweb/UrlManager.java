@@ -61,10 +61,10 @@ class UrlManager {
     private static final String PREFS_VERSION_KEY = "physicalweb_version";
     private static final String PREFS_ALL_URLS_KEY = "physicalweb_all_urls";
     private static final String PREFS_NEARBY_URLS_KEY = "physicalweb_nearby_urls";
-    private static final String PREFS_RESOLVED_URLS_KEY = "physicalweb_resolved_urls";
+    private static final String PREFS_PWS_RESULTS_KEY = "physicalweb_pws_results";
     private static final String PREFS_NOTIFICATION_UPDATE_TIMESTAMP =
             "physicalweb_notification_update_timestamp";
-    private static final int PREFS_VERSION = 3;
+    private static final int PREFS_VERSION = 4;
     private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;  // 30 Minutes
     private static final long MAX_CACHE_TIME = 24 * 60 * 60 * 1000;  // 1 Day
     private static final int MAX_CACHE_SIZE = 100;
@@ -72,8 +72,8 @@ class UrlManager {
     private final Context mContext;
     private final ObserverList<Listener> mObservers;
     private final Set<String> mNearbyUrls;
-    private final Set<String> mResolvedUrls;
     private final Map<String, UrlInfo> mUrlInfoMap;
+    private final Map<String, PwsResult> mPwsResultMap;
     private final PriorityQueue<String> mUrlsSortedByTimestamp;
     private NotificationManagerProxy mNotificationManager;
     private PwsClient mPwsClient;
@@ -102,8 +102,8 @@ class UrlManager {
         mPwsClient = new PwsClientImpl(context);
         mObservers = new ObserverList<Listener>();
         mNearbyUrls = new HashSet<>();
-        mResolvedUrls = new HashSet<>();
         mUrlInfoMap = new HashMap<>();
+        mPwsResultMap = new HashMap<>();
         mUrlsSortedByTimestamp = new PriorityQueue<String>(1, new Comparator<String>() {
             @Override
             public int compare(String url1, String url2) {
@@ -173,7 +173,7 @@ class UrlManager {
         mNearbyUrls.add(urlInfo.getUrl());
         putCachedNearbyUrls();
 
-        if (!PhysicalWeb.isOnboarding() && !mResolvedUrls.contains(urlInfo.getUrl())) {
+        if (!PhysicalWeb.isOnboarding() && !mPwsResultMap.keySet().contains(urlInfo.getUrl())) {
             // We need to resolve the URL.
             resolveUrl(urlInfo);
             return;
@@ -216,13 +216,14 @@ class UrlManager {
      */
     @VisibleForTesting
     public List<UrlInfo> getUrls(boolean allowUnresolved) {
+        Set<String> resolvedUrls = mPwsResultMap.keySet();
         Set<String> intersection = new HashSet<>(mNearbyUrls);
-        intersection.retainAll(mResolvedUrls);
+        intersection.retainAll(resolvedUrls);
         Log.d(TAG, "Get URLs With: %d nearby, %d resolved, and %d in intersection.",
-                mNearbyUrls.size(), mResolvedUrls.size(), intersection.size());
+                mNearbyUrls.size(), resolvedUrls.size(), intersection.size());
 
         List<UrlInfo> urlInfos = null;
-        if (allowUnresolved && mResolvedUrls.isEmpty()) {
+        if (allowUnresolved && resolvedUrls.isEmpty()) {
             urlInfos = getUrlInfoList(mNearbyUrls);
         } else {
             urlInfos = getUrlInfoList(intersection);
@@ -247,7 +248,7 @@ class UrlManager {
     }
 
     public Set<String> getResolvedUrls() {
-        return mResolvedUrls;
+        return mPwsResultMap.keySet();
     }
 
     /**
@@ -255,11 +256,11 @@ class UrlManager {
      */
     public void clearAllUrls() {
         clearNearbyUrls();
-        mResolvedUrls.clear();
         mUrlsSortedByTimestamp.clear();
         mUrlInfoMap.clear();
-        putCachedResolvedUrls();
+        mPwsResultMap.clear();
         putCachedUrlInfoMap();
+        putCachedPwsResultMap();
     }
 
     /**
@@ -292,27 +293,28 @@ class UrlManager {
 
     /**
      * Adds a URL that has been resolved by the PWS.
-     * @param urlInfo This needs to be a UrlInfo that exists in mUrlInfoMap
+     * @param pwsResult The meta data associated with the resolved URL.
      */
-    private void addResolvedUrl(UrlInfo urlInfo) {
-        Log.d(TAG, "PWS resolved: %s", urlInfo.getUrl());
-        if (mResolvedUrls.contains(urlInfo.getUrl())) {
+    private void addResolvedUrl(PwsResult pwsResult) {
+        Log.d(TAG, "PWS resolved: %s", pwsResult.requestUrl);
+        if (mPwsResultMap.containsKey(pwsResult.requestUrl)) {
             return;
         }
 
-        mResolvedUrls.add(urlInfo.getUrl());
-        putCachedResolvedUrls();
+        mPwsResultMap.put(pwsResult.requestUrl, pwsResult);
+        putCachedPwsResultMap();
 
-        if (!mNearbyUrls.contains(urlInfo.getUrl())) {
+        if (!mNearbyUrls.contains(pwsResult.requestUrl)
+                || !mUrlInfoMap.containsKey(pwsResult.requestUrl)) {
             return;
         }
-        registerNewDisplayableUrl(urlInfo);
+        registerNewDisplayableUrl(mUrlInfoMap.get(pwsResult.requestUrl));
     }
 
     private void removeResolvedUrl(UrlInfo url) {
         Log.d(TAG, "PWS unresolved: %s", url);
-        mResolvedUrls.remove(url.getUrl());
-        putCachedResolvedUrls();
+        mPwsResultMap.remove(url.getUrl());
+        putCachedPwsResultMap();
 
         // If there are no URLs nearby to display, clear the notification.
         if (getUrls(PhysicalWeb.isOnboarding()).isEmpty()) {
@@ -329,6 +331,8 @@ class UrlManager {
                 protected Void doInBackground(Void... params) {
                     prefs.edit()
                             .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
+                            // This clean up code can be deleted in m57.
+                            .remove("physicalweb_resolved_urls")
                             .apply();
                     return null;
                 }
@@ -338,8 +342,6 @@ class UrlManager {
 
         // Read the cache.
         mNearbyUrls.addAll(prefs.getStringSet(PREFS_NEARBY_URLS_KEY, new HashSet<String>()));
-        mResolvedUrls.addAll(
-                prefs.getStringSet(PREFS_RESOLVED_URLS_KEY, new HashSet<String>()));
         for (String serializedUrl : prefs.getStringSet(PREFS_ALL_URLS_KEY, new HashSet<String>())) {
             try {
                 JSONObject jsonObject = new JSONObject(serializedUrl);
@@ -350,23 +352,17 @@ class UrlManager {
                 Log.e(TAG, "Could not deserialize UrlInfo", e);
             }
         }
-        garbageCollect();
-    }
-
-    private void setUrlInfoCollectionInSharedPreferences(
-            String preferenceName, Collection<UrlInfo> urls) {
-        Set<String> serializedUrls = new HashSet<>();
-        for (UrlInfo url : urls) {
+        for (String serializedPwsResult : prefs.getStringSet(PREFS_PWS_RESULTS_KEY,
+                new HashSet<String>())) {
             try {
-                serializedUrls.add(url.jsonSerialize().toString());
+                JSONObject jsonObject = new JSONObject(serializedPwsResult);
+                PwsResult pwsResult = PwsResult.jsonDeserialize(jsonObject);
+                mPwsResultMap.put(pwsResult.requestUrl, pwsResult);
             } catch (JSONException e) {
-                Log.e(TAG, "Could not serialize UrlInfo", e);
+                Log.e(TAG, "Could not deserialize PwsResult", e);
             }
         }
-
-        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
-        editor.putStringSet(preferenceName, serializedUrls);
-        editor.apply();
+        garbageCollect();
     }
 
     private void setStringSetInSharedPreferences(String preferenceName, Set<String> urls) {
@@ -376,15 +372,33 @@ class UrlManager {
     }
 
     private void putCachedUrlInfoMap() {
-        setUrlInfoCollectionInSharedPreferences(PREFS_ALL_URLS_KEY, mUrlInfoMap.values());
+        Set<String> serializedUrls = new HashSet<>();
+        for (UrlInfo url : mUrlInfoMap.values()) {
+            try {
+                serializedUrls.add(url.jsonSerialize().toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "Could not serialize UrlInfo", e);
+            }
+        }
+
+        setStringSetInSharedPreferences(PREFS_ALL_URLS_KEY, serializedUrls);
     }
 
     private void putCachedNearbyUrls() {
         setStringSetInSharedPreferences(PREFS_NEARBY_URLS_KEY, mNearbyUrls);
     }
 
-    private void putCachedResolvedUrls() {
-        setStringSetInSharedPreferences(PREFS_RESOLVED_URLS_KEY, mResolvedUrls);
+    private void putCachedPwsResultMap() {
+        Set<String> serializedPwsResults = new HashSet<>();
+        for (PwsResult pwsResult : mPwsResultMap.values()) {
+            try {
+                serializedPwsResults.add(pwsResult.jsonSerialize().toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "Could not serialize PwsResult", e);
+            }
+        }
+
+        setStringSetInSharedPreferences(PREFS_PWS_RESULTS_KEY, serializedPwsResults);
     }
 
     private PendingIntent createListUrlsIntent() {
@@ -436,7 +450,7 @@ class UrlManager {
                         for (PwsResult pwsResult : pwsResults) {
                             String requestUrl = pwsResult.requestUrl;
                             if (url.getUrl().equalsIgnoreCase(requestUrl)) {
-                                addResolvedUrl(url);
+                                addResolvedUrl(pwsResult);
                                 return;
                             }
                         }
@@ -598,7 +612,7 @@ class UrlManager {
             // poll().
             mUrlsSortedByTimestamp.poll();
             mUrlInfoMap.remove(url);
-            mResolvedUrls.remove(url);
+            mPwsResultMap.remove(url);
         }
     }
 
@@ -618,8 +632,8 @@ class UrlManager {
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(PREFS_VERSION_KEY)
                 .remove(PREFS_NEARBY_URLS_KEY)
-                .remove(PREFS_RESOLVED_URLS_KEY)
                 .remove(PREFS_NOTIFICATION_UPDATE_TIMESTAMP)
+                .remove(PREFS_PWS_RESULTS_KEY)
                 .apply();
     }
 
@@ -636,7 +650,7 @@ class UrlManager {
     @VisibleForTesting
     boolean containsInAnyCache(String url) {
         return mNearbyUrls.contains(url)
-                || mResolvedUrls.contains(url)
+                || mPwsResultMap.containsKey(url)
                 || mUrlInfoMap.containsKey(url)
                 || mUrlsSortedByTimestamp.contains(url);
     }

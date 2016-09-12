@@ -18,7 +18,9 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Tests for {@link UrlManager}.
@@ -411,6 +413,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         UrlManager urlManager = new UrlManager(context);
         List<UrlInfo> urlInfos = urlManager.getUrls();
         assertEquals(2, urlInfos.size());
+        Set<String> resolvedUrls = urlManager.getResolvedUrls();
+        assertEquals(2, resolvedUrls.size());
     }
 
     @SmallTest
@@ -426,21 +430,27 @@ public class UrlManagerTest extends InstrumentationTestCase {
         UrlManager urlManager = new UrlManager(context);
         List<UrlInfo> urlInfos = urlManager.getUrls();
         assertEquals(0, urlInfos.size());
+        Set<String> resolvedUrls = urlManager.getResolvedUrls();
+        assertEquals(0, resolvedUrls.size());
     }
 
     @SmallTest
     public void testUpgradeFromNone() throws Exception {
+        Set<String> oldResolvedUrls = new HashSet<String>();
+        oldResolvedUrls.add("old");
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         mSharedPreferences.edit()
                 .remove(UrlManager.getVersionKey())
+                .putStringSet("physicalweb_resolved_urls", oldResolvedUrls)
                 .apply();
         new UrlManager(context);
 
-        // Make sure the new prefs are populated.
+        // Make sure the new prefs are populated and old prefs are gone.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mSharedPreferences.contains(UrlManager.getVersionKey());
+                return mSharedPreferences.contains(UrlManager.getVersionKey())
+                        && !mSharedPreferences.contains("physicalweb_resolved_urls");
             }
         }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
