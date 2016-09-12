@@ -1686,8 +1686,6 @@ void RenderFrameImpl::OnSwapOut(
     // The swap can fail when the frame is detached during swap (this can
     // happen while running the unload handlers). When that happens, delete
     // the proxy.
-    // TODO(lfg): Handle the case where a navigation started during swap.
-    // See https://crbug.com/590054 for more details.
     proxy->frameDetached(blink::WebRemoteFrameClient::DetachType::Swap);
     return;
   }
