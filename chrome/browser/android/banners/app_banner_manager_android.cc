@@ -34,10 +34,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerAndroid);
 
 namespace {
 
-const char kReferrerName[] = "referrer";
-const char kIdName[] = "id";
-const char kPlayInlineReferrer[] = "playinline=chrome_inline";
-
 std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
     const GURL& manifest_url,
     const content::Manifest& manifest,
@@ -236,20 +232,18 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
   if (java_banner_manager_.is_null())
     return false;
 
-  std::string id_from_app_url = ExtractQueryValueForName(url, kIdName);
+  std::string id_from_app_url = ExtractQueryValueForName(url, "id");
   if (id_from_app_url.size() && id != id_from_app_url) {
     ReportStatus(web_contents(), IDS_DO_NOT_MATCH);
     return false;
   }
 
-  std::string referrer = ExtractQueryValueForName(url, kReferrerName);
-
   // Attach the chrome_inline referrer value, prefixed with "&" if the referrer
   // is non empty.
-  if (referrer.empty())
-    referrer = kPlayInlineReferrer;
-  else
-    referrer.append("&").append(kPlayInlineReferrer);
+  std::string referrer = ExtractQueryValueForName(url, "referrer");
+  if (!referrer.empty())
+    referrer += "&";
+  referrer += "playinline=chrome_inline";
 
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, validated_url_.spec()));
