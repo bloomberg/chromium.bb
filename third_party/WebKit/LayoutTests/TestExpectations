@@ -1255,3 +1255,6 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
+
+crbug.com/646050 [ Linux Win10 ] media/video-zoom-controls.html [ Failure ]
+crbug.com/646050 [ Win10 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
