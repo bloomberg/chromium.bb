@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -161,12 +162,14 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"Omaha"})
+    @RetryOnFailure
     public void testCurrentVersionIsOlder() throws Exception {
         checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
     }
 
     @MediumTest
     @Feature({"Omaha"})
+    @RetryOnFailure
     public void testCurrentVersionIsSame() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "1.2.3.4");
     }
@@ -179,6 +182,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"Omaha"})
+    @RetryOnFailure
     public void testNoVersionKnown() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "0");
     }
@@ -186,6 +190,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"Omaha"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @RetryOnFailure
     public void testMenuItemNotShownInOverview() throws Exception {
         checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
 

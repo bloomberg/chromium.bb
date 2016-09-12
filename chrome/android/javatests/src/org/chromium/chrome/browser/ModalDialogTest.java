@@ -15,6 +15,7 @@ import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for displaying and functioning of modal dialogs.
  */
+@RetryOnFailure
 public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "ModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(

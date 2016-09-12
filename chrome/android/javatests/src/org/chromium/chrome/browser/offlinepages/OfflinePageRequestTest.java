@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -78,6 +79,7 @@ public class OfflinePageRequestTest extends ChromeActivityTestCaseBase<ChromeAct
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testLoadOfflinePageOnDisconnectedNetwork() throws Exception {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());

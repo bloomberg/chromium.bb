@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -110,12 +111,14 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
         List<OfflinePageItem> offlinePages = getAllPages();
         assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddOfflinePageAndLoad() throws Exception {
         loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
@@ -144,6 +147,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testGetPageByBookmarkId() throws Exception {
         loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
@@ -160,6 +164,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testDeleteOfflinePage() throws Exception {
         deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
         loadUrl(mTestPage);
@@ -196,6 +201,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testCheckPagesExistOffline() throws Exception {
         // If we save a page, then it should exist in the result.
         loadUrl(mTestPage);
@@ -216,6 +222,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";
@@ -248,12 +255,14 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
         assertEquals(null, mOfflinePageBridge);
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testRemoveRequestsFromQueue() throws Exception {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";

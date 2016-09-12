@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 
@@ -25,6 +26,7 @@ public class CastNotificationTest extends CastTestBase {
      */
     @Feature({"VideoFling"})
     @LargeTest
+    @RetryOnFailure
     public void testNotificationPause() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 

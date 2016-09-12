@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -23,6 +24,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 /**
  * Tests for the navigation popup.
  */
+@RetryOnFailure
 public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final int INVALID_NAVIGATION_INDEX = -1;

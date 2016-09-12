@@ -19,6 +19,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
@@ -144,6 +145,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     @Smoke
     @MediumTest
     @Feature({"Navigation", "Main"})
+    @RetryOnFailure
     public void testNavigate() throws Exception {
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         String result = typeInOmniboxAndNavigate(url, "Simple");
@@ -176,6 +178,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
+    @RetryOnFailure
     public void testNavigateLandscape() throws Exception {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
@@ -188,6 +191,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
+    @RetryOnFailure
     public void testOpenAndNavigate() throws Exception {
         final String url =
                 mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
@@ -208,6 +212,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
+    @RetryOnFailure
     public void testOpenLink() throws Exception {
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");

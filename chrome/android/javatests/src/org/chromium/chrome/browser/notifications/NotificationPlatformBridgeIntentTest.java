@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -29,6 +30,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * that the responsibility for correct initialization, e.g. loading the native library, lies with
  * the code exercised by this test.
  */
+@RetryOnFailure
 public class NotificationPlatformBridgeIntentTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**

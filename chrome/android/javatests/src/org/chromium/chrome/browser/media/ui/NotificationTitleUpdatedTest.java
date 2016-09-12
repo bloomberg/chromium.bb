@@ -14,6 +14,7 @@ import android.widget.TextView;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -30,6 +31,7 @@ import org.chromium.content_public.common.MediaMetadata;
  * Test of media notifications to see whether the text updates when the tab title changes or the
  * MediaMetadata gets updated.
  */
+@RetryOnFailure
 public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int NOTIFICATION_ID = R.id.media_playback_notification;
 

@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -145,6 +146,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testShowOfflineSnackbarIfNecessary() throws Exception {
         // Arrange - build a mock controller for sensing.
         OfflinePageUtils.setSnackbarDurationForTesting(1000);
@@ -244,6 +246,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testCopyToShareableLocation() throws Exception {
         // Save an offline page.
         loadPageAndSave();

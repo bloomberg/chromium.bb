@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -68,6 +69,7 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
      */
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testPopupNotClosedByOtherContentView()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

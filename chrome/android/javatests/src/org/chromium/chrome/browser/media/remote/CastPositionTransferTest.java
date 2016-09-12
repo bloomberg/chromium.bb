@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeoutException;
  * Tests related to the transfer of the playback position between the local and
  * the remote player.
  */
+@RetryOnFailure
 public class CastPositionTransferTest extends CastTestBase {
 
     /** Reference position in the video where we should start casting */

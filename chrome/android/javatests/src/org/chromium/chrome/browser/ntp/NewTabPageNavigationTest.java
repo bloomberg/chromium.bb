@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -18,6 +19,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 /**
  * Tests loading the NTP and navigating between it and other pages.
  */
+@RetryOnFailure
 public class NewTabPageNavigationTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;

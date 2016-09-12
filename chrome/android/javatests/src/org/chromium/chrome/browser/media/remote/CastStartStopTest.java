@@ -11,6 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -28,6 +29,7 @@ public class CastStartStopTest extends CastTestBase {
     @Feature({"VideoFling"})
     @LargeTest
     @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
+    @RetryOnFailure
     public void testCastingGenericVideo() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
         checkVideoStarted(DEFAULT_VIDEO);

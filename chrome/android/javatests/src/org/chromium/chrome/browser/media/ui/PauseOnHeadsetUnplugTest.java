@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,6 +39,7 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testPause()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();

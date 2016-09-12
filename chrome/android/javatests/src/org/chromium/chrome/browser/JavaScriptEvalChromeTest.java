@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -38,6 +39,7 @@ public class JavaScriptEvalChromeTest extends ChromeTabbedActivityTestBase {
      */
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testJavaScriptEvalIsCorrectlyOrderedWithinOneTab()
             throws InterruptedException, TimeoutException {
         Tab tab1 = getActivity().getActivityTab();

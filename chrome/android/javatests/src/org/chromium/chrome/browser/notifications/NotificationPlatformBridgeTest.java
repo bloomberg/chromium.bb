@@ -19,6 +19,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -178,6 +179,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testDefaultNotificationProperties() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
@@ -266,6 +268,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testNotificationVibratePreferenceDisabledDefault() throws Exception {
         verifyVibrationNotRequestedWhenDisabledInPrefs("{}");
     }
@@ -276,6 +279,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testNotificationVibratePreferenceDisabledCustomPattern() throws Exception {
         verifyVibrationNotRequestedWhenDisabledInPrefs("{ vibrate: 42 }");
     }
@@ -348,6 +352,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testShowNotificationWithIcon() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
@@ -368,6 +373,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testShowNotificationWithoutIcon() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
@@ -450,6 +456,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @LargeTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testNotificationContentIntentClosesNotification() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
@@ -472,6 +479,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      */
     @LargeTest
     @Feature({"Browser", "Notifications"})
+    @RetryOnFailure
     public void testNotificationContentIntentCreatesTab() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 

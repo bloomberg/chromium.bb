@@ -17,6 +17,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -104,6 +105,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
 
     @MediumTest
     @Feature({"Sync"})
+    @RetryOnFailure
     public void testRequestSyncNoInvalidationData() {
         performSyncWithBundle(new Bundle());
         assertTrue(mSyncAdapter.mInvalidatedAllTypes);
@@ -133,6 +135,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
 
     @MediumTest
     @Feature({"Sync"})
+    @RetryOnFailure
     public void testRequestSyncWhenChromeInBackground() throws InterruptedException {
         sendChromeToBackground(getActivity());
         performSyncWithBundle(new Bundle());
@@ -143,6 +146,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
 
     @MediumTest
     @Feature({"Sync"})
+    @RetryOnFailure
     public void testRequestInitializeSync() throws InterruptedException {
         Bundle extras = new Bundle();
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_INITIALIZE, true);
