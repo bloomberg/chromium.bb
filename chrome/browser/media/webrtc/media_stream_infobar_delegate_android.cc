@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/google/core/browser/google_util.h"
@@ -69,6 +70,24 @@ bool MediaStreamInfoBarDelegateAndroid::Create(
   return true;
 }
 
+void MediaStreamInfoBarDelegateAndroid::RecordPermissionAcceptedUma(
+    int position,
+    bool persist) {
+  PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
+      controller_->GetPermissionTypeForContentSettingsType(
+          GetContentSettingType(position)),
+      persist);
+}
+
+void MediaStreamInfoBarDelegateAndroid::RecordPermissionDeniedUma(
+    int position,
+    bool persist) {
+  PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
+      controller_->GetPermissionTypeForContentSettingsType(
+          GetContentSettingType(position)),
+      persist);
+}
+
 infobars::InfoBarDelegate::InfoBarIdentifier
 MediaStreamInfoBarDelegateAndroid::GetIdentifier() const {
   return MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID;
@@ -96,6 +115,24 @@ MediaStreamInfoBarDelegateAndroid::AsMediaStreamInfoBarDelegateAndroid() {
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Accept() {
+  bool persist_permission = true;
+  if (ShouldShowPersistenceToggle()) {
+    persist_permission = persist();
+
+    // TODO(dominickn): fold these metrics calls into
+    // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
+    if (GetPermissionCount() == 2) {
+      RecordPermissionAcceptedUma(kGroupedInfobarAudioPosition,
+                                  persist_permission);
+      RecordPermissionAcceptedUma(kGroupedInfobarVideoPosition,
+                                  persist_permission);
+    } else {
+      DCHECK_EQ(1, GetPermissionCount());
+      RecordPermissionAcceptedUma(0, persist_permission);
+    }
+  }
+
+  controller_->set_persist(persist_permission);
   if (GetPermissionCount() == 2) {
     controller_->GroupedRequestFinished(
         GetAcceptState(kGroupedInfobarAudioPosition),
@@ -108,6 +145,23 @@ bool MediaStreamInfoBarDelegateAndroid::Accept() {
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Cancel() {
+  bool persist_permission = true;
+  if (ShouldShowPersistenceToggle()) {
+    persist_permission = persist();
+
+    // TODO(dominickn): fold these metrics calls into
+    // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
+    if (GetPermissionCount() == 2) {
+      RecordPermissionDeniedUma(kGroupedInfobarAudioPosition,
+                                persist_permission);
+      RecordPermissionDeniedUma(kGroupedInfobarVideoPosition,
+                                persist_permission);
+    } else {
+      DCHECK_EQ(1, GetPermissionCount());
+      RecordPermissionDeniedUma(0, persist_permission);
+    }
+  }
+  controller_->set_persist(persist_permission);
   controller_->PermissionDenied();
   return true;
 }
