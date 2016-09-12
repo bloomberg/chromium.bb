@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/shared_memory_region.h"
@@ -1227,14 +1226,11 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
             coded_size_, gfx::Rect(visible_size_), visible_size_, fds,
             base::TimeDelta());
         // Unretained is safe because |this| owns image processor and there will
-        // be no callbacks after processor destroys. Also, this class ensures it
-        // is safe to post a task from child thread to decoder thread using
-        // Unretained.
+        // be no callbacks after processor destroys.
         image_processor_->Process(
             frame, dqbuf.index,
-            BindToCurrentLoop(
-                base::Bind(&V4L2VideoDecodeAccelerator::FrameProcessed,
-                           base::Unretained(this), bitstream_buffer_id)));
+            base::Bind(&V4L2VideoDecodeAccelerator::FrameProcessed,
+                       base::Unretained(this), bitstream_buffer_id));
       } else {
         output_record.state = kAtClient;
         decoder_frames_at_client_++;
