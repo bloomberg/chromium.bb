@@ -22,7 +22,8 @@ LazySchedulerMessageLoopDelegateForTests::
     LazySchedulerMessageLoopDelegateForTests()
     : message_loop_(base::MessageLoop::current()),
       thread_id_(base::PlatformThread::CurrentId()),
-      time_source_(base::MakeUnique<base::DefaultTickClock>()) {
+      time_source_(base::MakeUnique<base::DefaultTickClock>()),
+      pending_observer_(nullptr) {
   if (message_loop_)
     original_task_runner_ = message_loop_->task_runner();
 }
@@ -42,6 +43,8 @@ base::MessageLoop* LazySchedulerMessageLoopDelegateForTests::EnsureMessageLoop()
   original_task_runner_ = message_loop_->task_runner();
   if (pending_task_runner_)
     message_loop_->SetTaskRunner(std::move(pending_task_runner_));
+  if (pending_observer_)
+    message_loop_->AddNestingObserver(pending_observer_);
   return message_loop_;
 }
 
@@ -87,6 +90,25 @@ bool LazySchedulerMessageLoopDelegateForTests::RunsTasksOnCurrentThread()
 
 bool LazySchedulerMessageLoopDelegateForTests::IsNested() const {
   return EnsureMessageLoop()->IsNested();
+}
+
+void LazySchedulerMessageLoopDelegateForTests::AddNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {
+  if (!HasMessageLoop()) {
+    pending_observer_ = observer;
+    return;
+  }
+  message_loop_->AddNestingObserver(observer);
+}
+
+void LazySchedulerMessageLoopDelegateForTests::RemoveNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {
+  if (!message_loop_ || message_loop_ != base::MessageLoop::current()) {
+    DCHECK_EQ(pending_observer_, observer);
+    pending_observer_ = nullptr;
+    return;
+  }
+  message_loop_->RemoveNestingObserver(observer);
 }
 
 base::TimeTicks LazySchedulerMessageLoopDelegateForTests::NowTicks() {

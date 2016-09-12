@@ -29,6 +29,10 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
+  void AddNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
   base::TimeTicks NowTicks() override;
 
  protected:

@@ -61,6 +61,16 @@ bool SchedulerTqmDelegateImpl::IsNested() const {
   return message_loop_->IsNested();
 }
 
+void SchedulerTqmDelegateImpl::AddNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {
+  message_loop_->AddNestingObserver(observer);
+}
+
+void SchedulerTqmDelegateImpl::RemoveNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {
+  message_loop_->RemoveNestingObserver(observer);
+}
+
 base::TimeTicks SchedulerTqmDelegateImpl::NowTicks() {
   return time_source_->NowTicks();
 }

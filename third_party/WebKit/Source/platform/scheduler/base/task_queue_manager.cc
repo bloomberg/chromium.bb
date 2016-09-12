@@ -48,6 +48,7 @@ TaskQueueManager::TaskQueueManager(
     : real_time_domain_(new RealTimeDomain(tracing_category)),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
+      other_thread_pending_wakeup_(false),
       work_batch_size_(1),
       task_count_(0),
       tracing_category_(tracing_category),
@@ -73,6 +74,8 @@ TaskQueueManager::TaskQueueManager(
 
   // TODO(alexclarke): Change this to be a parameter that's passed in.
   RegisterTimeDomain(real_time_domain_.get());
+
+  delegate_->AddNestingObserver(this);
 }
 
 TaskQueueManager::~TaskQueueManager() {
@@ -83,6 +86,8 @@ TaskQueueManager::~TaskQueueManager() {
     (*queues_.begin())->UnregisterTaskQueue();
 
   selector_.SetTaskQueueSelectorObserver(nullptr);
+
+  delegate_->RemoveNestingObserver(this);
 }
 
 void TaskQueueManager::RegisterTimeDomain(TimeDomain* time_domain) {
@@ -143,6 +148,12 @@ void TaskQueueManager::UpdateWorkQueues(LazyNow lazy_now) {
   }
 }
 
+void TaskQueueManager::OnBeginNestedMessageLoop() {
+  // We just entered a nested message loop, make sure there's a DoWork posted or
+  // the system will grind to a halt.
+  delegate_->PostTask(FROM_HERE, from_main_thread_immediate_do_work_closure_);
+}
+
 void TaskQueueManager::MaybeScheduleImmediateWork(
     const tracked_objects::Location& from_here) {
   bool on_main_thread = delegate_->BelongsToCurrentThread();
@@ -155,8 +166,9 @@ void TaskQueueManager::MaybeScheduleImmediateWork(
   } else {
     {
       base::AutoLock lock(other_thread_lock_);
-      if (!other_thread_pending_wakeups_.insert(base::TimeTicks()).second)
+      if (other_thread_pending_wakeup_)
         return;
+      other_thread_pending_wakeup_ = true;
     }
     delegate_->PostTask(from_here,
                         from_other_thread_immediate_do_work_closure_);
@@ -169,8 +181,17 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
     base::TimeDelta delay) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(delay, base::TimeDelta());
-  base::TimeTicks run_time = now + delay;
+
+  // If there's a pending immediate DoWork then we rely on
+  // TryAdvanceTimeDomains getting the TimeDomain to call
+  // MaybeScheduleDelayedWork again when the immediate DoWork is complete.
+  if (main_thread_pending_wakeups_.find(base::TimeTicks()) !=
+      main_thread_pending_wakeups_.end()) {
+    return;
+  }
+
   // De-duplicate DoWork posts.
+  base::TimeTicks run_time = now + delay;
   if (!main_thread_pending_wakeups_.insert(run_time).second)
     return;
   delegate_->PostDelayedTask(
@@ -183,17 +204,16 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TRACE_EVENT1(tracing_category_, "TaskQueueManager::DoWork",
                "from_main_thread", from_main_thread);
+
   if (from_main_thread) {
     main_thread_pending_wakeups_.erase(run_time);
   } else {
     base::AutoLock lock(other_thread_lock_);
-    other_thread_pending_wakeups_.erase(run_time);
+    other_thread_pending_wakeup_ = false;
   }
 
-  // TODO(alexclarke): Add a base::RunLoop observer and prevent
-  // MaybeScheduleImmediateWork posting MaybeScheduleImmediateWork while DoWork
-  // is running.  We'll need to post a DoWork on entering and leaving a nested
-  // run loop.
+  // Posting a DoWork while a DoWork is running leads to spurious DoWorks.
+  main_thread_pending_wakeups_.insert(base::TimeTicks());
 
   if (!delegate_->IsNested())
     queues_to_delete_.clear();
@@ -204,7 +224,6 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   if (!delegate_->IsNested() && task_time_observers_.might_have_observers())
     task_start_time = lazy_now.Now();
 
-  // TODO(alexclarke): Get rid of this and call once per loop iteration.
   UpdateWorkQueues(lazy_now);
 
   for (int i = 0; i < work_batch_size_; i++) {
@@ -241,6 +260,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     if (delegate_->IsNested())
       break;
   }
+
+  main_thread_pending_wakeups_.erase(base::TimeTicks());
 
   // TODO(alexclarke): Consider refactoring the above loop to terminate only
   // when there's no more work left to be done, rather than posting a

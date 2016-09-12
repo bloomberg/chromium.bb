@@ -34,6 +34,10 @@ class SchedulerTqmDelegateForTest : public SchedulerTqmDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
+  void AddNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
   base::TimeTicks NowTicks() override;
 
   base::SingleThreadTaskRunner* default_task_runner() const {

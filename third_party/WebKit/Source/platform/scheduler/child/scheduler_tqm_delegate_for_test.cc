@@ -61,6 +61,12 @@ bool SchedulerTqmDelegateForTest::IsNested() const {
   return task_runner_->IsNested();
 }
 
+void SchedulerTqmDelegateForTest::AddNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {}
+
+void SchedulerTqmDelegateForTest::RemoveNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {}
+
 base::TimeTicks SchedulerTqmDelegateForTest::NowTicks() {
   return task_runner_->NowTicks();
 }

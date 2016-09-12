@@ -296,8 +296,7 @@ TEST_F(ThrottlingHelperTest,
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
   // Run the task.
-  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
-  EXPECT_EQ(2u, task_count);
+  EXPECT_EQ(1u, task_count);
 }
 
 TEST_F(ThrottlingHelperTest,
@@ -312,8 +311,7 @@ TEST_F(ThrottlingHelperTest,
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
   // Run the delayed task.
-  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
-  EXPECT_EQ(2u, task_count);
+  EXPECT_EQ(1u, task_count);
 }
 
 TEST_F(ThrottlingHelperTest,
@@ -334,8 +332,7 @@ TEST_F(ThrottlingHelperTest,
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
   // Run both delayed tasks.
-  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
-  EXPECT_EQ(4u, task_count);
+  EXPECT_EQ(2u, task_count);
 
   EXPECT_THAT(
       run_times,

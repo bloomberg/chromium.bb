@@ -38,6 +38,10 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
+  void AddNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override;
   base::TimeTicks NowTicks() override;
 
  private:
@@ -54,6 +58,8 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   mutable scoped_refptr<base::SingleThreadTaskRunner> pending_task_runner_;
   mutable scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
   std::unique_ptr<base::TickClock> time_source_;
+
+  base::MessageLoop::NestingObserver* pending_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LazySchedulerMessageLoopDelegateForTests);
 };

@@ -50,6 +50,12 @@ bool TaskQueueManagerDelegateForTest::IsNested() const {
   return false;
 }
 
+void TaskQueueManagerDelegateForTest::AddNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {}
+
+void TaskQueueManagerDelegateForTest::RemoveNestingObserver(
+    base::MessageLoop::NestingObserver* observer) {}
+
 base::TimeTicks TaskQueueManagerDelegateForTest::NowTicks() {
   return time_source_->NowTicks();
 }

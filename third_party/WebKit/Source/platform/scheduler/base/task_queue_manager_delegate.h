@@ -24,6 +24,14 @@ class BLINK_PLATFORM_EXPORT TaskQueueManagerDelegate
   // a nested task).
   virtual bool IsNested() const = 0;
 
+  // A NestingObserver is notified when a nested message loop begins. The
+  // observers are notified before the first task is processed.
+  virtual void AddNestingObserver(
+      base::MessageLoop::NestingObserver* observer) = 0;
+
+  virtual void RemoveNestingObserver(
+      base::MessageLoop::NestingObserver* observer) = 0;
+
  protected:
   ~TaskQueueManagerDelegate() override {}
 

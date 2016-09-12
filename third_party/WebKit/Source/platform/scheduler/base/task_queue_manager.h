@@ -53,7 +53,8 @@ class TaskTimeObserver;
 //    registered with the selector as input to the scheduling decision.
 //
 class BLINK_PLATFORM_EXPORT TaskQueueManager
-    : public internal::TaskQueueSelector::Observer {
+    : public internal::TaskQueueSelector::Observer,
+      public base::MessageLoop::NestingObserver {
  public:
   // Create a task queue manager where |delegate| identifies the thread
   // on which where the tasks are  eventually run. Category strings must have
@@ -158,6 +159,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   void OnTriedToSelectBlockedWorkQueue(
       internal::WorkQueue* work_queue) override;
 
+  // base::MessageLoop::NestingObserver implementation:
+  void OnBeginNestedMessageLoop() override;
+
   // Called by the task queue to register a new pending task.
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
 
@@ -227,9 +231,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // the main thread and other threads.
   std::set<base::TimeTicks> main_thread_pending_wakeups_;
 
-  // Protects |other_thread_pending_wakeups_|.
+  // Protects |other_thread_pending_wakeup_|.
   mutable base::Lock other_thread_lock_;
-  std::set<base::TimeTicks> other_thread_pending_wakeups_;
+  bool other_thread_pending_wakeup_;
 
   int work_batch_size_;
   size_t task_count_;

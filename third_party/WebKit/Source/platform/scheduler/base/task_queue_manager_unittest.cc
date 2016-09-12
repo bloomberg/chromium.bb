@@ -53,6 +53,16 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
     return base::MessageLoop::current()->IsNested();
   }
 
+  void AddNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override {
+    base::MessageLoop::current()->AddNestingObserver(observer);
+  }
+
+  void RemoveNestingObserver(
+      base::MessageLoop::NestingObserver* observer) override {
+    base::MessageLoop::current()->RemoveNestingObserver(observer);
+  }
+
  private:
   explicit MessageLoopTaskRunner(std::unique_ptr<base::TickClock> tick_clock)
       : TaskQueueManagerDelegateForTest(
