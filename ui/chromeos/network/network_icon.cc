@@ -45,15 +45,30 @@ namespace network_icon {
 
 namespace {
 
+// Constants for offseting the badge displayed on top of the signal strength
+// icon. The badge will extend outside of the base icon bounds by these amounts.
+// Only used for MD. All values are in dp.
+
+// The badge offsets are different depending on whether the icon is in the tray
+// or menu.
+const int kTrayIconBadgeOffset = 3;
+const int kMenuIconBadgeOffset = 2;
+
+// TODO(estade): use kTrayIconSize. See crbug.com/623987
+const int kTrayIconSide = 16;
+
+bool UseMd() {
+  return md_icon_controller::UseMaterialDesignNetworkIcons();
+}
+
 //------------------------------------------------------------------------------
 // Struct to pass icon badges to NetworkIconImageSource.
 struct Badges {
   Badges()
-      : top_left(NULL),
-        top_right(NULL),
-        bottom_left(NULL),
-        bottom_right(NULL) {
-  }
+      : top_left(nullptr),
+        top_right(nullptr),
+        bottom_left(nullptr),
+        bottom_right(nullptr) {}
   const gfx::ImageSkia* top_left;
   const gfx::ImageSkia* top_right;
   const gfx::ImageSkia* bottom_left;
@@ -130,15 +145,15 @@ typedef std::map<std::string, NetworkIconImpl*> NetworkIconMap;
 
 NetworkIconMap* GetIconMapInstance(IconType icon_type, bool create) {
   typedef std::map<IconType, NetworkIconMap*> IconTypeMap;
-  static IconTypeMap* s_icon_map = NULL;
-  if (s_icon_map == NULL) {
+  static IconTypeMap* s_icon_map = nullptr;
+  if (s_icon_map == nullptr) {
     if (!create)
-      return NULL;
+      return nullptr;
     s_icon_map = new IconTypeMap;
   }
   if (s_icon_map->count(icon_type) == 0) {
     if (!create)
-      return NULL;
+      return nullptr;
     (*s_icon_map)[icon_type] = new NetworkIconMap;
   }
   return (*s_icon_map)[icon_type];
@@ -189,11 +204,6 @@ SkColor GetBaseColorForIconType(IconType icon_type) {
   return icon_type == ICON_TYPE_TRAY ? SK_ColorWHITE : gfx::kChromeIconGrey;
 }
 
-gfx::Size GetSizeForIconType(IconType icon_type) {
-  // TODO(estade): use kTrayIconSize and kMenuIconSize.
-  return icon_type == ICON_TYPE_TRAY ? gfx::Size(16, 16) : gfx::Size(20, 20);
-}
-
 bool IconTypeIsDark(IconType icon_type) {
   return (icon_type != ICON_TYPE_TRAY);
 }
@@ -202,75 +212,32 @@ bool IconTypeHasVPNBadge(IconType icon_type) {
   return (icon_type != ICON_TYPE_LIST);
 }
 
-//------------------------------------------------------------------------------
-// Classes for generating scaled images.
-
-const SkBitmap GetEmptyBitmap(const gfx::Size pixel_size) {
-  typedef std::pair<int, int> SizeKey;
-  typedef std::map<SizeKey, SkBitmap> SizeBitmapMap;
-  static SizeBitmapMap* s_empty_bitmaps = new SizeBitmapMap;
-
-  SizeKey key(pixel_size.width(), pixel_size.height());
-
-  SizeBitmapMap::iterator iter = s_empty_bitmaps->find(key);
-  if (iter != s_empty_bitmaps->end())
-    return iter->second;
-
-  SkBitmap empty;
-  empty.allocN32Pixels(key.first, key.second);
-  empty.eraseARGB(0, 0, 0, 0);
-  (*s_empty_bitmaps)[key] = empty;
-  return empty;
-}
-
-class EmptyImageSource: public gfx::ImageSkiaSource {
- public:
-  explicit EmptyImageSource(const gfx::Size& size)
-      : size_(size) {
-  }
-
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    gfx::Size pixel_size = gfx::ScaleToFlooredSize(size_, scale);
-    SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
-    return gfx::ImageSkiaRep(empty_bitmap, scale);
-  }
-
- private:
-  const gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmptyImageSource);
-};
-
 // This defines how we assemble a network icon.
-class NetworkIconImageSource : public gfx::ImageSkiaSource {
+class NetworkIconImageSource : public gfx::CanvasImageSource {
  public:
   NetworkIconImageSource(const gfx::ImageSkia& icon, const Badges& badges)
-      : icon_(icon),
-        badges_(badges) {
-  }
+      : CanvasImageSource(icon.size(), false), icon_(icon), badges_(badges) {}
   ~NetworkIconImageSource() override {}
 
   // TODO(pkotwicz): Figure out what to do when a new image resolution becomes
   // available.
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    gfx::Canvas canvas(icon_.size(), scale, false);
-    canvas.DrawImageInt(icon_, 0, 0);
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->DrawImageInt(icon_, 0, 0);
 
     if (badges_.top_left)
-      canvas.DrawImageInt(*badges_.top_left, 0, 0);
+      canvas->DrawImageInt(*badges_.top_left, 0, 0);
     if (badges_.top_right)
-      canvas.DrawImageInt(*badges_.top_right,
-                          icon_.width() - badges_.top_right->width(), 0);
+      canvas->DrawImageInt(*badges_.top_right,
+                           icon_.width() - badges_.top_right->width(), 0);
     if (badges_.bottom_left) {
-      canvas.DrawImageInt(*badges_.bottom_left,
-                          0, icon_.height() - badges_.bottom_left->height());
+      canvas->DrawImageInt(*badges_.bottom_left, 0,
+                           icon_.height() - badges_.bottom_left->height());
     }
     if (badges_.bottom_right) {
-      canvas.DrawImageInt(*badges_.bottom_right,
-                          icon_.width() - badges_.bottom_right->width(),
-                          icon_.height() - badges_.bottom_right->height());
+      canvas->DrawImageInt(*badges_.bottom_right,
+                           icon_.width() - badges_.bottom_right->width(),
+                           icon_.height() - badges_.bottom_right->height());
     }
-    return canvas.ExtractImageRep();
   }
 
  private:
@@ -280,13 +247,75 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSource);
 };
 
-// Depicts a given signal strength using arcs (e.g. for WiFi connections) or
-// bars (e.g. for cell connections).
+// This defines how we assemble a network icon.
 class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
  public:
-  NetworkIconImageSourceMd(ImageType image_type,
-                           IconType icon_type,
-                           int signal_strength)
+  static gfx::ImageSkia CreateImage(const gfx::ImageSkia& icon,
+                                    const Badges& badges) {
+    auto source = new NetworkIconImageSourceMd(icon, badges);
+    return gfx::ImageSkia(source, source->size());
+  }
+
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    const int width = size().width();
+    const int height = size().height();
+
+    // The base icon is centered in both dimensions.
+    const int icon_y = (height - icon_.height()) / 2;
+    canvas->DrawImageInt(icon_, (width - icon_.width()) / 2, icon_y);
+
+    // The badges are flush against the edges of the canvas, except at the top,
+    // where the badge is only 1dp higher than the base image.
+    const int top_badge_y = icon_y - 1;
+    if (badges_.top_left)
+      canvas->DrawImageInt(*badges_.top_left, 0, top_badge_y);
+    if (badges_.top_right) {
+      canvas->DrawImageInt(*badges_.top_right,
+                           width - badges_.top_right->width(), top_badge_y);
+    }
+    if (badges_.bottom_left) {
+      canvas->DrawImageInt(*badges_.bottom_left, 0,
+                           height - badges_.bottom_left->height());
+    }
+    if (badges_.bottom_right) {
+      canvas->DrawImageInt(*badges_.bottom_right,
+                           width - badges_.bottom_right->width(),
+                           height - badges_.bottom_right->height());
+    }
+  }
+
+  bool HasRepresentationAtAllScales() const override { return true; }
+
+ private:
+  NetworkIconImageSourceMd(const gfx::ImageSkia& icon, const Badges& badges)
+      : CanvasImageSource(GetSizeForBaseIconSize(icon.size()), false),
+        icon_(icon),
+        badges_(badges) {}
+  ~NetworkIconImageSourceMd() override {}
+
+  static gfx::Size GetSizeForBaseIconSize(const gfx::Size& base_icon_size) {
+    gfx::Size size = base_icon_size;
+    const int badge_offset = base_icon_size.width() == kTrayIconSide
+                                 ? kTrayIconBadgeOffset
+                                 : kMenuIconBadgeOffset;
+    size.Enlarge(badge_offset * 2, badge_offset * 2);
+    return size;
+  }
+
+  const gfx::ImageSkia icon_;
+  const Badges badges_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSourceMd);
+};
+
+// Depicts a given signal strength using arcs (e.g. for WiFi connections) or
+// bars (e.g. for cell connections).
+class SignalStrengthImageSource : public gfx::CanvasImageSource {
+ public:
+  SignalStrengthImageSource(ImageType image_type,
+                            IconType icon_type,
+                            int signal_strength)
       : CanvasImageSource(GetSizeForIconType(icon_type), false),
         image_type_(image_type),
         icon_type_(icon_type),
@@ -297,7 +326,7 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
     DCHECK_GE(signal_strength, 0);
     DCHECK_LT(signal_strength, kNumNetworkImages);
   }
-  ~NetworkIconImageSourceMd() override {}
+  ~SignalStrengthImageSource() override {}
 
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {
@@ -306,14 +335,19 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
     else
       DrawBars(canvas);
   }
+
   bool HasRepresentationAtAllScales() const override {
-    // This image source can handle any scale factor. TODO(estade): investigate
-    // why this doesn't seem to be respected. (Perhaps because we compose
-    // multiple images that don't have representations at all scales?)
     return true;
   }
 
  private:
+  static gfx::Size GetSizeForIconType(IconType icon_type) {
+    return icon_type == ICON_TYPE_TRAY
+               ? gfx::Size(kTrayIconSide, kTrayIconSide)
+               // TODO(estade): use kMenuIconSize instead of 20.
+               : gfx::Size(20, 20);
+  }
+
   void DrawArcs(gfx::Canvas* canvas) {
     gfx::RectF oval_bounds((gfx::Rect(size())));
     oval_bounds.Inset(gfx::Insets(kIconInset));
@@ -409,7 +443,7 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
   // See crbug.com/623987 and crbug.com/632827
   static constexpr int kBgAlpha = 0x4D;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSourceMd);
+  DISALLOW_COPY_AND_ASSIGN(SignalStrengthImageSource);
 };
 
 //------------------------------------------------------------------------------
@@ -440,9 +474,9 @@ ImageType ImageTypeForNetworkType(const std::string& type) {
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
                                 IconType icon_type,
                                 int index) {
-  if (md_icon_controller::UseMaterialDesignNetworkIcons()) {
+  if (UseMd()) {
     gfx::CanvasImageSource* source =
-        new NetworkIconImageSourceMd(image_type, icon_type, index);
+        new SignalStrengthImageSource(image_type, icon_type, index);
     return gfx::ImageSkia(source, source->size());
   }
 
@@ -496,12 +530,11 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
     images = dark ? s_arcs_images_dark : s_arcs_images_light;
   if (!images[index]) {
     // Lazily cache images.
+    // TODO(estade): should the alpha be applied in SignalStrengthImageSource?
     gfx::ImageSkia source = GetImageForIndex(image_type, icon_type, index + 1);
-    images[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateBlendedImage(
-            gfx::ImageSkia(new EmptyImageSource(source.size()), source.size()),
-            source,
-            kConnectingImageAlpha));
+    images[index] =
+        new gfx::ImageSkia(gfx::ImageSkiaOperations::CreateTransparentImage(
+            source, kConnectingImageAlpha));
   }
   return images[index];
 }
@@ -514,10 +547,7 @@ gfx::ImageSkia* ConnectingVpnImage(double animation) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
     s_vpn_images[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateBlendedImage(
-            gfx::ImageSkia(new EmptyImageSource(icon->size()), icon->size()),
-            *icon,
-            animation));
+        gfx::ImageSkiaOperations::CreateTransparentImage(*icon, animation));
   }
   return s_vpn_images[index];
 }
@@ -528,15 +558,10 @@ gfx::ImageSkia* ConnectingVpnBadge(double animation) {
   if (!s_vpn_badges[index]) {
     // Lazily cache images.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia* icon =
-        rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);  // For size
     gfx::ImageSkia* badge =
         rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     s_vpn_badges[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateBlendedImage(
-            gfx::ImageSkia(new EmptyImageSource(icon->size()), icon->size()),
-            *badge,
-            animation));
+        gfx::ImageSkiaOperations::CreateTransparentImage(*badge, animation));
   }
   return s_vpn_badges[index];
 }
@@ -595,14 +620,9 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   }
   if (id == kUnknownBadgeType)
-    return NULL;
+    return nullptr;
   else
     return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
-}
-
-const gfx::ImageSkia* BadgeForVPN(IconType icon_type) {
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
 }
 
 gfx::ImageSkia GetIcon(const NetworkState* network,
@@ -629,24 +649,24 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
 
 gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const NetworkState* connected_network = NULL;
+  const NetworkState* connected_network = nullptr;
   if (icon_type == ICON_TYPE_TRAY) {
     connected_network =
         handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
   }
   double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
 
+  gfx::ImageSkia icon;
+  Badges badges;
   if (connected_network) {
-    gfx::ImageSkia icon = GetImageForNetwork(connected_network, icon_type);
-    Badges badges;
+    icon = GetImageForNetwork(connected_network, icon_type);
     badges.bottom_left = ConnectingVpnBadge(animation);
-    return gfx::ImageSkia(
-        new NetworkIconImageSource(icon, badges), icon.size());
   } else {
-    gfx::ImageSkia* icon = ConnectingVpnImage(animation);
-    return gfx::ImageSkia(
-        new NetworkIconImageSource(*icon, Badges()), icon->size());
+    icon = *ConnectingVpnImage(animation);
   }
+  return UseMd() ? NetworkIconImageSourceMd::CreateImage(icon, badges)
+                 : gfx::ImageSkia(new NetworkIconImageSource(icon, badges),
+                                  icon.size());
 }
 
 gfx::ImageSkia GetConnectingImage(IconType icon_type,
@@ -659,8 +679,9 @@ gfx::ImageSkia GetConnectingImage(IconType icon_type,
 
   gfx::ImageSkia* icon = ConnectingWirelessImage(
       image_type, icon_type, animation);
-  return gfx::ImageSkia(
-      new NetworkIconImageSource(*icon, Badges()), icon->size());
+  return UseMd() ? NetworkIconImageSourceMd::CreateImage(*icon, Badges())
+                 : gfx::ImageSkia(new NetworkIconImageSource(*icon, Badges()),
+                                  icon->size());
 }
 
 }  // namespace
@@ -672,8 +693,8 @@ NetworkIconImpl::NetworkIconImpl(const std::string& path, IconType icon_type)
     : network_path_(path),
       icon_type_(icon_type),
       strength_index_(-1),
-      technology_badge_(NULL),
-      vpn_badge_(NULL),
+      technology_badge_(nullptr),
+      vpn_badge_(nullptr),
       behind_captive_portal_(false) {
   // Default image
   image_ = GetDisconnectedImage(icon_type, shill::kTypeWifi);
@@ -754,11 +775,12 @@ bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
 bool NetworkIconImpl::UpdateVPNBadge() {
   const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
       ConnectedNetworkByType(NetworkTypePattern::VPN());
-  if (vpn && vpn_badge_ == NULL) {
-    vpn_badge_ = BadgeForVPN(icon_type_);
+  if (vpn && vpn_badge_ == nullptr) {
+    vpn_badge_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     return true;
-  } else if (!vpn && vpn_badge_ != NULL) {
-    vpn_badge_ = NULL;
+  } else if (!vpn && vpn_badge_ != nullptr) {
+    vpn_badge_ = nullptr;
     return true;
   }
   return false;
@@ -815,8 +837,9 @@ void NetworkIconImpl::GenerateImage(const NetworkState* network) {
   gfx::ImageSkia icon = GetIcon(network, icon_type_, strength_index_);
   Badges badges;
   GetBadges(network, &badges);
-  image_ = gfx::ImageSkia(
-      new NetworkIconImageSource(icon, badges), icon.size());
+  image_ = UseMd() ? NetworkIconImageSourceMd::CreateImage(icon, badges)
+                   : gfx::ImageSkia(new NetworkIconImageSource(icon, badges),
+                                    icon.size());
 }
 
 namespace {
