@@ -464,7 +464,6 @@ android_library("chrome_test_java") {
     "//chrome/test/data/webapps/",
     "//chrome/test/media_router/resources/",
     "//content/test/data/android/geolocation.html",
-    "//content/test/data/android/media_permissions.html",
     "//content/test/data/media/getusermedia.html",
     "//content/test/data/media/session/",
     "//content/test/data/media/webrtc_test_utilities.js",

@@ -27,8 +27,8 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
 
     GroupedPermissionInfoBar(String message, String buttonOk, String buttonCancel,
             int[] permissionIcons, String[] permissionText, WindowAndroid windowAndroid,
-            int[] contentSettings, boolean showPersistenceToggle) {
-        super(0, null, message, null, buttonOk, buttonCancel, showPersistenceToggle);
+            int[] contentSettings) {
+        super(0, null, message, null, buttonOk, buttonCancel);
         mPermissionIcons = permissionIcons;
         mPermissionText = permissionText;
         mWindowAndroid = windowAndroid;
@@ -37,6 +37,7 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
 
     @Override
     public void createContent(InfoBarLayout layout) {
+        super.createContent(layout);
         InfoBarControlLayout control = layout.addControlLayout();
 
         if (mPermissionIcons.length == 1) {
@@ -48,9 +49,6 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
                         R.color.light_normal_color, mPermissionText[i], i, true);
             }
         }
-
-        // Call this last to ensure that if a persistence toggle is added, it's added last.
-        super.createContent(layout);
     }
 
     @Override
@@ -92,11 +90,6 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
         super.onButtonClicked(isPrimaryButton);
     }
 
-    @CalledByNative
-    protected boolean isPersistSwitchOn() {
-        return super.isPersistSwitchOn();
-    }
-
     /**
      * Create an infobar for a given set of permission requests.
      *
@@ -108,16 +101,13 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
      * @param permissionText String to display for each permission request.
      * @param windowAndroid The window which owns the infobar.
      * @param contentSettings The list of ContentSettingsTypes requested by the infobar.
-     * @param showPersistenceToggle Whether or not a toggle to opt-out of persisting a decision
-     *                              should be displayed.
      */
     @CalledByNative
     private static InfoBar create(String message, String buttonOk, String buttonCancel,
             int[] permissionIcons, String[] permissionText, WindowAndroid windowAndroid,
-            int[] contentSettings, boolean showPersistenceToggle) {
-        GroupedPermissionInfoBar infobar =
-                new GroupedPermissionInfoBar(message, buttonOk, buttonCancel, permissionIcons,
-                        permissionText, windowAndroid, contentSettings, showPersistenceToggle);
+            int[] contentSettings) {
+        GroupedPermissionInfoBar infobar = new GroupedPermissionInfoBar(message, buttonOk,
+                buttonCancel, permissionIcons, permissionText, windowAndroid, contentSettings);
         return infobar;
     }
 

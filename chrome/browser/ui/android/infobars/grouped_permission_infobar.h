@@ -26,8 +26,6 @@ class GroupedPermissionInfoBar : public ConfirmInfoBar {
   static bool Register(JNIEnv* env);
 
  private:
-  void ProcessButton(int action) override;
-
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
