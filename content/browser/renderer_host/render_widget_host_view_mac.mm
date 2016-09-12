@@ -867,7 +867,16 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
-  if (HasFocus()) {
+  // Set the monitor state based on the text input focus state.
+  const bool has_focus = HasFocus();
+  const TextInputState* state = text_input_manager->GetTextInputState();
+  bool need_monitor_composition =
+      has_focus && state && state->type != ui::TEXT_INPUT_TYPE_NONE;
+  Send(new InputMsg_RequestCompositionUpdate(
+      render_widget_host_->GetRoutingID(), false /* immediate request */,
+      need_monitor_composition));
+
+  if (has_focus) {
     SetTextInputActive(true);
 
     // Let AppKit cache the new input context to make IMEs happy.
@@ -895,6 +904,8 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     RenderWidgetHostViewBase* updated_view) {
   const TextInputManager::CompositionRangeInfo* info =
       GetTextInputManager()->GetCompositionRangeInfo();
+  if (!info)
+    return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
   [cocoa_view_ setMarkedRange:info->range.ToNSRange()];
