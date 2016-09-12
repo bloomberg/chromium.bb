@@ -432,7 +432,9 @@ bool CastRtpStream::IsHardwareH264EncodingSupported() {
 //
 // TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
 // http://crbug.com/596674
-#if !defined(OS_MACOSX)
+// TODO(emircan): Look into HW encoder initialization issues on Win.
+// https://crbug.com/636064
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
   const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
   for (const auto& vea_profile : vea_profiles) {
@@ -441,7 +443,7 @@ bool CastRtpStream::IsHardwareH264EncodingSupported() {
       return true;
     }
   }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX) && !defined(OS_WIN)
   return false;
 }
 
