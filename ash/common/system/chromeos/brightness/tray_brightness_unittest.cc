@@ -39,14 +39,17 @@ class TrayBrightnessTest : public test::AshTestBase {
 };
 
 // Tests that when the default view is initially created, that its
-// BrightnessView is created not visible.
+// BrightnessView is created not visible for non MD and visible for MD.
 TEST_F(TrayBrightnessTest, CreateDefaultView) {
   std::unique_ptr<views::View> tray(CreateDefaultView());
-  EXPECT_FALSE(tray->visible());
+  if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
+    EXPECT_TRUE(tray->visible());
+  else
+    EXPECT_FALSE(tray->visible());
 }
 
 // Tests the construction of the default view while MaximizeMode is active.
-// The BrightnessView should be visible.
+// The BrightnessView should be visible for both modes non MD and MD.
 TEST_F(TrayBrightnessTest, CreateDefaultViewDuringMaximizeMode) {
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
@@ -56,8 +59,9 @@ TEST_F(TrayBrightnessTest, CreateDefaultViewDuringMaximizeMode) {
       false);
 }
 
-// Tests that the enabling of MaximizeMode affects a previously created
-// BrightnessView, changing the visibility.
+// Tests that, when MD is not enabled, then the enabling of MaximizeMode
+// affects a previously created BrightnessView, changing the visibility; when MD
+// is enabled, then the BrightnessView is visible regardless of the mode change.
 TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDefaultView());
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
@@ -65,18 +69,21 @@ TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringMaximizeMode) {
   EXPECT_TRUE(tray->visible());
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
-  EXPECT_FALSE(tray->visible());
+  if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
+    EXPECT_TRUE(tray->visible());
+  else
+    EXPECT_FALSE(tray->visible());
 }
 
 // Tests that when the detailed view is initially created that its
-// BrightnessView is created as visible.
+// BrightnessView is created as visible for both MD and non MD modes.
 TEST_F(TrayBrightnessTest, CreateDetailedView) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
   EXPECT_TRUE(tray->visible());
 }
 
 // Tests that when the detailed view is created during MaximizeMode that its
-// BrightnessView is visible.
+// BrightnessView is visible for both MD and non MD modes.
 TEST_F(TrayBrightnessTest, CreateDetailedViewDuringMaximizeMode) {
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
@@ -87,7 +94,8 @@ TEST_F(TrayBrightnessTest, CreateDetailedViewDuringMaximizeMode) {
 }
 
 // Tests that the enabling of MaximizeMode has no affect on the visibility of a
-// previously created BrightnessView that belongs to a detailed view.
+// previously created BrightnessView that belongs to a detailed view for both MD
+// and non MD modes.
 TEST_F(TrayBrightnessTest, DetailedViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(

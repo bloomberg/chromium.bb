@@ -47,6 +47,9 @@ const double kMinBrightnessPercent = 5.0;
 
 }  // namespace
 
+// TODO(yiyix|tdanderson): Once Chrome OS material design is enabled by default,
+// BrightnessView does not need to be a ShellObserver to observe touch view mode
+// changes. See crbug.com/614453.
 class BrightnessView : public ShellObserver,
                        public views::View,
                        public views::SliderListener {
@@ -123,11 +126,15 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BRIGHTNESS));
   AddChildView(slider_);
 
-  if (is_default_view_) {
-    WmShell::Get()->AddShellObserver(this);
-    SetVisible(WmShell::Get()
-                   ->maximize_mode_controller()
-                   ->IsMaximizeModeWindowManagerEnabled());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    SetVisible(true);
+  } else {
+    if (is_default_view_) {
+      WmShell::Get()->AddShellObserver(this);
+      SetVisible(WmShell::Get()
+                     ->maximize_mode_controller()
+                     ->IsMaximizeModeWindowManagerEnabled());
+    }
   }
 }
 
@@ -143,11 +150,13 @@ void BrightnessView::SetBrightnessPercent(double percent) {
 }
 
 void BrightnessView::OnMaximizeModeStarted() {
-  SetVisible(true);
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    SetVisible(true);
 }
 
 void BrightnessView::OnMaximizeModeEnded() {
-  SetVisible(false);
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    SetVisible(false);
 }
 
 void BrightnessView::OnBoundsChanged(const gfx::Rect& old_bounds) {
