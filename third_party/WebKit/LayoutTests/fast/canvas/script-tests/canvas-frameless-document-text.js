@@ -1,6 +1,6 @@
 description("This verifies that the browser does not crash when drawing text to a canvas in a frame-less document.");
 
-// It is not clear frome the spec whether this is supposed to work and how.
+// It is not clear from the spec whether this is supposed to work and how.
 // Therefore, we do not validate the rendering results. We just make sure
 // this does not crash the browser.
 var canvas1 = document.createElement('canvas');

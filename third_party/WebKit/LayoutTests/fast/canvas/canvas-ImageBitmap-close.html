@@ -40,12 +40,12 @@ createImageBitmap(imageData).then(imageBitmap => {
         testPassed("Apply structured clone to an already closed bitmap is rejected as expected: " + ex);
     }
 
-    // Try to apply transfering to an already closed bitmap
+    // Try to apply transferring to an already closed bitmap
     try {
         worker.postMessage({data: bitmap}, [bitmap]);
-        testFailed("Apply transfering to an already closed bitmap passed unexpectedly");
+        testFailed("Apply transferring to an already closed bitmap passed unexpectedly");
     } catch(ex) {
-        testPassed("Apply transfering to an already closed bitmap is rejected as expected: " + ex);
+        testPassed("Apply transferring to an already closed bitmap is rejected as expected: " + ex);
     }
 
     // Calling createImageBitmap from a closed bitmap should be rejected
@@ -69,7 +69,7 @@ createImageBitmap(imageData).then(imageBitmap => {
         // Transfer the bitmap to a worker
         worker.postMessage({data: bitmap}, [bitmap]);
 
-        // After transfering, the bitmap is neutered.
+        // After transferring, the bitmap is neutered.
         shouldBe("bitmap.width", "0");
         shouldBe("bitmap.height", "0");
 

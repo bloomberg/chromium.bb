@@ -33,7 +33,7 @@ createImageBitmap(image).then(imageBitmap => {
 
   worker.postMessage({data: imageBitmap}, [imageBitmap]);
 
-  // ImageBitmap has been transfered to worker, main thread loses ownership
+  // ImageBitmap has been transferred to worker, main thread loses ownership
   // of it, so the width and height should be 0 now.
   bitmapWidth = imageBitmap.width;
   bitmapHeight = imageBitmap.height;

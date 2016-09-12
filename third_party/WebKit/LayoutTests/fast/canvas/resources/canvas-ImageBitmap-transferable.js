@@ -1,6 +1,6 @@
 self.onmessage = function(e) {
   // Worker does two things:
-  // 1. call createImageBitmap() from the ImageBitmap that is transfered
+  // 1. call createImageBitmap() from the ImageBitmap that is transferred
   // from the main thread, which verifies that createImageBitmap(ImageBitmap)
   // works on the worker thread.
   // 2. send the created ImageBitmap back to the main thread, the
