@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/previews/previews_experiments.h"
@@ -33,9 +33,12 @@
 
 namespace offline_pages {
 
-const char kLoadingOfflinePageHeader[] = "X-Chrome-offline";
-const char kLoadingOfflinePageReason[] = "reason=";
-const char kLoadingOfflinePageDueToNetError[] = "error";
+const char kOfflinePageHeader[] = "X-Chrome-offline";
+const char kOfflinePageHeaderReasonKey[] = "reason";
+const char kOfflinePageHeaderReasonValueDueToNetError[] = "error";
+const char kOfflinePageHeaderReasonValueFromDownload[] = "download";
+const char kOfflinePageHeaderPersistKey[] = "persist";
+const char kOfflinePageHeaderIDKey[] = "id";
 
 namespace {
 
@@ -113,27 +116,68 @@ class DefaultDelegate : public OfflinePageRequestJob::Delegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
 };
 
-// Returns true if custom offline header is present.
-// |reason| may be set with the reason to trigger the offline page loading.
-bool ParseOfflineHeader(net::URLRequest* request, std::string* reason) {
-  std::string value;
-  if (!request->extra_request_headers().GetHeader(kLoadingOfflinePageHeader,
-                                                  &value)) {
-    return false;
-  }
+// Used to parse the extra request header string that defines offline page
+// loading behaviors.
+class OfflinePageHeader {
+ public:
+  enum class Reason {
+    NET_ERROR,
+    DOWNLOAD,
+    UNKNOWN
+  };
 
-  // Currently we only support reason field.
-  base::StringTokenizer tokenizer(value, ", ");
+  explicit OfflinePageHeader(const std::string& header_string);
+  ~OfflinePageHeader() {}
+
+  bool successfully_parsed() const { return successfully_parsed_; }
+  bool need_to_persist() const { return need_to_persist_; }
+  Reason reason() const { return reason_; }
+  const std::string& id() const { return id_; }
+
+ private:
+  // True if the header is present and parsed successfully.
+  bool successfully_parsed_;
+  // Flag to indicate if the header should be persisted across session restore.
+  bool need_to_persist_;
+  // Describes the reason to load offline page.
+  Reason reason_;
+  // The offline ID of the page to load.
+  std::string id_;
+
+  DISALLOW_COPY_AND_ASSIGN(OfflinePageHeader);
+};
+
+OfflinePageHeader::OfflinePageHeader(const std::string& header_string)
+    : successfully_parsed_(false),
+      need_to_persist_(false),
+      reason_(Reason::UNKNOWN) {
+  // If the offline header is not present, treat it as not parsed successfully.
+  if (header_string.empty())
+    return;
+
+  base::StringTokenizer tokenizer(header_string, ", ");
   while (tokenizer.GetNext()) {
-    if (base::StartsWith(tokenizer.token(),
-                         kLoadingOfflinePageReason,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      *reason = tokenizer.token().substr(
-          arraysize(kLoadingOfflinePageReason) - 1);
-      break;
+    std::string pair = tokenizer.token();
+    std::size_t pos = pair.find('=');
+    if (pos == std::string::npos)
+      return;
+    std::string key = base::ToLowerASCII(pair.substr(0, pos));
+    std::string value = base::ToLowerASCII(pair.substr(pos + 1));
+    if (key == kOfflinePageHeaderPersistKey) {
+      need_to_persist_ = (value == "1");
+    } else if (key == kOfflinePageHeaderReasonKey) {
+      if (value == kOfflinePageHeaderReasonValueDueToNetError)
+        reason_ = Reason::NET_ERROR;
+      else if (value == kOfflinePageHeaderReasonValueFromDownload)
+        reason_ = Reason::DOWNLOAD;
+      else
+        reason_ = Reason::UNKNOWN;
+    } else if (key == kOfflinePageHeaderIDKey) {
+      id_ = value;
     }
   }
-  return true;
+
+  successfully_parsed_ = true;
 }
 
 bool IsNetworkProhibitivelySlow(net::URLRequest* request) {
@@ -158,13 +202,12 @@ bool IsNetworkProhibitivelySlow(net::URLRequest* request) {
 NetworkState GetNetworkState(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  std::string reason;
-  bool has_offline_header = ParseOfflineHeader(request, &reason);
-  if (has_offline_header &&
-      base::EqualsCaseInsensitiveASCII(reason,
-                                       kLoadingOfflinePageDueToNetError)) {
+  std::string offline_header_string;
+  request->extra_request_headers().GetHeader(
+      kOfflinePageHeader, &offline_header_string);
+  OfflinePageHeader offline_header(offline_header_string);
+  if (offline_header.reason() == OfflinePageHeader::Reason::NET_ERROR)
     return NetworkState::FLAKY_NETWORK;
-  }
 
   if (net::NetworkChangeNotifier::IsOffline())
     return NetworkState::DISCONNECTED_NETWORK;
@@ -172,10 +215,11 @@ NetworkState GetNetworkState(net::URLRequest* request) {
   if (IsNetworkProhibitivelySlow(request))
     return NetworkState::PROHIBITIVELY_SLOW_NETWORK;
 
-  // The presence of custom offline header will force to load an offline page
-  // even when network is connected.
-  return has_offline_header ? NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK
-                            : NetworkState::CONNECTED_NETWORK;
+  // If custom offline header is present, the offline page should be forced to
+  // load even when the network is connected.
+  return offline_header.successfully_parsed()
+             ? NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK
+             : NetworkState::CONNECTED_NETWORK;
 }
 
 OfflinePageRequestJob::AggregatedRequestResult
@@ -239,6 +283,17 @@ void ReportRequestResult(
     RequestResult request_result, NetworkState network_state) {
   OfflinePageRequestJob::ReportAggregatedRequestResult(
       RequestResultToAggregatedRequestResult(request_result, network_state));
+}
+
+OfflinePageModel* GetOfflinePageModel(
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::WebContents* web_contents = web_contents_getter.Run();
+  return web_contents ?
+      OfflinePageModelFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext()) :
+      nullptr;
 }
 
 void NotifyOfflineFilePathOnIO(base::WeakPtr<OfflinePageRequestJob> job,
@@ -314,7 +369,7 @@ RequestResult AccessOfflineFile(
 }
 
 // Handles the result of finding an offline page.
-void SelectPageForOnlineURLDone(
+void SucceededToFindOfflinePage(
     NetworkState network_state,
     base::WeakPtr<OfflinePageRequestJob> job,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -334,7 +389,7 @@ void SelectPageForOnlineURLDone(
   NotifyOfflineFilePathOnUI(job, offline_file_path);
 }
 
-void FailedToSelectOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
+void FailedToFindOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Proceed with empty file path in order to notify the OfflinePageRequestJob
@@ -344,44 +399,112 @@ void FailedToSelectOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
 }
 
 // Tries to find the offline page to serve for |online_url|.
-void SelectOfflinePage(
+void SelectPageForOnlineURL(
     const GURL& online_url,
     NetworkState network_state,
-    void* profile_id,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
     base::WeakPtr<OfflinePageRequestJob> job) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
-  // before using it.
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id)) {
-    FailedToSelectOfflinePage(job);
-    return;
-  }
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents){
     ReportRequestResult(RequestResult::NO_WEB_CONTENTS, network_state);
-    FailedToSelectOfflinePage(job);
+    FailedToFindOfflinePage(job);
     return;
   }
   int tab_id;
   if (!tab_id_getter.Run(web_contents, &tab_id)) {
     ReportRequestResult(RequestResult::NO_TAB_ID, network_state);
-    FailedToSelectOfflinePage(job);
+    FailedToFindOfflinePage(job);
     return;
   }
 
   OfflinePageUtils::SelectPageForOnlineURL(
-      profile,
+      web_contents->GetBrowserContext(),
       online_url,
       tab_id,
-      base::Bind(&SelectPageForOnlineURLDone,
+      base::Bind(&SucceededToFindOfflinePage,
                  network_state,
                  job,
                  web_contents_getter));
+}
+
+void FindPageWithOfflineIDDone(
+    const GURL& online_url,
+    NetworkState network_state,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
+    base::WeakPtr<OfflinePageRequestJob> job,
+    const OfflinePageItem* offline_page) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If the found offline page does not has same URL as the request URL, fall
+  // back to find the offline page based on the URL.
+  if (!offline_page || offline_page->url != online_url) {
+    SelectPageForOnlineURL(
+        online_url, network_state, web_contents_getter, tab_id_getter, job);
+    return;
+  }
+
+  SucceededToFindOfflinePage(
+      network_state, job, web_contents_getter, offline_page);
+}
+
+// Tries to find an offline page associated with |offline_id|.
+void FindPageWithOfflineID(
+    const GURL& online_url,
+    int64_t offline_id,
+    NetworkState network_state,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
+    base::WeakPtr<OfflinePageRequestJob> job) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  OfflinePageModel* offline_page_model =
+      GetOfflinePageModel(web_contents_getter);
+  if (!offline_page_model) {
+    FailedToFindOfflinePage(job);
+    return;
+  }
+
+  offline_page_model->GetPageByOfflineId(
+      offline_id,
+      base::Bind(&FindPageWithOfflineIDDone,
+                 online_url,
+                 network_state,
+                 web_contents_getter,
+                 tab_id_getter,
+                 job));
+}
+
+// Tries to find the offline page to serve for |online_url|.
+void SelectPage(
+    const GURL& online_url,
+    const std::string& offline_header_string,
+    NetworkState network_state,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
+    base::WeakPtr<OfflinePageRequestJob> job) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  OfflinePageHeader offline_header(offline_header_string);
+
+  // If an offline ID is present in the offline header, try to load that
+  // particular version.
+  if (!offline_header.id().empty()) {
+    // if the id string cannot be converted to int64 id, fall through to
+    // select page via online URL.
+    int64_t offline_id;
+    if (base::StringToInt64(offline_header.id(), &offline_id)) {
+      FindPageWithOfflineID(online_url, offline_id, network_state,
+                            web_contents_getter, tab_id_getter, job);
+      return;
+    }
+  }
+
+  SelectPageForOnlineURL(online_url, network_state, web_contents_getter,
+                         tab_id_getter, job);
 }
 
 }  // namespace
@@ -396,7 +519,6 @@ void OfflinePageRequestJob::ReportAggregatedRequestResult(
 
 // static
 OfflinePageRequestJob* OfflinePageRequestJob::Create(
-    void* profile_id,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   const content::ResourceRequestInfo* resource_request_info =
@@ -429,11 +551,10 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
     request->SetUserData(&kUserDataKey, new OfflinePageRequestInfo());
   }
 
-  return new OfflinePageRequestJob(profile_id, request, network_delegate);
+  return new OfflinePageRequestJob(request, network_delegate);
 }
 
 OfflinePageRequestJob::OfflinePageRequestJob(
-    void* profile_id,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestFileJob(
@@ -443,7 +564,6 @@ OfflinePageRequestJob::OfflinePageRequestJob(
           content::BrowserThread::GetBlockingPool()->
               GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
-      profile_id_(profile_id),
       delegate_(new DefaultDelegate()),
       weak_ptr_factory_(this) {
 }
@@ -464,13 +584,16 @@ void OfflinePageRequestJob::StartAsync() {
     return;
   }
 
+  std::string offline_header_string;
+  request()->extra_request_headers().GetHeader(kOfflinePageHeader,
+                                               &offline_header_string);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&SelectOfflinePage,
+      base::Bind(&SelectPage,
                  request()->url(),
+                 offline_header_string,
                  network_state,
-                 profile_id_,
                  delegate_->GetWebContentsGetter(request()),
                  delegate_->GetTabIdGetter(),
                  weak_ptr_factory_.GetWeakPtr()));

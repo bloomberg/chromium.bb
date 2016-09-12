@@ -76,7 +76,7 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // Commands from UI. Start async operations, result is observable
   // via Observer or directly by the user (as in 'open').
   void DeleteItem(const std::string& guid);
-  GURL GetOfflineUrlByGuid(const std::string& guid) const;
+  int64_t GetOfflineIdByGuid(const std::string& guid) const;
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override;

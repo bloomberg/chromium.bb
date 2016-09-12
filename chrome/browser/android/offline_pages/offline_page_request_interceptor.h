@@ -20,9 +20,7 @@ namespace offline_pages {
 // their offline information. Created one per profile.
 class OfflinePageRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  // |profile_id|, which identifies the profile, is passed as a void* to ensure
-  // it's not accidently used on the IO thread.
-  explicit OfflinePageRequestInterceptor(void* profile_id);
+  OfflinePageRequestInterceptor();
   ~OfflinePageRequestInterceptor() override;
 
  private:
@@ -30,9 +28,6 @@ class OfflinePageRequestInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
-
-  // The profile for processing offline pages.
-  void* const profile_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestInterceptor);
 };

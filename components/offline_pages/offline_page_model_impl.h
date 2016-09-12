@@ -24,6 +24,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
@@ -34,8 +35,8 @@
 
 class GURL;
 namespace base {
+class Clock;
 class SequencedTaskRunner;
-class Time;
 class TimeDelta;
 class TimeTicks;
 }  // namespace base
@@ -114,6 +115,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
+  void set_testing_clock(base::Clock* clock) { testing_clock_ = clock; }
 
   OfflinePageStorageManager* GetStorageManager();
 
@@ -267,6 +269,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   void RunWhenLoaded(const base::Closure& job);
 
+  base::Time GetCurrentTime() const;
+
   // Persistent store for offline page metadata.
   std::unique_ptr<OfflinePageMetadataStore> store_;
 
@@ -299,6 +303,10 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Logger to facilitate recording of events.
   OfflinePageModelEventLogger offline_event_logger_;
+
+  // Clock for getting time in testing code. The setter is responsible to reset
+  // it once it is not longer needed.
+  base::Clock* testing_clock_;
 
   base::WeakPtrFactory<OfflinePageModelImpl> weak_ptr_factory_;
 

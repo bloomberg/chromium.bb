@@ -113,10 +113,11 @@ void OfflinePageTabHelper::SelectPageForOnlineURLDone(
   // Reloads the page with extra header set to force loading the offline page.
   content::NavigationController::LoadURLParams load_params(offline_page->url);
   load_params.transition_type = ui::PAGE_TRANSITION_RELOAD;
-  load_params.extra_headers = kLoadingOfflinePageHeader;
+  load_params.extra_headers = kOfflinePageHeader;
   load_params.extra_headers += ":";
-  load_params.extra_headers += kLoadingOfflinePageReason;
-  load_params.extra_headers += kLoadingOfflinePageDueToNetError;
+  load_params.extra_headers += kOfflinePageHeaderReasonKey;
+  load_params.extra_headers += "=";
+  load_params.extra_headers += kOfflinePageHeaderReasonValueDueToNetError;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 

@@ -9,10 +9,7 @@
 
 namespace offline_pages {
 
-OfflinePageRequestInterceptor::OfflinePageRequestInterceptor(void* profile_id)
-    : profile_id_(profile_id) {
-  DCHECK(profile_id);
-}
+OfflinePageRequestInterceptor::OfflinePageRequestInterceptor() {}
 
 OfflinePageRequestInterceptor::~OfflinePageRequestInterceptor() {}
 
@@ -22,7 +19,7 @@ net::URLRequestJob* OfflinePageRequestInterceptor::MaybeInterceptRequest(
   // OfflinePageRequestJob::Create may return a nullptr if the interception
   // is not needed for some sort of requests, like non-main resource request,
   // non-http request and more.
-  return OfflinePageRequestJob::Create(profile_id_, request, network_delegate);
+  return OfflinePageRequestJob::Create(request, network_delegate);
 }
 
 }  // namespace offline_pages

@@ -19,13 +19,20 @@ namespace offline_pages {
 // Header that indicates that the offline page should be loaded if it exists
 // regardless current network conditions. Its value is a comma/space separated
 // name-value pair that may provide reason or define custom behavior.
-extern const char kLoadingOfflinePageHeader[];
-// The name used in name-value pair of kLoadingOfflinePageHeader to denote the
-// reason for loading offline page.
-extern const char kLoadingOfflinePageReason[];
+extern const char kOfflinePageHeader[];
+// The name used in name-value pair of kOfflinePageHeader to tell if the offline
+// info in this header should be persisted across session restore.
+extern const char kOfflinePageHeaderPersistKey[];
+// The name used in name-value pair of kOfflinePageHeader to denote the reason
+// for loading offline page.
+extern const char kOfflinePageHeaderReasonKey[];
 // Possible values in name-value pair that denote the reason for loading offline
 // page.
-extern const char kLoadingOfflinePageDueToNetError[];
+extern const char kOfflinePageHeaderReasonValueDueToNetError[];
+extern const char kOfflinePageHeaderReasonValueFromDownload[];
+// The name used in name-value pair of kOfflinePageHeader to denote the offline
+// ID of the offline page to load.
+extern const char kOfflinePageHeaderIDKey[];
 
 // A request job that serves content from offline file.
 class OfflinePageRequestJob : public net::URLRequestFileJob {
@@ -75,8 +82,7 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
 
   // Creates and returns a job to serve the offline page. Nullptr is returned if
   // offline page cannot or should not be served.
-  static OfflinePageRequestJob* Create(void* profile_id,
-                                       net::URLRequest* request,
+  static OfflinePageRequestJob* Create(net::URLRequest* request,
                                        net::NetworkDelegate* network_delegate);
 
   ~OfflinePageRequestJob() override;
@@ -90,17 +96,13 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
-  OfflinePageRequestJob(void* profile_id,
-                        net::URLRequest* request,
+  OfflinePageRequestJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate);
 
   void StartAsync();
 
   // Restarts the request job in order to fall back to the default handling.
   void FallbackToDefault();
-
-  // The profile for processing offline pages.
-  void* profile_id_;
 
   std::unique_ptr<Delegate> delegate_;
 

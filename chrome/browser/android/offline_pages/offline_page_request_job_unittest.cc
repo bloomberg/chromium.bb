@@ -12,7 +12,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_request_interceptor.h"
@@ -23,7 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/offline_pages/client_namespace_constants.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_model_impl.h"
 #include "components/previews/previews_experiments.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +48,9 @@ namespace {
 const GURL kTestUrl("http://test.org/page1");
 const GURL kTestUrl2("http://test.org/page2");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
+const ClientId kTestClientId2 = ClientId(kDownloadNamespace, "1a2b3c4d");
 const int kTestFileSize = 444;
+const int kTestFileSize2 = 450;
 const int kTabId = 1;
 const int kBufSize = 1024;
 const char kAggregatedRequestResultHistogram[] =
@@ -226,9 +230,11 @@ class ScopedEnableProbihibitivelySlowNetwork {
 class TestOfflinePageArchiver : public OfflinePageArchiver {
  public:
   TestOfflinePageArchiver(const GURL& url,
-                          const base::FilePath& archive_file_path)
+                          const base::FilePath& archive_file_path,
+                          int archive_file_size)
       : url_(url),
-        archive_file_path_(archive_file_path) {}
+        archive_file_path_(archive_file_path),
+        archive_file_size_(archive_file_size) {}
   ~TestOfflinePageArchiver() override {}
 
   void CreateArchive(const base::FilePath& archives_dir,
@@ -237,12 +243,14 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED,
-                   url_, archive_file_path_, base::string16(), kTestFileSize));
+                   url_, archive_file_path_, base::string16(),
+                   archive_file_size_));
   }
 
  private:
   const GURL url_;
   const base::FilePath archive_file_path_;
+  const int archive_file_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOfflinePageArchiver);
 };
@@ -255,6 +263,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   ~OfflinePageRequestJobTest() override {}
 
   void SetUp() override;
+  void TearDown() override;
 
   void SimulateHasNetworkConnectivity(bool has_connectivity);
   void RunUntilIdle();
@@ -276,6 +285,7 @@ class OfflinePageRequestJobTest : public testing::Test {
     return offline_page_tab_helper_;
   }
   int64_t offline_id() const { return offline_id_; }
+  int64_t offline_id2() const { return offline_id2_; }
   int bytes_read() const { return bytes_read_; }
 
  private:
@@ -291,11 +301,11 @@ class OfflinePageRequestJobTest : public testing::Test {
                             const std::string& method,
                             const std::string& extra_header_name,
                             const std::string& extra_header_value,
-                            content::ResourceType resource_type,
-                            void* profile_id);
+                            content::ResourceType resource_type);
   void ReadCompletedOnIO(int bytes_read);
 
   content::TestBrowserThreadBundle thread_bundle_;
+  base::SimpleTestClock clock_;
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<net::TestURLRequestContext> test_url_request_context_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
@@ -310,6 +320,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
   std::unique_ptr<net::URLRequest> request_;
   int64_t offline_id_;
+  int64_t offline_id2_;
   int bytes_read_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestJobTest);
@@ -320,6 +331,7 @@ OfflinePageRequestJobTest::OfflinePageRequestJobTest()
       network_change_notifier_(new TestNetworkChangeNotifier()),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
       offline_id_(-1),
+      offline_id2_(-1),
       bytes_read_(0)  {
 }
 
@@ -340,19 +352,45 @@ void OfflinePageRequestJobTest::SetUp() {
       profile(), BuildTestOfflinePageModel);
   RunUntilIdle();
 
-  // Use a test archive file.
-  base::FilePath archive_file_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &archive_file_path));
-  archive_file_path =
-      archive_file_path.AppendASCII("offline_pages").AppendASCII("test.mhtml");
-  std::unique_ptr<TestOfflinePageArchiver> archiver(
-      new TestOfflinePageArchiver(kTestUrl, archive_file_path));
-
-  // Save an offline page.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
+
+  // Hook up a test clock such that we can control the time when the offline
+  // page is created.
+  clock_.SetNow(base::Time::Now());
+  static_cast<OfflinePageModelImpl*>(model)->set_testing_clock(&clock_);
+
+  // All offline pages being created below will point to real archive files
+  // residing in test data directory.
+  base::FilePath test_data_dir_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path));
+
+  // Save an offline page.
+  base::FilePath archive_file_path =
+      test_data_dir_path.AppendASCII("offline_pages").AppendASCII("test.mhtml");
+  std::unique_ptr<TestOfflinePageArchiver> archiver(
+      new TestOfflinePageArchiver(kTestUrl, archive_file_path, kTestFileSize));
+
   model->SavePage(
       kTestUrl, kTestClientId, 0, std::move(archiver),
+      base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
+                base::Unretained(this)));
+  RunUntilIdle();
+
+  // Save another offline page associated with same online URL as above, but
+  // pointing to different archive file.
+  base::FilePath archive_file_path2 =
+      test_data_dir_path.AppendASCII("offline_pages").
+          AppendASCII("hello.mhtml");
+  std::unique_ptr<TestOfflinePageArchiver> archiver2(
+      new TestOfflinePageArchiver(
+          kTestUrl, archive_file_path2, kTestFileSize2));
+
+  // Make sure that the creation time of 2nd offline file is later.
+  clock_.Advance(base::TimeDelta::FromMinutes(10));
+
+  model->SavePage(
+      kTestUrl, kTestClientId2, 0, std::move(archiver2),
       base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
                 base::Unretained(this)));
   RunUntilIdle();
@@ -362,7 +400,7 @@ void OfflinePageRequestJobTest::SetUp() {
 
   // Install the interceptor.
   std::unique_ptr<net::URLRequestInterceptor> interceptor(
-      new OfflinePageRequestInterceptor(profile_));
+      new OfflinePageRequestInterceptor());
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
       new net::URLRequestJobFactoryImpl());
   intercepting_job_factory_.reset(new TestURLRequestInterceptingJobFactory(
@@ -372,6 +410,12 @@ void OfflinePageRequestJobTest::SetUp() {
 
   test_url_request_context_->set_job_factory(intercepting_job_factory_.get());
   test_url_request_context_->Init();
+}
+
+void OfflinePageRequestJobTest::TearDown() {
+  OfflinePageModel* model =
+      OfflinePageModelFactory::GetForBrowserContext(profile());
+  static_cast<OfflinePageModelImpl*>(model)->set_testing_clock(nullptr);
 }
 
 void OfflinePageRequestJobTest::SimulateHasNetworkConnectivity(
@@ -419,9 +463,12 @@ void OfflinePageRequestJobTest::ExpectAggregatedRequestResultHistogram(
 }
 
 void OfflinePageRequestJobTest::OnSavePageDone(SavePageResult result,
-                                                   int64_t offline_id) {
+                                               int64_t offline_id) {
   ASSERT_EQ(SavePageResult::SUCCESS, result);
-  offline_id_ = offline_id;
+  if (offline_id_ == -1)
+    offline_id_ = offline_id;
+  else if (offline_id2_ == -1)
+    offline_id2_ = offline_id;
 }
 
 void OfflinePageRequestJobTest::InterceptRequestOnIO(
@@ -429,8 +476,7 @@ void OfflinePageRequestJobTest::InterceptRequestOnIO(
     const std::string& method,
     const std::string& extra_header_name,
     const std::string& extra_header_value,
-    content::ResourceType resource_type,
-    void* profile_id) {
+    content::ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   request_ = CreateRequest(url, method, resource_type);
@@ -453,7 +499,7 @@ void OfflinePageRequestJobTest::InterceptRequest(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&OfflinePageRequestJobTest::InterceptRequestOnIO,
                  base::Unretained(this), url, method, extra_header_name,
-                 extra_header_value, resource_type, profile()));
+                 extra_header_value, resource_type));
 }
 
 void OfflinePageRequestJobTest::ReadCompletedOnIO(int bytes_read) {
@@ -522,9 +568,9 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnDisconnectedNetwork) {
   InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
-  EXPECT_EQ(kTestFileSize, bytes_read());
+  EXPECT_EQ(kTestFileSize2, bytes_read());
   ASSERT_TRUE(offline_page_tab_helper()->offline_page());
-  EXPECT_EQ(offline_id(),
+  EXPECT_EQ(offline_id2(),
             offline_page_tab_helper()->offline_page()->offline_id);
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
@@ -552,9 +598,9 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
   InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
-  EXPECT_EQ(kTestFileSize, bytes_read());
+  EXPECT_EQ(kTestFileSize2, bytes_read());
   ASSERT_TRUE(offline_page_tab_helper()->offline_page());
-  EXPECT_EQ(offline_id(),
+  EXPECT_EQ(offline_id2(),
             offline_page_tab_helper()->offline_page()->offline_id);
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
@@ -584,14 +630,15 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
   InterceptRequest(
       kTestUrl,
       "GET",
-      kLoadingOfflinePageHeader,
-      std::string(kLoadingOfflinePageReason) + kLoadingOfflinePageDueToNetError,
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=" +
+          kOfflinePageHeaderReasonValueDueToNetError,
       content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
-  EXPECT_EQ(kTestFileSize, bytes_read());
+  EXPECT_EQ(kTestFileSize2, bytes_read());
   ASSERT_TRUE(offline_page_tab_helper()->offline_page());
-  EXPECT_EQ(offline_id(),
+  EXPECT_EQ(offline_id2(),
             offline_page_tab_helper()->offline_page()->offline_id);
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
@@ -606,8 +653,9 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
   InterceptRequest(
       kTestUrl2,
       "GET",
-      kLoadingOfflinePageHeader,
-      std::string(kLoadingOfflinePageReason) + kLoadingOfflinePageDueToNetError,
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=" +
+          kOfflinePageHeaderReasonValueDueToNetError,
       content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
@@ -626,14 +674,14 @@ TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
   InterceptRequest(
       kTestUrl,
       "GET",
-      kLoadingOfflinePageHeader,
-      std::string(kLoadingOfflinePageReason) + "download",
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=download",
       content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
-  EXPECT_EQ(kTestFileSize, bytes_read());
+  EXPECT_EQ(kTestFileSize2, bytes_read());
   ASSERT_TRUE(offline_page_tab_helper()->offline_page());
-  EXPECT_EQ(offline_id(),
+  EXPECT_EQ(offline_id2(),
             offline_page_tab_helper()->offline_page()->offline_id);
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
@@ -648,8 +696,8 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
   InterceptRequest(
       kTestUrl2,
       "GET",
-      kLoadingOfflinePageHeader,
-      std::string(kLoadingOfflinePageReason) + "download",
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=download",
       content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
@@ -668,6 +716,50 @@ TEST_F(OfflinePageRequestJobTest, DoNotLoadOfflinePageOnConnectedNetwork) {
 
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->offline_page());
+}
+
+TEST_F(OfflinePageRequestJobTest, LoadOfflinePageByOfflineID) {
+  SimulateHasNetworkConnectivity(true);
+
+  InterceptRequest(
+      kTestUrl,
+      "GET",
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=download " +
+          kOfflinePageHeaderIDKey + "=" + base::Int64ToString(offline_id()),
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  base::RunLoop().Run();
+
+  EXPECT_EQ(kTestFileSize, bytes_read());
+  ASSERT_TRUE(offline_page_tab_helper()->offline_page());
+  EXPECT_EQ(offline_id(),
+            offline_page_tab_helper()->offline_page()->offline_id);
+  ExpectAggregatedRequestResultHistogram(
+      OfflinePageRequestJob::AggregatedRequestResult::
+          SHOW_OFFLINE_ON_CONNECTED_NETWORK);
+}
+
+TEST_F(OfflinePageRequestJobTest,
+       LoadOfflinePageByOfflineIDAndFallbackToOnlineURL) {
+  SimulateHasNetworkConnectivity(true);
+
+  // The offline page found with specific offline ID does not match the passed
+  // online URL. Should fall back to find the offline page based on the online
+  // URL.
+  InterceptRequest(
+      kTestUrl2,
+      "GET",
+      kOfflinePageHeader,
+      std::string(kOfflinePageHeaderReasonKey) + "=download " +
+          kOfflinePageHeaderIDKey + "=" + base::Int64ToString(offline_id()),
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  base::RunLoop().Run();
+
+  EXPECT_EQ(0, bytes_read());
+  EXPECT_FALSE(offline_page_tab_helper()->offline_page());
+  ExpectAggregatedRequestResultHistogram(
+      OfflinePageRequestJob::AggregatedRequestResult::
+          PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
 }
 
 }  // namespace offline_pages

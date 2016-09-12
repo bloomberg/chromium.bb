@@ -196,15 +196,12 @@ void OfflinePageDownloadBridge::DeleteItemByGuid(
   download_ui_adapter_->DeleteItem(guid);
 }
 
-ScopedJavaLocalRef<jstring> OfflinePageDownloadBridge::GetOfflineUrlByGuid(
+jlong OfflinePageDownloadBridge::GetOfflineIdByGuid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_guid) {
   std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  GURL url = download_ui_adapter_->GetOfflineUrlByGuid(guid);
-  if (!url.is_valid())
-    return ScopedJavaLocalRef<jstring>();
-  return ConvertUTF8ToJavaString(env, url.spec());
+  return download_ui_adapter_->GetOfflineIdByGuid(guid);
 }
 
 void OfflinePageDownloadBridge::StartDownload(

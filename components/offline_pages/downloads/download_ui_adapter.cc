@@ -130,14 +130,14 @@ void DownloadUIAdapter::DeleteItem(const std::string& guid) {
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-GURL DownloadUIAdapter::GetOfflineUrlByGuid(
+int64_t DownloadUIAdapter::GetOfflineIdByGuid(
     const std::string& guid) const {
   // TODO(dimich): when requests are also in the cache, filter them out.
-  // Requests do not yet have offline URL.
+  // Requests do not yet have offline ID.
   DownloadUIItems::const_iterator it = items_.find(guid);
   if (it != items_.end())
-    return it->second->offline_url;
-  return GURL();
+    return it->second->offline_id;
+  return 0;
 }
 
 // Note that several LoadCache calls may be issued before the async GetAllPages

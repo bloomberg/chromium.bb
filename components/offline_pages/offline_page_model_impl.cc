@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/archive_manager.h"
 #include "components/offline_pages/client_namespace_constants.h"
@@ -150,7 +151,8 @@ void ReportSavePageResultHistogramAfterSave(const ClientId& client_id,
   histogram->Add(static_cast<int>(result));
 }
 
-void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page) {
+void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page,
+                                  const base::Time& save_time) {
   // The histogram below is an expansion of the UMA_HISTOGRAM_TIMES
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
@@ -158,7 +160,7 @@ void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page) {
       AddHistogramSuffix(offline_page.client_id, "OfflinePages.SavePageTime"),
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
       50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(base::Time::Now() - offline_page.creation_time);
+  histogram->AddTime(save_time - offline_page.creation_time);
 
   // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
   // macro adapted to allow for a dynamically suffixed histogram name.
@@ -172,9 +174,9 @@ void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page) {
 
 void ReportPageHistogramsAfterDelete(
     const std::map<int64_t, OfflinePageItem>& offline_pages,
-    const std::vector<int64_t>& deleted_offline_ids) {
+    const std::vector<int64_t>& deleted_offline_ids,
+    const base::Time& delete_time) {
   const int max_minutes = base::TimeDelta::FromDays(365).InMinutes();
-  base::Time now = base::Time::Now();
   int64_t total_size = 0;
   for (int64_t offline_id : deleted_offline_ids) {
     auto iter = offline_pages.find(offline_id);
@@ -189,13 +191,13 @@ void ReportPageHistogramsAfterDelete(
     base::HistogramBase* histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(client_id, "OfflinePages.PageLifetime"),
         1, max_minutes, 100, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add((now - iter->second.creation_time).InMinutes());
+    histogram->Add((delete_time - iter->second.creation_time).InMinutes());
 
     histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(
             client_id, "OfflinePages.DeletePage.TimeSinceLastOpen"),
         1, max_minutes, 100, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add((now - iter->second.last_access_time).InMinutes());
+    histogram->Add((delete_time - iter->second.last_access_time).InMinutes());
 
     histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(
@@ -225,7 +227,8 @@ void ReportPageHistogramsAfterDelete(
   }
 }
 
-void ReportPageHistogramsAfterAccess(const OfflinePageItem& offline_page_item) {
+void ReportPageHistogramsAfterAccess(const OfflinePageItem& offline_page_item,
+                                     const base::Time& access_time) {
   // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
@@ -238,7 +241,7 @@ void ReportPageHistogramsAfterAccess(const OfflinePageItem& offline_page_item) {
         1, kMaxOpenedPageHistogramBucket.InMinutes(), 50,
         base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(
-      (base::Time::Now() - offline_page_item.last_access_time).InMinutes());
+      (access_time - offline_page_item.last_access_time).InMinutes());
 }
 
 }  // namespace
@@ -256,6 +259,7 @@ OfflinePageModelImpl::OfflinePageModelImpl(
       is_loaded_(false),
       policy_controller_(new ClientPolicyController()),
       archive_manager_(new ArchiveManager(archives_dir, task_runner)),
+      testing_clock_(nullptr),
       weak_ptr_factory_(this) {
   archive_manager_->EnsureArchivesDirCreated(
       base::Bind(&OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone,
@@ -303,7 +307,7 @@ void OfflinePageModelImpl::SavePage(
       archives_dir_, proposed_offline_id,
       base::Bind(&OfflinePageModelImpl::OnCreateArchiveDone,
                  weak_ptr_factory_.GetWeakPtr(), url, proposed_offline_id,
-                 client_id, base::Time::Now(), callback));
+                 client_id, GetCurrentTime(), callback));
   pending_archivers_.push_back(std::move(archiver));
 }
 
@@ -323,9 +327,9 @@ void OfflinePageModelImpl::MarkPageAccessedWhenLoadDone(int64_t offline_id) {
   // be updated upon the successful store operation.
   OfflinePageItem offline_page_item = iter->second;
 
-  ReportPageHistogramsAfterAccess(offline_page_item);
+  ReportPageHistogramsAfterAccess(offline_page_item, GetCurrentTime());
 
-  offline_page_item.last_access_time = base::Time::Now();
+  offline_page_item.last_access_time = GetCurrentTime();
   offline_page_item.access_count++;
 
   store_->AddOrUpdateOfflinePage(
@@ -736,7 +740,7 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   if (success) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
-    ReportPageHistogramAfterSave(offline_page);
+    ReportPageHistogramAfterSave(offline_page, GetCurrentTime());
     offline_event_logger_.RecordPageSaved(
         offline_page.client_id.name_space, offline_page.url.spec(),
         std::to_string(offline_page.offline_id));
@@ -896,7 +900,8 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback,
     bool success) {
-  ReportPageHistogramsAfterDelete(offline_pages_, offline_ids);
+  ReportPageHistogramsAfterDelete(
+      offline_pages_, offline_ids, GetCurrentTime());
 
   for (int64_t offline_id : offline_ids) {
     offline_event_logger_.RecordPageDeleted(std::to_string(offline_id));
@@ -945,7 +950,7 @@ void OfflinePageModelImpl::ExpirePagesMissingArchiveFile(
     return;
 
   ExpirePages(
-      ids_of_pages_missing_archive_file, base::Time::Now(),
+      ids_of_pages_missing_archive_file, GetCurrentTime(),
       base::Bind(&OfflinePageModelImpl::OnExpirePagesMissingArchiveFileDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  ids_of_pages_missing_archive_file));
@@ -1076,6 +1081,10 @@ void OfflinePageModelImpl::RunWhenLoaded(const base::Closure& task) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+}
+
+base::Time OfflinePageModelImpl::GetCurrentTime() const {
+  return testing_clock_ ? testing_clock_->Now() : base::Time::Now();
 }
 
 }  // namespace offline_pages

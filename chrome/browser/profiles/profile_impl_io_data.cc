@@ -546,8 +546,7 @@ void ProfileImplIOData::InitializeInternal(
   // Install the Offline Page Interceptor.
 #if defined(OS_ANDROID)
   request_interceptors.push_back(std::unique_ptr<net::URLRequestInterceptor>(
-      new offline_pages::OfflinePageRequestInterceptor(
-          profile_params->profile)));
+      new offline_pages::OfflinePageRequestInterceptor()));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network
