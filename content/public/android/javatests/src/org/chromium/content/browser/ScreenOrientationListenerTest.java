@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -176,9 +177,11 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         super.tearDown();
     }
 
-    @MediumTest
-    @Feature({"ScreenOrientation"})
-    @RetryOnFailure
+    //@MediumTest
+    //@Feature({"ScreenOrientation"})
+    //@RetryOnFailure
+    // Disabled due to flakiness. See crbug.com/645609.
+    @DisabledTest
     public void testVariousOrientationChanges() throws Exception {
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertTrue(checkOrientationForLock(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
