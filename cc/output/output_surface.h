@@ -86,12 +86,77 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
     bool delegated_sync_points_required;
   };
 
-  const Capabilities& capabilities() const {
-    return capabilities_;
+  // ============== DISPLAY COMPOSITOR ONLY =======================
+
+  virtual void EnsureBackbuffer();
+  virtual void DiscardBackbuffer();
+
+  const gfx::ColorSpace& device_color_space() const {
+    return device_color_space_;
   }
 
-  virtual bool HasExternalStencilTest() const;
+  // Called by subclasses after receiving a response from the gpu process to a
+  // query about whether a given set of textures is still in use by the OS
+  // compositor.
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses);
+
+  // Get the class capable of informing cc of hardware overlay capability.
+  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const;
+
+  // Returns true if a main image overlay plane should be scheduled.
+  virtual bool IsDisplayedAsOverlayPlane() const;
+
+  // Get the texture for the main image's overlay.
+  virtual unsigned GetOverlayTextureId() const;
+
+  // If this returns true, then the surface will not attempt to draw.
+  virtual bool SurfaceIsSuspendForRecycle() const;
+
+  virtual void Reshape(const gfx::Size& size,
+                       float scale_factor,
+                       const gfx::ColorSpace& color_space,
+                       bool alpha);
+  gfx::Size SurfaceSize() const { return surface_size_; }
+
   virtual void ApplyExternalStencil();
+  virtual bool HasExternalStencilTest() const;
+
+  // ============== LAYER TREE COMPOSITOR ONLY ===================
+
+  // If supported, this causes a ReclaimResources for all resources that are
+  // currently in use.
+  virtual void ForceReclaimResources() {}
+
+  virtual void BindFramebuffer();
+  // Gives the GL internal format that should be used for calling CopyTexImage2D
+  // when the framebuffer is bound via BindFramebuffer().
+  virtual uint32_t GetFramebufferCopyTextureFormat() = 0;
+
+  // Support for a pull-model where draws are requested by the output surface.
+  //
+  // OutputSurface::Invalidate is called by the compositor to notify that
+  // there's new content.
+  virtual void Invalidate() {}
+
+  // ============== BOTH TYPES OF COMPOSITOR ======================
+
+  // Called by the compositor on the compositor thread. This is a place where
+  // thread-specific data for the output surface can be initialized, since from
+  // this point to when DetachFromClient() is called the output surface will
+  // only be used on the compositor thread.
+  // The caller should call DetachFromClient() on the same thread before
+  // destroying the OutputSurface, even if this fails. And BindToClient should
+  // not be called twice for a given OutputSurface.
+  virtual bool BindToClient(OutputSurfaceClient* client);
+
+  // Called by the compositor on the compositor thread. This is a place where
+  // thread-specific data for the output surface can be uninitialized.
+  virtual void DetachFromClient();
+
+  bool HasClient() { return !!client_; }
+
+  const Capabilities& capabilities() const { return capabilities_; }
 
   // Obtain the 3d context or the software device associated with this output
   // surface. Either of these may return a null pointer, but not both.
@@ -108,41 +173,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
     return software_device_.get();
   }
 
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be initialized, since from
-  // this point to when DetachFromClient() is called the output surface will
-  // only be used on the compositor thread.
-  // The caller should call DetachFromClient() on the same thread before
-  // destroying the OutputSurface, even if this fails. And BindToClient should
-  // not be called twice for a given OutputSurface.
-  virtual bool BindToClient(OutputSurfaceClient* client);
-
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be uninitialized.
-  virtual void DetachFromClient();
-
-  virtual void EnsureBackbuffer();
-  virtual void DiscardBackbuffer();
-
-  virtual void Reshape(const gfx::Size& size,
-                       float scale_factor,
-                       const gfx::ColorSpace& color_space,
-                       bool alpha);
-  gfx::Size SurfaceSize() const { return surface_size_; }
-  float device_scale_factor() const { return device_scale_factor_; }
-  const gfx::ColorSpace& device_color_space() const {
-    return device_color_space_;
-  }
-
-  // If supported, this causes a ReclaimResources for all resources that are
-  // currently in use.
-  virtual void ForceReclaimResources() {}
-
-  virtual void BindFramebuffer();
-  // Gives the GL internal format that should be used for calling CopyTexImage2D
-  // when the framebuffer is bound via BindFramebuffer().
-  virtual uint32_t GetFramebufferCopyTextureFormat() = 0;
-
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame
   // itself). For successful swaps, the implementation must call
@@ -150,40 +180,34 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   virtual void SwapBuffers(CompositorFrame frame) = 0;
   virtual void OnSwapBuffersComplete();
 
-  // Called by subclasses after receiving a response from the gpu process to a
-  // query about whether a given set of textures is still in use by the OS
-  // compositor.
-  void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses);
-
-  bool HasClient() { return !!client_; }
-
-  // Get the class capable of informing cc of hardware overlay capability.
-  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const;
-
-  // Returns true if a main image overlay plane should be scheduled.
-  virtual bool IsDisplayedAsOverlayPlane() const;
-
-  // Get the texture for the main image's overlay.
-  virtual unsigned GetOverlayTextureId() const;
-
+  // This is how LayerTreeHostImpl hears about context loss when the Display
+  // is the one listening for context loss. Also used internally for the
+  // context provider to inform the LayerTreeHostImpl or Display about loss.
+  // It would become display-compositor-only when LayerTreeHostImpl receives
+  // its contexts independently from the "OutputSurface".
+  // TODO(danakj): Be private. Subclasses should just call the client directly.
   virtual void DidLoseOutputSurface();
-
-  // Support for a pull-model where draws are requested by the output surface.
-  //
-  // OutputSurface::Invalidate is called by the compositor to notify that
-  // there's new content.
-  virtual void Invalidate() {}
-
-  // If this returns true, then the surface will not attempt to draw.
-  virtual bool SurfaceIsSuspendForRecycle() const;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
+  // ============== DISPLAY COMPOSITOR ONLY =======================
+
+  // Used by WebView for the display compositor only.
+  // TODO(danakj): This should go away, store the state in the subclass that
+  // uses this.
+  void SetExternalStencilTest(bool enabled);
+
+  // ============== BOTH TYPES OF COMPOSITOR ======================
+
+  // This is used by both display and delegating implementations.
   void PostSwapBuffersComplete();
+  // TODO(danakj): Delete this. Subclasses should just call the client directly.
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
+  // TODO(danakj): Delete this. Subclasses should just call the client directly.
+  void ReclaimResources(const ReturnedResourceArray& resources);
 
   OutputSurfaceClient* client_ = nullptr;
 
@@ -199,14 +223,10 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   gfx::ColorSpace color_space_;
   base::ThreadChecker client_thread_checker_;
 
-  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
-  void ReclaimResources(const ReturnedResourceArray& resources);
-  void SetExternalStencilTest(bool enabled);
+ private:
   void DetachFromClientInternal();
 
- private:
   bool external_stencil_test_enabled_ = false;
-
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
