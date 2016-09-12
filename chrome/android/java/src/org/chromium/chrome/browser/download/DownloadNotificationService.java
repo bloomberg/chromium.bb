@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.app.ActivityManager;
 import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -95,6 +96,14 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ActivityManager am = (ActivityManager) mContext.getSystemService(
+                    Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            // In multi-window case, there could be multiple tasks. Only swiping away the last
+            // activity should be pause the notification.
+            if (tasks.size() > 0) return;
+        }
         mStopPostingProgressNotifications = true;
         // This funcion is called when Chrome is swiped away from the recent apps
         // drawer. So it doesn't catch all scenarios that chrome can get killed.
