@@ -91,37 +91,27 @@ mojom::FrameDecorationValuesPtr CreateDefaultFrameDecorationValues() {
 
 class UserDisplayManagerTest : public testing::Test {
  public:
-  UserDisplayManagerTest()
-      : cursor_id_(0), platform_display_factory_(&cursor_id_) {}
+  UserDisplayManagerTest() {}
   ~UserDisplayManagerTest() override {}
 
- protected:
-  // testing::Test:
-  void SetUp() override {
-    PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    window_server_.reset(new WindowServer(&window_server_delegate_));
-    window_server_delegate_.set_window_server(window_server_.get());
+  WindowServer* window_server() { return ws_test_helper_.window_server(); }
+  TestWindowServerDelegate* window_server_delegate() {
+    return ws_test_helper_.window_server_delegate();
   }
 
- protected:
-  int32_t cursor_id_;
-  TestPlatformDisplayFactory platform_display_factory_;
-  TestWindowServerDelegate window_server_delegate_;
-  std::unique_ptr<WindowServer> window_server_;
-  base::MessageLoop message_loop_;
-
  private:
+  WindowServerTestHelper ws_test_helper_;
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTest);
 };
 
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
-  window_server_delegate_.set_num_displays_to_create(1);
+  window_server_delegate()->set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = window_server_->display_manager();
+  DisplayManager* display_manager = window_server()->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
-      window_server_->window_manager_window_tree_factory_set())
+      window_server()->window_manager_window_tree_factory_set())
       .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
@@ -134,7 +124,8 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 
   // Set the frame decoration values, which should trigger sending immediately.
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server_->window_manager_window_tree_factory_set()
+  window_server()
+      ->window_manager_window_tree_factory_set()
       ->GetWindowManagerStateForUser(kUserId1)
       ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
   EXPECT_EQ("OnDisplays 1",
@@ -144,19 +135,20 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
-  window_server_delegate_.set_num_displays_to_create(1);
+  window_server_delegate()->set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = window_server_->display_manager();
+  DisplayManager* display_manager = window_server()->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
-      window_server_->window_manager_window_tree_factory_set())
+      window_server()->window_manager_window_tree_factory_set())
       .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server_->window_manager_window_tree_factory_set()
+  window_server()
+      ->window_manager_window_tree_factory_set()
       ->GetWindowManagerStateForUser(kUserId1)
       ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
 
@@ -169,19 +161,20 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
-  window_server_delegate_.set_num_displays_to_create(1);
+  window_server_delegate()->set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = window_server_->display_manager();
+  DisplayManager* display_manager = window_server()->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
-      window_server_->window_manager_window_tree_factory_set())
+      window_server()->window_manager_window_tree_factory_set())
       .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server_->window_manager_window_tree_factory_set()
+  window_server()
+      ->window_manager_window_tree_factory_set()
       ->GetWindowManagerStateForUser(kUserId1)
       ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
   UserDisplayManagerTestApi(user_display_manager1)
@@ -190,8 +183,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Add another display.
-  Display* display2 =
-      new Display(window_server_.get(), PlatformDisplayInitParams());
+  Display* display2 = new Display(window_server(), PlatformDisplayInitParams());
   display2->Init(nullptr);
 
   // Observer should be notified immediately as frame decorations were set.
@@ -208,13 +200,13 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 }
 
 TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
-  window_server_delegate_.set_num_displays_to_create(1);
+  window_server_delegate()->set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = window_server_->display_manager();
+  DisplayManager* display_manager = window_server()->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
-      window_server_->window_manager_window_tree_factory_set())
+      window_server()->window_manager_window_tree_factory_set())
       .Add(kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);

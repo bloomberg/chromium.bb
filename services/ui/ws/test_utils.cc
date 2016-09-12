@@ -418,24 +418,33 @@ bool TestWindowServerDelegate::IsTestConfig() const {
   return true;
 }
 
+// WindowServerTestHelper  ---------------------------------------------------
+
+WindowServerTestHelper::WindowServerTestHelper()
+    : cursor_id_(0), platform_display_factory_(&cursor_id_) {
+  PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
+  window_server_.reset(new WindowServer(&window_server_delegate_));
+  window_server_delegate_.set_window_server(window_server_.get());
+}
+
+WindowServerTestHelper::~WindowServerTestHelper() {
+  // Destroy |window_server_| while the message-loop is still alive.
+  window_server_.reset();
+}
+
 // WindowEventTargetingHelper ------------------------------------------------
 
 WindowEventTargetingHelper::WindowEventTargetingHelper()
     : wm_client_(nullptr),
-      cursor_id_(0),
-      platform_display_factory_(&cursor_id_),
       display_binding_(nullptr),
       display_(nullptr),
-      surfaces_state_(new SurfacesState()),
-      window_server_(nullptr) {
-  PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-  window_server_.reset(new WindowServer(&window_server_delegate_));
+      surfaces_state_(new SurfacesState()) {
   PlatformDisplayInitParams display_init_params;
   display_init_params.surfaces_state = surfaces_state_;
-  display_ = new Display(window_server_.get(), display_init_params);
-  display_binding_ = new TestDisplayBinding(window_server_.get());
+  display_ = new Display(window_server(), display_init_params);
+  display_binding_ = new TestDisplayBinding(window_server());
   display_->Init(base::WrapUnique(display_binding_));
-  wm_client_ = window_server_delegate_.last_client();
+  wm_client_ = ws_test_helper_.window_server_delegate()->last_client();
   wm_client_->tracker()->changes()->clear();
 }
 
@@ -444,7 +453,7 @@ WindowEventTargetingHelper::~WindowEventTargetingHelper() {}
 ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
     const gfx::Rect& root_window_bounds,
     const gfx::Rect& window_bounds) {
-  WindowTree* wm_tree = window_server_->GetTreeWithId(1);
+  WindowTree* wm_tree = window_server()->GetTreeWithId(1);
   const ClientWindowId embed_window_id(
       WindowIdToTransportId(WindowId(wm_tree->id(), 1)));
   EXPECT_TRUE(wm_tree->NewWindow(embed_window_id, ServerWindow::Properties()));
@@ -457,7 +466,7 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   const uint32_t embed_flags = 0;
   wm_tree->Embed(embed_window_id, std::move(client), embed_flags);
   ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);
-  WindowTree* tree1 = window_server_->GetTreeWithRoot(embed_window);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   EXPECT_NE(nullptr, tree1);
   EXPECT_NE(tree1, wm_tree);
   WindowTreeTestApi(tree1).set_user_id(wm_tree->user_id());
@@ -473,7 +482,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
     TestWindowTreeClient** out_client,
     WindowTree** window_tree,
     ServerWindow** window) {
-  WindowTree* tree1 = window_server_->GetTreeWithRoot(embed_window);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
   const ClientWindowId child1_id(
       WindowIdToTransportId(WindowId(tree1->id(), 1)));
@@ -489,7 +498,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
   EnableHitTest(child1);
 
   TestWindowTreeClient* embed_client =
-      window_server_delegate_.last_client();
+      ws_test_helper_.window_server_delegate()->last_client();
   embed_client->tracker()->changes()->clear();
   wm_client_->tracker()->changes()->clear();
 
@@ -500,7 +509,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
 
 void WindowEventTargetingHelper::SetTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  message_loop_.SetTaskRunner(task_runner);
+  ws_test_helper_.message_loop()->SetTaskRunner(task_runner);
 }
 
 // ----------------------------------------------------------------------------

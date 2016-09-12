@@ -505,6 +505,33 @@ class TestWindowServerDelegate : public WindowServerDelegate {
 
 // -----------------------------------------------------------------------------
 
+// Helper class which creates and sets up the necessary objects for tests that
+// use the WindowServer.
+class WindowServerTestHelper {
+ public:
+  WindowServerTestHelper();
+  ~WindowServerTestHelper();
+
+  WindowServer* window_server() { return window_server_.get(); }
+  int32_t cursor_id() const { return cursor_id_; }
+
+  TestWindowServerDelegate* window_server_delegate() {
+    return &window_server_delegate_;
+  }
+  base::MessageLoop* message_loop() { return &message_loop_; }
+
+ private:
+  int32_t cursor_id_;
+  TestPlatformDisplayFactory platform_display_factory_;
+  TestWindowServerDelegate window_server_delegate_;
+  std::unique_ptr<WindowServer> window_server_;
+  base::MessageLoop message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowServerTestHelper);
+};
+
+// -----------------------------------------------------------------------------
+
 // Helper class which owns all of the necessary objects to test event targeting
 // of ServerWindow objects.
 class WindowEventTargetingHelper {
@@ -528,32 +555,27 @@ class WindowEventTargetingHelper {
   // Sets the task runner for |message_loop_|
   void SetTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  int32_t cursor_id() { return cursor_id_; }
+  int32_t cursor_id() const { return ws_test_helper_.cursor_id(); }
   Display* display() { return display_; }
   TestWindowTreeBinding* last_binding() {
-    return window_server_delegate_.last_binding();
+    return ws_test_helper_.window_server_delegate()->last_binding();
   }
   TestWindowTreeClient* last_window_tree_client() {
-    return window_server_delegate_.last_client();
+    return ws_test_helper_.window_server_delegate()->last_client();
   }
   TestWindowTreeClient* wm_client() { return wm_client_; }
-  WindowServer* window_server() { return window_server_.get(); }
+  WindowServer* window_server() { return ws_test_helper_.window_server(); }
 
  private:
+  WindowServerTestHelper ws_test_helper_;
   // TestWindowTreeClient that is used for the WM client. Owned by
   // |window_server_delegate_|
   TestWindowTreeClient* wm_client_;
-  int32_t cursor_id_;
-  TestPlatformDisplayFactory platform_display_factory_;
-  TestWindowServerDelegate window_server_delegate_;
   // Owned by WindowServer
   TestDisplayBinding* display_binding_;
   // Owned by WindowServer's DisplayManager.
   Display* display_;
   scoped_refptr<SurfacesState> surfaces_state_;
-  std::unique_ptr<WindowServer> window_server_;
-  // Needed to Bind to |wm_client_|
-  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
 };
