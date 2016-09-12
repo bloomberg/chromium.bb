@@ -1914,6 +1914,18 @@ fuzzer_test("mhtml_parser_fuzzer") {
   ]
 }
 
+# Fuzzer for blink::WebIconSizesParser.
+fuzzer_test("web_icon_sizes_fuzzer") {
+  sources = [
+    "WebIconSizesFuzzer.cpp",
+  ]
+  deps = [
+    ":blink_fuzzer_test_support",
+    ":platform",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/web_icon_sizes.dict"
+}
+
 # NOTE: These are legacy unit tests and tests that require a Platform
 # object. Do not add more unless the test requires a Platform object.
 # These tests are a part of the webkit_unit_tests binary.
