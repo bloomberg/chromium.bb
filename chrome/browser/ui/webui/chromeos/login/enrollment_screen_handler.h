@@ -86,6 +86,10 @@ class EnrollmentScreenHandler
   // Display the given i18n resource as error message.
   void ShowError(int message_id, bool retry);
 
+  // Display the given i18n resource as an error message, with the $1
+  // substitution parameter replaced with the device's product name.
+  void ShowErrorForDevice(int message_id, bool retry);
+
   // Display the given string as error message.
   void ShowErrorMessage(const std::string& message, bool retry);
 

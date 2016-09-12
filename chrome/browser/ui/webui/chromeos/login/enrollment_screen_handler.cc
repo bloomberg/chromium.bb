@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -188,7 +189,8 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
 
 void EnrollmentScreenHandler::ShowAttestationBasedEnrollmentSuccessScreen(
     const std::string& enterprise_domain) {
-  CallJS("showAttestationBasedEnrollmentSuccess", enterprise_domain);
+  CallJS("showAttestationBasedEnrollmentSuccess", ash::GetChromeOSDeviceName(),
+         enterprise_domain);
 }
 
 void EnrollmentScreenHandler::ShowAuthError(
@@ -341,7 +343,7 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       NOTREACHED();
       return;
     case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR, false);
+      ShowErrorForDevice(IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR, false);
       return;
   }
   NOTREACHED();
@@ -364,8 +366,8 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
   builder->Add("oauthEnrollNextBtn", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
   builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
-  builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
-  builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
+  builder->AddF("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS,
+                ash::GetChromeOSDeviceName());
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplainAttributeLink",
@@ -376,6 +378,8 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL);
   builder->Add("oauthEnrollLocationLabel",
                IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL);
+  // Do not use AddF for this string as it will be rendered by the JS code.
+  builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
@@ -535,6 +539,12 @@ void EnrollmentScreenHandler::ShowStep(const char* step) {
 
 void EnrollmentScreenHandler::ShowError(int message_id, bool retry) {
   ShowErrorMessage(l10n_util::GetStringUTF8(message_id), retry);
+}
+
+void EnrollmentScreenHandler::ShowErrorForDevice(int message_id, bool retry) {
+  ShowErrorMessage(
+      l10n_util::GetStringFUTF8(message_id, ash::GetChromeOSDeviceName()),
+      retry);
 }
 
 void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,

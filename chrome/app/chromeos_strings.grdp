@@ -5924,7 +5924,7 @@ All users must sign out to continue.
     Connection was lost
   </message>
 
-  <!-- Strings for the le OAuth-based enterprise enrollment page -->
+  <!-- Strings for the enterprise enrollment page -->
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
     Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
   </message>
@@ -5996,7 +5996,7 @@ All users must sign out to continue.
     This device cannot be enrolled to the domain your account belongs to because the device is marked for management by a different domain.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR" desc="Error message shown when successfully enrolled, but the device attribute update has failed.">
-  Your device has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED" desc="Error message shown when a registration certificate could not be obtained.">
     A registration certificate could not be obtained.
@@ -6017,11 +6017,10 @@ All users must sign out to continue.
     Skip
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
-    Your device has successfully been enrolled for enterprise management.
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS" desc="Success message to be shown once attestation-based enterprise enrollment completes.">
-    Your device has successfully been enrolled for enterprise management by
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
     <ph name="LINE_BREAK_AND_EMPTY_LINE">&lt;br&gt;&lt;br&gt;</ph>
     If this is unexpected, please contact support.
   </message>

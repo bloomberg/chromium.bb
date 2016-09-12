@@ -256,9 +256,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Shows a success card for attestation-based enrollment that shows
      * which domain the device was enrolled into.
      */
-    showAttestationBasedEnrollmentSuccess: function(enterpriseDomain) {
-      $('oauth-enroll-abe-success-card').innerHTML =
-          loadTimeData.getStringF('oauthEnrollAbeSuccess', enterpriseDomain);
+    showAttestationBasedEnrollmentSuccess: function(device, enterpriseDomain) {
+      $('oauth-enroll-abe-success-card').innerHTML = loadTimeData.getStringF(
+          'oauthEnrollAbeSuccess', device, enterpriseDomain);
       this.showStep(STEP_ABE_SUCCESS);
     },
 
