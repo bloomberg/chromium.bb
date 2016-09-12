@@ -20,6 +20,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,7 +34,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -165,7 +165,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     : web_contents_(web_contents),
       request_(request),
       callback_(callback),
-      persist_permission_changes_(true) {
+      persist_(true) {
   if (request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
     MediaPermissionRequestLogger::LogRequest(
         web_contents, request.render_process_id, request.render_frame_id,
@@ -257,9 +257,18 @@ base::string16 MediaStreamDevicesController::GetMessageText() const {
           GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
+content::PermissionType
+MediaStreamDevicesController::GetPermissionTypeForContentSettingsType(
+    ContentSettingsType content_type) const {
+  DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+         content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  content::PermissionType permission = content::PermissionType::NUM;
+  CHECK(PermissionUtil::GetPermissionType(content_type, &permission));
+  return permission;
+}
+
 void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
-  base::AutoReset<bool> persist_permissions(
-      &persist_permission_changes_, false);
+  base::AutoReset<bool> persist_permissions(&persist_, false);
   // TODO(tsergeant): Determine whether it is appropriate to record permission
   // action metrics here, as this is a different sort of user action.
   RunCallback(CONTENT_SETTING_BLOCK,
@@ -462,9 +471,9 @@ void MediaStreamDevicesController::RunCallback(
 
   // If the kill switch is on we don't update the tab context or persist the
   // setting.
-  if (persist_permission_changes_ &&
-      denial_reason != content::MEDIA_DEVICE_KILL_SWITCH_ON) {
-    StorePermission(audio_setting, video_setting);
+  if (denial_reason != content::MEDIA_DEVICE_KILL_SWITCH_ON) {
+    if (persist())
+      StorePermission(audio_setting, video_setting);
     UpdateTabSpecificContentSettings(audio_setting, video_setting);
   }
 
@@ -579,14 +588,8 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_BLOCK;
   }
 
-  content::PermissionType permission_type;
-  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-    permission_type = content::PermissionType::AUDIO_CAPTURE;
-  } else {
-    DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-    permission_type = content::PermissionType::VIDEO_CAPTURE;
-  }
-
+  content::PermissionType permission_type =
+      GetPermissionTypeForContentSettingsType(content_type);
   if (ContentTypeIsRequested(permission_type, request)) {
     DCHECK(content::IsOriginSecure(request_.security_origin) ||
            request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);

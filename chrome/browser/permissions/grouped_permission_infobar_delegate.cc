@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
@@ -13,13 +14,18 @@ GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const std::vector<ContentSettingsType>& types)
     : requesting_origin_(requesting_origin),
       types_(types),
-      accept_states_(types_.size(), true) {}
+      accept_states_(types_.size(), true),
+      persist_(true) {}
 
 GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 
 infobars::InfoBarDelegate::Type
 GroupedPermissionInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
+  return PermissionUtil::ShouldShowPersistenceToggle();
 }
 
 int GroupedPermissionInfoBarDelegate::GetButtons() const {
