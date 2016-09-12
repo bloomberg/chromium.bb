@@ -1019,7 +1019,7 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
       Your SIM card will be permanently disabled if you cannot enter
-      the correct PIN Unblocking Key.
+      the correct PIN Unlock Key.
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PIN.">
       Enter PIN
@@ -1034,7 +1034,7 @@
       Re-enter new PIN
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PUK.">
-      Enter PIN Unblocking Key
+      Enter PIN Unlock Key
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether a network is preferred over other networks.">
       Prefer this network
