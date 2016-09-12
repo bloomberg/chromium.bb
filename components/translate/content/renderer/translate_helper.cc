@@ -67,7 +67,7 @@ const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
 // TODO(dglazkov): This logic should be moved into Blink.
 bool HasNoTranslateMeta(WebDocument* document) {
   WebElement head = document->head();
-  if (head.isNull() || !head.hasChildNodes())
+  if (head.isNull() || head.firstChild().isNull())
     return false;
 
   const WebString meta(ASCIIToUTF16("meta"));

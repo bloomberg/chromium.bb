@@ -142,11 +142,6 @@ WebNode WebNode::nextSibling() const
     return WebNode(m_private->nextSibling());
 }
 
-bool WebNode::hasChildNodes() const
-{
-    return m_private->hasChildren();
-}
-
 bool WebNode::isLink() const
 {
     return m_private->isLink();

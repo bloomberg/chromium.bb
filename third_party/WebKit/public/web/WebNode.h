@@ -79,7 +79,7 @@ public:
     BLINK_EXPORT WebNode lastChild() const;
     BLINK_EXPORT WebNode previousSibling() const;
     BLINK_EXPORT WebNode nextSibling() const;
-    BLINK_EXPORT bool hasChildNodes() const;
+
     BLINK_EXPORT bool isLink() const;
     BLINK_EXPORT bool isDocumentNode() const;
     BLINK_EXPORT bool isDocumentTypeNode() const;
