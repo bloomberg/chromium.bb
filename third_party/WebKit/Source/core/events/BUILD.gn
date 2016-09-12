@@ -42,6 +42,7 @@ blink_core_sources("events") {
     "EventQueue.h",
     "EventSender.h",
     "EventTarget.cpp",
+    "EventTarget.h",
     "EventUtil.cpp",
     "EventUtil.h",
     "FocusEvent.cpp",
