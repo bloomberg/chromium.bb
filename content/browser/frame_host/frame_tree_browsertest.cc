@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
   GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // The navigation targets an invalid blob url; that's intentional to trigger
