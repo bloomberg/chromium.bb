@@ -106,6 +106,7 @@ bool MimeSniffingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
     case RESOURCE_TYPE_STYLESHEET:
       accept_value = kStylesheetAcceptHeader;
       break;
+    case RESOURCE_TYPE_FAVICON:
     case RESOURCE_TYPE_IMAGE:
       accept_value = kImageAcceptHeader;
       break;
@@ -117,7 +118,6 @@ bool MimeSniffingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
     case RESOURCE_TYPE_WORKER:
     case RESOURCE_TYPE_SHARED_WORKER:
     case RESOURCE_TYPE_PREFETCH:
-    case RESOURCE_TYPE_FAVICON:
     case RESOURCE_TYPE_XHR:
     case RESOURCE_TYPE_PING:
     case RESOURCE_TYPE_SERVICE_WORKER:

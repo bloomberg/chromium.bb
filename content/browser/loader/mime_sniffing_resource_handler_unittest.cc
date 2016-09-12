@@ -709,6 +709,8 @@ TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SCRIPT));
   EXPECT_EQ("image/webp,image/*,*/*;q=0.8",
             TestAcceptHeaderSetting(RESOURCE_TYPE_IMAGE));
+  EXPECT_EQ("image/webp,image/*,*/*;q=0.8",
+            TestAcceptHeaderSetting(RESOURCE_TYPE_FAVICON));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FONT_RESOURCE));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_RESOURCE));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_OBJECT));
@@ -716,7 +718,6 @@ TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_WORKER));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SHARED_WORKER));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PREFETCH));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FAVICON));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_XHR));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PING));
   EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SERVICE_WORKER));
