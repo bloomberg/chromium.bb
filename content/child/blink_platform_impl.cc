@@ -264,6 +264,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_MEDIA_OVERFLOW_MENU_PLAY;
     case WebLocalizedString::OverflowMenuPause:
       return IDS_MEDIA_OVERFLOW_MENU_PAUSE;
+    case WebLocalizedString::OverflowMenuDownload:
+      return IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD;
     case WebLocalizedString::PlaceholderForDayOfMonthField:
       return IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD;
     case WebLocalizedString::PlaceholderForMonthField:
@@ -648,6 +650,9 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_100P},
     {"mediaplayerOverflowMenu",
      IDR_MEDIAPLAYER_OVERFLOW_MENU_ICON,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerDownloadIcon",
+     IDR_MEDIAPLAYER_DOWNLOAD_ICON,
      ui::SCALE_FACTOR_100P},
     {"searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P},
     {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P},

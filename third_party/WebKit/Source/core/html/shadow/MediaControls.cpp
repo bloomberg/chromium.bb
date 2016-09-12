@@ -120,6 +120,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_overflowList(nullptr)
     , m_castButton(nullptr)
     , m_fullscreenButton(nullptr)
+    , m_downloadButton(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
     , m_hideTimerBehaviorFlags(IgnoreNone)
     , m_isMouseOverControls(false)
@@ -234,6 +235,10 @@ void MediaControls::initializeControls()
     m_fullscreenButton = fullscreenButton;
     panel->appendChild(fullscreenButton);
 
+    MediaControlDownloadButtonElement* downloadButton = MediaControlDownloadButtonElement::create(*this, &document());
+    m_downloadButton = downloadButton;
+    panel->appendChild(downloadButton);
+
     m_panel = panel;
     enclosure->appendChild(panel);
 
@@ -258,6 +263,7 @@ void MediaControls::initializeControls()
     m_overflowList->appendChild(m_toggleClosedCaptionsButton->createOverflowElement(*this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
     m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(*this, MediaControlFullscreenButtonElement::create(*this)));
     m_overflowList->appendChild(m_playButton->createOverflowElement(*this, MediaControlPlayButtonElement::create(*this)));
+    m_overflowList->appendChild(m_downloadButton->createOverflowElement(*this, MediaControlDownloadButtonElement::create(*this, &document())));
 }
 
 void MediaControls::reset()
@@ -300,6 +306,9 @@ void MediaControls::reset()
     m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 
     refreshCastButtonVisibilityWithoutUpdate();
+
+    if (RuntimeEnabledFeatures::mediaControlsDownloadButtonEnabled())
+        m_downloadButton->setIsWanted(m_downloadButton->shouldDisplayDownloadButton());
 }
 
 LayoutObject* MediaControls::layoutObjectForTextTrackLayout()
@@ -707,6 +716,7 @@ void MediaControls::computeWhichControlsFit()
         // Exclude m_overflowMenu; we handle it specially.
         m_playButton.get(),
         m_fullscreenButton.get(),
+        m_downloadButton.get(),
         m_toggleClosedCaptionsButton.get(),
         m_timeline.get(),
         m_currentTimeDisplay.get(),
@@ -824,6 +834,7 @@ void MediaControls::networkStateChanged()
     invalidate(m_overlayPlayButton);
     invalidate(m_muteButton);
     invalidate(m_fullscreenButton);
+    invalidate(m_downloadButton);
     invalidate(m_timeline);
     invalidate(m_volumeSlider);
 }
@@ -851,6 +862,7 @@ DEFINE_TRACE(MediaControls)
     visitor->trace(m_volumeSlider);
     visitor->trace(m_toggleClosedCaptionsButton);
     visitor->trace(m_fullscreenButton);
+    visitor->trace(m_downloadButton);
     visitor->trace(m_durationDisplay);
     visitor->trace(m_enclosure);
     visitor->trace(m_textTrackList);

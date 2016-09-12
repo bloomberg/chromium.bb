@@ -627,6 +627,42 @@ void MediaControlOverflowMenuListElement::defaultEventHandler(Event* event)
 }
 
 // ----------------------------
+MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(MediaControls& mediaControls)
+    : MediaControlInputElement(mediaControls, MediaDownloadButton)
+{
+}
+
+MediaControlDownloadButtonElement* MediaControlDownloadButtonElement::create(MediaControls& mediaControls, Document* document)
+{
+    MediaControlDownloadButtonElement* button = new MediaControlDownloadButtonElement(mediaControls);
+    button->ensureUserAgentShadowRoot();
+    button->setType(InputTypeNames::button);
+    button->setShadowPseudoId(AtomicString("-internal-download-button"));
+    button->setIsWanted(false);
+    return button;
+}
+
+WebLocalizedString::Name MediaControlDownloadButtonElement::getOverflowStringName()
+{
+    return WebLocalizedString::OverflowMenuDownload;
+}
+
+bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton()
+{
+    const KURL& url = mediaElement().currentSrc();
+    if (!HTMLMediaElement::isMediaStreamURL(url.getString()) && !url.protocolIs("blob") && !HTMLMediaSource::lookup(url)) {
+        return true;
+    }
+    return false;
+}
+
+void MediaControlDownloadButtonElement::defaultEventHandler(Event* event)
+{
+    // TODO(kdsilva): The implementation will be finished as part of
+    // https://crbug.com/601247
+}
+
+// ----------------------------
 
 MediaControlTimelineElement::MediaControlTimelineElement(MediaControls& mediaControls)
     : MediaControlInputElement(mediaControls, MediaSlider)

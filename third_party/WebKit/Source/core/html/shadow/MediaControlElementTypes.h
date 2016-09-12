@@ -70,6 +70,7 @@ enum MediaControlElementType {
     MediaOverlayCastOnButton,
     MediaOverflowButton,
     MediaOverflowList,
+    MediaDownloadButton,
 };
 
 CORE_EXPORT const HTMLMediaElement* toParentMediaElement(const Node*);

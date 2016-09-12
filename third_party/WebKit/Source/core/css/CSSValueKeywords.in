@@ -648,6 +648,7 @@ media-time-remaining-display
 -internal-media-closed-captions-icon
 -internal-media-subtitles-icon
 -internal-overflow-menu-button
+-internal-media-download-icon
 menulist
 menulist-button
 menulist-text

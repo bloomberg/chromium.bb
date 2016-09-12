@@ -215,6 +215,23 @@ private:
 };
 
 // ----------------------------
+// Represents a button that allows users to download media if the file is
+// downloadable.
+class MediaControlDownloadButtonElement final : public MediaControlInputElement {
+public:
+    static MediaControlDownloadButtonElement* create(MediaControls&, Document*);
+
+    WebLocalizedString::Name getOverflowStringName() override;
+
+    // Returns true if the download button should be shown. We should
+    // show the button for only non-MSE, non-EME, and non-MediaStream content.
+    bool shouldDisplayDownloadButton();
+
+private:
+    explicit MediaControlDownloadButtonElement(MediaControls&);
+
+    void defaultEventHandler(Event*) override;
+};
 
 class MediaControlTimelineElement final : public MediaControlInputElement {
 public:

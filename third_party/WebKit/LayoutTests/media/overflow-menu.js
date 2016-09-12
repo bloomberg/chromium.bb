@@ -4,7 +4,8 @@ var overflowButtonsCSS = [
     "-internal-media-controls-cast-button",
     "-webkit-media-controls-toggle-closed-captions-button",
     "-webkit-media-controls-fullscreen-button",
-    "-webkit-media-controls-play-button"];
+    "-webkit-media-controls-play-button",
+    "-internal-download-button"];
 //  PseudoID for the overflow button
 var menuID = "-internal-overflow-menu-button";
 //  PseudoID for the overflow list
@@ -27,8 +28,9 @@ var OverflowMenuButtons = {
   CLOSED_CAPTIONS: 2,
   FULLSCREEN: 3,
   PLAY: 4,
+  DOWNLOAD: 5,
 };
 
 // Default text within the overflow menu
-var overflowMenuText = ["Mute", "Cast", "Captions", "Fullscreen", "Play"];
+var overflowMenuText = ["Mute", "Cast", "Captions", "Fullscreen", "Play", "Download"];
 

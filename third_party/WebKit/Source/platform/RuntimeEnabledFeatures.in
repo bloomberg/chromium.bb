@@ -258,3 +258,4 @@ WebShare status=experimental, origin_trial_feature_name=WebShare
 Worklet status=experimental
 ParseHTMLOnMainThread status=test
 SendBeaconThrowForBlobWithNonSimpleType status=experimental
+MediaControlsDownloadButton settable_from_internals=True

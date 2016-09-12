@@ -433,6 +433,21 @@ video::-internal-overflow-menu-button, audio::-internal-overflow-menu-button {
     color: inherit;
 }
 
+video::-internal-download-button, audio::-internal-download-button {
+    -webkit-appearance: -internal-media-download-icon;
+    display: flex;
+    flex: none;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: initial;
+    color: inherit;
+}
+
 video::-internal-media-controls-overflow-menu-list-item, audio::-internal-media-controls-overflow-menu-list-item {
     display: block;
     color: #424242;

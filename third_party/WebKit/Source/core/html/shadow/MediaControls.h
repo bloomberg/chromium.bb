@@ -152,6 +152,7 @@ private:
 
     Member<MediaControlCastButtonElement> m_castButton;
     Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
+    Member<MediaControlDownloadButtonElement> m_downloadButton;
 
     Timer<MediaControls> m_hideMediaControlsTimer;
     unsigned m_hideTimerBehaviorFlags;

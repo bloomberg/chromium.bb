@@ -20,6 +20,7 @@ async_test(function(t) {
   internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
 
   video.onloadeddata = t.step_func_done(function() {
+  window.internals.runtimeFlags.MediaControlsDownloadButton = true;
   var overflowList = getOverflowList(video);
     var children = overflowList.children;
     // Ensure that all of the buttons are visible in the right order

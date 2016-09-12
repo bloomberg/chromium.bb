@@ -882,6 +882,9 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_PAUSE" desc="Media controls overflow menu item label for a pause button.">
         Pause
       </message>
+      <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
+       Download
+      </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified">
         Unknown
       </message>
