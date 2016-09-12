@@ -901,6 +901,10 @@
       # builds (and we only store baselines for release builds).
       'linux_layout_tests_slimming_paint_v2': 'swarming_gn_release_bot',
 
+      'linux_chromium_headless_dbg':
+        ('//build/args/bots/tryserver.chromium.linux/'
+         'headless_linux_dbg_trybot.gn'),
+
       'linux_nacl_sdk_build': 'gn_release_bot',
       'linux_nacl_sdk': 'gn_release_bot',
       'linux_optional_gpu_tests_rel':
