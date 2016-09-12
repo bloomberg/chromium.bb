@@ -1302,14 +1302,10 @@ def _GetConfig(site_config, ge_build_config):
     for board in boards:
       config_name = '%s-%s' % (board, name_suffix)
       if config_name not in site_config:
-        # I derive the config_base build config since the config gets modified
-        # below if they're in _nofactory_boards.  What happens if I don't derive
-        # is that once factory_install is removed from images, all configs will
-        # have factory_install removed from their images.  The derive creates a
-        # new copy of the config_base and thus isolates changes to the instance
-        # created.
+        # We copy the base because there seem to be cases where Add() modifies
+        # it directly (which is a bug).
         config = site_config.Add(config_name,
-                                 config_base.derive(config_lib.BuildConfig()),
+                                 config_base.deepcopy(),
                                  _base_configs[board],
                                  **kwargs)
         if board in _nofactory_boards:
