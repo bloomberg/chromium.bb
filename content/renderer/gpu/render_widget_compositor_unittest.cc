@@ -45,10 +45,6 @@ class StubRenderWidgetCompositorDelegate
       bool fallback) override {
     return nullptr;
   }
-  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource()
-      override {
-    return nullptr;
-  }
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
@@ -93,14 +89,6 @@ class FakeRenderWidgetCompositorDelegate
     // Create delegating surface so that max_pending_frames = 1.
     return cc::FakeOutputSurface::CreateDelegating3d(
         std::move(context_provider));
-  }
-
-  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource()
-      override {
-    double refresh_rate = 200.0;
-    bool tick_automatically = true;
-    return base::MakeUnique<cc::FakeExternalBeginFrameSource>(
-        refresh_rate, tick_automatically);
   }
 
   void add_success() {

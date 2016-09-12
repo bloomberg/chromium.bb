@@ -39,8 +39,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
-  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
-      int routing_id) override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool AreImageDecodeTasksEnabled() override;

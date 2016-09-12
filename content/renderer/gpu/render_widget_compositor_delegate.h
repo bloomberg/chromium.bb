@@ -47,10 +47,6 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   virtual std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
       bool fallback) = 0;
 
-  // Requests an external BeginFrameSource from the delegate.
-  virtual std::unique_ptr<cc::BeginFrameSource>
-  CreateExternalBeginFrameSource() = 0;
-
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
 

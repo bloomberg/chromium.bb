@@ -1834,7 +1834,9 @@ RenderThreadImpl::CreateCompositorOutputSurface(
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
       return base::MakeUnique<CompositorOutputSurface>(
-          routing_id, output_surface_id, std::move(vulkan_context_provider),
+          routing_id, output_surface_id,
+          CreateExternalBeginFrameSource(routing_id),
+          std::move(vulkan_context_provider),
           std::move(frame_swap_message_queue));
     }
   }
@@ -1857,7 +1859,8 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   if (use_software) {
     DCHECK(!layout_test_mode());
     return base::MakeUnique<CompositorOutputSurface>(
-        routing_id, output_surface_id, nullptr, nullptr,
+        routing_id, output_surface_id,
+        CreateExternalBeginFrameSource(routing_id), nullptr, nullptr,
         std::move(frame_swap_message_queue));
   }
 
@@ -1910,14 +1913,16 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   if (sync_compositor_message_filter_) {
     return base::MakeUnique<SynchronousCompositorOutputSurface>(
         std::move(context_provider), std::move(worker_context_provider),
-        routing_id, output_surface_id, sync_compositor_message_filter_.get(),
+        routing_id, output_surface_id,
+        CreateExternalBeginFrameSource(routing_id),
+        sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue));
   }
 #endif
-
-  return base::MakeUnique<CompositorOutputSurface>(
-      routing_id, output_surface_id, std::move(context_provider),
-      std::move(worker_context_provider), std::move(frame_swap_message_queue));
+  return base::WrapUnique(new CompositorOutputSurface(
+      routing_id, output_surface_id, CreateExternalBeginFrameSource(routing_id),
+      std::move(context_provider), std::move(worker_context_provider),
+      std::move(frame_swap_message_queue)));
 }
 
 std::unique_ptr<cc::SwapPromise>

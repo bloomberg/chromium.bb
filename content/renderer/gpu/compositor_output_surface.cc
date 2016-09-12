@@ -29,6 +29,7 @@ namespace content {
 CompositorOutputSurface::CompositorOutputSurface(
     int32_t routing_id,
     uint32_t output_surface_id,
+    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
@@ -40,16 +41,19 @@ CompositorOutputSurface::CompositorOutputSurface(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
+      begin_frame_source_(std::move(begin_frame_source)),
       routing_id_(routing_id) {
   DCHECK(output_surface_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
+  DCHECK(begin_frame_source_);
   capabilities_.delegated_rendering = true;
 }
 
 CompositorOutputSurface::CompositorOutputSurface(
     int32_t routing_id,
     uint32_t output_surface_id,
+    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : OutputSurface(std::move(vulkan_context_provider)),
@@ -58,10 +62,12 @@ CompositorOutputSurface::CompositorOutputSurface(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
+      begin_frame_source_(std::move(begin_frame_source)),
       routing_id_(routing_id) {
   DCHECK(output_surface_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
+  DCHECK(begin_frame_source_);
   capabilities_.delegated_rendering = true;
 }
 
@@ -71,6 +77,9 @@ bool CompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   if (!cc::OutputSurface::BindToClient(client))
     return false;
+
+  DCHECK(begin_frame_source_);
+  client_->SetBeginFrameSource(begin_frame_source_.get());
 
   output_surface_proxy_ = new CompositorOutputSurfaceProxy(this);
   output_surface_filter_handler_ =
@@ -85,6 +94,11 @@ bool CompositorOutputSurface::BindToClient(
 void CompositorOutputSurface::DetachFromClient() {
   if (!HasClient())
     return;
+  client_->SetBeginFrameSource(nullptr);
+  // Destroy the begin frame source on the same thread it was bound on.
+  // The OutputSurface itself is destroyed on the main thread.
+  begin_frame_source_ = nullptr;
+
   if (output_surface_proxy_) {
     output_surface_proxy_->ClearOutputSurface();
     output_surface_filter_->RemoveHandlerOnCompositorThread(

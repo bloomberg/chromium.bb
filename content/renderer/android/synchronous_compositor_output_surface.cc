@@ -96,6 +96,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     int routing_id,
     uint32_t output_surface_id,
+    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::OutputSurface(std::move(context_provider),
@@ -109,9 +110,11 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
       surface_id_allocator_(new cc::SurfaceIdAllocator(kCompositorClientId)),
-      surface_factory_(new cc::SurfaceFactory(surface_manager_.get(), this)) {
+      surface_factory_(new cc::SurfaceFactory(surface_manager_.get(), this)),
+      begin_frame_source_(std::move(begin_frame_source)) {
   DCHECK(registry_);
   DCHECK(sender_);
+  DCHECK(begin_frame_source_);
   thread_checker_.DetachFromThread();
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
@@ -147,6 +150,8 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
 
+  DCHECK(begin_frame_source_);
+  client_->SetBeginFrameSource(begin_frame_source_.get());
   client_->SetMemoryPolicy(memory_policy_);
   client_->SetTreeActivationCallback(
       base::Bind(&SynchronousCompositorOutputSurface::DidActivatePendingTree,
@@ -182,9 +187,11 @@ bool SynchronousCompositorOutputSurface::BindToClient(
 
 void SynchronousCompositorOutputSurface::DetachFromClient() {
   DCHECK(CalledOnValidThread());
-  if (registered_) {
+  client_->SetBeginFrameSource(nullptr);
+  // Destroy the begin frame source on the same thread it was bound on.
+  begin_frame_source_ = nullptr;
+  if (registered_)
     registry_->UnregisterOutputSurface(routing_id_, this);
-  }
   client_->SetTreeActivationCallback(base::Closure());
   if (!delegated_surface_id_.is_null())
     surface_factory_->Destroy(delegated_surface_id_);

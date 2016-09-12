@@ -71,6 +71,7 @@ class SynchronousCompositorOutputSurface
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       int routing_id,
       uint32_t output_surface_id,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   ~SynchronousCompositorOutputSurface() override;
@@ -159,6 +160,7 @@ class SynchronousCompositorOutputSurface
   std::unique_ptr<cc::Display> display_;
   // Owned by |display_|.
   SoftwareOutputSurface* software_output_surface_ = nullptr;
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
 
   base::ThreadChecker thread_checker_;
 

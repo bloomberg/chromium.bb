@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -44,12 +45,14 @@ class CompositorOutputSurface
   CompositorOutputSurface(
       int32_t routing_id,
       uint32_t output_surface_id,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   CompositorOutputSurface(
       int32_t routing_id,
       uint32_t output_surface_id,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   ~CompositorOutputSurface() override;
@@ -96,6 +99,7 @@ class CompositorOutputSurface
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   int routing_id_;
 };
 

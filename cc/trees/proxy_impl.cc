@@ -77,16 +77,9 @@ ProxyImpl::ProxyImpl(
           CompositorTimingHistory::RENDERER_UMA,
           rendering_stats_instrumentation_));
 
-  // BFS must either be external or come from the output surface.  If
-  // external, it must be provided.  If from the output surface, it must
-  // not be provided.
-  // TODO(enne): Make all BFS come from the output surface.
-  DCHECK(settings.use_external_begin_frame_source ^
-         settings.use_output_surface_begin_frame_source);
-  DCHECK(!settings.use_external_begin_frame_source ||
-         external_begin_frame_source_);
-  DCHECK(!settings.use_output_surface_begin_frame_source ||
-         !external_begin_frame_source_);
+  // TODO(enne): remove these settings.
+  DCHECK(!settings.use_external_begin_frame_source);
+  DCHECK(settings.use_output_surface_begin_frame_source);
   scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),
                                  external_begin_frame_source_.get(),

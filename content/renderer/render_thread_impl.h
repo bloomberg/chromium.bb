@@ -217,8 +217,6 @@ class CONTENT_EXPORT RenderThreadImpl
   GetCompositorImplThreadTaskRunner() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
-  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
-      int routing_id) override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool AreImageDecodeTasksEnabled() override;
@@ -526,6 +524,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void OnSyncMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+      int routing_id);
 
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;

@@ -748,11 +748,6 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
       GetURLForGraphicsContext3D());
 }
 
-std::unique_ptr<cc::BeginFrameSource>
-RenderWidget::CreateExternalBeginFrameSource() {
-  return compositor_deps_->CreateExternalBeginFrameSource(routing_id_);
-}
-
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // NOTE: Tests may break if this event is renamed or moved. See
   // tab_capture_performancetest.cc.

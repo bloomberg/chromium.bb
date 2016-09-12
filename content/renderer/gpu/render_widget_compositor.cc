@@ -241,13 +241,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
   params.main_task_runner =
       compositor_deps_->GetCompositorMainThreadTaskRunner();
-  if (settings.use_external_begin_frame_source) {
-    params.external_begin_frame_source =
-        delegate_->CreateExternalBeginFrameSource();
-  } else {
-    DCHECK(settings.use_output_surface_begin_frame_source);
-  }
   params.animation_host = cc::AnimationHost::CreateMainInstance();
+  DCHECK(settings.use_output_surface_begin_frame_source);
 
   if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
     DCHECK(!threaded_);
@@ -474,15 +469,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.create_low_res_tiling = true;
   if (cmd.HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-
-  // TODO(enne): fold external BFS into output surface BFS.
-  if (cmd.HasSwitch(switches::kUseRemoteCompositing)) {
-    settings.use_output_surface_begin_frame_source = true;
-    settings.use_external_begin_frame_source = false;
-  } else {
-    settings.use_output_surface_begin_frame_source = false;
-    settings.use_external_begin_frame_source = true;
-  }
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
       !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {

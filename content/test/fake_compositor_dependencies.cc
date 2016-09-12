@@ -90,14 +90,6 @@ FakeCompositorDependencies::GetRendererScheduler() {
   return &renderer_scheduler_;
 }
 
-std::unique_ptr<cc::BeginFrameSource>
-FakeCompositorDependencies::CreateExternalBeginFrameSource(int routing_id) {
-  double refresh_rate = 200.0;
-  bool tick_automatically = true;
-  return base::MakeUnique<cc::FakeExternalBeginFrameSource>(refresh_rate,
-                                                            tick_automatically);
-}
-
 cc::ImageSerializationProcessor*
 FakeCompositorDependencies::GetImageSerializationProcessor() {
   return nullptr;
