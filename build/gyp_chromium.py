@@ -181,9 +181,6 @@ def additional_include_files(supplemental_files, args=[]):
   if os.environ.get('GYP_INCLUDE_FIRST') != None:
     AddInclude(os.path.join(chrome_src, os.environ.get('GYP_INCLUDE_FIRST')))
 
-  # Always include common.gypi.
-  AddInclude(os.path.join(script_dir, 'common.gypi'))
-
   # Optionally add supplemental .gypi files if present.
   for supplement in supplemental_files:
     AddInclude(supplement)
