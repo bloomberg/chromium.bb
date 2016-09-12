@@ -28,6 +28,6 @@ trusted = common.TrustAnchor(root, constrained=False)
 # target is not.
 time = common.MARCH_1_2015_UTC
 verify_result = False
-errors = ['Time is before notBefore']
+errors = """Time is before notBefore"""
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)
