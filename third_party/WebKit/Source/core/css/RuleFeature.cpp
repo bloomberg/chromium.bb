@@ -439,18 +439,24 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData)
     // addFeaturesToInvalidationSets for that one as well.
 
     InvalidationSetFeatures features;
-    const CSSSelector* nextCompound = extractInvalidationSetFeaturesFromCompound(ruleData.selector(), features, Subject);
+    InvalidationSetFeatures* siblingFeatures = nullptr;
+
+    const CSSSelector* lastInCompound = extractInvalidationSetFeaturesFromCompound(ruleData.selector(), features, Subject);
 
     if (!features.hasFeatures())
         features.forceSubtree = true;
-
-    if (nextCompound)
-        addFeaturesToInvalidationSets(*nextCompound, features);
-    else if (features.hasNthPseudo)
+    if (features.hasNthPseudo)
         addFeaturesToInvalidationSet(ensureNthInvalidationSet(), features);
-
     if (features.hasBeforeOrAfter)
         updateInvalidationSetsForContentAttribute(ruleData);
+
+    const CSSSelector* nextCompound = lastInCompound ? lastInCompound->tagHistory() : &ruleData.selector();
+    if (!nextCompound)
+        return;
+    if (lastInCompound)
+        updateFeaturesFromCombinator(*lastInCompound, nullptr, features, siblingFeatures, features);
+
+    addFeaturesToInvalidationSets(*nextCompound, siblingFeatures, features);
 }
 
 void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& ruleData)
@@ -482,12 +488,12 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
     }
 }
 
-const CSSSelector*
+RuleFeatureSet::FeatureInvalidationType
 RuleFeatureSet::extractInvalidationSetFeaturesFromSelectorList(const CSSSelector& simpleSelector, InvalidationSetFeatures& features, PositionType position)
 {
     const CSSSelectorList* selectorList = simpleSelector.selectorList();
     if (!selectorList)
-        return nullptr;
+        return NormalInvalidation;
 
     DCHECK(supportsInvalidationWithSelectorList(simpleSelector.getPseudoType()));
 
@@ -498,12 +504,12 @@ RuleFeatureSet::extractInvalidationSetFeaturesFromSelectorList(const CSSSelector
 
     for (; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
         InvalidationSetFeatures compoundFeatures;
-        if (extractInvalidationSetFeaturesFromCompound(*subSelector, compoundFeatures, position, simpleSelector.getPseudoType())) {
-            // A non-null selector return means the sub-selector contained a
+        if (!extractInvalidationSetFeaturesFromCompound(*subSelector, compoundFeatures, position, simpleSelector.getPseudoType())) {
+            // A null selector return means the sub-selector contained a
             // selector which requiresSubtreeInvalidation().
             DCHECK(compoundFeatures.forceSubtree);
             features.forceSubtree = true;
-            return &simpleSelector;
+            return RequiresSubtreeInvalidation;
         }
         if (compoundFeatures.hasNthPseudo)
             features.hasNthPseudo = true;
@@ -518,23 +524,26 @@ RuleFeatureSet::extractInvalidationSetFeaturesFromSelectorList(const CSSSelector
     // any invalidation set features. E.g. :-webkit-any(*, span).
     if (allSubSelectorsHaveFeatures)
         features.add(anyFeatures);
-    return nullptr;
+    return NormalInvalidation;
 }
 
 const CSSSelector*
 RuleFeatureSet::extractInvalidationSetFeaturesFromCompound(const CSSSelector& compound, InvalidationSetFeatures& features, PositionType position, CSSSelector::PseudoType pseudo)
 {
+    // Extract invalidation set features and return a pointer to the the last
+    // simple selector of the compound, or nullptr if one of the selectors
+    // requiresSubtreeInvalidation().
+
     const CSSSelector* simpleSelector = &compound;
-    for (; simpleSelector; simpleSelector = simpleSelector->tagHistory()) {
+    for (;; simpleSelector = simpleSelector->tagHistory()) {
 
         // Fall back to use subtree invalidations, even for features in the
-        // rightmost compound selector. Returning the start &selector here
-        // will make addFeaturesToInvalidationSets start marking invalidation
-        // sets for subtree recalc for features in the rightmost compound
-        // selector.
+        // rightmost compound selector. Returning nullptr here will make
+        // addFeaturesToInvalidationSets start marking invalidation sets for
+        // subtree recalc for features in the rightmost compound selector.
         if (requiresSubtreeInvalidation(*simpleSelector)) {
             features.forceSubtree = true;
-            return &compound;
+            return nullptr;
         }
 
         // When inside a :not(), we should not use the found features for
@@ -556,29 +565,14 @@ RuleFeatureSet::extractInvalidationSetFeaturesFromCompound(const CSSSelector& co
                 invalidationSet->setInvalidatesSelf();
         }
 
-        if (extractInvalidationSetFeaturesFromSelectorList(*simpleSelector, features, position)) {
+        if (extractInvalidationSetFeaturesFromSelectorList(*simpleSelector, features, position) == RequiresSubtreeInvalidation) {
             DCHECK(features.forceSubtree);
-            return &compound;
+            return nullptr;
         }
 
-        if (simpleSelector->relation() == CSSSelector::SubSelector)
-            continue;
-
-        if (position == Subject) {
-            if (features.hasNthPseudo) {
-                DCHECK(m_nthInvalidationSet);
-                if (features.hasFeatures())
-                    addFeaturesToInvalidationSet(*m_nthInvalidationSet, features);
-                else
-                    m_nthInvalidationSet->setWholeSubtreeInvalid();
-            }
-            InvalidationSetFeatures* siblingFeatures = nullptr;
-            updateFeaturesFromCombinator(*simpleSelector, nullptr, features, siblingFeatures, features);
-        }
-        return simpleSelector->tagHistory();
+        if (!simpleSelector->tagHistory() || simpleSelector->relation() != CSSSelector::SubSelector)
+            return simpleSelector;
     }
-
-    return nullptr;
 }
 
 // Add features extracted from the rightmost compound selector to descendant invalidation
@@ -673,14 +667,12 @@ const CSSSelector* RuleFeatureSet::addFeaturesToInvalidationSetsForCompoundSelec
     return simpleSelector;
 }
 
-void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures& descendantFeatures)
+void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures)
 {
     // selector is the selector immediately to the left of the rightmost combinator.
     // descendantFeatures has the features of the rightmost compound selector.
 
     InvalidationSetFeatures lastCompoundInSiblingChainFeatures;
-    InvalidationSetFeatures* siblingFeatures = descendantFeatures.maxDirectAdjacentSelectors ? &descendantFeatures : nullptr;
-
     const CSSSelector* compound = &selector;
     while (compound) {
         const CSSSelector* lastInCompound = addFeaturesToInvalidationSetsForCompoundSelector(*compound, siblingFeatures, descendantFeatures);

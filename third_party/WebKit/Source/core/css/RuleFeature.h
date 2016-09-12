@@ -172,13 +172,12 @@ private:
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
 
-    enum UseFeaturesType { UseFeatures, ForceSubtree };
-
     enum PositionType { Subject, Ancestor };
+    enum FeatureInvalidationType { NormalInvalidation, RequiresSubtreeInvalidation };
 
     void extractInvalidationSetFeaturesFromSimpleSelector(const CSSSelector&, InvalidationSetFeatures&);
     const CSSSelector* extractInvalidationSetFeaturesFromCompound(const CSSSelector&, InvalidationSetFeatures&, PositionType, CSSSelector::PseudoType = CSSSelector::PseudoUnknown);
-    const CSSSelector* extractInvalidationSetFeaturesFromSelectorList(const CSSSelector&, InvalidationSetFeatures&, PositionType);
+    FeatureInvalidationType extractInvalidationSetFeaturesFromSelectorList(const CSSSelector&, InvalidationSetFeatures&, PositionType);
     void updateFeaturesFromCombinator(const CSSSelector&,
         const CSSSelector* lastCompoundSelectorInAdjacentChain,
         InvalidationSetFeatures& lastCompoundInAdjacentChainFeatures,
@@ -186,7 +185,7 @@ private:
         InvalidationSetFeatures& descendantFeatures);
 
     void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
-    void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures& descendantFeatures);
+    void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
     const CSSSelector* addFeaturesToInvalidationSetsForCompoundSelector(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
     void addFeaturesToInvalidationSetsForSimpleSelector(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
     void addFeaturesToInvalidationSetsForSelectorList(const CSSSelector&, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
