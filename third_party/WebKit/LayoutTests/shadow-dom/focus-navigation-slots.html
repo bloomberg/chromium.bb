@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <script src='../resources/testharness.js'></script>
 <script src='../resources/testharnessreport.js'></script>
-<script src='../fast/dom/shadow/resources/shadow-dom.js'></script>
 <script src='resources/shadow-dom.js'></script>
+<script src='resources/focus-utils.js'></script>
 <div id="log"></div>
 <p>
   document tree: [i0 -> [x-foo]]<br>
@@ -38,29 +38,27 @@
 </div>
 
 <script>
+'use strict';
 
-test(function() {
-  var xfoo = document.getElementById('x-foo');
-  convertTemplatesToShadowRootsWithin(xfoo);
+test(() => {
+    let xfoo = document.getElementById('x-foo');
+    convertTemplatesToShadowRootsWithin(xfoo);
 
-  var elements = [
-    'i0',
-    'x-foo/j1',
-    'i1',
-    'i2',
-    'i3',
-    'x-foo/j2',
-    'x-foo/x-bar',
-    'x-foo/x-bar/k1',
-    'i4',
-    'i5'
-  ];
+    let elements = [
+        'i0',
+        'x-foo/j1',
+        'i1',
+        'i2',
+        'i3',
+        'x-foo/j2',
+        'x-foo/x-bar',
+        'x-foo/x-bar/k1',
+        'i4',
+        'i5'
+    ];
 
-  for (var i = 0; i + 1 < elements.length; ++i)
-      assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'forward'), elements[i] + ' to ' + elements[i + 1]);
-  elements.reverse();
-  for (var i = 0; i + 1 < elements.length; ++i)
-      assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'backward'), elements[i] + ' to ' + elements[i + 1]);
+    assert_focus_navigation_forward(elements);
+    elements.reverse();
+    assert_focus_navigation_backward(elements);
 }, 'Focus should cover assigned elements of an assigned slot, as well as elements that are directly assigned to a slot.');
-
 </script>

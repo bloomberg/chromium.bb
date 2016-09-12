@@ -191,3 +191,9 @@ function assert_event_path_equals(actual, expected) {
     assert_array_equals(actual[i][3], expected[i][3], 'composedPath at ' + i + ' should be same');
   }
 }
+
+function assert_background_color(path, color)
+{
+  assert_equals(window.getComputedStyle(getNodeInComposedTree(path)).backgroundColor, color,
+                'backgroundColor for ' + path + ' should be ' + color);
+}
