@@ -25,6 +25,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/test/platform_event_waiter.h"
 #include "ui/gfx/x/x11_connection.h"
+#include "ui/views/test/test_desktop_screen_x11.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 namespace views {
@@ -144,6 +145,10 @@ class UIControlsDesktopX11 : public UIControlsAura {
     gfx::Point root_current_location =
         aura::test::QueryLatestMousePositionRequestInHost(host);
     host->ConvertPointFromHost(&root_current_location);
+
+    auto screen = views::test::TestDesktopScreenX11::GetInstance();
+    DCHECK_EQ(screen, display::Screen::GetScreen());
+    screen->set_cursor_screen_point(gfx::Point(screen_x, screen_y));
 
     if (root_location != root_current_location && button_down_mask == 0) {
       // Move the cursor because EnterNotify/LeaveNotify are generated with the

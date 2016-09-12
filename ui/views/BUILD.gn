@@ -756,6 +756,8 @@ static_library("test_support_internal") {
       sources += [
         "test/desktop_screen_x11_test_api.cc",
         "test/desktop_screen_x11_test_api.h",
+        "test/test_desktop_screen_x11.cc",
+        "test/test_desktop_screen_x11.h",
         "test/ui_controls_factory_desktop_aurax11.cc",
         "test/ui_controls_factory_desktop_aurax11.h",
       ]

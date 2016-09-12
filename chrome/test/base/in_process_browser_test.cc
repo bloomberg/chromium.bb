@@ -86,6 +86,10 @@
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
 #endif
 
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX)
+#include "ui/views/test/test_desktop_screen_x11.h"
+#endif
+
 namespace {
 
 // Passed as value of kTestType.
@@ -222,7 +226,11 @@ void InProcessBrowserTest::SetUp() {
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
-#endif  // defined(OS_CHROMEOS)
+#elif defined(OS_LINUX)
+  DCHECK(!display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(
+      views::test::TestDesktopScreenX11::GetInstance());
+#endif
 
   // Always use a mocked password storage if OS encryption is used (which is
   // when anything sensitive gets stored, including Cookies). Without this on
