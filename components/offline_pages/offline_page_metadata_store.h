@@ -36,6 +36,16 @@ class OfflinePageMetadataStore {
     LOAD_STATUS_COUNT
   };
 
+  // TODO(fgorski): This enum is meant to replace |LoadStatus|.
+  // Current store state. When LOADED, the store is operational. When
+  // initialization or reset fails, it is reflected appropriately.
+  enum StoreState {
+    NOT_LOADED,
+    LOADED,
+    FAILED_INITIALIZATION,
+    FAILED_RESET,
+  };
+
   typedef base::Callback<void(LoadStatus, const std::vector<OfflinePageItem>&)>
       LoadCallback;
   typedef base::Callback<void(bool)> UpdateCallback;
@@ -45,7 +55,7 @@ class OfflinePageMetadataStore {
   virtual ~OfflinePageMetadataStore();
 
   // Get all of the offline pages from the store.
-  virtual void Load(const LoadCallback& callback) = 0;
+  virtual void GetOfflinePages(const LoadCallback& callback) = 0;
 
   // Asynchronously adds or updates offline page metadata to the store.
   // Result of the update is passed in callback.
@@ -59,6 +69,9 @@ class OfflinePageMetadataStore {
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;
+
+  // Gets the store state.
+  virtual StoreState state() const = 0;
 };
 
 }  // namespace offline_pages

@@ -771,8 +771,9 @@ void OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone(
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
                       base::TimeTicks::Now() - start_time);
 
-  store_->Load(base::Bind(&OfflinePageModelImpl::OnLoadDone,
-                          weak_ptr_factory_.GetWeakPtr(), start_time));
+  store_->GetOfflinePages(base::Bind(&OfflinePageModelImpl::OnLoadDone,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     start_time));
 }
 
 void OfflinePageModelImpl::OnLoadDone(
@@ -1004,8 +1005,9 @@ void OfflinePageModelImpl::OnResetStoreDoneForClearAll(
   }
 
   offline_pages_.clear();
-  store_->Load(base::Bind(&OfflinePageModelImpl::OnReloadStoreDoneForClearAll,
-                          weak_ptr_factory_.GetWeakPtr(), callback));
+  store_->GetOfflinePages(
+      base::Bind(&OfflinePageModelImpl::OnReloadStoreDoneForClearAll,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageModelImpl::OnReloadStoreDoneForClearAll(

@@ -22,7 +22,7 @@ OfflinePageTestStore::OfflinePageTestStore(
 
 OfflinePageTestStore::~OfflinePageTestStore() {}
 
-void OfflinePageTestStore::Load(const LoadCallback& callback) {
+void OfflinePageTestStore::GetOfflinePages(const LoadCallback& callback) {
   OfflinePageMetadataStore::LoadStatus load_status;
   if (scenario_ == TestScenario::LOAD_FAILED) {
     load_status = OfflinePageMetadataStore::STORE_LOAD_FAILED;
@@ -66,6 +66,10 @@ void OfflinePageTestStore::RemoveOfflinePages(
 void OfflinePageTestStore::Reset(const ResetCallback& callback) {
   offline_pages_.clear();
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+}
+
+OfflinePageMetadataStore::StoreState OfflinePageTestStore::state() const {
+  return LOADED;
 }
 
 void OfflinePageTestStore::UpdateLastAccessTime(

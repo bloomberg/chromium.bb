@@ -36,12 +36,13 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   ~OfflinePageTestStore() override;
 
   // OfflinePageMetadataStore overrides:
-  void Load(const LoadCallback& callback) override;
+  void GetOfflinePages(const LoadCallback& callback) override;
   void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
                               const UpdateCallback& callback) override;
   void RemoveOfflinePages(const std::vector<int64_t>& offline_ids,
                           const UpdateCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
+  StoreState state() const override;
 
   void UpdateLastAccessTime(int64_t offline_id,
                             const base::Time& last_access_time);
