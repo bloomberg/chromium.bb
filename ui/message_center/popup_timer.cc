@@ -12,12 +12,11 @@ PopupTimer::PopupTimer(const std::string& id,
     : id_(id),
       timeout_(timeout),
       timer_delegate_(delegate),
-      timer_(new base::OneShotTimer) {}
+      timer_(new base::OneShotTimer) {
+  DCHECK(timer_delegate_);
+}
 
 PopupTimer::~PopupTimer() {
-  if (!timer_)
-    return;
-
   if (timer_->IsRunning())
     timer_->Stop();
 }
@@ -25,28 +24,22 @@ PopupTimer::~PopupTimer() {
 void PopupTimer::Start() {
   if (timer_->IsRunning())
     return;
+
   base::TimeDelta timeout_to_close =
       timeout_ <= passed_ ? base::TimeDelta() : timeout_ - passed_;
   start_time_ = base::Time::Now();
 
-  DCHECK(timer_delegate_);
   timer_->Start(
       FROM_HERE, timeout_to_close,
       base::Bind(&Delegate::TimerFinished, timer_delegate_, id_));
 }
 
 void PopupTimer::Pause() {
-  if (!timer_ || !timer_->IsRunning())
+  if (!timer_->IsRunning())
     return;
 
   timer_->Stop();
   passed_ += base::Time::Now() - start_time_;
-}
-
-void PopupTimer::Reset() {
-  if (timer_)
-    timer_->Stop();
-  passed_ = base::TimeDelta();
 }
 
 }  // namespace message_center

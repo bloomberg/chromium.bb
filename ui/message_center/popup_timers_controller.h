@@ -53,14 +53,6 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   void StartTimer(const std::string& id,
                   const base::TimeDelta& timeout_in_seconds);
 
-  // Stops a single timer, reverts it to a new timeout, and restarts it.
-  void ResetTimer(const std::string& id,
-                  const base::TimeDelta& timeout_in_seconds);
-
-  // Pauses a single timer, such that it will continue where it left off after a
-  // call to StartAll or StartTimer.
-  void PauseTimer(const std::string& id);
-
   // Removes and cancels a single popup timer, if it exists.
   void CancelTimer(const std::string& id);
 
