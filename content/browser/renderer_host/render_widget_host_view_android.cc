@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1026,6 +1027,13 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     cc::CompositorFrameMetadata frame_metadata) {
   if (!content_view_core_)
     return;
+
+  bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
+
+  if (host_ && host_->input_router()) {
+    host_->input_router()->NotifySiteIsMobileOptimized(
+        is_mobile_optimized);
+  }
 
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
