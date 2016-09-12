@@ -21,6 +21,8 @@
 
 namespace ui {
 
+class XScopedEventSelector;
+
 // Owns a specific X11 selection on an X window.
 //
 // The selection owner object keeps track of which xwindow is the current
@@ -65,8 +67,7 @@ class UI_BASE_EXPORT SelectionOwner {
                         XAtom property,
                         const scoped_refptr<base::RefCountedMemory>& data,
                         int offset,
-                        base::TimeTicks timeout,
-                        int foreign_window_manager_id);
+                        base::TimeTicks timeout);
     IncrementalTransfer(const IncrementalTransfer& other);
     ~IncrementalTransfer();
 
@@ -86,10 +87,6 @@ class UI_BASE_EXPORT SelectionOwner {
     // Time when the transfer should be aborted because the selection requestor
     // is taking too long to notify us that we can send the next chunk.
     base::TimeTicks timeout;
-
-    // Used to unselect PropertyChangeMask on |window| when we are done with
-    // the data transfer.
-    int foreign_window_manager_id;
   };
 
   // Attempts to convert the selection to |target|. If the conversion is
@@ -115,6 +112,9 @@ class UI_BASE_EXPORT SelectionOwner {
   // Our X11 state.
   XDisplay* x_display_;
   XID x_window_;
+
+  // Events selected on the requesting window.
+  std::unique_ptr<XScopedEventSelector> requestor_events_;
 
   // The X11 selection that this instance communicates on.
   XAtom selection_name_;

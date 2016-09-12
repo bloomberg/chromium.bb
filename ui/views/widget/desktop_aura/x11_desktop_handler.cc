@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/x/x11_foreign_window_manager.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -139,11 +138,6 @@ void X11DesktopHandler::OnWindowCreatedOrDestroyed(int event_type,
     ui::XMenuList::GetInstance()->MaybeRegisterMenu(window);
   } else {
     ui::XMenuList::GetInstance()->MaybeUnregisterMenu(window);
-  }
-
-  if (event_type == DestroyNotify) {
-    // Notify the XForeignWindowManager that |window| has been destroyed.
-    ui::XForeignWindowManager::GetInstance()->OnWindowDestroyed(window);
   }
 }
 
