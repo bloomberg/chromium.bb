@@ -79,8 +79,6 @@ is_component_build = true
 is_clang = true
 symbol_level = 1  # Faster build with fewer symbols. -g1 rather than -g2
 enable_incremental_javac = true  # Much faster; experimental
-symbol_level = 1 # Faster build with fewer symbols. -g1 rather than -g2
-enable_incremental_javac = true # Much faster; experimental
 ```
 
 You can also specify `target_cpu` values of "x86" and "mipsel". Re-run
