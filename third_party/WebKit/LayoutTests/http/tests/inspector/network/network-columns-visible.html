@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function sendXHRRequest() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "resources/empty.html?xhr");
+    xhr.send();
+}
+
+function test() {
+    var columnsToTest = ["name", "method", "status", "protocol", "scheme", "domain", "remoteaddress", "type", "initiator", "cookies", "setcookies", "priority", "cache-control", "connection", "content-encoding", "content-length", "vary"];
+
+    function onNodeInserted(node)
+    {
+        if (node.request().name() !== "empty.html?xhr")
+            return;
+        for (var columnName of columnsToTest)
+            InspectorTest.addResult(columnName + ": " + node.createCell(columnName).textContent);
+        InspectorTest.completeTest();
+    }
+
+    InspectorTest.recordNetwork();
+    InspectorTest.addSniffer(WebInspector.panels.network._networkLogView._dataGrid, "insertChild", onNodeInserted, true);
+    InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests to ensure column names are matching data.</p>
+</body>
+</html>
