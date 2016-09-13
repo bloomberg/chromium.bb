@@ -23,6 +23,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
@@ -594,9 +595,11 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    @SmallTest
-    @Feature({"TextInput"})
-    @RetryOnFailure
+    //@SmallTest
+    //@Feature({"TextInput"})
+    //@RetryOnFailure
+    // Disabled, see crbug.com/646231.
+    @DisabledTest
     public void testImeStaysOnLongPressingDifferentNonEmptyInputs() throws Exception {
         DOMUtils.focusNode(mWebContents, "input_text");
         assertWaitForKeyboardStatus(true);
