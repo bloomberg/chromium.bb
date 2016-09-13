@@ -191,7 +191,7 @@ RootLayerScrolling
 RTCPeerConnectionNewGetStats status=test
 ScriptedSpeech status=stable
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
-ScrollAnchoring settable_from_internals=True
+ScrollAnchoring status=experimental, settable_from_internals=True
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
