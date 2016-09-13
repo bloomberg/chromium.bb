@@ -10,7 +10,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 #include <memory>
 
 namespace blink {
@@ -18,15 +17,9 @@ namespace blink {
 class FakeOffscreenCanvasSurfaceImpl {
 public:
     FakeOffscreenCanvasSurfaceImpl() {}
-    ~FakeOffscreenCanvasSurfaceImpl();
+    ~FakeOffscreenCanvasSurfaceImpl() {}
 
     bool GetSurfaceId(cc::SurfaceId*);
-    void RequestSurfaceCreation(const cc::SurfaceId&);
-
-    bool isSurfaceInSurfaceMap(const cc::SurfaceId&);
-
-private:
-    Vector<cc::SurfaceId> m_fakeSurfaceMap;
 };
 
 //-----------------------------------------------------------------------------
@@ -37,7 +30,6 @@ public:
     ~MockCanvasSurfaceLayerBridgeClient() override;
 
     bool syncGetSurfaceId(cc::SurfaceId*) override;
-    void asyncRequestSurfaceCreation(const cc::SurfaceId&) override;
     void asyncRequire(const cc::SurfaceId&, const cc::SurfaceSequence&) override {}
     void asyncSatisfy(const cc::SurfaceSequence&) override {}
 
@@ -77,30 +69,10 @@ bool MockCanvasSurfaceLayerBridgeClient::syncGetSurfaceId(cc::SurfaceId* surface
     return m_service->GetSurfaceId(surfaceIdPtr);
 }
 
-void MockCanvasSurfaceLayerBridgeClient::asyncRequestSurfaceCreation(const cc::SurfaceId& surfaceId)
-{
-    m_service->RequestSurfaceCreation(surfaceId);
-}
-
-FakeOffscreenCanvasSurfaceImpl::~FakeOffscreenCanvasSurfaceImpl()
-{
-    m_fakeSurfaceMap.clear();
-}
-
 bool FakeOffscreenCanvasSurfaceImpl::GetSurfaceId(cc::SurfaceId* surfaceId)
 {
     *surfaceId = cc::SurfaceId(10, 15, 0);
     return true;
-}
-
-void FakeOffscreenCanvasSurfaceImpl::RequestSurfaceCreation(const cc::SurfaceId& surfaceId)
-{
-    m_fakeSurfaceMap.append(surfaceId);
-}
-
-bool FakeOffscreenCanvasSurfaceImpl::isSurfaceInSurfaceMap(const cc::SurfaceId& surfaceId)
-{
-    return m_fakeSurfaceMap.contains(surfaceId);
 }
 
 void CanvasSurfaceLayerBridgeTest::SetUp()
@@ -113,7 +85,6 @@ void CanvasSurfaceLayerBridgeTest::SetUp()
 TEST_F(CanvasSurfaceLayerBridgeTest, SurfaceLayerCreation)
 {
     bool success = this->surfaceLayerBridge()->createSurfaceLayer(50, 50);
-    EXPECT_TRUE(this->surfaceService()->isSurfaceInSurfaceMap(this->surfaceLayerBridge()->getSurfaceId()));
     EXPECT_TRUE(success);
 }
 

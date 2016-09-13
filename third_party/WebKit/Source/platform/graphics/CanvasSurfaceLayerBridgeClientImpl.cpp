@@ -24,11 +24,6 @@ bool CanvasSurfaceLayerBridgeClientImpl::syncGetSurfaceId(cc::SurfaceId* surface
     return m_service->GetSurfaceId(surfaceIdPtr);
 }
 
-void CanvasSurfaceLayerBridgeClientImpl::asyncRequestSurfaceCreation(const cc::SurfaceId& surfaceId)
-{
-    m_service->RequestSurfaceCreation(surfaceId);
-}
-
 void CanvasSurfaceLayerBridgeClientImpl::asyncRequire(const cc::SurfaceId& surfaceId, const cc::SurfaceSequence& sequence)
 {
     m_service->Require(surfaceId, sequence);

@@ -14,21 +14,9 @@
 namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl()
-    : id_allocator_(new cc::SurfaceIdAllocator(AllocateSurfaceClientId())) {
-  GetSurfaceManager()->RegisterSurfaceClientId(id_allocator_->client_id());
-}
+    : id_allocator_(new cc::SurfaceIdAllocator(AllocateSurfaceClientId())) {}
 
-OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
-  if (!GetSurfaceManager()) {
-    // Inform both members that SurfaceManager's no longer alive to
-    // avoid their destruction errors.
-    if (surface_factory_)
-        surface_factory_->DidDestroySurfaceManager();
-  } else {
-    GetSurfaceManager()->InvalidateSurfaceClientId(id_allocator_->client_id());
-  }
-  surface_factory_->Destroy(surface_id_);
-}
+OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {}
 
 // static
 void OffscreenCanvasSurfaceImpl::Create(
@@ -44,15 +32,6 @@ void OffscreenCanvasSurfaceImpl::GetSurfaceId(
   surface_id_ = id_allocator_->GenerateId();
 
   callback.Run(surface_id_);
-}
-
-void OffscreenCanvasSurfaceImpl::RequestSurfaceCreation(
-    const cc::SurfaceId& surface_id) {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  if (!surface_factory_) {
-    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
-  }
-  surface_factory_->Create(surface_id);
 }
 
 void OffscreenCanvasSurfaceImpl::Require(const cc::SurfaceId& surface_id,
@@ -72,17 +51,5 @@ void OffscreenCanvasSurfaceImpl::Satisfy(const cc::SurfaceSequence& sequence) {
   cc::SurfaceManager* manager = GetSurfaceManager();
   manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
-
-// TODO(619136): Implement cc::SurfaceFactoryClient functions for resources
-// return.
-void OffscreenCanvasSurfaceImpl::ReturnResources(
-    const cc::ReturnedResourceArray& resources) {}
-
-void OffscreenCanvasSurfaceImpl::WillDrawSurface(const cc::SurfaceId& id,
-                                                 const gfx::Rect& damage_rect) {
-}
-
-void OffscreenCanvasSurfaceImpl::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {}
 
 }  // namespace content

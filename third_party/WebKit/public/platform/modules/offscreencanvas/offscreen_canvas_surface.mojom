@@ -14,7 +14,6 @@ interface OffscreenCanvasSurface {
   // unique surface_id.id_namespace alone.
   [Sync]
   GetSurfaceId() => (cc.mojom.SurfaceId surface_id);
-  RequestSurfaceCreation(cc.mojom.SurfaceId surface_id);
 
   Require(cc.mojom.SurfaceId surface_id, cc.mojom.SurfaceSequence sequence);
   Satisfy(cc.mojom.SurfaceSequence sequence);

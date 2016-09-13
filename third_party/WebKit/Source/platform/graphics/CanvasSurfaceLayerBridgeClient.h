@@ -19,7 +19,6 @@ public:
 
     // Calls that help initial creation of SurfaceLayer.
     virtual bool syncGetSurfaceId(cc::SurfaceId*) = 0;
-    virtual void asyncRequestSurfaceCreation(const cc::SurfaceId&) = 0;
 
     // Calls that ensure correct destruction order of surface.
     virtual void asyncRequire(const cc::SurfaceId&, const cc::SurfaceSequence&) = 0;

@@ -32,7 +32,6 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth, int canvasHei
     if (!m_client->syncGetSurfaceId(&m_surfaceId))
         return false;
 
-    m_client->asyncRequestSurfaceCreation(m_surfaceId);
     cc::SurfaceLayer::SatisfyCallback satisfyCallback = convertToBaseCallback(WTF::bind(&CanvasSurfaceLayerBridge::satisfyCallback, WTF::unretained(this)));
     cc::SurfaceLayer::RequireCallback requireCallback = convertToBaseCallback(WTF::bind(&CanvasSurfaceLayerBridge::requireCallback, WTF::unretained(this)));
     m_surfaceLayer = cc::SurfaceLayer::Create(std::move(satisfyCallback), std::move(requireCallback));

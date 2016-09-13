@@ -13,7 +13,18 @@ namespace content {
 
 OffscreenCanvasFrameReceiverImpl::OffscreenCanvasFrameReceiverImpl() {}
 
-OffscreenCanvasFrameReceiverImpl::~OffscreenCanvasFrameReceiverImpl() {}
+OffscreenCanvasFrameReceiverImpl::~OffscreenCanvasFrameReceiverImpl() {
+  if (surface_factory_) {
+    if (!GetSurfaceManager()) {
+      // Inform SurfaceFactory that SurfaceManager's no longer alive to
+      // avoid its destruction error.
+      surface_factory_->DidDestroySurfaceManager();
+    } else {
+      GetSurfaceManager()->InvalidateSurfaceClientId(surface_id_.client_id());
+    }
+    surface_factory_->Destroy(surface_id_);
+  }
+}
 
 // static
 void OffscreenCanvasFrameReceiverImpl::Create(
@@ -25,11 +36,30 @@ void OffscreenCanvasFrameReceiverImpl::Create(
 void OffscreenCanvasFrameReceiverImpl::SubmitCompositorFrame(
     const cc::SurfaceId& surface_id,
     cc::CompositorFrame frame) {
-    cc::Surface* surface = GetSurfaceManager()->GetSurfaceForId(surface_id);
-    if (surface) {
-        surface->QueueFrame(std::move(frame), base::Closure());
+  if (!surface_factory_) {
+    cc::SurfaceManager* manager = GetSurfaceManager();
+    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
+    surface_factory_->Create(surface_id);
+
+    GetSurfaceManager()->RegisterSurfaceClientId(surface_id.client_id());
+  }
+  if (surface_id_.is_null()) {
+    surface_id_ = surface_id;
     }
-    // If surface doet not exist, drop the frame.
+    surface_factory_->SubmitCompositorFrame(surface_id, std::move(frame),
+                                            base::Closure());
 }
+
+// TODO(619136): Implement cc::SurfaceFactoryClient functions for resources
+// return.
+void OffscreenCanvasFrameReceiverImpl::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {}
+
+void OffscreenCanvasFrameReceiverImpl::WillDrawSurface(
+    const cc::SurfaceId& id,
+    const gfx::Rect& damage_rect) {}
+
+void OffscreenCanvasFrameReceiverImpl::SetBeginFrameSource(
+    cc::BeginFrameSource* begin_frame_source) {}
 
 }  // namespace content
