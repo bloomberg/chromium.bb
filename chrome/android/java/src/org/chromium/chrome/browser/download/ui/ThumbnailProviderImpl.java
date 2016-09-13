@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
@@ -106,9 +107,12 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
     }
 
     @CalledByNative
-    private void onThumbnailRetrieved(String filePath, Bitmap bitmap) {
-        getBitmapCache().put(filePath, bitmap);
-        mCurrentRequest.onThumbnailRetrieved(filePath, bitmap);
+    private void onThumbnailRetrieved(String filePath, @Nullable Bitmap bitmap) {
+        if (bitmap != null) {
+            getBitmapCache().put(filePath, bitmap);
+            mCurrentRequest.onThumbnailRetrieved(filePath, bitmap);
+        }
+
         mCurrentRequest = null;
         processQueue();
     }

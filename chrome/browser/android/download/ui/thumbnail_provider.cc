@@ -82,6 +82,7 @@ class ImageThumbnailRequest : public ImageDecoder::ImageRequest {
     if (!base::GetFileSize(path, &file_size) || file_size > kMaxImageSize) {
       LOG(ERROR) << "Unexpected file size: " << file_path_ << ", " << file_size;
       FinishRequest(SkBitmap());
+      return;
     }
 
     // Make sure the file isn't empty.
@@ -90,6 +91,7 @@ class ImageThumbnailRequest : public ImageDecoder::ImageRequest {
     if (!success || data.empty()) {
       LOG(ERROR) << "Failed to read file: " << file_path_;
       FinishRequest(SkBitmap());
+      return;
     }
 
     ImageDecoder::Start(this, data);
@@ -139,7 +141,8 @@ void ThumbnailProvider::OnThumbnailRetrieved(const std::string& file_path,
   Java_ThumbnailProviderImpl_onThumbnailRetrieved(
       env, java_delegate_,
       base::android::ConvertUTF8ToJavaString(env, file_path),
-      gfx::ConvertToJavaBitmap(&thumbnail));
+      thumbnail.drawsNothing() ? NULL
+          : gfx::ConvertToJavaBitmap(&thumbnail));
 }
 
 void ThumbnailProvider::RetrieveThumbnail(JNIEnv* env,
