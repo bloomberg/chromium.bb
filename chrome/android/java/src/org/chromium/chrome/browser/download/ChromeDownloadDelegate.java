@@ -510,10 +510,7 @@ public class ChromeDownloadDelegate {
                 || "application/force-download".equals(mimeType)
                 || "application/unknown".equals(mimeType)) {
 
-            if (!TextUtils.isEmpty(filename)) {
-                url = filename;
-            }
-            String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+            String extension = getFileExtension(url, filename);
             String newMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
             if (newMimeType != null) {
                 mimeType = newMimeType;
@@ -524,6 +521,22 @@ public class ChromeDownloadDelegate {
             }
         }
         return mimeType;
+    }
+
+    /**
+     * Retrieve the file extension from a given file name or url.
+     *
+     * @param url URL to extract the extension.
+     * @param filename File name to extract the extension.
+     * @return If extension can be extracted from file name, use that. Or otherwise, use the
+     *         extension extracted from the url.
+     */
+    static String getFileExtension(String url, String filename) {
+        if (!TextUtils.isEmpty(filename)) {
+            int index = filename.lastIndexOf(".");
+            if (index > 0) return filename.substring(index + 1);
+        }
+        return MimeTypeMap.getFileExtensionFromUrl(url);
     }
 
     /**

@@ -69,4 +69,14 @@ public class ChromeDownloadDelegateTest extends ChromeActivityTestCaseBase<Chrom
         assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.dd"));
         assertTrue(delegate.shouldInterceptContextMenuDownload("https://test/test.dm"));
     }
+
+    @SmallTest
+    @Feature({"Download"})
+    public void testGetFileExtension() {
+        assertEquals("ext", ChromeDownloadDelegate.getFileExtension("", "file.ext"));
+        assertEquals("ext", ChromeDownloadDelegate.getFileExtension("http://file.ext", ""));
+        assertEquals("txt", ChromeDownloadDelegate.getFileExtension("http://file.ext", "file.txt"));
+        assertEquals("txt", ChromeDownloadDelegate.getFileExtension(
+                "http://file.ext", "file name.txt"));
+    }
 }
