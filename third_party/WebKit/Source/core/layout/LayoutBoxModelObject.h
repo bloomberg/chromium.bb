@@ -232,16 +232,16 @@ public:
     bool hasBorderOrPadding() const { return style()->hasBorder() || style()->hasPadding(); }
 
     LayoutUnit borderAndPaddingStart() const { return borderStart() + paddingStart(); }
-    LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
-    LayoutUnit borderAndPaddingAfter() const { return borderAfter() + paddingAfter(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingAfter() const { return borderAfter() + paddingAfter(); }
     LayoutUnit borderAndPaddingOver() const { return borderOver() + paddingOver(); }
     LayoutUnit borderAndPaddingUnder() const { return borderUnder() + paddingUnder(); }
 
-    LayoutUnit borderAndPaddingHeight() const { return borderTop() + borderBottom() + paddingTop() + paddingBottom(); }
-    LayoutUnit borderAndPaddingWidth() const { return borderLeft() + borderRight() + paddingLeft() + paddingRight(); }
-    LayoutUnit borderAndPaddingLogicalHeight() const { return hasBorderOrPadding() ? borderAndPaddingBefore() + borderAndPaddingAfter() : LayoutUnit(); }
-    LayoutUnit borderAndPaddingLogicalWidth() const { return borderStart() + borderEnd() + paddingStart() + paddingEnd(); }
-    LayoutUnit borderAndPaddingLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingHeight() const { return borderTop() + borderBottom() + paddingTop() + paddingBottom(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingWidth() const { return borderLeft() + borderRight() + paddingLeft() + paddingRight(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingLogicalHeight() const { return hasBorderOrPadding() ? borderAndPaddingBefore() + borderAndPaddingAfter() : LayoutUnit(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingLogicalWidth() const { return borderStart() + borderEnd() + paddingStart() + paddingEnd(); }
+    DISABLE_CFI_PERF LayoutUnit borderAndPaddingLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
 
     LayoutUnit borderLogicalLeft() const { return LayoutUnit(style()->isHorizontalWritingMode() ? borderLeft() : borderTop()); }
     LayoutUnit borderLogicalRight() const { return LayoutUnit(style()->isHorizontalWritingMode() ? borderRight() : borderBottom()); }
@@ -260,10 +260,10 @@ public:
     virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const = 0;
     virtual LayoutUnit marginOver() const = 0;
     virtual LayoutUnit marginUnder() const = 0;
-    LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
-    LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
-    LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }
-    LayoutUnit marginLogicalWidth() const { return marginStart() + marginEnd(); }
+    DISABLE_CFI_PERF LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
+    DISABLE_CFI_PERF LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
+    DISABLE_CFI_PERF LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }
+    DISABLE_CFI_PERF LayoutUnit marginLogicalWidth() const { return marginStart() + marginEnd(); }
 
     bool hasInlineDirectionBordersPaddingOrMargin() const { return hasInlineDirectionBordersOrPadding() || marginStart() || marginEnd(); }
     bool hasInlineDirectionBordersOrPadding() const { return borderStart() || borderEnd() || paddingStart() || paddingEnd(); }

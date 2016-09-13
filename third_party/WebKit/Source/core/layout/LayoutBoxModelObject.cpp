@@ -237,6 +237,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
     LayoutObject::styleWillChange(diff, newStyle);
 }
 
+DISABLE_CFI_PERF
 void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     bool hadTransform = hasTransformRelatedProperty();
@@ -442,6 +443,7 @@ static bool hasPercentageTransform(const ComputedStyle& style)
         || (style.transformOriginY() != Length(50, Percent) && style.transformOriginY().isPercentOrCalc());
 }
 
+DISABLE_CFI_PERF
 void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ensureIsReadyForPaintInvalidation();

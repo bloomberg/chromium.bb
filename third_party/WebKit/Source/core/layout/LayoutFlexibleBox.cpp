@@ -424,6 +424,7 @@ void LayoutFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineCon
     flipForRightToLeftColumn();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::clientLogicalBottomAfterRepositioning()
 {
     LayoutUnit maxChildLogicalBottom;
@@ -497,6 +498,7 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalHeight(const LayoutBox& child
     return child.logicalHeight();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::childIntrinsicLogicalWidth(const LayoutBox& child) const
 {
     // This should only be called if the logical width is the cross size
@@ -632,6 +634,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
     return LayoutUnit(borderTop());
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwareBorderAfter() const
 {
     switch (getTransformedWritingMode()) {
@@ -678,6 +681,7 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingBefore() const
     return paddingTop();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingAfter() const
 {
     switch (getTransformedWritingMode()) {
@@ -694,6 +698,7 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingAfter() const
     return paddingTop();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwareMarginStartForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
@@ -701,6 +706,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareMarginStartForChild(const LayoutBox& chil
     return isLeftToRightFlow() ? child.marginTop() : child.marginBottom();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(const LayoutBox& child) const
 {
     if (isHorizontalFlow())
@@ -708,6 +714,7 @@ LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(const LayoutBox& child)
     return isLeftToRightFlow() ? child.marginBottom() : child.marginTop();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(const LayoutBox& child) const
 {
     switch (getTransformedWritingMode()) {
@@ -853,6 +860,7 @@ void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child)
     m_intrinsicSizeAlongMainAxis.remove(&child);
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, LayoutUnit mainAxisBorderAndPadding, ChildLayoutType childLayoutType)
 {
     child.clearOverrideSize();
@@ -1071,6 +1079,7 @@ bool LayoutFlexibleBox::updateAutoMarginsInCrossAxis(LayoutBox& child, LayoutUni
     return false;
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::marginBoxAscentForChild(const LayoutBox& child)
 {
     LayoutUnit ascent(child.firstLineBoxBaseline());
@@ -1109,6 +1118,7 @@ void LayoutFlexibleBox::prepareOrderIteratorAndMargins()
     }
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize)
 {
     Length max = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
@@ -1225,6 +1235,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForAspectRatioCrossAxisMinAndMax(co
     return childSize;
 }
 
+DISABLE_CFI_PERF
 LayoutFlexibleBox::FlexItem LayoutFlexibleBox::constructFlexItem(LayoutBox& child, ChildLayoutType layoutType)
 {
     LayoutUnit borderAndPadding = isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
@@ -1619,6 +1630,7 @@ EOverflow LayoutFlexibleBox::crossAxisOverflowForChild(const LayoutBox& child) c
     return child.styleRef().overflowX();
 }
 
+DISABLE_CFI_PERF
 void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope& layoutScope, Vector<LineContext>& lineContexts)
 {
     ContentPosition position = styleRef().resolvedJustifyContentPosition(contentAlignmentNormalBehavior());

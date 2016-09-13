@@ -115,6 +115,7 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     return oldChild;
 }
 
+DISABLE_CFI_PERF
 void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyLayoutObject)
 {
     ASSERT(!newChild->parent());

@@ -114,6 +114,7 @@ void ObjectPaintInvalidator::invalidateDisplayItemClientsIncludingNonCompositing
     });
 }
 
+DISABLE_CFI_PERF
 void ObjectPaintInvalidator::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason reason)
 {
     // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.

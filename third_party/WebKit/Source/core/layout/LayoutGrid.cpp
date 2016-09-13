@@ -1001,6 +1001,7 @@ bool LayoutGrid::updateOverrideContainingBlockContentSizeForChild(LayoutBox& chi
     return true;
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData) const
 {
     GridTrackSizingDirection childInlineDirection = flowAwareDirectionForChild(child, ForColumns);
@@ -1030,6 +1031,7 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
     return logicalHeightForChild(child, sizingData);
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirection direction, GridSizingData& sizingData) const
 {
     GridTrackSizingDirection childInlineDirection = flowAwareDirectionForChild(child, ForColumns);
@@ -2292,6 +2294,7 @@ bool LayoutGrid::hasAutoMarginsInRowAxis(const LayoutBox& child) const
 }
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+DISABLE_CFI_PERF
 void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());
@@ -2313,6 +2316,7 @@ void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child)
 }
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
+DISABLE_CFI_PERF
 void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());

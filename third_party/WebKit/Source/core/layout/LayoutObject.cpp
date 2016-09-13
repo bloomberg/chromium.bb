@@ -303,6 +303,7 @@ bool LayoutObject::requiresAnonymousTableWrappers(const LayoutObject* newChild) 
     return false;
 }
 
+DISABLE_CFI_PERF
 void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     ASSERT(isAllowedToModifyLayoutTreeStructure(document()));
@@ -1146,6 +1147,7 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
+DISABLE_CFI_PERF
 void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
@@ -1204,6 +1206,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     return invalidatePaintIfNeeded(context);
 }
 
+DISABLE_CFI_PERF
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
 {
     return ObjectPaintInvalidatorWithContext(*this, context).invalidatePaintIfNeeded();
@@ -1560,6 +1563,7 @@ void LayoutObject::setNeedsOverflowRecalcAfterStyleChange()
         markAncestorsForOverflowRecalcIfNeeded();
 }
 
+DISABLE_CFI_PERF
 void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
 {
     ASSERT(style);
@@ -2404,6 +2408,7 @@ void LayoutObject::willBeDestroyed()
         setIsBackgroundAttachmentFixedObject(false);
 }
 
+DISABLE_CFI_PERF
 void LayoutObject::insertedIntoTree()
 {
     // FIXME: We should ASSERT(isRooted()) here but generated content makes some out-of-order insertion.
@@ -2576,6 +2581,7 @@ void LayoutObject::destroy()
     delete this;
 }
 
+DISABLE_CFI_PERF
 void LayoutObject::removeShapeImageClient(ShapeValue* shapeValue)
 {
     if (!shapeValue)

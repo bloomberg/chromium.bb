@@ -245,6 +245,7 @@ public:
     LayoutObject* previousSibling() const { return m_previous; }
     LayoutObject* nextSibling() const { return m_next; }
 
+    DISABLE_CFI_PERF
     LayoutObject* slowFirstChild() const
     {
         if (const LayoutObjectChildList* children = virtualChildren())
@@ -357,7 +358,7 @@ public:
 
     // LayoutObject tree manipulation
     //////////////////////////////////////////
-    virtual bool canHaveChildren() const { return virtualChildren(); }
+    DISABLE_CFI_PERF virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const { return true; }
 
     // This function is called whenever a child is inserted under |this|.
@@ -885,7 +886,7 @@ public:
     bool hasSubtreeChangeListenerRegistered() const { return m_bitfields.subtreeChangeListenerRegistered(); }
 
     /* This function performs a layout only if one is needed. */
-    void layoutIfNeeded()
+    DISABLE_CFI_PERF void layoutIfNeeded()
     {
         if (needsLayout())
             layout();
@@ -2087,6 +2088,7 @@ inline void LayoutObject::invalidateBackgroundObscurationStatus()
     m_bitfields.setBackgroundObscurationState(BackgroundObscurationStatusInvalid);
 }
 
+DISABLE_CFI_PERF
 inline bool LayoutObject::backgroundIsKnownToBeObscured() const
 {
     if (m_bitfields.getBackgroundObscurationState() == BackgroundObscurationStatusInvalid) {
