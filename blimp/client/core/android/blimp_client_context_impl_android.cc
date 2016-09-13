@@ -25,7 +25,7 @@ bool BlimpClientContextImplAndroid::RegisterJni(JNIEnv* env) {
 // static
 BlimpClientContextImplAndroid* BlimpClientContextImplAndroid::FromJavaObject(
     JNIEnv* env,
-    jobject jobj) {
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<BlimpClientContextImplAndroid*>(
       Java_BlimpClientContextImpl_getNativePtr(env, jobj));
 }
@@ -69,7 +69,7 @@ BlimpClientContextImplAndroid::GetJavaObject() {
 base::android::ScopedJavaLocalRef<jobject>
 BlimpClientContextImplAndroid::CreateBlimpContentsJava(
     JNIEnv* env,
-    jobject jobj,
+    const base::android::JavaRef<jobject>& jobj,
     jlong window_android_ptr) {
   ui::WindowAndroid* window_android =
       reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
@@ -91,13 +91,16 @@ GURL BlimpClientContextImplAndroid::GetAssignerURL() {
   return assigner_url;
 }
 
-void BlimpClientContextImplAndroid::ConnectFromJava(JNIEnv* env, jobject jobj) {
+void BlimpClientContextImplAndroid::ConnectFromJava(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
   BlimpClientContextImpl::Connect();
 }
 
-void BlimpClientContextImplAndroid::InitSettingsPage(JNIEnv* env,
-                                                     jobject jobj,
-                                                     jobject blimp_settings) {
+void BlimpClientContextImplAndroid::InitSettingsPage(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj,
+    const base::android::JavaRef<jobject>& blimp_settings) {
   BlimpSettingsAndroid* settings_android =
       BlimpSettingsAndroid::FromJavaObject(env, blimp_settings);
 

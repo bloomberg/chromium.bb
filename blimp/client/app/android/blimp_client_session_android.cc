@@ -50,7 +50,7 @@ bool BlimpClientSessionAndroid::RegisterJni(JNIEnv* env) {
 // static
 BlimpClientSessionAndroid* BlimpClientSessionAndroid::FromJavaObject(
     JNIEnv* env,
-    jobject jobj) {
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<BlimpClientSessionAndroid*>(
       Java_BlimpClientSession_getNativePtr(env, jobj));
 }

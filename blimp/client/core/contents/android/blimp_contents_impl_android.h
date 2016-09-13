@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_CONTENTS_ANDROID_BLIMP_CONTENTS_IMPL_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/core/contents/android/blimp_navigation_controller_impl_android.h"
@@ -17,7 +18,9 @@ namespace client {
 class BlimpContentsImplAndroid : public base::SupportsUserData::Data {
  public:
   static bool RegisterJni(JNIEnv* env);
-  static BlimpContentsImplAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
+  static BlimpContentsImplAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   explicit BlimpContentsImplAndroid(BlimpContentsImpl* blimp_contents_impl);

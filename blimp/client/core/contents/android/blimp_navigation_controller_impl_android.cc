@@ -24,8 +24,9 @@ bool BlimpNavigationControllerImplAndroid::RegisterJni(JNIEnv* env) {
 
 // static
 BlimpNavigationControllerImplAndroid*
-BlimpNavigationControllerImplAndroid::FromJavaObject(JNIEnv* env,
-                                                     jobject jobj) {
+BlimpNavigationControllerImplAndroid::FromJavaObject(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<BlimpNavigationControllerImplAndroid*>(
       Java_BlimpNavigationControllerImpl_getNativePtr(env, jobj));
 }

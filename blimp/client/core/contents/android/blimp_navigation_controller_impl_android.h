@@ -20,8 +20,9 @@ class BlimpNavigationControllerDelegate;
 class BlimpNavigationControllerImplAndroid {
  public:
   static bool RegisterJni(JNIEnv* env);
-  static BlimpNavigationControllerImplAndroid* FromJavaObject(JNIEnv* env,
-                                                              jobject jobj);
+  static BlimpNavigationControllerImplAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   BlimpNavigationControllerImplAndroid(

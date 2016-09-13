@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_ANDROID_BLIMP_CLIENT_CONTEXT_IMPL_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "blimp/client/core/blimp_client_context_impl.h"
 
@@ -18,8 +19,9 @@ class CompositorDependencies;
 class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
  public:
   static bool RegisterJni(JNIEnv* env);
-  static BlimpClientContextImplAndroid* FromJavaObject(JNIEnv* env,
-                                                       jobject jobj);
+  static BlimpClientContextImplAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
 
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
@@ -33,15 +35,20 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  base::android::ScopedJavaLocalRef<jobject>
-  CreateBlimpContentsJava(JNIEnv* env, jobject jobj, jlong window_android_ptr);
+  base::android::ScopedJavaLocalRef<jobject> CreateBlimpContentsJava(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      jlong window_android_ptr);
 
   // Start authentication flow from Java.
-  void ConnectFromJava(JNIEnv* env, jobject jobj);
+  void ConnectFromJava(JNIEnv* env,
+                       const base::android::JavaRef<jobject>& jobj);
 
   // Initialize blimp settings page, this involves setup neccessary data in
   // native for setting page.
-  void InitSettingsPage(JNIEnv* env, jobject jobj, jobject blimp_settings);
+  void InitSettingsPage(JNIEnv* env,
+                        const base::android::JavaRef<jobject>& jobj,
+                        const base::android::JavaRef<jobject>& blimp_settings);
 
  protected:
   // BlimpClientContextImpl implementation.

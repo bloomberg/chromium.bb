@@ -36,8 +36,7 @@ static jlong Init(JNIEnv* env,
                   jint height,
                   jfloat dp_to_px) {
   BlimpClientSession* client_session =
-      BlimpClientSessionAndroid::FromJavaObject(env,
-                                                blimp_client_session.obj());
+      BlimpClientSessionAndroid::FromJavaObject(env, blimp_client_session);
 
   // TODO(dtrainor): Pull the feature object from the BlimpClientSession and
   // pass it through to the BlimpCompositor.

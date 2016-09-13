@@ -15,7 +15,7 @@ namespace client {
 // static
 DummyBlimpClientContextAndroid* DummyBlimpClientContextAndroid::FromJavaObject(
     JNIEnv* env,
-    jobject jobj) {
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<DummyBlimpClientContextAndroid*>(
       Java_DummyBlimpClientContext_getNativePtr(env, jobj));
 }

@@ -17,7 +17,7 @@ jlong Init(JNIEnv* env,
            const base::android::JavaParamRef<jobject>& jobj,
            const base::android::JavaParamRef<jobject>& jblimp_contents_impl) {
   BlimpContentsImplAndroid* blimp_contents_impl_android =
-      BlimpContentsImplAndroid::FromJavaObject(env, jblimp_contents_impl.obj());
+      BlimpContentsImplAndroid::FromJavaObject(env, jblimp_contents_impl);
   CHECK(blimp_contents_impl_android);
 
   return reinterpret_cast<intptr_t>(

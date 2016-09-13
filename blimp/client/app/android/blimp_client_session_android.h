@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "blimp/client/core/contents/android/ime_helper_dialog.h"
 #include "blimp/client/public/session/assignment.h"
@@ -20,7 +21,9 @@ class AssignmentSource;
 class BlimpClientSessionAndroid : public BlimpClientSession {
  public:
   static bool RegisterJni(JNIEnv* env);
-  static BlimpClientSessionAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
+  static BlimpClientSessionAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
 
   BlimpClientSessionAndroid(
       JNIEnv* env,

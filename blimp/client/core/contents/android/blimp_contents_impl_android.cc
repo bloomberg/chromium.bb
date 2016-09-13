@@ -23,7 +23,7 @@ bool BlimpContentsImplAndroid::RegisterJni(JNIEnv* env) {
 // static
 BlimpContentsImplAndroid* BlimpContentsImplAndroid::FromJavaObject(
     JNIEnv* env,
-    jobject jobj) {
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<BlimpContentsImplAndroid*>(
       Java_BlimpContentsImpl_getNativePtr(env, jobj));
 }

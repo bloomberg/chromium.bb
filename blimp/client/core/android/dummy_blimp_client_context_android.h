@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_ANDROID_DUMMY_BLIMP_CLIENT_CONTEXT_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "blimp/client/core/dummy_blimp_client_context.h"
 
@@ -15,8 +16,9 @@ namespace client {
 // JNI bridge between DummyBlimpClientContext in Java and C++.
 class DummyBlimpClientContextAndroid : public DummyBlimpClientContext {
  public:
-  static DummyBlimpClientContextAndroid* FromJavaObject(JNIEnv* env,
-                                                        jobject jobj);
+  static DummyBlimpClientContextAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
 
   DummyBlimpClientContextAndroid();
   ~DummyBlimpClientContextAndroid() override;

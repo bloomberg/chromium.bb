@@ -16,8 +16,9 @@ bool BlimpSettingsAndroid::RegisterJni(JNIEnv* env) {
 }
 
 // static
-BlimpSettingsAndroid* BlimpSettingsAndroid::FromJavaObject(JNIEnv* env,
-                                                           jobject jobj) {
+BlimpSettingsAndroid* BlimpSettingsAndroid::FromJavaObject(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
   return reinterpret_cast<BlimpSettingsAndroid*>(
       Java_AboutBlimpPreferences_getNativePtr(env, jobj));
 }
@@ -27,9 +28,11 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(new BlimpSettingsAndroid(env, jobj));
 }
 
-BlimpSettingsAndroid::BlimpSettingsAndroid(JNIEnv* env, jobject jobj)
+BlimpSettingsAndroid::BlimpSettingsAndroid(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj)
     : identity_source_(nullptr) {
-  java_obj_.Reset(env, jobj);
+  java_obj_.Reset(jobj);
 }
 
 BlimpSettingsAndroid::~BlimpSettingsAndroid() {

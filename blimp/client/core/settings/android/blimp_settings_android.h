@@ -19,8 +19,11 @@ class BlimpClientContextImplAndroid;
 class BlimpSettingsAndroid : public IdentityProvider::Observer {
  public:
   static bool RegisterJni(JNIEnv* env);
-  static BlimpSettingsAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
-  BlimpSettingsAndroid(JNIEnv* env, jobject jobj);
+  static BlimpSettingsAndroid* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
+  BlimpSettingsAndroid(JNIEnv* env,
+                       const base::android::JavaRef<jobject>& jobj);
   ~BlimpSettingsAndroid() override;
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);

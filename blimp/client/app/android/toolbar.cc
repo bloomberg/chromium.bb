@@ -28,8 +28,7 @@ static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
                   const JavaParamRef<jobject>& blimp_client_session) {
   BlimpClientSession* client_session =
-      BlimpClientSessionAndroid::FromJavaObject(env,
-                                                blimp_client_session.obj());
+      BlimpClientSessionAndroid::FromJavaObject(env, blimp_client_session);
 
   return reinterpret_cast<intptr_t>(
       new Toolbar(env, jobj, client_session->GetNavigationFeature()));
