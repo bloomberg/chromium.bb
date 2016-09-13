@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_BINDING_H_
 
+#include <string>
 #include <utility>
 
 #include "base/callback_forward.h"
@@ -12,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -198,6 +200,11 @@ class Binding {
   // state where it can be rebound to a new pipe.
   void Close() { internal_state_.Close(); }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void CloseWithReason(uint32_t custom_reason, const std::string& description) {
+    internal_state_.CloseWithReason(custom_reason, description);
+  }
+
   // Unbinds the underlying pipe from this binding and returns it so it can be
   // used in another context, such as on another thread or with a different
   // implementation. Put this object into a state where it can be rebound to a
@@ -224,6 +231,12 @@ class Binding {
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
     internal_state_.set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(is_bound());
+    internal_state_.set_connection_error_with_reason_handler(error_handler);
   }
 
   // Returns the interface implementation that was previously specified. Caller

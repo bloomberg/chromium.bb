@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
@@ -47,6 +48,12 @@ class Router : public MessageReceiverWithResponder {
   // encountered while reading from the pipe or waiting to read from the pipe.
   void set_connection_error_handler(const base::Closure& error_handler) {
     error_handler_ = error_handler;
+    error_with_reason_handler_.Reset();
+  }
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    error_with_reason_handler_ = error_handler;
+    error_handler_.Reset();
   }
 
   // Returns true if an error was encountered while reading from the pipe or
@@ -179,6 +186,7 @@ class Router : public MessageReceiverWithResponder {
   bool pending_task_for_messages_;
   bool encountered_error_;
   base::Closure error_handler_;
+  ConnectionErrorWithReasonCallback error_with_reason_handler_;
   ControlMessageProxy control_message_proxy_;
   ControlMessageHandler control_message_handler_;
   base::ThreadChecker thread_checker_;

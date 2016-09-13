@@ -327,8 +327,16 @@ void Router::OnConnectionError() {
   // longer.
   async_responders_.clear();
 
-  if (!error_handler_.is_null())
+  if (!error_handler_.is_null()) {
     error_handler_.Run();
+  } else if (!error_with_reason_handler_.is_null()) {
+    // Make a copy on the stack. If we directly pass a reference to a member of
+    // |control_message_handler_|, that reference will be invalidated as soon as
+    // the user destroys the interface endpoint.
+    std::string description = control_message_handler_.disconnect_description();
+    error_with_reason_handler_.Run(
+        control_message_handler_.disconnect_custom_reason(), description);
+  }
 }
 
 // ----------------------------------------------------------------------------

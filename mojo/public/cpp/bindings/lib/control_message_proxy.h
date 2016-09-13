@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
@@ -28,6 +30,8 @@ class ControlMessageProxy {
   void RequireVersion(uint32_t version);
 
   void FlushForTesting();
+  void SendDisconnectReason(uint32_t custom_reason,
+                            const std::string& description);
 
   void OnConnectionError();
 

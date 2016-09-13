@@ -424,6 +424,27 @@ TEST_F(BindingTest, FlushForTestingWithClosedPeer) {
   binding.FlushForTesting();
 }
 
+TEST_F(BindingTest, ConnectionErrorWithReason) {
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  ServiceImpl impl;
+  Binding<sample::Service> binding(&impl, std::move(request));
+
+  base::RunLoop run_loop;
+  binding.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(1234u, custom_reason);
+        EXPECT_EQ("hello", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  ptr.ResetWithReason(1234u, "hello");
+
+  run_loop.Run();
+}
+
 // StrongBindingTest -----------------------------------------------------------
 
 using StrongBindingTest = BindingTestBase;
@@ -524,6 +545,26 @@ TEST_F(StrongBindingTest, FlushForTestingWithClosedPeer) {
   EXPECT_TRUE(called);
   EXPECT_TRUE(was_deleted);
   ASSERT_FALSE(binding);
+}
+
+TEST_F(StrongBindingTest, ConnectionErrorWithReason) {
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  auto binding =
+      MakeStrongBinding(base::MakeUnique<ServiceImpl>(), std::move(request));
+  base::RunLoop run_loop;
+  binding->set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(5678u, custom_reason);
+        EXPECT_EQ("hello", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  ptr.ResetWithReason(5678u, "hello");
+
+  run_loop.Run();
 }
 
 }  // namespace

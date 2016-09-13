@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -28,12 +30,23 @@ class ControlMessageHandler : public MessageReceiverWithResponderStatus {
   bool AcceptWithResponder(Message* message,
                            MessageReceiverWithStatus* responder) override;
 
+  uint32_t disconnect_custom_reason() const {
+    return disconnect_custom_reason_;
+  }
+
+  const std::string& disconnect_description() const {
+    return disconnect_description_;
+  }
+
  private:
   bool Run(Message* message, MessageReceiverWithStatus* responder);
   bool RunOrClosePipe(Message* message);
 
   uint32_t interface_version_;
   SerializationContext context_;
+
+  uint32_t disconnect_custom_reason_ = 0;
+  std::string disconnect_description_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlMessageHandler);
 };

@@ -29,10 +29,6 @@ class MathCalculatorImpl : public math::Calculator {
       : total_(0.0), binding_(this, std::move(request)) {}
   ~MathCalculatorImpl() override {}
 
-  void CloseMessagePipe() { binding_.Close(); }
-
-  void WaitForIncomingMethodCall() { binding_.WaitForIncomingMethodCall(); }
-
   void Clear(const CalcCallback& callback) override {
     total_ = 0.0;
     callback.Run(total_);
@@ -47,6 +43,8 @@ class MathCalculatorImpl : public math::Calculator {
     total_ *= value;
     callback.Run(total_);
   }
+
+  Binding<math::Calculator>* binding() { return &binding_; }
 
  private:
   double total_;
@@ -252,14 +250,14 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   base::RunLoop run_loop;
   calculator_ui.Add(2.0, run_loop.QuitClosure());
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
-  calc_impl.WaitForIncomingMethodCall();
+  calc_impl.binding()->WaitForIncomingMethodCall();
   run_loop.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
   base::RunLoop run_loop2;
   calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
-  calc_impl.WaitForIncomingMethodCall();
+  calc_impl.binding()->WaitForIncomingMethodCall();
   run_loop2.Run();
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
@@ -328,7 +326,7 @@ TEST_F(InterfacePtrTest, EncounteredError) {
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
-  calc_impl.CloseMessagePipe();
+  calc_impl.binding()->Close();
 
   // The state change isn't picked up locally yet.
   base::RunLoop run_loop2;
@@ -363,7 +361,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
-  calc_impl.CloseMessagePipe();
+  calc_impl.binding()->Close();
 
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
@@ -752,6 +750,25 @@ TEST_F(InterfacePtrTest, FlushForTestingWithClosedPeer) {
   calc.FlushForTesting();
   EXPECT_TRUE(called);
   calc.FlushForTesting();
+}
+
+TEST_F(InterfacePtrTest, ConnectionErrorWithReason) {
+  math::CalculatorPtr calc;
+  MathCalculatorImpl calc_impl(GetProxy(&calc));
+
+  base::RunLoop run_loop;
+  calc.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(42u, custom_reason);
+        EXPECT_EQ("hey", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  calc_impl.binding()->CloseWithReason(42u, "hey");
+
+  run_loop.Run();
 }
 
 }  // namespace

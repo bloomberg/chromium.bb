@@ -9,6 +9,7 @@
 
 #include <algorithm>  // For |std::swap()|.
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -20,6 +21,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
@@ -72,6 +74,12 @@ class AssociatedInterfacePtrState {
     endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
+  void SendDisconnectReason(uint32_t custom_reason,
+                            const std::string& description) {
+    endpoint_client_->control_message_proxy()->SendDisconnectReason(
+        custom_reason, description);
+  }
+
   void Swap(AssociatedInterfacePtrState* other) {
     using std::swap;
     swap(other->endpoint_client_, endpoint_client_);
@@ -116,6 +124,12 @@ class AssociatedInterfacePtrState {
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(endpoint_client_);
     endpoint_client_->set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->set_connection_error_with_reason_handler(error_handler);
   }
 
   // Returns true if bound and awaiting a response to a message.

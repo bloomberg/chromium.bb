@@ -115,6 +115,25 @@ TEST_F(BindingSetTest, BindingSetContext) {
   EXPECT_TRUE(bindings_.empty());
 }
 
+TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
+  PingImpl impl;
+  PingServicePtr ptr;
+  BindingSet<PingService> bindings;
+  bindings.AddBinding(&impl, GetProxy(&ptr));
+
+  base::RunLoop run_loop;
+  bindings.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(1024u, custom_reason);
+        EXPECT_EQ("bye", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  ptr.ResetWithReason(1024u, "bye");
+}
+
 class PingProviderImpl : public AssociatedPingProvider, public PingService {
  public:
   PingProviderImpl() : ping_bindings_(BindingSetDispatchMode::WITH_CONTEXT) {}
@@ -261,6 +280,30 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   }
 
   EXPECT_TRUE(bindings.empty());
+}
+
+TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
+  AssociatedPingProviderPtr master_ptr;
+  PingProviderImpl master_impl;
+  Binding<AssociatedPingProvider> master_binding(&master_impl, &master_ptr);
+
+  base::RunLoop run_loop;
+  master_impl.ping_bindings().set_connection_error_with_reason_handler(
+      base::Bind(
+          [](const base::Closure& quit_closure, uint32_t custom_reason,
+             const std::string& description) {
+            EXPECT_EQ(2048u, custom_reason);
+            EXPECT_EQ("bye", description);
+            quit_closure.Run();
+          },
+          run_loop.QuitClosure()));
+
+  PingServiceAssociatedPtr ptr;
+  master_ptr->GetPing(GetProxy(&ptr, master_ptr.associated_group()));
+
+  ptr.ResetWithReason(2048u, "bye");
+
+  run_loop.Run();
 }
 
 }  // namespace

@@ -6,6 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 
 #include <stdint.h>
+
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -17,6 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -122,6 +125,13 @@ class AssociatedInterfacePtr {
     internal_state_.Swap(&doomed);
   }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    if (internal_state_.is_bound())
+      internal_state_.SendDisconnectReason(custom_reason, description);
+    reset();
+  }
+
   // Indicates whether an error has been encountered. If true, method calls made
   // on this interface will be dropped (and may already have been dropped).
   bool encountered_error() const { return internal_state_.encountered_error(); }
@@ -132,6 +142,11 @@ class AssociatedInterfacePtr {
   // bound.
   void set_connection_error_handler(const base::Closure& error_handler) {
     internal_state_.set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    internal_state_.set_connection_error_with_reason_handler(error_handler);
   }
 
   // Unbinds and returns the associated interface pointer information which

@@ -163,6 +163,16 @@ void ControlMessageProxy::FlushForTesting() {
   run_loop.Run();
 }
 
+void ControlMessageProxy::SendDisconnectReason(uint32_t custom_reason,
+                                               const std::string& description) {
+  auto send_disconnect_reason = interface_control::SendDisconnectReason::New();
+  send_disconnect_reason->custom_reason = custom_reason;
+  send_disconnect_reason->description = description;
+  auto input_ptr = interface_control::RunOrClosePipeInput::New();
+  input_ptr->set_send_disconnect_reason(std::move(send_disconnect_reason));
+  SendRunOrClosePipeMessage(receiver_, std::move(input_ptr), &context_);
+}
+
 void ControlMessageProxy::RunFlushForTestingClosure() {
   DCHECK(!run_loop_quit_closure_.is_null());
   base::ResetAndReturn(&run_loop_quit_closure_).Run();

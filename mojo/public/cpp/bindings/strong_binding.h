@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -59,6 +61,14 @@ class StrongBinding {
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(binding_.is_bound());
     connection_error_handler_ = error_handler;
+    connection_error_with_reason_handler_.Reset();
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(binding_.is_bound());
+    connection_error_with_reason_handler_ = error_handler;
+    connection_error_handler_.Reset();
   }
 
   // Forces the binding to close. This destroys the StrongBinding instance.
@@ -81,20 +91,24 @@ class StrongBinding {
       : impl_(std::move(impl)),
         binding_(impl_.get(), std::move(request)),
         weak_factory_(this) {
-    binding_.set_connection_error_handler(
+    binding_.set_connection_error_with_reason_handler(
         base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   ~StrongBinding() {}
 
-  void OnConnectionError() {
+  void OnConnectionError(uint32_t custom_reason,
+                         const std::string& description) {
     if (!connection_error_handler_.is_null())
       connection_error_handler_.Run();
+    else if (!connection_error_with_reason_handler_.is_null())
+      connection_error_with_reason_handler_.Run(custom_reason, description);
     Close();
   }
 
   std::unique_ptr<Interface> impl_;
   base::Closure connection_error_handler_;
+  ConnectionErrorWithReasonCallback connection_error_with_reason_handler_;
   Binding<Interface> binding_;
   base::WeakPtrFactory<StrongBinding> weak_factory_;
 

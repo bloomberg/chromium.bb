@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
@@ -49,6 +50,14 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
     error_handler_ = error_handler;
+    error_with_reason_handler_.Reset();
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    error_with_reason_handler_ = error_handler;
+    error_handler_.Reset();
   }
 
   // Returns true if an error was encountered.
@@ -150,6 +159,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   uint64_t next_request_id_;
 
   base::Closure error_handler_;
+  ConnectionErrorWithReasonCallback error_with_reason_handler_;
   bool encountered_error_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

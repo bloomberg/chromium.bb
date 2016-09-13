@@ -19,6 +19,7 @@ static_library("bindings") {
     "associated_interface_request.h",
     "binding.h",
     "binding_set.h",
+    "connection_error_callback.h",
     "connector.h",
     "enum_traits.h",
     "filter_chain.h",

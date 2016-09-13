@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -49,10 +51,17 @@ class SimpleBindingState {
       MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE);
 
   void Close();
+  void CloseWithReason(uint32_t custom_reason, const std::string& description);
 
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
-    connection_error_handler_ = error_handler;
+    router_->set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(is_bound());
+    router_->set_connection_error_with_reason_handler(error_handler);
   }
 
   bool is_bound() const { return !!router_; }
@@ -80,10 +89,6 @@ class SimpleBindingState {
   void DestroyRouter();
 
   internal::Router* router_ = nullptr;
-  base::Closure connection_error_handler_;
-
- private:
-  void RunConnectionErrorHandler();
 };
 
 template <typename Interface, bool use_multiplex_router>
@@ -145,10 +150,17 @@ class MultiplexedBindingState {
       MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE);
 
   void Close();
+  void CloseWithReason(uint32_t custom_reason, const std::string& description);
 
   void set_connection_error_handler(const base::Closure& error_handler) {
     DCHECK(is_bound());
-    connection_error_handler_ = error_handler;
+    endpoint_client_->set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    DCHECK(is_bound());
+    endpoint_client_->set_connection_error_with_reason_handler(error_handler);
   }
 
   bool is_bound() const { return !!router_; }
@@ -177,10 +189,6 @@ class MultiplexedBindingState {
 
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
-  base::Closure connection_error_handler_;
-
- private:
-  void RunConnectionErrorHandler();
 };
 
 // Uses a multiplexing router. If |Interface| has methods to pass associated
@@ -208,7 +216,6 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
     InterfaceRequest<Interface> request =
         MakeRequest<Interface>(router_->PassMessagePipe());
     router_ = nullptr;
-    connection_error_handler_.Reset();
     return request;
   }
 

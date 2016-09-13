@@ -9,6 +9,7 @@
 
 #include <algorithm>  // For |std::swap()|.
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -86,6 +88,13 @@ class InterfacePtrState<Interface, false> {
     router_->control_message_proxy()->FlushForTesting();
   }
 
+  void SendDisconnectReason(uint32_t custom_reason,
+                            const std::string& description) {
+    ConfigureProxyIfNecessary();
+    router_->control_message_proxy()->SendDisconnectReason(custom_reason,
+                                                           description);
+  }
+
   void Swap(InterfacePtrState* other) {
     using std::swap;
     swap(other->proxy_, proxy_);
@@ -128,6 +137,14 @@ class InterfacePtrState<Interface, false> {
 
     DCHECK(router_);
     router_->set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    ConfigureProxyIfNecessary();
+
+    DCHECK(router_);
+    router_->set_connection_error_with_reason_handler(error_handler);
   }
 
   // Returns true if bound and awaiting a response to a message.
@@ -234,6 +251,13 @@ class InterfacePtrState<Interface, true> {
     endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
+  void SendDisconnectReason(uint32_t custom_reason,
+                            const std::string& description) {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->control_message_proxy()->SendDisconnectReason(
+        custom_reason, description);
+  }
+
   void Swap(InterfacePtrState* other) {
     using std::swap;
     swap(other->router_, router_);
@@ -282,6 +306,14 @@ class InterfacePtrState<Interface, true> {
 
     DCHECK(endpoint_client_);
     endpoint_client_->set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    ConfigureProxyIfNecessary();
+
+    DCHECK(endpoint_client_);
+    endpoint_client_->set_connection_error_with_reason_handler(error_handler);
   }
 
   // Returns true if bound and awaiting a response to a message.

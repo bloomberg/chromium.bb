@@ -6,6 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 
 #include <stdint.h>
+
+#include <string>
 #include <utility>
 
 #include "base/callback_forward.h"
@@ -14,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 
@@ -127,6 +130,13 @@ class InterfacePtr {
     internal_state_.Swap(&doomed);
   }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    if (internal_state_.is_bound())
+      internal_state_.SendDisconnectReason(custom_reason, description);
+    reset();
+  }
+
   // Whether there are any associated interfaces running on the pipe currently.
   bool HasAssociatedInterfaces() const {
     return internal_state_.HasAssociatedInterfaces();
@@ -144,6 +154,11 @@ class InterfacePtr {
   // message pipe.
   void set_connection_error_handler(const base::Closure& error_handler) {
     internal_state_.set_connection_error_handler(error_handler);
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    internal_state_.set_connection_error_with_reason_handler(error_handler);
   }
 
   // Unbinds the InterfacePtr and returns the information which could be used

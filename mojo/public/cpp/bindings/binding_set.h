@@ -5,12 +5,14 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_BINDING_SET_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_BINDING_SET_H_
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -58,6 +60,13 @@ class BindingSet {
 
   void set_connection_error_handler(const base::Closure& error_handler) {
     error_handler_ = error_handler;
+    error_with_reason_handler_.Reset();
+  }
+
+  void set_connection_error_with_reason_handler(
+      const ConnectionErrorWithReasonCallback& error_handler) {
+    error_with_reason_handler_ = error_handler;
+    error_handler_.Reset();
   }
 
   // Sets a callback to be invoked immediately before dispatching any message or
@@ -149,8 +158,8 @@ class BindingSet {
           context_(context) {
       if (binding_set->SupportsContext())
         binding_.AddFilter(base::MakeUnique<DispatchFilter>(this));
-      binding_.set_connection_error_handler(base::Bind(
-          &Entry::OnConnectionError, base::Unretained(this)));
+      binding_.set_connection_error_with_reason_handler(
+          base::Bind(&Entry::OnConnectionError, base::Unretained(this)));
     }
 
     void FlushForTesting() { binding_.FlushForTesting(); }
@@ -178,10 +187,11 @@ class BindingSet {
       binding_set_->SetDispatchContext(context_);
     }
 
-    void OnConnectionError() {
+    void OnConnectionError(uint32_t custom_reason,
+                           const std::string& description) {
       if (binding_set_->SupportsContext())
         WillDispatch();
-      binding_set_->OnConnectionError(binding_id_);
+      binding_set_->OnConnectionError(binding_id_, custom_reason, description);
     }
 
     BindingType binding_;
@@ -203,17 +213,22 @@ class BindingSet {
     return dispatch_mode_ == BindingSetDispatchMode::WITH_CONTEXT;
   }
 
-  void OnConnectionError(BindingId id) {
+  void OnConnectionError(BindingId id,
+                         uint32_t custom_reason,
+                         const std::string& description) {
     auto it = bindings_.find(id);
     DCHECK(it != bindings_.end());
     bindings_.erase(it);
 
     if (!error_handler_.is_null())
       error_handler_.Run();
+    else if (!error_with_reason_handler_.is_null())
+      error_with_reason_handler_.Run(custom_reason, description);
   }
 
   BindingSetDispatchMode dispatch_mode_;
   base::Closure error_handler_;
+  ConnectionErrorWithReasonCallback error_with_reason_handler_;
   PreDispatchCallback pre_dispatch_handler_;
   BindingId next_binding_id_ = 0;
   std::map<BindingId, std::unique_ptr<Entry>> bindings_;
