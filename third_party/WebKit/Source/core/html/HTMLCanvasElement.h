@@ -88,19 +88,10 @@ public:
 
     const IntSize& size() const { return m_size; }
 
-    void setWidth(int);
-    void setHeight(int);
+    void setWidth(int, ExceptionState&);
+    void setHeight(int, ExceptionState&);
 
-    void setSize(const IntSize& newSize)
-    {
-        if (newSize == size())
-            return;
-        m_ignoreReset = true;
-        setWidth(newSize.width());
-        setHeight(newSize.height());
-        m_ignoreReset = false;
-        reset();
-    }
+    void setSize(const IntSize& newSize);
 
     // Called by Document::getCSSCanvasContext as well as above getContext().
     CanvasRenderingContext* getCanvasRenderingContext(const String&, const CanvasContextCreationAttributes&);

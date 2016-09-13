@@ -46,6 +46,26 @@ test(function() {
     assert_throws("InvalidStateError", function() { offscreenCanvas3.height = 20; });
 }, "Test if resizing on offscreencanvas transferred from html canvas has thrown exceptions.");
 
+test(function() {
+    var canvas4 = createCanvas(10, 10);
+    var offscreenCanvas4 = canvas4.transferControlToOffscreen();
+    assert_throws("InvalidStateError", function() {
+        canvas4.getContext("2d");
+    }, "canvas.getContext() is not allowed after transferring control to offscreen.");
+    assert_throws("InvalidStateError", function() {
+        canvas4.height = 20;
+    }, "canvas resizing height is not allowed after transferring control to offscreen.");
+    assert_throws("InvalidStateError", function() {
+        canvas4.width = 20;
+    }, "canvas resizing width is not allowed after transferring control to offscreen.");
+    assert_throws("InvalidStateError", function() {
+        canvas4.toBlob(function() {});
+    }, "canvas.toBlob is not allowed after transferring control to offscreen.");
+    assert_throws("InvalidStateError", function() {
+        canvas4.toDataURL();
+    }, "canvas.toDataURL is not allowed after transferring control to offscreen.");
+}, "Test if modifying canvas after it transfers controls to offscreen throw exceptions");
+
 </script>
 </body>
 </html>
