@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "remoting/codec/video_encoder.h"
+#include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -41,11 +41,9 @@ class WebrtcVideoStream : public VideoStream,
   WebrtcVideoStream();
   ~WebrtcVideoStream() override;
 
-  bool Start(
-      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
-      WebrtcTransport* webrtc_transport,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-      std::unique_ptr<VideoEncoder> video_encoder);
+  bool Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
+             WebrtcTransport* webrtc_transport,
+             scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
 
   // VideoStream interface.
   void Pause(bool pause) override;
@@ -74,11 +72,10 @@ class WebrtcVideoStream : public VideoStream,
 
   // Task running on the encoder thread to encode the |frame|.
   static EncodedFrameWithTimestamps EncodeFrame(
-      VideoEncoder* encoder,
+      WebrtcVideoEncoder* encoder,
       std::unique_ptr<webrtc::DesktopFrame> frame,
-      std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps,
-      uint32_t target_bitrate_kbps,
-      bool key_frame_request);
+      WebrtcVideoEncoder::FrameParams params,
+      std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps);
   void OnFrameEncoded(EncodedFrameWithTimestamps frame);
 
   void SetKeyFrameRequest();
@@ -92,7 +89,7 @@ class WebrtcVideoStream : public VideoStream,
   // Task runner used to run |encoder_|.
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
   // Used to encode captured frames. Always accessed on the encode thread.
-  std::unique_ptr<VideoEncoder> encoder_;
+  std::unique_ptr<WebrtcVideoEncoder> encoder_;
 
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   scoped_refptr<webrtc::MediaStreamInterface> stream_;

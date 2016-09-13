@@ -77,7 +77,7 @@ TEST_P(CodecPerfTest, EncodeLatency) {
         frame_generator_->GenerateFrame(nullptr);
     base::TimeTicks started = base::TimeTicks::Now();
 
-    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame, 0);
+    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame);
 
     base::TimeTicks ended = base::TimeTicks::Now();
     base::TimeDelta latency = ended - started;
@@ -140,7 +140,7 @@ TEST_P(CodecPerfTest, MaxFramerate) {
         frame_generator_->GenerateFrame(nullptr);
     base::TimeTicks started = base::TimeTicks::Now();
 
-    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame, 0);
+    std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame);
 
     base::TimeTicks ended = base::TimeTicks::Now();
     base::TimeDelta latency = ended - started;

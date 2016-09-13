@@ -37,8 +37,8 @@ class VideoEncoderVpx : public VideoEncoder {
   // VideoEncoder interface.
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
-  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
-                                      uint32_t flags) override;
+  std::unique_ptr<VideoPacket> Encode(
+      const webrtc::DesktopFrame& frame) override;
 
  private:
   explicit VideoEncoderVpx(bool use_vp9);

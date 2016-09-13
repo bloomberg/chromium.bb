@@ -276,33 +276,18 @@ void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   }
 }
 
-void WebrtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
-  target_bitrate_kbps_ = new_bitrate_kbps;
-  // Configuration not initialized.
-  if (config_.g_timebase.den == 0)
-    return;
-
-  if (config_.rc_target_bitrate == static_cast<unsigned int>(new_bitrate_kbps))
-    return;
-  config_.rc_target_bitrate = new_bitrate_kbps;
-
-  // Update encoder context.
-  if (vpx_codec_enc_config_set(codec_.get(), &config_))
-    NOTREACHED() << "Unable to set encoder config";
-
-  VLOG(1) << "New rc_target_bitrate: " << new_bitrate_kbps << " kbps";
-}
-
-std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
+std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
     const webrtc::DesktopFrame& frame,
-    uint32_t flags) {
+    const FrameParams& params) {
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
   // Based on information fetching active map, we return here if there is
   // nothing to top-off.
-  if (frame.updated_region().is_empty() && !encode_unchanged_frame_)
+  if (frame.updated_region().is_empty() && !encode_unchanged_frame_ &&
+      !params.key_frame) {
     return nullptr;
+  }
 
   // Create or reconfigure the codec to match the size of |frame|.
   if (!codec_ ||
@@ -310,6 +295,8 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
        !frame.size().equals(webrtc::DesktopSize(image_->w, image_->h)))) {
     Configure(frame.size());
   }
+
+  UpdateTargetBitrate(params.bitrate_kbps);
 
   vpx_active_map_t act_map;
   act_map.rows = active_map_size_.height();
@@ -331,12 +318,9 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
     }
   }
 
-  // Frame rate is adapted based on how well the encoder meets the target
-  // bandwidth requirement. We specify a target rate of 1 / 15 fps here.
-  // TODO(isheriff): Investigate if it makes sense to increase the target FPS.
   vpx_codec_err_t ret = vpx_codec_encode(
-      codec_.get(), image_.get(), 0, 66666,
-      (flags & REQUEST_KEY_FRAME) ? VPX_EFLAG_FORCE_KF : 0, VPX_DL_REALTIME);
+      codec_.get(), image_.get(), 0, params.duration.InMicroseconds(),
+      (params.key_frame) ? VPX_EFLAG_FORCE_KF : 0, VPX_DL_REALTIME);
   DCHECK_EQ(ret, VPX_CODEC_OK)
       << "Encoding error: " << vpx_codec_err_to_string(ret) << "\n"
       << "Details: " << vpx_codec_error(codec_.get()) << "\n"
@@ -366,11 +350,8 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
   vpx_codec_iter_t iter = nullptr;
   bool got_data = false;
 
-  // TODO(hclam): Make sure we get exactly one frame from the packet.
-  // TODO(hclam): We should provide the output buffer to avoid one copy.
-  std::unique_ptr<VideoPacket> packet(
-      helper_.CreateVideoPacketWithUpdatedRegion(frame, updated_region));
-  packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
+  std::unique_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
+  encoded_frame->size = frame.size();
 
   while (!got_data) {
     const vpx_codec_cx_pkt_t* vpx_packet =
@@ -381,8 +362,12 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
     switch (vpx_packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT: {
         got_data = true;
-        packet->set_data(vpx_packet->data.frame.buf, vpx_packet->data.frame.sz);
-        packet->set_key_frame(vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY);
+        // TODO(sergeyu): Avoid copying the data here..
+        encoded_frame->data.assign(
+            reinterpret_cast<const char*>(vpx_packet->data.frame.buf),
+            vpx_packet->data.frame.sz);
+        encoded_frame->key_frame =
+            vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY;
         int quantizer = -1;
         CHECK_EQ(vpx_codec_control(codec_.get(), VP8E_GET_LAST_QUANTIZER_64,
                                    &quantizer),
@@ -397,7 +382,7 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
     }
   }
 
-  return packet;
+  return encoded_frame;
 }
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)
@@ -465,6 +450,24 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   } else {
     SetVp8CodecOptions(codec_.get());
   }
+}
+
+void WebrtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
+  target_bitrate_kbps_ = new_bitrate_kbps;
+
+  // Configuration not initialized.
+  if (config_.g_timebase.den == 0)
+    return;
+
+  if (config_.rc_target_bitrate == static_cast<unsigned int>(new_bitrate_kbps))
+    return;
+  config_.rc_target_bitrate = new_bitrate_kbps;
+
+  // Update encoder context.
+  if (vpx_codec_enc_config_set(codec_.get(), &config_))
+    NOTREACHED() << "Unable to set encoder config";
+
+  VLOG(1) << "New rc_target_bitrate: " << new_bitrate_kbps << " kbps";
 }
 
 void WebrtcVideoEncoderVpx::PrepareImage(

@@ -12,8 +12,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "remoting/codec/scoped_vpx_codec.h"
-#include "remoting/codec/video_encoder.h"
-#include "remoting/codec/video_encoder_helper.h"
+#include "remoting/codec/webrtc_video_encoder.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
 typedef struct vpx_image vpx_image_t;
@@ -28,7 +27,7 @@ namespace remoting {
 // This is a copy of VideoEncoderVpx with enhancements to encoder for use
 // over WebRTC as transport. The original VideoEncoderVpx should be deleted
 // once the old implementation is no longer in use.
-class WebrtcVideoEncoderVpx : public VideoEncoder {
+class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
  public:
   // Create encoder for the specified protocol.
   static std::unique_ptr<WebrtcVideoEncoderVpx> CreateForVP8();
@@ -38,12 +37,12 @@ class WebrtcVideoEncoderVpx : public VideoEncoder {
 
   void SetTickClockForTests(base::TickClock* tick_clock);
 
-  // VideoEncoder interface.
-  void SetLosslessEncode(bool want_lossless) override;
-  void SetLosslessColor(bool want_lossless) override;
-  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
-                                      uint32_t flags) override;
-  void UpdateTargetBitrate(int bitrate_kbps) override;
+  void SetLosslessEncode(bool want_lossless);
+  void SetLosslessColor(bool want_lossless);
+
+  // WebrtcVideoEncoder interface.
+  std::unique_ptr<EncodedFrame> Encode(const webrtc::DesktopFrame& frame,
+                                       const FrameParams& params) override;
 
  private:
   explicit WebrtcVideoEncoderVpx(bool use_vp9);
@@ -51,6 +50,9 @@ class WebrtcVideoEncoderVpx : public VideoEncoder {
   // (Re)Configures this instance to encode frames of the specified |size|,
   // with the configured lossless color & encoding modes.
   void Configure(const webrtc::DesktopSize& size);
+
+  // Updates target bitrate.
+  void UpdateTargetBitrate(int new_bitrate_kbps);
 
   // Prepares |image_| for encoding. Writes updated rectangles into
   // |updated_region|.
@@ -92,9 +94,6 @@ class WebrtcVideoEncoderVpx : public VideoEncoder {
 
   // True if the codec wants unchanged frames to finish topping-off with.
   bool encode_unchanged_frame_;
-
-  // Used to help initialize VideoPackets from DesktopFrames.
-  VideoEncoderHelper helper_;
 
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;

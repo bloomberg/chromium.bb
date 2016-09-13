@@ -9,7 +9,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/constants.h"
-#include "remoting/proto/video.pb.h"
+#include "remoting/codec/webrtc_video_encoder_vpx.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/webrtc_dummy_video_capturer.h"
@@ -59,7 +59,7 @@ struct WebrtcVideoStream::FrameTimestamps {
 };
 
 struct WebrtcVideoStream::EncodedFrameWithTimestamps {
-  std::unique_ptr<VideoPacket> frame;
+  std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame;
   std::unique_ptr<FrameTimestamps> timestamps;
 };
 
@@ -79,13 +79,11 @@ WebrtcVideoStream::~WebrtcVideoStream() {
 bool WebrtcVideoStream::Start(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
     WebrtcTransport* webrtc_transport,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-    std::unique_ptr<VideoEncoder> video_encoder) {
+    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(webrtc_transport);
   DCHECK(desktop_capturer);
   DCHECK(encode_task_runner);
-  DCHECK(video_encoder);
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory(
       webrtc_transport->peer_connection_factory());
@@ -96,7 +94,8 @@ bool WebrtcVideoStream::Start(
   encode_task_runner_ = encode_task_runner;
   capturer_ = std::move(desktop_capturer);
   webrtc_transport_ = webrtc_transport;
-  encoder_ = std::move(video_encoder);
+  // TODO(isheriff): make this codec independent
+  encoder_ = WebrtcVideoEncoderVpx::CreateForVP8();
   capturer_->Start(this);
 
   // Set video stream constraints.
@@ -237,12 +236,19 @@ void WebrtcVideoStream::OnCaptureResult(
       base::TimeDelta::FromMilliseconds(frame->capture_time_ms());
 
   encode_pending_ = true;
+
+  // TODO(sergeyu): Currently frame_duration is always set to 1/15 of a second.
+  // Experiment with different values, and try changing it dynamically.
+  WebrtcVideoEncoder::FrameParams frame_params;
+  frame_params.bitrate_kbps = target_bitrate_kbps_;
+  frame_params.duration = base::TimeDelta::FromSeconds(1) / 15;
+  frame_params.key_frame = ClearAndGetKeyFrameRequest();
+
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
       base::Bind(&WebrtcVideoStream::EncodeFrame, encoder_.get(),
-                 base::Passed(std::move(frame)),
-                 base::Passed(std::move(captured_frame_timestamps_)),
-                 target_bitrate_kbps_, ClearAndGetKeyFrameRequest()),
+                 base::Passed(std::move(frame)), frame_params,
+                 base::Passed(std::move(captured_frame_timestamps_))),
       base::Bind(&WebrtcVideoStream::OnFrameEncoded,
                  weak_factory_.GetWeakPtr()));
 }
@@ -288,21 +294,15 @@ void WebrtcVideoStream::CaptureNextFrame() {
 
 // static
 WebrtcVideoStream::EncodedFrameWithTimestamps WebrtcVideoStream::EncodeFrame(
-    VideoEncoder* encoder,
+    WebrtcVideoEncoder* encoder,
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps,
-    uint32_t target_bitrate_kbps,
-    bool key_frame_request) {
+    WebrtcVideoEncoder::FrameParams params,
+    std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps) {
   EncodedFrameWithTimestamps result;
   result.timestamps = std::move(timestamps);
   result.timestamps->encode_started_time = base::TimeTicks::Now();
-
-  encoder->UpdateTargetBitrate(target_bitrate_kbps);
-  result.frame = encoder->Encode(
-      *frame, key_frame_request ? VideoEncoder::REQUEST_KEY_FRAME : 0);
-
+  result.frame = encoder->Encode(*frame, params);
   result.timestamps->encode_ended_time = base::TimeTicks::Now();
-
   return result;
 }
 
@@ -311,7 +311,7 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
 
   encode_pending_ = false;
 
-  size_t frame_size = frame.frame ? frame.frame->data().size() : 0;
+  size_t frame_size = frame.frame ? frame.frame->data.size() : 0;
 
   // Generate HostFrameStats.
   HostFrameStats stats;

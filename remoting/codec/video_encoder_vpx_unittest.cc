@@ -61,11 +61,11 @@ TEST(VideoEncoderVpxTest, Vp9LossyEncodeSwitching) {
 
   // Lossy encode the first frame.
   encoder->SetLosslessEncode(false);
-  std::unique_ptr<VideoPacket> lossy_packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> lossy_packet = encoder->Encode(*frame);
 
   // Lossless encode the second frame.
   encoder->SetLosslessEncode(true);
-  std::unique_ptr<VideoPacket> lossless_packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> lossless_packet = encoder->Encode(*frame);
   // Lossless encode is so good that the frames are smaller than the lossy
   // encodes. This comparison needs to be revisited.
   // http://crbug.com/439166
@@ -73,7 +73,7 @@ TEST(VideoEncoderVpxTest, Vp9LossyEncodeSwitching) {
 
   // Lossy encode one more frame.
   encoder->SetLosslessEncode(false);
-  lossy_packet = encoder->Encode(*frame, 0);
+  lossy_packet = encoder->Encode(*frame);
   // Same bug as above.
   // EXPECT_LT(lossy_packet->data().size(), lossless_packet->data().size());
 }
@@ -87,15 +87,15 @@ TEST(VideoEncoderVpxTest, Vp9LossyColorSwitching) {
 
   // Lossy encode the first frame.
   encoder->SetLosslessColor(false);
-  std::unique_ptr<VideoPacket> lossy_packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> lossy_packet = encoder->Encode(*frame);
 
   // Lossless encode the second frame.
   encoder->SetLosslessColor(true);
-  std::unique_ptr<VideoPacket> lossless_packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> lossless_packet = encoder->Encode(*frame);
 
   // Lossy encode one more frame.
   encoder->SetLosslessColor(false);
-  lossy_packet = encoder->Encode(*frame, 0);
+  lossy_packet = encoder->Encode(*frame);
 }
 
 // Test that the VP8 encoder ignores lossless modes without crashing.
@@ -108,7 +108,7 @@ TEST(VideoEncoderVpxTest, Vp8IgnoreLossy) {
   // Encode a frame, to give the encoder a chance to crash if misconfigured.
   encoder->SetLosslessEncode(true);
   encoder->SetLosslessColor(true);
-  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 }
 
@@ -121,13 +121,13 @@ TEST(VideoEncoderVpxTest, Vp8SizeChangeNoCrash) {
 
   // Create first frame & encode it.
   std::unique_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 
   // Double the size of the frame, and updated region, and encode again.
   frame_size.set(frame_size.width() * 2, frame_size.height() * 2);
   frame = CreateTestFrame(frame_size);
-  packet = encoder->Encode(*frame, 0);
+  packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 }
 
@@ -140,13 +140,13 @@ TEST(VideoEncoderVpxTest, Vp9SizeChangeNoCrash) {
 
   // Create first frame & encode it.
   std::unique_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
-  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 
   // Double the size of the frame, and updated region, and encode again.
   frame_size.set(frame_size.width() * 2, frame_size.height() * 2);
   frame = CreateTestFrame(frame_size);
-  packet = encoder->Encode(*frame, 0);
+  packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 }
 
@@ -159,7 +159,7 @@ TEST(VideoEncoderVpxTest, DpiPropagation) {
 
   std::unique_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
   frame->set_dpi(webrtc::DesktopVector(96, 97));
-  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame, 0);
+  std::unique_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_EQ(packet->format().x_dpi(), 96);
   EXPECT_EQ(packet->format().y_dpi(), 97);
 }

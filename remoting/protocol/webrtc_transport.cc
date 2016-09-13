@@ -24,7 +24,7 @@
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
-#include "remoting/protocol/webrtc_video_encoder_factory.h"
+#include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/modules/audio_device/include/fake_audio_device.h"
@@ -271,7 +271,7 @@ void WebrtcTransport::Start(
     LOG(FATAL) << "HMAC::Init() failed.";
   }
 
-  video_encoder_factory_ = new remoting::WebrtcVideoEncoderFactory();
+  video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();
   std::unique_ptr<cricket::PortAllocator> port_allocator =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
           transport_context_);

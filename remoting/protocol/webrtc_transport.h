@@ -17,7 +17,7 @@
 #include "crypto/hmac.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
-#include "remoting/protocol/webrtc_video_encoder_factory.h"
+#include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -67,7 +67,7 @@ class WebrtcTransport : public Transport {
 
   webrtc::PeerConnectionInterface* peer_connection();
   webrtc::PeerConnectionFactoryInterface* peer_connection_factory();
-  remoting::WebrtcVideoEncoderFactory* video_encoder_factory() {
+  WebrtcDummyVideoEncoderFactory* video_encoder_factory() {
     return video_encoder_factory_;
   }
 
@@ -131,7 +131,7 @@ class WebrtcTransport : public Transport {
 
   std::unique_ptr<PeerConnectionWrapper> peer_connection_wrapper_;
 
-  remoting::WebrtcVideoEncoderFactory* video_encoder_factory_;
+  WebrtcDummyVideoEncoderFactory* video_encoder_factory_;
 
   bool negotiation_pending_ = false;
 

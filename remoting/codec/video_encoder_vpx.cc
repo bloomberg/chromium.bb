@@ -269,8 +269,7 @@ void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
 }
 
 std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
-    const webrtc::DesktopFrame& frame,
-    uint32_t flags) {
+    const webrtc::DesktopFrame& frame) {
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
@@ -300,9 +299,6 @@ std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
   if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
     LOG(ERROR) << "Unable to apply active map";
   }
-
-  if (flags & REQUEST_KEY_FRAME)
-    vpx_codec_control(codec_.get(), VP8E_SET_FRAME_FLAGS, VPX_EFLAG_FORCE_KF);
 
   // Do the actual encoding.
   int timestamp = (clock_->NowTicks() - timestamp_base_).InMilliseconds();
@@ -344,7 +340,6 @@ std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
         packet->set_data(vpx_packet->data.frame.buf, vpx_packet->data.frame.sz);
-        packet->set_key_frame(vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY);
         break;
       default:
         break;

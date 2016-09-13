@@ -140,8 +140,7 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
       CreateDesktopFrameWithGradient(screen_width, screen_height);
   EXPECT_TRUE(original_frame);
 
-  std::unique_ptr<VideoPacket> packet =
-      encoder_->Encode(*original_frame.get(), 0);
+  std::unique_ptr<VideoPacket> packet = encoder_->Encode(*original_frame.get());
 
   DCHECK(!run_loop_ || !run_loop_->running());
   DCHECK(!timer_->IsRunning());
@@ -233,7 +232,7 @@ void TestVideoRendererTest::TestImagePatternMatch(
       CreateDesktopFrameWithGradient(screen_width, screen_height);
   RGBValue expected_average_color =
       CalculateAverageColorValueForFrame(frame.get(), expected_rect);
-  std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame.get(), 0);
+  std::unique_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
 
   if (expect_to_match) {
     EXPECT_TRUE(SendPacketAndWaitForMatch(std::move(packet), expected_rect,
@@ -405,7 +404,7 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
     std::unique_ptr<webrtc::DesktopFrame> original_frame =
         CreateDesktopFrameWithGradient(kDefaultScreenWidthPx,
                                        kDefaultScreenHeightPx);
-    video_packets.push_back(encoder_->Encode(*original_frame.get(), 0));
+    video_packets.push_back(encoder_->Encode(*original_frame.get()));
   }
 
   for (int i = 0; i < task_num; ++i) {
@@ -454,7 +453,7 @@ TEST_F(TestVideoRendererTest, VerifySetExpectedImagePattern) {
       kDefaultExpectedRect, black_color, base::Bind(&base::DoNothing));
 
   // Post test video packet.
-  test_video_renderer_->ProcessVideoPacket(encoder_->Encode(*frame.get(), 0),
+  test_video_renderer_->ProcessVideoPacket(encoder_->Encode(*frame.get()),
                                            base::Bind(&base::DoNothing));
 }
 
