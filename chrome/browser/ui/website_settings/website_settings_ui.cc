@@ -193,12 +193,6 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
   }
 }
 
-base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
-  std::unique_ptr<WebsiteSettingsUI::SecurityDescription> security_description =
-      GetSecurityDescription();
-  return security_description->summary;
-}
-
 WebsiteSettingsUI::~WebsiteSettingsUI() {
 }
 

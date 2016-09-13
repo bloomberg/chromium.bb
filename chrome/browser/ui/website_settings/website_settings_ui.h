@@ -118,8 +118,6 @@ class WebsiteSettingsUI {
     WebsiteSettings::SiteIdentityStatus identity_status;
     // Helper to get security description info to display to the user.
     std::unique_ptr<SecurityDescription> GetSecurityDescription() const;
-    // Deprecated method go get just the summary from GetSecurityDescription().
-    base::string16 GetSecuritySummary() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
