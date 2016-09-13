@@ -10380,6 +10380,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DocumentActivity.Enabled" enum="RunningMode">
   <owner>mariakhomenko@chromium.org</owner>
+  <obsolete>
+    Removed 9/2016.
+  </obsolete>
   <summary>
     Recorded only for Android. Records on every metrics upload whether document
     mode is enabled.
@@ -93002,6 +93005,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="RunningMode" type="int">
+  <obsolete>
+    Removed 9/2016.
+  </obsolete>
   <int value="0" label="Document Mode"/>
   <int value="1" label="Tabbed Mode"/>
 </enum>

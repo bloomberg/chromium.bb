@@ -9,18 +9,12 @@
 using base::android::JavaParamRef;
 
 namespace {
-bool document_mode_enabled = false;
 bool custom_tab_visible = false;
 bool is_in_multi_window_mode = false;
 } // namespace
 
 namespace chrome {
 namespace android {
-
-RunningModeHistogram GetDocumentModeValue() {
-  return document_mode_enabled ? RUNNING_MODE_DOCUMENT_MODE :
-      RUNNING_MODE_TABBED_MODE;
-}
 
 CustomTabsVisibilityHistogram GetCustomTabsVisibleValue() {
   return custom_tab_visible ? VISIBLE_CUSTOM_TAB :
@@ -33,12 +27,6 @@ bool GetIsInMultiWindowModeValue() {
 
 } // namespace android
 } // namespace chrome
-
-static void SetDocumentModeEnabled(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   jboolean enabled) {
-  document_mode_enabled = enabled;
-}
 
 static void SetCustomTabVisible(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,

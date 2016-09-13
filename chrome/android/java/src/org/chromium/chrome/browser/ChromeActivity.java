@@ -581,7 +581,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.onStartWithNative();
         UpdateMenuItemHelper.getInstance().onStart();
         getChromeApplication().onStartWithNative();
-        FeatureUtilities.setDocumentModeEnabled(FeatureUtilities.isDocumentMode(this));
 
         if (GSAState.getInstance(this).isGsaAvailable()) {
             mGSAServiceClient = new GSAServiceClient(this);

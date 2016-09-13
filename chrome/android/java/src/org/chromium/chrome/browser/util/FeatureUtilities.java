@@ -134,14 +134,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * Records the current document mode state with native-side feature utilities.
-     * @param enabled Whether the document mode is enabled.
-     */
-    public static void setDocumentModeEnabled(boolean enabled) {
-        nativeSetDocumentModeEnabled(enabled);
-    }
-
-    /**
      * Records the current custom tab visibility state with native-side feature utilities.
      * @param visible Whether a custom tab is visible.
      */
@@ -257,7 +249,6 @@ public class FeatureUtilities {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
     }
 
-    private static native void nativeSetDocumentModeEnabled(boolean enabled);
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
