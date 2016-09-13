@@ -192,11 +192,13 @@ weston_desktop_xdg_surface_set_size(struct weston_desktop_surface *dsurface,
 	struct weston_desktop_xdg_surface *surface = user_data;
 	struct weston_surface *wsurface = weston_desktop_surface_get_surface(surface->surface);
 
-	if (wsurface->width == width && wsurface->height == height)
-		return;
-
 	surface->requested_size.width = width;
 	surface->requested_size.height = height;
+
+	if ((wsurface->width == width && wsurface->height == height) ||
+	    (width == 0 && height == 0))
+		return;
+
 	weston_desktop_xdg_surface_schedule_configure(surface);
 }
 

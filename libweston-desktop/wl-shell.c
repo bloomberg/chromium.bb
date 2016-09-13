@@ -67,8 +67,8 @@ weston_desktop_wl_shell_surface_set_size(struct weston_desktop_surface *dsurface
 	struct weston_surface *wsurface =
 		weston_desktop_surface_get_surface(surface->surface);
 
-	if (wsurface->width == width && wsurface->height == height)
-		return;
+	if ((wsurface->width == width && wsurface->height == height) ||
+	    (width == 0 && height == 0))
 
 	wl_shell_surface_send_configure(surface->resource,
 					WL_SHELL_SURFACE_RESIZE_NONE,
