@@ -2116,6 +2116,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
+  // Make sure to add this hostname to the resolver so that it's not blocked
+  // (browser_test_base.cc has a resolver that blocks all non-local hostnames
+  // by default to ensure tests don't hit the network). This is critical to do
+  // because for PlzNavigate the request would otherwise get cancelled in the
+  // browser before the renderer sees it.
+  host_resolver()->AddRule(
+      "example.test",
+      embedded_test_server()->GetURL("/title1.html").host());
+
   std::string top_frame_path;
   GetTopFramePath(*embedded_test_server(), https_server_, https_server_expired_,
                   &top_frame_path);
@@ -2193,11 +2202,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
     observer.Wait();
   }
 
-  // Our state should be unathenticated (in the ran mixed script sense)
+  // Our state should be unathenticated (in the ran mixed script sense). Note
+  // this also displays images from the http page (google.com).
   CheckAuthenticationBrokenState(
       tab,
       CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT);
+      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
 
   // Go back, our state should be unchanged.
   {
@@ -2211,7 +2221,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   CheckAuthenticationBrokenState(
       tab,
       CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT);
+      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
 // From a bad HTTPS top frame:
