@@ -129,7 +129,7 @@ def SetCommandFlag(device, engine_ip, engine_port):
   """
   cmd_helper.GetCmdStatusAndOutput([
       os.path.join(SRC_PATH, 'build', 'android',
-                   'adb_chrome_command_line'),
+                   'adb_chrome_public_command_line'),
       '--device=' + str(device),
       '--enable-blimp',
       '--engine-ip=' + engine_ip,
