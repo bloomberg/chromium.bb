@@ -7,29 +7,44 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//tools/grit/repack.gni")
 
-# Wraps repack_locales(), setting the source_patterns and deps required for
-# Chrome.
+# Arguments:
 #
-# Extra Parameters:
+#   locale
+#       Internal name of locale. e.g. "pt-BR"
 #
-#   additional_source_patterns [optional]
-#      Extra source_patterns for repack_locales().
-template("chrome_repack_locales") {
-  repack_locales(target_name) {
-    forward_variables_from(invoker, "*", [ "additional_source_patterns" ])
+#   output
+#       Output file name.
+#
+#   visibility
+#       Normal meaning.
+#
+#   additional_source_patterns
+#      The pattern of additional pak files which need repacked, the name of
+#      pak always ends with '_${locale}.pak' e.g. foo_zh-CN.pak, since the
+#      locale is argument of template, the sources in this list should be
+#      the file name without '_${locale}.pak', tempate expands sources to
+#      the full name, e.g
+#         ${root_gen_dir}/foo expands to ${root_gen_dir}/foo_zh-CN.pak
+#       when locale is zh-CN.
+#
+#   additional_deps
+#      The corresponding deps of additonal_source_patterns.
+#
+template("_repack_one_locale") {
+  locale = invoker.locale
 
-    # Each input pak file should also have a deps line.
-    source_patterns = [
-      "${root_gen_dir}/chrome/generated_resources_",
-      "${root_gen_dir}/chrome/locale_settings_",
-      "${root_gen_dir}/chrome/platform_locale_settings_",
-      "${root_gen_dir}/components/strings/components_locale_settings_",
-      "${root_gen_dir}/components/strings/components_strings_",
+  repack(target_name) {
+    visibility = invoker.visibility
+
+    # Each input pak file should also have a deps line for completeness.
+    sources = [
+      "${root_gen_dir}/chrome/generated_resources_${locale}.pak",
+      "${root_gen_dir}/chrome/locale_settings_${locale}.pak",
+      "${root_gen_dir}/chrome/platform_locale_settings_${locale}.pak",
+      "${root_gen_dir}/components/strings/components_locale_settings_${locale}.pak",
+      "${root_gen_dir}/components/strings/components_strings_${locale}.pak",
     ]
-    if (!defined(deps)) {
-      deps = []
-    }
-    deps += [
+    deps = [
       "//chrome/app:generated_resources",
       "//chrome/app/resources:locale_settings",
       "//chrome/app/resources:platform_locale_settings",
@@ -37,14 +52,21 @@ template("chrome_repack_locales") {
       "//components/strings:components_strings",
     ]
 
+    if (defined(invoker.additional_source_patterns)) {
+      sources += process_file_template(invoker.additional_source_patterns,
+                                       [ "{{source}}_${locale}.pak" ])
+      deps += invoker.additional_deps
+    }
+
     if (use_ash) {
-      source_patterns += [ "${root_gen_dir}/ash/common/strings/ash_strings_" ]
+      sources +=
+          [ "${root_gen_dir}/ash/common/strings/ash_strings_${locale}.pak" ]
       deps += [ "//ash/common/strings" ]
     }
     if (is_chromeos) {
-      source_patterns += [
-        "${root_gen_dir}/remoting/resources/",
-        "${root_gen_dir}/ui/chromeos/strings/ui_chromeos_strings_",
+      sources += [
+        "${root_gen_dir}/remoting/resources/${locale}.pak",
+        "${root_gen_dir}/ui/chromeos/strings/ui_chromeos_strings_${locale}.pak",
       ]
       deps += [
         "//remoting/resources",
@@ -52,12 +74,12 @@ template("chrome_repack_locales") {
       ]
     }
     if (!is_ios) {
-      source_patterns += [
-        "${root_gen_dir}/content/app/strings/content_strings_",
-        "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_",
-        "${root_gen_dir}/third_party/libaddressinput/address_input_strings_",
-        "${root_gen_dir}/ui/strings/app_locale_settings_",
-        "${root_gen_dir}/ui/strings/ui_strings_",
+      sources += [
+        "${root_gen_dir}/content/app/strings/content_strings_${locale}.pak",
+        "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_${locale}.pak",
+        "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak",
+        "${root_gen_dir}/ui/strings/app_locale_settings_${locale}.pak",
+        "${root_gen_dir}/ui/strings/ui_strings_${locale}.pak",
       ]
       deps += [
         "//content/app/strings",
@@ -68,27 +90,27 @@ template("chrome_repack_locales") {
       ]
     }
     if (enable_extensions) {
-      source_patterns += [
+      sources += [
         # TODO(jamescook): When Android stops building extensions code move
         # this to the OS != 'ios' and OS != 'android' section.
-        "${root_gen_dir}/extensions/strings/extensions_strings_",
+        "${root_gen_dir}/extensions/strings/extensions_strings_${locale}.pak",
       ]
       deps += [ "//extensions/strings" ]
     }
 
     if (is_chrome_branded) {
-      source_patterns += [
-        "${root_gen_dir}/chrome/google_chrome_strings_",
-        "${root_gen_dir}/components/strings/components_google_chrome_strings_",
+      sources += [
+        "${root_gen_dir}/chrome/google_chrome_strings_${locale}.pak",
+        "${root_gen_dir}/components/strings/components_google_chrome_strings_${locale}.pak",
       ]
       deps += [
         "//chrome/app:google_chrome_strings",
         "//components/strings:components_google_chrome_strings",
       ]
     } else {
-      source_patterns += [
-        "${root_gen_dir}/chrome/chromium_strings_",
-        "${root_gen_dir}/components/strings/components_chromium_strings_",
+      sources += [
+        "${root_gen_dir}/chrome/chromium_strings_${locale}.pak",
+        "${root_gen_dir}/components/strings/components_chromium_strings_${locale}.pak",
       ]
       deps += [
         "//chrome/app:chromium_strings",
@@ -96,16 +118,93 @@ template("chrome_repack_locales") {
       ]
     }
 
-    if (defined(invoker.additional_source_patterns)) {
-      source_patterns += invoker.additional_source_patterns
+    if (enable_resource_whitelist_generation) {
+      repack_whitelist = "$root_gen_dir/chrome/resource_whitelist.txt"
+      deps += [ "//chrome:resource_whitelist" ]
     }
+    output = invoker.output
+  }
+}
 
-    if (!defined(output_dir)) {
-      if (is_mac || is_ios) {
-        output_dir = "${root_gen_dir}/repack/locales"
+# Creates an action to call the repack_locales script.
+#
+# The GYP version generates the locales in the "gen" directory and then copies
+# it to the root build directory. This isn't easy to express in a GN copy
+# rule since the files on Mac have a complex structure. So we generate the
+# files into the final place and skip the "gen" directory.
+#
+# This template uses GN's looping constructs to avoid the complex call to
+# chrome/tools/build/repack_locales.py which wraps the repack commands in the
+# GYP build.
+#
+# Arguments
+#
+#   input_locales
+#       List of locale names to use as inputs.
+#
+#   output_locales
+#       A list containing the corresponding output names for each of the
+#       input names. Mac uses different names in some cases.
+#
+#   visibility
+#
+#   additional_source_patterns
+#      Pass to template("_repack_one_locale")
+#
+#   additional_deps
+#      Pass to template("_repack_one_locale")
+#
+#   output_dir
+#      this is used to override default output dir.
+#
+template("chrome_repack_locales") {
+  # This is the name of the group below that will collect all the invidual
+  # locale targets. External targets will depend on this.
+  group_target_name = target_name
+
+  # GN's subscript is too stupid to do invoker.output_locales[foo] so we need
+  # to make a copy and do output_locales[foo].
+  output_locales = invoker.output_locales
+
+  # Collects all targets the loop generates.
+  locale_targets = []
+
+  # This loop iterates over the input locales and also keeps a counter so it
+  # can simultaneously iterate over the output locales (using GN's very
+  # limited looping capabilities).
+  current_index = 0
+  foreach(input_locale, invoker.input_locales) {
+    output_locale = output_locales[current_index]
+
+    # Compute the name of the target for the current file. Save it for the deps.
+    current_name = "${target_name}_${input_locale}"
+    locale_targets += [ ":$current_name" ]
+
+    _repack_one_locale(current_name) {
+      visibility = [ ":$group_target_name" ]
+      locale = input_locale
+
+      # Compute the output name. Mac uses a different location.
+      if (defined(invoker.output_dir)) {
+        output = "${invoker.output_dir}/${output_locale}.pak"
+      } else if (is_mac || is_ios) {
+        output = "${root_gen_dir}/repack/locales/${output_locale}.pak"
       } else {
-        output_dir = "${root_out_dir}/locales"
+        output = "${root_out_dir}/locales/${output_locale}.pak"
+      }
+
+      if (defined(invoker.additional_source_patterns)) {
+        additional_source_patterns = invoker.additional_source_patterns
+        additional_deps = invoker.additional_deps
       }
     }
+
+    current_index = current_index + 1
+  }
+
+  # The group that external targets depend on which collects all deps.
+  group(group_target_name) {
+    forward_variables_from(invoker, [ "visibility" ])
+    public_deps = locale_targets
   }
 }

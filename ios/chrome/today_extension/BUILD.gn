@@ -15,5 +15,4 @@ extension_repack_all_locales("packed_resources") {
   extension = "today_extension"
   input_locales = ios_packed_locales
   output_locales = ios_packed_locales_as_mac_outputs
-  copy_data_to_bundle = true
 }
