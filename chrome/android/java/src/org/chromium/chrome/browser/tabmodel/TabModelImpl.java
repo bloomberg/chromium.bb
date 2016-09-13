@@ -88,7 +88,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public void removeTab(Tab tab) {
-        removeTabAndSelectNext(tab, TabSelectionType.FROM_USER, false, true);
+        removeTabAndSelectNext(tab, TabSelectionType.FROM_CLOSE, false, true);
 
         for (TabModelObserver obs : mObservers) obs.tabRemoved(tab);
     }
@@ -538,6 +538,9 @@ public class TabModelImpl extends TabModelJniBridge {
      */
     private void removeTabAndSelectNext(Tab tab, TabSelectionType selectionType, boolean pauseMedia,
             boolean updateRewoundList) {
+        assert selectionType == TabSelectionType.FROM_CLOSE
+                || selectionType == TabSelectionType.FROM_EXIT;
+
         final int closingTabId = tab.getId();
         final int closingTabIndex = indexOf(tab);
 
