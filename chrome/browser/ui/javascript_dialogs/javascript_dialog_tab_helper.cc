@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
@@ -43,19 +46,52 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
-  if (!IsEnabled()) {
-    return AppModalDialogManager()->RunJavaScriptDialog(
+  SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  double engagement_score = site_engagement_service->GetScore(origin_url);
+  UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs",
+                           engagement_score);
+  int32_t message_length = static_cast<int32_t>(message_text.length());
+  if (engagement_score == 0) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementNone",
+                         message_length);
+  } else if (engagement_score < 1) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementLessThanOne",
+                         message_length);
+  } else if (engagement_score < 5) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementOneToFive",
+                         message_length);
+  } else {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementHigher",
+                         message_length);
+  }
+
+  if (IsEnabled()) {
+    NOTREACHED() << "auto-dismissing dialog code does not yet exist";
+  } else {
+    AppModalDialogManager()->RunJavaScriptDialog(
         web_contents, origin_url, message_type, message_text,
         default_prompt_text, callback, did_suppress_message);
   }
 
-  NOTREACHED() << "auto-dismissing dialog code does not yet exist";
+  if (did_suppress_message) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCountUserSuppressed",
+                         message_length);
+  }
 }
 
 void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     bool is_reload,
     const DialogClosedCallback& callback) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  SiteEngagementService* site_engagement_service =
+      SiteEngagementService::Get(profile);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "JSDialogs.SiteEngagementOfBeforeUnload",
+      site_engagement_service->GetScore(web_contents->GetLastCommittedURL()));
+
   // onbeforeunload dialogs are always handled with an app-modal dialog, because
   // - they are critical to the user not losing data
   // - they can be requested for tabs that are not foremost

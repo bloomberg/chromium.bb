@@ -20693,7 +20693,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="JSDialogs.CountOfJSDialogMessageCharacters">
+<histogram name="JSDialogs.CharacterCount" units="characters">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of characters in JavaScript dialog messages grouped
+    by site engagement score.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.CharacterCountUserSuppressed" units="characters">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of characters in JavaScript dialog messages that
+    were suppressed by the user. Compare with
+    JSDialogs.CountOfJSDialogMessageCharacters.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.CountOfJSDialogMessageCharacters" units="characters">
   <owner>avi@chromium.org</owner>
   <summary>
     The count of the number of characters in JavaScript dialog messages.
@@ -20708,7 +20725,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="JSDialogs.CountOfOnBeforeUnloadMessageCharacters">
+<histogram name="JSDialogs.CountOfOnBeforeUnloadMessageCharacters"
+    units="characters">
   <obsolete>
     Deprecated 2016-02.
   </obsolete>
@@ -20764,6 +20782,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     For onbeforeunload dialogs, the user's choice between staying on the page
     and leaving it.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.SiteEngagementOfBeforeUnload" units="%">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The site engagement values of sites showing onbeforeunload dialogs. Logged
+    once per dialog, whether shown or suppressed.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.SiteEngagementOfDialogs" units="%">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The site engagement values of sites showing dialogs. Logged once per dialog,
+    whether shown or suppressed.
   </summary>
 </histogram>
 
@@ -101484,6 +101518,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="IPv6_probe_done"
       label="with IPv6 probed for and possibly disabled"/>
   <affected-histogram name="DNS.PrefetchResolution"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="JSDialogs.EngagementList" separator=".">
+  <suffix name="EngagementNone" label="site engagement = 0"/>
+  <suffix name="EngagementLessThanOne" label="site engagement &lt; 1"/>
+  <suffix name="EngagementOneToFive" label="site engagement &gt;= 1, &lt; 5"/>
+  <suffix name="EngagementHigher" label="site engagement &gt;= 5"/>
+  <affected-histogram name="JSDialogs.CharacterCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LateBindingExperiment">
