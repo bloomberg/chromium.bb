@@ -96,12 +96,10 @@ CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
   if (!found)
     return CGRectNull;
 
-  double left, top, width, height, document_width, document_height;
+  double left, top, width, height;
   if (!(rect->GetDouble("left", &left) && rect->GetDouble("top", &top) &&
         rect->GetDouble("width", &width) &&
-        rect->GetDouble("height", &height) &&
-        rect->GetDouble("document_width", &document_width) &&
-        rect->GetDouble("document_height", &document_height))) {
+        rect->GetDouble("height", &height))) {
     return CGRectNull;
   }
 
