@@ -54,12 +54,9 @@ class QuicStreamFactoryPeer {
   static void SetTaskRunner(QuicStreamFactory* factory,
                             base::TaskRunner* task_runner);
 
-  static int GetNumberOfLossyConnections(QuicStreamFactory* factory,
-                                         uint16_t port);
-
   static QuicTime::Delta GetPingTimeout(QuicStreamFactory* factory);
 
-  static bool IsQuicDisabled(QuicStreamFactory* factory, uint16_t port);
+  static bool IsQuicDisabled(QuicStreamFactory* factory);
 
   static bool GetDelayTcpRace(QuicStreamFactory* factory);
 
@@ -83,10 +80,6 @@ class QuicStreamFactoryPeer {
 
   static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
                                       const QuicServerId& server_id);
-
-  static int GetNumTimeoutsWithOpenStreams(QuicStreamFactory* factory);
-
-  static int GetNumPublicResetsPostHandshake(QuicStreamFactory* factory);
 
   static void MaybeInitialize(QuicStreamFactory* factory);
 

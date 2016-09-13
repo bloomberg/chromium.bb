@@ -241,7 +241,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                        net_log_)),
       going_away_(false),
       port_migration_detected_(false),
-      disabled_reason_(QUIC_DISABLED_NOT),
       token_binding_signatures_(kTokenBindingSignatureMapSize),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
@@ -777,8 +776,7 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
   if (stream_factory_ && event == HANDSHAKE_CONFIRMED &&
-      (stream_factory_->OnHandshakeConfirmed(
-          this, logger_->ReceivedPacketLossRate()))) {
+      stream_factory_->OnHandshakeConfirmed(this)) {
     return;
   }
 
@@ -903,7 +901,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
     }
     if (IsCryptoHandshakeConfirmed()) {
       if (GetNumOpenOutgoingStreams() > 0) {
-        disabled_reason_ = QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS;
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
             connection()->sent_packet_manager().HasUnackedPackets());
@@ -941,8 +938,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
           "Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError",
           error);
     }
-  } else if (error == QUIC_PUBLIC_RESET) {
-    disabled_reason_ = QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE;
   }
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",

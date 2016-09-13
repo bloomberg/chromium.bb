@@ -47,8 +47,6 @@ public class QuicTest extends CronetTestBase {
                                         .put("host_whitelist", "test.example.com")
                                         .put("max_server_configs_stored_in_properties", 2)
                                         .put("delay_tcp_race", true)
-                                        .put("max_number_of_lossy_connections", 10)
-                                        .put("packet_loss_threshold", 0.5)
                                         .put("idle_connection_timeout_seconds", 300)
                                         .put("close_sessions_on_ip_change", false)
                                         .put("migrate_sessions_on_network_change", false)

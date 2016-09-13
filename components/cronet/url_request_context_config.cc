@@ -41,9 +41,6 @@ const char kQuicStoreServerConfigsInProperties[] =
 const char kQuicMaxServerConfigsStoredInProperties[] =
     "max_server_configs_stored_in_properties";
 const char kQuicDelayTcpRace[] = "delay_tcp_race";
-const char kQuicMaxNumberOfLossyConnections[] =
-    "max_number_of_lossy_connections";
-const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
 const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
 const char kQuicHostWhitelist[] = "host_whitelist";
@@ -143,20 +140,6 @@ void ParseAndSetExperimentalOptions(
     bool quic_delay_tcp_race = false;
     if (quic_args->GetBoolean(kQuicDelayTcpRace, &quic_delay_tcp_race)) {
       context_builder->set_quic_delay_tcp_race(quic_delay_tcp_race);
-    }
-
-    int quic_max_number_of_lossy_connections = 0;
-    if (quic_args->GetInteger(kQuicMaxNumberOfLossyConnections,
-                              &quic_max_number_of_lossy_connections)) {
-      context_builder->set_quic_max_number_of_lossy_connections(
-          quic_max_number_of_lossy_connections);
-    }
-
-    double quic_packet_loss_threshold = 0.0;
-    if (quic_args->GetDouble(kQuicPacketLossThreshold,
-                             &quic_packet_loss_threshold)) {
-      context_builder->set_quic_packet_loss_threshold(
-          quic_packet_loss_threshold);
     }
 
     int quic_idle_connection_timeout_seconds = 0;
