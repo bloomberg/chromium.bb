@@ -560,6 +560,14 @@ Google Chrome is unable to recover your settings.
          desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is malicious, and Chrome has blocked it.
       </message>
+      <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware.">
+        This file is dangerous, so Chrome has blocked it.
+      </message>
+      <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware.">
+        This file may be dangerous, so Chrome has blocked it.
+      </message>
 
       <!-- Remove in-progress downloads confirmation dialog -->
       <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one or more downloads are in progress. [ICU Syntax]">

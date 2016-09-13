@@ -144,16 +144,18 @@ cr.define('downloads', function() {
           var fileName = data.file_name;
           switch (data.danger_type) {
             case downloads.DangerType.DANGEROUS_FILE:
-              return loadTimeData.getStringF('dangerFileDesc', fileName);
+             return loadTimeData.getString('dangerFileDesc');
+
             case downloads.DangerType.DANGEROUS_URL:
-              return loadTimeData.getString('dangerUrlDesc');
-            case downloads.DangerType.DANGEROUS_CONTENT:  // Fall through.
+            case downloads.DangerType.DANGEROUS_CONTENT:
             case downloads.DangerType.DANGEROUS_HOST:
-              return loadTimeData.getStringF('dangerContentDesc', fileName);
+             return loadTimeData.getString('dangerDownloadDesc');
+
             case downloads.DangerType.UNCOMMON_CONTENT:
-              return loadTimeData.getStringF('dangerUncommonDesc', fileName);
+             return loadTimeData.getString('dangerUncommonDesc');
+
             case downloads.DangerType.POTENTIALLY_UNWANTED:
-              return loadTimeData.getStringF('dangerSettingsDesc', fileName);
+             return loadTimeData.getString('dangerSettingsDesc');
           }
           break;
 

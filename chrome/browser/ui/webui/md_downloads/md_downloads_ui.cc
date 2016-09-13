@@ -63,15 +63,14 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("statusRemoved", IDS_DOWNLOAD_FILE_REMOVED);
 
   // Dangerous file.
-  source->AddLocalizedString("dangerFileDesc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
-  source->AddLocalizedString("dangerUrlDesc",
-                             IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-  source->AddLocalizedString("dangerContentDesc",
-                             IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
+  source->AddLocalizedString("dangerFileDesc",
+                             IDS_BLOCK_REASON_GENERIC_DOWNLOAD);
+  source->AddLocalizedString("dangerDownloadDesc",
+                             IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
   source->AddLocalizedString("dangerUncommonDesc",
-                             IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
+                             IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD);
   source->AddLocalizedString("dangerSettingsDesc",
-                             IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS);
+                             IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
   source->AddLocalizedString("dangerSave", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE);
   source->AddLocalizedString("dangerDiscard", IDS_DISCARD_DOWNLOAD);

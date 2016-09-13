@@ -1747,6 +1747,15 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
          desc="Message shown to the user to validate the download when the download content is classified as uncommon by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is not commonly downloaded and could be dangerous.
       </message>
+      <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
+        This file is not commonly downloaded and may be dangerous.
+      </message>
+      <message name="IDS_BLOCK_REASON_GENERIC_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it may be dangerous.">
+        This type of file may harm your computer.
+      </message>
+
       <if expr="chromeos">
         <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
                  desc="In the download notification, a title of message shown for blocked download">
@@ -1757,41 +1766,33 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
                desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         Confirm Download
       </message>
-      <message name="IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE"
+      <message name="IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE"
                desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-        Recover malware?
+        Keep dangerous file?
+      </message>
+      <message name="IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
+        Keep file?
       </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         This file may be harmful for your computer.
       </message>
-      <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD"
-               desc="Lead prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
-        This file will harm your computer.
-      </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY"
-               desc="Body prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
-Even if you have downloaded files from this website before, the website might have been hacked. Instead of recovering this file, you can retry the download later.
+               desc="Body prompt text for the confirmation dialog asking whether the user really meant to keep a download">
+        Even if you have downloaded files from this site before, the site may be temporarily unsafe (hacked). Try downloading this file later.
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD_AGAIN"
                desc="Text for the button used to confirm the dialog asking whether the user really meant to keep dangerous download.">
         Keep anyway
       </message>
-      <message name="IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS"
-               desc="The text for the button used to confirm that the user DOES want to keep malware.">
-        Recover anyway
-      </message>
-      <message name="IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS"
-               desc="Text for the button used to indicate that the user does NOT want to restore a malicious download.">
-        Be safe
-      </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
-               desc="Text for the button used to validate the downloading of a dangerous download.">
+               desc="Text for the button used to validate the downloading of a dangerous download on download shelf.">
         Keep
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD_RESTORE"
-               desc="Text for the button used to validate the downloading of a dangerous download.">
-        Recover malicious file
+               desc="Text for the button used to validate the downloading of a dangerous download on chrome://downloads page.">
+        Keep dangerous file
       </message>
       <message name="IDS_CONTINUE_EXTENSION_DOWNLOAD"
                desc="Text for the button used to validate the installation of an extension.">

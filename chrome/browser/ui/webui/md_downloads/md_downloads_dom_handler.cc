@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
@@ -79,9 +80,8 @@ MdDownloadsDOMHandler::MdDownloadsDOMHandler(
     : list_tracker_(download_manager, web_ui),
       weak_ptr_factory_(this) {
   // Create our fileicon data source.
-  Profile* profile = Profile::FromBrowserContext(
-      download_manager->GetBrowserContext());
-  content::URLDataSource::Add(profile, new FileIconSource());
+  profile_ = Profile::FromBrowserContext(download_manager->GetBrowserContext());
+  content::URLDataSource::Add(profile_, new FileIconSource());
   CheckForRemovedFiles();
 }
 
@@ -194,8 +194,33 @@ void MdDownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
 void MdDownloadsDOMHandler::HandleSaveDangerous(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
   content::DownloadItem* file = GetDownloadByValue(args);
-  if (file)
-    ShowDangerPrompt(file);
+  SaveDownload(file);
+}
+
+void MdDownloadsDOMHandler::SaveDownload(
+    content::DownloadItem* download) {
+  if (!download)
+    return;
+  // If danger type is NOT DANGEROUS_FILE, chrome shows users a download danger
+  // prompt.
+  if (download->GetDangerType() !=
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+    ShowDangerPrompt(download);
+  } else {
+    // If danger type is DANGEROUS_FILE, chrome proceeds to keep this download
+    // without showing download danger prompt.
+    if (profile_) {
+      PrefService* prefs = profile_->GetPrefs();
+      if (!profile_->IsOffTheRecord() &&
+          prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+        DownloadDangerPrompt::SendSafeBrowsingDownloadReport(
+            safe_browsing::ClientSafeBrowsingReportRequest::
+                DANGEROUS_DOWNLOAD_RECOVERY,
+            true, *download);
+      }
+    }
+    DangerPromptDone(download->GetId(), DownloadDangerPrompt::ACCEPT);
+  }
 }
 
 void MdDownloadsDOMHandler::HandleDiscardDangerous(

@@ -32,7 +32,6 @@ using safe_browsing::ClientSafeBrowsingReportRequest;
 namespace {
 
 const int kMessageWidth = 320;
-const int kParagraphPadding = 15;
 
 // Views-specific implementation of download danger prompt dialog. We use this
 // class rather than a TabModalConfirmDialog so that we can use custom
@@ -66,8 +65,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
  private:
   base::string16 GetAcceptButtonTitle() const;
   base::string16 GetCancelButtonTitle() const;
-  // The message lead is separated from the main text and is bolded.
-  base::string16 GetMessageLead() const;
   base::string16 GetMessageBody() const;
   void RunDone(Action action);
 
@@ -102,22 +99,6 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, kMessageWidth, 0);
-
-  const base::string16 message_lead = GetMessageLead();
-
-  if (!message_lead.empty()) {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    views::Label* message_lead_label = new views::Label(
-        message_lead, rb->GetFontList(ui::ResourceBundle::BoldFont));
-    message_lead_label->SetMultiLine(true);
-    message_lead_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    message_lead_label->SetAllowCharacterBreak(true);
-
-    layout->StartRow(0, 0);
-    layout->AddView(message_lead_label);
-
-    layout->AddPaddingRow(0, kParagraphPadding);
-  }
 
   views::Label* message_body_label = new views::Label(GetMessageBody());
   message_body_label->SetMultiLine(true);
@@ -178,8 +159,19 @@ base::string16 DownloadDangerPromptViews::GetDialogButtonLabel(
 base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
-  else
-    return l10n_util::GetStringUTF16(IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      return l10n_util::GetStringUTF16(IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return l10n_util::GetStringUTF16(IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE);
+    default: {
+      return l10n_util::GetStringUTF16(
+          IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+    }
+  }
 }
 
 void DownloadDangerPromptViews::DeleteDelegate() {
@@ -243,39 +235,13 @@ void DownloadDangerPromptViews::OnDownloadUpdated(
 }
 
 base::string16 DownloadDangerPromptViews::GetAcceptButtonTitle() const {
-  // "Be safe".
-  return l10n_util::GetStringUTF16(IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS);
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 base::string16 DownloadDangerPromptViews::GetCancelButtonTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD);
-  switch (download_->GetDangerType()) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-      return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS);
-    }
-    default:
-      return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
-  }
-}
-
-base::string16 DownloadDangerPromptViews::GetMessageLead() const {
-  if (!show_context_) {
-    switch (download_->GetDangerType()) {
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-        return l10n_util::GetStringUTF16(
-            IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD);
-
-      default:
-        break;
-    }
-  }
-
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
 }
 
 base::string16 DownloadDangerPromptViews::GetMessageBody() const {
@@ -314,7 +280,9 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
     switch (download_->GetDangerType()) {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         return l10n_util::GetStringUTF16(
             IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY);
       }

@@ -52,7 +52,6 @@ class DownloadDangerPrompt {
   // respective button click handler.
   virtual void InvokeActionForTesting(Action action) = 0;
 
- protected:
   // Sends download recovery report to safe browsing backend.
   // Since it only records download url (DownloadItem::GetURL()), user's
   // action (click through or not) and its download danger type, it isn't gated
@@ -64,6 +63,7 @@ class DownloadDangerPrompt {
       bool did_proceed,
       const content::DownloadItem& download);
 
+ protected:
   // Records UMA stats for a download danger prompt event.
   static void RecordDownloadDangerPrompt(bool did_proceed,
                                          const content::DownloadItem& download);

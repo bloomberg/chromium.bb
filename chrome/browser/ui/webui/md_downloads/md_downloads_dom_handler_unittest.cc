@@ -21,11 +21,25 @@ class TestMdDownloadsDOMHandler : public MdDownloadsDOMHandler {
  public:
   explicit TestMdDownloadsDOMHandler(content::DownloadManager* download_manager,
                                      content::WebUI* web_ui)
-      : MdDownloadsDOMHandler(download_manager, web_ui) {}
+      : MdDownloadsDOMHandler(download_manager, web_ui),
+        danger_prompt_count_(0) {}
 
   using MdDownloadsDOMHandler::set_web_ui;
   using MdDownloadsDOMHandler::FinalizeRemovals;
   using MdDownloadsDOMHandler::RemoveDownloads;
+  using MdDownloadsDOMHandler::SaveDownload;
+
+  int danger_prompt_count() { return danger_prompt_count_; }
+
+ private:
+  void ShowDangerPrompt(content::DownloadItem* dangerous) override {
+    danger_prompt_count_++;
+  }
+
+  void DangerPromptDone(int download_id,
+                        DownloadDangerPrompt::Action action) override {}
+
+  int danger_prompt_count_;
 };
 
 }  // namespace
@@ -111,4 +125,28 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
   EXPECT_CALL(*manager(), GetDownload(1)).WillOnce(testing::Return(&completed));
   EXPECT_CALL(completed, Remove());
   handler.FinalizeRemovals();
+}
+
+TEST_F(MdDownloadsDOMHandlerTest, HandleSaveDownload) {
+  // When user chooses to recover a download, download danger prompt should NOT
+  // be shown if download danger type is DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE.
+  testing::StrictMock<content::MockDownloadItem> dangerous_file_type;
+  EXPECT_CALL(dangerous_file_type, GetDangerType())
+      .WillRepeatedly(
+          testing::Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
+  EXPECT_CALL(dangerous_file_type, GetId())
+      .WillOnce(testing::Return(uint32_t()));
+  TestMdDownloadsDOMHandler handler(manager(), web_ui());
+  EXPECT_EQ(0, handler.danger_prompt_count());
+  handler.SaveDownload(&dangerous_file_type);
+  EXPECT_EQ(0, handler.danger_prompt_count());
+
+  // For other download danger types, download danger prompt should
+  // be shown.
+  testing::StrictMock<content::MockDownloadItem> malicious_download;
+  EXPECT_CALL(malicious_download, GetDangerType())
+      .WillRepeatedly(
+          testing::Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
+  handler.SaveDownload(&malicious_download);
+  EXPECT_EQ(1, handler.danger_prompt_count());
 }

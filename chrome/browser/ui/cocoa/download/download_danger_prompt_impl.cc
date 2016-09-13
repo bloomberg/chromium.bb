@@ -129,10 +129,10 @@ base::string16 DownloadDangerPromptImpl::GetTitle() {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-      return l10n_util::GetStringUTF16(
-          IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE);
-    }
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      return l10n_util::GetStringUTF16(IDS_KEEP_DANGEROUS_DOWNLOAD_TITLE);
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return l10n_util::GetStringUTF16(IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE);
     default: {
       return l10n_util::GetStringUTF16(
           IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
@@ -176,11 +176,10 @@ base::string16 DownloadDangerPromptImpl::GetDialogMessage() {
     switch (download_->GetDangerType()) {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+      case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         return l10n_util::GetStringUTF16(
-                   IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD) +
-               base::ASCIIToUTF16("\n\n") +
-               l10n_util::GetStringUTF16(
                    IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY);
       }
       default: {
@@ -196,31 +195,11 @@ base::string16 DownloadDangerPromptImpl::GetDialogMessage() {
 base::string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD);
-  switch (download_->GetDangerType()) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-      return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS);
-    }
-    default:
-      return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
-  }
+  return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
 }
 
 base::string16 DownloadDangerPromptImpl::GetCancelButtonTitle() {
-  if (show_context_)
-    return l10n_util::GetStringUTF16(IDS_CANCEL);
-  switch (download_->GetDangerType()) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-      return l10n_util::GetStringUTF16(IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS);
-    }
-    default:
-      return l10n_util::GetStringUTF16(IDS_CANCEL);
-  }
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 void DownloadDangerPromptImpl::OnAccepted() {

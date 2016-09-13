@@ -28,6 +28,8 @@ class WebContents;
 class WebUI;
 }
 
+class Profile;
+
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 class MdDownloadsDOMHandler : public content::WebContentsObserver,
@@ -102,6 +104,9 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // dangerous ones are immediately removed. Protected for testing.
   void RemoveDownloads(const DownloadVector& to_remove);
 
+  // Helper function to handle save download event.
+  void SaveDownload(content::DownloadItem* download);
+
  private:
   using IdSet = std::set<uint32_t>;
 
@@ -119,11 +124,12 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // user accepts the dangerous download. The native prompt will observe
   // |dangerous| until either the dialog is dismissed or |dangerous| is no
   // longer an in-progress dangerous download.
-  void ShowDangerPrompt(content::DownloadItem* dangerous);
+  virtual void ShowDangerPrompt(content::DownloadItem* dangerous);
 
   // Conveys danger acceptance from the DownloadDangerPrompt to the
   // DownloadItem.
-  void DangerPromptDone(int download_id, DownloadDangerPrompt::Action action);
+  virtual void DangerPromptDone(int download_id,
+                                DownloadDangerPrompt::Action action);
 
   // Returns true if the records of any downloaded items are allowed (and able)
   // to be deleted.
@@ -145,6 +151,9 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   // IDs of downloads to remove when this handler gets deleted.
   std::vector<IdSet> removals_;
+
+  // User profile that corresponds to this handler.
+  Profile* profile_;
 
   base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_;
 
