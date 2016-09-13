@@ -121,35 +121,6 @@ enum ProceedDecision {
   SSL_INTERSTITIAL_DO_NOT_PROCEED
 };
 
-class ProvisionalLoadWaiter : public content::WebContentsObserver {
- public:
-  explicit ProvisionalLoadWaiter(WebContents* tab)
-    : WebContentsObserver(tab), waiting_(false), seen_(false) {}
-
-  void Wait() {
-    if (seen_)
-      return;
-
-    waiting_ = true;
-    content::RunMessageLoop();
-  }
-
-  void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override {
-    seen_ = true;
-    if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
-  }
-
- private:
-  bool waiting_;
-  bool seen_;
-};
-
 namespace AuthState {
 
 enum AuthStateFlags {
@@ -1031,14 +1002,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
-  ProvisionalLoadWaiter load_failed_observer(tab);
-
   // Simulate user clicking on back button (crbug.com/39248).
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(tab);
 
-  // Wait until we hear the load failure, and make sure we haven't changed
-  // the previous RFH.  Prevents regression of http://crbug.com/82667.
-  load_failed_observer.Wait();
+  // Make sure we haven't changed the previous RFH.  Prevents regression of
+  // http://crbug.com/82667.
   EXPECT_EQ(rfh, tab->GetMainFrame());
 
   // We should be back at the original good page.
