@@ -210,6 +210,7 @@ static_library("v4_local_database_manager") {
     ":hit_report",
     ":safebrowsing_proto",
     ":v4_database",
+    ":v4_get_hash_protocol_manager",
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",
     "//base",
@@ -272,6 +273,57 @@ static_library("v4_update_protocol_manager") {
     "//base",
     "//net",
     "//url",
+  ]
+}
+
+source_set("v4_database_unittest") {
+  testonly = true
+  sources = [
+    "v4_database_unittest.cc",
+  ]
+  deps = [
+    ":v4_database",
+    ":v4_store",
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("v4_get_hash_protocol_manager_unittest") {
+  testonly = true
+  sources = [
+    "v4_get_hash_protocol_manager_unittest.cc",
+  ]
+  deps = [
+    ":safebrowsing_proto",
+    ":util",
+    ":v4_database",
+    ":v4_get_hash_protocol_manager",
+    ":v4_local_database_manager",
+    "//base",
+    "//base/test:test_support",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("v4_local_database_manager_unittest") {
+  testonly = true
+  sources = [
+    "v4_local_database_manager_unittest.cc",
+  ]
+  deps = [
+    ":v4_database",
+    ":v4_local_database_manager",
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
   ]
 }
 

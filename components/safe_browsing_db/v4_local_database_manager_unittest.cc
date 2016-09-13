@@ -10,6 +10,7 @@
 #include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/platform_test.h"
 
 namespace safe_browsing {
@@ -18,19 +19,19 @@ class FakeV4Database : public V4Database {
  public:
   FakeV4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
                  std::unique_ptr<StoreMap> store_map,
-                 const MatchedHashPrefixMap& matched_hash_prefix_map)
+                 const StoreAndHashPrefixes& store_and_hash_prefixes)
       : V4Database(db_task_runner, std::move(store_map)),
-        matched_hash_prefix_map_(matched_hash_prefix_map) {}
+        store_and_hash_prefixes_(store_and_hash_prefixes) {}
 
   void GetStoresMatchingFullHash(
       const FullHash& full_hash,
       const base::hash_set<UpdateListIdentifier>& stores_to_look,
-      MatchedHashPrefixMap* matched_hash_prefix_map) override {
-    *matched_hash_prefix_map = matched_hash_prefix_map_;
+      StoreAndHashPrefixes* store_and_hash_prefixes) override {
+    *store_and_hash_prefixes = store_and_hash_prefixes_;
   }
 
  private:
-  const MatchedHashPrefixMap& matched_hash_prefix_map_;
+  const StoreAndHashPrefixes& store_and_hash_prefixes_;
 };
 
 class V4LocalDatabaseManagerTest : public PlatformTest {
@@ -67,9 +68,9 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReplaceV4Database(const MatchedHashPrefixMap& matched_hash_prefix_map) {
+  void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes) {
     v4_local_database_manager_->v4_database_.reset(new FakeV4Database(
-        task_runner_, base::MakeUnique<StoreMap>(), matched_hash_prefix_map));
+        task_runner_, base::MakeUnique<StoreMap>(), store_and_hash_prefixes));
   }
 
   void ForceDisableLocalDatabaseManager() {
@@ -110,9 +111,11 @@ TEST_F(V4LocalDatabaseManagerTest,
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithFakeDbReturnsMatch) {
-  MatchedHashPrefixMap matched_hash_prefix_map;
-  matched_hash_prefix_map[GetUrlMalwareId()] = HashPrefix("aaaa");
-  ReplaceV4Database(matched_hash_prefix_map);
+  net::TestURLFetcherFactory factory;
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  ReplaceV4Database(store_and_hash_prefixes);
 
   // The fake database returns a matched hash prefix.
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
@@ -121,9 +124,9 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithFakeDbReturnsMatch) {
 
 TEST_F(V4LocalDatabaseManagerTest,
        TestCheckBrowseUrlReturnsNoMatchWhenDisabled) {
-  MatchedHashPrefixMap matched_hash_prefix_map;
-  matched_hash_prefix_map[GetUrlMalwareId()] = HashPrefix("aaaa");
-  ReplaceV4Database(matched_hash_prefix_map);
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  ReplaceV4Database(store_and_hash_prefixes);
 
   // The same URL returns |false| in the previous test because
   // v4_local_database_manager_ is enabled.

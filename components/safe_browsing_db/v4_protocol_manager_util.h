@@ -24,6 +24,17 @@ class HttpRequestHeaders;
 
 namespace safe_browsing {
 
+// The size of the hash prefix, in bytes. It should be between 4 to 32 (full
+// hash).
+typedef size_t PrefixSize;
+
+// The minimum expected size (in bytes) of a hash-prefix.
+const PrefixSize kMinHashPrefixLength = 4;
+
+// The maximum expected size (in bytes) of a hash-prefix. This represents the
+// length of a SHA256 hash.
+const PrefixSize kMaxHashPrefixLength = 32;
+
 // A hash prefix sent by the SafeBrowsing PVer4 service.
 typedef std::string HashPrefix;
 
@@ -77,23 +88,38 @@ struct UpdateListIdentifier {
 
 std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id);
 
+PlatformType GetCurrentPlatformType();
 const UpdateListIdentifier GetUrlMalwareId();
 const UpdateListIdentifier GetUrlSocEngId();
-
-// The set of interesting lists and ASCII filenames for their hash prefix
-// stores. The stores are created inside the user-data directory.
-// For instance, the UpdateListIdentifier could be for URL expressions for UwS
-// on Windows platform, and the corresponding file on disk could be named:
-// "uws_win_url.store"
-// TODO(vakh): Find the canonical place where these are defined and update the
-// comment to point to that place.
-typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
+const UpdateListIdentifier GetChromeUrlApiId();
 
 // Represents the state of each store.
 typedef base::hash_map<UpdateListIdentifier, std::string> StoreStateMap;
 
 // Sever response, parsed in vector form.
 typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
+
+// TODO(vakh): Consider using a std::pair for this.
+// Holds the hash prefix and the store that it matched in.
+struct StoreAndHashPrefix {
+ public:
+  UpdateListIdentifier list_id;
+  HashPrefix hash_prefix;
+
+  explicit StoreAndHashPrefix(UpdateListIdentifier, HashPrefix);
+  ~StoreAndHashPrefix();
+
+  bool operator==(const StoreAndHashPrefix& other) const;
+  bool operator!=(const StoreAndHashPrefix& other) const;
+  size_t hash() const;
+
+ private:
+  StoreAndHashPrefix();
+};
+
+// Used to track the hash prefix and the store in which a full hash's prefix
+// matched.
+typedef std::vector<StoreAndHashPrefix> StoreAndHashPrefixes;
 
 // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
 // ORDERING OF THESE VALUES.
@@ -183,6 +209,16 @@ class V4ProtocolManagerUtil {
   static void UrlToFullHashes(const GURL& url,
                               base::hash_set<FullHash>* full_hashes);
 
+  static bool FullHashToHashPrefix(const FullHash& full_hash,
+                                   PrefixSize prefix_size,
+                                   HashPrefix* hash_prefix);
+
+  static bool FullHashToSmallestHashPrefix(const FullHash& full_hash,
+                                           HashPrefix* hash_prefix);
+
+  static bool FullHashMatchesHashPrefix(const FullHash& full_hash,
+                                        const HashPrefix& hash_prefix);
+
  private:
   V4ProtocolManagerUtil(){};
   FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, TestBackOffLogic);
@@ -221,9 +257,30 @@ class V4ProtocolManagerUtil {
 
 namespace std {
 template <>
+struct hash<safe_browsing::PlatformType> {
+  std::size_t operator()(const safe_browsing::PlatformType& p) const {
+    return std::hash<unsigned int>()(p);
+  }
+};
+
+template <>
+struct hash<safe_browsing::ThreatEntryType> {
+  std::size_t operator()(const safe_browsing::ThreatEntryType& tet) const {
+    return std::hash<unsigned int>()(tet);
+  }
+};
+
+template <>
+struct hash<safe_browsing::ThreatType> {
+  std::size_t operator()(const safe_browsing::ThreatType& tt) const {
+    return std::hash<unsigned int>()(tt);
+  }
+};
+
+template <>
 struct hash<safe_browsing::UpdateListIdentifier> {
-  std::size_t operator()(const safe_browsing::UpdateListIdentifier& s) const {
-    return s.hash();
+  std::size_t operator()(const safe_browsing::UpdateListIdentifier& id) const {
+    return id.hash();
   }
 };
 }

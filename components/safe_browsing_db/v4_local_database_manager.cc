@@ -134,7 +134,6 @@ bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
 }
 
 bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !CanCheckUrl(url)) {
     return true;
@@ -148,26 +147,39 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
         {GetUrlMalwareId(), GetUrlSocEngId()});
     base::hash_set<HashPrefix> matched_hash_prefixes;
     base::hash_set<UpdateListIdentifier> matched_stores;
-    MatchedHashPrefixMap matched_hash_prefix_map;
+    StoreAndHashPrefixes matched_store_and_full_hashes;
+    FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
     for (const auto& full_hash : full_hashes) {
+      matched_store_and_full_hashes.clear();
       v4_database_->GetStoresMatchingFullHash(full_hash, stores_to_look,
-                                              &matched_hash_prefix_map);
-      for (const auto& matched_pair : matched_hash_prefix_map) {
-        matched_stores.insert(matched_pair.first);
-        matched_hash_prefixes.insert(matched_pair.second);
+                                              &matched_store_and_full_hashes);
+      if (!matched_store_and_full_hashes.empty()) {
+        full_hash_to_store_and_hash_prefixes[full_hash] =
+            matched_store_and_full_hashes;
       }
     }
 
-    DCHECK_EQ(matched_stores.empty(), matched_hash_prefixes.empty());
-
-    // TODO(vakh): Return false and fetch full hashes for the matching hash
-    // prefixes.
-    return matched_hash_prefixes.empty();
+    if (full_hash_to_store_and_hash_prefixes.empty()) {
+      return true;
+    } else {
+      // TODO(vakh): Pass more information to the callback for it to be able to
+      // do something meaningful.
+      v4_get_hash_protocol_manager_->GetFullHashes(
+          full_hash_to_store_and_hash_prefixes,
+          base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
+                     base::Unretained(this)));
+      return false;
+    }
   } else {
     // TODO(vakh): Queue the check and process it when the database becomes
     // ready.
     return false;
   }
+}
+
+void V4LocalDatabaseManager::OnFullHashResponse(
+    const std::vector<FullHashInfo>& full_hash_infos) {
+  // TODO(vakh): Implement this skeleton.
 }
 
 void V4LocalDatabaseManager::CancelCheck(Client* client) {

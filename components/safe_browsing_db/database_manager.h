@@ -177,41 +177,17 @@ class SafeBrowsingDatabaseManager
   // Bundled client info for an API abuse hash prefix check.
   class SafeBrowsingApiCheck {
    public:
-    SafeBrowsingApiCheck(const GURL& url,
-                         const std::vector<SBPrefix>& prefixes,
-                         const std::vector<SBFullHash>& full_hashes,
-                         const std::vector<SBFullHashResult>& cached_results,
-                         Client* client);
+    SafeBrowsingApiCheck(const GURL& url, Client* client);
     ~SafeBrowsingApiCheck();
 
-    const GURL& url() {return url_;}
-    const std::vector<SBPrefix>& prefixes() {return prefixes_;}
-    const std::vector<SBFullHash>& full_hashes() {return full_hashes_;}
-    const std::vector<SBFullHashResult>& cached_results() {
-        return cached_results_;
-    }
-    SafeBrowsingDatabaseManager::Client* client() {return client_;}
-    base::TimeTicks start_time() {return start_time_;}
-
-    void set_start_time(base::TimeTicks start) {start_time_ = start;}
+    const GURL& url() const { return url_; }
+    Client* client() const { return client_; }
 
    private:
     GURL url_;
 
-    // Prefixes that were requested in this check.
-    std::vector<SBPrefix> prefixes_;
-
-    // Full hashes for this check.
-    std::vector<SBFullHash> full_hashes_;
-
-    // Cached results for this check.
-    std::vector<SBFullHashResult> cached_results_;
-
     // Not owned.
-    SafeBrowsingDatabaseManager::Client* client_;
-
-    // When the check was sent to the Safe Browsing service.
-    base::TimeTicks start_time_;
+    Client* client_;
 
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingApiCheck);
   };
@@ -244,45 +220,20 @@ class SafeBrowsingDatabaseManager
                            CachedResultsAreEvicted);
 
   typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
-  typedef std::map<SBPrefix, SBCachedFullHashResult> PrefixToFullHashResultsMap;
-  typedef std::map<SBThreatType, PrefixToFullHashResultsMap>
-      ThreatTypeToResultsMap;
 
-  // Called on the IO thread wheh the SafeBrowsingProtocolManager has received
+  // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in
   // CheckApiBlacklistUrl.
-  virtual void HandleGetHashesWithApisResults(
-      SafeBrowsingApiCheck* check,
-      const std::vector<SBFullHashResult>& full_hash_results,
-      const base::Time& negative_cache_expire);
-
-  // Looks up the cached results for |threat_type|. Fills |prefixes| with the
-  // prefixes that need a request. Fills |cached_results| with the cached
-  // results.
-  void GetFullHashCachedResults(const SBThreatType& threat_type,
-                                const std::vector<SBFullHash>& full_hashes,
-                                base::Time now,
-                                std::vector<SBPrefix>* prefixes,
-                                std::vector<SBFullHashResult>* cached_results);
-
-  // Populates |md| with permission api metadata from all results that have a
-  // match in |full_hashes|. Returns |true| if any of the results have a match
-  // in |full_hashes|.
-  bool PopulateApiMetadataResult(const std::vector<SBFullHashResult>& results,
-                                 const std::vector<SBFullHash>& full_hashes,
-                                 ThreatMetadata* md);
+  virtual void OnThreatMetadataResponse(
+      std::unique_ptr<SafeBrowsingApiCheck> check,
+      const ThreatMetadata& md);
 
   // In-progress checks. This set owns the SafeBrowsingApiCheck pointers and is
   // responsible for deleting them when removing from the set.
   ApiCheckSet api_checks_;
 
-  // A cache of V4 full hash results for api checks.
-  // TODO(kcarattini): Look into moving all caching logic to
-  // V4GetHashProtocolManager.
-  ThreatTypeToResultsMap v4_full_hash_cache_;
-
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
-  V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
+  std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;
 
  private:
   // Returns an iterator to the pending API check with the given |client|.

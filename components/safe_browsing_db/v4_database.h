@@ -25,14 +25,19 @@ typedef base::Callback<void(std::unique_ptr<V4Database>)>
 // requests.
 typedef base::Callback<void()> DatabaseUpdatedCallback;
 
+// The set of interesting lists and ASCII filenames for their hash prefix
+// stores. The stores are created inside the user-data directory.
+// For instance, the UpdateListIdentifier could be for URL expressions for UwS
+// on Windows platform, and the corresponding file on disk could be named:
+// "uws_win_url.store"
+// TODO(vakh): Find the canonical place where these are defined and update the
+// comment to point to that place.
+typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
+
 // This hash_map maps the UpdateListIdentifiers to their corresponding in-memory
 // stores, which contain the hash prefixes for that UpdateListIdentifier as well
 // as manage their storage on disk.
 typedef base::hash_map<UpdateListIdentifier, std::unique_ptr<V4Store>> StoreMap;
-
-// Map of identifier for any store that had a hash prefix matching the given
-// full hash to the matching hash prefix.
-typedef base::hash_map<UpdateListIdentifier, HashPrefix> MatchedHashPrefixMap;
 
 // Factory for creating V4Database. Tests implement this factory to create fake
 // databases for testing.
@@ -84,7 +89,7 @@ class V4Database {
   virtual void GetStoresMatchingFullHash(
       const FullHash& full_hash,
       const base::hash_set<UpdateListIdentifier>& stores_to_look,
-      MatchedHashPrefixMap* matched_hash_prefix_map);
+      StoreAndHashPrefixes* matched_store_and_full_hashes);
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase();

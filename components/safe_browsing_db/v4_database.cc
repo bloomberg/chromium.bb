@@ -171,14 +171,15 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
 void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
     const base::hash_set<UpdateListIdentifier>& stores_to_look,
-    MatchedHashPrefixMap* matched_hash_prefix_map) {
+    StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
+  matched_store_and_hash_prefixes->clear();
   for (const UpdateListIdentifier& identifier : stores_to_look) {
     const auto& store_pair = store_map_->find(identifier);
     DCHECK(store_pair != store_map_->end());
     const std::unique_ptr<V4Store>& store = store_pair->second;
     HashPrefix hash_prefix = store->GetMatchingHashPrefix(full_hash);
     if (!hash_prefix.empty()) {
-      (*matched_hash_prefix_map)[identifier] = hash_prefix;
+      matched_store_and_hash_prefixes->emplace_back(identifier, hash_prefix);
     }
   }
 }

@@ -49992,12 +49992,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.V4FullHashCacheResult"
     enum="SafeBrowsingV4FullHashCacheResult">
   <owner>kcarattini@chromium.org</owner>
+  <owner>vakh@chromium.org</owner>
   <summary>Track cache hits for V4 full hashes.</summary>
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHashCheckResult"
     enum="SafeBrowsingV4GetHashCheckResult">
   <owner>kcarattini@chromium.org</owner>
+  <owner>vakh@chromium.org</owner>
   <summary>Track get hash response hits for V4 full hash requests.</summary>
 </histogram>
 
@@ -93094,6 +93096,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="UNEXPECTED_PLATFORM_TYPE_ERROR"/>
   <int value="4" label="NO_METADATA_ERROR"/>
   <int value="5" label="INCONSISTENT_THREAT_TYPE_ERROR"/>
+  <int value="6" label="UNEXPECTED_METADATA_VALUE_ERROR"/>
+  <int value="7" label="NO_THREAT_ERROR"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4UpdateResult" type="int">

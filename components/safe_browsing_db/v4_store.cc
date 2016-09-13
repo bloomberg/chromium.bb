@@ -23,13 +23,6 @@ const uint32_t kFileMagic = 0x600D71FE;
 
 const uint32_t kFileVersion = 9;
 
-// The minimum expected size (in bytes) of a hash-prefix.
-const uint32_t kMinHashPrefixLength = 4;
-
-// The maximum expected size (in bytes) of a hash-prefix. This represents the
-// length of a SHA256 hash.
-const uint32_t kMaxHashPrefixLength = 32;
-
 void RecordStoreReadResult(StoreReadResult result) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4StoreReadResult", result,
                             STORE_READ_RESULT_MAX);

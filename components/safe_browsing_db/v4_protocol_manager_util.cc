@@ -68,31 +68,59 @@ std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id) {
   return os;
 }
 
+PlatformType GetCurrentPlatformType() {
 #if defined(OS_WIN)
-#define PLATFORM_TYPE WINDOWS_PLATFORM
+  return WINDOWS_PLATFORM;
 #elif defined(OS_LINUX)
-#define PLATFORM_TYPE LINUX_PLATFORM
+  return LINUX_PLATFORM;
 #elif defined(OS_MACOSX)
-#define PLATFORM_TYPE OSX_PLATFORM
+  return OSX_PLATFORM;
 #else
 // This should ideally never compile but it is getting compiled on Android.
 // See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
 // TODO(vakh): Once that bug is fixed, this should be removed. If we leave
 // the platform_type empty, the server won't recognize the request and
 // return an error response which will pollute our UMA metrics.
-#define PLATFORM_TYPE LINUX_PLATFORM
+return LINUX_PLATFORM;
 #endif
+}
 
 const UpdateListIdentifier GetUrlMalwareId() {
-  return UpdateListIdentifier(PLATFORM_TYPE, URL, MALWARE_THREAT);
+  return UpdateListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
 
 const UpdateListIdentifier GetUrlSocEngId() {
-  return UpdateListIdentifier(PLATFORM_TYPE, URL, SOCIAL_ENGINEERING_PUBLIC);
+  return UpdateListIdentifier(GetCurrentPlatformType(), URL,
+                              SOCIAL_ENGINEERING_PUBLIC);
+}
+
+const UpdateListIdentifier GetChromeUrlApiId() {
+  return UpdateListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
 // The Safe Browsing V4 server URL prefix.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
+
+StoreAndHashPrefix::StoreAndHashPrefix(UpdateListIdentifier list_id,
+                                       HashPrefix hash_prefix)
+    : list_id(list_id), hash_prefix(hash_prefix) {}
+
+StoreAndHashPrefix::~StoreAndHashPrefix() {}
+
+bool StoreAndHashPrefix::operator==(const StoreAndHashPrefix& other) const {
+  return list_id == other.list_id && hash_prefix == other.hash_prefix;
+}
+
+bool StoreAndHashPrefix::operator!=(const StoreAndHashPrefix& other) const {
+  return !operator==(other);
+}
+
+size_t StoreAndHashPrefix::hash() const {
+  std::size_t first = list_id.hash();
+  std::size_t second = std::hash<std::string>()(hash_prefix);
+
+  return base::HashInts(first, second);
+}
 
 bool UpdateListIdentifier::operator==(const UpdateListIdentifier& other) const {
   return platform_type == other.platform_type &&
@@ -227,6 +255,31 @@ void V4ProtocolManagerUtil::UrlToFullHashes(
       full_hashes->insert(crypto::SHA256HashString(host + path));
     }
   }
+}
+
+// static
+bool V4ProtocolManagerUtil::FullHashToHashPrefix(const FullHash& full_hash,
+                                                 PrefixSize prefix_size,
+                                                 HashPrefix* hash_prefix) {
+  if (full_hash.size() < prefix_size) {
+    return false;
+  }
+  *hash_prefix = full_hash.substr(prefix_size);
+  return true;
+}
+
+// static
+bool V4ProtocolManagerUtil::FullHashToSmallestHashPrefix(
+    const FullHash& full_hash,
+    HashPrefix* hash_prefix) {
+  return FullHashToHashPrefix(full_hash, kMinHashPrefixLength, hash_prefix);
+}
+
+// static
+bool V4ProtocolManagerUtil::FullHashMatchesHashPrefix(
+    const FullHash& full_hash,
+    const HashPrefix& hash_prefix) {
+  return full_hash.compare(0, hash_prefix.length(), hash_prefix) == 0;
 }
 
 // static

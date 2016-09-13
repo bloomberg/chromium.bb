@@ -18,10 +18,6 @@ class V4Store;
 typedef base::Callback<void(std::unique_ptr<V4Store>)>
     UpdatedStoreReadyCallback;
 
-// The size of the hash prefix, in bytes. It should be between 4 to 32 (full
-// hash).
-typedef size_t PrefixSize;
-
 // The sorted list of hash prefixes.
 typedef std::string HashPrefixes;
 

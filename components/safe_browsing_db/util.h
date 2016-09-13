@@ -77,6 +77,9 @@ struct ThreatMetadata {
   ThreatMetadata(const ThreatMetadata& other);
   ~ThreatMetadata();
 
+  bool operator==(const ThreatMetadata& other) const;
+  bool operator!=(const ThreatMetadata& other) const;
+
   // Type of blacklisted page. Used on malware and UwS lists.
   // This will be NONE if it wasn't present in the reponse.
   ThreatPatternType threat_pattern_type;

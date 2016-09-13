@@ -13,6 +13,7 @@
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/v4_database.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/v4_update_protocol_manager.h"
 #include "url/gurl.h"
@@ -76,6 +77,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       const V4ProtocolConfig& config);
 
   void SetupDatabase();
+
+  void OnFullHashResponse(const std::vector<FullHashInfo>& full_hash_infos);
 
   void DatabaseReady(std::unique_ptr<V4Database> v4_database);
 
