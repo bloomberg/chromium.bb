@@ -15,6 +15,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace cryptohome {
 class Identification;
@@ -84,7 +85,15 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void EmitLoginPromptVisible() = 0;
 
   // Restarts the browser job, passing |argv| as the updated command line.
-  virtual void RestartJob(const std::vector<std::string>& argv) = 0;
+  // The session manager requires a RestartJob caller to open a socket pair and
+  // pass one end while holding the local end open for the duration of the call.
+  // The session manager uses this to determine whether the PID the restart
+  // request originates from belongs to the browser itself.
+  // This method duplicates |socket_fd| so it's OK to close the FD without
+  // waiting for the result.
+  virtual void RestartJob(int socket_fd,
+                          const std::vector<std::string>& argv,
+                          const VoidDBusMethodCallback& callback) = 0;
 
   // Starts the session for the user.
   virtual void StartSession(

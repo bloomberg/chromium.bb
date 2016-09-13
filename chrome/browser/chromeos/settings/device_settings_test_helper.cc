@@ -110,7 +110,9 @@ bool DeviceSettingsTestHelper::IsScreenLocked() const { return false; }
 void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 
 void DeviceSettingsTestHelper::RestartJob(
-    const std::vector<std::string>& argv) {}
+    int socket_fd,
+    const std::vector<std::string>& argv,
+    const VoidDBusMethodCallback& callback) {}
 
 void DeviceSettingsTestHelper::StartSession(
     const cryptohome::Identification& cryptohome_id) {}

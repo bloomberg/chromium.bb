@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 
+#include <sys/socket.h>
 #include <vector>
 
 #include "ash/common/ash_switches.h"
@@ -270,6 +271,9 @@ class ChromeRestartRequest
   // Fires job restart request to session manager.
   void RestartJob();
 
+  // Called when RestartJob D-Bus method call is complete.
+  void OnRestartJob(base::ScopedFD local_auth_fd, DBusMethodCallStatus status);
+
   const std::vector<std::string> argv_;
   base::OneShotTimer timer_;
 
@@ -319,8 +323,34 @@ void ChromeRestartRequest::RestartJob() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "ChromeRestartRequest::RestartJob";
 
-  DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(argv_);
+  // The session manager requires a RestartJob caller to open a socket pair and
+  // pass one end over D-Bus while holding the local end open for the duration
+  // of the call.
+  int sockets[2] = {-1, -1};
+  // socketpair() doesn't cause disk IO so it's OK to call it on the UI thread.
+  // Also, the current chrome process is going to die soon so it doesn't matter
+  // anyways.
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+    PLOG(ERROR) << "Failed to create a unix domain socketpair";
+    delete this;
+    return;
+  }
+  base::ScopedFD local_auth_fd(sockets[0]);
+  base::ScopedFD remote_auth_fd(sockets[1]);
+  // Ownership of local_auth_fd is passed to the callback that is to be
+  // called on completion of this method call. This keeps the browser end
+  // of the socket-pair alive for the duration of the RPC.
+  DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
+      remote_auth_fd.get(), argv_,
+      base::Bind(&ChromeRestartRequest::OnRestartJob, AsWeakPtr(),
+                 base::Passed(&local_auth_fd)));
+}
 
+void ChromeRestartRequest::OnRestartJob(base::ScopedFD local_auth_fd,
+                                        DBusMethodCallStatus status) {
+  // Now that the call is complete, local_auth_fd can be closed and discarded,
+  // which will happen automatically when it goes out of scope.
+  VLOG(1) << "OnRestartJob";
   delete this;
 }
 

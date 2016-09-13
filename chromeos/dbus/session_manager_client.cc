@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/socket.h>
 
 #include <memory>
 
@@ -68,23 +67,6 @@ void StoreFile(const base::FilePath& path, const std::string& data) {
   }
 }
 
-// Creates a pair of file descriptors that form a conduit for trustworthy
-// transfer of credentials between Chrome and the session_manager
-void CreateValidCredConduit(dbus::FileDescriptor* local_auth_fd,
-                            dbus::FileDescriptor* remote_auth_fd) {
-  int sockets[2] = {-1, -1};
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
-    PLOG(ERROR) << "Failed to create a unix domain socketpair";
-    return;
-  }
-
-  local_auth_fd->PutValue(sockets[0]);
-  local_auth_fd->CheckValidity();
-
-  remote_auth_fd->PutValue(sockets[1]);
-  remote_auth_fd->CheckValidity();
-}
-
 }  // namespace
 
 // The SessionManagerClient implementation used in production.
@@ -122,39 +104,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, EmitLoginPromptVisibleCalled());
   }
 
-  void RestartJob(const std::vector<std::string>& argv) override {
-    dbus::ScopedFileDescriptor local_auth_fd(new dbus::FileDescriptor);
-    dbus::ScopedFileDescriptor remote_auth_fd(new dbus::FileDescriptor);
-
-    // session_manager's RestartJob call requires the caller to open a socket
-    // pair and pass one end over dbus while holding the local end open for the
-    // duration of the call. session_manager uses this to determine whether the
-    // PID the restart request originates from belongs to the browser itself.
-    //
-    // Here, we call CreateValidCredConduit() to create the socket pair,
-    // and then pass both ends along to CallRestartJobWithValidFd(), which
-    // takes care of them from there.
-    // NB: PostTaskAndReply ensures that the second callback (which owns the
-    //     ScopedFileDescriptor objects) outlives the first, so passing the
-    //     bare pointers to CreateValidCredConduit is safe...
-    //     -- BUT --
-    //     you have to grab pointers to the contents of {local,remote}_auth_fd
-    //     _before_ they're acted on by base::Passed() below. Passing ownership
-    //     of the ScopedFileDescriptor objects to the callback actually nulls
-    //     out the storage inside the local instances. Since there are
-    //     no guarantees about the order of evaluation of arguments in a
-    //     function call, merely having them appear earlier among the args
-    //     to PostTaskAndReply() is not enough. Relying on this crashed on
-    //     some platforms.
-    base::Closure create_credentials_conduit_closure = base::Bind(
-        &CreateValidCredConduit, local_auth_fd.get(), remote_auth_fd.get());
-
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE, create_credentials_conduit_closure,
-        base::Bind(&SessionManagerClientImpl::CallRestartJobWithValidFd,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&local_auth_fd),
-                   base::Passed(&remote_auth_fd), argv),
-        false);
+  void RestartJob(int socket_fd,
+                  const std::vector<std::string>& argv,
+                  const VoidDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerRestartJob);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(socket_fd);
+    writer.AppendArrayOfStrings(argv);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnRestartJob,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void StartSession(const cryptohome::Identification& cryptohome_id) override {
@@ -505,39 +466,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
             callback));
   }
 
-  // Calls RestartJob to tell the session manager to restart the browser using
-  // the contents of |argv| as the command line, authorizing the call using
-  // credentials acquired via |remote_auth_fd|. Ownership of |local_auth_fd| is
-  // held for the duration of the dbus call.
-  void CallRestartJobWithValidFd(dbus::ScopedFileDescriptor local_auth_fd,
-                                 dbus::ScopedFileDescriptor remote_auth_fd,
-                                 const std::vector<std::string>& argv) {
-    VLOG(1) << "CallRestartJobWithValidFd";
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRestartJob);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendFileDescriptor(*remote_auth_fd);
-    writer.AppendArrayOfStrings(argv);
-
-    // Ownership of local_auth_fd is passed to the callback that is to be
-    // called on completion of this method call. This keeps the browser end
-    // of the socket-pair alive for the duration of the RPC.
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&SessionManagerClientImpl::OnRestartJob,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&local_auth_fd)));
-  }
-
   // Called when kSessionManagerRestartJob method is complete.
-  // Now that the call is complete, local_auth_fd can be closed and discarded,
-  // which will happen automatically when it goes out of scope.
-  void OnRestartJob(dbus::ScopedFileDescriptor local_auth_fd,
+  void OnRestartJob(const VoidDBusMethodCallback& callback,
                     dbus::Response* response) {
-    VLOG(1) << "OnRestartJob";
     LOG_IF(ERROR, !response)
         << "Failed to call "
         << login_manager::kSessionManagerRestartJob;
+    callback.Run(response ? DBUS_METHOD_CALL_SUCCESS
+                          : DBUS_METHOD_CALL_FAILURE);
   }
 
   // Called when kSessionManagerStartSession method is complete.
@@ -816,7 +752,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
   bool IsScreenLocked() const override { return screen_is_locked_; }
   void EmitLoginPromptVisible() override {}
-  void RestartJob(const std::vector<std::string>& argv) override {}
+  void RestartJob(int socket_fd,
+                  const std::vector<std::string>& argv,
+                  const VoidDBusMethodCallback& callback) override {}
   void StartSession(const cryptohome::Identification& cryptohome_id) override {}
   void StopSession() override {}
   void NotifySupervisedUserCreationStarted() override {}

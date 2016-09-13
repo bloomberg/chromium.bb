@@ -49,7 +49,9 @@ void FakeSessionManagerClient::EmitLoginPromptVisible() {
 }
 
 void FakeSessionManagerClient::RestartJob(
-    const std::vector<std::string>& argv) {}
+    int socket_fd,
+    const std::vector<std::string>& argv,
+    const VoidDBusMethodCallback& callback) {}
 
 void FakeSessionManagerClient::StartSession(
     const cryptohome::Identification& cryptohome_id) {
