@@ -271,7 +271,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     }
 
     @LargeTest
-    @Feature({"NewTagPage"})
+    @Feature({"NewTabPage"})
     public void testUrlFocusAnimationsEnabledOnFailedLoad() throws Exception {
         // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
