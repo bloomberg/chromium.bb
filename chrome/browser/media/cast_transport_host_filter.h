@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/media/cast_remoting_sender.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
@@ -40,8 +41,12 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Forwarding functions.
+  // For remoting RTP streams, calling this will create a CastRemotingSender for
+  // the stream, which will be automatically destroyed when the associated
+  // chanel is deleted.
   void OnInitializeStream(int32_t channel_id,
                           const media::cast::CastTransportRtpConfig& config);
+
   void OnInsertFrame(int32_t channel_id,
                      uint32_t ssrc,
                      const media::cast::EncodedFrame& frame);
@@ -92,6 +97,14 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // device::PowerSaveBlocker.  This prevents Chrome from being suspended while
   // remoting content.
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+
+  // This map records all active remoting senders. It uses the unique RTP
+  // stream ID as the key.
+  IDMap<CastRemotingSender, IDMapOwnPointer> remoting_sender_map_;
+
+  // This map stores all active remoting streams for each channel. It uses the
+  // channel ID as the key.
+  std::multimap<int32_t, int32_t> stream_id_map_;
 
   base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
 

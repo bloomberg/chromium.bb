@@ -32,6 +32,7 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/media_stream_utils.h"
+#include "extensions/common/extension.h"
 #include "extensions/renderer/script_context.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -74,6 +75,8 @@ constexpr char kUnableToConvertParams[] = "Unable to convert params";
 constexpr char kCodecNameOpus[] = "OPUS";
 constexpr char kCodecNameVp8[] = "VP8";
 constexpr char kCodecNameH264[] = "H264";
+constexpr char kCodecNameRemoteAudio[] = "REMOTE_AUDIO";
+constexpr char kCodecNameRemoteVideo[] = "REMOTE_VIDEO";
 
 // To convert from kilobits per second to bits per second.
 constexpr int kBitsPerKilobit = 1000;
@@ -213,6 +216,12 @@ bool ToFrameSenderConfigOrThrow(v8::Isolate* isolate,
     if (!config->use_external_encoder)
       config->video_codec_params.number_of_encode_threads =
           NumberOfEncodeThreads();
+  } else if (ext_params.codec_name == kCodecNameRemoteAudio) {
+    config->rtp_payload_type = media::cast::RtpPayloadType::REMOTE_AUDIO;
+    config->codec = media::cast::CODEC_AUDIO_REMOTE;
+  } else if (ext_params.codec_name == kCodecNameRemoteVideo) {
+    config->rtp_payload_type = media::cast::RtpPayloadType::REMOTE_VIDEO;
+    config->codec = media::cast::CODEC_VIDEO_REMOTE;
   } else {
     DVLOG(1) << "codec_name " << ext_params.codec_name << " is invalid";
     isolate->ThrowException(v8::Exception::Error(
@@ -251,6 +260,12 @@ void FromFrameSenderConfig(const FrameSenderConfig& config,
     case media::cast::CODEC_VIDEO_H264:
       ext_params->codec_name = kCodecNameH264;
       break;
+    case media::cast::CODEC_AUDIO_REMOTE:
+      ext_params->codec_name = kCodecNameRemoteAudio;
+      break;
+    case media::cast::CODEC_VIDEO_REMOTE:
+      ext_params->codec_name = kCodecNameRemoteVideo;
+      break;
     default:
       NOTREACHED();
   }
@@ -272,9 +287,19 @@ void FromFrameSenderConfig(const FrameSenderConfig& config,
 
 }  // namespace
 
+// |last_transport_id_| is the identifier for the next created RTP stream. To
+// create globally unique IDs used for referring to RTP stream objects in
+// browser process, we set its higher 16 bits as HASH(extension_id)&0x7fff, and
+// lower 16 bits as the sequence number of the RTP stream created in the same
+// extension. Collision will happen when the first RTP stream keeps alive after
+// creating another 64k-1 RTP streams in the same extension, which is very
+// unlikely to happen in normal use cases.
 CastStreamingNativeHandler::CastStreamingNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context),
-      last_transport_id_(1),
+      last_transport_id_(
+          context->extension()
+              ? (((base::Hash(context->extension()->id()) & 0x7fff) << 16) + 1)
+              : 1),
       weak_factory_(this) {
   RouteFunction("CreateSession", "cast.streaming.session",
                 base::Bind(&CastStreamingNativeHandler::CreateCastSession,
@@ -343,36 +368,40 @@ void CastStreamingNativeHandler::CreateCastSession(
   CHECK(args[2]->IsFunction());
 
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
-  if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
-      (args[1]->IsNull() || args[1]->IsUndefined())) {
-    isolate->ThrowException(v8::Exception::Error(
-        v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
-    return;
-  }
 
   scoped_refptr<CastSession> session(new CastSession());
   std::unique_ptr<CastRtpStream> stream1, stream2;
-  if (!args[0]->IsNull() && !args[0]->IsUndefined()) {
-    CHECK(args[0]->IsObject());
-    blink::WebDOMMediaStreamTrack track =
-        blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
-    if (track.isNull()) {
-      isolate->ThrowException(v8::Exception::Error(
-          v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
-      return;
+  if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
+      (args[1]->IsNull() || args[1]->IsUndefined())) {
+    DVLOG(3) << "CreateCastSession for remoting.";
+    // Creates audio/video RTP streams for media remoting.
+    stream1.reset(new CastRtpStream(true, session));
+    stream2.reset(new CastRtpStream(false, session));
+  } else {
+    // Creates RTP streams that consume from an audio and/or a video
+    // MediaStreamTrack.
+    if (!args[0]->IsNull() && !args[0]->IsUndefined()) {
+      CHECK(args[0]->IsObject());
+      blink::WebDOMMediaStreamTrack track =
+          blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
+      if (track.isNull()) {
+        isolate->ThrowException(v8::Exception::Error(
+            v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
+        return;
+      }
+      stream1.reset(new CastRtpStream(track.component(), session));
     }
-    stream1.reset(new CastRtpStream(track.component(), session));
-  }
-  if (!args[1]->IsNull() && !args[1]->IsUndefined()) {
-    CHECK(args[1]->IsObject());
-    blink::WebDOMMediaStreamTrack track =
-        blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
-    if (track.isNull()) {
-      isolate->ThrowException(v8::Exception::Error(
-          v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
-      return;
+    if (!args[1]->IsNull() && !args[1]->IsUndefined()) {
+      CHECK(args[1]->IsObject());
+      blink::WebDOMMediaStreamTrack track =
+          blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
+      if (track.isNull()) {
+        isolate->ThrowException(v8::Exception::Error(
+            v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
+        return;
+      }
+      stream2.reset(new CastRtpStream(track.component(), session));
     }
-    stream2.reset(new CastRtpStream(track.component(), session));
   }
   std::unique_ptr<CastUdpTransport> udp_transport(
       new CastUdpTransport(session));
@@ -529,7 +558,10 @@ void CastStreamingNativeHandler::StartCastRtpStream(
       base::Bind(&CastStreamingNativeHandler::CallErrorCallback,
                  weak_factory_.GetWeakPtr(),
                  transport_id);
-  transport->Start(config, start_callback, stop_callback, error_callback);
+
+  // |transport_id| is a globally unique identifier for the RTP stream.
+  transport->Start(transport_id, config, start_callback, stop_callback,
+                   error_callback);
 }
 
 void CastStreamingNativeHandler::StopCastRtpStream(

@@ -45,15 +45,10 @@ chrome.test.runTests([
       }));
     }));
   },
-  function noStream() {
-    console.log("[TEST] noAudio");
+  function remotingSession() {
+    console.log("[TEST] remotingSession");
     chrome.tabs.create({"url": "about:blank"}, pass(function(tab) {
-      try {
-        createSession(null, null, function(a, b, c) {});
-        chrome.test.fail();
-      } catch (e) {
-        // Success.
-      }
+      createSession(null, null, function(a, b, c) {});
     }));
   },
 ]);

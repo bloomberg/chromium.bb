@@ -3643,7 +3643,14 @@ split_static_library("browser") {
   }
 
   if (enable_media_router) {
-    deps += [ "//chrome/browser/media/router" ]
+    deps += [
+      "//chrome/browser/media/router",
+      "//media/cast:net",
+    ]
+    sources += [
+      "media/cast_remoting_sender.cc",
+      "media/cast_remoting_sender.h",
+    ]
   }
 
   if (enable_mojo_media) {

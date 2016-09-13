@@ -39,16 +39,16 @@ class CastSessionDelegate;
 // CastSessionDelegate on the IO thread.
 class CastSession : public base::RefCounted<CastSession> {
  public:
-  typedef base::Callback<void(const scoped_refptr<
-      media::cast::AudioFrameInput>&)> AudioFrameInputAvailableCallback;
-  typedef base::Callback<void(const scoped_refptr<
-      media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
-  typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
-  typedef base::Callback<void(std::unique_ptr<base::BinaryValue>)>
-      EventLogsCallback;
-  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
-      StatsCallback;
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  using AudioFrameInputAvailableCallback =
+      base::Callback<void(const scoped_refptr<media::cast::AudioFrameInput>&)>;
+  using VideoFrameInputAvailableCallback =
+      base::Callback<void(const scoped_refptr<media::cast::VideoFrameInput>&)>;
+  using SendPacketCallback = base::Callback<void(const std::vector<char>&)>;
+  using EventLogsCallback =
+      base::Callback<void(std::unique_ptr<base::BinaryValue>)>;
+  using StatsCallback =
+      base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
 
   CastSession();
 
@@ -66,6 +66,12 @@ class CastSession : public base::RefCounted<CastSession> {
   void StartVideo(const media::cast::FrameSenderConfig& config,
                   const VideoFrameInputAvailableCallback& callback,
                   const ErrorCallback& error_callback);
+
+  // Start remoting a stream. |error_callback| will be invoked when any error
+  // occurs. |StartUDP()| must be called before calling this method.
+  void StartRemotingStream(int32_t stream_id,
+                           const media::cast::FrameSenderConfig& config,
+                           const ErrorCallback& error_callback);
 
   // This will create the Cast transport and connect to |remote_endpoint|.
   // |options| is a dictionary which contain optional configuration for the

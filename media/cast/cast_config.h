@@ -33,6 +33,9 @@ enum SuggestedDefaults {
   // Suggested default audio sampling rate.
   kDefaultAudioSamplingRate = 48000,
 
+  // RTP timebase for media remoting RTP streams.
+  kRemotingRtpTimebase = 90000,
+
   // Suggested default maximum video frame rate.
   kDefaultMaxFrameRate = 30,
 

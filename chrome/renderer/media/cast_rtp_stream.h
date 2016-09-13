@@ -41,6 +41,7 @@ class CastRtpStream {
 
   CastRtpStream(const blink::WebMediaStreamTrack& track,
                 const scoped_refptr<CastSession>& session);
+  CastRtpStream(bool is_audio, const scoped_refptr<CastSession>& session);
   ~CastRtpStream();
 
   // Return parameters currently supported by this stream.
@@ -48,10 +49,12 @@ class CastRtpStream {
 
   // Begin encoding of media stream and then submit the encoded streams
   // to underlying transport.
+  // |stream_id| is the unique ID of this stream.
   // When the stream is started |start_callback| is called.
   // When the stream is stopped |stop_callback| is called.
   // When there is an error |error_callback| is called with a message.
-  void Start(const media::cast::FrameSenderConfig& config,
+  void Start(int32_t stream_id,
+             const media::cast::FrameSenderConfig& config,
              const base::Closure& start_callback,
              const base::Closure& stop_callback,
              const ErrorCallback& error_callback);
@@ -74,10 +77,6 @@ class CastRtpStream {
                 void(std::unique_ptr<base::DictionaryValue>)>& callback);
 
  private:
-  // Return true if this track is an audio track. Return false if this
-  // track is a video track.
-  bool IsAudio() const;
-
   void DidEncounterError(const std::string& message);
 
   blink::WebMediaStreamTrack track_;
@@ -86,6 +85,7 @@ class CastRtpStream {
   std::unique_ptr<CastVideoSink> video_sink_;
   base::Closure stop_callback_;
   ErrorCallback error_callback_;
+  bool is_audio_;
 
   base::WeakPtrFactory<CastRtpStream> weak_factory_;
 

@@ -85,6 +85,18 @@ void CastSession::StartVideo(const media::cast::FrameSenderConfig& config,
                      base::Bind(&CreateVideoEncodeMemory))));
 }
 
+void CastSession::StartRemotingStream(
+    int32_t stream_id,
+    const media::cast::FrameSenderConfig& config,
+    const ErrorCallback& error_callback) {
+  DCHECK(content::RenderThread::Get());
+
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&CastSessionDelegate::StartRemotingStream,
+                            base::Unretained(delegate_.get()), stream_id,
+                            config, media::BindToCurrentLoop(error_callback)));
+}
+
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
                            std::unique_ptr<base::DictionaryValue> options,
                            const ErrorCallback& error_callback) {

@@ -154,6 +154,27 @@ void CastSessionDelegate::StartVideo(
       create_video_encode_mem_cb);
 }
 
+void CastSessionDelegate::StartRemotingStream(
+    int32_t stream_id,
+    const FrameSenderConfig& config,
+    const ErrorCallback& error_callback) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (!cast_transport_) {
+    error_callback.Run("Destination not set.");
+    return;
+  }
+
+  media::cast::CastTransportRtpConfig transport_config;
+  transport_config.ssrc = config.sender_ssrc;
+  transport_config.feedback_ssrc = config.receiver_ssrc;
+  transport_config.rtp_payload_type = config.rtp_payload_type;
+  transport_config.rtp_stream_id = stream_id;
+  transport_config.aes_key = config.aes_key;
+  transport_config.aes_iv_mask = config.aes_iv_mask;
+  cast_transport_->InitializeStream(transport_config, nullptr);
+}
+
 void CastSessionDelegate::StartUDP(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,

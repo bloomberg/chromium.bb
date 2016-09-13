@@ -82,6 +82,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::CastTransportRtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_stream_id)
   IPC_STRUCT_TRAITS_MEMBER(feedback_ssrc)
   IPC_STRUCT_TRAITS_MEMBER(rtp_payload_type)
   IPC_STRUCT_TRAITS_MEMBER(aes_key)

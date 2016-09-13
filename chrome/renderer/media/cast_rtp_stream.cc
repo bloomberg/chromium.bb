@@ -62,7 +62,6 @@ FrameSenderConfig DefaultOpusConfig() {
   config.receiver_ssrc = 2;
   config.rtp_timebase = media::cast::kDefaultAudioSamplingRate;
   config.channels = 2;
-  // The value is 0 which means VBR.
   config.min_bitrate = config.max_bitrate = config.start_bitrate =
       media::cast::kDefaultAudioEncoderBitrate;
   config.max_frame_rate = 100;  // 10 ms audio frames
@@ -98,14 +97,47 @@ FrameSenderConfig DefaultH264Config() {
   return config;
 }
 
-std::vector<FrameSenderConfig> SupportedAudioConfigs() {
-  // TODO(hclam): Fill in more codecs here.
-  return std::vector<FrameSenderConfig>(1, DefaultOpusConfig());
+FrameSenderConfig DefaultRemotingAudioConfig() {
+  FrameSenderConfig config;
+  config.rtp_payload_type = media::cast::RtpPayloadType::REMOTE_AUDIO;
+  config.sender_ssrc = 3;
+  config.receiver_ssrc = 4;
+  config.codec = media::cast::CODEC_AUDIO_REMOTE;
+  config.rtp_timebase = media::cast::kRemotingRtpTimebase;
+  config.max_bitrate = 1000000;
+  config.min_bitrate = 0;
+  config.channels = 2;
+  config.max_frame_rate = 100;  // 10 ms audio frames
+
+  return config;
 }
 
-std::vector<FrameSenderConfig> SupportedVideoConfigs() {
-  std::vector<FrameSenderConfig> supported_configs;
+FrameSenderConfig DefaultRemotingVideoConfig() {
+  FrameSenderConfig config;
+  config.rtp_payload_type = media::cast::RtpPayloadType::REMOTE_VIDEO;
+  config.sender_ssrc = 13;
+  config.receiver_ssrc = 14;
+  config.codec = media::cast::CODEC_VIDEO_REMOTE;
+  config.rtp_timebase = media::cast::kRemotingRtpTimebase;
+  config.max_bitrate = 10000000;
+  config.min_bitrate = 0;
+  config.channels = 1;
+  config.max_frame_rate = media::cast::kDefaultMaxFrameRate;
+  return config;
+}
 
+std::vector<FrameSenderConfig> SupportedAudioConfigs(bool for_remoting_stream) {
+  if (for_remoting_stream)
+    return {DefaultRemotingAudioConfig()};
+  else
+    return {DefaultOpusConfig()};
+}
+
+std::vector<FrameSenderConfig> SupportedVideoConfigs(bool for_remoting_stream) {
+  if (for_remoting_stream)
+    return {DefaultRemotingVideoConfig()};
+
+  std::vector<FrameSenderConfig> supported_configs;
   // Prefer VP8 over H.264 for hardware encoder.
   if (CastRtpStream::IsHardwareVP8EncodingSupported())
     supported_configs.push_back(DefaultVp8Config());
@@ -449,20 +481,29 @@ bool CastRtpStream::IsHardwareH264EncodingSupported() {
 
 CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
                              const scoped_refptr<CastSession>& session)
-    : track_(track), cast_session_(session), weak_factory_(this) {}
+    : track_(track),
+      cast_session_(session),
+      is_audio_(track_.source().getType() ==
+                blink::WebMediaStreamSource::TypeAudio),
+      weak_factory_(this) {}
+
+CastRtpStream::CastRtpStream(bool is_audio,
+                             const scoped_refptr<CastSession>& session)
+    : cast_session_(session), is_audio_(is_audio), weak_factory_(this) {}
 
 CastRtpStream::~CastRtpStream() {
   Stop();
 }
 
 std::vector<FrameSenderConfig> CastRtpStream::GetSupportedConfigs() {
-  if (IsAudio())
-    return SupportedAudioConfigs();
+  if (is_audio_)
+    return SupportedAudioConfigs(track_.isNull());
   else
-    return SupportedVideoConfigs();
+    return SupportedVideoConfigs(track_.isNull());
 }
 
-void CastRtpStream::Start(const FrameSenderConfig& config,
+void CastRtpStream::Start(int32_t stream_id,
+                          const FrameSenderConfig& config,
                           const base::Closure& start_callback,
                           const base::Closure& stop_callback,
                           const ErrorCallback& error_callback) {
@@ -470,11 +511,15 @@ void CastRtpStream::Start(const FrameSenderConfig& config,
   DCHECK(!stop_callback.is_null());
   DCHECK(!error_callback.is_null());
 
-  DVLOG(1) << "CastRtpStream::Start = " << (IsAudio() ? "audio" : "video");
+  DVLOG(1) << "CastRtpStream::Start = " << (is_audio_ ? "audio" : "video");
   stop_callback_ = stop_callback;
   error_callback_ = error_callback;
 
-  if (IsAudio()) {
+  if (track_.isNull()) {
+    cast_session_->StartRemotingStream(
+        stream_id, config, base::Bind(&CastRtpStream::DidEncounterError,
+                                      weak_factory_.GetWeakPtr()));
+  } else if (is_audio_) {
     // In case of error we have to go through DidEncounterError() to stop
     // the streaming after reporting the error.
     audio_sink_.reset(
@@ -484,7 +529,6 @@ void CastRtpStream::Start(const FrameSenderConfig& config,
         base::Bind(&CastAudioSink::AddToTrack, audio_sink_->AsWeakPtr()),
         base::Bind(&CastRtpStream::DidEncounterError,
                    weak_factory_.GetWeakPtr()));
-    start_callback.Run();
   } else {
     // See the code for audio above for explanation of callbacks.
     video_sink_.reset(new CastVideoSink(
@@ -496,12 +540,12 @@ void CastRtpStream::Start(const FrameSenderConfig& config,
                            !config.aes_key.empty()),
         base::Bind(&CastRtpStream::DidEncounterError,
                    weak_factory_.GetWeakPtr()));
-    start_callback.Run();
   }
+  start_callback.Run();
 }
 
 void CastRtpStream::Stop() {
-  DVLOG(1) << "CastRtpStream::Stop = " << (IsAudio() ? "audio" : "video");
+  DVLOG(1) << "CastRtpStream::Stop = " << (is_audio_ ? "audio" : "video");
   if (stop_callback_.is_null())
     return;  // Already stopped.
   weak_factory_.InvalidateWeakPtrs();
@@ -512,35 +556,30 @@ void CastRtpStream::Stop() {
 }
 
 void CastRtpStream::ToggleLogging(bool enable) {
-  DVLOG(1) << "CastRtpStream::ToggleLogging(" << enable << ") = "
-           << (IsAudio() ? "audio" : "video");
-  cast_session_->ToggleLogging(IsAudio(), enable);
+  DVLOG(1) << "CastRtpStream::ToggleLogging(" << enable
+           << ") = " << (is_audio_ ? "audio" : "video");
+  cast_session_->ToggleLogging(is_audio_, enable);
 }
 
 void CastRtpStream::GetRawEvents(
     const base::Callback<void(std::unique_ptr<base::BinaryValue>)>& callback,
     const std::string& extra_data) {
   DVLOG(1) << "CastRtpStream::GetRawEvents = "
-           << (IsAudio() ? "audio" : "video");
-  cast_session_->GetEventLogsAndReset(IsAudio(), extra_data, callback);
+           << (is_audio_ ? "audio" : "video");
+  cast_session_->GetEventLogsAndReset(is_audio_, extra_data, callback);
 }
 
 void CastRtpStream::GetStats(
     const base::Callback<void(std::unique_ptr<base::DictionaryValue>)>&
         callback) {
-  DVLOG(1) << "CastRtpStream::GetStats = "
-           << (IsAudio() ? "audio" : "video");
-  cast_session_->GetStatsAndReset(IsAudio(), callback);
-}
-
-bool CastRtpStream::IsAudio() const {
-  return track_.source().getType() == blink::WebMediaStreamSource::TypeAudio;
+  DVLOG(1) << "CastRtpStream::GetStats = " << (is_audio_ ? "audio" : "video");
+  cast_session_->GetStatsAndReset(is_audio_, callback);
 }
 
 void CastRtpStream::DidEncounterError(const std::string& message) {
   DCHECK(content::RenderThread::Get());
-  DVLOG(1) << "CastRtpStream::DidEncounterError(" << message << ") = "
-           << (IsAudio() ? "audio" : "video");
+  DVLOG(1) << "CastRtpStream::DidEncounterError(" << message
+           << ") = " << (is_audio_ ? "audio" : "video");
   // Save the WeakPtr first because the error callback might delete this object.
   base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);

@@ -3832,6 +3832,7 @@ test("unit_tests") {
       "../browser/extensions/webstore_inline_installer_unittest.cc",
       "../browser/extensions/webstore_installer_unittest.cc",
       "../browser/extensions/zipfile_installer_unittest.cc",
+      "../browser/media/cast_remoting_sender_unittest.cc",
       "../browser/media/cast_transport_host_filter_unittest.cc",
       "../browser/metrics/extensions_metrics_provider_unittest.cc",
       "../browser/notifications/extension_welcome_notification_unittest.cc",
@@ -3965,6 +3966,7 @@ test("unit_tests") {
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/strings",
+      "//media/cast:test_support",
       "//tools/json_schema_compiler/test:features_generation_test",
     ]
     if (enable_service_discovery) {

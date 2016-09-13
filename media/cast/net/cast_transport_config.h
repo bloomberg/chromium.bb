@@ -24,10 +24,12 @@ enum Codec {
   CODEC_AUDIO_OPUS,
   CODEC_AUDIO_PCM16,
   CODEC_AUDIO_AAC,
+  CODEC_AUDIO_REMOTE,
   CODEC_VIDEO_FAKE,
   CODEC_VIDEO_VP8,
   CODEC_VIDEO_H264,
-  CODEC_LAST = CODEC_VIDEO_H264
+  CODEC_VIDEO_REMOTE,
+  CODEC_LAST = CODEC_VIDEO_REMOTE
 };
 
 // Describes the content being transported over RTP streams.
@@ -62,6 +64,9 @@ enum class RtpPayloadType {
 struct CastTransportRtpConfig {
   CastTransportRtpConfig();
   ~CastTransportRtpConfig();
+
+  // Identifier for the RTP stream.
+  int32_t rtp_stream_id;
 
   // Identifier refering to this sender.
   uint32_t ssrc;
