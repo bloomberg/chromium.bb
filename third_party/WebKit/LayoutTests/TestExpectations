@@ -1240,9 +1240,6 @@ crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-4-and-click.h
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-remove-summary-2-and-click.html [ Pass Failure ]
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-3-and-click.html [ Pass Failure ]
 
-crbug.com/640264 css3/filters/filter-repaint-turbulence.html [ NeedsRebaseline ]
-crbug.com/640264 css3/filters/filter-repaint-feimage.html [ NeedsRebaseline ]
-
 crbug.com/635909 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
