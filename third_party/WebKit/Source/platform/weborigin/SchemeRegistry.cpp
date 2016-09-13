@@ -87,8 +87,6 @@ static URLSchemesSet& schemesWithUniqueOrigins()
     DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, schemesWithUniqueOrigins, ({
         "about",
         "javascript",
-        // This is a willful violation of HTML5.
-        // See https://bugs.webkit.org/show_bug.cgi?id=11885
         "data",
     }));
     return schemesWithUniqueOrigins;
