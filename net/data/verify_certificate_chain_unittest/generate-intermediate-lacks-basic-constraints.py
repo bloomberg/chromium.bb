@@ -23,6 +23,9 @@ chain = [target, intermediate]
 trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
-errors = """Does not have Basic Constraints"""
+errors = """[Context] Processing Certificate
+  index: 0
+      [Error] Does not have Basic Constraints
+"""
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)

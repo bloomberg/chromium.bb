@@ -13,11 +13,11 @@ namespace net {
 
 namespace {
 
-DEFINE_CERT_ERROR_TYPE(kUnacceptableCurveForEcdsa,
-                       "Only P-256, P-384, P-521 are supported for ECDSA");
-DEFINE_CERT_ERROR_TYPE(kRsaModulusLessThan2048,
-                       "RSA modulus must be at least 2048 bits");
-DEFINE_CERT_ERROR_TYPE(kRsaModulusTooSmall, "RSA modulus too small");
+DEFINE_CERT_ERROR_ID(kUnacceptableCurveForEcdsa,
+                     "Only P-256, P-384, P-521 are supported for ECDSA");
+DEFINE_CERT_ERROR_ID(kRsaModulusLessThan2048,
+                     "RSA modulus must be at least 2048 bits");
+DEFINE_CERT_ERROR_ID(kRsaModulusTooSmall, "RSA modulus too small");
 
 }  // namespace
 

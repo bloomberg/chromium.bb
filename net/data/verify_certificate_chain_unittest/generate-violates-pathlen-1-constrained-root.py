@@ -28,6 +28,9 @@ chain = [target, intermediate2, intermediate1]
 trusted = common.TrustAnchor(root, constrained=True)
 time = common.DEFAULT_TIME
 verify_result = False
-errors = """max_path_length reached"""
+errors = """[Context] Processing Certificate
+  index: 1
+      [Error] max_path_length reached
+"""
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)

@@ -82,21 +82,21 @@ NET_EXPORT bool VerifyCertificateChain(const ParsedCertificateList& certs,
 namespace verify_certificate_chain_errors {
 
 // TODO(eroman): Document each of these and their parameters.
-extern CertErrorType kSignatureAlgorithmMismatch;
-extern CertErrorType kInvalidOrUnsupportedAlgorithm;
-extern CertErrorType kChainIsEmpty;
-extern CertErrorType kUnconsumedCriticalExtension;
-extern CertErrorType kTargetCertInconsistentCaBits;
-extern CertErrorType kKeyCertSignBitNotSet;
-extern CertErrorType kMaxPathLengthViolated;
-extern CertErrorType kBasicConstraintsIndicatesNotCa;
-extern CertErrorType kMissingBasicConstraints;
-extern CertErrorType kNotPermittedByNameConstraints;
-extern CertErrorType kSubjectDoesNotMatchIssuer;
-extern CertErrorType kVerifySignedDataFailed;
-extern CertErrorType kValidityFailedNotAfter;
-extern CertErrorType kValidityFailedNotBefore;
-extern CertErrorType kSignatureAlgorithmsDifferentEncoding;
+extern CertErrorId kSignatureAlgorithmMismatch;
+extern CertErrorId kInvalidOrUnsupportedSignatureAlgorithm;
+extern CertErrorId kChainIsEmpty;
+extern CertErrorId kUnconsumedCriticalExtension;
+extern CertErrorId kTargetCertInconsistentCaBits;
+extern CertErrorId kKeyCertSignBitNotSet;
+extern CertErrorId kMaxPathLengthViolated;
+extern CertErrorId kBasicConstraintsIndicatesNotCa;
+extern CertErrorId kMissingBasicConstraints;
+extern CertErrorId kNotPermittedByNameConstraints;
+extern CertErrorId kSubjectDoesNotMatchIssuer;
+extern CertErrorId kVerifySignedDataFailed;
+extern CertErrorId kValidityFailedNotAfter;
+extern CertErrorId kValidityFailedNotBefore;
+extern CertErrorId kSignatureAlgorithmsDifferentEncoding;
 
 }  // namespace verify_certificate_chain_errors
 

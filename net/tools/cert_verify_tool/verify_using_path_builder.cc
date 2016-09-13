@@ -146,7 +146,7 @@ void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
   }
 
   // Print the errors.
-  if (!result_path->errors.errors().empty()) {
+  if (!result_path->errors.empty()) {
     std::cout << "Errors:\n";
     std::cout << result_path->errors.ToDebugString() << "\n";
   }

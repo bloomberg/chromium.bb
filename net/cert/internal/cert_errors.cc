@@ -4,105 +4,141 @@
 
 #include "net/cert/internal/cert_errors.h"
 
-#include <memory>
-
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/values.h"
-#include "net/der/input.h"
+#include "base/strings/string_split.h"
+#include "net/cert/internal/cert_error_params.h"
+#include "net/cert/internal/cert_error_scoper.h"
 
 namespace net {
 
 namespace {
 
-std::string HexEncodeString(const std::string& bytes) {
-  return base::HexEncode(bytes.data(), bytes.size());
+// Helpers for pretty-printing CertErrors to a string.
+void AppendNodeToDebugString(CertErrorNode* node,
+                             const std::string& indentation,
+                             std::string* out);
+
+void AppendChildrenToDebugString(const CertErrorNodes& children,
+                                 const std::string& indentation,
+                                 std::string* out) {
+  for (const auto& child : children)
+    AppendNodeToDebugString(child.get(), indentation, out);
+}
+
+void AppendLinesWithIndentation(const std::string& text,
+                                const std::string& indentation,
+                                std::string* out) {
+  std::vector<base::StringPiece> lines = base::SplitStringPieceUsingSubstr(
+      text, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  for (const auto& line : lines) {
+    *out += indentation;
+    line.AppendToString(out);
+    *out += "\n";
+  }
+}
+
+const char* CertErrorNodeTypeToString(CertErrorNodeType type) {
+  switch (type) {
+    case CertErrorNodeType::TYPE_CONTEXT:
+      return "[Context] ";
+    case CertErrorNodeType::TYPE_WARNING:
+      return "[Warning] ";
+    case CertErrorNodeType::TYPE_ERROR:
+      return "[Error] ";
+  }
+  return nullptr;
+}
+
+void AppendNodeToDebugString(CertErrorNode* node,
+                             const std::string& indentation,
+                             std::string* out) {
+  std::string cur_indentation = indentation;
+
+  *out += cur_indentation;
+  *out += CertErrorNodeTypeToString(node->node_type);
+  *out += CertErrorIdToDebugString(node->id);
+  *out += +"\n";
+
+  if (node->params) {
+    cur_indentation += "  ";
+    AppendLinesWithIndentation(node->params->ToDebugString(), cur_indentation,
+                               out);
+  }
+
+  cur_indentation += "    ";
+
+  AppendChildrenToDebugString(node->children, cur_indentation, out);
 }
 
 }  // namespace
 
-CertErrorParams::CertErrorParams() = default;
-CertErrorParams::~CertErrorParams() = default;
+CertErrorNode::CertErrorNode(CertErrorNodeType node_type,
+                             CertErrorId id,
+                             std::unique_ptr<CertErrorParams> params)
+    : node_type(node_type), id(id), params(std::move(params)) {}
 
-CertError::CertError() = default;
-CertError::~CertError() = default;
-CertError::CertError(CertError&& other) = default;
+CertErrorNode::~CertErrorNode() = default;
+
+void CertErrorNode::AddChild(std::unique_ptr<CertErrorNode> child) {
+  DCHECK_EQ(CertErrorNodeType::TYPE_CONTEXT, node_type);
+  children.push_back(std::move(child));
+}
 
 CertErrors::CertErrors() = default;
 
 CertErrors::~CertErrors() = default;
 
-void CertErrors::Add(CertErrorType type) {
-  AddWithParam(type, nullptr);
+void CertErrors::Add(CertErrorNodeType node_type,
+                     CertErrorId id,
+                     std::unique_ptr<CertErrorParams> params) {
+  AddNode(base::MakeUnique<CertErrorNode>(node_type, id, std::move(params)));
 }
 
-void CertErrors::AddWithParam(CertErrorType type,
-                              std::unique_ptr<CertErrorParams> params) {
-  errors_.resize(errors_.size() + 1);
-  errors_.back().type = type;
-  errors_.back().params = std::move(params);
+void CertErrors::Add(CertErrorId id) {
+  AddError(id);
 }
 
-void CertErrors::AddWith1DerParam(CertErrorType type, const der::Input& der1) {
-  AddWithParam(type, base::MakeUnique<CertErrorParamsDer1>(der1));
+void CertErrors::AddError(CertErrorId id,
+                          std::unique_ptr<CertErrorParams> params) {
+  Add(CertErrorNodeType::TYPE_ERROR, id, std::move(params));
 }
 
-void CertErrors::AddWith2DerParams(CertErrorType type,
-                                   const der::Input& der1,
-                                   const der::Input& der2) {
-  AddWithParam(type, base::MakeUnique<CertErrorParamsDer2>(der1, der2));
+void CertErrors::AddError(CertErrorId id) {
+  AddError(id, nullptr);
+}
+
+void CertErrors::AddWarning(CertErrorId id,
+                            std::unique_ptr<CertErrorParams> params) {
+  Add(CertErrorNodeType::TYPE_WARNING, id, std::move(params));
+}
+
+void CertErrors::AddWarning(CertErrorId id) {
+  AddWarning(id, nullptr);
+}
+
+bool CertErrors::empty() const {
+  return nodes_.empty();
 }
 
 std::string CertErrors::ToDebugString() const {
-  std::string str;
-  for (const auto& error : errors_) {
-    if (!str.empty())
-      str += "\n";
-    str += error.type;
-  }
-  return str;
+  std::string result;
+  AppendChildrenToDebugString(nodes_, std::string(), &result);
+  return result;
 }
 
-ScopedCertErrorsCertContext::ScopedCertErrorsCertContext(
-    CertErrors* parent,
-    const ParsedCertificate* cert,
-    size_t i) {
-  // TODO(crbug.com/634443): Implement.
+void CertErrors::AddNode(std::unique_ptr<CertErrorNode> node) {
+  if (current_scoper_)
+    current_scoper_->LazyGetRootNode()->AddChild(std::move(node));
+  else
+    nodes_.push_back(std::move(node));
 }
 
-ScopedCertErrorsCertContext::~ScopedCertErrorsCertContext() {
-  // TODO(crbug.com/634443): Implement.
-}
-
-ScopedCertErrorsTrustAnchorContext::ScopedCertErrorsTrustAnchorContext(
-    CertErrors* parent,
-    const TrustAnchor* trust_anchor) {
-  // TODO(crbug.com/634443): Implement.
-}
-
-ScopedCertErrorsTrustAnchorContext::~ScopedCertErrorsTrustAnchorContext() {
-  // TODO(crbug.com/634443): Implement.
-}
-
-CertErrorParamsDer1::CertErrorParamsDer1(const der::Input& der1)
-    : der1_(der1.AsString()) {}
-
-std::unique_ptr<base::Value> CertErrorParamsDer1::ToValue() const {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetString("der1", HexEncodeString(der1_));
-  return std::move(dict);
-}
-
-CertErrorParamsDer2::CertErrorParamsDer2(const der::Input& der1,
-                                         const der::Input& der2)
-    : der1_(der1.AsString()), der2_(der2.AsString()) {}
-
-std::unique_ptr<base::Value> CertErrorParamsDer2::ToValue() const {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetString("der1", HexEncodeString(der1_));
-  dict->SetString("der2", HexEncodeString(der2_));
-  return std::move(dict);
+CertErrorScoper* CertErrors::SetScoper(CertErrorScoper* scoper) {
+  CertErrorScoper* prev = current_scoper_;
+  current_scoper_ = scoper;
+  return prev;
 }
 
 }  // namespace net

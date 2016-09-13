@@ -26,14 +26,14 @@ namespace net {
 
 namespace {
 
-DEFINE_CERT_ERROR_TYPE(kUnacceptableSignatureAlgorithm,
-                       "Unacceptable signature algorithm");
-DEFINE_CERT_ERROR_TYPE(kUnacceptableRsaModulusLength,
-                       "Unacceptable modulus length for RSA key");
-DEFINE_CERT_ERROR_TYPE(kUnacceptableEcdsaCurve,
-                       "Unacceptable curve for ECDSA key");
-DEFINE_CERT_ERROR_TYPE(kSignatureVerificationFailed,
-                       "Signature verification failed");
+DEFINE_CERT_ERROR_ID(kUnacceptableSignatureAlgorithm,
+                     "Unacceptable signature algorithm");
+DEFINE_CERT_ERROR_ID(kUnacceptableRsaModulusLength,
+                     "Unacceptable modulus length for RSA key");
+DEFINE_CERT_ERROR_ID(kUnacceptableEcdsaCurve,
+                     "Unacceptable curve for ECDSA key");
+DEFINE_CERT_ERROR_ID(kSignatureVerificationFailed,
+                     "Signature verification failed");
 
 // Converts a DigestAlgorithm to an equivalent EVP_MD*.
 WARN_UNUSED_RESULT bool GetDigest(DigestAlgorithm digest, const EVP_MD** out) {

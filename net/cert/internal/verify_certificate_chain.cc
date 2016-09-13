@@ -7,6 +7,9 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "net/cert/internal/cert_error_params.h"
+#include "net/cert/internal/cert_error_scoper.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/name_constraints.h"
 #include "net/cert/internal/parse_certificate.h"
@@ -23,6 +26,28 @@ using namespace verify_certificate_chain_errors;
 
 namespace {
 
+DEFINE_CERT_ERROR_ID(kContextTrustAnchor, "Processing Trust Anchor");
+DEFINE_CERT_ERROR_ID(kContextCertificate, "Processing Certificate");
+
+// This class changes the error scope to indicate which certificate in the
+// chain is currently being processed.
+class CertErrorScoperForCert : public CertErrorScoper {
+ public:
+  CertErrorScoperForCert(CertErrors* parent_errors, size_t index)
+      : CertErrorScoper(parent_errors), index_(index) {}
+
+  std::unique_ptr<CertErrorNode> BuildRootNode() override {
+    return base::MakeUnique<CertErrorNode>(
+        CertErrorNodeType::TYPE_CONTEXT, kContextCertificate,
+        CreateCertErrorParamsSizeT("index", index_));
+  }
+
+ private:
+  size_t index_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertErrorScoperForCert);
+};
+
 // Returns true if the certificate does not contain any unconsumed _critical_
 // extensions.
 WARN_UNUSED_RESULT bool VerifyNoUnconsumedCriticalExtensions(
@@ -33,8 +58,9 @@ WARN_UNUSED_RESULT bool VerifyNoUnconsumedCriticalExtensions(
   for (const auto& entry : cert.unparsed_extensions()) {
     if (entry.second.critical) {
       has_unconsumed_critical_extensions = true;
-      errors->AddWith2DerParams(kUnconsumedCriticalExtension, entry.second.oid,
-                                entry.second.value);
+      errors->AddError(kUnconsumedCriticalExtension,
+                       CreateCertErrorParams2Der("oid", entry.second.oid,
+                                                 "value", entry.second.value));
     }
   }
 
@@ -124,12 +150,17 @@ WARN_UNUSED_RESULT bool VerifySignatureAlgorithmsMatch(
   // But make a compatibility concession for RSA with SHA1.
   if (IsRsaWithSha1SignatureAlgorithm(alg1_tlv) &&
       IsRsaWithSha1SignatureAlgorithm(alg2_tlv)) {
-    errors->AddWith2DerParams(kSignatureAlgorithmsDifferentEncoding, alg1_tlv,
-                              alg2_tlv);
+    errors->AddWarning(
+        kSignatureAlgorithmsDifferentEncoding,
+        CreateCertErrorParams2Der("Certificate.algorithm", alg1_tlv,
+                                  "TBSCertificate.signature", alg2_tlv));
     return true;
   }
 
-  errors->AddWith2DerParams(kSignatureAlgorithmMismatch, alg1_tlv, alg2_tlv);
+  errors->AddError(
+      kSignatureAlgorithmMismatch,
+      CreateCertErrorParams2Der("Certificate.algorithm", alg1_tlv,
+                                "TBSCertificate.signature", alg2_tlv));
 
   return false;
 }
@@ -154,8 +185,9 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
   // Verify the digital signature using the previous certificate's key (RFC
   // 5280 section 6.1.3 step a.1).
   if (!cert.has_valid_supported_signature_algorithm()) {
-    errors->AddWith1DerParam(kInvalidOrUnsupportedAlgorithm,
-                             cert.signature_algorithm_tlv());
+    errors->AddError(
+        kInvalidOrUnsupportedSignatureAlgorithm,
+        CreateCertErrorParams1Der("algorithm", cert.signature_algorithm_tlv()));
     return false;
   }
 
@@ -394,7 +426,7 @@ WARN_UNUSED_RESULT bool ProcessTrustAnchorConstraints(
     std::vector<const NameConstraints*>* name_constraints_list,
     CertErrors* errors) {
   // Set the trust anchor as the current context for any subsequent errors.
-  ScopedCertErrorsTrustAnchorContext error_context(errors, &trust_anchor);
+  CertErrorScoperNoParams error_context(errors, kContextTrustAnchor);
 
   // In RFC 5937 the enforcement of anchor constraints is governed by the input
   // enforceTrustAnchorConstraints to path validation. In our implementation
@@ -529,7 +561,7 @@ bool VerifyCertificateChain(const ParsedCertificateList& certs,
     const ParsedCertificate& cert = *certs[index_into_certs];
 
     // Set the current certificate as the context for any subsequent errors.
-    ScopedCertErrorsCertContext error_context(errors, &cert, i);
+    CertErrorScoperForCert error_context(errors, i);
 
     // Per RFC 5280 section 6.1:
     //  * Do basic processing for each certificate
@@ -563,33 +595,33 @@ bool VerifyCertificateChain(const ParsedCertificateList& certs,
 
 namespace verify_certificate_chain_errors {
 
-DEFINE_CERT_ERROR_TYPE(
+DEFINE_CERT_ERROR_ID(
     kSignatureAlgorithmMismatch,
     "Certificate.signatureAlgorithm != TBSCertificate.signature");
-DEFINE_CERT_ERROR_TYPE(kInvalidOrUnsupportedAlgorithm,
-                       "Invalid or unsupported signature algorithm");
-DEFINE_CERT_ERROR_TYPE(kChainIsEmpty, "Chain is empty");
-DEFINE_CERT_ERROR_TYPE(kUnconsumedCriticalExtension,
-                       "Unconsumed critical extension");
-DEFINE_CERT_ERROR_TYPE(
+DEFINE_CERT_ERROR_ID(kInvalidOrUnsupportedSignatureAlgorithm,
+                     "Invalid or unsupported signature algorithm");
+DEFINE_CERT_ERROR_ID(kChainIsEmpty, "Chain is empty");
+DEFINE_CERT_ERROR_ID(kUnconsumedCriticalExtension,
+                     "Unconsumed critical extension");
+DEFINE_CERT_ERROR_ID(
     kTargetCertInconsistentCaBits,
     "Target certificate looks like a CA but does not set all CA properties");
-DEFINE_CERT_ERROR_TYPE(kKeyCertSignBitNotSet, "keyCertSign bit is not set");
-DEFINE_CERT_ERROR_TYPE(kMaxPathLengthViolated, "max_path_length reached");
-DEFINE_CERT_ERROR_TYPE(kBasicConstraintsIndicatesNotCa,
-                       "Basic Constraints indicates not a CA");
-DEFINE_CERT_ERROR_TYPE(kMissingBasicConstraints,
-                       "Does not have Basic Constraints");
-DEFINE_CERT_ERROR_TYPE(kNotPermittedByNameConstraints,
-                       "Not permitted by name constraints");
-DEFINE_CERT_ERROR_TYPE(kSubjectDoesNotMatchIssuer,
-                       "subject does not match issuer");
-DEFINE_CERT_ERROR_TYPE(kVerifySignedDataFailed, "VerifySignedData failed");
-DEFINE_CERT_ERROR_TYPE(kValidityFailedNotAfter, "Time is after notAfter");
-DEFINE_CERT_ERROR_TYPE(kValidityFailedNotBefore, "Time is before notBefore");
-DEFINE_CERT_ERROR_TYPE(kSignatureAlgorithmsDifferentEncoding,
-                       "Certificate.signatureAlgorithm is encoded differently "
-                       "than TBSCertificate.signature");
+DEFINE_CERT_ERROR_ID(kKeyCertSignBitNotSet, "keyCertSign bit is not set");
+DEFINE_CERT_ERROR_ID(kMaxPathLengthViolated, "max_path_length reached");
+DEFINE_CERT_ERROR_ID(kBasicConstraintsIndicatesNotCa,
+                     "Basic Constraints indicates not a CA");
+DEFINE_CERT_ERROR_ID(kMissingBasicConstraints,
+                     "Does not have Basic Constraints");
+DEFINE_CERT_ERROR_ID(kNotPermittedByNameConstraints,
+                     "Not permitted by name constraints");
+DEFINE_CERT_ERROR_ID(kSubjectDoesNotMatchIssuer,
+                     "subject does not match issuer");
+DEFINE_CERT_ERROR_ID(kVerifySignedDataFailed, "VerifySignedData failed");
+DEFINE_CERT_ERROR_ID(kValidityFailedNotAfter, "Time is after notAfter");
+DEFINE_CERT_ERROR_ID(kValidityFailedNotBefore, "Time is before notBefore");
+DEFINE_CERT_ERROR_ID(kSignatureAlgorithmsDifferentEncoding,
+                     "Certificate.signatureAlgorithm is encoded differently "
+                     "than TBSCertificate.signature");
 
 }  // verify_certificate_chain_errors
 

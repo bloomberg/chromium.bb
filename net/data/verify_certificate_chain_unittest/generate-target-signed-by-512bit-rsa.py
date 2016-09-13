@@ -23,8 +23,11 @@ chain = [target, intermediate]
 trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
-errors = """RSA modulus too small
-Unacceptable modulus length for RSA key
-VerifySignedData failed"""
+errors = """[Context] Processing Certificate
+  index: 1
+      [Error] RSA modulus too small
+      [Error] Unacceptable modulus length for RSA key
+      [Error] VerifySignedData failed
+"""
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)
