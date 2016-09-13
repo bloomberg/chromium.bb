@@ -287,7 +287,8 @@ VisibilityTestData kTestParams[] = {
 Pipeline kPipelines[] = {
     Pipeline::WMPI,
 #if defined(OS_ANDROID)
-    Pipeline::WMPA,
+    // Disabling WMPA tests because of https://crbug.com/646312
+    // Pipeline::WMPA,
 #endif  // defined(OS_ANDROID)
 };
 
