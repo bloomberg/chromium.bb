@@ -32,9 +32,6 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   NewChromeIdentityInteractionManager(
       ios::ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
-  ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
-      ios::ChromeBrowserState* browser_state,
-      id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
 
   bool IsValidIdentity(ChromeIdentity* identity) const override;
   ChromeIdentity* GetIdentityWithGaiaID(

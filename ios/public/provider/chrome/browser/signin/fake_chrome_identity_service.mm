@@ -164,16 +164,6 @@ FakeChromeIdentityService::NewChromeIdentityInteractionManager(
   return manager;
 }
 
-ChromeIdentityInteractionManager*
-FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ios::ChromeBrowserState* browser_state,
-    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  base::scoped_nsobject<ChromeIdentityInteractionManager> manager(
-      [[FakeChromeIdentityInteractionManager alloc] init]);
-  manager.get().delegate = delegate;
-  return manager.autorelease();
-}
-
 bool FakeChromeIdentityService::IsValidIdentity(
     ChromeIdentity* identity) const {
   return [identities_ indexOfObject:identity] != NSNotFound;

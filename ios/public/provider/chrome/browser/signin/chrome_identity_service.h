@@ -118,13 +118,6 @@ class ChromeIdentityService {
       ios::ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
-  // Returns a newly created and autoreleased ChromeIdentityInteractionManager
-  // with |delegate| as its delegate.
-  virtual ChromeIdentityInteractionManager*
-  CreateChromeIdentityInteractionManager(
-      ios::ChromeBrowserState* browser_state,
-      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
-
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.
   virtual bool IsValidIdentity(ChromeIdentity* identity) const;

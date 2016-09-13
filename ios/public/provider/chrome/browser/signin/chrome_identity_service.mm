@@ -44,13 +44,6 @@ ChromeIdentityService::NewChromeIdentityInteractionManager(
   return base::scoped_nsobject<ChromeIdentityInteractionManager>();
 }
 
-ChromeIdentityInteractionManager*
-ChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ios::ChromeBrowserState* browser_state,
-    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  return [[[ChromeIdentityInteractionManager alloc] init] autorelease];
-}
-
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
   return false;
 }
