@@ -619,6 +619,16 @@
       'Win x64 Builder': 'gn_official_goma_minimal_symbols_x64',
     },
 
+    'client.nacl.sdk': {
+      'linux-sdk-asan-multi': 'gn_release_bot',
+      'linux-sdk-multi': 'gn_release_bot',
+      'linux-sdk-multirel': 'gn_release_bot',
+      'mac-sdk-multi': 'gn_release_bot',
+      'mac-sdk-multirel': 'gn_release_bot',
+      'windows-sdk-multi': 'gn_release_bot_minimal_symbols_x86',
+      'windows-sdk-multirel': 'gn_release_bot_minimal_symbols_x86',
+    },
+
     'client.v8.fyi': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
       'Chromium ASAN - debug': 'gn_asan_lsan_edge_debug_bot',
