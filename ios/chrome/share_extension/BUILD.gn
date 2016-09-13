@@ -12,7 +12,6 @@ group("resources") {
 }
 
 extension_repack_all_locales("packed_resources") {
-  copy_data_to_bundle = false
   extension = "share_extension"
   input_locales = ios_packed_locales
   output_locales = ios_packed_locales_as_mac_outputs

@@ -1481,6 +1481,11 @@ chrome_repack_locales("repack_locales_pack") {
   } else {
     output_locales = locales
   }
+
+  if (enable_resource_whitelist_generation) {
+    repack_whitelist = android_resource_whitelist
+    deps += [ "//chrome:resource_whitelist" ]
+  }
 }
 
 chrome_repack_locales("repack_pseudo_locales_pack") {
@@ -1492,6 +1497,11 @@ chrome_repack_locales("repack_pseudo_locales_pack") {
     output_locales = [ "fake_bidi" ]  # Mac uses underscores.
   } else {
     output_locales = [ "fake-bidi" ]
+  }
+
+  if (enable_resource_whitelist_generation) {
+    repack_whitelist = android_resource_whitelist
+    deps += [ "//chrome:resource_whitelist" ]
   }
 }
 

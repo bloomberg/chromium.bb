@@ -4,122 +4,24 @@
 
 import("//tools/grit/repack.gni")
 
-# Pack all resources for an application extension for a given locale.
+# Pack all resources for an application extension for all locales.
 #
-# Arguments:
+# Arguments (in addition to those from repack_locales):
 #
 #   extension [required]
 #       name of the application extension.
 #
-#   input_locale [required]
-#       name of the locale to pack.
-#
-#   output_locale [required]
-#       name of the locale (may be different from input_locale as iOS
-#       and Chrome does not use the same convention for naming locales
-#       with country variants).
-#
-#   copy_data_to_bundle [required]
-#       controls whether bundle_data targets are defined to  copy the repacked
-#       data into the final bundle.
-#
-#   visibility [optional]
-#       usual meaning.
-#
-template("_extension_repack_one_locale") {
-  assert(defined(invoker.extension), "Need extension for $target_name")
-  assert(defined(invoker.input_locale), "Need input_locale for $target_name")
-  assert(defined(invoker.output_locale), "Need output_locale for $target_name")
+template("extension_repack_all_locales") {
+  # Wraps repack_locales(), setting the source_patterns and deps required for
+  # Chrome.
+  # Generates a collection of bundle_data targets.
+  repack_locales(target_name) {
+    forward_variables_from(invoker, "*", [ "extension" ])
 
-  if (invoker.copy_data_to_bundle) {
-    _target_type = "repack_and_bundle"
-  } else {
-    _target_type = "repack"
-  }
-
-  target(_target_type, target_name) {
-    forward_variables_from(invoker, [ "visibility" ])
+    source_patterns = [ "$root_gen_dir/ios/${invoker.extension}/ios_${invoker.extension}_strings_" ]
 
     deps = [
       "//ios/chrome/${invoker.extension}/strings",
     ]
-
-    sources = [
-      "$root_gen_dir/ios/${invoker.extension}/" +
-          "ios_${invoker.extension}_strings_${invoker.input_locale}.pak",
-    ]
-
-    output = "$target_gen_dir/${invoker.output_locale}.lproj/locale.pak"
-    if (invoker.copy_data_to_bundle) {
-      bundle_output = "{{bundle_resources_dir}}/" +
-                      "${invoker.output_locale}.lproj/locale.pak"
-    }
-  }
-}
-
-# Pack all resources for an application extension for all locales.
-#
-# Arguments:
-#
-#   extension [required]
-#       name of the application extension.
-#
-#   input_locales [required]
-#       list of all locales to pack.
-#
-#   output_locales [required]
-#       list of all locales in application bundle (may differ from input
-#       locales as iOS and Chrome does not use the same convention for
-#       naming locales with country variants).
-#
-#       Must be the same length as input_locales.
-#
-#   copy_data_to_bundle [optional]
-#       controls whether bundle_data targets are defined to copy the repacked
-#       data into the final bundle (defaults to true if not defined).
-#
-#   visibility [optional]
-#       usual meaning.
-#
-template("extension_repack_all_locales") {
-  assert(defined(invoker.extension), "Need extension for $target_name")
-  assert(defined(invoker.input_locales), "Need input_locales for $target_name")
-  assert(defined(invoker.output_locales),
-         "Need output_locales for $target_name")
-
-  _target_name = target_name
-
-  _copy_data_to_bundle = true
-  if (defined(invoker.copy_data_to_bundle)) {
-    _copy_data_to_bundle = invoker.copy_data_to_bundle
-  }
-
-  # TODO(614747): GN parser does not grok invoker.output_locales[foo]. Use a
-  # local variables to workaround this issue until the issue is fixed.
-  _current_locale = 0
-  _output_locales = invoker.output_locales
-
-  # Collect all locale targets to avoid looping twice over the locales.
-  _locale_targets = []
-
-  foreach(_input_locale, invoker.input_locales) {
-    _output_locale = _output_locales[_current_locale]
-
-    _locale_target = _target_name + "_$_input_locale"
-    _extension_repack_one_locale(_locale_target) {
-      visibility = [ ":$_target_name" ]
-      input_locale = _input_locale
-      output_locale = _output_locale
-      extension = invoker.extension
-      copy_data_to_bundle = _copy_data_to_bundle
-    }
-
-    _locale_targets += [ ":$_locale_target" ]
-    _current_locale = _current_locale + 1
-  }
-
-  group(_target_name) {
-    forward_variables_from(invoker, [ "visibility" ])
-    public_deps = _locale_targets
   }
 }
