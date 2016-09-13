@@ -237,7 +237,7 @@ TEST(ScrollOffsetAnimationCurveTest, CurveWithLargeDelay) {
   curve->UpdateTarget(-0.01, gfx::ScrollOffset(0.f, 300.f));
   double duration =
       ScrollOffsetAnimationCurve::SegmentDuration(
-          gfx::Vector2dF(0.f, 300.f),
+          gfx::Vector2dF(0.f, 200.f),
           ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA,
           base::TimeDelta::FromSecondsD(0.01))
           .InSecondsF();
@@ -255,6 +255,56 @@ TEST(ScrollOffsetAnimationCurveTest, CurveWithLargeDelay) {
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0.f, 500.f),
                       curve->GetValue(base::TimeDelta::FromSecondsD(1.0)));
+}
+
+// This test verifies that if the last segment duration is zero, ::UpdateTarget
+// simply updates the total animation duration see crbug.com/645317.
+TEST(ScrollOffsetAnimationCurveTest, UpdateTargetZeroLastSegmentDuration) {
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          gfx::ScrollOffset(0.f, 100.f),
+          CubicBezierTimingFunction::CreatePreset(
+              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA));
+  double duration_in_seconds = kInverseDeltaMaxDuration / kDurationDivisor;
+  double delay_in_seconds = 0.02;
+  double curve_duration = duration_in_seconds - delay_in_seconds;
+
+  curve->SetInitialValue(gfx::ScrollOffset(),
+                         base::TimeDelta::FromSecondsD(delay_in_seconds));
+  EXPECT_NEAR(curve_duration, curve->Duration().InSecondsF(), 0.0002f);
+
+  // Re-target 1, this should set last_retarget_ to 0.05.
+  gfx::ScrollOffset new_delta =
+      gfx::ScrollOffset(0.f, 200.f) -
+      curve->GetValue(base::TimeDelta::FromSecondsD(0.05));
+  double expected_duration =
+      ScrollOffsetAnimationCurve::SegmentDuration(
+          gfx::Vector2dF(new_delta.x(), new_delta.y()),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA,
+          base::TimeDelta())
+          .InSecondsF() +
+      0.05;
+  curve->UpdateTarget(0.05, gfx::ScrollOffset(0.f, 200.f));
+  EXPECT_NEAR(expected_duration, curve->Duration().InSecondsF(), 0.0002f);
+
+  // Re-target 2, this should set total_animation_duration to t, which is
+  // last_retarget_. This is what would cause the DCHECK failure in
+  // crbug.com/645317.
+  curve->UpdateTarget(-0.145, gfx::ScrollOffset(0.f, 300.f));
+  EXPECT_NEAR(0.05, curve->Duration().InSecondsF(), 0.0002f);
+
+  // Re-target 3, this should set total_animation_duration based on new_delta.
+  new_delta = gfx::ScrollOffset(0.f, 500.f) -
+              curve->GetValue(base::TimeDelta::FromSecondsD(0.05));
+  expected_duration =
+      ScrollOffsetAnimationCurve::SegmentDuration(
+          gfx::Vector2dF(new_delta.x(), new_delta.y()),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA,
+          base::TimeDelta::FromSecondsD(0.15))
+          .InSecondsF();
+  curve->UpdateTarget(-0.1, gfx::ScrollOffset(0.f, 500.f));
+  EXPECT_NEAR(expected_duration, curve->Duration().InSecondsF(), 0.0002f);
 }
 
 }  // namespace

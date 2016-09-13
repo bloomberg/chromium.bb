@@ -207,18 +207,6 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
     return;
   }
 
-  // The total_animation_duration_ is zero because of the delay that we
-  // accounted for when the animation was created. The new duration should
-  // also take the delay into account.
-  if (total_animation_duration_.is_zero()) {
-    DCHECK_LE(t, 0);
-    total_animation_duration_ =
-        SegmentDuration(new_target.DeltaFrom(initial_value_),
-                        duration_behavior_, base::TimeDelta::FromSecondsD(-t));
-    target_value_ = new_target;
-    return;
-  }
-
   base::TimeDelta delayed_by = base::TimeDelta::FromSecondsD(
       std::max(0.0, last_retarget_.InSecondsF() - t));
   t = std::max(t, last_retarget_.InSecondsF());
@@ -227,6 +215,15 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
       GetValue(base::TimeDelta::FromSecondsD(t));
   gfx::Vector2dF old_delta = target_value_.DeltaFrom(initial_value_);
   gfx::Vector2dF new_delta = new_target.DeltaFrom(current_position);
+
+  // The last segement was of zero duration.
+  if ((total_animation_duration_ - last_retarget_).is_zero()) {
+    DCHECK_EQ(t, last_retarget_.InSecondsF());
+    total_animation_duration_ =
+        SegmentDuration(new_delta, duration_behavior_, delayed_by);
+    target_value_ = new_target;
+    return;
+  }
 
   double old_duration =
       (total_animation_duration_ - last_retarget_).InSecondsF();
