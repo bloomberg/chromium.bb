@@ -1359,7 +1359,7 @@ private:
 
     // Encapsulates the work to preserve the old "FeatureObserver" histogram with original semantics
     // TODO(rbyers): remove this - http://crbug.com/597963
-    class LegacyCounter {
+    class CORE_EXPORT LegacyCounter {
     public:
         LegacyCounter();
         ~LegacyCounter();
