@@ -299,17 +299,16 @@ class OCSPRequestSession
     }
   }
 
-  void OnResponseStarted(URLRequest* request, int net_error) override {
+  void OnResponseStarted(URLRequest* request) override {
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
-    DCHECK_NE(ERR_IO_PENDING, net_error);
 
     int bytes_read = 0;
-    if (net_error == OK) {
+    if (request->status().is_success()) {
       response_code_ = request_->GetResponseCode();
       response_headers_ = request_->response_headers();
       response_headers_->GetMimeType(&response_content_type_);
-      bytes_read = request_->Read(buffer_.get(), kRecvBufferSize);
+      request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read);
     }
     OnReadCompleted(request_.get(), bytes_read);
   }
@@ -318,12 +317,13 @@ class OCSPRequestSession
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
-    while (bytes_read > 0) {
+    do {
+      if (!request_->status().is_success() || bytes_read <= 0)
+        break;
       data_.append(buffer_->data(), bytes_read);
-      bytes_read = request_->Read(buffer_.get(), kRecvBufferSize);
-    }
+    } while (request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read));
 
-    if (bytes_read != ERR_IO_PENDING) {
+    if (!request_->status().is_io_pending()) {
       request_.reset();
       g_ocsp_io_loop.Get().RemoveRequest(this);
       {

@@ -178,7 +178,7 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
   void OnReceivedRedirect(URLRequest* request,
                           const RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnResponseStarted(URLRequest* request, int net_error) override;
+  void OnResponseStarted(URLRequest* request) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
   // Clears the URLRequest and timer. Helper for doing work common to
@@ -192,17 +192,17 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
   // aggregated buffer.
   bool ConsumeBytesRead(URLRequest* request, int num_bytes);
 
+  // Called once the job has exceeded its deadline.
+  void OnTimeout();
+
   // Called when the URLRequest has completed (either success or failure).
-  void OnUrlRequestCompleted(int net_error);
+  void OnUrlRequestCompleted(URLRequest* request);
 
   // Called when the Job has completed. The job may finish in response to a
   // timeout, an invalid URL, or the URLRequest completing. By the time this
-  // method is called, the |response_body_| variable have been assigned.
-  void OnJobCompleted(Error error);
-
-  // Cancels a request with a specified error code and calls
-  // OnUrlRequestCompleted().
-  void FailRequest(Error error);
+  // method is called, the response variables have been assigned
+  // (result_net_error_ and response_body_).
+  void OnJobCompleted();
 
   // The requests attached to this job.
   RequestList requests_;
@@ -212,6 +212,7 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
 
   // The URLRequest response information.
   std::vector<uint8_t> response_body_;
+  Error result_net_error_;
 
   std::unique_ptr<URLRequest> url_request_;
   scoped_refptr<IOBuffer> read_buffer_;
@@ -234,6 +235,7 @@ CertNetFetcherImpl::RequestImpl::~RequestImpl() {
 CertNetFetcherImpl::Job::Job(std::unique_ptr<RequestParams> request_params,
                              CertNetFetcherImpl* parent)
     : request_params_(std::move(request_params)),
+      result_net_error_(ERR_IO_PENDING),
       parent_(parent) {}
 
 CertNetFetcherImpl::Job::~Job() {
@@ -278,11 +280,10 @@ void CertNetFetcherImpl::Job::DetachRequest(RequestImpl* request) {
 void CertNetFetcherImpl::Job::StartURLRequest(URLRequestContext* context) {
   Error error = CanFetchUrl(request_params_->url);
   if (error != OK) {
+    result_net_error_ = error;
     // The CertNetFetcher's API contract is that requests always complete
     // asynchronously. Use the timer class so the task is easily cancelled.
-    timer_.Start(
-        FROM_HERE, base::TimeDelta(),
-        base::Bind(&Job::OnJobCompleted, base::Unretained(this), error));
+    timer_.Start(FROM_HERE, base::TimeDelta(), this, &Job::OnJobCompleted);
     return;
   }
 
@@ -298,9 +299,7 @@ void CertNetFetcherImpl::Job::StartURLRequest(URLRequestContext* context) {
 
   // Start a timer to limit how long the job runs for.
   if (request_params_->timeout > base::TimeDelta())
-    timer_.Start(
-        FROM_HERE, request_params_->timeout,
-        base::Bind(&Job::FailRequest, base::Unretained(this), ERR_TIMED_OUT));
+    timer_.Start(FROM_HERE, request_params_->timeout, this, &Job::OnTimeout);
 }
 
 void CertNetFetcherImpl::Job::OnReceivedRedirect(
@@ -312,24 +311,24 @@ void CertNetFetcherImpl::Job::OnReceivedRedirect(
   // Ensure that the new URL matches the policy.
   Error error = CanFetchUrl(redirect_info.new_url);
   if (error != OK) {
-    FailRequest(error);
+    request->CancelWithError(error);
+    OnUrlRequestCompleted(request);
     return;
   }
 }
 
-void CertNetFetcherImpl::Job::OnResponseStarted(URLRequest* request,
-                                                int net_error) {
+void CertNetFetcherImpl::Job::OnResponseStarted(URLRequest* request) {
   DCHECK_EQ(url_request_.get(), request);
-  DCHECK_NE(ERR_IO_PENDING, net_error);
 
-  if (net_error != OK) {
-    OnUrlRequestCompleted(net_error);
+  if (!request->status().is_success()) {
+    OnUrlRequestCompleted(request);
     return;
   }
 
   if (request->GetResponseCode() != 200) {
     // TODO(eroman): Use a more specific error code.
-    FailRequest(ERR_FAILED);
+    request->CancelWithError(ERR_FAILED);
+    OnUrlRequestCompleted(request);
     return;
   }
 
@@ -339,7 +338,6 @@ void CertNetFetcherImpl::Job::OnResponseStarted(URLRequest* request,
 void CertNetFetcherImpl::Job::OnReadCompleted(URLRequest* request,
                                               int bytes_read) {
   DCHECK_EQ(url_request_.get(), request);
-  DCHECK_NE(ERR_IO_PENDING, bytes_read);
 
   // Keep reading the response body.
   if (ConsumeBytesRead(request, bytes_read))
@@ -353,16 +351,16 @@ void CertNetFetcherImpl::Job::Stop() {
 
 void CertNetFetcherImpl::Job::ReadBody(URLRequest* request) {
   // Read as many bytes as are available synchronously.
-  int num_bytes = 0;
-  while (num_bytes >= 0) {
-    num_bytes = request->Read(read_buffer_.get(), kReadBufferSizeInBytes);
+  int num_bytes;
+  while (
+      request->Read(read_buffer_.get(), kReadBufferSizeInBytes, &num_bytes)) {
     if (!ConsumeBytesRead(request, num_bytes))
       return;
   }
 
   // Check whether the read failed synchronously.
-  if (num_bytes != ERR_IO_PENDING)
-    OnUrlRequestCompleted(num_bytes);
+  if (!request->status().is_io_pending())
+    OnUrlRequestCompleted(request);
   return;
 }
 
@@ -370,13 +368,14 @@ bool CertNetFetcherImpl::Job::ConsumeBytesRead(URLRequest* request,
                                                int num_bytes) {
   if (num_bytes <= 0) {
     // Error while reading, or EOF.
-    OnUrlRequestCompleted(num_bytes);
+    OnUrlRequestCompleted(request);
     return false;
   }
 
   // Enforce maximum size bound.
   if (num_bytes + response_body_.size() > request_params_->max_response_bytes) {
-    FailRequest(ERR_FILE_TOO_BIG);
+    request->CancelWithError(ERR_FILE_TOO_BIG);
+    OnUrlRequestCompleted(request);
     return false;
   }
 
@@ -387,12 +386,24 @@ bool CertNetFetcherImpl::Job::ConsumeBytesRead(URLRequest* request,
   return true;
 }
 
-void CertNetFetcherImpl::Job::OnUrlRequestCompleted(int net_error) {
-  Error result = static_cast<Error>(net_error);
-  OnJobCompleted(result);
+void CertNetFetcherImpl::Job::OnTimeout() {
+  result_net_error_ = ERR_TIMED_OUT;
+  url_request_->CancelWithError(result_net_error_);
+  OnJobCompleted();
 }
 
-void CertNetFetcherImpl::Job::OnJobCompleted(Error error) {
+void CertNetFetcherImpl::Job::OnUrlRequestCompleted(URLRequest* request) {
+  DCHECK_EQ(request, url_request_.get());
+
+  if (request->status().is_success())
+    result_net_error_ = OK;
+  else
+    result_net_error_ = static_cast<Error>(request->status().error());
+
+  OnJobCompleted();
+}
+
+void CertNetFetcherImpl::Job::OnJobCompleted() {
   // Stop the timer and clear the URLRequest.
   Stop();
 
@@ -408,16 +419,11 @@ void CertNetFetcherImpl::Job::OnJobCompleted(Error error) {
   while (!requests_.empty()) {
     base::LinkNode<RequestImpl>* request = requests_.head();
     request->RemoveFromList();
-    request->value()->OnJobCompleted(this, error, response_body_);
+    request->value()->OnJobCompleted(this, result_net_error_, response_body_);
   }
 
   if (parent_)
     parent_->ClearCurrentlyCompletingJob(this);
-}
-
-void CertNetFetcherImpl::Job::FailRequest(Error error) {
-  int result = url_request_->CancelWithError(error);
-  OnUrlRequestCompleted(result);
 }
 
 CertNetFetcherImpl::CertNetFetcherImpl(URLRequestContext* context)
