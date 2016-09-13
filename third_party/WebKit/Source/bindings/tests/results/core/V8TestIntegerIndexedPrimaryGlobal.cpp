@@ -7,6 +7,7 @@
 #include "V8TestIntegerIndexedPrimaryGlobal.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8Node.h"
@@ -80,7 +81,7 @@ void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(info.Holder());

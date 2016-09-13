@@ -7,6 +7,7 @@
 #include "V8TestInterfaceOriginTrialEnabled.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -155,7 +156,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterfaceOriginTrialEnabled", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());

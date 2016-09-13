@@ -7,6 +7,7 @@
 #include "V8TestTypedefs.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -145,7 +146,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodFloatArgStringArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -170,7 +171,7 @@ static void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallback
 static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -194,7 +195,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -242,7 +243,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -264,7 +265,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayMethodStringArrayArg", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
@@ -285,7 +286,7 @@ static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCall
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestTypedefs", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     V8StringResource<> stringArg;

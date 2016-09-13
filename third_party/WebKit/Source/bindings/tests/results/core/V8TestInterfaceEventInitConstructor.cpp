@@ -7,6 +7,7 @@
 #include "V8TestInterfaceEventInitConstructor.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEventInit.h"
@@ -76,7 +77,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceEventInitConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     V8StringResource<> type;

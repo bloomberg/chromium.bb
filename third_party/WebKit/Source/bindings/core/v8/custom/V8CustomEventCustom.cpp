@@ -60,7 +60,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomEvent", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
 

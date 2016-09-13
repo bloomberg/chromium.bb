@@ -7,6 +7,7 @@
 #include "V8TestInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -1458,7 +1459,7 @@ void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCall
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestInterface", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1482,7 +1483,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1508,7 +1509,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1534,7 +1535,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestEnumArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1822,7 +1823,7 @@ static void staticPromiseMethodPartialOverload1Method(const v8::FunctionCallback
 static void legacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "legacyInterfaceTypeCheckingMethod", "TestInterface", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("legacyInterfaceTypeCheckingMethod", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1919,7 +1920,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "implementsComplexMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -2020,7 +2021,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidMethodLongArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -2057,7 +2058,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallba
 static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "partialVoidMethodPartialCallbackTypeArg", "TestInterface", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -2081,7 +2082,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());

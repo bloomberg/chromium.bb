@@ -7,6 +7,7 @@
 #include "V8TestSpecialOperations.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NodeOrNodeList.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Node.h"
@@ -56,7 +57,7 @@ namespace TestSpecialOperationsV8Internal {
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "namedItem", "TestSpecialOperations", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("namedItem", "TestSpecialOperations", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());

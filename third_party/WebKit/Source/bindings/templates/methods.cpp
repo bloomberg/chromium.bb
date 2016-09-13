@@ -323,7 +323,7 @@ return;
 {######################################}
 {% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
 {% if method.has_exception_state %}
-setMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length());
+exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
 {{propagate_error_with_exception_state(method)}}
 {%- elif method.idl_type == 'Promise' %}
 v8SetReturnValue(info, ScriptPromise::rejectRaw(ScriptState::current(info.GetIsolate()), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
@@ -338,9 +338,9 @@ return;
 {######################################}
 {% macro create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments) %}
 {% if method.is_constructor %}
-createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "{{interface_name}}", {{number_of_required_arguments}}, info.Length())
+V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("{{interface_name}}", ExceptionMessages::notEnoughArguments({{number_of_required_arguments}}, info.Length())))
 {%- else %}
-createMinimumArityTypeErrorForMethod(info.GetIsolate(), "{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length())
+V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{number_of_required_arguments}}, info.Length())))
 {%- endif %}
 {%- endmacro %}
 
@@ -426,7 +426,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {# Report full list of valid arities if gaps and above minimum #}
         {% if overloads.valid_arities %}
         if (info.Length() >= {{overloads.length}}) {
-            setArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
+            exceptionState.throwTypeError(ExceptionMessages::invalidArity("{{overloads.valid_arities}}", info.Length()));
             {{propagate_error_with_exception_state(overloads) | indent(12)}}
         }
         {% endif %}
@@ -453,12 +453,12 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 
 
 {##############################################################################}
-{% macro generate_post_message_impl() %}
+{% macro generate_post_message_impl(method) %}
 static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, interfaceName, "postMessage");
+    if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
         return;
     }
     Transferables transferables;

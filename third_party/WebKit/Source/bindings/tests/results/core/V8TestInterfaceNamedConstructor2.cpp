@@ -7,6 +7,7 @@
 #include "V8TestInterfaceNamedConstructor2.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -72,7 +73,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestInterfaceNamedConstructor2", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     V8StringResource<> stringArg;

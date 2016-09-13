@@ -12,6 +12,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -5063,7 +5064,7 @@ static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDateArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5084,7 +5085,7 @@ static void voidMethodDateArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void voidMethodStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodStringArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5106,7 +5107,7 @@ static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Val
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5128,7 +5129,7 @@ static void voidMethodUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Valu
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUSVStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5150,7 +5151,7 @@ static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::V
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDOMTimeStampArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5172,7 +5173,7 @@ static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5194,7 +5195,7 @@ static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5216,7 +5217,7 @@ static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5238,7 +5239,7 @@ static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodFloatArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5260,7 +5261,7 @@ static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5282,7 +5283,7 @@ static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5304,7 +5305,7 @@ static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOctetArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5326,7 +5327,7 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodShortArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5348,7 +5349,7 @@ static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::V
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5370,7 +5371,7 @@ static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5392,7 +5393,7 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedShortArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5424,7 +5425,7 @@ static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInf
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5448,7 +5449,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5497,7 +5498,7 @@ static void anyCallbackFunctionOptionalAnyArgMethodMethodCallback(const v8::Func
 static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodVoidCallbackFunctionArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5549,7 +5550,7 @@ static void voidMethodOptionalVoidCallbackFunctionArgMethodCallback(const v8::Fu
 static void voidMethodNullableVoidCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodNullableVoidCallbackFunctionArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5572,7 +5573,7 @@ static void voidMethodNullableVoidCallbackFunctionArgMethodCallback(const v8::Fu
 static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5606,7 +5607,7 @@ static void anyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodEventTargetArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5629,7 +5630,7 @@ static void voidMethodEventTargetArgMethodCallback(const v8::FunctionCallbackInf
 static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodAnyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5648,7 +5649,7 @@ static void voidMethodAnyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodAttrArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5671,7 +5672,7 @@ static void voidMethodAttrArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocumentArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5694,7 +5695,7 @@ static void voidMethodDocumentArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocumentTypeArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5717,7 +5718,7 @@ static void voidMethodDocumentTypeArgMethodCallback(const v8::FunctionCallbackIn
 static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodElementArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5740,7 +5741,7 @@ static void voidMethodElementArgMethodCallback(const v8::FunctionCallbackInfo<v8
 static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodNodeArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5818,7 +5819,7 @@ static void uint8ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodArrayBufferArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5841,7 +5842,7 @@ static void voidMethodArrayBufferArgMethodCallback(const v8::FunctionCallbackInf
 static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodArrayBufferOrNullArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5864,7 +5865,7 @@ static void voidMethodArrayBufferOrNullArgMethodCallback(const v8::FunctionCallb
 static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodArrayBufferViewArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5887,7 +5888,7 @@ static void voidMethodArrayBufferViewArgMethodCallback(const v8::FunctionCallbac
 static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodFlexibleArrayBufferViewArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5910,7 +5911,7 @@ static void voidMethodFlexibleArrayBufferViewArgMethodCallback(const v8::Functio
 static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5933,7 +5934,7 @@ static void voidMethodFlexibleArrayBufferViewTypedArgMethodCallback(const v8::Fu
 static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodFloat32ArrayArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5956,7 +5957,7 @@ static void voidMethodFloat32ArrayArgMethodCallback(const v8::FunctionCallbackIn
 static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodInt32ArrayArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -5979,7 +5980,7 @@ static void voidMethodInt32ArrayArgMethodCallback(const v8::FunctionCallbackInfo
 static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodUint8ArrayArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6036,7 +6037,7 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6058,7 +6059,7 @@ static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Va
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6080,7 +6081,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6102,7 +6103,7 @@ static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodNullableArrayLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6159,7 +6160,7 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6181,7 +6182,7 @@ static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6203,7 +6204,7 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6225,7 +6226,7 @@ static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallb
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceSequenceDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6247,7 +6248,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodNullableSequenceLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6282,7 +6283,7 @@ static void voidMethodStringFrozenArrayMethodMethod(const v8::FunctionCallbackIn
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringFrozenArrayMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6304,7 +6305,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyFrozenArrayMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6417,7 +6418,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6439,7 +6440,7 @@ static void voidMethodDoubleOrDOMStringOrNullArgMethod(const v8::FunctionCallbac
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringOrNullArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6461,7 +6462,7 @@ static void voidMethodDoubleOrNullOrDOMStringArgMethod(const v8::FunctionCallbac
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrNullOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6483,7 +6484,7 @@ static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(const v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6505,7 +6506,7 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6544,7 +6545,7 @@ static void voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::Functi
 static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyOrNullArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6567,7 +6568,7 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::Functi
 static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestCallbackInterfaceArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6613,7 +6614,7 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::F
 static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestCallbackInterfaceOrNullArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6648,7 +6649,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestEnumArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6747,7 +6748,7 @@ static void nodeFilterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void promiseMethodMethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
 {
     if (UNLIKELY(info.Length() < 3)) {
-        setMinimumArityTypeError(exceptionState, 3, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(3, info.Length()));
         v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
         return;
     }
@@ -6794,7 +6795,7 @@ static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 static void promiseMethodWithoutExceptionStateMethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
         return;
     }
@@ -6852,7 +6853,7 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6877,7 +6878,7 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
 static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodNodeFilterArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeFilterArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6896,7 +6897,7 @@ static void voidMethodNodeFilterArgMethodCallback(const v8::FunctionCallbackInfo
 static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPromiseArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6920,7 +6921,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSerializedScriptValueArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6941,7 +6942,7 @@ static void voidMethodSerializedScriptValueArgMethodCallback(const v8::FunctionC
 static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodXPathNSResolverArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6965,7 +6966,7 @@ static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionarySequenceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -6987,7 +6988,7 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7181,7 +7182,7 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7217,7 +7218,7 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7261,7 +7262,7 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7299,7 +7300,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7650,7 +7651,7 @@ static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbac
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7698,7 +7699,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -8664,7 +8665,7 @@ static void promiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value
         break;
     default:
         if (info.Length() >= 0) {
-            setArityTypeError(exceptionState, "[0, 2]", info.Length());
+            exceptionState.throwTypeError(ExceptionMessages::invalidArity("[0, 2]", info.Length()));
             v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
@@ -8838,7 +8839,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -8862,7 +8863,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setItem", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -8890,7 +8891,7 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedShortArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -8912,7 +8913,7 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -8988,7 +8989,7 @@ static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEnforceRangeLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9009,7 +9010,7 @@ static void voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallba
 static void voidMethodTreatNullAsEmptyStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTreatNullAsEmptyStringStringArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsEmptyStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9030,7 +9031,7 @@ static void voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const v8::Fu
 static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTreatNullAsNullStringStringArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9051,7 +9052,7 @@ static void voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::Fun
 static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9783,7 +9784,7 @@ static void perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::Funct
 static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9806,7 +9807,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback(const 
 static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -9828,9 +9829,9 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMain
 
 static void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, interfaceName, "postMessage");
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     Transferables transferables;
@@ -9987,7 +9988,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10073,7 +10074,7 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "callWithExecutionContextRaisesExceptionVoidMethodLongArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10323,7 +10324,7 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback(const v8::
 static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10364,7 +10365,7 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMe
 static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10403,7 +10404,7 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback(c
 static void useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", 2, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10432,7 +10433,7 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback(c
 static void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10473,7 +10474,7 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10495,7 +10496,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedArrayArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10568,7 +10569,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10592,7 +10593,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback
 static void stringMethodWithStringArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10616,7 +10617,7 @@ static void stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallba
 static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10643,7 +10644,7 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 5)) {
-        setMinimumArityTypeError(exceptionState, 5, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(5, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10688,7 +10689,7 @@ static void methodImplementedInCPPForPrivateScriptOnlyMethod(const v8::FunctionC
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodImplementedInCPPForPrivateScriptOnly", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10765,7 +10766,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10795,7 +10796,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10822,7 +10823,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "get", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10865,7 +10866,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "delete", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10892,7 +10893,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "set", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());

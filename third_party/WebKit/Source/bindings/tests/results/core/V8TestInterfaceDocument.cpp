@@ -7,6 +7,7 @@
 #include "V8TestInterfaceDocument.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"

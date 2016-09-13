@@ -80,12 +80,6 @@ struct V8TypeOf {
     typedef void Type;
 };
 
-// Helpers for throwing JavaScript TypeErrors for arity mismatches.
-CORE_EXPORT void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
-CORE_EXPORT v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const char* method, const char* type, unsigned expected, unsigned provided);
-CORE_EXPORT v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate*, const char* type, unsigned expected, unsigned provided);
-CORE_EXPORT void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provided);
-
 template<typename CallbackInfo, typename S>
 inline void v8SetReturnValue(const CallbackInfo& info, const v8::Persistent<S>& handle)
 {

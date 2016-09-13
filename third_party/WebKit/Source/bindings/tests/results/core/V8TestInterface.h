@@ -7,7 +7,6 @@
 #ifndef V8TestInterface_h
 #define V8TestInterface_h
 
-#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/ToV8.h"

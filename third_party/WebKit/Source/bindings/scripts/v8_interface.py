@@ -50,7 +50,6 @@ from v8_utilities import (cpp_name_or_partial, cpp_name, has_extended_attribute_
 
 
 INTERFACE_H_INCLUDES = frozenset([
-    'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/ScriptWrappable.h',
     'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
@@ -60,6 +59,7 @@ INTERFACE_H_INCLUDES = frozenset([
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ExceptionState.h',
+    'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/V8DOMConfiguration.h',
     'bindings/core/v8/V8ObjectConstructor.h',
     'core/dom/Document.h',

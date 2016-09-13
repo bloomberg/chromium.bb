@@ -7,6 +7,7 @@
 #include "V8TestException.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -86,7 +87,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestException", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     unsigned argument;

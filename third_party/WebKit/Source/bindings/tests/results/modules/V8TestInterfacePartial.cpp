@@ -7,6 +7,7 @@
 #include "V8TestInterfacePartial.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -271,7 +272,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidTestEnumModulesArgMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());

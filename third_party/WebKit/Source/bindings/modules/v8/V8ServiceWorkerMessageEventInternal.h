@@ -25,7 +25,7 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName, info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
 

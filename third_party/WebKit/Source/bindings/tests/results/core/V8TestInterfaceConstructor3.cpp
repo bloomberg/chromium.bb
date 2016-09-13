@@ -7,6 +7,7 @@
 #include "V8TestInterfaceConstructor3.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
@@ -50,7 +51,7 @@ namespace TestInterfaceConstructor3V8Internal {
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "TestInterfaceConstructor3", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor3", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     V8StringResource<> stringArg;

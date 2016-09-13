@@ -524,7 +524,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate
 {% if constructor_overloads %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "{{interface_name}}");
     {# 2. Initialize argcount to be min(maxarg, n). #}
     switch (std::min({{constructor_overloads.maxarg}}, info.Length())) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
@@ -545,7 +545,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {# Report full list of valid arities if gaps and above minimum #}
         {% if constructor_overloads.valid_arities %}
         if (info.Length() >= {{constructor_overloads.length}}) {
-            setArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
+            exceptionState.throwTypeError(ExceptionMessages::invalidArity("{{constructor_overloads.valid_arities}}", info.Length()));
             return;
         }
         {% endif %}
@@ -559,6 +559,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {% endif %}
 {% endblock %}
+
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
@@ -744,6 +745,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObjec
 
 {% endif %}
 {% endblock %}
+
 
 {##############################################################################}
 {% block has_instance %}

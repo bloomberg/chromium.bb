@@ -7,6 +7,7 @@
 #include "V8TestInterface2Partial.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -26,7 +27,7 @@ namespace TestInterface2PartialV8Internal {
 static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial1", "TestInterface2", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -47,7 +48,7 @@ static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::
 static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodPartial2", "TestInterface2", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());

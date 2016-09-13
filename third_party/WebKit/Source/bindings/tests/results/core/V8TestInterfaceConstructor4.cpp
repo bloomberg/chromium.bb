@@ -7,6 +7,7 @@
 #include "V8TestInterfaceConstructor4.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceConstructor4.h"
@@ -81,7 +82,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor4");
     switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterfaceConstructor4::hasInstance(info[0], info.GetIsolate())) {

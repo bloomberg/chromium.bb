@@ -7,6 +7,7 @@
 #include "V8TestInterface5.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -315,7 +316,7 @@ void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInf
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestInterface5", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface5", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -339,7 +340,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterface5", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -365,7 +366,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", "TestInterface5", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -487,7 +488,7 @@ static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodBooleanOrDOMStringArg", "TestInterface5", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -509,7 +510,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringArg", "TestInterface5", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -582,7 +583,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface5", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());

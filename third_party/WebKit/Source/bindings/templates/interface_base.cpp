@@ -151,7 +151,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {{generate_method(method, world_suffix)}}
 {% endif %}
 {% if method.is_post_message and not is_partial %}
-{{generate_post_message_impl()}}
+{{generate_post_message_impl(method)}}
 {% endif %}
 {% if method.overloads and method.overloads.visible %}
 {% if method.overloads.runtime_determined_lengths %}

@@ -76,26 +76,6 @@
 
 namespace blink {
 
-void setArityTypeError(ExceptionState& exceptionState, const char* valid, unsigned provided)
-{
-    exceptionState.throwTypeError(ExceptionMessages::invalidArity(valid, provided));
-}
-
-v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate* isolate, const char* method, const char* type, unsigned expected, unsigned provided)
-{
-    return V8ThrowException::createTypeError(isolate, ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, provided)));
-}
-
-v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate* isolate, const char* type, unsigned expected, unsigned provided)
-{
-    return V8ThrowException::createTypeError(isolate, ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, provided)));
-}
-
-void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned provided)
-{
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, provided));
-}
-
 NodeFilter* toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Object> creationContext, ScriptState* scriptState)
 {
     if (callback->IsNull())

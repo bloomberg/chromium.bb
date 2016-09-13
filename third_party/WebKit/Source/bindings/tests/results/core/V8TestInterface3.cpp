@@ -7,6 +7,7 @@
 #include "V8TestInterface3.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -67,7 +68,7 @@ void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallb
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDocument", "TestInterface3", 1, info.Length()));
+        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::notEnoughArguments(1, info.Length()))));
         return;
     }
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
@@ -142,7 +143,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface3", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());

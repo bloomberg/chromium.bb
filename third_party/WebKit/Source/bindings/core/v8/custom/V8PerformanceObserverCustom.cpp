@@ -5,7 +5,6 @@
 #include "bindings/core/v8/V8PerformanceObserver.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -19,7 +18,7 @@ namespace blink {
 void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "createPerformanceObserver", "Performance", 1, info.Length()));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("PerformanceObserver", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
 
@@ -28,7 +27,7 @@ void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8:
     Performance* performance = nullptr;
     DOMWindow* window = toDOMWindow(wrapper->CreationContext());
     if (!window) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("createPerformanceObserver", "Performance", "No \"window\" in current context."));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("PerformanceObserver", "No 'window' in current context."));
         return;
     }
     performance = DOMWindowPerformance::performance(*window);
@@ -37,7 +36,7 @@ void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8:
     PerformanceObserverCallback* callback;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("createPerformanceObserver", "Performance", "The callback provided as parameter 1 is not a function."));
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("PerformanceObserver", "The callback provided as parameter 1 is not a function."));
             return;
         }
         callback = V8PerformanceObserverCallback::create(v8::Local<v8::Function>::Cast(info[0]), wrapper, ScriptState::current(info.GetIsolate()));

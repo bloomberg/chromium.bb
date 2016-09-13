@@ -8,6 +8,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
@@ -157,7 +158,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
     switch (std::min(6, info.Length())) {
     case 1:
         if (info[0]->IsArray()) {

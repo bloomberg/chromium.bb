@@ -8,6 +8,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/LongOrTestDictionary.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -207,7 +208,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
     switch (std::min(9, info.Length())) {
     case 0:
         if (true) {
@@ -253,7 +254,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     default:
         if (info.Length() >= 0) {
-            setArityTypeError(exceptionState, "[0, 1, 2, 3, 7, 8, 9]", info.Length());
+            exceptionState.throwTypeError(ExceptionMessages::invalidArity("[0, 1, 2, 3, 7, 8, 9]", info.Length()));
             return;
         }
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
@@ -288,7 +289,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     }
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
     V8StringResource<> arg;

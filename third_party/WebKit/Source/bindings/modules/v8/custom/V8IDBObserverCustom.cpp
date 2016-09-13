@@ -15,25 +15,26 @@ namespace blink {
 
 void V8IDBObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "IDBObserver");
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "IDBObserver", 1, info.Length()));
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
 
     v8::Local<v8::Object> wrapper = info.Holder();
 
     if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("IDBObserver", "The callback provided as parameter 1 is not a function."));
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
         return;
     }
 
     if (info.Length() > 1 && !isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("IDBObserver", "IDBObserverInit (parameter 2) is not an object."));
+        exceptionState.throwTypeError("parameter 2 ('options') is not an object.");
         return;
     }
 
     IDBObserverInit idbObserverInit;
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "IDBObserver", info.Holder(), info.GetIsolate());
     V8IDBObserverInit::toImpl(info.GetIsolate(), info[1], idbObserverInit, exceptionState);
     if (exceptionState.hadException())
         return;
