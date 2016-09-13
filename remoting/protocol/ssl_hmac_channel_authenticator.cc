@@ -258,7 +258,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromBytes(local_cert_.data(),
                                               local_cert_.length());
-    if (!cert.get()) {
+    if (!cert) {
       LOG(ERROR) << "Failed to parse X509Certificate";
       NotifyError(net::ERR_FAILED);
       return;
@@ -285,10 +285,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     ct_verifier_.reset(new IgnoresCTVerifier);
     ct_policy_enforcer_.reset(new IgnoresCTPolicyEnforcer);
 
-    net::SSLConfig::CertAndStatus cert_and_status;
-    cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
-    cert_and_status.der_cert = remote_cert_;
-
     net::SSLConfig ssl_config;
     // Certificate verification and revocation checking are not needed
     // because we use self-signed certs. Disable it so that the SSL
@@ -296,8 +292,19 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     // thread).
     ssl_config.cert_io_enabled = false;
     ssl_config.rev_checking_enabled = false;
-    ssl_config.allowed_bad_certs.push_back(cert_and_status);
     ssl_config.require_ecdhe = true;
+
+    scoped_refptr<net::X509Certificate> cert =
+        net::X509Certificate::CreateFromBytes(remote_cert_.data(),
+                                              remote_cert_.length());
+    if (!cert) {
+      LOG(ERROR) << "Failed to parse X509Certificate";
+      NotifyError(net::ERR_FAILED);
+      return;
+    }
+
+    ssl_config.allowed_bad_certs.emplace_back(
+        std::move(cert), net::CERT_STATUS_AUTHORITY_INVALID);
 
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     net::SSLClientSocketContext context;

@@ -395,13 +395,8 @@ class SSLServerSocketTest : public PlatformTest {
     client_ssl_config_.channel_id_enabled = false;
 
     // Certificate provided by the host doesn't need authority.
-    SSLConfig::CertAndStatus cert_and_status;
-    cert_and_status.cert_status = CERT_STATUS_AUTHORITY_INVALID;
-    std::string server_cert_der;
-    ASSERT_TRUE(X509Certificate::GetDEREncoded(server_cert_->os_cert_handle(),
-                                               &server_cert_der));
-    cert_and_status.der_cert = server_cert_der;
-    client_ssl_config_.allowed_bad_certs.push_back(cert_and_status);
+    client_ssl_config_.allowed_bad_certs.emplace_back(
+        server_cert_, CERT_STATUS_AUTHORITY_INVALID);
   }
 
  protected:

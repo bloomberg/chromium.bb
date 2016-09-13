@@ -450,29 +450,33 @@ void SSLClientSocketImpl::PeerCertificateChain::Reset(STACK_OF(X509) * chain) {
 
 scoped_refptr<X509Certificate>
 SSLClientSocketImpl::PeerCertificateChain::AsOSChain() const {
-#if defined(USE_OPENSSL_CERTS)
-  // When OSCertHandle is typedef'ed to X509, this implementation does a short
-  // cut to avoid converting back and forth between DER and the X509 struct.
-  X509Certificate::OSCertHandles intermediates;
-  for (size_t i = 1; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    intermediates.push_back(sk_X509_value(openssl_chain_.get(), i));
-  }
-
-  return X509Certificate::CreateFromHandle(
-      sk_X509_value(openssl_chain_.get(), 0), intermediates);
-#else
   // DER-encode the chain and convert to a platform certificate handle.
-  std::vector<base::StringPiece> der_chain;
+  std::vector<std::string> chain;
+  chain.reserve(sk_X509_num(openssl_chain_.get()));
   for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
     X509* x = sk_X509_value(openssl_chain_.get(), i);
-    base::StringPiece der;
-    if (!x509_util::GetDER(x, &der))
-      return NULL;
-    der_chain.push_back(der);
+    // Note: This intentionally avoids using x509_util::GetDER(), which may
+    // cache the encoded DER on |x|, as |x| is shared with the underlying
+    // socket (SSL*) this chain belongs to. As the DER will only be used
+    // once in //net, within this code, this avoids needlessly caching
+    // additional data. See https://crbug.com/642082
+    int len = i2d_X509(x, nullptr);
+    if (len < 0)
+      return nullptr;
+    std::string cert;
+    uint8_t* ptr = reinterpret_cast<uint8_t*>(base::WriteInto(&cert, len + 1));
+    len = i2d_X509(x, &ptr);
+    if (len < 0) {
+      NOTREACHED();
+      return nullptr;
+    }
+    chain.push_back(std::move(cert));
   }
+  std::vector<base::StringPiece> stringpiece_chain;
+  for (const auto& cert : chain)
+    stringpiece_chain.push_back(cert);
 
-  return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
+  return X509Certificate::CreateFromDERCertChain(stringpiece_chain);
 }
 
 // static
@@ -1294,18 +1298,13 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   // OpenSSL decoded the certificate, but the platform certificate
   // implementation could not. This is treated as a fatal SSL-level protocol
   // error rather than a certificate error. See https://crbug.com/91341.
-  if (!server_cert_.get())
+  if (!server_cert_)
     return ERR_SSL_SERVER_CERT_BAD_FORMAT;
 
   // If the certificate is bad and has been previously accepted, use
   // the previous status and bypass the error.
-  base::StringPiece der_cert;
-  if (!x509_util::GetDER(server_cert_chain_->Get(0), &der_cert)) {
-    NOTREACHED();
-    return ERR_CERT_INVALID;
-  }
   CertStatus cert_status;
-  if (ssl_config_.IsAllowedBadCert(der_cert, &cert_status)) {
+  if (ssl_config_.IsAllowedBadCert(server_cert_.get(), &cert_status)) {
     server_cert_verify_result_.Reset();
     server_cert_verify_result_.cert_status = cert_status;
     server_cert_verify_result_.verified_cert = server_cert_;

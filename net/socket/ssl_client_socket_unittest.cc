@@ -2140,6 +2140,8 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(3U, certs.size());
 
+  ASSERT_TRUE(certs[0]->Equals(unverified_certs[0].get()));
+
   X509Certificate::OSCertHandles temp_intermediates;
   temp_intermediates.push_back(certs[1]->os_cert_handle());
   temp_intermediates.push_back(certs[2]->os_cert_handle());
@@ -2173,10 +2175,11 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 
   SSLInfo ssl_info;
-  sock_->GetSSLInfo(&ssl_info);
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
   // Verify that SSLInfo contains the corrected re-constructed chain A -> B
   // -> C2.
+  ASSERT_TRUE(ssl_info.cert);
   const X509Certificate::OSCertHandles& intermediates =
       ssl_info.cert->GetIntermediateCertificates();
   ASSERT_EQ(2U, intermediates.size());
@@ -2188,6 +2191,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
                                             certs[2]->os_cert_handle()));
 
   // Verify that SSLInfo also contains the chain as received from the server.
+  ASSERT_TRUE(ssl_info.unverified_cert);
   const X509Certificate::OSCertHandles& served_intermediates =
       ssl_info.unverified_cert->GetIntermediateCertificates();
   ASSERT_EQ(3U, served_intermediates.size());

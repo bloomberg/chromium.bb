@@ -1476,22 +1476,18 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
       static_cast<SSLClientSocket*>(connection_->socket());
   ssl_socket->GetSSLInfo(&ssl_info_);
 
+  if (!ssl_info_.cert) {
+    // If the server's certificate could not be parsed, there is no way
+    // to gracefully recover this, so just pass the error up.
+    return error;
+  }
+
   // Add the bad certificate to the set of allowed certificates in the
   // SSL config object. This data structure will be consulted after calling
   // RestartIgnoringLastError(). And the user will be asked interactively
   // before RestartIgnoringLastError() is ever called.
-  SSLConfig::CertAndStatus bad_cert;
-
-  // |ssl_info_.cert| may be NULL if we failed to create
-  // X509Certificate for whatever reason, but normally it shouldn't
-  // happen, unless this code is used inside sandbox.
-  if (ssl_info_.cert.get() == NULL ||
-      !X509Certificate::GetDEREncoded(ssl_info_.cert->os_cert_handle(),
-                                      &bad_cert.der_cert)) {
-    return error;
-  }
-  bad_cert.cert_status = ssl_info_.cert_status;
-  server_ssl_config_.allowed_bad_certs.push_back(bad_cert);
+  server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info_.cert,
+                                                    ssl_info_.cert_status);
 
   int load_flags = request_info_.load_flags;
   if (session_->params().ignore_certificate_errors)

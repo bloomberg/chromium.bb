@@ -56,11 +56,6 @@ struct NET_EXPORT SSLConfig {
   // be NULL if user doesn't care about the cert status.
   bool IsAllowedBadCert(X509Certificate* cert, CertStatus* cert_status) const;
 
-  // Same as above except works with DER encoded certificates instead
-  // of X509Certificate.
-  bool IsAllowedBadCert(const base::StringPiece& der_cert,
-                        CertStatus* cert_status) const;
-
   // Returns the set of flags to use for certificate verification, which is a
   // bitwise OR of CertVerifier::VerifyFlags that represent this SSLConfig's
   // configuration.
@@ -141,10 +136,12 @@ struct NET_EXPORT SSLConfig {
 
   struct NET_EXPORT CertAndStatus {
     CertAndStatus();
+    CertAndStatus(scoped_refptr<X509Certificate> cert, CertStatus status);
+    CertAndStatus(const CertAndStatus&);
     ~CertAndStatus();
 
-    std::string der_cert;
-    CertStatus cert_status;
+    scoped_refptr<X509Certificate> cert;
+    CertStatus cert_status = 0;
   };
 
   // Add any known-bad SSL certificate (with its cert status) to
