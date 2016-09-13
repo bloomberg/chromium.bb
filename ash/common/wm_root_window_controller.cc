@@ -5,6 +5,8 @@
 #include "ash/common/wm_root_window_controller.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
@@ -16,6 +18,9 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/memory/ptr_util.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace ash {
 namespace {
@@ -89,6 +94,33 @@ WmWindow* WmRootWindowController::GetContainer(int container_id) {
 
 const WmWindow* WmRootWindowController::GetContainer(int container_id) const {
   return root_->GetChildByShellWindowId(container_id);
+}
+
+void WmRootWindowController::ShowContextMenu(
+    const gfx::Point& location_in_screen,
+    ui::MenuSourceType source_type) {
+  ShellDelegate* delegate = WmShell::Get()->delegate();
+  DCHECK(delegate);
+  menu_model_.reset(delegate->CreateContextMenu(GetShelf(), nullptr));
+  if (!menu_model_)
+    return;
+
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
+      menu_model_.get(), base::Bind(&WmRootWindowController::OnMenuClosed,
+                                    base::Unretained(this))));
+
+  // The wallpaper controller may not be set yet if the user clicked on the
+  // status area before the initial animation completion. See crbug.com/222218
+  if (!wallpaper_widget_controller())
+    return;
+
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model_adapter_->CreateMenu(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
+  ignore_result(
+      menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
+                              gfx::Rect(location_in_screen, gfx::Size()),
+                              views::MENU_ANCHOR_TOPLEFT, source_type));
 }
 
 void WmRootWindowController::OnInitialWallpaperAnimationStarted() {}
@@ -308,6 +340,13 @@ void WmRootWindowController::CreateLayoutManagers() {
 
 void WmRootWindowController::DeleteWorkspaceController() {
   workspace_controller_.reset();
+}
+
+void WmRootWindowController::OnMenuClosed() {
+  menu_runner_.reset();
+  menu_model_adapter_.reset();
+  menu_model_.reset();
+  GetShelf()->UpdateVisibilityState();
 }
 
 }  // namespace ash

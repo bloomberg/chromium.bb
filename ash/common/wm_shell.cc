@@ -31,6 +31,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -100,6 +101,19 @@ void WmShell::Shutdown() {
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
+}
+
+void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
+                              ui::MenuSourceType source_type) {
+  // Bail if there is no active user session or if the screen is locked.
+  if (GetSessionStateDelegate()->NumberOfLoggedInUsers() < 1 ||
+      GetSessionStateDelegate()->IsScreenLocked()) {
+    return;
+  }
+
+  WmWindow* root = wm::GetRootWindowAt(location_in_screen);
+  root->GetRootWindowController()->ShowContextMenu(location_in_screen,
+                                                   source_type);
 }
 
 void WmShell::CreateShelfDelegate() {

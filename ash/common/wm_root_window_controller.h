@@ -8,10 +8,20 @@
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "base/macros.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
 class Point;
+}
+
+namespace ui {
+class MenuModel;
+}
+
+namespace views {
+class MenuModelAdapter;
+class MenuRunner;
 }
 
 namespace ash {
@@ -99,6 +109,10 @@ class ASH_EXPORT WmRootWindowController {
   // coordinates. This may return a point outside the root window's bounds.
   virtual gfx::Point GetLastMouseLocationInRoot() = 0;
 
+  // Shows a context menu at the |location_in_screen|.
+  void ShowContextMenu(const gfx::Point& location_in_screen,
+                       ui::MenuSourceType source_type);
+
   // Called when the wallpaper animation has started or finished.
   // TODO: port remaining classic ash wallpaper functionality here.
   virtual void OnInitialWallpaperAnimationStarted();
@@ -114,6 +128,9 @@ class ASH_EXPORT WmRootWindowController {
   void DeleteWorkspaceController();
 
  private:
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed();
+
   WmWindow* root_;
 
   wm::RootWindowLayoutManager* root_window_layout_manager_;
@@ -122,6 +139,11 @@ class ASH_EXPORT WmRootWindowController {
   std::unique_ptr<AnimatingWallpaperWidgetController>
       animating_wallpaper_widget_controller_;
   std::unique_ptr<WorkspaceController> workspace_controller_;
+
+  // Manages the context menu.
+  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowController);
 };

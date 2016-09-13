@@ -277,10 +277,9 @@ class ASH_EXPORT WmShell {
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
   virtual void RecordTaskSwitchMetric(TaskSwitchSource source) = 0;
 
-  // Shows the context menu for the background and the shelf at
-  // |location_in_screen|.
-  virtual void ShowContextMenu(const gfx::Point& location_in_screen,
-                               ui::MenuSourceType source_type) = 0;
+  // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
+  void ShowContextMenu(const gfx::Point& location_in_screen,
+                       ui::MenuSourceType source_type);
 
   // Returns a WindowResizer to handle dragging. |next_window_resizer| is
   // the next WindowResizer in the WindowResizer chain. This may return

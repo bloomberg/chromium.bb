@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target.h"
 #include "ui/gfx/geometry/insets.h"
@@ -42,7 +41,6 @@ class AudioA11yController;
 
 namespace gfx {
 class ImageSkia;
-class Point;
 class Rect;
 }
 
@@ -191,10 +189,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
                                     int container_id);
   static const aura::Window* GetContainer(const aura::Window* root_window,
                                           int container_id);
-
-  // Shows the context menu for the wallpaper and shelf at the screen location.
-  void ShowContextMenu(const gfx::Point& location_in_screen,
-                       ui::MenuSourceType source_type);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.

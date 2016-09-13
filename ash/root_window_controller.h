@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_types.h"
 
 class SkBitmap;
 
@@ -33,12 +32,9 @@ class KeyboardController;
 
 namespace ui {
 class EventHandler;
-class MenuModel;
 }
 
 namespace views {
-class MenuModelAdapter;
-class MenuRunner;
 class Widget;
 }
 
@@ -142,11 +138,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // lead to a crash.
   SystemTray* GetSystemTray();
 
-  // Shows context menu at the |location_in_screen|. This uses
-  // |ShellDelegate::CreateContextMenu| to define the content of the menu.
-  void ShowContextMenu(const gfx::Point& location_in_screen,
-                       ui::MenuSourceType source_type);
-
   // True if the window can receive events on this root window.
   bool CanWindowReceiveEvents(aura::Window* window);
 
@@ -231,9 +222,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Disables projection touch HUD.
   void DisableTouchHudProjection();
 
-  // Callback for MenuModelAdapter.
-  void OnMenuClosed();
-
   // Overridden from ShellObserver.
   void OnLoginStateChanged(LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
@@ -283,11 +271,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
-
-  // Manages the context menu.
-  std::unique_ptr<ui::MenuModel> menu_model_;
-  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

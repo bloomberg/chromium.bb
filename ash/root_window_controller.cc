@@ -69,13 +69,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/wm/core/capture_controller.h"
@@ -577,34 +574,6 @@ SystemTray* RootWindowController::GetSystemTray() {
   return wm_shelf_aura_->shelf_widget()->status_area_widget()->system_tray();
 }
 
-void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
-                                           ui::MenuSourceType source_type) {
-  ShellDelegate* delegate = WmShell::Get()->delegate();
-  DCHECK(delegate);
-  menu_model_.reset(delegate->CreateContextMenu(wm_shelf_aura_.get(), nullptr));
-  if (!menu_model_)
-    return;
-
-  menu_model_adapter_.reset(new views::MenuModelAdapter(
-      menu_model_.get(),
-      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this))));
-
-  // Wallpaper controller may not be set yet if user clicked on status are
-  // before initial animation completion. See crbug.com/222218
-  WallpaperWidgetController* wallpaper_widget_controller =
-      wm_root_window_controller_->wallpaper_widget_controller();
-  if (!wallpaper_widget_controller)
-    return;
-
-  menu_runner_.reset(new views::MenuRunner(
-      menu_model_adapter_->CreateMenu(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
-  ignore_result(
-      menu_runner_->RunMenuAt(wallpaper_widget_controller->widget(), nullptr,
-                              gfx::Rect(location_in_screen, gfx::Size()),
-                              views::MENU_ANCHOR_TOPLEFT, source_type));
-}
-
 void RootWindowController::UpdateShelfVisibility() {
   wm_shelf_aura_->UpdateVisibilityState();
 }
@@ -853,13 +822,6 @@ void RootWindowController::DisableTouchHudProjection() {
   if (!touch_hud_projection_)
     return;
   touch_hud_projection_->Remove();
-}
-
-void RootWindowController::OnMenuClosed() {
-  menu_runner_.reset();
-  menu_model_adapter_.reset();
-  menu_model_.reset();
-  Shell::GetInstance()->UpdateShelfVisibility();
 }
 
 void RootWindowController::OnLoginStateChanged(LoginStatus status) {

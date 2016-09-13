@@ -185,11 +185,6 @@ void WmShellAura::RecordTaskSwitchMetric(TaskSwitchSource source) {
       source);
 }
 
-void WmShellAura::ShowContextMenu(const gfx::Point& location_in_screen,
-                                  ui::MenuSourceType source_type) {
-  Shell::GetInstance()->ShowContextMenu(location_in_screen, source_type);
-}
-
 std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {

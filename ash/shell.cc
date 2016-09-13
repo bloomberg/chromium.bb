@@ -264,21 +264,6 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
   return root_window->GetChildById(container_id);
 }
 
-void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
-                            ui::MenuSourceType source_type) {
-  // No context menus if there is no session with an active user.
-  if (!session_state_delegate_->NumberOfLoggedInUsers())
-    return;
-  // No context menus when screen is locked.
-  if (session_state_delegate_->IsScreenLocked())
-    return;
-
-  aura::Window* root = WmWindowAura::GetAuraWindow(
-      wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size())));
-  GetRootWindowController(root)->ShowContextMenu(location_in_screen,
-                                                 source_type);
-}
-
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
