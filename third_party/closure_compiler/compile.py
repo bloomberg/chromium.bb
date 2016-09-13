@@ -35,16 +35,14 @@ class Checker(object):
 
   _MAP_FILE_FORMAT = "%s.map"
 
-  def __init__(self, verbose=False, strict=False):
+  def __init__(self, verbose=False):
     """
     Args:
       verbose: Whether this class should output diagnostic messages.
-      strict: Whether the Closure Compiler should be invoked more strictly.
     """
     self._runner_jar = os.path.join(_CURRENT_DIR, "runner", "runner.jar")
     self._temp_files = []
     self._verbose = verbose
-    self._strict = strict
     self._error_filter = error_filter.PromiseErrorFilter()
 
   def _nuke_temp_files(self):
@@ -345,7 +343,7 @@ if __name__ == "__main__":
   parser.add_argument("-v", "--verbose", action="store_true",
                       help="Show more information as this script runs")
 
-  parser.set_defaults(single_file=True, strict=False)
+  parser.set_defaults(single_file=True)
   opts = parser.parse_args()
 
   depends = opts.depends or []
@@ -356,7 +354,7 @@ if __name__ == "__main__":
 
   externs.add(os.path.join(_CURRENT_DIR, "externs", "polymer-1.0.js"))
 
-  checker = Checker(verbose=opts.verbose, strict=opts.strict)
+  checker = Checker(verbose=opts.verbose)
   if opts.single_file:
     for source in sources:
       # Normalize source to the current directory.

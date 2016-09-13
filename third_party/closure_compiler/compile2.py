@@ -41,7 +41,6 @@ class Checker(object):
     """
     Args:
       verbose: Whether this class should output diagnostic messages.
-      strict: Whether the Closure Compiler should be invoked more strictly.
     """
     self._runner_jar = os.path.join(_CURRENT_DIR, "runner", "runner.jar")
     self._target = None
