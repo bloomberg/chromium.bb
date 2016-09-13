@@ -79,11 +79,27 @@ void NGMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
   }
 }
 
+void NGMarginStrut::SetMarginBlockEnd(const LayoutUnit& value) {
+  if (value < 0) {
+    negative_margin_block_end = value;
+  } else {
+    margin_block_end = value;
+  }
+}
+
 String NGMarginStrut::ToString() const {
   return String::format(
       "Start: (%d %d) End: (%d %d)", negative_margin_block_start.toInt(),
       margin_block_start.toInt(), negative_margin_block_end.toInt(),
       margin_block_end.toInt());
+}
+
+bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
+  return std::tie(other.margin_block_start, other.margin_block_end,
+                  other.negative_margin_block_start,
+                  other.negative_margin_block_end) ==
+         std::tie(margin_block_start, margin_block_end,
+                  negative_margin_block_start, negative_margin_block_end);
 }
 
 }  // namespace blink

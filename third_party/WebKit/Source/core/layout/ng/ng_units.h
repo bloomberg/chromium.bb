@@ -118,7 +118,7 @@ struct NGBoxStrut {
 };
 
 // This struct is used for the margin collapsing calculation.
-struct NGMarginStrut {
+struct CORE_EXPORT NGMarginStrut {
   LayoutUnit margin_block_start;
   LayoutUnit margin_block_end;
 
@@ -127,8 +127,11 @@ struct NGMarginStrut {
 
   void AppendMarginBlockStart(const LayoutUnit& value);
   void AppendMarginBlockEnd(const LayoutUnit& value);
+  void SetMarginBlockEnd(const LayoutUnit& value);
 
   String ToString() const;
+
+  bool operator==(const NGMarginStrut& other) const;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

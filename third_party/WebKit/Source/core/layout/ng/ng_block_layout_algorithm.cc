@@ -112,7 +112,13 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
   // Calculate margin strut for the current child.
   NGMarginStrut curr_margin_strut = children_margin_strut;
   curr_margin_strut.AppendMarginBlockStart(margins.block_start);
-  curr_margin_strut.AppendMarginBlockEnd(margins.block_end);
+  if (current_child_->Style()->logicalHeight().isAuto()) {
+    // bottom margin of a last in-flow child is only collapsed if
+    // the parent has 'auto' computed height
+    curr_margin_strut.AppendMarginBlockEnd(margins.block_end);
+  } else {
+    curr_margin_strut.SetMarginBlockEnd(margins.block_end);
+  }
 
   // Set the margin strut for the resultant fragment if this is the first or
   // last child fragment.
