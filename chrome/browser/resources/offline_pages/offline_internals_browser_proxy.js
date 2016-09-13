@@ -71,6 +71,20 @@ cr.define('offlineInternals', function() {
     deleteSelectedPages: function(ids) {},
 
     /**
+     * Deletes all the requests from the request queue.
+     * @return {!Promise<!string>} A promise firing when the pages are deleted.
+     */
+    deleteAllRequests: function() {},
+
+    /**
+     * Deletes a set of requests from the request queue
+     * @param {!Array<string>} ids A list of request IDs to delete.
+     * @return {!Promise<!string>} A promise firing when the selected
+     *     pages are deleted.
+     */
+    deleteSelectedRequests: function(ids) {},
+
+    /**
      * Sets whether to record logs for stored pages.
      * @param {boolean} shouldLog True if logging should be enabled.
      */
@@ -138,6 +152,16 @@ cr.define('offlineInternals', function() {
     /** @override */
     deleteSelectedPages: function(ids) {
       return cr.sendWithPromise('deleteSelectedPages', ids);
+    },
+
+    /** @override */
+    deleteAllRequests: function() {
+      return cr.sendWithPromise('deleteAllRequests');
+    },
+
+    /** @override */
+    deleteSelectedRequests: function(ids) {
+      return cr.sendWithPromise('deleteSelectedRequests', ids);
     },
 
     /** @override */

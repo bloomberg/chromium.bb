@@ -47,6 +47,19 @@ std::string OfflineInternalsUIMessageHandler::GetStringFromDeletePageResult(
   return "Unknown";
 }
 
+std::string OfflineInternalsUIMessageHandler::GetStringFromDeleteRequestResults(
+    const offline_pages::RequestQueue::UpdateMultipleRequestResults& results) {
+  // If any requests failed, return "failure", else "success".
+  for (const auto& result : results) {
+    if (result.second ==
+        offline_pages::RequestQueue::UpdateRequestResult::STORE_FAILURE) {
+      return "Store failure, could not delete one or more requests";
+    }
+  }
+
+  return "Success";
+}
+
 std::string OfflineInternalsUIMessageHandler::GetStringFromSavePageStatus() {
   return "Available";
 }
@@ -86,12 +99,80 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
                  weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
+void OfflineInternalsUIMessageHandler::HandleDeleteAllRequests(
+    const base::ListValue* args) {
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  // First do a get, then in the callback, build a list of IDs, and
+  // call RemoveRequests with that list.
+  if (request_coordinator_) {
+    request_coordinator_->GetAllRequests(
+        base::Bind(&OfflineInternalsUIMessageHandler::
+                       HandleGetAllRequestsForDeleteCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback_id));
+  }
+}
+
+void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
+    const base::ListValue* args) {
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  std::vector<int64_t> offline_ids;
+  const base::ListValue* offline_ids_from_arg = nullptr;
+  args->GetList(1, &offline_ids_from_arg);
+
+  for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
+    std::string value;
+    offline_ids_from_arg->GetString(i, &value);
+    int64_t int_value;
+    base::StringToInt64(value, &int_value);
+    offline_ids.push_back(int_value);
+  }
+
+  // Call RequestCoordinator to delete them
+  if (request_coordinator_) {
+    request_coordinator_->RemoveRequests(
+        offline_ids,
+        base::Bind(
+            &OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback,
+            weak_ptr_factory_.GetWeakPtr(), callback_id));
+  }
+}
+
+void OfflineInternalsUIMessageHandler::HandleGetAllRequestsForDeleteCallback(
+    std::string callback_id,
+    std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests) {
+  std::vector<int64_t> offline_ids;
+  // Build a list of offline_ids from the requests.
+  for (const auto& request : requests) {
+    offline_ids.push_back(request->request_id());
+  }
+
+  // Call RequestCoordinator to delete them
+  if (request_coordinator_) {
+    request_coordinator_->RemoveRequests(
+        offline_ids,
+        base::Bind(
+            &OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback,
+            weak_ptr_factory_.GetWeakPtr(), callback_id));
+  }
+}
+
 void OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback(
     std::string callback_id,
     offline_pages::DeletePageResult result) {
   ResolveJavascriptCallback(
       base::StringValue(callback_id),
       base::StringValue(GetStringFromDeletePageResult(result)));
+}
+
+void OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback(
+    std::string callback_id,
+    const offline_pages::RequestQueue::UpdateMultipleRequestResults& results) {
+  ResolveJavascriptCallback(
+      base::StringValue(callback_id),
+      base::StringValue(GetStringFromDeleteRequestResults(results)));
 }
 
 void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
@@ -268,6 +349,15 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       "deleteSelectedPages",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages,
                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "deleteAllRequests",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteAllRequests,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "deleteSelectedRequests",
+      base::Bind(
+          &OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests,
+          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getRequestQueue",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGetRequestQueue,

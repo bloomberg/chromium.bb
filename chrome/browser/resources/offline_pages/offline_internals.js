@@ -72,6 +72,15 @@ cr.define('offlineInternals', function() {
     for (var i = 0; i < requests.length; i++) {
       var row = document.createElement('tr');
 
+      var checkboxCell = document.createElement('td');
+      var checkbox = document.createElement('input');
+      checkbox.setAttribute('type', 'checkbox');
+      checkbox.setAttribute('name', 'requests');
+      checkbox.setAttribute('value', requests[i].id);
+
+      checkboxCell.appendChild(checkbox);
+      row.appendChild(checkboxCell);
+
       var cell = document.createElement('td');
       cell.textContent = requests[i].onlineUrl;
       row.appendChild(cell);
@@ -123,12 +132,27 @@ cr.define('offlineInternals', function() {
   }
 
   /**
+   * Delete all pending SavePageRequest items in the request queue.
+   */
+  function deleteAllRequests() {
+    browserProxy_.deleteAllRequests().then(requestsDeleted);
+  }
+
+  /**
    * Callback when pages are deleted.
    * @param {string} status The status of the request.
    */
   function pagesDeleted(status) {
     $('page-actions-info').textContent = status;
     browserProxy_.getStoredPages().then(fillStoredPages);
+  }
+
+  /**
+   * Callback when requests are deleted.
+   */
+  function requestsDeleted(status) {
+    $('request-queue-actions-info').textContent = status;
+    browserProxy_.getRequestQueue().then(fillRequestQueue);
   }
 
   /**
@@ -171,6 +195,21 @@ cr.define('offlineInternals', function() {
   }
 
   /**
+   * Delete selected SavePageRequest items from the request queue.
+   */
+  function deleteSelectedRequests() {
+    var checkboxes = document.getElementsByName('requests');
+    var selectedIds = [];
+
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked)
+        selectedIds.push(checkboxes[i].value);
+    }
+
+    browserProxy_.deleteSelectedRequests(selectedIds).then(requestsDeleted);
+  }
+
+  /**
    * Refreshes the logs.
    */
   function refreshLog() {
@@ -198,6 +237,8 @@ cr.define('offlineInternals', function() {
     var incognito = loadTimeData.getBoolean('isIncognito');
     $('clear-all').disabled = incognito;
     $('clear-selected').disabled = incognito;
+    $('delete-all-requests').disabled = incognito;
+    $('delete-selected-requests').disabled = incognito;
     $('log-model-on').disabled = incognito;
     $('log-model-off').disabled = incognito;
     $('log-request-on').disabled = incognito;
@@ -206,6 +247,8 @@ cr.define('offlineInternals', function() {
 
     $('clear-all').onclick = deleteAllPages;
     $('clear-selected').onclick = deleteSelectedPages;
+    $('delete-all-requests').onclick = deleteAllRequests;
+    $('delete-selected-requests').onclick = deleteSelectedRequests;
     $('refresh').onclick = refreshAll;
     $('download').onclick = download;
     $('log-model-on').onclick = togglePageModelLog.bind(this, true);

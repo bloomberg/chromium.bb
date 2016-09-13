@@ -30,6 +30,12 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Delete selected list of page ids from the store.
   void HandleDeleteSelectedPages(const base::ListValue* args);
 
+  // Deletes all the requests in the request queue.
+  void HandleDeleteAllRequests(const base::ListValue* args);
+
+  // Delete selected list of requests from the request queue.
+  void HandleDeleteSelectedRequests(const base::ListValue* args);
+
   // Load Request Queue info.
   void HandleGetRequestQueue(const base::ListValue* args);
 
@@ -54,6 +60,11 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Load whether device is currently offline.
   void HandleGetNetworkStatus(const base::ListValue* args);
 
+  // Callback used by DeleteAllRequests to get the request_ids to delete.
+  void HandleGetAllRequestsForDeleteCallback(
+      std::string callback_id,
+      std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests);
+
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
       std::string callback_id,
@@ -65,13 +76,22 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
       offline_pages::RequestQueue::GetRequestsResult result,
       std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests);
 
-  // Callback for DeletePage/ClearAll calls.
+  // Callback for DeletePage/DeleteAllPages calls.
   void HandleDeletedPagesCallback(std::string callback_id,
                                   const offline_pages::DeletePageResult result);
+
+  // Callback for DeleteRequest/DeleteAllRequests calls.
+  void HandleDeletedRequestsCallback(
+      std::string callback_id,
+      const offline_pages::RequestQueue::UpdateMultipleRequestResults& results);
 
   // Turns a DeletePageResult enum into logical string.
   std::string GetStringFromDeletePageResult(
       offline_pages::DeletePageResult value);
+
+  // Summarizes the UpdateMultipleRequestResults vector with a string.
+  std::string GetStringFromDeleteRequestResults(
+      const offline_pages::RequestQueue::UpdateMultipleRequestResults& result);
 
   // Turns a SavePageRequest::Status into logical string.
   std::string GetStringFromSavePageStatus();
