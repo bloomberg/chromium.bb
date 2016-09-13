@@ -1428,8 +1428,10 @@ static void encode_loopfilter(struct loopfilter *lf,
 
 #if CONFIG_CLPF
 static void encode_clpf(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  aom_wb_write_literal(wb, cm->clpf_strength, 2);
-  if (cm->clpf_strength) {
+  aom_wb_write_literal(wb, cm->clpf_strength_y, 2);
+  aom_wb_write_literal(wb, cm->clpf_strength_u, 2);
+  aom_wb_write_literal(wb, cm->clpf_strength_v, 2);
+  if (cm->clpf_strength_y) {
     aom_wb_write_literal(wb, cm->clpf_size, 2);
     if (cm->clpf_size) {
       int i;
