@@ -12,6 +12,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -69,7 +70,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
 
   // Binding for AudioDecoderClient, bound to the |task_runner_|.
-  mojo::Binding<AudioDecoderClient> binding_;
+  mojo::AssociatedBinding<AudioDecoderClient> client_binding_;
 
   // We call the following callbacks to pass the information to the pipeline.
   // |output_cb_| is permanent while other three are called only once,

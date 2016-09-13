@@ -29,7 +29,7 @@ class MojoAudioDecoderService : public mojom::AudioDecoder {
   ~MojoAudioDecoderService() final;
 
   // mojom::AudioDecoder implementation
-  void Initialize(mojom::AudioDecoderClientPtr client,
+  void Initialize(mojom::AudioDecoderClientAssociatedPtrInfo client,
                   mojom::AudioDecoderConfigPtr config,
                   int32_t cdm_id,
                   const InitializeCallback& callback) final;
@@ -66,7 +66,7 @@ class MojoAudioDecoderService : public mojom::AudioDecoder {
   std::unique_ptr<media::AudioDecoder> decoder_;
 
   // The destination for the decoded buffers.
-  mojom::AudioDecoderClientPtr client_;
+  mojom::AudioDecoderClientAssociatedPtr client_;
 
   // Hold a reference to the CDM to keep it alive for the lifetime of the
   // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.

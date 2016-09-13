@@ -24,7 +24,7 @@ MojoAudioDecoder::MojoAudioDecoder(
     mojom::AudioDecoderPtr remote_decoder)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
-      binding_(this),
+      client_binding_(this),
       has_connection_error_(false),
       needs_bitstream_conversion_(false) {
   DVLOG(1) << __FUNCTION__;
@@ -67,11 +67,14 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   init_cb_ = init_cb;
   output_cb_ = output_cb;
 
+  mojom::AudioDecoderClientAssociatedPtrInfo client_ptr_info;
+  client_binding_.Bind(&client_ptr_info, remote_decoder_.associated_group());
+
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
   remote_decoder_->Initialize(
-      binding_.CreateInterfacePtrAndBind(),
-      mojom::AudioDecoderConfig::From(config), cdm_id,
+      std::move(client_ptr_info), mojom::AudioDecoderConfig::From(config),
+      cdm_id,
       base::Bind(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
 }
 
