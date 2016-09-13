@@ -1249,7 +1249,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "6",
               "device_os": "KTU84P",
               "device_type": "hammerhead"
             }
