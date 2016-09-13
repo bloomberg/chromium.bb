@@ -217,7 +217,11 @@ public:
     bool isUnusedPreload() const { return isPreloaded() && getPreloadResult() == PreloadNotReferenced; }
     bool isPreloaded() const { return m_preloadCount; }
     void increasePreloadCount() { ++m_preloadCount; }
-    void decreasePreloadCount() { ASSERT(m_preloadCount); --m_preloadCount; }
+    void decreasePreloadCount()
+    {
+        DCHECK(m_preloadCount);
+        --m_preloadCount;
+    }
 
     bool canReuseRedirectChain();
     bool mustRevalidateDueToCacheHeaders();

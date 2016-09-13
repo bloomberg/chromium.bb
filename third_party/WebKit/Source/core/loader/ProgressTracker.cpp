@@ -53,7 +53,8 @@ static const double progressNotificationInterval = 0.02;
 static const double progressNotificationTimeInterval = 0.1;
 
 struct ProgressItem {
-    WTF_MAKE_NONCOPYABLE(ProgressItem); USING_FAST_MALLOC(ProgressItem);
+    WTF_MAKE_NONCOPYABLE(ProgressItem);
+    USING_FAST_MALLOC(ProgressItem);
 public:
     ProgressItem(long long length)
         : bytesReceived(0)

@@ -287,7 +287,8 @@ public:
 };
 
 class EmptySpellCheckerClient : public SpellCheckerClient {
-    WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); USING_FAST_MALLOC(EmptySpellCheckerClient);
+    WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient);
+    USING_FAST_MALLOC(EmptySpellCheckerClient);
 public:
     EmptySpellCheckerClient() {}
     ~EmptySpellCheckerClient() override {}
@@ -306,7 +307,8 @@ private:
 };
 
 class EmptyEditorClient final : public EditorClient {
-    WTF_MAKE_NONCOPYABLE(EmptyEditorClient); USING_FAST_MALLOC(EmptyEditorClient);
+    WTF_MAKE_NONCOPYABLE(EmptyEditorClient);
+    USING_FAST_MALLOC(EmptyEditorClient);
 public:
     EmptyEditorClient() {}
     ~EmptyEditorClient() override {}
@@ -321,7 +323,8 @@ public:
 };
 
 class EmptyContextMenuClient final : public ContextMenuClient {
-    WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); USING_FAST_MALLOC(EmptyContextMenuClient);
+    WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient);
+    USING_FAST_MALLOC(EmptyContextMenuClient);
 public:
     EmptyContextMenuClient() {}
     ~EmptyContextMenuClient() override {}

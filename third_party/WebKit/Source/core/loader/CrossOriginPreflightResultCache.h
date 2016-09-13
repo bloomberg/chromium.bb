@@ -40,7 +40,8 @@ class HTTPHeaderMap;
 class ResourceResponse;
 
 class CrossOriginPreflightResultCacheItem {
-    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem); USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
+    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem);
+    USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
 public:
     CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
         : m_absoluteExpiryTime(0)
@@ -66,7 +67,8 @@ private:
 };
 
 class CrossOriginPreflightResultCache {
-    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCache); USING_FAST_MALLOC(CrossOriginPreflightResultCache);
+    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCache);
+    USING_FAST_MALLOC(CrossOriginPreflightResultCache);
 public:
     static CrossOriginPreflightResultCache& shared();
 

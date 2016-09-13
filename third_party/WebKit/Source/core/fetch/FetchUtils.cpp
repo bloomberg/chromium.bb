@@ -22,7 +22,8 @@ bool isHTTPWhitespace(UChar chr)
 }
 
 class ForbiddenHeaderNames {
-    WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames); USING_FAST_MALLOC(ForbiddenHeaderNames);
+    WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames);
+    USING_FAST_MALLOC(ForbiddenHeaderNames);
 public:
     bool has(const String& name) const
     {
