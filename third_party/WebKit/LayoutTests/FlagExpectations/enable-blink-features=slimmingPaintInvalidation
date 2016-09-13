@@ -1,0 +1,3 @@
+# Expectations for slimmingPaintInvalidation feature
+paint/invalidation/4776765.html [ NeedsRebaseline ]
+paint/invalidation/caret-subpixel.html [ NeedsRebaseline ]

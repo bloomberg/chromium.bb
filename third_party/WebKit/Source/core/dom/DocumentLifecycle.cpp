@@ -232,11 +232,11 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         break;
     case InPrePaint:
-        if (nextState == PrePaintClean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (nextState == PrePaintClean && RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
             return true;
         break;
     case PrePaintClean:
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
             break;
         if (nextState == InPaint)
             return true;
@@ -281,6 +281,7 @@ bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const
         || m_state == LayoutClean
         || m_state == CompositingClean
         || m_state == PaintInvalidationClean
+        || m_state == PrePaintClean
         || m_state == PaintClean;
 }
 

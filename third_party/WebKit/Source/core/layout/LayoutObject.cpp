@@ -234,9 +234,6 @@ LayoutObject::LayoutObject(Node* node)
 #endif
     , m_bitfields(node)
 {
-    // TODO(wangxianzhu): Move this into initialization list when we enable the feature by default.
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-        m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
     InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
     if (m_node)
         frameView()->incrementLayoutObjectCount();
@@ -1128,6 +1125,7 @@ LayoutRect LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect, D
 
 void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     ensureIsReadyForPaintInvalidation();
 
     // If we didn't need paint invalidation then our children don't need as well.
@@ -1150,6 +1148,8 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
 DISABLE_CFI_PERF
 void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         // Column spanners are invalidated through their placeholders.
         // See LayoutMultiColumnSpannerPlaceholder::invalidatePaintOfSubtreesIfNeeded().
@@ -3230,13 +3230,13 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(bool isBackgroundAttachm
 
 const ObjectPaintProperties* LayoutObject::objectPaintProperties() const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     return objectPaintPropertiesMap().get(this);
 }
 
 ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
 {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     auto addResult = objectPaintPropertiesMap().add(this, nullptr);
     if (addResult.isNewEntry)
         addResult.storedValue->value = ObjectPaintProperties::create();

@@ -26,10 +26,7 @@ class PropertyTreePrinter {
 public:
     void showTree(const FrameView& frameView)
     {
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            LOG(ERROR) << "This is for slimmingPaintV2 only";
-            return;
-        }
+        DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         collectPropertyNodes(frameView);
         showAllPropertyNodes(nullptr);
     }

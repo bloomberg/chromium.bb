@@ -456,6 +456,7 @@ static bool hasPercentageTransform(const ComputedStyle& style)
 DISABLE_CFI_PERF
 void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     ensureIsReadyForPaintInvalidation();
 
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);

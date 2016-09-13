@@ -52,6 +52,8 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     , m_canCheckFastPathSlowPathEquality(layoutView == m_paintInvalidationContainer)
 #endif
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+
     if (!supportsCachedOffsets(layoutView)) {
         m_cachedOffsetsEnabled = false;
         return;
@@ -86,6 +88,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
     , m_canCheckFastPathSlowPathEquality(parentState.m_canCheckFastPathSlowPathEquality)
 #endif
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     DCHECK(&m_paintingLayer == currentObject.paintingLayer());
 
     if (currentObject == parentState.m_currentObject) {

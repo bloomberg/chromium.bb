@@ -2644,7 +2644,7 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
         }
 
         if (targetState >= DocumentLifecycle::PrePaintClean) {
-            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
                 updatePaintProperties();
         }
 
@@ -2673,7 +2673,7 @@ void FrameView::updatePaintProperties()
 {
     TRACE_EVENT0("blink", "FrameView::updatePaintProperties");
 
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
 
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint); });
     PrePaintTreeWalk().walk(*this);

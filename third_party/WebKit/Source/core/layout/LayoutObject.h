@@ -1314,17 +1314,6 @@ public:
     const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
-    bool paintOffsetChanged(const LayoutPoint& newPaintOffset) const
-    {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-        return m_previousPositionFromPaintInvalidationBacking != uninitializedPaintOffset() && m_previousPositionFromPaintInvalidationBacking != newPaintOffset;
-    }
-    void setPreviousPaintOffset(const LayoutPoint& paintOffset)
-    {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-        m_previousPositionFromPaintInvalidationBacking = paintOffset;
-    }
-
     PaintInvalidationReason fullPaintInvalidationReason() const { return m_bitfields.fullPaintInvalidationReason(); }
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason = PaintInvalidationFull);
@@ -1375,7 +1364,6 @@ public:
     // Painters can use const methods only, except for these explicitly declared methods.
     class MutableForPainting {
     public:
-        void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
         void clearPaintInvalidationFlags() { m_layoutObject.clearPaintInvalidationFlags(); }
         void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) { m_layoutObject.setShouldDoFullPaintInvalidation(reason); }
         void ensureIsReadyForPaintInvalidation() { m_layoutObject.ensureIsReadyForPaintInvalidation(); }
@@ -1636,8 +1624,6 @@ private:
     // - For multi-column spanner, returns the spanner placeholder;
     // - Otherwise returns parent().
     LayoutObject* paintInvalidationParent() const;
-
-    static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 
     RefPtr<ComputedStyle> m_style;
 
@@ -1930,8 +1916,6 @@ private:
     // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect layoutObject shifts that forces a full invalidation.
     // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
-    // For slimmingPaintInvalidation, this stores the previous paint offset.
-    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintInvalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 
