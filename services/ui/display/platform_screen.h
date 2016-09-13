@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "services/ui/display/platform_screen_delegate.h"
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace display {
 
 // PlatformScreen provides the necessary functionality to configure all
@@ -22,6 +26,9 @@ class PlatformScreen {
   // Creates a singleton PlatformScreen instance.
   static std::unique_ptr<PlatformScreen> Create();
   static PlatformScreen* GetInstance();
+
+  // Registers Mojo interfaces provided.
+  virtual void AddInterfaces(shell::InterfaceRegistry* registry) = 0;
 
   // Triggers initial display configuration to start. On device this will
   // configuration the connected displays. Off device this will create one or

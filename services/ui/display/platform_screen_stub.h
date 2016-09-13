@@ -25,6 +25,7 @@ class PlatformScreenStub : public PlatformScreen {
   void FixedSizeScreenConfiguration();
 
   // PlatformScreen.
+  void AddInterfaces(shell::InterfaceRegistry* registry) override;
   void Init(PlatformScreenDelegate* delegate) override;
   int64_t GetPrimaryDisplayId() const override;
 

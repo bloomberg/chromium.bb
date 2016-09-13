@@ -10,7 +10,7 @@ interface DisplayController {
   // Toggles adding or removing a virtual display. If there is only one display
   // a second display is added. If there is more than one display then the last
   // display is removed. 
-  ToggleVirtualDisplay() => (bool success);
+  ToggleVirtualDisplay();
 
   // TODO(kylechar): This interface will need to be expanded to provide
   // additional functionality for the display settings page and other ash

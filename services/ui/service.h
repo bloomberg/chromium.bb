@@ -167,7 +167,8 @@ class Service
 
   UserIdToUserState user_id_to_user_state_;
 
-  // Provides input-device information via Mojo IPC.
+  // Provides input-device information via Mojo IPC. Registers Mojo interfaces
+  // and must outlive shell::InterfaceRegistry.
   InputDeviceServer input_device_server_;
 
   bool test_config_;
@@ -175,7 +176,10 @@ class Service
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
+  // Manages display hardware and handles display management. May register Mojo
+  // interfaces and must outlive shell::InterfaceRegistry.
   std::unique_ptr<display::PlatformScreen> platform_screen_;
+
   std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;
   IMEServerImpl ime_server_;

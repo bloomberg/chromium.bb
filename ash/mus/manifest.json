@@ -19,6 +19,7 @@
       },
       "mojo:ui": {
         "interfaces": [
+          "display::mojom::DisplayController",
           "ui::mojom::AccessibilityManager",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ]

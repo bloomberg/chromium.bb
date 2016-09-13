@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace display {
@@ -31,6 +32,8 @@ PlatformScreenStub::~PlatformScreenStub() {}
 void PlatformScreenStub::FixedSizeScreenConfiguration() {
   delegate_->OnDisplayAdded(kDisplayId, gfx::Rect(1024, 768));
 }
+
+void PlatformScreenStub::AddInterfaces(shell::InterfaceRegistry* registry) {}
 
 void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);

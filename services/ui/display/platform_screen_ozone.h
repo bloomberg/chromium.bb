@@ -12,6 +12,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/interface_factory.h"
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -21,20 +24,22 @@ namespace display {
 
 // PlatformScreenOzone provides the necessary functionality to configure all
 // attached physical displays on the ozone platform.
-class PlatformScreenOzone : public PlatformScreen,
-                            public ui::DisplayConfigurator::Observer,
-                            public mojom::DisplayController {
+class PlatformScreenOzone
+    : public PlatformScreen,
+      public ui::DisplayConfigurator::Observer,
+      public shell::InterfaceFactory<mojom::DisplayController>,
+      public mojom::DisplayController {
  public:
   PlatformScreenOzone();
   ~PlatformScreenOzone() override;
 
   // PlatformScreen:
+  void AddInterfaces(shell::InterfaceRegistry* registry) override;
   void Init(PlatformScreenDelegate* delegate) override;
   int64_t GetPrimaryDisplayId() const override;
 
   // mojom::DisplayController:
-  void ToggleVirtualDisplay(
-      const ToggleVirtualDisplayCallback& callback) override;
+  void ToggleVirtualDisplay() override;
 
  private:
   // TODO(kylechar): This struct is just temporary until we migrate
@@ -90,13 +95,19 @@ class PlatformScreenOzone : public PlatformScreen,
       const ui::DisplayConfigurator::DisplayStateList& displays,
       ui::MultipleDisplayState failed_new_state) override;
 
-  PlatformScreenDelegate* delegate_ = nullptr;
+  // mojo::InterfaceFactory<mojom::DisplayController>:
+  void Create(const shell::Identity& remote_identity,
+              mojom::DisplayControllerRequest request) override;
+
   ui::DisplayConfigurator display_configurator_;
+  PlatformScreenDelegate* delegate_ = nullptr;
 
   // TODO(kylechar): These values can/should be replaced by DisplayLayout.
   int64_t primary_display_id_ = display::Display::kInvalidDisplayID;
   std::vector<DisplayInfo> cached_displays_;
   gfx::Point next_display_origin_;
+
+  mojo::BindingSet<mojom::DisplayController> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenOzone);
 };

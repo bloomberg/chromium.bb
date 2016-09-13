@@ -5,11 +5,13 @@
 #include "services/ui/display/platform_screen_ozone.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
@@ -34,6 +36,10 @@ PlatformScreenOzone::PlatformScreenOzone() {}
 
 PlatformScreenOzone::~PlatformScreenOzone() {
   display_configurator_.RemoveObserver(this);
+}
+
+void PlatformScreenOzone::AddInterfaces(shell::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::DisplayController>(this);
 }
 
 void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
@@ -64,22 +70,17 @@ int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
-void PlatformScreenOzone::ToggleVirtualDisplay(
-    const ToggleVirtualDisplayCallback& callback) {
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    callback.Run(false);
+void PlatformScreenOzone::ToggleVirtualDisplay() {
+  if (base::SysInfo::IsRunningOnChromeOS())
     return;
-  }
 
+  // TODO(kylechar): Convert to use VirtualDisplayDelegate once landed.
   if (cached_displays_.size() == 1) {
     display_configurator_.AddVirtualDisplay(cached_displays_[0].bounds.size());
-    callback.Run(true);
   } else if (cached_displays_.size() > 1) {
-    callback.Run(
-        display_configurator_.RemoveVirtualDisplay(cached_displays_.back().id));
+    display_configurator_.RemoveVirtualDisplay(cached_displays_.back().id);
   } else {
     NOTREACHED();
-    callback.Run(false);
   }
 }
 
@@ -198,6 +199,11 @@ void PlatformScreenOzone::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";
+}
+
+void PlatformScreenOzone::Create(const shell::Identity& remote_identity,
+                                 mojom::DisplayControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace display

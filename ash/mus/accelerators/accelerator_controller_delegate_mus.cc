@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mash/public/interfaces/launchable.mojom.h"
+#include "services/ui/public/interfaces/display/display_controller.mojom.h"
 
 namespace ash {
 namespace mus {
@@ -50,7 +51,12 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       return false;
 
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_ADD_REMOVE_DISPLAY: {
+      display::mojom::DisplayControllerPtr display_controller;
+      connector_->ConnectToInterface("mojo:ui", &display_controller);
+      display_controller->ToggleVirtualDisplay();
+      break;
+    }
     case DEBUG_TOGGLE_UNIFIED_DESKTOP:
     case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:

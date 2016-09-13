@@ -106,6 +106,7 @@ source_set("lib") {
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//services/ui/public/interfaces/display",
     "//skia",
     "//ui/aura",
     "//ui/events",

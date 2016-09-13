@@ -213,6 +213,8 @@ bool Service::OnConnect(const shell::Identity& remote_identity,
   if (input_device_server_.IsRegisteredAsObserver())
     input_device_server_.AddInterface(registry);
 
+  platform_screen_->AddInterfaces(registry);
+
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
 #endif
