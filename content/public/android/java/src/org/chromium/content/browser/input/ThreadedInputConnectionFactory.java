@@ -203,7 +203,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.w(TAG, "checkRegisterResult - retry: " + retry);
         // Success.
         if (mInputMethodManagerWrapper.isActive(mProxyView)) {
-            mInputMethodUma.recordProxyViewSuccess();
+            onRegisterProxyViewSuccess();
             return;
         }
 
@@ -214,12 +214,18 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
             return;
         }
 
-        onRegisterProxyViewFailed();
+        onRegisterProxyViewFailure();
     }
 
     @VisibleForTesting
-    protected void onRegisterProxyViewFailed() {
-        Log.w(TAG, "onRegisterProxyViewFailed");
+    protected void onRegisterProxyViewSuccess() {
+        Log.d(TAG, "onRegisterProxyViewSuccess");
+        mInputMethodUma.recordProxyViewSuccess();
+    }
+
+    @VisibleForTesting
+    protected void onRegisterProxyViewFailure() {
+        Log.w(TAG, "onRegisterProxyViewFailure");
         mInputMethodUma.recordProxyViewFailure();
     }
 

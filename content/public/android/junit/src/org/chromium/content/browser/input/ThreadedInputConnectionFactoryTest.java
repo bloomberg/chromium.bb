@@ -1,0 +1,290 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.content.browser.input;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
+
+import android.content.Context;
+import android.os.Handler;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.ShadowLooper;
+
+import java.util.concurrent.Callable;
+
+/**
+ * Unit tests for {@ThreadedInputConnectionFactory}.
+ */
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
+public class ThreadedInputConnectionFactoryTest {
+
+    /**
+     * A testable version of ThreadedInputConnectionFactory.
+     */
+    private class TestFactory extends ThreadedInputConnectionFactory {
+
+        private boolean mSucceeded;
+        private boolean mFailed;
+
+        TestFactory(InputMethodManagerWrapper inputMethodManagerWrapper) {
+            super(inputMethodManagerWrapper);
+        }
+
+        @Override
+        protected Handler createHandler() {
+            mImeHandler = super.createHandler();
+            mImeShadowLooper = (ShadowLooper) ShadowExtractor.extract(mImeHandler.getLooper());
+            return mImeHandler;
+        }
+
+        @Override
+        protected ThreadedInputConnectionProxyView createProxyView(Handler handler,
+                View containerView) {
+            return mProxyView;
+        }
+
+        @Override
+        protected InputMethodUma createInputMethodUma() {
+            return null;
+        }
+
+        @Override
+        protected void onRegisterProxyViewSuccess() {
+            mSucceeded = true;
+        }
+
+        @Override
+        protected void onRegisterProxyViewFailure() {
+            mFailed = true;
+        }
+
+        public boolean hasFailed() {
+            return mFailed;
+        }
+        public boolean hasSucceeded() {
+            return mSucceeded;
+        }
+    }
+
+    @Mock
+    private ImeAdapter mImeAdapter;
+    @Mock
+    private View mContainerView;
+    @Mock
+    private ThreadedInputConnectionProxyView mProxyView;
+    @Mock
+    private InputMethodManager mInputMethodManager;
+    @Mock
+    private Context mContext;
+
+    private EditorInfo mEditorInfo;
+    private Handler mImeHandler;
+    private Handler mUiHandler;
+    private ShadowLooper mImeShadowLooper;
+    private TestFactory mFactory;
+    private InputConnection mInputConnection;
+    private InOrder mInOrder;
+    private boolean mWindowFocusChanged;
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+
+        mEditorInfo = new EditorInfo();
+        mUiHandler = new Handler();
+
+        mContext = Mockito.mock(Context.class);
+        mContainerView = Mockito.mock(View.class);
+        mImeAdapter = Mockito.mock(ImeAdapter.class);
+        mInputMethodManager = Mockito.mock(InputMethodManager.class);
+
+        mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));
+
+        when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE))
+                .thenReturn(mInputMethodManager);
+        when(mContainerView.getContext()).thenReturn(mContext);
+        when(mContainerView.getHandler()).thenReturn(mUiHandler);
+        when(mContainerView.hasFocus()).thenReturn(true);
+        when(mContainerView.hasWindowFocus()).thenReturn(true);
+
+        mProxyView = Mockito.mock(ThreadedInputConnectionProxyView.class);
+        when(mProxyView.getContext()).thenReturn(mContext);
+        when(mProxyView.requestFocus()).thenReturn(true);
+        when(mProxyView.getHandler()).thenReturn(mImeHandler);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                mWindowFocusChanged = true;
+                return null;
+            }
+        }).when(mProxyView).onWindowFocusChanged(true);
+        final Callable<InputConnection> callable = new Callable<InputConnection>() {
+            @Override
+            public InputConnection call() throws Exception {
+                return mFactory.initializeAndGet(
+                        mContainerView, mImeAdapter, 1, 0, 0, 0, mEditorInfo);
+            }
+        };
+        when(mProxyView.onCreateInputConnection(any(EditorInfo.class))).thenAnswer(
+                new Answer<InputConnection>() {
+                    @Override
+                    public InputConnection answer(InvocationOnMock invocation) throws Throwable {
+                        return ThreadUtils.runOnUiThreadBlockingNoException(callable);
+                    }
+                });
+
+        when(mInputMethodManager.isActive(mContainerView)).thenAnswer(new Answer<Boolean>() {
+            private int mCount;
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                mCount++;
+                if (mCount == 1 && mWindowFocusChanged) {
+                    mInputConnection = mProxyView.onCreateInputConnection(mEditorInfo);
+                    return false;
+                } else if (mCount == 2) {
+                    return true;
+                }
+                fail();
+                return false;
+            }
+        });
+        when(mInputMethodManager.isActive(mProxyView)).thenReturn(true);
+
+        mInOrder = inOrder(mImeAdapter, mInputMethodManager, mContainerView, mProxyView);
+    }
+
+    private void activateInput() {
+        mUiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(mFactory.initializeAndGet(
+                        mContainerView, mImeAdapter, 1, 0, 0, 0, mEditorInfo));
+            }
+        });
+    }
+
+    private void runOneUiTask() {
+        assertTrue(Robolectric.getForegroundThreadScheduler().runOneTask());
+    }
+
+    @Test
+    @Feature({"TextInput"})
+    public void testCreateInputConnection_Success() {
+        // Pause all the loopers.
+        Robolectric.getForegroundThreadScheduler().pause();
+        mImeShadowLooper.pause();
+
+        activateInput();
+
+        // The first onCreateInputConnection().
+        runOneUiTask();
+        mInOrder.verify(mContainerView).hasFocus();
+        mInOrder.verify(mContainerView).hasWindowFocus();
+        mInOrder.verify(mProxyView).requestFocus();
+        mInOrder.verify(mContainerView).getHandler();
+        mInOrder.verifyNoMoreInteractions();
+        assertNull(mInputConnection);
+
+        // The second onCreateInputConnection().
+        runOneUiTask();
+        mInOrder.verify(mProxyView).onWindowFocusChanged(true);
+        mInOrder.verify(mInputMethodManager).isActive(mContainerView);
+        mInOrder.verify(mProxyView).onCreateInputConnection(any(EditorInfo.class));
+        mInOrder.verify(mContainerView).getContext();  // BaseInputConnection#<init>
+        mInOrder.verifyNoMoreInteractions();
+        assertNotNull(mInputConnection);
+        assertTrue(ThreadedInputConnection.class.isInstance(mInputConnection));
+
+        // Verification process.
+        mImeShadowLooper.runOneTask();
+        runOneUiTask();
+
+        mInOrder.verify(mInputMethodManager).isActive(mProxyView);
+        mInOrder.verifyNoMoreInteractions();
+
+        assertTrue(mFactory.hasSucceeded());
+        assertFalse(mFactory.hasFailed());
+    }
+
+    @Test
+    @Feature({"TextInput"})
+    public void testCreateInputConnection_WindowFocusLostOnFirstLoop() {
+        // Somehow input was activated right after window focus was lost.
+        when(mContainerView.hasWindowFocus()).thenReturn(false);
+
+        // Pause all the loopers.
+        Robolectric.getForegroundThreadScheduler().pause();
+        mImeShadowLooper.pause();
+
+        activateInput();
+
+        // The first onCreateInputConnection().
+        runOneUiTask();
+        mInOrder.verify(mContainerView).hasFocus();
+        mInOrder.verify(mContainerView).hasWindowFocus();
+        mInOrder.verifyNoMoreInteractions();
+        assertNull(mInputConnection);
+        assertFalse(mFactory.hasSucceeded());
+        assertFalse(mFactory.hasFailed());
+    }
+
+    @Test
+    @Feature({"TextInput"})
+    public void testCreateInputConnection_WindowFocusLostOnSecondLoop() {
+        // Pause all the loopers.
+        Robolectric.getForegroundThreadScheduler().pause();
+        mImeShadowLooper.pause();
+
+        activateInput();
+
+        // The first onCreateInputConnection().
+        runOneUiTask();
+        mInOrder.verify(mContainerView).hasFocus();
+        mInOrder.verify(mContainerView).hasWindowFocus();
+        mInOrder.verify(mProxyView).requestFocus();
+        mInOrder.verify(mContainerView).getHandler();
+        mInOrder.verifyNoMoreInteractions();
+        assertNull(mInputConnection);
+
+        // Now window focus was lost before the second onCreateInputConnection().
+        mFactory.onWindowFocusChanged(false);
+
+        // The second onCreateInputConnection() gets ignored.
+        runOneUiTask();
+        mInOrder.verify(mProxyView).onOriginalViewWindowFocusChanged(false);
+        mInOrder.verifyNoMoreInteractions();
+        assertNull(mInputConnection);
+        assertFalse(mFactory.hasSucceeded());
+        assertFalse(mFactory.hasFailed());
+    }
+}
