@@ -335,6 +335,26 @@
             "group_name": "Enable"
         }
     ],
+    "PersistentHistograms": [
+        {
+            "enable_features": [
+                "PersistentHistograms"
+            ],
+            "group_name": "EnabledInMemory",
+            "params": {
+                "storage": "LocalMemory"
+            }
+        },
+        {
+            "enable_features": [
+                "PersistentHistograms"
+            ],
+            "group_name": "EnabledOnDisk",
+            "params": {
+                "storage": "MappedFile"
+            }
+        }
+    ],
     "PhysicalWeb": [
         {
             "enable_features": [

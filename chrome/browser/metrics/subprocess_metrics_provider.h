@@ -36,6 +36,10 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
   SubprocessMetricsProvider();
   ~SubprocessMetricsProvider() override;
 
+  // Merge histograms for all subprocesses. This is used by tests that don't
+  // have access to the internal instance of this class.
+  static void MergeHistogramDeltasForTesting();
+
  private:
   friend class SubprocessMetricsProviderTest;
 

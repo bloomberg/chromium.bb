@@ -18,16 +18,32 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 
+namespace {
+
+// This is used by tests that don't have an easy way to access the global
+// instance of this class.
+SubprocessMetricsProvider* g_subprocess_metrics_provider_for_testing;
+
+}  // namespace
+
 SubprocessMetricsProvider::SubprocessMetricsProvider()
     : scoped_observer_(this), weak_ptr_factory_(this) {
   content::BrowserChildProcessObserver::Add(this);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  g_subprocess_metrics_provider_for_testing = this;
 }
 
 SubprocessMetricsProvider::~SubprocessMetricsProvider() {
   // Safe even if this object has never been added as an observer.
   content::BrowserChildProcessObserver::Remove(this);
+  g_subprocess_metrics_provider_for_testing = nullptr;
+}
+
+// static
+void SubprocessMetricsProvider::MergeHistogramDeltasForTesting() {
+  DCHECK(g_subprocess_metrics_provider_for_testing);
+  g_subprocess_metrics_provider_for_testing->MergeHistogramDeltas();
 }
 
 void SubprocessMetricsProvider::RegisterSubprocessAllocator(

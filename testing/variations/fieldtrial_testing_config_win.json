@@ -326,6 +326,26 @@
             }
         }
     ],
+    "PersistentHistograms": [
+        {
+            "enable_features": [
+                "PersistentHistograms"
+            ],
+            "group_name": "EnabledInMemory",
+            "params": {
+                "storage": "LocalMemory"
+            }
+        },
+        {
+            "enable_features": [
+                "PersistentHistograms"
+            ],
+            "group_name": "EnabledOnDisk",
+            "params": {
+                "storage": "MappedFile"
+            }
+        }
+    ],
     "PointerEvent": [
         {
             "enable_features": [
