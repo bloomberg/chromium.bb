@@ -968,6 +968,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrShellInterface.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
@@ -1068,10 +1070,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
 ]
 
-chrome_vr_java_sources = [
-  "java/src/org/chromium/chrome/browser/VrActivity.java",
-  "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
-]
+chrome_vr_java_sources =
+    [ "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java" ]
 
 chrome_test_java_sources = [
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestAnnotationTest.java",

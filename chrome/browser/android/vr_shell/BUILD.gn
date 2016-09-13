@@ -9,6 +9,8 @@ assert(enable_vr_shell && android_java_ui)
 
 static_library("vr_shell") {
   sources = [
+    "ui_elements.cc",
+    "ui_elements.h",
     "vr_shell.cc",
     "vr_shell.h",
     "vr_shell_renderer.cc",

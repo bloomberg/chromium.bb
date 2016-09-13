@@ -56,6 +56,10 @@ by a child template that "extends" this file.
     {% if enable_vr_shell == "true" %}
     <!-- Required to read the paired viewer's distortion parameters. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- Indicates use of Android's VR-mode, available only on Android N+. -->
+    <uses-feature android:name="android.software.vr.mode" android:required="false"/>
+    <!-- Indicates use of VR features that are available only on Daydream-ready devices. -->
+    <uses-feature android:name="android.hardware.vr.high_performance" android:required="false"/>
     {% endif %}
 
     <permission android:name="{{ manifest_package }}.permission.CHILD_SERVICE" android:protectionLevel="signature" />
@@ -160,6 +164,10 @@ by a child template that "extends" this file.
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
                 {% if channel in ['dev', 'canary', 'default'] %}
                 <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+                {% endif %}
+                {% if enable_vr_shell == "true" %}
+                <!-- Show icon in Daydream app launcher. -->
+                <category android:name="com.google.intent.category.DAYDREAM" />
                 {% endif %}
             </intent-filter>
             <!-- Matches the common case of intents with no MIME type.
@@ -345,22 +353,6 @@ by a child template that "extends" this file.
              android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
              android:hardwareAccelerated="false">
         </activity>
-        {% if enable_vr_shell == "true" %}
-        <activity android:name="org.chromium.chrome.browser.VrActivity"
-             android:theme="@style/MainTheme"
-             android:windowSoftInputMode="stateAlwaysHidden"
-             android:launchMode="singleTask"
-             android:screenOrientation="landscape"
-             android:hardwareAccelerated="false"
-             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <!-- Show icon in Daydream app launcher. -->
-                <category android:name="com.google.intent.category.DAYDREAM" />
-           </intent-filter>
-        </activity>
-        {% endif %}
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
              android:theme="@style/TabbedModeTheme"
              android:exported="false"

@@ -95,6 +95,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentVideoView;
@@ -214,6 +215,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs = 0;
+
+    private VrShellDelegate mVrShellDelegate;
 
     private class TabbedAssistStatusHandler extends AssistStatusHandler {
         public TabbedAssistStatusHandler(Activity activity) {
@@ -367,12 +370,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
             mMergeTabsOnResume = false;
         }
+        if (mVrShellDelegate.isInVR()) mVrShellDelegate.resumeVR();
     }
 
     @Override
     public void onPauseWithNative() {
         mTabModelSelectorImpl.commitAllTabClosures();
         CookiesFetcher.persistCookies(this);
+        if (mVrShellDelegate.isInVR()) mVrShellDelegate.pauseVR();
         super.onPauseWithNative();
     }
 
@@ -410,6 +415,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             super.onNewIntentWithNative(intent);
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
+            }
+            if (!mVrShellDelegate.isInVR() && mVrShellDelegate.isVrIntent(intent)) {
+                mVrShellDelegate.enterVRIfNecessary();
             }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
@@ -594,9 +602,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             mIntentWithEffect = false;
-            if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null
-                    && !mIntentHandler.shouldIgnoreIntent(ChromeTabbedActivity.this, intent)) {
-                mIntentWithEffect = mIntentHandler.onNewIntent(ChromeTabbedActivity.this, intent);
+            if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null) {
+                if (mVrShellDelegate.isVrIntent(intent)) {
+                    // TODO(mthiesse): Improve startup when started from a VR intent. Right now
+                    // we launch out of VR, partially load out of VR, then switch into VR.
+                    mVrShellDelegate.enterVRIfNecessary();
+                } else if (!mIntentHandler.shouldIgnoreIntent(ChromeTabbedActivity.this, intent)) {
+                    mIntentWithEffect = mIntentHandler.onNewIntent(ChromeTabbedActivity.this,
+                            intent);
+                }
             }
 
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
@@ -941,6 +955,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         mUndoBarPopupController = new UndoBarController(this, mTabModelSelectorImpl,
                 getSnackbarManager());
+
+        mVrShellDelegate = new VrShellDelegate(this, mContentContainer);
     }
 
     @Override
@@ -1121,6 +1137,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             TabModel currentModel = mTabModelSelectorImpl.getCurrentModel();
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
+        } else if (id == R.id.enter_vr_id) {
+            mVrShellDelegate.enterVRIfNecessary();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -1157,6 +1175,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public boolean handleBackPressed() {
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
+
+        if (mVrShellDelegate.exitVRIfNecessary()) return true;
 
         if (currentTab == null) {
             recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);
@@ -1375,6 +1395,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mUndoBarPopupController = null;
         }
 
+        if (mVrShellDelegate != null) {
+            mVrShellDelegate.destroyVrShell();
+        }
+
         super.onDestroyInternal();
     }
 
@@ -1569,5 +1593,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // 4. Ask TabPersistentStore to merge state.
         RecordUserAction.record("Android.MergeState.Live");
         mTabModelSelectorImpl.mergeState();
+    }
+
+    /**
+     * See VrShellDelegate#isVrShellEnabled()
+     */
+    @Override
+    public boolean isVrShellEnabled() {
+        return mVrShellDelegate.isVrShellEnabled();
     }
 }

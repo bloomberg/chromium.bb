@@ -176,6 +176,9 @@ public class AppMenuPropertiesDelegate {
             // Only display reader mode settings menu option if the current page is in reader mode.
             menu.findItem(R.id.reader_mode_prefs_id)
                     .setVisible(DomDistillerUrlUtils.isDistilledPage(currentTab.getUrl()));
+
+            // Only display the Enter VR button if VR Shell is enabled.
+            menu.findItem(R.id.enter_vr_id).setVisible(mActivity.isVrShellEnabled());
         }
 
         if (isOverviewMenu) {

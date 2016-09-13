@@ -1641,6 +1641,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * Tests if VR Shell (the mode displaying browser UI and tab contents in VR) is currently
+     * enabled.
+     */
+    public boolean isVrShellEnabled() {
+        return false;
+    }
+
+    /**
      * Add a view to the set of views that obscure the content of all tabs for
      * accessibility. As long as this set is nonempty, all tabs should be
      * hidden from the accessibility tree.

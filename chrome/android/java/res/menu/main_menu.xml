@@ -68,6 +68,8 @@
             android:title="@string/menu_preferences" />
         <item android:id="@+id/help_id"
             android:title="@string/menu_help" />
+        <item android:id="@+id/enter_vr_id"
+            android:title="@string/enter_vr" />
     </group>
 
     <!-- Items shown only in the tab switcher -->

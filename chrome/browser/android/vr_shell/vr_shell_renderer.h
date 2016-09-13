@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/vr_util.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 
@@ -32,7 +33,8 @@ class TexturedQuadRenderer {
   ~TexturedQuadRenderer();
 
   // Draw the content rect in the texture quad.
-  void Draw(int texture_data_handle, const gvr::Mat4f& combined_matrix);
+  void Draw(int texture_data_handle, const gvr::Mat4f& combined_matrix,
+            const Rectf& copy_rect);
 
  private:
   GLuint vertex_shader_handle_;
@@ -40,6 +42,7 @@ class TexturedQuadRenderer {
   GLuint program_handle_;
   GLuint combined_matrix_handle_;
   GLuint texture_uniform_handle_;
+  GLuint copy_rect_uniform_handle_;
   GLuint position_handle_;
   GLuint texture_coordinate_handle_;
 
@@ -92,6 +95,7 @@ class VrShellRenderer {
  private:
   std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
   std::unique_ptr<WebVrRenderer> webvr_renderer_;
+
   DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
 

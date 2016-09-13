@@ -226,6 +226,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_SECTION_ADVANCED" desc='Title of "Advanced" section of preferences. [CHAR-LIMIT=32]'>
         Advanced
       </message>
+      <message name="IDS_ENTER_VR" desc="Menu item for entering VR. [CHAR-LIMIT=27]">
+        &#128083;&#128083;&#128083; Enter VR &#128083;&#128083;&#128083;
+      </message>
 
       <!-- Sign-in preference -->
       <message name="IDS_SIGN_IN_TO_CHROME" desc="Title for the button to sign in to Chrome using one's Google account. [CHAR-LIMIT=27]">

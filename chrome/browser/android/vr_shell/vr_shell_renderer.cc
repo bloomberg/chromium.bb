@@ -7,23 +7,26 @@
 #include "chrome/browser/android/vr_shell/vr_util.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace vr_shell {
-
 namespace {
 
-const float kHalfHeight = 0.5f;
-const float kHalfWidth = 0.5f;
-const float kTextureQuadPosition[18] = {
+#define RECTANGULAR_TEXTURE_BUFFER(left, right, bottom, top) \
+  { left, bottom, left, top, right, bottom, left, top, right, top, right, \
+    bottom }
+
+static constexpr float kHalfHeight = 0.5f;
+static constexpr float kHalfWidth = 0.5f;
+static constexpr float kTextureQuadPosition[18] = {
     -kHalfWidth, kHalfHeight,  0.0f, -kHalfWidth, -kHalfHeight, 0.0f,
     kHalfWidth,  kHalfHeight,  0.0f, -kHalfWidth, -kHalfHeight, 0.0f,
     kHalfWidth,  -kHalfHeight, 0.0f, kHalfWidth,  kHalfHeight,  0.0f};
-const int kPositionDataSize = 3;
+static constexpr int kPositionDataSize = 3;
 // Number of vertices passed to glDrawArrays().
-const int kVerticesNumber = 6;
+static constexpr int kVerticesNumber = 6;
 
-const float kTexturedQuadTextureCoordinates[12] = {
-    0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f};
-const int kTextureCoordinateDataSize = 2;
+static constexpr float kTexturedQuadTextureCoordinates[12] =
+    RECTANGULAR_TEXTURE_BUFFER(0.0f, 1.0f, 0.0f, 1.0f);
+
+static constexpr int kTextureCoordinateDataSize = 2;
 
 const float kWebVrVertices[32] = {
   //   x     y    u,   v
@@ -42,21 +45,28 @@ const int kWebVrVerticesSize = sizeof(float) * 32;
 #define OEIE_SHADER(Src) "#extension GL_OES_EGL_image_external : require\n" #Src
 #define VOID_OFFSET(x) reinterpret_cast<void*>(x)
 
-const char* GetShaderSource(ShaderID shader) {
+const char* GetShaderSource(vr_shell::ShaderID shader) {
   switch (shader) {
-    case TEXTURE_QUAD_VERTEX_SHADER:
-      return SHADER(uniform mat4 u_CombinedMatrix; attribute vec4 a_Position;
+    case vr_shell::ShaderID::TEXTURE_QUAD_VERTEX_SHADER:
+      return SHADER(uniform mat4 u_CombinedMatrix;
+                    attribute vec4 a_Position;
                     attribute vec2 a_TexCoordinate;
-                    varying vec2 v_TexCoordinate; void main() {
+                    varying vec2 v_TexCoordinate;
+                    void main() {
                       v_TexCoordinate = a_TexCoordinate;
                       gl_Position = u_CombinedMatrix * a_Position;
                     });
-    case TEXTURE_QUAD_FRAGMENT_SHADER:
+    case vr_shell::ShaderID::TEXTURE_QUAD_FRAGMENT_SHADER:
       return OEIE_SHADER(
-          precision highp float; uniform samplerExternalOES u_Texture;
-          varying vec2 v_TexCoordinate; void main() {
-            vec4 texture = texture2D(u_Texture, v_TexCoordinate);
-            gl_FragColor = vec4(texture.r, texture.g, texture.b, 1.0);
+          precision highp float;
+          uniform samplerExternalOES u_Texture;
+          uniform vec4 u_CopyRect; // rectangle
+          varying vec2 v_TexCoordinate;
+          void main() {
+            vec2 scaledTex = vec2(
+                u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
+                u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
+            gl_FragColor = texture2D(u_Texture, scaledTex);
           });
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
@@ -84,7 +94,10 @@ const char* GetShaderSource(ShaderID shader) {
   }
 }
 
+#undef RECTANGULAR_TEXTURE_BUFFER
 }  // namespace
+
+namespace vr_shell {
 
 TexturedQuadRenderer::TexturedQuadRenderer() {
   std::string error;
@@ -97,19 +110,22 @@ TexturedQuadRenderer::TexturedQuadRenderer() {
   CHECK(fragment_shader_handle_) << error;
 
   program_handle_ = CreateAndLinkProgram(
-      vertex_shader_handle_, fragment_shader_handle_, 4, nullptr, error);
+      vertex_shader_handle_, fragment_shader_handle_, 5, nullptr, error);
   CHECK(program_handle_) << error;
 
   combined_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_CombinedMatrix");
   texture_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  copy_rect_uniform_handle_ = glGetUniformLocation(program_handle_,
+                                                   "u_CopyRect");
   position_handle_ = glGetAttribLocation(program_handle_, "a_Position");
   texture_coordinate_handle_ =
       glGetAttribLocation(program_handle_, "a_TexCoordinate");
 }
 
 void TexturedQuadRenderer::Draw(int texture_data_handle,
-                                const gvr::Mat4f& combined_matrix) {
+                                const gvr::Mat4f& combined_matrix,
+                                const Rectf& copy_rect) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
@@ -125,6 +141,9 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
                         kTextureQuadPosition);
   glEnableVertexAttribArray(position_handle_);
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_data_handle);
@@ -132,7 +151,9 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
   glUniform1i(texture_uniform_handle_, 0);
+  glUniform4fv(copy_rect_uniform_handle_, 1, (float*)(&copy_rect));
 
   glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 
@@ -140,10 +161,7 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
   glDisableVertexAttribArray(texture_coordinate_handle_);
 }
 
-TexturedQuadRenderer::~TexturedQuadRenderer() {
-  glDeleteShader(vertex_shader_handle_);
-  glDeleteShader(fragment_shader_handle_);
-}
+TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 WebVrRenderer::WebVrRenderer() {
   left_bounds_ = { 0.0f, 0.0f, 0.5f, 1.0f };
@@ -230,15 +248,15 @@ void WebVrRenderer::UpdateTextureBounds(int eye, const gvr::Rectf& bounds) {
   }
 }
 
-WebVrRenderer::~WebVrRenderer() {
-  glDeleteBuffersARB(1, &vertex_buffer_);
-  glDeleteProgram(program_handle_);
-}
+// Note that we don't explicitly delete gl objects here, they're deleted
+// automatically when we call ClearGLBindings, and deleting them here leads to
+// segfaults.
+WebVrRenderer::~WebVrRenderer() = default;
 
 VrShellRenderer::VrShellRenderer()
     : textured_quad_renderer_(new TexturedQuadRenderer),
       webvr_renderer_(new WebVrRenderer) {}
 
-VrShellRenderer::~VrShellRenderer() {}
+VrShellRenderer::~VrShellRenderer() = default;
 
 }  // namespace vr_shell

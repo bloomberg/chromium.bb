@@ -16,7 +16,9 @@ import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.opengl.GLES11Ext;
 import android.opengl.GLSurfaceView;
+import android.os.StrictMode;
 import android.view.MotionEvent;
+import android.widget.FrameLayout;
 
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
@@ -30,25 +32,26 @@ import javax.microedition.khronos.opengles.GL10;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFrameAvailableListener {
+public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShellInterface {
+    private static final String TAG = "VrShell";
+
+    public static final String VR_EXTRA = com.google.vr.sdk.base.Constants.EXTRA_VR_LAUNCH;
+
     private Activity mActivity;
 
-    private GLSurfaceView mGlSurfaceView;
-
-    private SurfaceTexture mSurfaceTexture;
+    private final GLSurfaceView mGlSurfaceView;
 
     private long mNativeVrShell = 0;
+
+    private int mContentTextureHandle;
+    private FrameListener mContentFrameListener;
 
     public VrShell(Activity activity) {
         super(activity);
         mActivity = activity;
-    }
-
-    public void onNativeLibraryReady() {
-        mNativeVrShell = nativeInit();
         mGlSurfaceView = new GLSurfaceView(getContext());
         mGlSurfaceView.setEGLContextClientVersion(2);
-        mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
+        mGlSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 0, 0);
         mGlSurfaceView.setPreserveEGLContextOnPause(true);
         mGlSurfaceView.setRenderer(this);
         setPresentationView(mGlSurfaceView);
@@ -59,8 +62,16 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFram
     }
 
     @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        mGlSurfaceView.queueEvent(new Runnable() {
+    public void onNativeLibraryReady() {
+        mNativeVrShell = nativeInit();
+    }
+
+    private static class FrameListener implements OnFrameAvailableListener {
+        final SurfaceTexture mSurfaceTexture;
+        final GLSurfaceView mGlSurfaceView;
+        boolean mFirstTex = true;
+
+        final Runnable mUpdateTexImage = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -68,33 +79,44 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFram
                 } catch (IllegalStateException e) {
                 }
             }
-        });
+        };
+
+        public FrameListener(SurfaceTexture texture, GLSurfaceView glSurfaceView) {
+            mSurfaceTexture = texture;
+            mSurfaceTexture.setOnFrameAvailableListener(this);
+            mGlSurfaceView = glSurfaceView;
+        }
+
+        @Override
+        public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+            mFirstTex = false;
+            mGlSurfaceView.queueEvent(mUpdateTexImage);
+        }
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        // This handle doesn't get deleted anywhere because we create it in onSurfaceCreated() and
-        // rely on onSurfaceDestroyed() according to the GLSurfaceView documentation to delete the
-        // context and clean up resources.
-        int textureDataHandle = createExternalTextureHandle();
-        mSurfaceTexture = new SurfaceTexture(textureDataHandle);
-        mSurfaceTexture.setOnFrameAvailableListener(this);
-        // TODO(bshe): Use this SurfaceTexture to create a Surface and then pass the Surface to a
-        // compositor to get frames of web page.
+        mContentTextureHandle = createExternalTextureHandle();
+        mContentFrameListener = new FrameListener(new SurfaceTexture(mContentTextureHandle),
+                mGlSurfaceView);
+
         nativeGvrInit(mNativeVrShell, getGvrApi().getNativeGvrContext());
-        nativeInitializeGl(mNativeVrShell, textureDataHandle);
+        nativeInitializeGl(mNativeVrShell, mContentTextureHandle);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {}
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return false;
-    }
-
-    @Override
     public void onDrawFrame(GL10 gl) {
+        // Make sure we've updated the texture at least once. We do this because onFrameAvailable
+        // isn't guaranteed to have fired after transitioning to VR. It only fires when the texture
+        // is updated either through scrolling, resizing, etc. - none of which we're guaranteed to
+        // have done on transition.
+        if (mContentFrameListener.mFirstTex) {
+            mContentFrameListener.mSurfaceTexture.updateTexImage();
+            mContentFrameListener.mFirstTex = false;
+        }
         nativeDrawFrame(mNativeVrShell);
     }
 
@@ -102,9 +124,15 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFram
     public void onResume() {
         super.onResume();
         if (mNativeVrShell != 0) {
-            nativeOnResume(mNativeVrShell);
+            // Refreshing the viewer profile accesses disk, so we need to temporarily allow disk
+            // reads. The GVR team promises this will be fixed when they launch.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                nativeOnResume(mNativeVrShell);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
-        AndroidCompat.setVrModeEnabled(mActivity, true);
     }
 
     @Override
@@ -121,9 +149,39 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFram
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
         }
-        if (mSurfaceTexture != null) {
-            mSurfaceTexture.release();
+        if (mContentFrameListener != null && mContentFrameListener.mSurfaceTexture != null) {
+            mContentFrameListener.mSurfaceTexture.release();
         }
+    }
+
+    @Override
+    public void pause() {
+        onPause();
+    }
+
+    @Override
+    public void resume() {
+        onResume();
+    }
+
+    @Override
+    public void teardown() {
+        shutdown();
+    }
+
+    @Override
+    public void setVrModeEnabled(boolean enabled) {
+        AndroidCompat.setVrModeEnabled(mActivity, enabled);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return true;
+    }
+
+    @Override
+    public FrameLayout getContainer() {
+        return (FrameLayout) this;
     }
 
     /**
@@ -149,7 +207,8 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, OnFram
 
     private native void nativeDestroy(long nativeVrShell);
 
-    private native void nativeInitializeGl(long nativeVrShell, int textureDataHandle);
+    private native void nativeInitializeGl(
+            long nativeVrShell, int contentDataHandle);
 
     private native void nativeDrawFrame(long nativeVrShell);
 
