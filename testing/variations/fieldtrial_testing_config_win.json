@@ -82,6 +82,14 @@
             "group_name": "SettingsTextNotNow"
         }
     ],
+    "DefaultEnableGpuRasterization": [
+        {
+            "enable_features": [
+                "DefaultEnableGpuRasterization"
+            ],
+            "group_name": "DefaultEnableGpuRasterization"
+        }
+    ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "disable_features": [
