@@ -89,12 +89,12 @@ Consider this simple application that implements the Service interface:
 
 **app.cc:**
 
-    #include mojo/public/c/system/main.h
-    #include services/shell/public/cpp/application_runner.h
-    #include services/shell/public/cpp/connector.h
-    #include services/shell/public/cpp/connection.h
-    #include services/shell/public/cpp/identity.h
-    #include services/shell/public/cpp/service.h
+    #include "mojo/public/c/system/main.h"
+    #include "services/shell/public/cpp/application_runner.h"
+    #include "services/shell/public/cpp/connector.h"
+    #include "services/shell/public/cpp/connection.h"
+    #include "services/shell/public/cpp/identity.h"
+    #include "services/shell/public/cpp/service.h"
 
     class Service : public shell::Service {
      public:
@@ -116,25 +116,25 @@ Consider this simple application that implements the Service interface:
     app_manifest.json:
 
     {
-      manifest_version: 1,
-      name: mojo:app,
-      display_name: Example App,
-      capabilities: {}
+      "manifest_version": 1,
+      "name": "mojo:app",
+      "display_name": "Example App",
+      "capabilities": {}
     }
 
 **BUILD.gn:**
 
-    import(//mojo/public/mojo_application.gni)
+    import("//mojo/public/mojo_application.gni")
 
-    service(app) {
-      sources = [ app.cc ]
-      deps = [ //base, //mojo/shell/public/cpp ]
-      data_deps = [ :manifest ]
+    service("app") {
+      sources = [ "app.cc" ]
+      deps = [ "//base", "//mojo/shell/public/cpp" ]
+      data_deps = [ ":manifest" ]
     }
 
-    service_manifest(manifest) {
-      name = app
-      source = app_manifest.json
+    service_manifest("manifest") {
+      name = "app"
+      source = "app_manifest.json"
     }
 
 What does all this do? Building the app target produces two files in the output
@@ -180,7 +180,7 @@ from them. In the trivial app above we can do this directly in OnStart:
 
     void OnStart(const shell::Identity& identity) override {
       scoped_ptr<shell::Connection> connection = 
-          connector()->Connect(mojo:service);
+          connector()->Connect("mojo:service");
       mojom::SomeInterfacePtr some_interface;
       connection->GetInterface(&some_interface);
       some_interface->Foo();
@@ -189,10 +189,11 @@ from them. In the trivial app above we can do this directly in OnStart:
 This assumes an interface called mojo.SomeInterface with a method Foo()
 exported by another Mojo client identified by the name mojo:service.
 
-What is happening here? Lets look line-by-line
+What is happening here? Lets look line-by-line
+
 
     scoped_ptr<shell::Connection> connection = 
-        connector->Connect(mojo:service);
+        connector->Connect("mojo:service");
 
 This asks the Service Manager to open a connection to the service named
 mojo:service. The Connect() method returns a Connection object similar to the
@@ -329,7 +330,7 @@ spec from another services manifest:
       "provided": {
         "web": ["if1", "if2"],
         "uid": []
-        god-mode: [*]
+        "god-mode": ["*"]
       },
       "required": {
         "*": { "classes": ["c1", "c2"], "interfaces": ["if3", "if4"] },
@@ -375,12 +376,12 @@ Armed with this knowledge, we can return to app_manifest.json from the first
 example and fill out the capability spec:
 
     {
-      manifest_version: 1,
-      name: mojo:app,
-      display_name: Example App,
-      capabilities: {
-        required: {
-          mojo:service: [],
+      "manifest_version": 1,
+      "name": "mojo:app",
+      "display_name": "Example App",
+      "capabilities": {
+        "required": {
+          "mojo:service": [],
         }
       }
     }
@@ -394,8 +395,8 @@ The connection was allowed to complete, but the attempt to bind
 `mojom.SomeInterface` was blocked. We need to add that interface to the array in
 the manifest:
 
-    required: {
-      mojo:service: [ mojom.SomeInterface ],
+    "required": {
+      "mojo:service": [ "mojom::SomeInterface" ],
     }
 
 Now everything should work.
@@ -412,10 +413,10 @@ for them. The Shell client library provides a gtest base class
 **shell::test::ServiceTest** that makes writing integration tests of services
 straightforward. Lets look at a simple test of our service:
 
-    #include base/bind.h
-    #include base/run_loop.h
-    #include mojo/shell/public/cpp/service_test.h
-    #include path/to/some_interface.mojom.h
+    #include "base/bind.h"
+    #include "base/run_loop.h"
+    #include "mojo/shell/public/cpp/service_test.h"
+    #include "path/to/some_interface.mojom.h"
 
     void QuitLoop(base::RunLoop* loop) {
       loop->Quit();
@@ -429,7 +430,7 @@ straightforward. Lets look at a simple test of our service:
 
     TEST_F(Test, Basic) {
       mojom::SomeInterface some_interface;
-      connector()->ConnectToInterface(mojo:service, &some_interface);
+      connector()->ConnectToInterface("mojo:service", &some_interface);
       base::RunLoop loop;
       some_interface->Foo(base::Bind(&QuitLoop, &loop));
       loop.Run();
@@ -484,11 +485,9 @@ two:
     class Services : public shell::Service,
                      public shell::InterfaceFactory<ServiceFactory>,
                      public ServiceFactory {
-      
+
       // Expose ServiceFactory to inbound connections and implement
       // InterfaceFactory to bind requests for it to this object.
-      
-
       void CreateService(ServiceRequest request,
                          const std::string& name) {
         if (name == mojo:service1)
@@ -496,7 +495,6 @@ two:
         else if (name == mojo:service2)
           new Service2(std::move(request));
       }
-      
     }
 
 This is only half the story though. While this does mean that mojo:service1 and
@@ -531,8 +529,8 @@ magic that automates generating this meta-manifest, so you dont need to write
 it by hand. In the service_manifest() template instantiation for services, we
 add the following lines:
 
-    deps = [ :service1_manifest, :service2_manifest ]
-    packaged_services = [ service1, service2 ]
+    deps = [ ":service1_manifest", ":service2_manifest" ]
+    packaged_services = [ "service1", "service2" ]
 
 The deps line lists the service_manifest targets for the packaged services to be
 consumed, and the packaged_services line provides the service names, without the
@@ -559,9 +557,9 @@ Assuming you have an executable that properly initializes the Mojo EDK, you add
 the following lines at some point early in application startup to establish the
 connection with the Service Manager:
 
-    #include services/shell/public/cpp/service.h
-    #include services/shell/public/cpp/service_context.h
-    #include services/shell/runner/child/runner_connection.h
+    #include "services/shell/public/cpp/service.h"
+    #include "services/shell/public/cpp/service_context.h"
+    #include "services/shell/runner/child/runner_connection.h"
 
     class MyClient : public shell::Service {
     ..
@@ -609,7 +607,7 @@ referred to as the driver) works like this:
 
     base::FilePath target_path;
     base::PathService::Get(base::DIR_EXE, &target_path);
-    target_path = target_path.Append(FILE_PATH_LITERAL(target.exe));
+    target_path = target_path.Append(FILE_PATH_LITERAL("target.exe"));
     base::CommandLine target_command_line(target_path);
 
     mojo::edk::PlatformChannelPair pair;
@@ -629,7 +627,7 @@ referred to as the driver) works like this:
             std::move(pipe), 0u));
     shell::mojom::PIDReceiverPtr receiver;
 
-    shell::Identity target(exe:target,shell::mojom::kInheritUserID);
+    shell::Identity target("exe:target",shell::mojom::kInheritUserID);
     shell::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(factory), 
                                          GetProxy(&receiver));
