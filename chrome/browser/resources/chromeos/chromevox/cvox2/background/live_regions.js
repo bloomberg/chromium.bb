@@ -54,6 +54,14 @@ LiveRegions = function(chromeVoxState) {
 LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 500;
 
 /**
+ * Live region events received on the same node in fewer than this many
+ * milliseconds will be dropped to avoid a stream of constant chatter.
+ * @type {number}
+ * @const
+ */
+LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
+
+/**
  * Whether live regions from background tabs should be announced or not.
  * @type {boolean}
  * @private
@@ -135,13 +143,16 @@ LiveRegions.prototype = {
     // the same time, otherwise flush previous live region updates.
     var currentTime = new Date();
     var queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
-    if (currentTime - this.lastLiveRegionTime_ > queueTime) {
-      this.liveRegionNodeSet_ = new WeakSet();
+    var delta = currentTime - this.lastLiveRegionTime_;
+    if (delta > queueTime) {
       output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
       this.lastLiveRegionTime_ = currentTime;
     } else {
       output.withQueueMode(cvox.QueueMode.QUEUE);
     }
+
+    if (delta > LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS)
+      this.liveRegionNodeSet_ = new WeakSet();
 
     var parent = node;
     while (parent) {
