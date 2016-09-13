@@ -35,10 +35,11 @@ class PasswordStoreMac : public password_manager::PasswordStore {
  public:
   enum MigrationResult {
     MIGRATION_OK,
-    LOGIN_DB_UNAVAILABLE,
     LOGIN_DB_FAILURE,
     ENCRYPTOR_FAILURE,
-    KEYCHAIN_BLOCKED,
+    // Chrome has read whatever it had access to. Not all the passwords were
+    // accessible.
+    MIGRATION_PARTIAL,
   };
 
   PasswordStoreMac(
@@ -50,11 +51,18 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void InitWithTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
 
-  // Reads all the passwords from the Keychain and stores them in LoginDatabase.
-  // After the successful migration PasswordStoreMac should not be used. If the
-  // migration fails, PasswordStoreMac remains the active backend for
-  // PasswordStoreProxyMac.
-  MigrationResult ImportFromKeychain();
+  // For all the entries in LoginDatabase reads the password value from the
+  // Keychain and updates the database.
+  // The method conducts "best effort" migration without the UI prompt.
+  // Inaccessible entries are deleted.
+  static MigrationResult ImportFromKeychain(
+      password_manager::LoginDatabase* login_db,
+      crypto::AppleKeychain* keychain);
+
+  // Delete Chrome-owned entries matching |forms| from the Keychain.
+  static void CleanUpKeychain(
+      crypto::AppleKeychain* keychain,
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms);
 
   // To be used for testing.
   password_manager::LoginDatabase* login_metadata_db() const {

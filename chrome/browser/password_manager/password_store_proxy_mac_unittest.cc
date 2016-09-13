@@ -42,11 +42,6 @@ using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Pointee;
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
 // Returns a change list corresponding to |form| being added.
 PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
   return PasswordStoreChangeList(
@@ -56,14 +51,31 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
 class MockPasswordStoreConsumer
     : public password_manager::PasswordStoreConsumer {
  public:
-  MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
-               void(const std::vector<std::unique_ptr<PasswordForm>>&));
+  MockPasswordStoreConsumer() = default;
 
-  // GMock cannot mock methods with move-only args.
+  void WaitForResult() {
+    base::RunLoop run_loop;
+    nested_loop_ = &run_loop;
+    run_loop.Run();
+    nested_loop_ = nullptr;
+  }
+
+  const std::vector<std::unique_ptr<PasswordForm>>& forms() const {
+    return forms_;
+  }
+
+ private:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override {
-    OnGetPasswordStoreResultsConstRef(results);
+    forms_.swap(results);
+    if (nested_loop_)
+      nested_loop_->Quit();
   }
+
+  std::vector<std::unique_ptr<PasswordForm>> forms_;
+  base::RunLoop* nested_loop_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
 class MockPasswordStoreObserver
@@ -78,6 +90,8 @@ class MockPasswordStoreObserver
 
  private:
   ScopedObserver<PasswordStoreProxyMac, MockPasswordStoreObserver> guard_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreObserver);
 };
 
 // A mock LoginDatabase that simulates a failing Init() method.
@@ -122,6 +136,9 @@ class PasswordStoreProxyMacTest
 
   base::FilePath test_login_db_file_path() const;
 
+  // Returns the expected migration status after the password store was inited.
+  MigrationStatus GetTargetStatus(bool keychain_locked) const;
+
   password_manager::LoginDatabase* login_db() const {
     return store_->login_metadata_db();
   }
@@ -163,7 +180,7 @@ void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
     std::unique_ptr<password_manager::LoginDatabase> login_db) {
   store_ = new PasswordStoreProxyMac(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      base::WrapUnique(new crypto::MockAppleKeychain), std::move(login_db),
+      base::MakeUnique<crypto::MockAppleKeychain>(), std::move(login_db),
       &testing_prefs_);
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 }
@@ -182,13 +199,24 @@ void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
   MockPasswordStoreConsumer consumer;
   store_->GetLogins({PasswordForm::SCHEME_HTML, std::string(), GURL()},
                     &consumer);
-  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_))
-      .WillOnce(QuitUIMessageLoop());
-  base::RunLoop().Run();
+  consumer.WaitForResult();
 }
 
 base::FilePath PasswordStoreProxyMacTest::test_login_db_file_path() const {
   return db_dir_.path().Append(FILE_PATH_LITERAL("login.db"));
+}
+
+MigrationStatus PasswordStoreProxyMacTest::GetTargetStatus(
+    bool keychain_locked) const {
+  if (GetParam() == MigrationStatus::NOT_STARTED ||
+      GetParam() == MigrationStatus::FAILED_ONCE ||
+      GetParam() == MigrationStatus::FAILED_TWICE) {
+    return keychain_locked ? MigrationStatus::MIGRATED_PARTIALLY
+                           : MigrationStatus::MIGRATED;
+  }
+  if (GetParam() == MigrationStatus::MIGRATED)
+    return MigrationStatus::MIGRATED_DELETED;
+  return GetParam();
 }
 
 void PasswordStoreProxyMacTest::AddForm(const PasswordForm& form) {
@@ -273,12 +301,7 @@ TEST_P(PasswordStoreProxyMacTest, StartAndStop) {
 
   int status = testing_prefs_.GetInteger(
       password_manager::prefs::kKeychainMigrationStatus);
-  if (GetParam() == MigrationStatus::NOT_STARTED ||
-      GetParam() == MigrationStatus::FAILED_ONCE) {
-    EXPECT_EQ(static_cast<int>(MigrationStatus::MIGRATED), status);
-  } else {
-    EXPECT_EQ(static_cast<int>(GetParam()), status);
-  }
+  EXPECT_EQ(static_cast<int>(GetTargetStatus(false)), status);
 }
 
 TEST_P(PasswordStoreProxyMacTest, FormLifeCycle) {
@@ -318,22 +341,16 @@ TEST_P(PasswordStoreProxyMacTest, FillLogins) {
 
   MockPasswordStoreConsumer mock_consumer;
   store()->GetLogins(PasswordStore::FormDigest(password_form), &mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
-                                 ElementsAre(Pointee(password_form))))
-      .WillOnce(QuitUIMessageLoop());
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), ElementsAre(Pointee(password_form)));
 
   store()->GetBlacklistLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
-                                 ElementsAre(Pointee(blacklisted_form))))
-      .WillOnce(QuitUIMessageLoop());
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), ElementsAre(Pointee(blacklisted_form)));
 
   store()->GetAutofillableLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
-                                 ElementsAre(Pointee(password_form))))
-      .WillOnce(QuitUIMessageLoop());
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), ElementsAre(Pointee(password_form)));
 }
 
 TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
@@ -341,7 +358,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // explosions, but fail without side effect, return no data and trigger no
   // notifications.
   ClosePasswordStore();
-  CreateAndInitPasswordStore(base::WrapUnique(new BadLoginDatabase));
+  CreateAndInitPasswordStore(base::MakeUnique<BadLoginDatabase>());
   FinishAsyncProcessing();
   EXPECT_FALSE(login_db());
 
@@ -377,18 +394,16 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // Get all logins; autofillable logins; blacklisted logins.
   MockPasswordStoreConsumer mock_consumer;
   store()->GetLogins(PasswordStore::FormDigest(*form), &mock_consumer);
-  ON_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(_))
-      .WillByDefault(QuitUIMessageLoop());
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), IsEmpty());
 
   store()->GetAutofillableLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), IsEmpty());
 
   store()->GetBlacklistLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  EXPECT_THAT(mock_consumer.forms(), IsEmpty());
 
   // Report metrics.
   store()->ReportMetrics("Test Username", true);
@@ -415,7 +430,9 @@ INSTANTIATE_TEST_CASE_P(,
                         testing::Values(MigrationStatus::NOT_STARTED,
                                         MigrationStatus::MIGRATED,
                                         MigrationStatus::FAILED_ONCE,
-                                        MigrationStatus::FAILED_TWICE));
+                                        MigrationStatus::FAILED_TWICE,
+                                        MigrationStatus::MIGRATED_DELETED,
+                                        MigrationStatus::MIGRATED_PARTIALLY));
 
 // Test the migration process.
 class PasswordStoreProxyMacMigrationTest : public PasswordStoreProxyMacTest {
@@ -443,7 +460,10 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
   form.username_value = base::ASCIIToUTF16("my_username");
   form.password_value = base::ASCIIToUTF16("12345");
 
-  if (GetParam() != MigrationStatus::MIGRATED)
+  const bool before_migration = (GetParam() == MigrationStatus::NOT_STARTED ||
+                                  GetParam() == MigrationStatus::FAILED_ONCE ||
+                                  GetParam() == MigrationStatus::FAILED_TWICE);
+  if (before_migration)
     login_db_->set_clear_password_values(true);
   EXPECT_TRUE(login_db_->Init());
   EXPECT_EQ(AddChangeForForm(form), login_db_->AddLogin(form));
@@ -463,34 +483,31 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
   FinishAsyncProcessing();
 
-  // Check the password is still there.
-  if (lock_keychain && store_->password_store_mac()) {
-    static_cast<crypto::MockAppleKeychain*>(
-        store_->password_store_mac()->keychain())
-        ->set_locked(false);
-  }
   MockPasswordStoreConsumer mock_consumer;
   store()->GetLogins(PasswordStore::FormDigest(form), &mock_consumer);
-  EXPECT_CALL(mock_consumer,
-              OnGetPasswordStoreResultsConstRef(ElementsAre(Pointee(form))))
-      .WillOnce(QuitUIMessageLoop());
-  base::RunLoop().Run();
+  mock_consumer.WaitForResult();
+  if (before_migration && lock_keychain)
+    EXPECT_THAT(mock_consumer.forms(), IsEmpty());
+  else
+    EXPECT_THAT(mock_consumer.forms(), ElementsAre(Pointee(form)));
 
   int status = testing_prefs_.GetInteger(
       password_manager::prefs::kKeychainMigrationStatus);
-  if (GetParam() == MigrationStatus::MIGRATED ||
-      GetParam() == MigrationStatus::FAILED_TWICE) {
-    EXPECT_EQ(static_cast<int>(GetParam()), status);
-  } else if (lock_keychain) {
-    EXPECT_EQ(static_cast<int>(GetParam() == MigrationStatus::NOT_STARTED
-                                   ? MigrationStatus::FAILED_ONCE
-                                   : MigrationStatus::FAILED_TWICE),
-              status);
-  } else {
-    EXPECT_EQ(static_cast<int>(MigrationStatus::MIGRATED), status);
-  }
+  EXPECT_EQ(static_cast<int>(GetTargetStatus(lock_keychain)), status);
   histogram_tester_.ExpectUniqueSample(
       "PasswordManager.KeychainMigration.Status", status, 1);
+  static_cast<crypto::MockAppleKeychain*>(store()->keychain())
+      ->set_locked(false);
+  if (GetTargetStatus(lock_keychain) == MigrationStatus::MIGRATED_DELETED &&
+      GetParam() != MigrationStatus::MIGRATED_DELETED && !lock_keychain) {
+    EXPECT_THAT(adapter.GetAllPasswordFormPasswords(), IsEmpty());
+  } else {
+    auto forms = adapter.GetAllPasswordFormPasswords();
+    ASSERT_EQ(1u, forms.size());
+    form.date_created = forms[0]->date_created;
+    EXPECT_THAT(adapter.GetAllPasswordFormPasswords(),
+                ElementsAre(Pointee(form)));
+  }
 }
 
 TEST_P(PasswordStoreProxyMacMigrationTest, TestSuccessfullMigration) {
@@ -506,6 +523,8 @@ INSTANTIATE_TEST_CASE_P(,
                         testing::Values(MigrationStatus::NOT_STARTED,
                                         MigrationStatus::MIGRATED,
                                         MigrationStatus::FAILED_ONCE,
-                                        MigrationStatus::FAILED_TWICE));
+                                        MigrationStatus::FAILED_TWICE,
+                                        MigrationStatus::MIGRATED_DELETED,
+                                        MigrationStatus::MIGRATED_PARTIALLY));
 
 }  // namespace

@@ -23,7 +23,6 @@ namespace password_manager {
 class LoginDatabase;
 }
 
-class PasswordStoreMac;
 class SimplePasswordStoreMac;
 
 // The class is a proxy for either PasswordStoreMac or SimplePasswordStoreMac.
@@ -48,8 +47,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
     return login_metadata_db_.get();
   }
 
-  scoped_refptr<PasswordStoreMac> password_store_mac() {
-    return password_store_mac_;
+  crypto::AppleKeychain* keychain() {
+    return keychain_.get();
   }
 #endif
 
@@ -104,13 +103,15 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   std::vector<std::unique_ptr<password_manager::InteractionsStats>>
   GetSiteStatsImpl(const GURL& origin_domain) override;
 
-  scoped_refptr<PasswordStoreMac> password_store_mac_;
   scoped_refptr<SimplePasswordStoreMac> password_store_simple_;
 
   // The login metadata SQL database. If opening the DB on |thread_| fails,
   // |login_metadata_db_| will be reset to NULL for the lifetime of |this|.
   // The ownership may be transferred to |password_store_simple_|.
   std::unique_ptr<password_manager::LoginDatabase> login_metadata_db_;
+
+  // Keychain wrapper.
+  const std::unique_ptr<crypto::AppleKeychain> keychain_;
 
   // Thread that the synchronous methods are run on.
   std::unique_ptr<base::Thread> thread_;

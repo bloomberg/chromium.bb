@@ -150,8 +150,9 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kCredentialsEnableAutosignin, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 #if defined(OS_MACOSX)
-  registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
-                                static_cast<int>(MigrationStatus::NOT_STARTED));
+  registry->RegisterIntegerPref(
+      prefs::kKeychainMigrationStatus,
+      static_cast<int>(MigrationStatus::MIGRATED_DELETED));
 #endif
 }
 

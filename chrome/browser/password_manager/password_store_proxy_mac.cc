@@ -22,19 +22,14 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     PrefService* prefs)
     : PasswordStore(main_thread_runner, nullptr),
-      login_metadata_db_(std::move(login_db)) {
+      login_metadata_db_(std::move(login_db)),
+      keychain_(std::move(keychain)) {
   DCHECK(login_metadata_db_);
   migration_status_.Init(password_manager::prefs::kKeychainMigrationStatus,
                          prefs);
-  if (migration_status_.GetValue() ==
-      static_cast<int>(MigrationStatus::MIGRATED)) {
-    // The login database will be set later after initialization.
-    password_store_simple_ =
-        new SimplePasswordStoreMac(main_thread_runner, nullptr, nullptr);
-  } else {
-    password_store_mac_ =
-        new PasswordStoreMac(main_thread_runner, nullptr, std::move(keychain));
-  }
+  // The login database will be set later after initialization.
+  password_store_simple_ =
+      new SimplePasswordStoreMac(main_thread_runner, nullptr, nullptr);
 }
 
 PasswordStoreProxyMac::~PasswordStoreProxyMac() {
@@ -70,10 +65,6 @@ void PasswordStoreProxyMac::ShutdownOnUIThread() {
   // Unsubscribe the observer, otherwise it's too late in the destructor.
   migration_status_.Destroy();
 
-  // After the thread has stopped it's impossible to switch from one backend to
-  // another. GetBackend() returns the correct result.
-  // The backend doesn't need the background thread as PasswordStore::Init() and
-  // other public methods were never called on it.
   GetBackend()->ShutdownOnUIThread();
 }
 
@@ -83,8 +74,6 @@ PasswordStoreProxyMac::GetBackgroundTaskRunner() {
 }
 
 password_manager::PasswordStore* PasswordStoreProxyMac::GetBackend() const {
-  if (password_store_mac_)
-    return password_store_mac_.get();
   return password_store_simple_.get();
 }
 
@@ -95,36 +84,36 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
     LOG(ERROR) << "Could not create/open login database.";
   }
 
-  if (status == MigrationStatus::MIGRATED) {
-    password_store_simple_->InitWithTaskRunner(GetBackgroundTaskRunner(),
-                                               std::move(login_metadata_db_));
-  } else {
-    password_store_mac_->set_login_metadata_db(login_metadata_db_.get());
-    password_store_mac_->InitWithTaskRunner(GetBackgroundTaskRunner());
-    if (login_metadata_db_ && (status == MigrationStatus::NOT_STARTED ||
-                               status == MigrationStatus::FAILED_ONCE)) {
-      // Let's try to migrate the passwords.
-      if (password_store_mac_->ImportFromKeychain() ==
-          PasswordStoreMac::MIGRATION_OK) {
-        status = MigrationStatus::MIGRATED;
-        // Switch from |password_store_mac_| to |password_store_simple_|.
-        password_store_mac_->set_login_metadata_db(nullptr);
-        pending_ui_tasks_.push_back(base::Bind(
-            &PasswordStoreMac::ShutdownOnUIThread, password_store_mac_));
-        password_store_mac_ = nullptr;
-        DCHECK(!password_store_simple_);
-        password_store_simple_ = new SimplePasswordStoreMac(
-            main_thread_runner_, GetBackgroundTaskRunner(),
-            std::move(login_metadata_db_));
-      } else {
-        status = (status == MigrationStatus::FAILED_ONCE
-                      ? MigrationStatus::FAILED_TWICE
-                      : MigrationStatus::FAILED_ONCE);
-      }
+  if (login_metadata_db_ && (status == MigrationStatus::NOT_STARTED ||
+                             status == MigrationStatus::FAILED_ONCE ||
+                             status == MigrationStatus::FAILED_TWICE)) {
+    // Let's try to migrate the passwords.
+    login_metadata_db_->set_clear_password_values(true);
+    auto import_status =
+        PasswordStoreMac::ImportFromKeychain(login_metadata_db_.get(),
+                                             keychain_.get());
+    if (import_status == PasswordStoreMac::MIGRATION_OK) {
+      status = MigrationStatus::MIGRATED;
+    } else if (import_status == PasswordStoreMac::MIGRATION_PARTIAL) {
+      status = MigrationStatus::MIGRATED_PARTIALLY;
+    } else {
+      login_metadata_db_.reset();
+    }
+    pending_ui_tasks_.push_back(
+        base::Bind(&PasswordStoreProxyMac::UpdateStatusPref, this, status));
+  } else if (login_metadata_db_ && status == MigrationStatus::MIGRATED) {
+    // Delete the migrated passwords from the keychain.
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+    if (login_metadata_db_->GetAutofillableLogins(&forms)) {
+      PasswordStoreMac::CleanUpKeychain(keychain_.get(), forms);
+      status = MigrationStatus::MIGRATED_DELETED;
       pending_ui_tasks_.push_back(
           base::Bind(&PasswordStoreProxyMac::UpdateStatusPref, this, status));
     }
   }
+
+  password_store_simple_->InitWithTaskRunner(GetBackgroundTaskRunner(),
+                                             std::move(login_metadata_db_));
   if (!pending_ui_tasks_.empty()) {
     main_thread_runner_->PostTask(
         FROM_HERE, base::Bind(&PasswordStoreProxyMac::FlushPendingTasks, this));
@@ -132,7 +121,6 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.KeychainMigration.Status", static_cast<int>(status),
       static_cast<int>(MigrationStatus::MIGRATION_STATUS_COUNT));
-  DCHECK(GetBackend());
 }
 
 void PasswordStoreProxyMac::UpdateStatusPref(MigrationStatus status) {

@@ -23,6 +23,12 @@ enum class MigrationStatus {
   // Migration failed twice. It should not be tried again.
   FAILED_TWICE,
 
+  // Migration finished successfully. The Keychain was cleaned up.
+  MIGRATED_DELETED,
+
+  // Best effort migration happened. Some passwords were inaccessible.
+  MIGRATED_PARTIALLY,
+
   MIGRATION_STATUS_COUNT,
 };
 
