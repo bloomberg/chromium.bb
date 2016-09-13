@@ -144,6 +144,8 @@ source_set("chromeos") {
     "../supervised_user/chromeos/supervised_user_password_service.h",
     "../supervised_user/chromeos/supervised_user_password_service_factory.cc",
     "../supervised_user/chromeos/supervised_user_password_service_factory.h",
+    "accessibility/accessibility_extension_loader.cc",
+    "accessibility/accessibility_extension_loader.h",
     "accessibility/accessibility_highlight_manager.cc",
     "accessibility/accessibility_highlight_manager.h",
     "accessibility/accessibility_manager.cc",

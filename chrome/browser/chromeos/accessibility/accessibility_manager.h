@@ -34,6 +34,7 @@ class Profile;
 
 namespace chromeos {
 
+class AccessibilityExtensionLoader;
 class AccessibilityHighlightManager;
 
 enum AccessibilityNotificationType {
@@ -286,13 +287,8 @@ class AccessibilityManager
   ~AccessibilityManager() override;
 
  private:
-  void LoadChromeVox();
-  void LoadChromeVoxToUserScreen(const base::Closure& done_cb);
-  void LoadChromeVoxToLockScreen(const base::Closure& done_cb);
-  void UnloadChromeVox();
-  void UnloadChromeVoxFromLockScreen();
-  void PostLoadChromeVox(Profile* profile);
-  void PostUnloadChromeVox(Profile* profile);
+  void PostLoadChromeVox();
+  void PostUnloadChromeVox();
 
   void UpdateLargeCursorFromPref();
   void UpdateStickyKeysFromPref();
@@ -346,11 +342,6 @@ class AccessibilityManager
 
   // Profile which has the current a11y context.
   Profile* profile_;
-
-  // Profile which ChromeVox is currently loaded to. If NULL, ChromeVox is not
-  // loaded to any profile.
-  bool chrome_vox_loaded_on_lock_screen_;
-  bool chrome_vox_loaded_on_user_screen_;
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -412,6 +403,8 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityHighlightManager>
       accessibility_highlight_manager_;
+
+  std::unique_ptr<AccessibilityExtensionLoader> chromevox_loader_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
