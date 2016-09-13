@@ -71,10 +71,8 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
 
   void SetUp() override {
     worker_ = SchedulerWorker::Create(
-        ThreadPriority::NORMAL,
-        WrapUnique(new TestSchedulerWorkerDelegate(this)),
-        &task_tracker_,
-        SchedulerWorker::InitialState::ALIVE);
+        ThreadPriority::NORMAL, MakeUnique<TestSchedulerWorkerDelegate>(this),
+        &task_tracker_, SchedulerWorker::InitialState::ALIVE);
     ASSERT_TRUE(worker_);
     worker_set_.Signal();
     main_entry_called_.Wait();

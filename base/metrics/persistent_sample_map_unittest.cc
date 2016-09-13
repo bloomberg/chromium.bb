@@ -16,16 +16,16 @@ namespace {
 
 std::unique_ptr<PersistentHistogramAllocator> CreateHistogramAllocator(
     size_t bytes) {
-  return WrapUnique(new PersistentHistogramAllocator(
-      WrapUnique(new LocalPersistentMemoryAllocator(bytes, 0, ""))));
+  return MakeUnique<PersistentHistogramAllocator>(
+      MakeUnique<LocalPersistentMemoryAllocator>(bytes, 0, ""));
 }
 
 std::unique_ptr<PersistentHistogramAllocator> DuplicateHistogramAllocator(
     PersistentHistogramAllocator* original) {
-  return WrapUnique(
-      new PersistentHistogramAllocator(WrapUnique(new PersistentMemoryAllocator(
+  return MakeUnique<PersistentHistogramAllocator>(
+      MakeUnique<PersistentMemoryAllocator>(
           const_cast<void*>(original->data()), original->length(), 0,
-          original->Id(), original->Name(), false))));
+          original->Id(), original->Name(), false));
 }
 
 TEST(PersistentSampleMapTest, AccumulateTest) {

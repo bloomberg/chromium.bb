@@ -61,7 +61,7 @@ TestDiscardableMemoryAllocator::~TestDiscardableMemoryAllocator() {
 
 std::unique_ptr<DiscardableMemory>
 TestDiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
-  return WrapUnique(new DiscardableMemoryImpl(size));
+  return MakeUnique<DiscardableMemoryImpl>(size);
 }
 
 }  // namespace base

@@ -216,9 +216,9 @@ TEST_F(TaskSchedulerSequenceTest, GetSortKey) {
 
 TEST_F(TaskSchedulerSequenceTest, CanPushTaskInTaskDestructor) {
   scoped_refptr<Sequence> sequence(new Sequence);
-  sequence->PushTask(WrapUnique(
-      new Task(FROM_HERE, Bind(&DoNothing, PushTaskInDestructor(sequence)),
-               TaskTraits(), TimeDelta())));
+  sequence->PushTask(MakeUnique<Task>(
+      FROM_HERE, Bind(&DoNothing, PushTaskInDestructor(sequence)), TaskTraits(),
+      TimeDelta()));
 
   // PushTask() is invoked on |sequence| when the popped Task is destroyed. If
   // PopTask() destroys the Task outside the scope of its lock as expected, no

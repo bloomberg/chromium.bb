@@ -102,9 +102,8 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterateTest) {
 
   // Create a second allocator and have it access the memory of the first.
   std::unique_ptr<HistogramBase> recovered;
-  PersistentHistogramAllocator recovery(
-      WrapUnique(new PersistentMemoryAllocator(
-          allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false)));
+  PersistentHistogramAllocator recovery(MakeUnique<PersistentMemoryAllocator>(
+      allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false));
   PersistentHistogramAllocator::Iterator histogram_iter(&recovery);
 
   recovered = histogram_iter.GetNext();
@@ -181,9 +180,8 @@ TEST_F(PersistentHistogramAllocatorTest, StatisticsRecorderTest) {
 
   // Create a second allocator and have it access the memory of the first.
   std::unique_ptr<HistogramBase> recovered;
-  PersistentHistogramAllocator recovery(
-      WrapUnique(new PersistentMemoryAllocator(
-          allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false)));
+  PersistentHistogramAllocator recovery(MakeUnique<PersistentMemoryAllocator>(
+      allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false));
   PersistentHistogramAllocator::Iterator histogram_iter(&recovery);
 
   recovered = histogram_iter.GetNext();

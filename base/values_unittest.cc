@@ -62,10 +62,10 @@ TEST(ValuesTest, Basic) {
 
 TEST(ValuesTest, List) {
   std::unique_ptr<ListValue> mixed_list(new ListValue());
-  mixed_list->Set(0, WrapUnique(new FundamentalValue(true)));
-  mixed_list->Set(1, WrapUnique(new FundamentalValue(42)));
-  mixed_list->Set(2, WrapUnique(new FundamentalValue(88.8)));
-  mixed_list->Set(3, WrapUnique(new StringValue("foo")));
+  mixed_list->Set(0, MakeUnique<FundamentalValue>(true));
+  mixed_list->Set(1, MakeUnique<FundamentalValue>(42));
+  mixed_list->Set(2, MakeUnique<FundamentalValue>(88.8));
+  mixed_list->Set(3, MakeUnique<StringValue>("foo"));
   ASSERT_EQ(4u, mixed_list->GetSize());
 
   Value *value = NULL;
@@ -200,14 +200,14 @@ TEST(ValuesTest, ListDeletion) {
 
   {
     ListValue list;
-    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
+    list.Append(MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
   }
   EXPECT_TRUE(deletion_flag);
 
   {
     ListValue list;
-    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
+    list.Append(MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     list.Clear();
     EXPECT_TRUE(deletion_flag);
@@ -215,7 +215,7 @@ TEST(ValuesTest, ListDeletion) {
 
   {
     ListValue list;
-    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
+    list.Append(MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(list.Set(0, Value::CreateNullValue()));
     EXPECT_TRUE(deletion_flag);
@@ -228,7 +228,7 @@ TEST(ValuesTest, ListRemoval) {
 
   {
     ListValue list;
-    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
+    list.Append(MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     EXPECT_EQ(1U, list.GetSize());
     EXPECT_FALSE(list.Remove(std::numeric_limits<size_t>::max(),
@@ -244,7 +244,7 @@ TEST(ValuesTest, ListRemoval) {
 
   {
     ListValue list;
-    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
+    list.Append(MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(list.Remove(0, NULL));
     EXPECT_TRUE(deletion_flag);
@@ -272,14 +272,14 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
   }
   EXPECT_TRUE(deletion_flag);
 
   {
     DictionaryValue dict;
-    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     dict.Clear();
     EXPECT_TRUE(deletion_flag);
@@ -287,7 +287,7 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     dict.Set(key, Value::CreateNullValue());
     EXPECT_TRUE(deletion_flag);
@@ -301,7 +301,7 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_FALSE(dict.Remove("absent key", &removed_item));
@@ -315,7 +315,7 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, MakeUnique<DeletionTestValue>(&deletion_flag));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_TRUE(dict.Remove(key, NULL));
@@ -582,7 +582,7 @@ TEST(ValuesTest, Equals) {
   copy->Set("f", std::move(list_copy));
   EXPECT_TRUE(dv.Equals(copy.get()));
 
-  original_list->Append(WrapUnique(new FundamentalValue(true)));
+  original_list->Append(MakeUnique<FundamentalValue>(true));
   EXPECT_FALSE(dv.Equals(copy.get()));
 
   // Check if Equals detects differences in only the keys.
@@ -739,7 +739,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   {
     std::unique_ptr<ListValue> inner(new ListValue);
     std::unique_ptr<ListValue> inner2(new ListValue);
-    inner2->Append(WrapUnique(new StringValue("hello")));
+    inner2->Append(MakeUnique<StringValue>("hello"));
     inner->Append(WrapUnique(new DictionaryValue));
     inner->Append(std::move(inner2));
     root->Set("list_with_empty_children", std::move(inner));

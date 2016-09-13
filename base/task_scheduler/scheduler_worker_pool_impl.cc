@@ -61,7 +61,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
                        TimeDelta delay) override {
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
-        WrapUnique(new Task(from_here, closure, traits_, delay)),
+        MakeUnique<Task>(from_here, closure, traits_, delay),
         make_scoped_refptr(new Sequence), nullptr);
   }
 
@@ -643,9 +643,9 @@ bool SchedulerWorkerPoolImpl::Initialize(
 
   for (size_t i = 0; i < max_threads; ++i) {
     std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
-        priority_hint, WrapUnique(new SchedulerWorkerDelegateImpl(
+        priority_hint, MakeUnique<SchedulerWorkerDelegateImpl>(
                            this, re_enqueue_sequence_callback,
-                           &shared_priority_queue_, static_cast<int>(i))),
+                           &shared_priority_queue_, static_cast<int>(i)),
         task_tracker_, i == 0 ? SchedulerWorker::InitialState::ALIVE
                               : SchedulerWorker::InitialState::DETACHED);
     if (!worker)

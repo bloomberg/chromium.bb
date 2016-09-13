@@ -61,7 +61,7 @@ class ActivityAnalyzerTest : public testing::Test {
 
   std::unique_ptr<ThreadActivityTracker> CreateActivityTracker() {
     std::unique_ptr<char[]> memory(new char[kStackSize]);
-    return WrapUnique(new TestActivityTracker(std::move(memory), kStackSize));
+    return MakeUnique<TestActivityTracker>(std::move(memory), kStackSize);
   }
 
   static void DoNothing() {}
@@ -142,9 +142,8 @@ TEST_F(ActivityAnalyzerTest, GlobalAnalyzerConstruction) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer analyzer(WrapUnique(
-      new PersistentMemoryAllocator(const_cast<void*>(allocator->data()),
-                                    allocator->size(), 0, 0, "", true)));
+  GlobalActivityAnalyzer analyzer(MakeUnique<PersistentMemoryAllocator>(
+      const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
 
   // The only thread at thois point is the test thread.
   ThreadActivityAnalyzer* ta1 = analyzer.GetFirstAnalyzer();

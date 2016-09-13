@@ -104,7 +104,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow(WrapUnique(new std::string("foo")));
+  writer.WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
@@ -117,7 +117,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow(WrapUnique(new std::string("foo")));
+  writer.WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
 
   // Confirm that the observer is invoked.
@@ -128,7 +128,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that re-installing the observer works for another write.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow(WrapUnique(new std::string("bar")));
+  writer.WriteNow(MakeUnique<std::string>("bar"));
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(successful_write_observer_.GetAndResetObservationState());
@@ -138,7 +138,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that writing again without re-installing the observer doesn't
   // result in a notification.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow(WrapUnique(new std::string("baz")));
+  writer.WriteNow(MakeUnique<std::string>("baz"));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());

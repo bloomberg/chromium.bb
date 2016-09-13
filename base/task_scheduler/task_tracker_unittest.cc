@@ -120,10 +120,10 @@ class TaskSchedulerTaskTrackerTest
 
   // Creates a task with |shutdown_behavior|.
   std::unique_ptr<Task> CreateTask(TaskShutdownBehavior shutdown_behavior) {
-    return WrapUnique(new Task(
+    return MakeUnique<Task>(
         FROM_HERE,
         Bind(&TaskSchedulerTaskTrackerTest::RunTaskCallback, Unretained(this)),
-        TaskTraits().WithShutdownBehavior(shutdown_behavior), TimeDelta()));
+        TaskTraits().WithShutdownBehavior(shutdown_behavior), TimeDelta());
   }
 
   // Calls tracker_->Shutdown() on a new thread. When this returns, Shutdown()
@@ -496,21 +496,21 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunBeforeShutdown) {
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
     tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true));
     threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true));
     threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true));
     threads.back()->Start();
   }
 
@@ -532,21 +532,21 @@ TEST_F(TaskSchedulerTaskTrackerTest,
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
     tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-    post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    post_threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST, true));
     post_threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
-    post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    post_threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST, true));
     post_threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
-    post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    post_threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST, true));
     post_threads.back()->Start();
   }
 
@@ -560,9 +560,9 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> run_threads;
 
   for (const auto& task : tasks) {
-    run_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    run_threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, task.get(), ThreadPostingAndRunningTask::Action::RUN,
-        false)));
+        false));
     run_threads.back()->Start();
   }
 
@@ -591,21 +591,21 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunDuringShutdown) {
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
     tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false));
     threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false));
     threads.back()->Start();
 
     tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
-    threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
+    threads.push_back(MakeUnique<ThreadPostingAndRunningTask>(
         &tracker_, tasks.back().get(),
-        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
+        ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true));
     threads.back()->Start();
   }
 

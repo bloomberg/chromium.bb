@@ -171,9 +171,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasks) {
   // Create threads to post tasks.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(WrapUnique(new ThreadPostingTasks(
+    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
-        PostNestedTask::NO)));
+        PostNestedTask::NO));
     threads_posting_tasks.back()->Start();
   }
 
@@ -194,9 +194,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllWorkersIdle) {
   // posting a new task.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(WrapUnique(new ThreadPostingTasks(
+    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(),
-        WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE, PostNestedTask::NO)));
+        WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE, PostNestedTask::NO));
     threads_posting_tasks.back()->Start();
   }
 
@@ -216,9 +216,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, NestedPostTasks) {
   // another task when it runs.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(WrapUnique(new ThreadPostingTasks(
+    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
-        PostNestedTask::YES)));
+        PostNestedTask::YES));
     threads_posting_tasks.back()->Start();
   }
 
@@ -241,9 +241,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableWorker) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kNumWorkersInWorkerPool - 1); ++i) {
-    blocked_task_factories.push_back(WrapUnique(new test::TestTaskFactory(
+    blocked_task_factories.push_back(MakeUnique<test::TestTaskFactory>(
         worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
-        GetParam())));
+        GetParam()));
     EXPECT_TRUE(blocked_task_factories.back()->PostTask(
         PostNestedTask::NO, Bind(&WaitableEvent::Wait, Unretained(&event))));
     blocked_task_factories.back()->WaitForAllTasksToRun();
@@ -275,9 +275,9 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, Saturate) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    factories.push_back(WrapUnique(new test::TestTaskFactory(
+    factories.push_back(MakeUnique<test::TestTaskFactory>(
         worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()),
-        GetParam())));
+        GetParam()));
     EXPECT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO, Bind(&WaitableEvent::Wait, Unretained(&event))));
     factories.back()->WaitForAllTasksToRun();

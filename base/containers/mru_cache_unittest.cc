@@ -245,10 +245,10 @@ TEST(MRUCacheTest, AutoEvict) {
     Cache cache(kMaxSize);
 
     static const int kItem1Key = 1, kItem2Key = 2, kItem3Key = 3, kItem4Key = 4;
-    cache.Put(kItem1Key, WrapUnique(new CachedItem(20)));
-    cache.Put(kItem2Key, WrapUnique(new CachedItem(21)));
-    cache.Put(kItem3Key, WrapUnique(new CachedItem(22)));
-    cache.Put(kItem4Key, WrapUnique(new CachedItem(23)));
+    cache.Put(kItem1Key, MakeUnique<CachedItem>(20));
+    cache.Put(kItem2Key, MakeUnique<CachedItem>(21));
+    cache.Put(kItem3Key, MakeUnique<CachedItem>(22));
+    cache.Put(kItem4Key, MakeUnique<CachedItem>(23));
 
     // The cache should only have kMaxSize items in it even though we inserted
     // more.

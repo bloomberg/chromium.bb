@@ -52,10 +52,9 @@ std::unique_ptr<GlobalActivityAnalyzer> GlobalActivityAnalyzer::CreateWithFile(
   if (!FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true))
     return nullptr;
 
-  return WrapUnique(new GlobalActivityAnalyzer(
-             WrapUnique(new FilePersistentMemoryAllocator(
-                            std::move(mmfile), 0, 0, base::StringPiece(),
-                            true))));
+  return WrapUnique(
+      new GlobalActivityAnalyzer(MakeUnique<FilePersistentMemoryAllocator>(
+          std::move(mmfile), 0, 0, base::StringPiece(), true)));
 }
 #endif  // !defined(OS_NACL)
 
