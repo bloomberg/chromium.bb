@@ -119,10 +119,9 @@ public class ChromeBrowserInitializer {
     public void handleSynchronousStartup() throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
 
-        ChromeBrowserInitializer initializer = ChromeBrowserInitializer.getInstance(mApplication);
         BrowserParts parts = new EmptyBrowserParts();
-        initializer.handlePreNativeStartup(parts);
-        initializer.handlePostNativeStartup(false, parts);
+        handlePreNativeStartup(parts);
+        handlePostNativeStartup(false, parts);
     }
 
     /**
@@ -134,6 +133,7 @@ public class ChromeBrowserInitializer {
     public void handlePreNativeStartup(final BrowserParts parts) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
 
+        ProcessInitializationHandler.getInstance().initializePreNative();
         preInflationStartup();
         parts.preInflationStartup();
         if (parts.isActivityFinishing()) return;

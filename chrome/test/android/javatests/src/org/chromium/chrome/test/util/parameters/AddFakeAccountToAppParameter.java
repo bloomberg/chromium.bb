@@ -6,8 +6,10 @@ package org.chromium.chrome.test.util.parameters;
 
 import android.app.Instrumentation;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.test.util.ChromeSigninUtils;
 import org.chromium.components.sync.signin.ChromeSigninController;
 
@@ -32,6 +34,12 @@ public class AddFakeAccountToAppParameter extends BaseParameter {
     public AddFakeAccountToAppParameter(Parameter.Reader parameterReader,
             Instrumentation instrumentation) {
         super(PARAMETER_TAG, parameterReader);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProcessInitializationHandler.getInstance().initializePreNative();
+            }
+        });
         mSigninController = ChromeSigninController.get(instrumentation.getTargetContext());
         mSigninUtil = new ChromeSigninUtils(instrumentation);
     }

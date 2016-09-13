@@ -10,6 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
@@ -39,6 +40,12 @@ public final class SigninTestUtil {
     public static void setUpAuthForTest(Instrumentation instrumentation) {
         assert sContext == null;
         sContext = instrumentation.getTargetContext();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProcessInitializationHandler.getInstance().initializePreNative();
+            }
+        });
         sAccountManager = new MockAccountManager(sContext, instrumentation.getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(sContext, sAccountManager);
         overrideAccountIdProvider();
