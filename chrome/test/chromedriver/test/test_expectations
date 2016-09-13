@@ -136,6 +136,7 @@ _SPECIFIC_OS_REVISION_NEGATIVE_FILTER['linux_53'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1418
     'ClickTest.testShouldOnlyFollowHrefOnce',
     'JavascriptEnabledDriverTest.testShouldFireOnChangeEventWhenSettingAnElementsValue',
+    'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
     'WindowSwitchingTest.testCanCloseWindowWhenMultipleWindowsAreOpen',
     'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
     'WindowSwitchingTest.testCanCloseWindowAndSwitchBackToMainWindow',
