@@ -223,7 +223,8 @@ void ElementShadow::setNeedsDistributionRecalc()
         return;
     m_needsDistributionRecalc = true;
     host().markAncestorsWithChildNeedsDistributionRecalc();
-    clearDistribution();
+    if (!isV1())
+        clearDistributionV0();
 }
 
 bool ElementShadow::hasSameStyles(const ElementShadow* other) const
@@ -253,6 +254,7 @@ bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 
 const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Node* key) const
 {
+    DCHECK(!isV1());
     DCHECK(key);
     DCHECK(!key->needsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
@@ -261,6 +263,7 @@ const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Nod
 
 const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(const Node* key) const
 {
+    DCHECK(!isV1());
     DCHECK(key);
     DCHECK(!key->needsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
@@ -277,6 +280,7 @@ void ElementShadow::distribute()
 
 void ElementShadow::distributeV0()
 {
+    DCHECK(!isV1());
     HeapVector<Member<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(host());
 
@@ -293,7 +297,7 @@ void ElementShadow::distributeV0()
                 shadowInsertionPoints.append(shadowInsertionPoint);
             } else {
                 pool.distributeTo(point, this);
-                if (ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*point))
+                if (ElementShadow* shadow = shadowWhereNodeCanBeDistributedForV0(*point))
                     shadow->setNeedsDistributionRecalc();
             }
         }
@@ -312,7 +316,7 @@ void ElementShadow::distributeV0()
             olderShadowRootPool.distributeTo(shadowInsertionPoint, this);
             root->olderShadowRoot()->setShadowInsertionPointOfYoungerShadowRoot(shadowInsertionPoint);
         }
-        if (ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*shadowInsertionPoint))
+        if (ElementShadow* shadow = shadowWhereNodeCanBeDistributedForV0(*shadowInsertionPoint))
             shadow->setNeedsDistributionRecalc();
     }
     InspectorInstrumentation::didPerformElementShadowDistribution(&host());
@@ -320,6 +324,7 @@ void ElementShadow::distributeV0()
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)
 {
+    DCHECK(!isV1());
     NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, nullptr);
     if (result.isNewEntry)
         result.storedValue->value = new DestinationInsertionPoints;
@@ -328,6 +333,7 @@ void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertio
 
 const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()
 {
+    DCHECK(!isV1());
     if (!m_needsSelectFeatureSet)
         return m_selectFeatures;
 
@@ -340,6 +346,7 @@ const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()
 
 void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
 {
+    DCHECK(!isV1());
     if (!root.containsShadowRoots() && !root.containsContentElements())
         return;
 
@@ -355,6 +362,7 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
 
 void ElementShadow::willAffectSelector()
 {
+    DCHECK(!isV1());
     for (ElementShadow* shadow = this; shadow; shadow = shadow->containingShadow()) {
         if (shadow->needsSelectFeatureSet())
             break;
@@ -363,8 +371,9 @@ void ElementShadow::willAffectSelector()
     setNeedsDistributionRecalc();
 }
 
-void ElementShadow::clearDistribution()
+void ElementShadow::clearDistributionV0()
 {
+    DCHECK(!isV1());
     m_nodeToInsertionPoints.clear();
 
     for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot())

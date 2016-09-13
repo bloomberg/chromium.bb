@@ -55,20 +55,21 @@ public:
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);
 
-    void willAffectSelector();
-    const SelectRuleFeatureSet& ensureSelectFeatureSet();
-
     void distributeIfNeeded();
     void setNeedsDistributionRecalc();
     bool needsDistributionRecalc() const { return m_needsDistributionRecalc; }
+
+    bool isV1() const { return youngestShadowRoot().isV1(); };
+    bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); };
+
+    // For only v0
+    void willAffectSelector();
+    const SelectRuleFeatureSet& ensureSelectFeatureSet();
 
     const InsertionPoint* finalDestinationInsertionPointFor(const Node*) const;
     const DestinationInsertionPoints* destinationInsertionPointsFor(const Node*) const;
 
     void didDistributeNode(const Node*, InsertionPoint*);
-
-    bool isV1() const { return youngestShadowRoot().isV1(); };
-    bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); };
 
     DECLARE_TRACE();
     DECLARE_TRACE_WRAPPERS();
@@ -79,7 +80,7 @@ private:
     void appendShadowRoot(ShadowRoot&);
 
     void distribute();
-    void clearDistribution();
+    void clearDistributionV0();
 
     void distributeV0();
     void distributeV1();
@@ -90,12 +91,13 @@ private:
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    using NodeToDestinationInsertionPoints = HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
-    NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
-
-    SelectRuleFeatureSet m_selectFeatures;
     Member<ShadowRoot> m_shadowRoot;
     bool m_needsDistributionRecalc;
+
+    // For only v0
+    using NodeToDestinationInsertionPoints = HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
+    NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
+    SelectRuleFeatureSet m_selectFeatures;
     bool m_needsSelectFeatureSet;
 };
 

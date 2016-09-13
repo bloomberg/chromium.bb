@@ -76,7 +76,7 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
 {
     if (name == selectAttr) {
         if (ShadowRoot* root = containingShadowRoot()) {
-            if (root->owner())
+            if (!root->isV1() && root->owner())
                 root->owner()->willAffectSelector();
         }
         m_shouldParseSelect = true;

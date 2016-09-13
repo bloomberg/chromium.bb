@@ -103,7 +103,7 @@ Node* FlatTreeTraversal::traverseSiblings(const Node& node, TraversalDirection d
     if (node.isChildOfV1ShadowHost())
         return traverseSiblingsForV1HostChild(node, direction);
 
-    if (shadowWhereNodeCanBeDistributed(node))
+    if (shadowWhereNodeCanBeDistributedForV0(node))
         return traverseSiblingsForV0Distribution(node, direction);
 
     if (Node* found = resolveDistributionStartingAt(direction == TraversalDirectionForward ? node.nextSibling() : node.previousSibling(), direction))
@@ -169,18 +169,18 @@ ContainerNode* FlatTreeTraversal::traverseParent(const Node& node, ParentTravers
     if (canBeDistributedToInsertionPoint(node))
         return traverseParentForV0(node, details);
 
-    DCHECK(!shadowWhereNodeCanBeDistributed(node));
+    DCHECK(!shadowWhereNodeCanBeDistributedForV0(node));
     return traverseParentOrHost(node);
 }
 
 ContainerNode* FlatTreeTraversal::traverseParentForV0(const Node& node, ParentTraversalDetails* details)
 {
-    if (shadowWhereNodeCanBeDistributed(node)) {
+    if (shadowWhereNodeCanBeDistributedForV0(node)) {
         if (const InsertionPoint* insertionPoint = resolveReprojection(&node)) {
             if (details)
                 details->didTraverseInsertionPoint(insertionPoint);
             // The node is distributed. But the distribution was stopped at this insertion point.
-            if (shadowWhereNodeCanBeDistributed(*insertionPoint))
+            if (shadowWhereNodeCanBeDistributedForV0(*insertionPoint))
                 return nullptr;
             return traverseParent(*insertionPoint);
         }

@@ -1173,7 +1173,7 @@ static inline AtomicString makeIdForStyleResolution(const AtomicString& value, b
 
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributed(*this)) {
+    if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributedForV0(*this)) {
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
             parentElementShadow->setNeedsDistributionRecalc();
     }
@@ -1293,6 +1293,8 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* elementShadow, const QualifiedName& name, const AtomicString& newValue)
 {
     DCHECK(elementShadow);
+    if (elementShadow->isV1())
+        return false;
     const SelectRuleFeatureSet& featureSet = elementShadow->ensureSelectFeatureSet();
 
     if (name == HTMLNames::idAttr) {

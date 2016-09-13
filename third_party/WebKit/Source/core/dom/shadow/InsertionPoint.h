@@ -97,8 +97,7 @@ inline bool isActiveShadowInsertionPoint(const Node& node)
     return node.isInsertionPoint() && toInsertionPoint(node).isShadowInsertionPoint();
 }
 
-// TODO(hayato): The function name is confusing. This neither resolve a reprojection nor support v1 shadow trees.
-inline ElementShadow* shadowWhereNodeCanBeDistributed(const Node& node)
+inline ElementShadow* shadowWhereNodeCanBeDistributedForV0(const Node& node)
 {
     Node* parent = node.parentNode();
     if (!parent)

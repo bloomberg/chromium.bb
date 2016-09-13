@@ -265,8 +265,8 @@ const InsertionPoint* resolveReprojection(const Node* projectedNode)
     const Node* current = projectedNode;
     ElementShadow* lastElementShadow = 0;
     while (true) {
-        ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*current);
-        if (!shadow || shadow == lastElementShadow)
+        ElementShadow* shadow = shadowWhereNodeCanBeDistributedForV0(*current);
+        if (!shadow || shadow->isV1() || shadow == lastElementShadow)
             break;
         lastElementShadow = shadow;
         const InsertionPoint* insertedTo = shadow->finalDestinationInsertionPointFor(projectedNode);
@@ -284,8 +284,8 @@ void collectDestinationInsertionPoints(const Node& node, HeapVector<Member<Inser
     const Node* current = &node;
     ElementShadow* lastElementShadow = 0;
     while (true) {
-        ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*current);
-        if (!shadow || shadow == lastElementShadow)
+        ElementShadow* shadow = shadowWhereNodeCanBeDistributedForV0(*current);
+        if (!shadow || shadow->isV1() || shadow == lastElementShadow)
             return;
         lastElementShadow = shadow;
         const DestinationInsertionPoints* insertionPoints = shadow->destinationInsertionPointsFor(&node);
