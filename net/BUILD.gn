@@ -341,6 +341,7 @@ component("net") {
       "crypt32.lib",
       "dhcpcsvc.lib",
       "iphlpapi.lib",
+      "ncrypt.lib",
       "rpcrt4.lib",
       "secur32.lib",
       "urlmon.lib",

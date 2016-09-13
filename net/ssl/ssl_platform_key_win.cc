@@ -17,7 +17,6 @@
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
@@ -34,42 +33,6 @@
 namespace net {
 
 namespace {
-
-using NCryptFreeObjectFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE);
-using NCryptSignHashFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_KEY_HANDLE,  // hKey
-                                                    VOID*,   // pPaddingInfo
-                                                    BYTE*,   // pbHashValue
-                                                    DWORD,   // cbHashValue
-                                                    BYTE*,   // pbSignature
-                                                    DWORD,   // cbSignature
-                                                    DWORD*,  // pcbResult
-                                                    DWORD);  // dwFlags
-
-class CNGFunctions {
- public:
-  CNGFunctions() : ncrypt_free_object_(nullptr), ncrypt_sign_hash_(nullptr) {
-    HMODULE ncrypt = GetModuleHandle(L"ncrypt.dll");
-    if (ncrypt != nullptr) {
-      ncrypt_free_object_ = reinterpret_cast<NCryptFreeObjectFunc>(
-          GetProcAddress(ncrypt, "NCryptFreeObject"));
-      ncrypt_sign_hash_ = reinterpret_cast<NCryptSignHashFunc>(
-          GetProcAddress(ncrypt, "NCryptSignHash"));
-    }
-  }
-
-  NCryptFreeObjectFunc ncrypt_free_object() const {
-    return ncrypt_free_object_;
-  }
-
-  NCryptSignHashFunc ncrypt_sign_hash() const { return ncrypt_sign_hash_; }
-
- private:
-  NCryptFreeObjectFunc ncrypt_free_object_;
-  NCryptSignHashFunc ncrypt_sign_hash_;
-};
-
-base::LazyInstance<CNGFunctions>::Leaky g_cng_functions =
-    LAZY_INSTANCE_INITIALIZER;
 
 class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
  public:
@@ -172,9 +135,7 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
                     size_t max_length)
       : key_(key), type_(type), max_length_(max_length) {}
 
-  ~SSLPlatformKeyCNG() override {
-    g_cng_functions.Get().ncrypt_free_object()(key_);
-  }
+  ~SSLPlatformKeyCNG() override { NCryptFreeObject(key_); }
 
   SSLPrivateKey::Type GetType() override { return type_; }
 
@@ -230,7 +191,7 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
     }
 
     DWORD signature_len;
-    SECURITY_STATUS status = g_cng_functions.Get().ncrypt_sign_hash()(
+    SECURITY_STATUS status = NCryptSignHash(
         key_, padding_info,
         const_cast<BYTE*>(reinterpret_cast<const BYTE*>(input.data())),
         input.size(), nullptr, 0, &signature_len, flags);
@@ -239,7 +200,7 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
     signature->resize(signature_len);
-    status = g_cng_functions.Get().ncrypt_sign_hash()(
+    status = NCryptSignHash(
         key_, padding_info,
         const_cast<BYTE*>(reinterpret_cast<const BYTE*>(input.data())),
         input.size(), signature->data(), signature_len, &signature_len, flags);
