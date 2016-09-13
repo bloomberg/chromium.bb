@@ -604,7 +604,12 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
       try:
         ok = False
         git('checkout', '-b', temp_branch_name, cwd=root)
-        git('rebase', base_rev, cwd=root)
+        try:
+          git('rebase', base_rev, cwd=root)
+        except SubprocessFailed:
+          # Abort the rebase since there were failures.
+          git('rebase', '--abort', cwd=root)
+          raise
 
         # Get off of the temporary branch since it can't be deleted otherwise.
         cur_rev = git('rev-parse', 'HEAD', cwd=root).strip()
