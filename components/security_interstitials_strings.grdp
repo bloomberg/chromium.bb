@@ -51,6 +51,9 @@
 
   <!-- Extended reporting strings -->
   <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
+    https://www.google.com/chrome/browser/privacy/#safe-browsing-policies
+  </message>
+  <message name="IDS_SAFE_BROWSING_WHITEPAPER_URL" translateable="false">
     https://www.google.com/chrome/browser/privacy/whitepaper.html#malware
   </message>
 

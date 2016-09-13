@@ -182,6 +182,9 @@ void SSLErrorUI::HandleCommand(SecurityInterstitialCommands command) {
     case CMD_OPEN_REPORTING_PRIVACY:
       controller_->OpenExtendedReportingPrivacyPolicy();
       break;
+    case CMD_OPEN_WHITEPAPER:
+      controller_->OpenExtendedReportingWhitepaper();
+      break;
     case CMD_OPEN_DATE_SETTINGS:
     case CMD_OPEN_DIAGNOSTIC:
     case CMD_OPEN_LOGIN:

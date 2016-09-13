@@ -110,6 +110,7 @@ void ChromeMetricsHelper::RecordExtraUserInteractionMetrics(
     case SET_EXTENDED_REPORTING_DISABLED:
     case EXTENDED_REPORTING_IS_ENABLED:
     case REPORT_PHISHING_ERROR:
+    case SHOW_WHITEPAPER:
     case MAX_INTERACTION:
       break;
   }

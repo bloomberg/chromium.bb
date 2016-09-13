@@ -23,8 +23,9 @@ var CMD_OPEN_LOGIN = 7;
 var CMD_DO_REPORT = 8;
 var CMD_DONT_REPORT = 9;
 var CMD_OPEN_REPORTING_PRIVACY = 10;
+var CMD_OPEN_WHITEPAPER = 11;
 // Report a phishing error.
-var CMD_REPORT_PHISHING_ERROR = 11;
+var CMD_REPORT_PHISHING_ERROR = 12;
 
 /**
  * A convenience method for sending commands to the parent page.

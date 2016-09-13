@@ -50,4 +50,13 @@ void ControllerClient::OpenExtendedReportingPrivacyPolicy() {
   OpenUrlInCurrentTab(privacy_url);
 }
 
+void ControllerClient::OpenExtendedReportingWhitepaper() {
+  metrics_helper_->RecordUserInteraction(MetricsHelper::SHOW_WHITEPAPER);
+  GURL whitepaper_url(
+      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_WHITEPAPER_URL));
+  whitepaper_url = google_util::AppendGoogleLocaleParam(whitepaper_url,
+                                                        GetApplicationLocale());
+  OpenUrlInCurrentTab(whitepaper_url);
+}
+
 }  // namespace security_interstitials

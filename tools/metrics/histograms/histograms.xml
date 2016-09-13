@@ -93951,6 +93951,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="SET_EXTENDED_REPORTING_DISABLED"/>
   <int value="9" label="EXTENDED_REPORTING_IS_ENABLED"/>
   <int value="10" label="REPORT_PHISHING_ERROR"/>
+  <int value="11" label="SHOW_WHITEPAPER"/>
 </enum>
 
 <enum name="ServiceProcessEventType" type="int">

@@ -33,6 +33,12 @@ function setupExtendedReportingCheckbox() {
 
   $('body').classList.add('extended-reporting-has-checkbox');
 
+  if ($('whitepaper-link')) {
+    $('whitepaper-link').addEventListener('click', function(event) {
+      sendCommand(CMD_OPEN_WHITEPAPER);
+    });
+  }
+
   $('opt-in-checkbox').addEventListener('click', function() {
     sendCommand($('opt-in-checkbox').checked ?
                 CMD_DO_REPORT :
