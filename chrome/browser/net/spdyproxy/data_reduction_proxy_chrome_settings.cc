@@ -204,10 +204,10 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
 #endif
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
-      base::WrapUnique(new data_reduction_proxy::DataReductionProxyService(
+      base::MakeUnique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, request_context_getter, std::move(store),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
-          commit_delay));
+          commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(data_reduction_proxy_enabled_pref_name_,
                                      profile_prefs, io_data,

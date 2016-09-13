@@ -84,9 +84,9 @@ UtilityProcessMojoProxyResolverFactory::CreateResolver(
   num_proxy_resolvers_++;
   resolver_factory_->CreateResolver(pac_script, std::move(req),
                                     std::move(client));
-  return base::WrapUnique(new base::ScopedClosureRunner(
+  return base::MakeUnique<base::ScopedClosureRunner>(
       base::Bind(&UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 void UtilityProcessMojoProxyResolverFactory::OnConnectionError() {

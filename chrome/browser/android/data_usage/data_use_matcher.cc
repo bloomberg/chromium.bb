@@ -80,8 +80,8 @@ void DataUseMatcher::RegisterURLRegexes(
     if (expiration <= now_ticks)
       continue;  // skip expired matching rules.
     DCHECK(!labels.at(i).empty());
-    matching_rules_.push_back(base::WrapUnique(new MatchingRule(
-        app_package_name, std::move(pattern), labels.at(i), expiration)));
+    matching_rules_.push_back(base::MakeUnique<MatchingRule>(
+        app_package_name, std::move(pattern), labels.at(i), expiration));
 
     removed_matching_rule_labels.erase(labels.at(i));
   }

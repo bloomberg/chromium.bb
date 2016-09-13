@@ -17,8 +17,8 @@
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return base::WrapUnique(new FakeGaiaCookieManagerService(
+  return base::MakeUnique<FakeGaiaCookieManagerService>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       GaiaConstants::kChromeSource,
-      ChromeSigninClientFactory::GetForProfile(profile)));
+      ChromeSigninClientFactory::GetForProfile(profile));
 }

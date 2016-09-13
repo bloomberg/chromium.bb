@@ -53,7 +53,7 @@ class FakeLoginUI : public LoginUIService::LoginUI {
 
 std::unique_ptr<KeyedService> BuildMockLoginUIService(
     content::BrowserContext* profile) {
-  return base::WrapUnique(new FakeLoginUIService());
+  return base::MakeUnique<FakeLoginUIService>();
 }
 
 // Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to

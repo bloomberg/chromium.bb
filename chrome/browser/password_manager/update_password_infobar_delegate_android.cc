@@ -29,10 +29,10 @@ void UpdatePasswordInfoBarDelegate::Create(
           ProfileSyncServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(base::WrapUnique(new UpdatePasswordInfoBar(
+      ->AddInfoBar(base::MakeUnique<UpdatePasswordInfoBar>(
           base::WrapUnique(new UpdatePasswordInfoBarDelegate(
               web_contents, std::move(form_to_save),
-              is_smartlock_branding_enabled)))));
+              is_smartlock_branding_enabled))));
 }
 
 UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {}

@@ -80,8 +80,8 @@ class TestPageLoadMetricsEmbedderInterface
   }
   void set_is_ntp(bool is_ntp) { is_ntp_ = is_ntp; }
   void RegisterObservers(PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::WrapUnique(new TestPageLoadMetricsObserver(
-        &updated_timings_, &complete_timings_, &observed_committed_urls_)));
+    tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
+        &updated_timings_, &complete_timings_, &observed_committed_urls_));
   }
   const std::vector<PageLoadTiming>& updated_timings() const {
     return updated_timings_;

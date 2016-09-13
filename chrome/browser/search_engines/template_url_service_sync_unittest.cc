@@ -175,8 +175,8 @@ void TestTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
   if (url.SchemeIs(kOmniboxScheme)) {
     const std::string& extension_id = url.host();
     template_url->set_extension_info(
-        base::WrapUnique(new TemplateURL::AssociatedExtensionInfo(
-            TemplateURL::OMNIBOX_API_EXTENSION, extension_id)));
+        base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(
+            TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
   }
 }
 

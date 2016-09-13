@@ -288,7 +288,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   std::unique_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
   webrtc_log_uploader->LoggingStoppedDoUpload(
-      std::move(log), base::WrapUnique(new MetaDataMap()), upload_done_data);
+      std::move(log), base::MakeUnique<MetaDataMap>(), upload_done_data);
 
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);

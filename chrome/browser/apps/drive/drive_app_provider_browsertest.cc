@@ -108,7 +108,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
     provider_.reset(
         new DriveAppProvider(profile(), fake_uninstall_sync_service_.get()));
     provider_->SetDriveServiceBridgeForTest(
-        base::WrapUnique(new TestDriveServiceBridge(apps_registry_.get())));
+        base::MakeUnique<TestDriveServiceBridge>(apps_registry_.get()));
 
     // The DriveAppProvider in AppListSyncalbeService interferes with the
     // test. So resets it.

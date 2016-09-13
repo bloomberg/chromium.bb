@@ -783,9 +783,9 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   // committed_load_ or navigation_handle beyond the scope of the constructor.
   provisional_loads_.insert(std::make_pair(
       navigation_handle,
-      base::WrapUnique(new PageLoadTracker(
+      base::MakeUnique<PageLoadTracker>(
           in_foreground_, embedder_interface_.get(), currently_committed_url,
-          navigation_handle, chain_size, chain_size_same_url))));
+          navigation_handle, chain_size, chain_size_same_url)));
 }
 
 void MetricsWebContentsObserver::OnRequestComplete(

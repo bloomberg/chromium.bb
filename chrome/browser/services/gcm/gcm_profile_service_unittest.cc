@@ -52,7 +52,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  return base::WrapUnique(new gcm::GCMProfileService(
+  return base::MakeUnique<gcm::GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
@@ -69,7 +69,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
           content::BrowserThread::UI),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
-      blocking_task_runner));
+      blocking_task_runner);
 }
 
 }  // namespace

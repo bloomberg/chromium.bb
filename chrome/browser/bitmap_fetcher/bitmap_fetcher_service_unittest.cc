@@ -49,7 +49,7 @@ class TestService : public BitmapFetcherService {
   // the decode step, which requires a utility process.
   std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(
       const GURL& url) override {
-    return base::WrapUnique(new chrome::BitmapFetcher(url, this));
+    return base::MakeUnique<chrome::BitmapFetcher>(url, this);
   }
 };
 

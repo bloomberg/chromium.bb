@@ -411,9 +411,9 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PREF_HASH_SEED_BIN).as_string();
 #endif
-  return base::WrapUnique(new ProfilePrefStoreManager(
+  return base::MakeUnique<ProfilePrefStoreManager>(
       profile_path, GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
-      seed, device_id, g_browser_process->local_state()));
+      seed, device_id, g_browser_process->local_state());
 }
 
 void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,

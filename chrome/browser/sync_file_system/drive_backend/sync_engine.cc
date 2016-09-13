@@ -201,7 +201,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
       worker_pool.get(), GetSyncFileSystemDir(context->GetPath()), task_logger,
       notification_manager, extension_service, signin_manager, token_service,
-      request_context.get(), base::WrapUnique(new DriveServiceFactory()),
+      request_context.get(), base::MakeUnique<DriveServiceFactory>(),
       nullptr /* env_override */));
 
   sync_engine->Initialize();

@@ -14,7 +14,7 @@ class DocumentWritePageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::WrapUnique(new DocumentWritePageLoadMetricsObserver()));
+        base::MakeUnique<DocumentWritePageLoadMetricsObserver>());
   }
   void AssertNoPreloadHistogramsLogged() {
     histogram_tester().ExpectTotalCount(

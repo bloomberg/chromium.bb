@@ -92,7 +92,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
     bool suppress_db) {
   scoped_refptr<ShortcutsBackend> backend(new ShortcutsBackend(
       TemplateURLServiceFactory::GetForProfile(profile),
-      base::WrapUnique(new UIThreadSearchTermsData(profile)),
+      base::MakeUnique<UIThreadSearchTermsData>(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
       content::BrowserThread::GetTaskRunnerForThread(

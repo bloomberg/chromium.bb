@@ -41,7 +41,7 @@ void HostedAppsCounter::Count() {
   std::sort(names.begin(), names.end());
   names.resize(std::min<size_t>(2u, names.size()));
 
-  ReportResult(base::WrapUnique(new HostedAppsResult(this, count, names)));
+  ReportResult(base::MakeUnique<HostedAppsResult>(this, count, names));
 }
 
 // HostedAppsCounter::HostedAppsResult -----------------------------------------

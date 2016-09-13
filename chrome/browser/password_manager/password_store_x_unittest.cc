@@ -331,11 +331,11 @@ class PasswordStoreXTestDelegate {
 PasswordStoreXTestDelegate::PasswordStoreXTestDelegate(BackendType backend_type)
     : backend_type_(backend_type) {
   SetupTempDir();
-  store_ = new PasswordStoreX(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::WrapUnique(
-          new password_manager::LoginDatabase(test_login_db_file_path())),
-      GetBackend(backend_type_));
+  store_ = new PasswordStoreX(base::ThreadTaskRunnerHandle::Get(),
+                              base::ThreadTaskRunnerHandle::Get(),
+                              base::MakeUnique<password_manager::LoginDatabase>(
+                                  test_login_db_file_path()),
+                              GetBackend(backend_type_));
   store_->Init(syncer::SyncableService::StartSyncFlare());
 }
 

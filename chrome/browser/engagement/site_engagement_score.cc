@@ -58,10 +58,10 @@ std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
   }
 
   if (!value.get())
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   if (!value->IsType(base::Value::TYPE_DICTIONARY))
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
 }

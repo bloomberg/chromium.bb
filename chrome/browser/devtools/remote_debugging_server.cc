@@ -108,7 +108,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
-      base::WrapUnique(new TCPServerSocketFactory(ip, port)),
+      base::MakeUnique<TCPServerSocketFactory>(ip, port),
       std::string(),
       output_dir,
       debug_frontend_dir,

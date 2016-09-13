@@ -85,9 +85,9 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return base::WrapUnique(new invalidation::ProfileInvalidationProvider(
+  return base::MakeUnique<invalidation::ProfileInvalidationProvider>(
       std::unique_ptr<invalidation::InvalidationService>(
-          new invalidation::FakeInvalidationService)));
+          new invalidation::FakeInvalidationService));
 }
 
 #if !defined(OS_CHROMEOS)
@@ -153,26 +153,26 @@ void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
                   POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
                   base::WrapUnique(new base::FundamentalValue(false)), nullptr);
 #if defined(OS_CHROMEOS)
-  policy_map->Set(
-      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-      base::WrapUnique(new base::StringValue("primary-only")), nullptr);
+  policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  base::MakeUnique<base::StringValue>("primary-only"), nullptr);
   policy_map->Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_map->Set(key::kCaptivePortalAuthenticationIgnoresProxy,
                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_map->Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_map->Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_map->Set(key::kPacHttpsUrlStrippingEnabled, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
 #endif
 }
 
@@ -181,10 +181,10 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
 
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+                base::MakeUnique<base::FundamentalValue>(true), nullptr);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::FundamentalValue(4)), nullptr);
+                base::MakeUnique<base::FundamentalValue>(4), nullptr);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
@@ -192,10 +192,10 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   expected->Set(key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::FundamentalValue(1000)), nullptr);
+                base::MakeUnique<base::FundamentalValue>(1000), nullptr);
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::StringValue(homepage)), nullptr);
+                base::MakeUnique<base::StringValue>(homepage), nullptr);
 }
 
 }  // namespace

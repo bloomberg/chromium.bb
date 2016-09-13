@@ -12,8 +12,8 @@ namespace signin {
 
 std::unique_ptr<KeyedService> BuildTestSigninClient(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new TestSigninClient(static_cast<Profile*>(context)->GetPrefs()));
+  return base::MakeUnique<TestSigninClient>(
+      static_cast<Profile*>(context)->GetPrefs());
 }
 
 }  // namespace signin

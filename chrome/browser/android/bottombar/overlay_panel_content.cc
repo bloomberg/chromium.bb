@@ -130,8 +130,8 @@ void OverlayPanelContent::SetInterceptNavigationDelegate(
   DCHECK(web_contents);
   navigation_interception::InterceptNavigationDelegate::Associate(
       web_contents,
-      base::WrapUnique(new navigation_interception::InterceptNavigationDelegate(
-          env, delegate)));
+      base::MakeUnique<navigation_interception::InterceptNavigationDelegate>(
+          env, delegate));
 }
 
 bool RegisterOverlayPanelContent(JNIEnv* env) {

@@ -517,8 +517,8 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   void AddChannelIDWithTimes(const std::string& server_identifier,
                              base::Time creation_time) {
     GetChannelIDStore()->SetChannelID(
-        base::WrapUnique(new net::ChannelIDStore::ChannelID(
-            server_identifier, creation_time, crypto::ECPrivateKey::Create())));
+        base::MakeUnique<net::ChannelIDStore::ChannelID>(
+            server_identifier, creation_time, crypto::ECPrivateKey::Create()));
   }
 
   // Add a server bound cert for |server|, with the current time as the
@@ -2589,16 +2589,16 @@ TEST_F(BrowsingDataRemoverTest, RemoveContentSettingsWithBlacklist) {
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin1, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
+      base::MakeUnique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin2, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
+      base::MakeUnique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin3, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
+      base::MakeUnique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin4, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::WrapUnique(new base::DictionaryValue()));
+      base::MakeUnique<base::DictionaryValue>());
 
   // Clear all except for origin1 and origin3.
   RegistrableDomainFilterBuilder filter(
@@ -2885,26 +2885,23 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
   // Test several tasks with various configuration of masks, filters, and target
   // observers.
   std::list<BrowsingDataRemover::RemovalTask> tasks;
-  tasks.emplace_back(
-      BrowsingDataRemover::Unbounded(),
-      BrowsingDataRemover::REMOVE_HISTORY,
-      BrowsingDataHelper::UNPROTECTED_WEB,
-      base::WrapUnique(new RegistrableDomainFilterBuilder(
-          RegistrableDomainFilterBuilder::BLACKLIST)),
-      observer.target_a());
-  tasks.emplace_back(
-      BrowsingDataRemover::Unbounded(),
-      BrowsingDataRemover::REMOVE_COOKIES,
-      BrowsingDataHelper::PROTECTED_WEB,
-      base::WrapUnique(new RegistrableDomainFilterBuilder(
-          RegistrableDomainFilterBuilder::BLACKLIST)),
-      nullptr);
+  tasks.emplace_back(BrowsingDataRemover::Unbounded(),
+                     BrowsingDataRemover::REMOVE_HISTORY,
+                     BrowsingDataHelper::UNPROTECTED_WEB,
+                     base::MakeUnique<RegistrableDomainFilterBuilder>(
+                         RegistrableDomainFilterBuilder::BLACKLIST),
+                     observer.target_a());
+  tasks.emplace_back(BrowsingDataRemover::Unbounded(),
+                     BrowsingDataRemover::REMOVE_COOKIES,
+                     BrowsingDataHelper::PROTECTED_WEB,
+                     base::MakeUnique<RegistrableDomainFilterBuilder>(
+                         RegistrableDomainFilterBuilder::BLACKLIST),
+                     nullptr);
   tasks.emplace_back(
       BrowsingDataRemover::TimeRange(base::Time::Now(), base::Time::Max()),
-      BrowsingDataRemover::REMOVE_PASSWORDS,
-      BrowsingDataHelper::ALL,
-      base::WrapUnique(new RegistrableDomainFilterBuilder(
-          RegistrableDomainFilterBuilder::BLACKLIST)),
+      BrowsingDataRemover::REMOVE_PASSWORDS, BrowsingDataHelper::ALL,
+      base::MakeUnique<RegistrableDomainFilterBuilder>(
+          RegistrableDomainFilterBuilder::BLACKLIST),
       observer.target_b());
   tasks.emplace_back(
       BrowsingDataRemover::TimeRange(base::Time(), base::Time::UnixEpoch()),

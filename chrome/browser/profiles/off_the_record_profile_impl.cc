@@ -246,8 +246,8 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
 std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return base::WrapUnique(new ChromeZoomLevelOTRDelegate(
-      zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
+  return base::MakeUnique<ChromeZoomLevelOTRDelegate>(
+      zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
 
 scoped_refptr<base::SequencedTaskRunner>

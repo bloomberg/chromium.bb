@@ -23,11 +23,10 @@
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
-  auto sync_client =
-      base::WrapUnique(new browser_sync::ChromeSyncClient(profile));
+  auto sync_client = base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
 
   sync_client->SetSyncApiComponentFactoryForTesting(
-      base::WrapUnique(new SyncApiComponentFactoryMock()));
+      base::MakeUnique<SyncApiComponentFactoryMock>());
 
   ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(std::move(sync_client), profile);
@@ -40,8 +39,8 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
   ProfileSyncService::InitParams init_params;
 
-  init_params.signin_wrapper = base::WrapUnique(
-      new SigninManagerWrapper(SigninManagerFactory::GetForProfile(profile)));
+  init_params.signin_wrapper = base::MakeUnique<SigninManagerWrapper>(
+      SigninManagerFactory::GetForProfile(profile));
   init_params.oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
@@ -62,7 +61,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
 }
 
 std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
-  auto profile = base::WrapUnique(new TestingProfile());
+  auto profile = base::MakeUnique<TestingProfile>();
   SigninManagerFactory::GetForProfile(profile.get())
       ->SetAuthenticatedAccountInfo("12345", "foo");
   return profile;
@@ -70,7 +69,7 @@ std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
 
 std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
-          Profile::FromBrowserContext(context))));
+  return base::MakeUnique<ProfileSyncServiceMock>(
+      CreateProfileSyncServiceParamsForTest(
+          Profile::FromBrowserContext(context)));
 }

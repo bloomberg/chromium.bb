@@ -464,7 +464,7 @@ bool SupervisedUserURLFilter::HasAsyncURLChecker() const {
 
 void SupervisedUserURLFilter::Clear() {
   default_behavior_ = ALLOW;
-  SetContents(base::WrapUnique(new Contents()));
+  SetContents(base::MakeUnique<Contents>());
   url_map_.clear();
   host_map_.clear();
   blacklist_ = nullptr;

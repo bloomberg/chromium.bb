@@ -869,7 +869,7 @@ void TabAndroid::SetInterceptNavigationDelegate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InterceptNavigationDelegate::Associate(
       web_contents(),
-      base::WrapUnique(new ChromeInterceptNavigationDelegate(env, delegate)));
+      base::MakeUnique<ChromeInterceptNavigationDelegate>(env, delegate));
 }
 
 void TabAndroid::AttachToTabContentManager(

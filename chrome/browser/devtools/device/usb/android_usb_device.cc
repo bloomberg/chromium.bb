@@ -360,8 +360,8 @@ void AndroidUsbDevice::InitOnCallerThread() {
   if (task_runner_)
     return;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  Queue(base::WrapUnique(new AdbMessage(AdbMessage::kCommandCNXN, kVersion,
-                                        kMaxPayload, kHostConnectMessage)));
+  Queue(base::MakeUnique<AdbMessage>(AdbMessage::kCommandCNXN, kVersion,
+                                     kMaxPayload, kHostConnectMessage));
   ReadHeader();
 }
 
@@ -577,20 +577,20 @@ void AndroidUsbDevice::HandleIncoming(std::unique_ptr<AdbMessage> message) {
       {
       DCHECK_EQ(message->arg0, static_cast<uint32_t>(AdbMessage::kAuthToken));
         if (signature_sent_) {
-          Queue(base::WrapUnique(new AdbMessage(
+          Queue(base::MakeUnique<AdbMessage>(
               AdbMessage::kCommandAUTH, AdbMessage::kAuthRSAPublicKey, 0,
-              AndroidRSAPublicKey(rsa_key_.get()))));
+              AndroidRSAPublicKey(rsa_key_.get())));
         } else {
           signature_sent_ = true;
           std::string signature = AndroidRSASign(rsa_key_.get(), message->body);
           if (!signature.empty()) {
-            Queue(base::WrapUnique(new AdbMessage(AdbMessage::kCommandAUTH,
-                                                  AdbMessage::kAuthSignature, 0,
-                                                  signature)));
+            Queue(base::MakeUnique<AdbMessage>(AdbMessage::kCommandAUTH,
+                                               AdbMessage::kAuthSignature, 0,
+                                               signature));
           } else {
-            Queue(base::WrapUnique(new AdbMessage(
+            Queue(base::MakeUnique<AdbMessage>(
                 AdbMessage::kCommandAUTH, AdbMessage::kAuthRSAPublicKey, 0,
-                AndroidRSAPublicKey(rsa_key_.get()))));
+                AndroidRSAPublicKey(rsa_key_.get())));
           }
         }
       }

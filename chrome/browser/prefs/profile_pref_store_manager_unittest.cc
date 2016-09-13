@@ -201,13 +201,13 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     PersistentPrefStore::PrefReadError error = pref_store->ReadPrefs();
     EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE, error);
     pref_store->SetValue(kTrackedAtomic,
-                         base::WrapUnique(new base::StringValue(kFoobar)),
+                         base::MakeUnique<base::StringValue>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kProtectedAtomic,
-                         base::WrapUnique(new base::StringValue(kHelloWorld)),
+                         base::MakeUnique<base::StringValue>(kHelloWorld),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kUnprotectedPref,
-                         base::WrapUnique(new base::StringValue(kFoobar)),
+                         base::MakeUnique<base::StringValue>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
     pref_store->CommitPendingWrite();

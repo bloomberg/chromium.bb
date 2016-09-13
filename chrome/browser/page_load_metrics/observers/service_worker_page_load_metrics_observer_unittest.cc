@@ -19,7 +19,7 @@ class ServiceWorkerPageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::WrapUnique(new ServiceWorkerPageLoadMetricsObserver()));
+        base::MakeUnique<ServiceWorkerPageLoadMetricsObserver>());
   }
 
   void SimulateTimingWithoutPaint() {

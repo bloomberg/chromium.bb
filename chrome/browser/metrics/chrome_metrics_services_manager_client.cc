@@ -191,15 +191,15 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 std::unique_ptr<rappor::RapporService>
 ChromeMetricsServicesManagerClient::CreateRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::WrapUnique(new rappor::RapporService(
-      local_state_, base::Bind(&chrome::IsIncognitoSessionActive)));
+  return base::MakeUnique<rappor::RapporService>(
+      local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
 ChromeMetricsServicesManagerClient::CreateVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return variations::VariationsService::Create(
-      base::WrapUnique(new ChromeVariationsServiceClient()), local_state_,
+      base::MakeUnique<ChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), switches::kDisableBackgroundNetworking,
       chrome_variations::CreateUIStringOverrider());
 }

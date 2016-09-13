@@ -169,8 +169,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   GetLocalSessionEventRouter() override {
     syncer::SyncableService::StartSyncFlare flare(
         sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
-    return base::WrapUnique(
-        new NotificationServiceSessionsRouter(profile_, this, flare));
+    return base::MakeUnique<NotificationServiceSessionsRouter>(profile_, this,
+                                                               flare);
   }
 
  private:

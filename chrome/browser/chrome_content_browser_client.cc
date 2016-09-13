@@ -2040,7 +2040,7 @@ std::unique_ptr<storage::QuotaEvictionPolicy>
 ChromeContentBrowserClient::GetTemporaryStorageEvictionPolicy(
     content::BrowserContext* context) {
   return SiteEngagementEvictionPolicy::IsEnabled()
-             ? base::WrapUnique(new SiteEngagementEvictionPolicy(context))
+             ? base::MakeUnique<SiteEngagementEvictionPolicy>(context)
              : nullptr;
 }
 

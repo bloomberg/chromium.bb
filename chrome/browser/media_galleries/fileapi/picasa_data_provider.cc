@@ -85,14 +85,14 @@ std::unique_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
          state_ == ALBUMS_IMAGES_FRESH_STATE);
-  return base::WrapUnique(new AlbumMap(folder_map_));
+  return base::MakeUnique<AlbumMap>(folder_map_);
 }
 
 std::unique_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
          state_ == ALBUMS_IMAGES_FRESH_STATE);
-  return base::WrapUnique(new AlbumMap(album_map_));
+  return base::MakeUnique<AlbumMap>(album_map_);
 }
 
 std::unique_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
@@ -110,7 +110,7 @@ std::unique_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
   }
 
   *error = base::File::FILE_OK;
-  return base::WrapUnique(new AlbumImages(it->second));
+  return base::MakeUnique<AlbumImages>(it->second);
 }
 
 void PicasaDataProvider::InvalidateData() {

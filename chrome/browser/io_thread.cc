@@ -1049,21 +1049,21 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
 
-  job_factory->SetProtocolHandler(
-      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
+  job_factory->SetProtocolHandler(url::kDataScheme,
+                                  base::MakeUnique<net::DataProtocolHandler>());
   job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::WrapUnique(new net::FileProtocolHandler(
+      base::MakeUnique<net::FileProtocolHandler>(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
 #if !defined(DISABLE_FTP_SUPPORT)
   globals->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals->host_resolver.get()));
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      base::WrapUnique(new net::FtpProtocolHandler(
-          globals->proxy_script_fetcher_ftp_transaction_factory.get())));
+      base::MakeUnique<net::FtpProtocolHandler>(
+          globals->proxy_script_fetcher_ftp_transaction_factory.get()));
 #endif
   globals->proxy_script_fetcher_url_request_job_factory =
       std::move(job_factory);

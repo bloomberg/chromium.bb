@@ -930,8 +930,8 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
   return std::unique_ptr<net::ClientCertStore>(
       new chromeos::ClientCertStoreChromeOS(
           certificate_provider_ ? certificate_provider_->Copy() : nullptr,
-          base::WrapUnique(new chromeos::ClientCertFilterChromeOS(
-              use_system_key_slot_, username_hash_)),
+          base::MakeUnique<chromeos::ClientCertFilterChromeOS>(
+              use_system_key_slot_, username_hash_),
           base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                      chrome::kCryptoModulePasswordClientAuth)));
 #elif defined(USE_NSS_CERTS)
@@ -1014,8 +1014,8 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
       this,
       got_delegate_callback);
 #else
-  callback.Run(base::WrapUnique(
-      new net::KeygenHandler(key_size_in_bits, challenge_string, url)));
+  callback.Run(base::MakeUnique<net::KeygenHandler>(key_size_in_bits,
+                                                    challenge_string, url));
 #endif
 }
 
@@ -1210,10 +1210,10 @@ ProfileIOData::SetUpJobFactoryDefaults(
   // ProfileIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::WrapUnique(new net::FileProtocolHandler(
+      base::MakeUnique<net::FileProtocolHandler>(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
   DCHECK(set_protocol);
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1231,14 +1231,14 @@ ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(set_protocol);
 #endif
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
+      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
   if (profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
         content::kExternalFileScheme,
-        base::WrapUnique(new chromeos::ExternalFileProtocolHandler(
-            profile_params_->profile)));
+        base::MakeUnique<chromeos::ExternalFileProtocolHandler>(
+            profile_params_->profile));
     DCHECK(set_protocol);
   }
 #endif  // defined(OS_CHROMEOS)
@@ -1253,12 +1253,12 @@ ProfileIOData::SetUpJobFactoryDefaults(
 
   job_factory->SetProtocolHandler(
       url::kAboutScheme,
-      base::WrapUnique(new about_handler::AboutProtocolHandler()));
+      base::MakeUnique<about_handler::AboutProtocolHandler>());
 #if !defined(DISABLE_FTP_SUPPORT)
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      base::WrapUnique(new net::FtpProtocolHandler(ftp_transaction_factory)));
+      base::MakeUnique<net::FtpProtocolHandler>(ftp_transaction_factory));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
 #if defined(DEBUG_DEVTOOLS)
@@ -1365,19 +1365,19 @@ ProfileIOData::CreateHttpNetworkSession(
 std::unique_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
     std::unique_ptr<net::HttpCache::BackendFactory> main_backend) const {
-  return base::WrapUnique(new net::HttpCache(
+  return base::MakeUnique<net::HttpCache>(
       base::WrapUnique(new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), session)),
-      std::move(main_backend), true /* set_up_quic_server_info */));
+      std::move(main_backend), true /* set_up_quic_server_info */);
 }
 
 std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
     net::HttpNetworkSession* shared_session,
     std::unique_ptr<net::HttpCache::BackendFactory> backend) const {
-  return base::WrapUnique(new net::HttpCache(
+  return base::MakeUnique<net::HttpCache>(
       base::WrapUnique(new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), shared_session)),
-      std::move(backend), true /* set_up_quic_server_info */));
+      std::move(backend), true /* set_up_quic_server_info */);
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(

@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policy::PolicyMap policies;
   policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(true), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policy::PolicyMap policies;
   policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(true), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));

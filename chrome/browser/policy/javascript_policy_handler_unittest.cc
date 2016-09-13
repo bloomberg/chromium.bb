@@ -29,12 +29,12 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   PolicyMap policy;
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(true), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
@@ -47,18 +47,17 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   PolicyMap policy;
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
                                &value));
   EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_BLOCK).Equals(value));
   // DefaultJavaScriptSetting overrides JavascriptEnabled.
-  policy.Set(
-      key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(CONTENT_SETTING_ALLOW)),
-      nullptr);
+  policy.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::MakeUnique<base::FundamentalValue>(CONTENT_SETTING_ALLOW),
+             nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
                                &value));

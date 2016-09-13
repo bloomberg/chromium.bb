@@ -175,7 +175,7 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
 std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
     const content::MediaStreamDevices& devices) {
-  return base::WrapUnique(new UIDelegate(weak_factory_.GetWeakPtr(), devices));
+  return base::MakeUnique<UIDelegate>(weak_factory_.GetWeakPtr(), devices);
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(

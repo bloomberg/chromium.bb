@@ -51,8 +51,8 @@ void MTPReadFileWorker::WriteDataIntoSnapshotFile(
     const SnapshotRequestInfo& request_info,
     const base::File::Info& snapshot_file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ReadDataChunkFromDeviceFile(base::WrapUnique(
-      new SnapshotFileDetails(request_info, snapshot_file_info)));
+  ReadDataChunkFromDeviceFile(
+      base::MakeUnique<SnapshotFileDetails>(request_info, snapshot_file_info));
 }
 
 void MTPReadFileWorker::ReadDataChunkFromDeviceFile(

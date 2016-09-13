@@ -91,9 +91,9 @@ ChooserContextBase::GetAllGrantedObjects() {
         continue;
       }
 
-      results.push_back(base::WrapUnique(
-          new Object(requesting_origin, embedding_origin, object_dict,
-                     content_setting.source, content_setting.incognito)));
+      results.push_back(base::MakeUnique<Object>(
+          requesting_origin, embedding_origin, object_dict,
+          content_setting.source, content_setting.incognito));
     }
   }
 

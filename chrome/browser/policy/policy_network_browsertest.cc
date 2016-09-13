@@ -85,7 +85,7 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                 POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                base::MakeUnique<base::FundamentalValue>(false), nullptr);
   }
 
  private:
@@ -105,7 +105,7 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                 POLICY_SOURCE_CLOUD,
-                base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+                base::MakeUnique<base::FundamentalValue>(true), nullptr);
   }
 
  private:

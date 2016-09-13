@@ -80,8 +80,7 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
   // We need to make a scoped copy of this vector since it will be destroyed
   // at the end of the IPC message handler.
   std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images_copy =
-      base::WrapUnique(
-          new std::vector<metadata::AttachedImage>(attached_images));
+      base::MakeUnique<std::vector<metadata::AttachedImage>>(attached_images);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

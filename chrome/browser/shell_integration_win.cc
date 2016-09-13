@@ -380,8 +380,8 @@ class OpenSystemSettingsHelper {
   // Helper function to create a registry watcher for a given |key_path|. Do
   // nothing on initialization failure.
   void AddRegistryKeyWatcher(const wchar_t* key_path) {
-    auto reg_key = base::WrapUnique(
-        new base::win::RegKey(HKEY_CURRENT_USER, key_path, KEY_NOTIFY));
+    auto reg_key = base::MakeUnique<base::win::RegKey>(HKEY_CURRENT_USER,
+                                                       key_path, KEY_NOTIFY);
 
     if (reg_key->Valid() &&
         reg_key->StartWatching(

@@ -109,9 +109,9 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 #endif
 
   std::unique_ptr<PolicyHeaderService> service =
-      base::WrapUnique(new PolicyHeaderService(
+      base::MakeUnique<PolicyHeaderService>(
           device_management_service->GetServerUrl(), kPolicyVerificationKeyHash,
-          user_store, device_store));
+          user_store, device_store);
   return new PolicyHeaderServiceWrapper(std::move(service));
 }
 

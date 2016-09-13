@@ -74,7 +74,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
   std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name) override {
-    return base::WrapUnique(new MockResolution(name, request_context_.get()));
+    return base::MakeUnique<MockResolution>(name, request_context_.get());
   }
 
  private:

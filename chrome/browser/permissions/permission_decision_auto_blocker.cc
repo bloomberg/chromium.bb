@@ -34,7 +34,7 @@ std::unique_ptr<base::DictionaryValue> GetOriginDict(
           CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT, std::string(),
           nullptr));
   if (!dict)
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   return dict;
 }

@@ -89,7 +89,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     live_tab_ = base::WrapUnique(new sessions::ContentLiveTab(web_contents()));
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new sessions::PersistentTabRestoreService(
-        base::WrapUnique(new ChromeTabRestoreServiceClient(profile())),
+        base::MakeUnique<ChromeTabRestoreServiceClient>(profile()),
         time_factory_));
   }
 
@@ -129,7 +129,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     content::RunAllBlockingPoolTasksUntilIdle();
     service_.reset();
     service_.reset(new sessions::PersistentTabRestoreService(
-        base::WrapUnique(new ChromeTabRestoreServiceClient(profile())),
+        base::MakeUnique<ChromeTabRestoreServiceClient>(profile()),
         time_factory_));
     SynchronousLoadTabsFromLastSession();
   }

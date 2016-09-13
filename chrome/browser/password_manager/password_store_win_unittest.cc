@@ -173,8 +173,7 @@ class PasswordStoreWinTest : public testing::Test {
     return new PasswordStoreWin(
         base::ThreadTaskRunnerHandle::Get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
-        base::WrapUnique(new LoginDatabase(test_login_db_file_path())),
-        wds_.get());
+        base::MakeUnique<LoginDatabase>(test_login_db_file_path()), wds_.get());
   }
 
   base::MessageLoopForUI message_loop_;

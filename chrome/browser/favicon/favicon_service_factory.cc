@@ -19,10 +19,10 @@ namespace {
 std::unique_ptr<KeyedService> BuildFaviconService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return base::WrapUnique(new favicon::FaviconService(
+  return base::MakeUnique<favicon::FaviconService>(
       base::WrapUnique(new ChromeFaviconClient(profile)),
-      HistoryServiceFactory::GetForProfile(
-          profile, ServiceAccessType::EXPLICIT_ACCESS)));
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 }  // namespace

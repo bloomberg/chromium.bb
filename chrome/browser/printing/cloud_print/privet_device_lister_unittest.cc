@@ -120,8 +120,8 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
   std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override {
-    return base::WrapUnique(
-        new MockServiceWatcher(service_type, callback, mock_delegate_));
+    return base::MakeUnique<MockServiceWatcher>(service_type, callback,
+                                                mock_delegate_);
   }
 
   // Create a service resolver object for getting detailed service information
@@ -129,8 +129,8 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
   std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override {
-    return base::WrapUnique(
-        new MockServiceResolver(service_name, callback, mock_delegate_));
+    return base::MakeUnique<MockServiceResolver>(service_name, callback,
+                                                 mock_delegate_);
   }
 
   // Not used in this test.

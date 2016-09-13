@@ -71,10 +71,10 @@ void DelegationTracker::SetDelegatedPermissions(
     content::RenderFrameHost* child_rfh,
     const std::vector<content::PermissionType>& permissions) {
   DCHECK(child_rfh && child_rfh->GetParent());
-  delegated_permissions_[child_rfh] = base::WrapUnique(new DelegatedForChild(
+  delegated_permissions_[child_rfh] = base::MakeUnique<DelegatedForChild>(
       child_rfh, permissions,
       base::Bind(&DelegationTracker::RenderFrameHostChanged,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 bool DelegationTracker::IsGranted(content::RenderFrameHost* requesting_rfh,

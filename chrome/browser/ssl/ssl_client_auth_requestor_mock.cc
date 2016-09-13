@@ -47,5 +47,5 @@ SSLClientAuthRequestorMock::~SSLClientAuthRequestorMock() {}
 
 std::unique_ptr<content::ClientCertificateDelegate>
 SSLClientAuthRequestorMock::CreateDelegate() {
-  return base::WrapUnique(new FakeClientCertificateDelegate(this));
+  return base::MakeUnique<FakeClientCertificateDelegate>(this);
 }

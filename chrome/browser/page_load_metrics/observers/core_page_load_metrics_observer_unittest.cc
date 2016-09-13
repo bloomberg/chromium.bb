@@ -23,7 +23,7 @@ class CorePageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::WrapUnique(new CorePageLoadMetricsObserver()));
+    tracker->AddObserver(base::MakeUnique<CorePageLoadMetricsObserver>());
   }
 
   void SetUp() override {

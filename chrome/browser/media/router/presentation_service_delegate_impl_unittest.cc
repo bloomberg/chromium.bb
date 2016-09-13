@@ -394,9 +394,9 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
       .Times(1);
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
-      base::WrapUnique(new MediaRoute(
+      base::MakeUnique<MediaRoute>(
           "routeId", MediaSourceForPresentationUrl(kPresentationUrl1),
-          "mediaSinkId", "description", true, "", true)),
+          "mediaSinkId", "description", true, "", true),
       kPresentationId);
   for (const auto& route_response_callback : route_response_callbacks)
     route_response_callback.Run(*result);

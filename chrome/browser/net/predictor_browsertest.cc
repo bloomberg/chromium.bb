@@ -545,8 +545,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         url.scheme(), url.host(),
-        base::WrapUnique(new MatchingPortRequestInterceptor(
-            url.EffectiveIntPort(), callback)));
+        base::MakeUnique<MatchingPortRequestInterceptor>(url.EffectiveIntPort(),
+                                                         callback));
   }
 
   static void StopInterceptingHost(const GURL& url) {
@@ -1006,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PredictBasedOnSubframeRedirect) {
   // TODO(csharrison): Possibly this is a bug in either net or Blink, and it
   // might be worthwhile to investigate.
   std::unique_ptr<net::EmbeddedTestServer> redirector =
-      base::WrapUnique(new net::EmbeddedTestServer());
+      base::MakeUnique<net::EmbeddedTestServer>();
   ASSERT_TRUE(redirector->Start());
 
   NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);

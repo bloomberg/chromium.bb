@@ -171,7 +171,7 @@ class TestProcessManager : public extensions::ProcessManager {
 
   static std::unique_ptr<KeyedService> Create(
       content::BrowserContext* context) {
-    return base::WrapUnique(new TestProcessManager(context));
+    return base::MakeUnique<TestProcessManager>(context);
   }
 
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& ext_id));

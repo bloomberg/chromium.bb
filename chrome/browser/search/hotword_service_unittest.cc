@@ -118,8 +118,7 @@ class MockHotwordService : public HotwordService {
 
 std::unique_ptr<KeyedService> BuildMockHotwordService(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new MockHotwordService(static_cast<Profile*>(context)));
+  return base::MakeUnique<MockHotwordService>(static_cast<Profile*>(context));
 }
 
 }  // namespace

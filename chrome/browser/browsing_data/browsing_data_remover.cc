@@ -407,8 +407,8 @@ void BrowsingDataRemover::RemoveInternal(
   // Remove() and RemoveAndReply() pass a null pointer to indicate no filter.
   // No filter is equivalent to one that |IsEmptyBlacklist()|.
   if (!filter_builder) {
-    filter_builder = base::WrapUnique(new RegistrableDomainFilterBuilder(
-        RegistrableDomainFilterBuilder::BLACKLIST));
+    filter_builder = base::MakeUnique<RegistrableDomainFilterBuilder>(
+        RegistrableDomainFilterBuilder::BLACKLIST);
     DCHECK(filter_builder->IsEmptyBlacklist());
   }
 

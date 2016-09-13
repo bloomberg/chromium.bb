@@ -181,7 +181,7 @@ leveldb::Status LevelDBWrapper::Get(const std::string& key,
 }
 
 std::unique_ptr<LevelDBWrapper::Iterator> LevelDBWrapper::NewIterator() {
-  return base::WrapUnique(new Iterator(this));
+  return base::MakeUnique<Iterator>(this);
 }
 
 leveldb::Status LevelDBWrapper::Commit() {

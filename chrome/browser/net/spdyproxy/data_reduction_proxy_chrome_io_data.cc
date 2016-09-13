@@ -85,12 +85,12 @@ CreateDataReductionProxyChromeIOData(
               version_info::GetChannelString(chrome::GetChannel())));
 
   data_reduction_proxy_io_data->set_lofi_decider(
-      base::WrapUnique(new data_reduction_proxy::ContentLoFiDecider()));
+      base::MakeUnique<data_reduction_proxy::ContentLoFiDecider>());
   data_reduction_proxy_io_data->set_lofi_ui_service(
-      base::WrapUnique(new data_reduction_proxy::ContentLoFiUIService(
-          ui_task_runner, base::Bind(&OnLoFiResponseReceivedOnUI))));
+      base::MakeUnique<data_reduction_proxy::ContentLoFiUIService>(
+          ui_task_runner, base::Bind(&OnLoFiResponseReceivedOnUI)));
   data_reduction_proxy_io_data->set_data_usage_source_provider(
-      base::WrapUnique(new ChromeDataUseGroupProvider()));
+      base::MakeUnique<ChromeDataUseGroupProvider>());
 
   return data_reduction_proxy_io_data;
 }

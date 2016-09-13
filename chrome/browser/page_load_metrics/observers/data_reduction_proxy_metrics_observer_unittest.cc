@@ -238,9 +238,9 @@ class DataReductionProxyMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::WrapUnique(new TestDataReductionProxyMetricsObserver(
+        base::MakeUnique<TestDataReductionProxyMetricsObserver>(
             web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
-            is_using_lofi_)));
+            is_using_lofi_));
   }
 
   std::unique_ptr<TestPingbackClient> pingback_client_;

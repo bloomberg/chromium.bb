@@ -507,8 +507,9 @@ BrowserProcessImpl::GetMetricsServicesManager() {
   DCHECK(CalledOnValidThread());
   if (!metrics_services_manager_) {
     metrics_services_manager_.reset(
-        new metrics_services_manager::MetricsServicesManager(base::WrapUnique(
-            new ChromeMetricsServicesManagerClient(local_state()))));
+        new metrics_services_manager::MetricsServicesManager(
+            base::MakeUnique<ChromeMetricsServicesManagerClient>(
+                local_state())));
   }
   return metrics_services_manager_.get();
 }

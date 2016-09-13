@@ -78,5 +78,5 @@ void MediaLicensesCounter::Count() {
 void MediaLicensesCounter::OnContentLicensesObtained(
     const std::set<GURL>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ReportResult(base::WrapUnique(new MediaLicenseResult(this, origins)));
+  ReportResult(base::MakeUnique<MediaLicenseResult>(this, origins));
 }

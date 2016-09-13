@@ -142,8 +142,8 @@ std::unique_ptr<KeywordExtensionsDelegate>
 ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
     KeywordProvider* keyword_provider) {
 #if defined(ENABLE_EXTENSIONS)
-  return base::WrapUnique(
-      new KeywordExtensionsDelegateImpl(profile_, keyword_provider));
+  return base::MakeUnique<KeywordExtensionsDelegateImpl>(profile_,
+                                                         keyword_provider);
 #else
   return nullptr;
 #endif

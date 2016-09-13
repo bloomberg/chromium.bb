@@ -124,7 +124,7 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     leveldb::Status status =
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());
-    return base::WrapUnique(new LevelDBWrapper(base::WrapUnique(db)));
+    return base::MakeUnique<LevelDBWrapper>(base::WrapUnique(db));
   }
 
  private:

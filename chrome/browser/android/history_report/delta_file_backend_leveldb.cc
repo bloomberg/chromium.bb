@@ -196,7 +196,7 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
     int64_t last_seq_no,
     int32_t limit) {
   if (!EnsureInitialized())
-    return base::WrapUnique(new std::vector<DeltaFileEntryWithData>());
+    return base::MakeUnique<std::vector<DeltaFileEntryWithData>>();
   std::string start;
   base::SStringPrintf(&start, "%" PRId64, last_seq_no + 1);
   leveldb::ReadOptions options;

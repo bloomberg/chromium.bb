@@ -97,7 +97,7 @@ PrefService* ChromeProximityAuthClient::GetPrefService() {
 std::unique_ptr<proximity_auth::SecureMessageDelegate>
 ChromeProximityAuthClient::CreateSecureMessageDelegate() {
 #if defined(OS_CHROMEOS)
-  return base::WrapUnique(new chromeos::SecureMessageDelegateChromeOS());
+  return base::MakeUnique<chromeos::SecureMessageDelegateChromeOS>();
 #else
   return nullptr;
 #endif
@@ -105,9 +105,9 @@ ChromeProximityAuthClient::CreateSecureMessageDelegate() {
 
 std::unique_ptr<proximity_auth::CryptAuthClientFactory>
 ChromeProximityAuthClient::CreateCryptAuthClientFactory() {
-  return base::WrapUnique(new proximity_auth::CryptAuthClientFactoryImpl(
+  return base::MakeUnique<proximity_auth::CryptAuthClientFactoryImpl>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_), GetAccountId(),
-      profile_->GetRequestContext(), GetDeviceClassifier()));
+      profile_->GetRequestContext(), GetDeviceClassifier());
 }
 
 cryptauth::DeviceClassifier ChromeProximityAuthClient::GetDeviceClassifier() {

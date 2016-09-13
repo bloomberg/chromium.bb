@@ -115,9 +115,9 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
       SetValue(string_switch_map_[i].preference_path,
-               base::WrapUnique(
-                   new base::StringValue(command_line_->GetSwitchValueASCII(
-                       string_switch_map_[i].switch_name))),
+               base::MakeUnique<base::StringValue>(
+                   command_line_->GetSwitchValueASCII(
+                       string_switch_map_[i].switch_name)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -126,9 +126,9 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
     if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
       SetValue(
           path_switch_map_[i].preference_path,
-          base::WrapUnique(new base::StringValue(
+          base::MakeUnique<base::StringValue>(
               command_line_->GetSwitchValuePath(path_switch_map_[i].switch_name)
-                  .value())),
+                  .value()),
           WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -145,7 +145,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
         continue;
       }
       SetValue(integer_switch_map_[i].preference_path,
-               base::WrapUnique(new base::FundamentalValue(int_value)),
+               base::MakeUnique<base::FundamentalValue>(int_value),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -153,8 +153,8 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
       SetValue(boolean_switch_map_[i].preference_path,
-               base::WrapUnique(new base::FundamentalValue(
-                   boolean_switch_map_[i].set_value)),
+               base::MakeUnique<base::FundamentalValue>(
+                   boolean_switch_map_[i].set_value),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -202,7 +202,7 @@ void CommandLinePrefStore::ApplySSLSwitches() {
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line_->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
-             base::WrapUnique(new base::FundamentalValue(false)),
+             base::MakeUnique<base::FundamentalValue>(false),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }

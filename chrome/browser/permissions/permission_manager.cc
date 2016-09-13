@@ -218,36 +218,36 @@ PermissionManager::PermissionManager(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
   permission_contexts_[PermissionType::MIDI_SYSEX] =
-      base::WrapUnique(new MidiPermissionContext(profile));
+      base::MakeUnique<MidiPermissionContext>(profile);
   permission_contexts_[PermissionType::PUSH_MESSAGING] =
-      base::WrapUnique(new NotificationPermissionContext(
-          profile, PermissionType::PUSH_MESSAGING));
+      base::MakeUnique<NotificationPermissionContext>(
+          profile, PermissionType::PUSH_MESSAGING);
   permission_contexts_[PermissionType::NOTIFICATIONS] =
-      base::WrapUnique(new NotificationPermissionContext(
-          profile, PermissionType::NOTIFICATIONS));
+      base::MakeUnique<NotificationPermissionContext>(
+          profile, PermissionType::NOTIFICATIONS);
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   permission_contexts_[PermissionType::GEOLOCATION] =
-      base::WrapUnique(new GeolocationPermissionContext(profile));
+      base::MakeUnique<GeolocationPermissionContext>(profile);
 #else
   permission_contexts_[PermissionType::GEOLOCATION] =
-      base::WrapUnique(new GeolocationPermissionContextAndroid(profile));
+      base::MakeUnique<GeolocationPermissionContextAndroid>(profile);
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   permission_contexts_[PermissionType::PROTECTED_MEDIA_IDENTIFIER] =
-      base::WrapUnique(new ProtectedMediaIdentifierPermissionContext(profile));
+      base::MakeUnique<ProtectedMediaIdentifierPermissionContext>(profile);
 #endif
   permission_contexts_[PermissionType::DURABLE_STORAGE] =
-      base::WrapUnique(new DurableStoragePermissionContext(profile));
+      base::MakeUnique<DurableStoragePermissionContext>(profile);
   permission_contexts_[PermissionType::AUDIO_CAPTURE] =
-      base::WrapUnique(new MediaStreamDevicePermissionContext(
+      base::MakeUnique<MediaStreamDevicePermissionContext>(
           profile, content::PermissionType::AUDIO_CAPTURE,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   permission_contexts_[PermissionType::VIDEO_CAPTURE] =
-      base::WrapUnique(new MediaStreamDevicePermissionContext(
+      base::MakeUnique<MediaStreamDevicePermissionContext>(
           profile, content::PermissionType::VIDEO_CAPTURE,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   permission_contexts_[PermissionType::BACKGROUND_SYNC] =
-      base::WrapUnique(new BackgroundSyncPermissionContext(profile));
+      base::MakeUnique<BackgroundSyncPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {

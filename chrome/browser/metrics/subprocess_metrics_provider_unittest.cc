@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -85,10 +86,10 @@ class SubprocessMetricsProviderTest : public testing::Test {
   std::unique_ptr<base::PersistentHistogramAllocator> CreateDuplicateAllocator(
       base::PersistentHistogramAllocator* allocator) {
     // Just wrap around the data segment in-use by the passed allocator.
-    return WrapUnique(new base::PersistentHistogramAllocator(
-        WrapUnique(new base::PersistentMemoryAllocator(
-            const_cast<void*>(allocator->data()), allocator->length(),
-            0, 0, "", false))));
+    return base::MakeUnique<base::PersistentHistogramAllocator>(
+        base::MakeUnique<base::PersistentMemoryAllocator>(
+            const_cast<void*>(allocator->data()), allocator->length(), 0, 0,
+            std::string(), false));
   }
 
   size_t GetSnapshotHistogramCount() {

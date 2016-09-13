@@ -661,16 +661,16 @@ void EasyUnlockServiceRegular::InitializeCryptAuth() {
   // Initialize enrollment manager.
   cryptauth::GcmDeviceInfo device_info;
   enrollment_manager_.reset(new proximity_auth::CryptAuthEnrollmentManager(
-      base::WrapUnique(new base::DefaultClock()),
-      base::WrapUnique(new proximity_auth::CryptAuthEnrollerFactoryImpl(
-          proximity_auth_client())),
+      base::MakeUnique<base::DefaultClock>(),
+      base::MakeUnique<proximity_auth::CryptAuthEnrollerFactoryImpl>(
+          proximity_auth_client()),
       proximity_auth_client()->CreateSecureMessageDelegate(),
       GetGcmDeviceInfo(), gcm_manager_.get(),
       proximity_auth_client()->GetPrefService()));
 
   // Initialize device manager.
   device_manager_.reset(new proximity_auth::CryptAuthDeviceManager(
-      base::WrapUnique(new base::DefaultClock()),
+      base::MakeUnique<base::DefaultClock>(),
       proximity_auth_client()->CreateCryptAuthClientFactory(),
       gcm_manager_.get(), proximity_auth_client()->GetPrefService()));
 

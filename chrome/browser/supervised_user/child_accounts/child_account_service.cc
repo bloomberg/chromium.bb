@@ -149,18 +149,18 @@ bool ChildAccountService::SetActive(bool active) {
 
     settings_service->SetLocalSetting(
         supervised_users::kRecordHistoryIncludesSessionSync,
-        base::WrapUnique(new base::FundamentalValue(false)));
+        base::MakeUnique<base::FundamentalValue>(false));
 
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(
         supervised_users::kSigninAllowed,
-        base::WrapUnique(new base::FundamentalValue(true)));
+        base::MakeUnique<base::FundamentalValue>(true));
 
     // SafeSearch is controlled at the account level, so don't override it
     // client-side.
     settings_service->SetLocalSetting(
         supervised_users::kForceSafeSearch,
-        base::WrapUnique(new base::FundamentalValue(false)));
+        base::MakeUnique<base::FundamentalValue>(false));
 
 #if !defined(OS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since

@@ -35,7 +35,7 @@ class PolicyMakeDefaultBrowserTest : public InProcessBrowserTest {
     values.Set(policy::key::kDefaultBrowserSettingEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(false), nullptr);
     provider_.UpdateChromePolicy(values);
   }
 

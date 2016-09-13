@@ -155,8 +155,8 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 std::unique_ptr<KeyedService>
 DownloadUIControllerTest::TestingDownloadServiceFactory(
     content::BrowserContext* browser_context) {
-  return base::WrapUnique(
-      new TestDownloadService(Profile::FromBrowserContext(browser_context)));
+  return base::MakeUnique<TestDownloadService>(
+      Profile::FromBrowserContext(browser_context));
 }
 
 DownloadUIControllerTest::DownloadUIControllerTest()
