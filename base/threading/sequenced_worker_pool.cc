@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -381,7 +382,14 @@ class SequencedWorkerPool::Inner {
 
   // Helper used by PostTask() to complete the work when redirection is on.
   // Coalesce upon resolution of http://crbug.com/622400.
-  void PostTaskToTaskScheduler(const SequencedTask& sequenced);
+  void PostTaskToTaskScheduler(const SequencedTask& sequenced,
+                               const TimeDelta& delay);
+
+  // Returns the TaskScheduler TaskRunner for the specified |sequence_token_id|
+  // and |traits|.
+  scoped_refptr<TaskRunner> GetTaskSchedulerTaskRunner(
+      int sequence_token_id,
+      const TaskTraits& traits);
 
   // Called from within the lock, this converts the given token name into a
   // token ID, creating a new one if necessary.
@@ -540,8 +548,12 @@ class SequencedWorkerPool::Inner {
   const base::TaskPriority task_priority_;
 
   // A map of SequenceToken IDs to TaskScheduler TaskRunners used to redirect
-  // SequencedWorkerPool usage to the TaskScheduler.
-  std::map<int, scoped_refptr<TaskRunner>> sequenced_task_runner_map_;
+  // sequenced tasks to the TaskScheduler.
+  std::unordered_map<int, scoped_refptr<TaskRunner>> sequenced_task_runner_map_;
+
+  // TaskScheduler TaskRunners to redirect unsequenced tasks to the
+  // TaskScheduler. Indexed by TaskShutdownBehavior.
+  scoped_refptr<TaskRunner> unsequenced_task_runners_[3];
 
   // A dummy TaskRunner obtained from TaskScheduler with the same TaskTraits as
   // used by this SequencedWorkerPool to query for RunsTasksOnCurrentThread().
@@ -719,7 +731,7 @@ bool SequencedWorkerPool::Inner::PostTask(
 
     if (subtle::NoBarrier_Load(&g_all_pools_state) ==
         AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
-      PostTaskToTaskScheduler(sequenced);
+      PostTaskToTaskScheduler(sequenced, delay);
     } else {
       pending_tasks_.insert(sequenced);
 
@@ -759,7 +771,8 @@ bool SequencedWorkerPool::Inner::PostTask(
 }
 
 void SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
-    const SequencedTask& sequenced) {
+    const SequencedTask& sequenced,
+    const TimeDelta& delay) {
   DCHECK_EQ(AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER,
             subtle::NoBarrier_Load(&g_all_pools_state));
 
@@ -783,42 +796,68 @@ void SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
 
   const TaskShutdownBehavior task_shutdown_behavior =
       static_cast<TaskShutdownBehavior>(sequenced.shutdown_behavior);
-  const TaskTraits pool_traits =
-      TaskTraits()
-          .WithFileIO()
-          .WithPriority(task_priority_)
-          .WithShutdownBehavior(task_shutdown_behavior);
+  const TaskTraits traits = TaskTraits()
+                                .WithFileIO()
+                                .WithPriority(task_priority_)
+                                .WithShutdownBehavior(task_shutdown_behavior);
+  GetTaskSchedulerTaskRunner(sequenced.sequence_token_id, traits)
+      ->PostDelayedTask(sequenced.posted_from, sequenced.task, delay);
+}
 
-  // Find or create the TaskScheduler TaskRunner to redirect this task to if
-  // it is posted to a specific sequence.
-  scoped_refptr<TaskRunner>* sequenced_task_runner = nullptr;
-  if (sequenced.sequence_token_id) {
-    sequenced_task_runner =
-        &sequenced_task_runner_map_[sequenced.sequence_token_id];
-    if (!*sequenced_task_runner) {
-      const ExecutionMode execution_mode =
-          max_threads_ == 1U ? ExecutionMode::SINGLE_THREADED
-                             : ExecutionMode::SEQUENCED;
-      *sequenced_task_runner =
-          CreateTaskRunnerWithTraits(pool_traits, execution_mode);
+scoped_refptr<TaskRunner>
+SequencedWorkerPool::Inner::GetTaskSchedulerTaskRunner(
+    int sequence_token_id,
+    const TaskTraits& traits) {
+  DCHECK_EQ(AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER,
+            subtle::NoBarrier_Load(&g_all_pools_state));
+
+  lock_.AssertAcquired();
+
+  static_assert(
+      static_cast<int>(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN) == 0,
+      "TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN must be equal to 0 to be "
+      "used as an index in |unsequenced_task_runners_|.");
+  static_assert(static_cast<int>(TaskShutdownBehavior::SKIP_ON_SHUTDOWN) == 1,
+                "TaskShutdownBehavior::SKIP_ON_SHUTDOWN must be equal to 1 to "
+                "be used as an index in |unsequenced_task_runners_|.");
+  static_assert(static_cast<int>(TaskShutdownBehavior::BLOCK_SHUTDOWN) == 2,
+                "TaskShutdownBehavior::BLOCK_SHUTDOWN must be equal to 2 to be "
+                "used as an index in |unsequenced_task_runners_|.");
+  static_assert(arraysize(unsequenced_task_runners_) == 3,
+                "The size of |unsequenced_task_runners_| doesn't match the "
+                "number of shutdown behaviors.");
+
+  scoped_refptr<TaskRunner>& task_runner =
+      sequence_token_id ? sequenced_task_runner_map_[sequence_token_id]
+                        : unsequenced_task_runners_[static_cast<int>(
+                              traits.shutdown_behavior())];
+
+  // TODO(fdoray): DCHECK that all tasks posted to the same sequence have the
+  // same shutdown behavior.
+
+  if (!task_runner) {
+    ExecutionMode execution_mode =
+        sequence_token_id ? ExecutionMode::SEQUENCED : ExecutionMode::PARALLEL;
+
+    if (max_threads_ == 1U) {
+      // Tasks posted to single-threaded pools can assume thread affinity.
+      execution_mode = ExecutionMode::SINGLE_THREADED;
+
+      // Disallow posting tasks with different sequence tokens to single-
+      // threaded pools since the TaskScheduler can't force different sequences
+      // to run on the same thread.
+      DCHECK_LE(sequenced_task_runner_map_.size(), 1U);
+
+      // Disallow posting tasks without a sequence token to a single-threaded
+      // pool. No users do that currently and we don't want to support new use
+      // cases.
+      DCHECK(sequence_token_id);
     }
+
+    task_runner = CreateTaskRunnerWithTraits(traits, execution_mode);
   }
 
-  if (sequenced_task_runner) {
-    (*sequenced_task_runner)
-        ->PostTask(sequenced.posted_from, sequenced.task);
-  } else {
-    // PostTaskWithTraits() posts a task with PARALLEL semantics. There are
-    // however a few pools that use only one thread and therefore can currently
-    // legitimatelly assume thread affinity despite using SequencedWorkerPool.
-    // Such pools typically only give access to their TaskRunner which will be
-    // SINGLE_THREADED per nature of the pool having only one thread but this
-    // DCHECK ensures no such pools use SequencedWorkerPool::PostTask()
-    // directly.
-    DCHECK_GT(max_threads_, 1U);
-    base::PostTaskWithTraits(sequenced.posted_from, pool_traits,
-                             sequenced.task);
-  }
+  return task_runner;
 }
 
 bool SequencedWorkerPool::Inner::RunsTasksOnCurrentThread() const {
