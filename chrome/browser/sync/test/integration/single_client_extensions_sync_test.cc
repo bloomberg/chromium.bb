@@ -82,9 +82,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   std::vector<sync_pb::SyncEntity> server_extensions =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::EXTENSIONS);
   ASSERT_EQ(1ul, server_extensions.size());
-  std::string entity_id = server_extensions[0].id_string();
   std::unique_ptr<fake_server::FakeServerEntity> tombstone(
-      fake_server::TombstoneEntity::Create(entity_id));
+      fake_server::TombstoneEntity::Create(
+          server_extensions[0].id_string(),
+          server_extensions[0].client_defined_unique_tag()));
   GetFakeServer()->InjectEntity(std::move(tombstone));
 
   // Modify the extension in the local profile to cause a conflict.

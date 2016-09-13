@@ -261,9 +261,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   if (!disabled_types.Has(syncer::PREFERENCES) &&
       base::FeatureList::IsEnabled(kSyncPreferencesFeature)) {
-    sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIDataTypeController>(syncer::PREFERENCES,
-                                               error_callback, sync_client_));
+    if (!override_prefs_controller_to_uss_for_test_) {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<UIDataTypeController>(syncer::PREFERENCES,
+                                                 error_callback, sync_client_));
+    } else {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<UIModelTypeController>(
+              syncer::PREFERENCES, error_callback, sync_client_));
+    }
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
@@ -413,3 +419,11 @@ ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
                                   model_associator, std::move(error_handler));
   return SyncComponents(model_associator, change_processor);
 }
+
+// static
+void ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(bool use_uss) {
+  override_prefs_controller_to_uss_for_test_ = use_uss;
+}
+
+bool ProfileSyncComponentsFactoryImpl::
+    override_prefs_controller_to_uss_for_test_ = false;

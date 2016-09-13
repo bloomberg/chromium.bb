@@ -28,10 +28,10 @@ namespace fake_server {
 class UniqueClientEntity : public FakeServerEntity {
  public:
   UniqueClientEntity(const std::string& id,
+                     const std::string& client_defined_unique_tag,
                      syncer::ModelType model_type,
                      int64_t version,
                      const std::string& name,
-                     const std::string& client_defined_unique_tag,
                      const sync_pb::EntitySpecifics& specifics,
                      int64_t creation_time,
                      int64_t last_modified_time);
@@ -59,7 +59,6 @@ class UniqueClientEntity : public FakeServerEntity {
 
  private:
   // These member values have equivalent fields in SyncEntity.
-  std::string client_defined_unique_tag_;
   int64_t creation_time_;
   int64_t last_modified_time_;
 };

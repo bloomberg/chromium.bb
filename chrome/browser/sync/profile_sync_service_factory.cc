@@ -170,8 +170,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                    ? ProfileSyncService::AUTO_START
                                    : ProfileSyncService::MANUAL_START;
 
-  init_params.sync_client =
-      base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
+  if (!client_factory_) {
+    init_params.sync_client =
+        base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
+  } else {
+    init_params.sync_client = client_factory_->Run(profile);
+  }
 
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = profile->GetPath();
@@ -196,3 +200,13 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 bool ProfileSyncServiceFactory::HasProfileSyncService(Profile* profile) {
   return GetInstance()->GetServiceForBrowserContext(profile, false) != NULL;
 }
+
+// static
+void ProfileSyncServiceFactory::SetSyncClientFactoryForTest(
+    SyncClientFactory* client_factory) {
+  client_factory_ = client_factory;
+}
+
+// static
+ProfileSyncServiceFactory::SyncClientFactory*
+    ProfileSyncServiceFactory::client_factory_ = nullptr;

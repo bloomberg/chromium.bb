@@ -65,13 +65,13 @@ std::unique_ptr<FakeServerEntity> PermanentEntity::CreateTopLevel(
 std::unique_ptr<FakeServerEntity> PermanentEntity::CreateUpdatedNigoriEntity(
     const sync_pb::SyncEntity& client_entity,
     const FakeServerEntity& current_server_entity) {
-  ModelType model_type = current_server_entity.GetModelType();
+  ModelType model_type = current_server_entity.model_type();
   CHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
                                       << "entities.";
 
   return base::WrapUnique<FakeServerEntity>(new PermanentEntity(
-      current_server_entity.GetId(), model_type,
-      current_server_entity.GetName(), current_server_entity.GetParentId(),
+      current_server_entity.id(), model_type, current_server_entity.GetName(),
+      current_server_entity.GetParentId(),
       syncer::ModelTypeToRootTag(model_type), client_entity.specifics()));
 }
 
@@ -81,7 +81,7 @@ PermanentEntity::PermanentEntity(const string& id,
                                  const string& parent_id,
                                  const string& server_defined_unique_tag,
                                  const sync_pb::EntitySpecifics& specifics)
-    : FakeServerEntity(id, model_type, 0, name),
+    : FakeServerEntity(id, string(), model_type, 0, name),
       server_defined_unique_tag_(server_defined_unique_tag),
       parent_id_(parent_id) {
   SetSpecifics(specifics);

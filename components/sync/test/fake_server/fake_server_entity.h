@@ -31,8 +31,11 @@ class FakeServerEntity {
   static std::string GetTopLevelId(const syncer::ModelType& model_type);
 
   virtual ~FakeServerEntity();
-  const std::string& GetId() const;
-  syncer::ModelType GetModelType() const;
+  const std::string& id() const { return id_; }
+  const std::string& client_defined_unique_tag() const {
+    return client_defined_unique_tag_;
+  }
+  syncer::ModelType model_type() const { return model_type_; }
   int64_t GetVersion() const;
   void SetVersion(int64_t version);
   const std::string& GetName() const;
@@ -56,6 +59,7 @@ class FakeServerEntity {
   static syncer::ModelType GetModelTypeFromId(const std::string& id);
 
   FakeServerEntity(const std::string& id,
+                   const std::string& client_defined_unique_tag,
                    const syncer::ModelType& model_type,
                    int64_t version,
                    const std::string& name);
@@ -64,10 +68,13 @@ class FakeServerEntity {
 
  private:
   // The entity's ID.
-  std::string id_;
+  const std::string id_;
+
+  // The tag for this entity. Can be empty for bookmarks or permanent entities.
+  const std::string client_defined_unique_tag_;
 
   // The ModelType that categorizes this entity.
-  syncer::ModelType model_type_;
+  const syncer::ModelType model_type_;
 
   // The version of this entity.
   int64_t version_;

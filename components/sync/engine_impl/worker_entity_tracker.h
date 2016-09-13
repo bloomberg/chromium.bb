@@ -72,6 +72,9 @@ class WorkerEntityTracker {
   // Clears the encrypted update. Allows us to resume regular commit behavior.
   void ClearEncryptedUpdate();
 
+  const std::string& id() const { return id_; }
+  const std::string& client_tag_hash() const { return client_tag_hash_; }
+
  private:
   // Checks if the current state indicates a conflict.
   //

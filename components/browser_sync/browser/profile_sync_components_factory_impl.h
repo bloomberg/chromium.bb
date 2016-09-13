@@ -88,6 +88,10 @@ class ProfileSyncComponentsFactoryImpl
       sync_driver::SyncService* sync_service,
       std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
 
+  // Sets a bit that determines whether PREFERENCES should be registered with a
+  // ModelTypeController for testing purposes.
+  static void OverridePrefsForUssTest(bool use_uss);
+
  private:
   // Register data types which are enabled on both desktop and mobile.
   // |disabled_types| and |enabled_types| correspond only to those types
@@ -116,6 +120,9 @@ class ProfileSyncComponentsFactoryImpl
   const scoped_refptr<password_manager::PasswordStore> password_store_;
 
   base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
+
+  // Whether to override PREFERENCES to use USS.
+  static bool override_prefs_controller_to_uss_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };

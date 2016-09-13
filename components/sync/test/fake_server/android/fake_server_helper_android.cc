@@ -301,7 +301,7 @@ void FakeServerHelperAndroid::DeleteEntity(JNIEnv* env,
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   std::string native_id = base::android::ConvertJavaStringToUTF8(env, id);
   fake_server_ptr->InjectEntity(
-      fake_server::TombstoneEntity::Create(native_id));
+      fake_server::TombstoneEntity::Create(native_id, std::string()));
 }
 
 void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,

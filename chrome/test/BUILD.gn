@@ -897,6 +897,7 @@ if (!is_android) {
       "//components/invalidation/impl",
       "//components/invalidation/impl:test_support",
       "//components/sync",
+      "//components/sync:test_support_sync_api",
       "//components/sync:test_support_sync_fake_server",
       "//components/sync:test_support_sync_testserver",
       "//content/test:test_support",
@@ -2681,6 +2682,7 @@ if (!is_android) {
       "../browser/sync/test/integration/two_client_sessions_sync_test.cc",
       "../browser/sync/test/integration/two_client_themes_sync_test.cc",
       "../browser/sync/test/integration/two_client_typed_urls_sync_test.cc",
+      "../browser/sync/test/integration/two_client_uss_sync_test.cc",
       "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
       "data/resource.rc",
     ]

@@ -139,8 +139,13 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
 
     WorkerEntityTracker* entity = GetOrCreateEntityTracker(data);
 
+    // Deleted entities must use the default instance of EntitySpecifics in
+    // order for EntityData to correctly reflect that they are deleted.
+    const sync_pb::EntitySpecifics& specifics =
+        update_entity->deleted() ? sync_pb::EntitySpecifics::default_instance()
+                                 : update_entity->specifics();
+
     // Check if specifics are encrypted and try to decrypt if so.
-    const sync_pb::EntitySpecifics& specifics = update_entity->specifics();
     if (!specifics.has_encrypted()) {
       // No encryption.
       entity->ReceiveUpdate(update_entity->version());

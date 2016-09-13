@@ -39,14 +39,6 @@ namespace fake_server {
 
 FakeServerEntity::~FakeServerEntity() {}
 
-const std::string& FakeServerEntity::GetId() const {
-  return id_;
-}
-
-ModelType FakeServerEntity::GetModelType() const {
-  return model_type_;
-}
-
 int64_t FakeServerEntity::GetVersion() const {
   return version_;
 }
@@ -108,10 +100,18 @@ ModelType FakeServerEntity::GetModelTypeFromId(const string& id) {
 }
 
 FakeServerEntity::FakeServerEntity(const string& id,
+                                   const string& client_defined_unique_tag,
                                    const ModelType& model_type,
                                    int64_t version,
                                    const string& name)
-    : id_(id), model_type_(model_type), version_(version), name_(name) {}
+    : id_(id),
+      client_defined_unique_tag_(client_defined_unique_tag),
+      model_type_(model_type),
+      version_(version),
+      name_(name) {
+  // There shouldn't be a unique_tag if the type is bookmarks.
+  DCHECK(model_type != syncer::BOOKMARKS || client_defined_unique_tag.empty());
+}
 
 void FakeServerEntity::SerializeBaseProtoFields(
     sync_pb::SyncEntity* sync_entity) const {
@@ -120,6 +120,8 @@ void FakeServerEntity::SerializeBaseProtoFields(
 
   // FakeServerEntity fields
   sync_entity->set_id_string(id_);
+  if (!client_defined_unique_tag_.empty())
+    sync_entity->set_client_defined_unique_tag(client_defined_unique_tag_);
   sync_entity->set_version(version_);
   sync_entity->set_name(name_);
 

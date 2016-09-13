@@ -83,7 +83,7 @@ BookmarkEntity::BookmarkEntity(const string& id,
                                const string& parent_id,
                                int64_t creation_time,
                                int64_t last_modified_time)
-    : FakeServerEntity(id, syncer::BOOKMARKS, version, name),
+    : FakeServerEntity(id, string(), syncer::BOOKMARKS, version, name),
       originator_cache_guid_(originator_cache_guid),
       originator_client_item_id_(originator_client_item_id),
       unique_position_(unique_position),

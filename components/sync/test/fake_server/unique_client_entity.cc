@@ -37,15 +37,18 @@ const int64_t kDefaultTime = 1234L;
 
 UniqueClientEntity::UniqueClientEntity(
     const string& id,
+    const string& client_defined_unique_tag,
     ModelType model_type,
     int64_t version,
     const string& name,
-    const string& client_defined_unique_tag,
     const sync_pb::EntitySpecifics& specifics,
     int64_t creation_time,
     int64_t last_modified_time)
-    : FakeServerEntity(id, model_type, version, name),
-      client_defined_unique_tag_(client_defined_unique_tag),
+    : FakeServerEntity(id,
+                       client_defined_unique_tag,
+                       model_type,
+                       version,
+                       name),
       creation_time_(creation_time),
       last_modified_time_(last_modified_time) {
   SetSpecifics(specifics);
@@ -62,8 +65,8 @@ std::unique_ptr<FakeServerEntity> UniqueClientEntity::Create(
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
   string id = EffectiveIdForClientTaggedEntity(client_entity);
   return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
-      id, model_type, client_entity.version(), client_entity.name(),
-      client_entity.client_defined_unique_tag(), client_entity.specifics(),
+      id, client_entity.client_defined_unique_tag(), model_type,
+      client_entity.version(), client_entity.name(), client_entity.specifics(),
       client_entity.ctime(), client_entity.mtime()));
 }
 
@@ -75,7 +78,7 @@ std::unique_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
   string client_defined_unique_tag = GenerateSyncableHash(model_type, name);
   string id = FakeServerEntity::CreateId(model_type, client_defined_unique_tag);
   return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
-      id, model_type, kUnusedVersion, name, client_defined_unique_tag,
+      id, client_defined_unique_tag, model_type, kUnusedVersion, name,
       entity_specifics, kDefaultTime, kDefaultTime));
 }
 
@@ -94,13 +97,12 @@ bool UniqueClientEntity::RequiresParentId() const {
 string UniqueClientEntity::GetParentId() const {
   // The parent ID for this type of entity should always be its ModelType's
   // root node.
-  return FakeServerEntity::GetTopLevelId(GetModelType());
+  return FakeServerEntity::GetTopLevelId(model_type());
 }
 
 void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   FakeServerEntity::SerializeBaseProtoFields(proto);
 
-  proto->set_client_defined_unique_tag(client_defined_unique_tag_);
   proto->set_ctime(creation_time_);
   proto->set_mtime(last_modified_time_);
 }
