@@ -127,7 +127,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
 }
 
 void GenericURLRequestJob::OnFetchStartError(net::Error error) {
-  OnStartError(error);
+  DispatchStartError(error);
 }
 
 void GenericURLRequestJob::OnFetchComplete(
