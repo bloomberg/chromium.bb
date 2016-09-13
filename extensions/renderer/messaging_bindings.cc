@@ -473,22 +473,14 @@ void MessagingBindings::OpenChannelToNativeApp(
   std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
   int local_id = GetNextLocalId();
-  ExtensionPort* port =
-      ports_
-          .insert(std::make_pair(
-              local_id, base::MakeUnique<ExtensionPort>(context(), local_id)))
-          .first->second.get();
+  ports_[local_id] = base::MakeUnique<ExtensionPort>(context(), local_id);
 
-  int global_id = -1;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Extensions.Messaging.GetPortIdSyncTime.NativeApp");
-    // TODO(devlin): Make this async. crbug.com/642380
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-        render_frame->GetRoutingID(), native_app_name, &global_id));
-  }
-
-  port->SetGlobalId(global_id);
+  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
+  DCHECK(frame_helper);
+  frame_helper->RequestNativeAppPortId(
+      native_app_name,
+      base::Bind(&MessagingBindings::SetGlobalPortId,
+                 weak_ptr_factory_.GetWeakPtr(), local_id));
   args.GetReturnValue().Set(static_cast<int32_t>(local_id));
 }
 
@@ -512,26 +504,22 @@ void MessagingBindings::OpenChannelToTab(
   CHECK(args[3]->IsString());
 
   int local_id = GetNextLocalId();
-  ExtensionPort* port =
-      ports_
-          .insert(std::make_pair(
-              local_id, base::MakeUnique<ExtensionPort>(context(), local_id)))
-          .first->second.get();
+  ports_[local_id] = base::MakeUnique<ExtensionPort>(context(), local_id);
 
   ExtensionMsg_TabTargetConnectionInfo info;
   info.tab_id = args[0]->Int32Value();
   info.frame_id = args[1]->Int32Value();
+  // TODO(devlin): Why is this not part of info?
   std::string extension_id = *v8::String::Utf8Value(args[2]);
   std::string channel_name = *v8::String::Utf8Value(args[3]);
-  int global_id = -1;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.GetPortIdSyncTime.Tab");
-    // TODO(devlin): Make this async. crbug.com/642380
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
-        render_frame->GetRoutingID(), info, extension_id, channel_name,
-        &global_id));
-  }
-  port->SetGlobalId(global_id);
+
+  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
+  DCHECK(frame_helper);
+  frame_helper->RequestTabPortId(
+      info, extension_id, channel_name,
+      base::Bind(&MessagingBindings::SetGlobalPortId,
+                 weak_ptr_factory_.GetWeakPtr(), local_id));
+
   args.GetReturnValue().Set(static_cast<int32_t>(local_id));
 }
 

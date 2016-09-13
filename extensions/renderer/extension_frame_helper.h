@@ -16,6 +16,7 @@
 
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
+struct ExtensionMsg_TabTargetConnectionInfo;
 
 namespace base {
 class ListValue;
@@ -87,6 +88,12 @@ class ExtensionFrameHelper
                      const std::string& channel_name,
                      bool include_tls_channel_id,
                      const base::Callback<void(int)>& callback);
+  void RequestTabPortId(const ExtensionMsg_TabTargetConnectionInfo& info,
+                        const std::string& extension_id,
+                        const std::string& channel_name,
+                        const base::Callback<void(int)>& callback);
+  void RequestNativeAppPortId(const std::string& native_app_name,
+                              const base::Callback<void(int)>& callback);
 
  private:
   // RenderFrameObserver implementation.

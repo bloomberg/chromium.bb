@@ -694,19 +694,19 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_AssignPortId,
                     int /*port_id */,
                     int /* request_id */)
 
-IPC_SYNC_MESSAGE_CONTROL2_1(ExtensionHostMsg_OpenChannelToNativeApp,
-                            int /* frame_routing_id */,
-                            std::string /* native_app_name */,
-                            int /* port_id */)
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_OpenChannelToNativeApp,
+                     int /* frame_routing_id */,
+                     std::string /* native_app_name */,
+                     int /* request_id */)
 
 // Get a port handle to the given tab.  The handle can be used for sending
 // messages to the extension.
-IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToTab,
-                            int /* frame_routing_id */,
-                            ExtensionMsg_TabTargetConnectionInfo,
-                            std::string /* extension_id */,
-                            std::string /* channel_name */,
-                            int /* port_id */)
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToTab,
+                     int /* frame_routing_id */,
+                     ExtensionMsg_TabTargetConnectionInfo,
+                     std::string /* extension_id */,
+                     std::string /* channel_name */,
+                     int /* request_id */)
 
 // Sent in response to ExtensionMsg_DispatchOnConnect when the port is accepted.
 // The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.

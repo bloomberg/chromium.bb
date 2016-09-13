@@ -190,6 +190,34 @@ void ExtensionFrameHelper::RequestPortId(
   }
 }
 
+void ExtensionFrameHelper::RequestTabPortId(
+    const ExtensionMsg_TabTargetConnectionInfo& info,
+    const std::string& extension_id,
+    const std::string& channel_name,
+    const base::Callback<void(int)>& callback) {
+  int port_request_id = next_port_request_id_++;
+  pending_port_requests_[port_request_id] = callback;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.GetPortIdSyncTime.Tab");
+    render_frame()->Send(new ExtensionHostMsg_OpenChannelToTab(
+        render_frame()->GetRoutingID(), info, extension_id, channel_name,
+        port_request_id));
+  }
+}
+
+void ExtensionFrameHelper::RequestNativeAppPortId(
+    const std::string& native_app_name,
+    const base::Callback<void(int)>& callback) {
+  int port_request_id = next_port_request_id_++;
+  pending_port_requests_[port_request_id] = callback;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Extensions.Messaging.GetPortIdSyncTime.NativeApp");
+    render_frame()->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+        render_frame()->GetRoutingID(), native_app_name, port_request_id));
+  }
+}
+
 void ExtensionFrameHelper::DidMatchCSS(
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
