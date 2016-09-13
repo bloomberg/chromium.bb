@@ -7,28 +7,20 @@
 // Used by host_service.rc
 //
 
-// N.B. Values of |IDS_DISPLAY_SERVICE_NAME|, |IDS_SERVICE_DESCRIPTION|,
-//      |IDS_CONTROLLER_NAME| and |IDD_VERIFY_CONFIG_DIALOG| are hardcoded in
-//      remoting/host/install/chromoting.wxs. Make sure the values below and in
-//      the installation script match.
-#define IDS_DISPLAY_SERVICE_NAME        101
-#define IDS_SERVICE_DESCRIPTION         102
-#define IDS_CONTROLLER_NAME             103
-#define IDD_VERIFY_CONFIG_DIALOG        104
-#define IDC_MESSAGE                     105
-#define IDC_EMAIL                       106
-#define IDC_PIN                         107
-#define IDC_EMAIL_LABEL                 108
-#define IDC_PIN_LABEL                   109
-
-#define IDD_DISCONNECT                  110
-#define IDD_CONTINUE                    111
-#define IDI_CHROME_REMOTE_DESKTOP       112
-#define IDS_PRODUCT_NAME                113
+// N.B. Values of |IDS_DISPLAY_SERVICE_NAME|, |IDS_SERVICE_DESCRIPTION| are
+//      hardcoded in remoting/host/install/chromoting.wxs. Make sure the values
+//      below and in the installation script match.
+#define IDS_DISPLAY_SERVICE_NAME         101
+#define IDS_SERVICE_DESCRIPTION          102
+#define IDD_DISCONNECT                   110
+#define IDD_CONTINUE                     111
+#define IDI_CHROME_REMOTE_DESKTOP        112
+#define IDS_PRODUCT_NAME                 113
 #define IDS_SHARE_CONFIRM_DIALOG_MESSAGE 114
 #define IDS_SHARE_CONFIRM_DIALOG_MESSAGE_WITH_USERNAME 115
 #define IDS_SHARE_CONFIRM_DIALOG_CONFIRM 116
 #define IDS_SHARE_CONFIRM_DIALOG_DECLINE 117
+
 #define IDC_DISCONNECT                  1001
 #define IDC_DISCONNECT_SHARINGWITH      1002
 #define IDC_DISCONNECT_USERNAME         1003
