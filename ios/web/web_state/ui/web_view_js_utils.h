@@ -21,6 +21,9 @@ namespace web {
 // The domain for JS evaluation NSErrors in web.
 extern NSString* const kJSEvaluationErrorDomain;
 
+// The maximum recursion depth when parsing JS results.
+extern int const kMaximumParsingRecursionDepth;
+
 // The type of errors that can occur while evaluating JS.
 enum JSEvaluationErrorCode {
   // No web view present to evaluate JS.

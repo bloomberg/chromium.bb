@@ -4,7 +4,9 @@
 
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,12 +70,12 @@ TEST(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
 // Tests that ValueResultFromWKResult converts NSDictionaries to properly
 // initialized base::DictionaryValue.
 TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
-  NSDictionary* testDictionary =
+  NSDictionary* test_dictionary =
       @{ @"Key1" : @"Value1",
          @"Key2" : @{@"Key3" : @42} };
 
   std::unique_ptr<base::Value> value(
-      web::ValueResultFromWKResult(testDictionary));
+      web::ValueResultFromWKResult(test_dictionary));
   base::DictionaryValue* dictionary = nullptr;
   value->GetAsDictionary(&dictionary);
   EXPECT_NE(nullptr, dictionary);
@@ -82,13 +84,51 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
   dictionary->GetString("Key1", &value1);
   EXPECT_EQ("Value1", value1);
 
-  base::DictionaryValue const* innerDictionary = nullptr;
-  dictionary->GetDictionary("Key2", &innerDictionary);
-  EXPECT_NE(nullptr, innerDictionary);
+  base::DictionaryValue const* inner_dictionary = nullptr;
+  dictionary->GetDictionary("Key2", &inner_dictionary);
+  EXPECT_NE(nullptr, inner_dictionary);
 
   double value3;
-  innerDictionary->GetDouble("Key3", &value3);
+  inner_dictionary->GetDouble("Key3", &value3);
   EXPECT_EQ(42, value3);
+}
+
+// Tests that an NSDictionary with a cycle does not cause infinite recursion.
+TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
+  // Create a dictionary with a cycle.
+  NSMutableDictionary* test_dictionary =
+      [NSMutableDictionary dictionaryWithCapacity:1];
+  NSMutableDictionary* test_dictionary_2 =
+      [NSMutableDictionary dictionaryWithCapacity:1];
+  const char* key = "key";
+  NSString* obj_c_key =
+      [NSString stringWithCString:key encoding:NSASCIIStringEncoding];
+  test_dictionary[obj_c_key] = test_dictionary_2;
+  test_dictionary_2[obj_c_key] = test_dictionary;
+
+  // Break the retain cycle so that the dictionaries are freed.
+  base::ScopedClosureRunner runner(base::BindBlock(^{
+    [test_dictionary_2 removeAllObjects];
+  }));
+
+  // Check that parsing the dictionary stopped at a depth of
+  // |kMaximumParsingRecursionDepth|.
+  std::unique_ptr<base::Value> value =
+      web::ValueResultFromWKResult(test_dictionary);
+  base::DictionaryValue* current_dictionary = nullptr;
+  base::DictionaryValue* inner_dictionary = nullptr;
+
+  value->GetAsDictionary(&current_dictionary);
+  EXPECT_NE(nullptr, current_dictionary);
+
+  for (int current_depth = 0; current_depth <= kMaximumParsingRecursionDepth;
+       current_depth++) {
+    EXPECT_NE(nullptr, current_dictionary);
+    inner_dictionary = nullptr;
+    current_dictionary->GetDictionary(key, &inner_dictionary);
+    current_dictionary = inner_dictionary;
+  }
+  EXPECT_EQ(nullptr, current_dictionary);
 }
 
 }  // namespace web

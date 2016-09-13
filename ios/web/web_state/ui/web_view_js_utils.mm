@@ -8,20 +8,28 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
-namespace web {
+namespace {
 
-NSString* const kJSEvaluationErrorDomain = @"JSEvaluationError";
-
-std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
+// Converts result of WKWebView script evaluation to base::Value, parsing
+// |wk_result| up to a depth of |max_depth|.
+std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
+                                                     int max_depth) {
   if (!wk_result)
     return nullptr;
 
   std::unique_ptr<base::Value> result;
+
+  if (max_depth < 0) {
+    DLOG(WARNING) << "JS maximum recursion depth exceeded.";
+    return result;
+  }
+
   CFTypeID result_type = CFGetTypeID(wk_result);
   if (result_type == CFStringGetTypeID()) {
     result.reset(new base::StringValue(base::SysNSStringToUTF16(wk_result)));
@@ -40,16 +48,30 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
     std::unique_ptr<base::DictionaryValue> dictionary =
         base::MakeUnique<base::DictionaryValue>();
     for (id key in wk_result) {
-      DCHECK([key respondsToSelector:@selector(UTF8String)]);
-      const std::string& path([key UTF8String]);
-      dictionary->Set(path,
-                      ValueResultFromWKResult([wk_result objectForKey:key]));
+      NSString* obj_c_string = base::mac::ObjCCast<NSString>(key);
+      const std::string path = base::SysNSStringToUTF8(obj_c_string);
+      std::unique_ptr<base::Value> value = ValueResultFromWKResult(
+          [wk_result objectForKey:obj_c_string], max_depth - 1);
+      if (value) {
+        dictionary->Set(path, std::move(value));
+      }
     }
     result = std::move(dictionary);
   } else {
     NOTREACHED();  // Convert other types as needed.
   }
   return result;
+}
+
+}  // namespace
+
+namespace web {
+
+NSString* const kJSEvaluationErrorDomain = @"JSEvaluationError";
+int const kMaximumParsingRecursionDepth = 6;
+
+std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
+  return ::ValueResultFromWKResult(wk_result, kMaximumParsingRecursionDepth);
 }
 
 void ExecuteJavaScript(WKWebView* web_view,
