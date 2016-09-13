@@ -99,7 +99,7 @@ FramebustingNeedsSameOriginOrUserGesture status=stable
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 GamepadExtensions
-GeometryInterfaces status=test
+GeometryInterfaces status=experimental, implied_by=CompositorWorker
 GetUserMedia status=stable
 GlobalCacheStorage status=stable
 IDBObserver status=experimental
