@@ -111,6 +111,13 @@ class ChromeIdentityService {
   NewWebAndAppSettingDetails(ChromeIdentity* identity,
                              id<ChromeIdentityBrowserOpener> browser_opener);
 
+  // Returns a new ChromeIdentityInteractionManager with |delegate| as its
+  // delegate.
+  virtual base::scoped_nsobject<ChromeIdentityInteractionManager>
+  NewChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
+
   // Returns a newly created and autoreleased ChromeIdentityInteractionManager
   // with |delegate| as its delegate.
   virtual ChromeIdentityInteractionManager*

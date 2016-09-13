@@ -37,6 +37,13 @@ ChromeIdentityService::NewWebAndAppSettingDetails(
   return base::scoped_nsobject<UINavigationController>();
 }
 
+base::scoped_nsobject<ChromeIdentityInteractionManager>
+ChromeIdentityService::NewChromeIdentityInteractionManager(
+    ios::ChromeBrowserState* browser_state,
+    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+  return base::scoped_nsobject<ChromeIdentityInteractionManager>();
+}
+
 ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,

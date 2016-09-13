@@ -154,6 +154,16 @@ FakeChromeIdentityService::NewAccountDetails(
   return navigationController;
 }
 
+base::scoped_nsobject<ChromeIdentityInteractionManager>
+FakeChromeIdentityService::NewChromeIdentityInteractionManager(
+    ios::ChromeBrowserState* browser_state,
+    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+  base::scoped_nsobject<ChromeIdentityInteractionManager> manager(
+      [[FakeChromeIdentityInteractionManager alloc] init]);
+  manager.get().delegate = delegate;
+  return manager;
+}
+
 ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,

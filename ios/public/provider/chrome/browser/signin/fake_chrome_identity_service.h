@@ -28,6 +28,10 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   base::scoped_nsobject<UINavigationController> NewAccountDetails(
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener) override;
+  base::scoped_nsobject<ChromeIdentityInteractionManager>
+  NewChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
   ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
       ios::ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
