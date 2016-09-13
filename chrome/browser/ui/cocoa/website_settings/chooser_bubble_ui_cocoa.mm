@@ -105,7 +105,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   if ((self = [super initWithWindow:window
                        parentWindow:[self getExpectedParentWindow]
                          anchoredAt:NSZeroPoint])) {
-    [self setShouldCloseOnResignKey:NO];
+    [self setShouldCloseOnResignKey:YES];
     [self setShouldOpenAsKeyWindow:YES];
     [[self bubble] setArrowLocation:[self getExpectedArrowLocation]];
     bridge_ = bridge;
