@@ -155,9 +155,9 @@ public:
             m_name = AtomicString(token.data());
             m_doctypeData = wrapUnique(new DoctypeData());
             m_doctypeData->m_hasPublicIdentifier = true;
-            append(m_doctypeData->m_publicIdentifier, token.publicIdentifier());
+            token.publicIdentifier().appendTo(m_doctypeData->m_publicIdentifier);
             m_doctypeData->m_hasSystemIdentifier = true;
-            append(m_doctypeData->m_systemIdentifier, token.systemIdentifier());
+            token.systemIdentifier().appendTo(m_doctypeData->m_systemIdentifier);
             m_doctypeData->m_forceQuirks = token.doctypeForcesQuirks();
             break;
         case HTMLToken::EndOfFile:

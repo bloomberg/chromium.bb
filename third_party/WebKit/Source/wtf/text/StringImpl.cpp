@@ -498,6 +498,18 @@ UChar32 StringImpl::characterStartingAt(unsigned i)
     return 0;
 }
 
+unsigned StringImpl::copyTo(UChar* buffer, unsigned start, unsigned maxLength) const
+{
+    unsigned numberOfCharactersToCopy = std::min(length() - start, maxLength);
+    if (!numberOfCharactersToCopy)
+        return 0;
+    if (is8Bit())
+        copyChars(buffer, characters8() + start, numberOfCharactersToCopy);
+    else
+        copyChars(buffer, characters16() + start, numberOfCharactersToCopy);
+    return numberOfCharactersToCopy;
+}
+
 PassRefPtr<StringImpl> StringImpl::lowerASCII()
 {
 

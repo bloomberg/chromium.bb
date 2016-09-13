@@ -193,14 +193,6 @@ public:
     size_t reverseFind(const StringView& value, unsigned start = UINT_MAX) const
         { return m_impl ? m_impl->reverseFind(value, start) : kNotFound; }
 
-    unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
-
-    template<typename BufferType>
-    void appendTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
-
-    template<typename BufferType>
-    void prependTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
-
     UChar32 characterStartingAt(unsigned) const;
 
     bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
@@ -297,6 +289,16 @@ public:
     {
         split(separator, false, result);
     }
+
+    // Copy characters out of the string. See StringImpl.h for detailed docs.
+    unsigned copyTo(UChar* buffer, unsigned start, unsigned maxLength) const
+        { return m_impl ? m_impl->copyTo(buffer, start, maxLength) : 0; }
+    template<typename BufferType>
+    void appendTo(BufferType&, unsigned start = 0, unsigned length = UINT_MAX) const;
+    template<typename BufferType>
+    void prependTo(BufferType&, unsigned start = 0, unsigned length = UINT_MAX) const;
+
+    // Convert the string into a number.
 
     int toIntStrict(bool* ok = 0, int base = 10) const;
     unsigned toUIntStrict(bool* ok = 0, int base = 10) const;
@@ -481,22 +483,6 @@ inline bool codePointCompareLessThan(const String& a, const String& b)
 
 WTF_EXPORT int codePointCompareIgnoringASCIICase(const String&, const char*);
 
-template<size_t inlineCapacity>
-inline void append(Vector<UChar, inlineCapacity>& vector, const String& string)
-{
-    unsigned length = string.length();
-    if (!length)
-        return;
-    if (string.is8Bit()) {
-        const LChar* characters8 = string.characters8();
-        vector.reserveCapacity(vector.size() + length);
-        for (size_t i = 0; i < length; ++i)
-            vector.uncheckedAppend(characters8[i]);
-    } else {
-        vector.append(string.characters16(), length);
-    }
-}
-
 template<bool isSpecialCharacter(UChar), typename CharacterType>
 inline bool isAllSpecialCharacters(const CharacterType* characters, size_t length)
 {
@@ -521,27 +507,19 @@ inline bool String::isAllSpecialCharacters() const
 }
 
 template<typename BufferType>
-inline void String::appendTo(BufferType& result, unsigned pos, unsigned len) const
+void String::appendTo(BufferType& result, unsigned position, unsigned length) const
 {
-    unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (!numberOfCharactersToCopy)
+    if (!m_impl)
         return;
-    if (is8Bit())
-        result.append(m_impl->characters8() + pos, numberOfCharactersToCopy);
-    else
-        result.append(m_impl->characters16() + pos, numberOfCharactersToCopy);
+    m_impl->appendTo(result, position, length);
 }
 
 template<typename BufferType>
-inline void String::prependTo(BufferType& result, unsigned pos, unsigned len) const
+void String::prependTo(BufferType& result, unsigned position, unsigned length) const
 {
-    unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (!numberOfCharactersToCopy)
+    if (!m_impl)
         return;
-    if (is8Bit())
-        result.prepend(m_impl->characters8() + pos, numberOfCharactersToCopy);
-    else
-        result.prepend(m_impl->characters16() + pos, numberOfCharactersToCopy);
+    m_impl->prependTo(result, position, length);
 }
 
 // StringHash is the default hash for String
@@ -576,7 +554,6 @@ using WTF::StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD;
 using WTF::String;
 using WTF::emptyString;
 using WTF::emptyString16Bit;
-using WTF::append;
 using WTF::charactersAreAllASCII;
 using WTF::equal;
 using WTF::find;

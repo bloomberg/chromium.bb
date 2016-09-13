@@ -383,6 +383,27 @@ public:
 
     PassRefPtr<StringImpl> upconvertedString();
 
+    // Copy characters from string starting at |start| up until |maxLength| or
+    // the end of the string is reached. Returns the actual number of characters
+    // copied.
+    unsigned copyTo(UChar* buffer, unsigned start, unsigned maxLength) const;
+
+    // Append characters from this string into a buffer. Expects the buffer to
+    // have the methods:
+    //    append(const UChar*, unsigned length);
+    //    append(const LChar*, unsigned length);
+    // StringBuilder and Vector conform to this protocol.
+    template<typename BufferType>
+    void appendTo(BufferType&, unsigned start = 0, unsigned length = UINT_MAX) const;
+
+    // Prepend characters from this string into a buffer. Expects the buffer to
+    // have the methods:
+    //    prepend(const UChar*, unsigned length);
+    //    prepend(const LChar*, unsigned length);
+    // Vector conforms to this protocol.
+    template<typename BufferType>
+    void prependTo(BufferType&, unsigned start = 0, unsigned length = UINT_MAX) const;
+
 #if OS(MACOSX)
     RetainPtr<CFStringRef> createCFString();
 #endif
@@ -678,6 +699,30 @@ inline PassRefPtr<StringImpl> StringImpl::isolatedCopy() const
     if (is8Bit())
         return create(characters8(), m_length);
     return create(characters16(), m_length);
+}
+
+template<typename BufferType>
+inline void StringImpl::appendTo(BufferType& result, unsigned start, unsigned length) const
+{
+    unsigned numberOfCharactersToCopy = std::min(length, m_length - start);
+    if (!numberOfCharactersToCopy)
+        return;
+    if (is8Bit())
+        result.append(characters8() + start, numberOfCharactersToCopy);
+    else
+        result.append(characters16() + start, numberOfCharactersToCopy);
+}
+
+template<typename BufferType>
+inline void StringImpl::prependTo(BufferType& result, unsigned start, unsigned length) const
+{
+    unsigned numberOfCharactersToCopy = std::min(length, m_length - start);
+    if (!numberOfCharactersToCopy)
+        return;
+    if (is8Bit())
+        result.prepend(characters8() + start, numberOfCharactersToCopy);
+    else
+        result.prepend(characters16() + start, numberOfCharactersToCopy);
 }
 
 // TODO(rob.buis) possibly find a better place for this method.

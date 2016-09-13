@@ -121,7 +121,7 @@ public:
         String value() const { return String(m_value); }
 
         void appendToValue(UChar c) { m_value.append(c); }
-        void appendToValue(const String& value) { append(m_value, value); }
+        void appendToValue(const String& value) { value.appendTo(m_value); }
         void clearValue() { m_value.clear(); }
 
         const Range& nameRange() const { return m_nameRange; }

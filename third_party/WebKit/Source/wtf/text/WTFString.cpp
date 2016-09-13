@@ -331,20 +331,6 @@ String String::foldCase() const
     return m_impl->foldCase();
 }
 
-unsigned String::copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const
-{
-    unsigned length = this->length();
-    RELEASE_ASSERT(pos <= length);
-    unsigned numCharacters = std::min(length - pos, maxLength);
-    if (!numCharacters)
-        return 0;
-    if (is8Bit())
-        StringImpl::copyChars(buffer, characters8() + pos, numCharacters);
-    else
-        StringImpl::copyChars(buffer, characters16() + pos, numCharacters);
-    return numCharacters;
-}
-
 String String::format(const char *format, ...)
 {
     va_list args;
