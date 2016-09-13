@@ -62,11 +62,7 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(cons
     DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
 
     Document& document = *positionWithAffinity.position().document();
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
+    DCHECK(!document.needsLayoutTreeUpdate());
     DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
 
     const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
@@ -87,36 +83,64 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(cons
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::afterNode(Node* node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (node)
+        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::afterNode(node)));
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::beforeNode(Node* node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (node)
+        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::beforeNode(node)));
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::firstPositionInNode(Node* node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (node)
+        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(node)));
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentAfterNode(const Node& node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentAfterNode(node)));
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentBeforeNode(const Node& node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentBeforeNode(node)));
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::lastPositionInNode(Node* node)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (node)
+        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::lastPositionInNode(node)));
 }
 
@@ -127,6 +151,11 @@ VisiblePosition createVisiblePosition(const Position& position, TextAffinity aff
 
 VisiblePosition createVisiblePosition(const PositionWithAffinity& positionWithAffinity)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (positionWithAffinity.isNotNull())
+        positionWithAffinity.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return VisiblePosition::create(positionWithAffinity);
 }
 
@@ -137,6 +166,11 @@ VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree& positi
 
 VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity& positionWithAffinity)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    if (positionWithAffinity.isNotNull())
+        positionWithAffinity.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return VisiblePositionInFlatTree::create(positionWithAffinity);
 }
 
