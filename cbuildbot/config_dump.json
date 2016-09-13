@@ -18308,9 +18308,13 @@
     },
     "pbody-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "pbody"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "pbody-release-afdo": {
         "_template": "release-afdo-generate",

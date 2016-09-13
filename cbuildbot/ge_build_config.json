@@ -750,6 +750,17 @@
       ]
     },
     {
+      "name": "pbody",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "glados"
+        }
+      ]
+    },
+    {
       "name": "peach_pi",
       "configs": [
         {
