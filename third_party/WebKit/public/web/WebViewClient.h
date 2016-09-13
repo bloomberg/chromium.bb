@@ -187,6 +187,14 @@ public:
     // Called when the View acquires focus.
     virtual void didFocus() {}
 
+    // TODO(lfg): The callback below is exposed in RenderViewObserver and only
+    // used to implement autofill. We should figure out a better way to plumb
+    // this.
+    // Called immediately after a mousedown event is dispatched due to a mouse
+    // press or gesture tap.
+    // Note: This is called even when the mouse down event is prevent default.
+    virtual void onMouseDown(const WebNode& mouseDownNode) { }
+
     // Session history -----------------------------------------------------
 
     // Tells the embedder to navigate back or forward in session history by
@@ -256,7 +264,6 @@ public:
     void didOverscroll(const WebFloatSize& overscrollDelta, const WebFloatSize& accumulatedOverscroll, const WebFloatPoint& positionInViewport, const WebFloatSize& velocityInViewport) override {}
     void hasTouchEventHandlers(bool) override {}
     void initializeLayerTreeView() override {}
-    void onMouseDown(const WebNode& mouseDownNode) override {}
     void resetInputMethod() override {}
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }
     void setToolTipText(const WebString&, WebTextDirection hint) override {}

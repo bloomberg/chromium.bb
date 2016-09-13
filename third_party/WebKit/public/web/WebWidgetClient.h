@@ -160,11 +160,6 @@ public:
     virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
         const WebNode& tappedNode, bool pageChanged) { }
 
-    // Called immediately after a mousedown event is dispatched due to a mouse
-    // press or gesture tap.
-    // Note: This is called even when the mouse down event is prevent default.
-    virtual void onMouseDown(const WebNode& mouseDownNode) { }
-
     // Converts the |rect| from Blink's Viewport coordinates to the
     // coordinates in the native window used to display the content, in
     // DIP.  They're identical in tradional world, but will differ when
