@@ -41,7 +41,8 @@ void SetAccountCreationFormsDetectedMessage(
 
   std::vector<autofill::PasswordFormGenerationData> forms;
   forms.push_back(autofill::PasswordFormGenerationData{
-      form_data.name, form_data.action, form_data.fields[field_index]});
+      form_data.name, form_util::StripAuthAndParams(form_data.action),
+      form_data.fields[field_index]});
   generation_agent->FoundFormsEligibleForGeneration(forms);
 }
 

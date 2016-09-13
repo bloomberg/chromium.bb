@@ -14,6 +14,24 @@
 
 namespace password_manager {
 
+namespace {
+
+// Helper function that returns canonical action based on |target_url| and
+// |source_url|.
+GURL GetCanonicalAction(const GURL& source_url, const GURL& target_url) {
+  GURL action = target_url;
+  if (action.is_empty())
+    action = source_url;
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return action.ReplaceComponents(rep);
+}
+
+}  // namespace
+
 PasswordGenerationManager::PasswordGenerationManager(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver)
@@ -41,8 +59,10 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
       if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
           field->server_type() == autofill::NEW_PASSWORD) {
         forms_eligible_for_generation.push_back(
-            autofill::PasswordFormGenerationData{form->form_name(),
-                                                 form->target_url(), *field});
+            autofill::PasswordFormGenerationData{
+                form->form_name(),
+                GetCanonicalAction(form->source_url(), form->target_url()),
+                *field});
         break;
       }
     }
