@@ -240,6 +240,7 @@ using DocumentClassFlags = unsigned char;
 class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public Supplementable<Document> {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Document);
+    friend class Settings;
 public:
     static Document* create(const DocumentInit& initializer = DocumentInit())
     {
@@ -1434,6 +1435,9 @@ private:
     bool m_visibilityWasLogged;
 
     Member<PropertyRegistry> m_propertyRegistry;
+
+    // m_defaultSettings will be used only if the document does not have a frame.
+    mutable std::unique_ptr<Settings> m_defaultSettings;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

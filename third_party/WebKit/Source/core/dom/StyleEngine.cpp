@@ -61,12 +61,9 @@ StyleEngine::StyleEngine(Document& document)
     : m_document(&document)
     , m_isMaster(!document.importsController() || document.importsController()->master() == &document)
     , m_documentStyleSheetCollection(DocumentStyleSheetCollection::create(document))
-    // We don't need to create CSSFontSelector for imported document or
-    // HTMLTemplateElement's document, because those documents have no frame.
-    , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
 {
-    if (m_fontSelector)
-        m_fontSelector->registerForInvalidationCallbacks(this);
+    m_fontSelector = CSSFontSelector::create(m_document);
+    m_fontSelector->registerForInvalidationCallbacks(this);
 }
 
 StyleEngine::~StyleEngine()
@@ -390,13 +387,6 @@ void StyleEngine::appendActiveAuthorStyleSheets()
 
 void StyleEngine::createResolver()
 {
-    TRACE_EVENT1("blink", "StyleEngine::createResolver", "frame", document().frame());
-    // It is a programming error to attempt to resolve style on a Document
-    // which is not in a frame. Code which hits this should have checked
-    // Document::isActive() before calling into code which could get here.
-
-    DCHECK(document().frame());
-
     m_resolver = StyleResolver::create(*m_document);
 
     // A scoped style resolver for document will be created during

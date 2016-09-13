@@ -1254,3 +1254,9 @@ crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.ht
 
 # Tests added from W3C auto import bot
 crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure ]
+
+# Skip the test for drawing text on canvases with no browsing context on Mac.
+# The feature works on Mac, but the default behavior must be determined as Mac does not use sans-serif 10 px as default font.
+crbug.com/646598 [ Mac ] virtual/display_list_2d_canvas/fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
+crbug.com/646598 virtual/gpu/fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
+crbug.com/646598 fast/canvas/text-rendering-frameless-canvas.html [ Skip ]

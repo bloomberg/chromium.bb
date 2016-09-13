@@ -44,14 +44,13 @@ namespace blink {
 
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
-    , m_genericFontFamilySettings(document->frame()->settings()->genericFontFamilySettings())
+    , m_genericFontFamilySettings(document->settings()->genericFontFamilySettings())
 {
     // FIXME: An old comment used to say there was no need to hold a reference to m_document
     // because "we are guaranteed to be destroyed before the document". But there does not
     // seem to be any such guarantee.
 
     ASSERT(m_document);
-    ASSERT(m_document->frame());
     FontCache::fontCache()->addClient(this);
     FontFaceSet::from(*document)->addFontFacesToFontFaceCache(&m_fontFaceCache, this);
 }

@@ -38,7 +38,6 @@ FontBuilder::FontBuilder(const Document& document)
     : m_document(&document)
     , m_flags(0)
 {
-    ASSERT(document.frame());
 }
 
 void FontBuilder::setInitial(float effectiveZoom)

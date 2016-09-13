@@ -374,10 +374,6 @@ SkImageFilter* CanvasRenderingContext2D::stateGetFilter()
 
 void CanvasRenderingContext2D::snapshotStateForFilter()
 {
-    // The style resolution required for fonts is not available in frame-less documents.
-    if (!canvas()->document().frame())
-        return;
-
     modifiableState().setFontForFilter(accessFont());
 }
 
@@ -443,10 +439,6 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
-    // The style resolution required for rendering text is not available in frame-less documents.
-    if (!canvas()->document().frame())
-        return;
-
     canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
 
     // The following early exit is dependent on the cache not being empty
@@ -727,10 +719,6 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
 {
     TextMetrics* metrics = TextMetrics::create();
 
-    // The style resolution required for rendering text is not available in frame-less documents.
-    if (!canvas()->document().frame())
-        return metrics;
-
     canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
     const Font& font = accessFont();
 
@@ -772,10 +760,6 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
 
 void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, double y, CanvasRenderingContext2DState::PaintType paintType, double* maxWidth)
 {
-    // The style resolution required for rendering text is not available in frame-less documents.
-    if (!canvas()->document().frame())
-        return;
-
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
     // style before grabbing the drawingCanvas.

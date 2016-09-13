@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="srcCanvas" width="200" height="100" style="border:1px solid #d3d3d3;"></canvas>
+<canvas id="srcCanvas2" width="200" height="100" style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+var cnv1 = document.getElementById('srcCanvas');
+document.implementation.createDocument('' ,'' ,null).adoptNode(cnv1);
+var ctx = cnv1.getContext('2d');
+// We don't set the font here. We expect to fallback to default font.
+ctx.strokeStyle='rgba(140, 0.013953202404081821)';
+ctx.strokeText('Hello World!' ,1, 30);
+ctx.font = "30px Verdana";
+ctx.strokeText('Goodbye!' ,1, 70);
+
+var cnv2=document.getElementById('srcCanvas2');
+var ctx2=cnv2.getContext('2d');
+ctx2.drawImage(cnv1, 0, 0);
+</script>
+
+</body>
+</html>
