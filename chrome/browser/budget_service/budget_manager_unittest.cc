@@ -43,6 +43,13 @@ class BudgetManagerTest : public testing::Test {
   Profile* profile() { return &profile_; }
   const url::Origin origin() const { return origin_; }
 
+  void ReserveCallback(base::Closure run_loop_closure,
+                       blink::mojom::BudgetServiceErrorType error,
+                       bool success) {
+    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE) && success;
+    run_loop_closure.Run();
+  }
+
   void StatusCallback(base::Closure run_loop_closure, bool success) {
     success_ = success;
     run_loop_closure.Run();
@@ -52,7 +59,7 @@ class BudgetManagerTest : public testing::Test {
     base::RunLoop run_loop;
     GetManager()->Reserve(
         origin(), type,
-        base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
+        base::Bind(&BudgetManagerTest::ReserveCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
     run_loop.Run();
     return success_;

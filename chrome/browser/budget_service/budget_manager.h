@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_BUDGET_SERVICE_BUDGET_MANAGER_H_
 #define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
@@ -39,7 +39,7 @@ class BudgetManager : public KeyedService {
   static double GetCost(blink::mojom::BudgetOperationType type);
 
   using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
-  using ReserveCallback = base::Callback<void(bool success)>;
+  using ReserveCallback = blink::mojom::BudgetService::ReserveCallback;
   using ConsumeCallback = base::Callback<void(bool success)>;
 
   // Get the budget associated with the origin. This is passed to the
@@ -63,17 +63,23 @@ class BudgetManager : public KeyedService {
  private:
   friend class BudgetManagerTest;
 
+  // Called as a callback from BudgetDatabase after it made a SpendBudget
+  // decision.
+  void DidConsume(const ConsumeCallback& callback,
+                  blink::mojom::BudgetServiceErrorType error,
+                  bool success);
+
   // Called as a callback from BudgetDatabase after it has made a reserve
   // decision.
   void DidReserve(const url::Origin& origin,
-                  blink::mojom::BudgetOperationType type,
                   const ReserveCallback& callback,
+                  blink::mojom::BudgetServiceErrorType error,
                   bool success);
 
   Profile* profile_;
   BudgetDatabase db_;
 
-  std::unordered_map<std::string, int> reservation_map_;
+  std::map<url::Origin, int> reservation_map_;
   base::WeakPtrFactory<BudgetManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BudgetManager);

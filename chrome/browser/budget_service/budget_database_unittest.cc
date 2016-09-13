@@ -40,8 +40,10 @@ class BudgetDatabaseTest : public ::testing::Test {
             base::ThreadTaskRunnerHandle::Get()),
         origin_(url::Origin(GURL(kTestOrigin))) {}
 
-  void WriteBudgetComplete(base::Closure run_loop_closure, bool success) {
-    success_ = success;
+  void WriteBudgetComplete(base::Closure run_loop_closure,
+                           blink::mojom::BudgetServiceErrorType error,
+                           bool success) {
+    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE) && success;
     run_loop_closure.Run();
   }
 

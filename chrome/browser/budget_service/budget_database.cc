@@ -65,7 +65,7 @@ void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
 
 void BudgetDatabase::SpendBudget(const url::Origin& origin,
                                  double amount,
-                                 const StoreBudgetCallback& callback) {
+                                 const SpendBudgetCallback& callback) {
   SyncCache(origin, base::Bind(&BudgetDatabase::SpendBudgetAfterSync,
                                weak_ptr_factory_.GetWeakPtr(), origin, amount,
                                callback));
@@ -97,10 +97,10 @@ double BudgetDatabase::GetBudget(const url::Origin& origin) const {
 
 void BudgetDatabase::AddToCache(
     const url::Origin& origin,
-    const AddToCacheCallback& callback,
+    const CacheCallback& callback,
     bool success,
     std::unique_ptr<budget_service::Budget> budget_proto) {
-  // If the database read failed, there's nothing to add to the cache.
+  // If the database read failed or there's nothing to add, just return.
   if (!success || !budget_proto) {
     callback.Run(success);
     return;
@@ -171,10 +171,11 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
 
 void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
                                           double amount,
-                                          const StoreBudgetCallback& callback,
+                                          const SpendBudgetCallback& callback,
                                           bool success) {
   if (!success) {
-    callback.Run(false /* success */);
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 false /* success */);
     return;
   }
 
@@ -190,7 +191,8 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
 
   if (total < amount) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", score);
-    callback.Run(false /* success */);
+    callback.Run(blink::mojom::BudgetServiceErrorType::NONE,
+                 false /* success */);
     return;
   } else if (total < amount * 2) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", score);
@@ -212,12 +214,23 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
   DCHECK_EQ(0, bill);
 
   // Now that the cache is updated, write the data to the database.
-  // TODO(harkness): Consider adding a second parameter to the callback so the
-  // caller can distinguish between not enough budget and a failed database
-  // write.
+  WriteCachedValuesToDatabase(
+      origin, base::Bind(&BudgetDatabase::SpendBudgetAfterWrite,
+                         weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+// This converts the bool value which is returned from the database to a Mojo
+// error type.
+void BudgetDatabase::SpendBudgetAfterWrite(const SpendBudgetCallback& callback,
+                                           bool write_successful) {
   // TODO(harkness): If the database write fails, the cache will be out of sync
   // with the database. Consider ways to mitigate this.
-  WriteCachedValuesToDatabase(origin, callback);
+  if (!write_successful) {
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 false /* success */);
+    return;
+  }
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, true /* success */);
 }
 
 void BudgetDatabase::WriteCachedValuesToDatabase(
@@ -255,10 +268,10 @@ void BudgetDatabase::WriteCachedValuesToDatabase(
 }
 
 void BudgetDatabase::SyncCache(const url::Origin& origin,
-                               const SyncCacheCallback& callback) {
+                               const CacheCallback& callback) {
   // If the origin isn't already cached, add it to the cache.
   if (!IsCached(origin)) {
-    AddToCacheCallback add_callback =
+    CacheCallback add_callback =
         base::Bind(&BudgetDatabase::SyncLoadedCache,
                    weak_ptr_factory_.GetWeakPtr(), origin, callback);
     db_->GetEntry(origin.Serialize(), base::Bind(&BudgetDatabase::AddToCache,
@@ -270,7 +283,7 @@ void BudgetDatabase::SyncCache(const url::Origin& origin,
 }
 
 void BudgetDatabase::SyncLoadedCache(const url::Origin& origin,
-                                     const SyncCacheCallback& callback,
+                                     const CacheCallback& callback,
                                      bool success) {
   if (!success) {
     callback.Run(false /* success */);

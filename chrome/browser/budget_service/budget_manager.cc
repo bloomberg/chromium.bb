@@ -74,10 +74,9 @@ void BudgetManager::GetBudget(const url::Origin& origin,
 void BudgetManager::Reserve(const url::Origin& origin,
                             blink::mojom::BudgetOperationType type,
                             const ReserveCallback& callback) {
-  db_.SpendBudget(
-      origin, GetCost(type),
-      base::Bind(&BudgetManager::DidReserve, weak_ptr_factory_.GetWeakPtr(),
-                 origin, type, callback));
+  db_.SpendBudget(origin, GetCost(type),
+                  base::Bind(&BudgetManager::DidReserve,
+                             weak_ptr_factory_.GetWeakPtr(), origin, callback));
 }
 
 void BudgetManager::Consume(const url::Origin& origin,
@@ -86,12 +85,12 @@ void BudgetManager::Consume(const url::Origin& origin,
   bool found_reservation = false;
 
   // First, see if there is a reservation already.
-  auto count = reservation_map_.find(origin.host());
+  auto count = reservation_map_.find(origin);
   if (count != reservation_map_.end()) {
     if (count->second == 1)
-      reservation_map_.erase(origin.host());
+      reservation_map_.erase(origin);
     else
-      reservation_map_[origin.host()]--;
+      reservation_map_[origin]--;
     found_reservation = true;
   }
 
@@ -102,19 +101,30 @@ void BudgetManager::Consume(const url::Origin& origin,
 
   // If there wasn't a reservation already, try to directly consume budget.
   // The callback will return directly to the caller.
-  db_.SpendBudget(origin, GetCost(type), callback);
+  db_.SpendBudget(origin, GetCost(type),
+                  base::Bind(&BudgetManager::DidConsume,
+                             weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void BudgetManager::DidConsume(const ConsumeCallback& callback,
+                               blink::mojom::BudgetServiceErrorType error,
+                               bool success) {
+  // The caller of Consume only cares whether it succeeded or failed and not
+  // why. So, only return a combined bool.
+  if (error != blink::mojom::BudgetServiceErrorType::NONE) {
+    callback.Run(false /* success */);
+    return;
+  }
+  callback.Run(success);
 }
 
 void BudgetManager::DidReserve(const url::Origin& origin,
-                               blink::mojom::BudgetOperationType type,
                                const ReserveCallback& callback,
+                               blink::mojom::BudgetServiceErrorType error,
                                bool success) {
-  if (!success) {
-    callback.Run(false);
-    return;
-  }
+  // If the call succeeded, write the new reservation into the map.
+  if (success && error == blink::mojom::BudgetServiceErrorType::NONE)
+    reservation_map_[origin]++;
 
-  // Write the new reservation into the map.
-  reservation_map_[origin.host()]++;
-  callback.Run(true);
+  callback.Run(error, success);
 }

@@ -35,11 +35,13 @@ class Profile;
 // assigned to an origin. The class uses an underlying LevelDB.
 class BudgetDatabase {
  public:
-  // Callback for setting a budget value.
-  using StoreBudgetCallback = base::Callback<void(bool success)>;
-
   // Callback for getting a list of all budget chunks.
   using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
+
+  // This is invoked only after the spend has been written to the database.
+  using SpendBudgetCallback =
+      base::Callback<void(blink::mojom::BudgetServiceErrorType error_type,
+                          bool success)>;
 
   // The database_dir specifies the location of the budget information on
   // disk. The task_runner is used by the ProtoDatabase to handle all blocking
@@ -54,13 +56,11 @@ class BudgetDatabase {
   void GetBudgetDetails(const url::Origin& origin,
                         const GetBudgetCallback& callback);
 
-  // Spend a particular amount of budget for an origin. The callback takes
-  // a boolean which indicates whether the origin had enough budget to spend.
-  // If it returns success, then the budget was deducted and the result written
-  // to the database.
+  // Spend a particular amount of budget for an origin. The callback indicates
+  // whether there was an error and if the origin had enough budget.
   void SpendBudget(const url::Origin& origin,
                    double amount,
-                   const StoreBudgetCallback& callback);
+                   const SpendBudgetCallback& callback);
 
  private:
   friend class BudgetDatabaseTest;
@@ -97,8 +97,10 @@ class BudgetDatabase {
     DISALLOW_COPY_AND_ASSIGN(BudgetInfo);
   };
 
-  using AddToCacheCallback = base::Callback<void(bool success)>;
-  using SyncCacheCallback = base::Callback<void(bool success)>;
+  // Callback for writing budget values to the database.
+  using StoreBudgetCallback = base::Callback<void(bool success)>;
+
+  using CacheCallback = base::Callback<void(bool success)>;
 
   void OnDatabaseInit(bool success);
 
@@ -107,7 +109,7 @@ class BudgetDatabase {
   double GetBudget(const url::Origin& origin) const;
 
   void AddToCache(const url::Origin& origin,
-                  const AddToCacheCallback& callback,
+                  const CacheCallback& callback,
                   bool success,
                   std::unique_ptr<budget_service::Budget> budget);
 
@@ -117,15 +119,17 @@ class BudgetDatabase {
 
   void SpendBudgetAfterSync(const url::Origin& origin,
                             double amount,
-                            const StoreBudgetCallback& callback,
+                            const SpendBudgetCallback& callback,
                             bool success);
+
+  void SpendBudgetAfterWrite(const SpendBudgetCallback& callback, bool success);
 
   void WriteCachedValuesToDatabase(const url::Origin& origin,
                                    const StoreBudgetCallback& callback);
 
-  void SyncCache(const url::Origin& origin, const SyncCacheCallback& callback);
+  void SyncCache(const url::Origin& origin, const CacheCallback& callback);
   void SyncLoadedCache(const url::Origin& origin,
-                       const SyncCacheCallback& callback,
+                       const CacheCallback& callback,
                        bool success);
 
   // Add budget based on engagement with an origin. The method queries for the

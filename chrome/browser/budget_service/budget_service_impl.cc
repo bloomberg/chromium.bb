@@ -55,6 +55,15 @@ void BudgetServiceImpl::GetBudget(const url::Origin& origin,
 void BudgetServiceImpl::Reserve(const url::Origin& origin,
                                 blink::mojom::BudgetOperationType operation,
                                 const ReserveCallback& callback) {
-  // TODO(harkness): Call the BudgetManager::Reserve when it is available.
-  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, false);
+  // The RenderProcessHost should still be alive as long as any connections are
+  // alive, and if the BudgetService mojo connection is down, the
+  // BudgetServiceImpl should have been destroyed.
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  DCHECK(host);
+
+  // Request a reservation from the BudgetManager.
+  content::BrowserContext* context = host->GetBrowserContext();
+  BudgetManagerFactory::GetForProfile(context)->Reserve(origin, operation,
+                                                        callback);
 }
