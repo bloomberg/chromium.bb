@@ -70,8 +70,6 @@ struct OfflinePageItem {
   // their ids to our saved pages.
   ClientId client_id;
 
-  // Version of the offline page item.
-  int version;
   // The file path to the archive with a local copy of the page.
   base::FilePath file_path;
   // The size of the offline copy.

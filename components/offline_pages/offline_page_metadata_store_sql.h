@@ -26,6 +26,30 @@ namespace offline_pages {
 
 // OfflinePageMetadataStoreSQL is an instance of OfflinePageMetadataStore
 // which is implemented using a SQLite database.
+//
+// This store has a history of schema updates in pretty much every release.
+// Original schema was delivered in M52. Since then, the following changes
+// happened:
+// * In M53 expiration_time was added,
+// * In M54 title was added,
+// * In M55 we dropped the following fields (never used): version, status,
+//   offline_url, user_initiated.
+//
+// Here is a procedure to update the schema for this store:
+// * Decide how to detect that the store is on a particular version, which
+//   typically means that a certain field exists or is missing. This happens in
+//   Upgrade section of |CreateSchema|
+// * Work out appropriate change and apply it to all existing upgrade paths. In
+//   the interest of performing a single update of the store, it upgrades from a
+//   detected version to the current one. This means that when making a change,
+//   more than a single query may have to be updated (in case of fields being
+//   removed or needed to be initialized to a specific, non-default value).
+//   Such approach is preferred to doing N updates for every changed version on
+//   a startup after browser update.
+// * New upgrade method should specify which version it is upgrading from, e.g.
+//   |UpgradeFrom54|.
+// * Upgrade should use |UpgradeWithQuery| and simply specify SQL command to
+//   move data from old table (prefixed by temp_) to the new one.
 class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
  public:
   OfflinePageMetadataStoreSQL(

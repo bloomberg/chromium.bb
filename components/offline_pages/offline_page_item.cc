@@ -8,10 +8,6 @@
 
 namespace offline_pages {
 
-namespace {
-const int kCurrentVersion = 1;
-}
-
 ClientId::ClientId() : name_space(""), id("") {}
 
 ClientId::ClientId(std::string name_space, std::string id)
@@ -29,11 +25,7 @@ bool ClientId::operator<(const ClientId& client_id) const {
 }
 
 OfflinePageItem::OfflinePageItem()
-    : version(kCurrentVersion),
-      file_size(0),
-      access_count(0),
-      flags(NO_FLAG) {
-}
+    : file_size(0), access_count(0), flags(NO_FLAG) {}
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
                                  int64_t offline_id,
@@ -43,7 +35,6 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
     : url(url),
       offline_id(offline_id),
       client_id(client_id),
-      version(kCurrentVersion),
       file_path(file_path),
       file_size(file_size),
       access_count(0),
@@ -58,7 +49,6 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
     : url(url),
       offline_id(offline_id),
       client_id(client_id),
-      version(kCurrentVersion),
       file_path(file_path),
       file_size(file_size),
       creation_time(creation_time),
