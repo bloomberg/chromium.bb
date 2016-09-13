@@ -198,8 +198,6 @@
 -ServiceWorker*
 -SessionRestoreTest.RestoreForeignTab
 -SessionRestoreTest.RestoreWebUISettings
--SSLUITest.*
--SSLUITestWithClientCert.TestWSSClientCert
 -StreamsPrivateApiTest.Abort
 -StreamsPrivateApiTest.FileURL
 -StreamsPrivateApiTest.Headers
