@@ -75,7 +75,7 @@ public:
     virtual CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
 
     KURL completeURL(const String&) const;
-    void dispose() final;
+    virtual void dispose();
     void exceptionUnhandled(int exceptionId);
 
     void registerEventListener(V8AbstractEventListener*);
@@ -172,7 +172,7 @@ private:
 
     Member<WorkerEventQueue> m_eventQueue;
 
-    Member<WorkerClients> m_workerClients;
+    CrossThreadPersistent<WorkerClients> m_workerClients;
 
     DOMTimerCoordinator m_timers;
 

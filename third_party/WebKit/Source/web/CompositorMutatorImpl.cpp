@@ -75,8 +75,15 @@ bool CompositorMutatorImpl::mutate(double monotonicTimeNow, CompositorMutableSta
 void CompositorMutatorImpl::registerProxyClient(CompositorProxyClientImpl* client)
 {
     TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::registerClient");
+    DCHECK(!m_proxyClients.contains(client));
     m_proxyClients.add(client);
     setNeedsMutate();
+}
+
+void CompositorMutatorImpl::unregisterProxyClient(CompositorProxyClientImpl* client)
+{
+    DCHECK(m_proxyClients.contains(client));
+    m_proxyClients.remove(client);
 }
 
 void CompositorMutatorImpl::setNeedsMutate()

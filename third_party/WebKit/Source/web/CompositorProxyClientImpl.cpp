@@ -40,13 +40,12 @@ CompositorProxyClientImpl::CompositorProxyClientImpl(CompositorMutatorImpl* muta
     : m_mutator(mutator)
     , m_globalScope(nullptr)
 {
+    DCHECK(isMainThread());
 }
 
 DEFINE_TRACE(CompositorProxyClientImpl)
 {
     CompositorProxyClient::trace(visitor);
-    visitor->trace(m_mutator);
-    visitor->trace(m_globalScope);
     visitor->trace(m_proxies);
 }
 
@@ -57,6 +56,17 @@ void CompositorProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope)
     DCHECK(scope);
     m_globalScope = static_cast<CompositorWorkerGlobalScope*>(scope);
     m_mutator->registerProxyClient(this);
+}
+
+void CompositorProxyClientImpl::dispose()
+{
+    // CompositorProxyClientImpl and CompositorMutatorImpl form a reference
+    // cycle. CompositorWorkerGlobalScope and CompositorProxyClientImpl
+    // also form another big reference cycle. So dispose needs to be called on
+    // Worker termination to break these cycles. If not, layout test leak
+    // detection will report a WorkerGlobalScope leak.
+    m_mutator->unregisterProxyClient(this);
+    m_globalScope = nullptr;
 }
 
 void CompositorProxyClientImpl::requestAnimationFrame()
@@ -87,6 +97,7 @@ bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(double monotonicT
 {
     TRACE_EVENT0("compositor-worker", "CompositorProxyClientImpl::executeAnimationFrameCallbacks");
 
+    DCHECK(m_globalScope);
     // Convert to zero based document time in milliseconds consistent with requestAnimationFrame.
     double highResTimeMs = 1000.0 * (monotonicTimeNow - m_globalScope->timeOrigin());
     return m_globalScope->executeAnimationFrameCallbacks(highResTimeMs);

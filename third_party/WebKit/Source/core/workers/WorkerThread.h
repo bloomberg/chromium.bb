@@ -253,9 +253,9 @@ private:
     // |m_threadState|, |m_runningDebuggerTask| and |m_exitCode|.
     Mutex m_threadStateMutex;
 
-    Persistent<ConsoleMessageStorage> m_consoleMessageStorage;
-    Persistent<WorkerOrWorkletGlobalScope> m_globalScope;
-    Persistent<WorkerInspectorController> m_workerInspectorController;
+    CrossThreadPersistent<ConsoleMessageStorage> m_consoleMessageStorage;
+    CrossThreadPersistent<WorkerOrWorkletGlobalScope> m_globalScope;
+    CrossThreadPersistent<WorkerInspectorController> m_workerInspectorController;
 
     // Signaled when the thread completes termination on the worker thread.
     std::unique_ptr<WaitableEvent> m_shutdownEvent;

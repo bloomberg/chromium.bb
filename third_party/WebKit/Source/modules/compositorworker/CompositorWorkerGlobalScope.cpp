@@ -38,6 +38,12 @@ CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope()
 {
 }
 
+void CompositorWorkerGlobalScope::dispose()
+{
+    WorkerGlobalScope::dispose();
+    CompositorProxyClient::from(clients())->dispose();
+}
+
 DEFINE_TRACE(CompositorWorkerGlobalScope)
 {
     visitor->trace(m_callbackCollection);

@@ -28,6 +28,7 @@ public:
     static CompositorProxyClient* from(WorkerClients*);
     static const char* supplementName();
 
+    virtual void dispose() = 0;
     virtual void setGlobalScope(WorkerGlobalScope*) = 0;
     virtual void requestAnimationFrame() = 0;
     virtual void registerCompositorProxy(CompositorProxy*) = 0;

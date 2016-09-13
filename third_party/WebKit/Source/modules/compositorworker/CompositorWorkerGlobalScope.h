@@ -23,6 +23,8 @@ public:
     static CompositorWorkerGlobalScope* create(CompositorWorkerThread*, std::unique_ptr<WorkerThreadStartupData>, double timeOrigin);
     ~CompositorWorkerGlobalScope() override;
 
+    void dispose() override;
+
     // EventTarget
     const AtomicString& interfaceName() const override;
 

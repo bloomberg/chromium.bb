@@ -108,7 +108,7 @@ private:
     // but made as a member variable for testing.
     double m_maxIntervalInSec;
 
-    Persistent<WorkerGlobalScope> m_workerGlobalScope;
+    CrossThreadPersistent<WorkerGlobalScope> m_workerGlobalScope;
 };
 
 } // namespace blink

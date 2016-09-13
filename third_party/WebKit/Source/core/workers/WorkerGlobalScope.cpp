@@ -359,7 +359,6 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_navigator);
     visitor->trace(m_scriptController);
     visitor->trace(m_eventQueue);
-    visitor->trace(m_workerClients);
     visitor->trace(m_timers);
     visitor->trace(m_eventListeners);
     visitor->trace(m_pendingErrorEvents);

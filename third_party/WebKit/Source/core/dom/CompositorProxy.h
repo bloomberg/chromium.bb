@@ -27,10 +27,7 @@ public:
     static CompositorProxy* create(ExecutionContext*, uint64_t element, uint32_t compositorMutableProperties);
     virtual ~CompositorProxy();
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_client);
-    }
+    DEFINE_INLINE_TRACE() { }
 
     uint64_t elementId() const { return m_elementId; }
     uint32_t compositorMutableProperties() const { return m_compositorMutableProperties; }
@@ -65,7 +62,7 @@ private:
     const uint32_t m_compositorMutableProperties = 0;
 
     bool m_connected = true;
-    Member<CompositorProxyClient> m_client;
+    CrossThreadPersistent<CompositorProxyClient> m_client;
     std::unique_ptr<CompositorMutableState> m_state;
 };
 

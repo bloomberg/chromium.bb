@@ -21,7 +21,7 @@ class WorkerGlobalScope;
 // mutator, e.g. if a single document creates multiple CompositorWorker objects.
 //
 // Should be accessed only on the compositor thread.
-class CompositorProxyClientImpl final : public GarbageCollected<CompositorProxyClientImpl>, public CompositorProxyClient {
+class CompositorProxyClientImpl final : public GarbageCollectedFinalized<CompositorProxyClientImpl>, public CompositorProxyClient {
     USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
     WTF_MAKE_NONCOPYABLE(CompositorProxyClientImpl);
 public:
@@ -33,6 +33,7 @@ public:
     bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
 
     // CompositorProxyClient:
+    void dispose() override;
     void setGlobalScope(WorkerGlobalScope*) override;
     void requestAnimationFrame() override;
     void registerCompositorProxy(CompositorProxy*) override;
@@ -41,9 +42,9 @@ public:
 private:
     bool executeAnimationFrameCallbacks(double monotonicTimeNow);
 
-    Member<CompositorMutatorImpl> m_mutator;
+    CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
 
-    Member<CompositorWorkerGlobalScope> m_globalScope;
+    CrossThreadPersistent<CompositorWorkerGlobalScope> m_globalScope;
     bool m_requestedAnimationFrameCallbacks;
 
     HeapHashSet<WeakMember<CompositorProxy>> m_proxies;

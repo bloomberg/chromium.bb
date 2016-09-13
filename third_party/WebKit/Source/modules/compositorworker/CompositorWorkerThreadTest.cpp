@@ -69,6 +69,7 @@ class TestCompositorProxyClient
 public:
     TestCompositorProxyClient() {}
 
+    void dispose() override {}
     void setGlobalScope(WorkerGlobalScope*) override {}
     void requestAnimationFrame() override {}
     void registerCompositorProxy(CompositorProxy*) override {}

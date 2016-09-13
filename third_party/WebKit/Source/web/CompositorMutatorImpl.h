@@ -31,16 +31,11 @@ public:
     static std::unique_ptr<CompositorMutatorClient> createClient();
     static CompositorMutatorImpl* create();
 
-    DEFINE_INLINE_TRACE()
-    {
-        CompositorMutator::trace(visitor);
-        visitor->trace(m_proxyClients);
-    }
-
     // CompositorMutator implementation.
     bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*) override;
 
     void registerProxyClient(CompositorProxyClientImpl*);
+    void unregisterProxyClient(CompositorProxyClientImpl*);
 
     void setNeedsMutate();
 
@@ -50,7 +45,7 @@ public:
 private:
     CompositorMutatorImpl();
 
-    using ProxyClients = HeapHashSet<WeakMember<CompositorProxyClientImpl>>;
+    using ProxyClients = HashSet<CrossThreadPersistent<CompositorProxyClientImpl>>;
     ProxyClients m_proxyClients;
 
     std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
