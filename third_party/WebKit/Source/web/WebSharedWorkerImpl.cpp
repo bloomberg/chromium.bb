@@ -256,10 +256,6 @@ void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
     terminateWorkerThread();
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*)
-{
-}
-
 void WebSharedWorkerImpl::workerThreadTerminated()
 {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, crossThreadUnretained(this)));

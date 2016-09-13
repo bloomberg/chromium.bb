@@ -52,6 +52,9 @@ public:
     virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
 
+    // Invoked when the worker script or imported script is loaded.
+    virtual void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) { }
+
     // Invoked when the worker script is evaluated. |success| is true if the
     // evaluation completed with no uncaught exception.
     virtual void didEvaluateWorkerScript(bool success) = 0;
@@ -60,7 +63,7 @@ public:
     virtual void didInitializeWorkerContext() { }
 
     // Invoked when the new WorkerGlobalScope is started.
-    virtual void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) = 0;
+    virtual void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) { }
 
     // Invoked when close() is invoked on the worker context.
     virtual void workerGlobalScopeClosed() = 0;

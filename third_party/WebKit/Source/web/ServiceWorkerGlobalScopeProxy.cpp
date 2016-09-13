@@ -258,8 +258,16 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& mes
     document().postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, crossThreadUnretained(m_embeddedWorker), message));
 }
 
+void ServiceWorkerGlobalScopeProxy::didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize)
+{
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->didLoadWorkerScript(scriptSize, cachedMetadataSize);
+}
+
 void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
 {
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->didEvaluateWorkerScript();
     client().didEvaluateWorkerScript(success);
 }
 

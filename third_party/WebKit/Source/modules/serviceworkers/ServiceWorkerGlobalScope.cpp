@@ -99,6 +99,13 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 {
 }
 
+void ServiceWorkerGlobalScope::didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize)
+{
+    ++m_scriptCount;
+    m_scriptTotalSize += scriptSize;
+    m_scriptCachedMetadataTotalSize += cachedMetadataSize;
+}
+
 void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scriptCountHistogram, new CustomCountHistogram("ServiceWorker.ScriptCount", 1, 1000, 50));
@@ -222,13 +229,6 @@ void ServiceWorkerGlobalScope::exceptionThrown(ErrorEvent* event)
     WorkerGlobalScope::exceptionThrown(event);
     if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
         debugger->exceptionThrown(event);
-}
-
-void ServiceWorkerGlobalScope::scriptLoaded(size_t scriptSize, size_t cachedMetadataSize)
-{
-    ++m_scriptCount;
-    m_scriptTotalSize += scriptSize;
-    m_scriptCachedMetadataTotalSize += cachedMetadataSize;
 }
 
 } // namespace blink

@@ -213,7 +213,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
         }
 
         InspectorInstrumentation::scriptImported(&executionContext, scriptLoader->identifier(), scriptLoader->script());
-        scriptLoaded(scriptLoader->script().length(), scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size() : 0);
+        thread()->workerReportingProxy().didLoadWorkerScript(scriptLoader->script().length(), scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size() : 0);
 
         ErrorEvent* errorEvent = nullptr;
         std::unique_ptr<Vector<char>> cachedMetaData(scriptLoader->releaseCachedMetadata());

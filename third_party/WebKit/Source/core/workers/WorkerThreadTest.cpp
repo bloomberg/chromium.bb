@@ -104,6 +104,7 @@ protected:
     void expectReportingCalls()
     {
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
@@ -112,6 +113,7 @@ protected:
     void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization()
     {
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(AtMost(1));
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(AtMost(1));
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
@@ -120,6 +122,7 @@ protected:
     void expectReportingCallsForWorkerForciblyTerminated()
     {
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(false)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
@@ -262,7 +265,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_SyncForciblyTerminate)
 {
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_workerThread->waitUntilScriptLoaded();
+    m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // terminateAndWait() synchronously terminates the worker execution.
     m_workerThread->terminateAndWait();
@@ -276,7 +279,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_AsyncForciblyTerminate)
 
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_workerThread->waitUntilScriptLoaded();
+    m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // terminate() schedules a force termination task.
     m_workerThread->terminate();
@@ -296,7 +299,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_AsyncForciblyTerminate_
 
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_workerThread->waitUntilScriptLoaded();
+    m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // terminate() schedules a force termination task.
     m_workerThread->terminate();
@@ -321,7 +324,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_SyncForciblyTerminateAf
 
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_workerThread->waitUntilScriptLoaded();
+    m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // terminate() schedules a force termination task.
     m_workerThread->terminate();
@@ -338,7 +341,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerT
 {
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_workerThread->waitUntilScriptLoaded();
+    m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // Simulate that a debugger task is running.
     m_workerThread->m_runningDebuggerTask = true;

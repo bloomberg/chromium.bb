@@ -66,8 +66,6 @@ public:
 
     ~WorkerGlobalScope() override;
 
-    virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) {}
-    virtual void didEvaluateWorkerScript() {}
     virtual void countFeature(UseCounter::Feature) const;
     virtual void countDeprecation(UseCounter::Feature) const;
 

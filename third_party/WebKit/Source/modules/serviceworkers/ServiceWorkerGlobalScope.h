@@ -61,8 +61,8 @@ public:
     ~ServiceWorkerGlobalScope() override;
     bool isServiceWorkerGlobalScope() const override { return true; }
 
-    // WorkerGlobalScope
-    void didEvaluateWorkerScript() override;
+    void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize);
+    void didEvaluateWorkerScript();
 
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
@@ -97,7 +97,6 @@ private:
     void importScripts(const Vector<String>& urls, ExceptionState&) override;
     CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) override;
     void exceptionThrown(ErrorEvent*) override;
-    void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) override;
 
     Member<ServiceWorkerClients> m_clients;
     Member<ServiceWorkerRegistration> m_registration;

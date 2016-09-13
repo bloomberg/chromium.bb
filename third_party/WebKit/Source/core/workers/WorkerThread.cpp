@@ -519,23 +519,21 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         m_consoleMessageStorage = new ConsoleMessageStorage();
         m_globalScope = createWorkerGlobalScope(std::move(startupData));
         m_workerInspectorController = WorkerInspectorController::create(this);
-        if (globalScope()->isWorkerGlobalScope())
-            toWorkerGlobalScope(globalScope())->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
         // Notify proxy that a new WorkerOrWorkletGlobalScope has been created
         // and started.
         m_workerReportingProxy.workerGlobalScopeStarted(globalScope());
 
-        WorkerOrWorkletScriptController* scriptController = globalScope()->scriptController();
-        if (!scriptController->isExecutionForbidden()) {
-            scriptController->initializeContextIfNeeded();
+        if (globalScope()->isWorkerGlobalScope())
+            m_workerReportingProxy.didLoadWorkerScript(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
-            // If Origin Trials have been registered before the V8 context was ready,
-            // then inject them into the context now
-            OriginTrialContext* originTrialContext = OriginTrialContext::from(globalScope());
-            if (originTrialContext)
-                originTrialContext->initializePendingFeatures();
-        }
+        globalScope()->scriptController()->initializeContextIfNeeded();
+
+        // If Origin Trials have been registered before the V8 context was ready,
+        // then inject them into the context now
+        OriginTrialContext* originTrialContext = OriginTrialContext::from(globalScope());
+        if (originTrialContext)
+            originTrialContext->initializePendingFeatures();
 
         setThreadState(lock, ThreadState::Running);
     }
@@ -560,7 +558,6 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(globalScope());
         CachedMetadataHandler* handler = workerGlobalScope->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get());
         bool success = workerGlobalScope->scriptController()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler, v8CacheOptions);
-        workerGlobalScope->didEvaluateWorkerScript();
         m_workerReportingProxy.didEvaluateWorkerScript(success);
     }
 }

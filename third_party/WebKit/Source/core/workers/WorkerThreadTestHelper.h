@@ -61,11 +61,27 @@ public:
     }
     MOCK_METHOD4(reportConsoleMessage, void(MessageSource, MessageLevel, const String& message, SourceLocation*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
+
+    MOCK_METHOD2(didLoadWorkerScriptMock, void(size_t scriptSize, size_t cachedMetadataSize));
+    void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override
+    {
+        m_scriptLoadedEvent.signal();
+        didLoadWorkerScriptMock(scriptSize, cachedMetadataSize);
+    }
+
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
     MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerOrWorkletGlobalScope*));
     MOCK_METHOD0(workerGlobalScopeClosed, void());
     MOCK_METHOD0(workerThreadTerminated, void());
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
+
+    void waitUntilScriptLoaded()
+    {
+        m_scriptLoadedEvent.wait();
+    }
+
+private:
+    WaitableEvent m_scriptLoadedEvent;
 };
 
 class MockWorkerThreadLifecycleObserver final : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>, public WorkerThreadLifecycleObserver {
@@ -85,7 +101,6 @@ public:
         WorkerReportingProxy& mockWorkerReportingProxy)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
         , m_workerBackingThread(WorkerBackingThread::createForTest("Test thread"))
-        , m_scriptLoadedEvent(wrapUnique(new WaitableEvent()))
     {
     }
 
@@ -95,16 +110,6 @@ public:
     void clearWorkerBackingThread() override { m_workerBackingThread = nullptr; }
 
     WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
-
-    void waitUntilScriptLoaded()
-    {
-        m_scriptLoadedEvent->wait();
-    }
-
-    void scriptLoaded()
-    {
-        m_scriptLoadedEvent->signal();
-    }
 
     void startWithSourceCode(SecurityOrigin* securityOrigin, const String& source)
     {
@@ -139,24 +144,17 @@ public:
 
 private:
     std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
-    std::unique_ptr<WaitableEvent> m_scriptLoadedEvent;
 };
 
 class FakeWorkerGlobalScope : public WorkerGlobalScope {
 public:
     FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThreadForTest* thread, std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
         : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), std::move(starterOriginPrivilegeData), workerClients)
-        , m_thread(thread)
     {
     }
 
     ~FakeWorkerGlobalScope() override
     {
-    }
-
-    void scriptLoaded(size_t, size_t) override
-    {
-        m_thread->scriptLoaded();
     }
 
     // EventTarget
@@ -168,9 +166,6 @@ public:
     void exceptionThrown(ErrorEvent*) override
     {
     }
-
-private:
-    WorkerThreadForTest* m_thread;
 };
 
 inline WorkerOrWorkletGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
