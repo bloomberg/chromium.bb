@@ -31,6 +31,8 @@ struct EVENTS_DEVICES_EXPORT TouchscreenDevice : public InputDevice {
   gfx::Size size;    // Size of the touch screen area.
   int touch_points;  // The number of touch points this device supports (0 if
                      // unknown).
+  bool is_stylus;    // True if the specified touchscreen device is stylus
+                     // capable.
 };
 
 }  // namespace ui

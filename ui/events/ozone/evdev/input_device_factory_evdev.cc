@@ -431,8 +431,11 @@ void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
-      touchscreens.push_back(TouchscreenDevice(it->second->input_device(),
-          it->second->GetTouchscreenSize(), it->second->GetTouchPoints()));
+      TouchscreenDevice device(it->second->input_device(),
+          it->second->GetTouchscreenSize(), it->second->GetTouchPoints());
+      if (it->second->HasPen())
+        device.is_stylus = true;
+      touchscreens.push_back(device);
     }
   }
 
