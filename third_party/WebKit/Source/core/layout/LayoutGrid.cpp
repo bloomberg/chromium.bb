@@ -767,8 +767,6 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         if (LayoutUnit increment = baseSize - oldBaseSize) {
             tracks[trackIndex].setBaseSize(baseSize);
             freeSpace -= increment;
-
-            baseSizesWithoutMaximization += increment;
             growthLimitsWithoutMaximization += increment;
         }
     }
