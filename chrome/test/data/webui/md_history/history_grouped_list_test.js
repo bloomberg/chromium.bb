@@ -307,6 +307,7 @@ cr.define('md_history.history_grouped_list_test', function() {
       });
 
       teardown(function() {
+        app.unselectAll();
         app.set('queryState_.results', []);
         app.set('queryState_.searchedTerm', '');
       });

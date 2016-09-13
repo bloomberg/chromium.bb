@@ -2,7 +2,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/html/icon.html">
@@ -16,6 +15,7 @@
   <template>
     <style include="shared-style">
       :host {
+        --checked-color: rgb(68, 136, 255);
         display: block;
       }
 
@@ -69,14 +69,51 @@
         overflow: hidden;
       }
 
-      paper-checkbox {
-        --paper-checkbox-checked-color: rgb(68, 136, 255);
-        --paper-checkbox-size: 16px;
-        --paper-checkbox-unchecked-color: var(--secondary-text-color);
-        height: 16px;
-        margin: 0 16px 0 20px;
-        padding: 2px;
-        width: 16px;
+      #checkbox {
+        -webkit-margin-end: 6px;
+        -webkit-margin-start: 10px;
+        height: 40px;
+        width: 40px;
+      }
+
+      :host([selected]) #checkbox {
+        color: var(--checked-color);
+      }
+
+      #checkmark {
+        border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        height: 12px;
+        margin: 12px;
+        width: 12px;
+      }
+
+      #checkmark::after {
+        border-color: inherit;
+        border-style: solid;
+        border-width: 0 2px 2px 0;
+        content: '';
+        display: block;
+        height: 70%;
+        transform: scale(0) rotate(45deg);
+        transform-origin: 97% 86%;
+        width: 36%;
+      }
+
+      :host-context([dir='rtl']) #checkmark::after {
+        transform-origin: 50% 14%;
+      }
+
+      :host([selected]) #checkmark {
+        background: var(--checked-color);
+        border-color: var(--checked-color);
+      }
+
+      :host([selected]) #checkmark::after {
+        border-color: white;
+        transform: scale(1) rotate(45deg);
+        /* Only animate when showing checkmark. */
+        transition: transform 140ms ease-out;
       }
 
       #time-accessed {
@@ -101,7 +138,7 @@
       }
 
       #bookmark-star {
-        color: rgb(68, 136, 255);
+        color: var(--checked-color);
         height: 32px;
         width: 32px;
       }
@@ -173,11 +210,15 @@
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>
         <div id="item-container">
-          <paper-checkbox id="checkbox" on-mousedown="onCheckboxMousedown_"
-              on-click="onCheckboxSelected_" checked="{{selected}}"
+          <button is="paper-icon-button-light" id="checkbox"
+              on-mousedown="onCheckboxMousedown_"
+              on-click="onCheckboxSelected_"
               disabled="[[selectionNotAllowed_()]]"
+              role="checkbox"
+              aria-checked$="[[getAriaChecked_(selected)]]"
               aria-label$="[[getEntrySummary_(item)]]">
-          </paper-checkbox>
+            <div id="checkmark"></div>
+          </button>
           <span id="time-accessed">[[item.readableTimestamp]]</span>
           <div class="website-icon" id="icon"></div>
           <div id="title-and-domain">

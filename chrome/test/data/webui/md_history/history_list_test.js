@@ -87,8 +87,8 @@ cr.define('md_history.history_list_test', function() {
           assertDeepEquals([false, false, false, false],
                            element.historyData_.map(i => i.selected));
 
-          assertFalse(items[2].$.checkbox.checked);
-          assertFalse(items[3].$.checkbox.checked);
+          assertFalse(items[2].selected);
+          assertFalse(items[3].selected);
         });
       });
 

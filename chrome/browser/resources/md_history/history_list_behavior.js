@@ -213,10 +213,12 @@ var HistoryListBehavior = {
     if (paths.length == 0)
       paths.push(item.path);
 
-    paths.forEach(function(path) {
-      this.set(path + '.selected', item.selected);
+    var selected = !this.selectedPaths.has(item.path);
 
-      if (item.selected) {
+    paths.forEach(function(path) {
+      this.set(path + '.selected', selected);
+
+      if (selected) {
         this.selectedPaths.add(path);
         return;
       }

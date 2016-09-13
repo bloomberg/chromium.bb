@@ -12,7 +12,8 @@ cr.define('md_history.lazy_render_test', function() {
             '<template is="dom-bind" id="bind">' +
             '  <template is="history-lazy-render" id="lazy">' +
             '    <h1>' +
-            '      <paper-checkbox checked="{{checked}}"></paper-checkbox>' +
+            '      <history-side-bar selected-page="{{selectedPage}}">' +
+            '      </history-side-bar>' +
             '      {{name}}' +
             '    </h1>' +
             '  </template>' +
@@ -46,16 +47,16 @@ cr.define('md_history.lazy_render_test', function() {
 
       test('two-way binding works', function() {
         var bind = document.getElementById('bind');
-        bind.checked = true;
+        bind.selectedPage = 'totally real page';
 
         var lazy = document.getElementById('lazy');
 
         return lazy.get().then(function(inner) {
-          var checkbox = document.querySelector('paper-checkbox');
-          assertTrue(checkbox.checked);
-          MockInteractions.tap(checkbox);
-          assertFalse(checkbox.checked);
-          assertFalse(bind.checked);
+          var sideBar = document.querySelector('history-side-bar');
+          assertEquals(bind.selectedPage, sideBar.selectedPage);
+
+          sideBar.selectedPage = 'different page';
+          assertEquals(bind.selectedPage, sideBar.selectedPage);
         });
       });
     });

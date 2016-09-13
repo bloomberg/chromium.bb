@@ -3520,184 +3520,6 @@ paper-tabs {
 
 </dom-module>
 
-<dom-module id="paper-checkbox" assetpath="chrome://resources/polymer/v1_0/paper-checkbox/" css-build="shadow">
-  <template strip-whitespace="">
-    <style scope="paper-checkbox">:host {
-  display: inline-block;
-        white-space: nowrap;
-        cursor: pointer;
-        --calculated-paper-checkbox-size: var(--paper-checkbox-size, 18px);
-        
-        --calculated-paper-checkbox-ink-size: var(--paper-checkbox-ink-size, -1px);
-        font-family: var(--paper-font-common-base_-_font-family); -webkit-font-smoothing: var(--paper-font-common-base_-_-webkit-font-smoothing);
-        line-height: 0;
-        -webkit-tap-highlight-color: transparent;
-}
-
-:host([hidden]) {
-  display: none !important;
-}
-
-:host(:focus) {
-  outline: none;
-}
-
-.hidden {
-  display: none;
-}
-
-#checkboxContainer {
-  display: inline-block;
-        position: relative;
-        width: var(--calculated-paper-checkbox-size);
-        height: var(--calculated-paper-checkbox-size);
-        min-width: var(--calculated-paper-checkbox-size);
-        margin: var(--paper-checkbox-margin, initial);
-        vertical-align: var(--paper-checkbox-vertical-align, middle);
-        background-color: var(--paper-checkbox-unchecked-background-color, transparent);
-}
-
-#ink {
-  position: absolute;
-
-        
-        top: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
-        left: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
-        width: var(--calculated-paper-checkbox-ink-size);
-        height: var(--calculated-paper-checkbox-ink-size);
-        color: var(--paper-checkbox-unchecked-ink-color, var(--primary-text-color));
-        opacity: 0.6;
-        pointer-events: none;
-}
-
-:host-context([dir="rtl"]) #ink {
-  right: calc(0px - (var(--calculated-paper-checkbox-ink-size) - var(--calculated-paper-checkbox-size)) / 2);
-        left: auto;
-}
-
-#ink[checked] {
-  color: var(--paper-checkbox-checked-ink-color, var(--primary-color));
-}
-
-#checkbox {
-  position: relative;
-        box-sizing: border-box;
-        height: 100%;
-        border: solid 2px;
-        border-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
-        border-radius: 2px;
-        pointer-events: none;
-        -webkit-transition: background-color 140ms, border-color 140ms;
-        transition: background-color 140ms, border-color 140ms;
-}
-
-#checkbox.checked #checkmark {
-  -webkit-animation: checkmark-expand 140ms ease-out forwards;
-        animation: checkmark-expand 140ms ease-out forwards;
-}
-
-@-webkit-keyframes checkmark-expand {
-0% {
-  -webkit-transform: scale(0, 0) rotate(45deg);
-}
-
-100% {
-  -webkit-transform: scale(1, 1) rotate(45deg);
-}
-
-}
-
-@keyframes checkmark-expand {
-0% {
-  transform: scale(0, 0) rotate(45deg);
-}
-
-100% {
-  transform: scale(1, 1) rotate(45deg);
-}
-
-}
-
-#checkbox.checked {
-  background-color: var(--paper-checkbox-checked-color, var(--primary-color));
-        border-color: var(--paper-checkbox-checked-color, var(--primary-color));
-}
-
-#checkmark {
-  position: absolute;
-        width: 36%;
-        height: 70%;
-        border-style: solid;
-        border-top: none;
-        border-left: none;
-        border-right-width: calc(2/15 * var(--calculated-paper-checkbox-size));
-        border-bottom-width: calc(2/15 * var(--calculated-paper-checkbox-size));
-        border-color: var(--paper-checkbox-checkmark-color, white);
-        -webkit-transform-origin: 97% 86%;
-        transform-origin: 97% 86%;
-        box-sizing: content-box;
-}
-
-:host-context([dir="rtl"]) #checkmark {
-  -webkit-transform-origin: 50% 14%;
-        transform-origin: 50% 14%;
-}
-
-#checkboxLabel {
-  position: relative;
-        display: inline-block;
-        vertical-align: middle;
-        padding-left: var(--paper-checkbox-label-spacing, 8px);
-        white-space: normal;
-        line-height: normal;
-        color: var(--paper-checkbox-label-color, var(--primary-text-color));
-        ;
-}
-
-:host([checked]) #checkboxLabel {
-  color: var(--paper-checkbox-label-checked-color, var(--paper-checkbox-label-color, var(--primary-text-color)));
-        ;
-}
-
-:host-context([dir="rtl"]) #checkboxLabel {
-  padding-right: var(--paper-checkbox-label-spacing, 8px);
-        padding-left: 0;
-}
-
-#checkboxLabel[hidden] {
-  display: none;
-}
-
-:host([disabled]) #checkbox {
-  opacity: 0.5;
-        border-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
-}
-
-:host([disabled][checked]) #checkbox {
-  background-color: var(--paper-checkbox-unchecked-color, var(--primary-text-color));
-        opacity: 0.5;
-}
-
-:host([disabled]) #checkboxLabel {
-  opacity: 0.65;
-}
-
-#checkbox.invalid:not(.checked) {
-  border-color: var(--paper-checkbox-error-color, var(--error-color));
-}
-
-</style>
-
-    <div id="checkboxContainer">
-      <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
-        <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
-      </div>
-    </div>
-
-    <div id="checkboxLabel"><content></content></div>
-  </template>
-
-  </dom-module>
 <dom-module id="paper-icon-button-light" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-icon-button-light">:host {
@@ -3814,7 +3636,8 @@ button.more-vert-button div {
 }
 
 :host {
-  display: block;
+  --checked-color: rgb(68, 136, 255);
+        display: block;
 }
 
 :host(:not([embedded])) #main-container {
@@ -3867,14 +3690,51 @@ button.more-vert-button div {
         overflow: hidden;
 }
 
-paper-checkbox {
-  --paper-checkbox-checked-color: rgb(68, 136, 255);
-        --paper-checkbox-size: 16px;
-        --paper-checkbox-unchecked-color: var(--secondary-text-color);
-        height: 16px;
-        margin: 0 16px 0 20px;
-        padding: 2px;
-        width: 16px;
+#checkbox {
+  -webkit-margin-end: 6px;
+        -webkit-margin-start: 10px;
+        height: 40px;
+        width: 40px;
+}
+
+:host([selected]) #checkbox {
+  color: var(--checked-color);
+}
+
+#checkmark {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        height: 12px;
+        margin: 12px;
+        width: 12px;
+}
+
+#checkmark::after {
+  border-color: inherit;
+        border-style: solid;
+        border-width: 0 2px 2px 0;
+        content: '';
+        display: block;
+        height: 70%;
+        transform: scale(0) rotate(45deg);
+        transform-origin: 97% 86%;
+        width: 36%;
+}
+
+:host-context([dir='rtl']) #checkmark::after {
+  transform-origin: 50% 14%;
+}
+
+:host([selected]) #checkmark {
+  background: var(--checked-color);
+        border-color: var(--checked-color);
+}
+
+:host([selected]) #checkmark::after {
+  border-color: white;
+        transform: scale(1) rotate(45deg);
+        
+        transition: transform 140ms ease-out;
 }
 
 #time-accessed {
@@ -3899,7 +3759,7 @@ paper-checkbox {
 }
 
 #bookmark-star {
-  color: rgb(68, 136, 255);
+  color: var(--checked-color);
         height: 32px;
         width: 32px;
 }
@@ -3971,8 +3831,9 @@ paper-checkbox {
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>
         <div id="item-container">
-          <paper-checkbox id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" checked="{{selected}}" disabled="[[selectionNotAllowed_()]]" aria-label$="[[getEntrySummary_(item)]]">
-          </paper-checkbox>
+          <button is="paper-icon-button-light" id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" disabled="[[selectionNotAllowed_()]]" role="checkbox" aria-checked$="[[getAriaChecked_(selected)]]" aria-label$="[[getEntrySummary_(item)]]">
+            <div id="checkmark"></div>
+          </button>
           <span id="time-accessed">[[item.readableTimestamp]]</span>
           <div class="website-icon" id="icon"></div>
           <div id="title-and-domain">

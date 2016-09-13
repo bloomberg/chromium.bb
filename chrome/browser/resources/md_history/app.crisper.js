@@ -6536,151 +6536,6 @@ Polymer({
   }
 });
 
-Polymer.IronFormElementBehavior = {
-  properties: {
-    name: {
-      type: String
-    },
-    value: {
-      notify: true,
-      type: String
-    },
-    required: {
-      type: Boolean,
-      value: false
-    },
-    _parentForm: {
-      type: Object
-    }
-  },
-  attached: function() {
-    this.fire('iron-form-element-register');
-  },
-  detached: function() {
-    if (this._parentForm) {
-      this._parentForm.fire('iron-form-element-unregister', {
-        target: this
-      });
-    }
-  }
-};
-
-Polymer.IronCheckedElementBehaviorImpl = {
-  properties: {
-    checked: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      notify: true,
-      observer: '_checkedChanged'
-    },
-    toggles: {
-      type: Boolean,
-      value: true,
-      reflectToAttribute: true
-    },
-    value: {
-      type: String,
-      value: 'on',
-      observer: '_valueChanged'
-    }
-  },
-  observers: [ '_requiredChanged(required)' ],
-  created: function() {
-    this._hasIronCheckedElementBehavior = true;
-  },
-  _getValidity: function(_value) {
-    return this.disabled || !this.required || this.checked;
-  },
-  _requiredChanged: function() {
-    if (this.required) {
-      this.setAttribute('aria-required', 'true');
-    } else {
-      this.removeAttribute('aria-required');
-    }
-  },
-  _checkedChanged: function() {
-    this.active = this.checked;
-    this.fire('iron-change');
-  },
-  _valueChanged: function() {
-    if (this.value === undefined || this.value === null) {
-      this.value = 'on';
-    }
-  }
-};
-
-Polymer.IronCheckedElementBehavior = [ Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior, Polymer.IronCheckedElementBehaviorImpl ];
-
-Polymer.PaperCheckedElementBehaviorImpl = {
-  _checkedChanged: function() {
-    Polymer.IronCheckedElementBehaviorImpl._checkedChanged.call(this);
-    if (this.hasRipple()) {
-      if (this.checked) {
-        this._ripple.setAttribute('checked', '');
-      } else {
-        this._ripple.removeAttribute('checked');
-      }
-    }
-  },
-  _buttonStateChanged: function() {
-    Polymer.PaperRippleBehavior._buttonStateChanged.call(this);
-    if (this.disabled) {
-      return;
-    }
-    if (this.isAttached) {
-      this.checked = this.active;
-    }
-  }
-};
-
-Polymer.PaperCheckedElementBehavior = [ Polymer.PaperInkyFocusBehavior, Polymer.IronCheckedElementBehavior, Polymer.PaperCheckedElementBehaviorImpl ];
-
-Polymer({
-  is: 'paper-checkbox',
-  behaviors: [ Polymer.PaperCheckedElementBehavior ],
-  hostAttributes: {
-    role: 'checkbox',
-    'aria-checked': false,
-    tabindex: 0
-  },
-  properties: {
-    ariaActiveAttribute: {
-      type: String,
-      value: 'aria-checked'
-    }
-  },
-  attached: function() {
-    var inkSize = this.getComputedStyleValue('--calculated-paper-checkbox-ink-size');
-    if (inkSize === '-1px') {
-      var checkboxSize = parseFloat(this.getComputedStyleValue('--calculated-paper-checkbox-size'));
-      var defaultInkSize = Math.floor(8 / 3 * checkboxSize);
-      if (defaultInkSize % 2 !== checkboxSize % 2) {
-        defaultInkSize++;
-      }
-      this.customStyle['--paper-checkbox-ink-size'] = defaultInkSize + 'px';
-      this.updateStyles();
-    }
-  },
-  _computeCheckboxClass: function(checked, invalid) {
-    var className = '';
-    if (checked) {
-      className += 'checked ';
-    }
-    if (invalid) {
-      className += 'invalid';
-    }
-    return className;
-  },
-  _computeCheckmarkClass: function(checked) {
-    return checked ? '' : 'hidden';
-  },
-  _createRipple: function() {
-    this._rippleContainer = this.$.checkboxContainer;
-    return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
-  }
-});
-
 Polymer({
   is: 'paper-icon-button-light',
   "extends": 'button',
@@ -6800,7 +6655,7 @@ cr.define('md_history', function() {
       },
       selected: {
         type: Boolean,
-        notify: true
+        reflectToAttribute: true
       },
       isFirstItem: {
         type: Boolean,
@@ -6840,6 +6695,9 @@ cr.define('md_history', function() {
     getEntrySummary_: function() {
       var item = this.item;
       return loadTimeData.getStringF('entrySummary', item.dateTimeOfDay, item.starred ? loadTimeData.getString('bookmarked') : '', item.title, item.domain);
+    },
+    getAriaChecked_: function(selected) {
+      return selected ? 'true' : 'false';
     },
     onRemoveBookmarkTap_: function() {
       if (!this.item.starred) return;
@@ -7006,9 +6864,10 @@ var HistoryListBehavior = {
       }
     }
     if (paths.length == 0) paths.push(item.path);
+    var selected = !this.selectedPaths.has(item.path);
     paths.forEach(function(path) {
-      this.set(path + '.selected', item.selected);
-      if (item.selected) {
+      this.set(path + '.selected', selected);
+      if (selected) {
         this.selectedPaths.add(path);
         return;
       }

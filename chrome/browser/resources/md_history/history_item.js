@@ -14,7 +14,7 @@ cr.define('md_history', function() {
       // Search term used to obtain this history-item.
       searchTerm: {type: String},
 
-      selected: {type: Boolean, notify: true},
+      selected: {type: Boolean, reflectToAttribute: true},
 
       isFirstItem: {type: Boolean, reflectToAttribute: true},
 
@@ -71,6 +71,15 @@ cr.define('md_history', function() {
           'entrySummary', item.dateTimeOfDay,
           item.starred ? loadTimeData.getString('bookmarked') : '', item.title,
           item.domain);
+    },
+
+    /**
+     * @param {boolean} selected
+     * @return {string}
+     * @private
+     */
+    getAriaChecked_: function(selected) {
+      return selected ? 'true' : 'false';
     },
 
     /**
