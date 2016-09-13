@@ -59,7 +59,7 @@ public final class InputMonitor
 
     private Rect mPanGestureBounds;
 
-    InputMonitor(DesktopView view, Context context) {
+    InputMonitor(DesktopView view, RenderStub renderStub, Context context) {
         mOnTap = new Event.Raisable<>();
         mOnPressAndHold = new Event.Raisable<>();
         mOnTouchEvent = new Event.Raisable<>();
@@ -77,7 +77,7 @@ public final class InputMonitor
         mZoomer = new ScaleGestureDetector(context, this);
         mTapDetector = new TapGestureDetector(context, this);
         mSwipePinchDetector = new SwipePinchDetector(context);
-        view.onClientSizeChanged().add(
+        renderStub.onClientSizeChanged().add(
                 new Event.ParameterRunnable<SizeChangedEventParameter>() {
                     @Override
                     public void run(SizeChangedEventParameter param) {

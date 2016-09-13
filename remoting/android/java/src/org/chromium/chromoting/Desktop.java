@@ -18,7 +18,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.help.HelpContext;
@@ -77,6 +76,8 @@ public class Desktop
     private CapabilityManager.HostCapability mHostTouchCapability =
             CapabilityManager.HostCapability.UNKNOWN;
 
+    private DesktopView mRemoteHostDesktop;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,13 +87,13 @@ public class Desktop
         mClient = Client.getInstance();
         mInjector = new InputEventSender(mClient);
 
+        Preconditions.notNull(mClient);
+
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        DesktopView remoteHostDesktop = mClient.createDesktopView(this, mClient);
-        remoteHostDesktop.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        ((ViewGroup) findViewById(R.id.desktop_view_placeholder)).addView(remoteHostDesktop);
+        mRemoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
+        mRemoteHostDesktop.init(mClient, this, mClient.getRenderStub());
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -140,7 +141,7 @@ public class Desktop
                 }
             });
         } else {
-            remoteHostDesktop.setFitsSystemWindows(true);
+            mRemoteHostDesktop.setFitsSystemWindows(true);
         }
     }
 

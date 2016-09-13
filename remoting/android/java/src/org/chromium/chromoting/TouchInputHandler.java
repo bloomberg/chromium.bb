@@ -8,10 +8,14 @@ import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ViewConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is responsible for handling Touch input from the user.  Touch events which manipulate
@@ -21,23 +25,26 @@ import android.view.ViewConfiguration;
 public class TouchInputHandler {
     private static final float EPSILON = 0.001f;
 
+    private final List<Pair<Object, Event<?>>> mAttachedEvents = new ArrayList<>();
     private final DesktopView mViewer;
     private final Context mContext;
     private final RenderData mRenderData;
     private final DesktopCanvas mDesktopCanvas;
-    private InputStrategyInterface mInputStrategy;
-
-    private GestureDetector mScroller;
-    private ScaleGestureDetector mZoomer;
-    private TapGestureDetector mTapDetector;
+    private final RenderStub mRenderStub;
+    private final GestureDetector mScroller;
+    private final ScaleGestureDetector mZoomer;
+    private final TapGestureDetector mTapDetector;
 
     /** Used to disambiguate a 2-finger gesture as a swipe or a pinch. */
-    private SwipePinchDetector mSwipePinchDetector;
+    private final SwipePinchDetector mSwipePinchDetector;
 
     // Used for processing cursor & scroller fling animations.
     // May consider using a List of AnimationJob if we have more than two animation jobs in
     // the future.
-    private FlingAnimationJob mCursorAnimationJob,  mScrollAnimationJob;
+    private final FlingAnimationJob mCursorAnimationJob;
+    private final FlingAnimationJob mScrollAnimationJob;
+
+    private InputStrategyInterface mInputStrategy;
 
     /**
      * Used for tracking swipe gestures. Only the Y-direction is needed for responding to swipe-up
@@ -180,14 +187,21 @@ public class TouchInputHandler {
         }
     }
 
-    public TouchInputHandler(DesktopView viewer, Context context) {
+    public TouchInputHandler(DesktopView viewer, Desktop desktop, RenderStub renderStub,
+                             final InputEventSender injector) {
+        Preconditions.notNull(viewer);
+        Preconditions.notNull(desktop);
+        Preconditions.notNull(renderStub);
+        Preconditions.notNull(injector);
+
         mViewer = viewer;
-        mContext = context;
+        mContext = desktop;
+        mRenderStub = renderStub;
         mRenderData = new RenderData();
-        mDesktopCanvas = new DesktopCanvas(mViewer, mRenderData);
+        mDesktopCanvas = new DesktopCanvas(renderStub, mRenderData);
 
         GestureListener listener = new GestureListener();
-        mScroller = new GestureDetector(context, listener, null, false);
+        mScroller = new GestureDetector(desktop, listener, null, false);
 
         // If long-press is enabled, the gesture-detector will not emit any further onScroll
         // notifications after the onLongPress notification. Since onScroll is being used for
@@ -195,22 +209,22 @@ public class TouchInputHandler {
         // down too long.
         mScroller.setIsLongpressEnabled(false);
 
-        mZoomer = new ScaleGestureDetector(context, listener);
-        mTapDetector = new TapGestureDetector(context, listener);
-        mSwipePinchDetector = new SwipePinchDetector(context);
+        mZoomer = new ScaleGestureDetector(desktop, listener);
+        mTapDetector = new TapGestureDetector(desktop, listener);
+        mSwipePinchDetector = new SwipePinchDetector(desktop);
 
         // The threshold needs to be bigger than the ScaledTouchSlop used by the gesture-detectors,
         // so that a gesture cannot be both a tap and a swipe. It also needs to be small enough so
         // that intentional swipes are usually detected.
-        float density = context.getResources().getDisplayMetrics().density;
+        float density = desktop.getResources().getDisplayMetrics().density;
         mSwipeThreshold = 40 * density;
 
-        mEdgeSlopInPx = ViewConfiguration.get(context).getScaledEdgeSlop();
+        mEdgeSlopInPx = ViewConfiguration.get(desktop).getScaledEdgeSlop();
 
         mInputStrategy = new NullInputStrategy();
 
-        mCursorAnimationJob = new CursorAnimationJob(context);
-        mScrollAnimationJob = new ScrollAnimationJob(context);
+        mCursorAnimationJob = new CursorAnimationJob(desktop);
+        mScrollAnimationJob = new ScrollAnimationJob(desktop);
 
         mProcessAnimationCallback = new Event.ParameterCallback<Boolean, Void>() {
             @Override
@@ -219,7 +233,61 @@ public class TouchInputHandler {
             }
         };
 
-        attachViewEvents(viewer);
+        attachEvent(mViewer.onTouch(), new Event.ParameterRunnable<TouchEventParameter>() {
+            @Override
+            public void run(TouchEventParameter parameter) {
+                parameter.handled = handleTouchEvent(parameter.event);
+            }
+        });
+
+        attachEvent(desktop.onInputModeChanged(),
+                new Event.ParameterRunnable<InputModeChangedEventParameter>() {
+                    @Override
+                    public void run(InputModeChangedEventParameter parameter) {
+                        handleInputModeChanged(parameter, injector);
+                    }
+                });
+
+        attachEvent(desktop.onSystemUiVisibilityChanged(),
+                new Event.ParameterRunnable<SystemUiVisibilityChangedEventParameter>() {
+                    @Override
+                    public void run(SystemUiVisibilityChangedEventParameter parameter) {
+                        handleSystemUiVisibilityChanged(parameter);
+                    }
+                });
+
+        attachEvent(renderStub.onClientSizeChanged(),
+                new Event.ParameterRunnable<SizeChangedEventParameter>() {
+                    @Override
+                    public void run(SizeChangedEventParameter parameter) {
+                        handleClientSizeChanged(parameter.width, parameter.height);
+                    }
+                });
+
+        attachEvent(renderStub.onHostSizeChanged(),
+                new Event.ParameterRunnable<SizeChangedEventParameter>() {
+                    @Override
+                    public void run(SizeChangedEventParameter parameter) {
+                        handleHostSizeChanged(parameter.width, parameter.height);
+                    }
+                });
+    }
+
+    private <ParamT> void attachEvent(Event<ParamT> event,
+                                      Event.ParameterRunnable<ParamT> runnable) {
+        mAttachedEvents.add(new Pair<Object, Event<?>>(event.add(runnable), event));
+    }
+
+    /**
+     * Detaches all registered event listeners. This function should be called exactly once.
+     */
+    public void detachEventListeners() {
+        Preconditions.isTrue(!mAttachedEvents.isEmpty());
+        abortAnimation();
+        for (Pair<Object, Event<?>> pair : mAttachedEvents) {
+            pair.second.remove(pair.first);
+        }
+        mAttachedEvents.clear();
     }
 
     /**
@@ -234,7 +302,7 @@ public class TouchInputHandler {
      * Start stepping animation when onCanvasRendered is triggered.
      */
     private void startAnimation() {
-        mViewer.onCanvasRendered().addSelfRemovable(mProcessAnimationCallback);
+        mRenderStub.onCanvasRendered().addSelfRemovable(mProcessAnimationCallback);
     }
 
     /**
@@ -243,46 +311,6 @@ public class TouchInputHandler {
     private void abortAnimation() {
         mCursorAnimationJob.abortAnimation();
         mScrollAnimationJob.abortAnimation();
-    }
-
-    public void init(Desktop desktop, final InputEventSender injector) {
-        Preconditions.notNull(injector);
-        desktop.onInputModeChanged().add(
-                new Event.ParameterRunnable<InputModeChangedEventParameter>() {
-                    @Override
-                    public void run(InputModeChangedEventParameter parameter) {
-                        handleInputModeChanged(parameter, injector);
-                    }
-                });
-
-        desktop.onSystemUiVisibilityChanged().add(
-                new Event.ParameterRunnable<SystemUiVisibilityChangedEventParameter>() {
-                    @Override
-                    public void run(SystemUiVisibilityChangedEventParameter parameter) {
-                        handleSystemUiVisibilityChanged(parameter);
-                    }
-                });
-    }
-
-    private void attachViewEvents(DesktopView viewer) {
-        viewer.onTouch().add(new Event.ParameterRunnable<TouchEventParameter>() {
-            @Override
-            public void run(TouchEventParameter parameter) {
-                parameter.handled = handleTouchEvent(parameter.event);
-            }
-        });
-        viewer.onClientSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
-            @Override
-            public void run(SizeChangedEventParameter parameter) {
-                handleClientSizeChanged(parameter.width, parameter.height);
-            }
-        });
-        viewer.onHostSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
-            @Override
-            public void run(SizeChangedEventParameter parameter) {
-                handleHostSizeChanged(parameter.width, parameter.height);
-            }
-        });
     }
 
     private void handleInputModeChanged(
@@ -316,7 +344,7 @@ public class TouchInputHandler {
         }
 
         // Ensure the cursor state is updated appropriately.
-        mViewer.cursorVisibilityChanged(mRenderData.drawCursor);
+        mRenderStub.setCursorVisibility(mRenderData.drawCursor);
     }
 
     private void handleSystemUiVisibilityChanged(
@@ -437,7 +465,7 @@ public class TouchInputHandler {
             mInputStrategy.injectCursorMoveEvent((int) newX, (int) newY);
         }
 
-        mViewer.cursorMoved(mRenderData.getCursorPosition());
+        mRenderStub.moveCursor(mRenderData.getCursorPosition());
     }
 
     /** Processes a (multi-finger) swipe gesture. */
@@ -616,7 +644,7 @@ public class TouchInputHandler {
             if (mInputStrategy.onTap(button)) {
                 PointF pos = mRenderData.getCursorPosition();
 
-                mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType(), pos);
+                mRenderStub.showInputFeedback(mInputStrategy.getShortPressFeedbackType(), pos);
             }
             return true;
         }
@@ -639,7 +667,7 @@ public class TouchInputHandler {
             if (mInputStrategy.onPressAndHold(button)) {
                 PointF pos = mRenderData.getCursorPosition();
 
-                mViewer.showInputFeedback(mInputStrategy.getLongPressFeedbackType(), pos);
+                mRenderStub.showInputFeedback(mInputStrategy.getLongPressFeedbackType(), pos);
                 mSuppressFling = true;
                 mIsDragging = true;
             }

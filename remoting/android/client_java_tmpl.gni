@@ -26,7 +26,6 @@ template("remoting_android_client_java_tmpl") {
       "DummyClientExtension.java",
       "Event.java",
       "FlingAnimationJob.java",
-      "GlDesktopView.java",
       "HostInfo.java",
       "HostListAdapter.java",
       "HostListManager.java",

@@ -11,18 +11,15 @@ import android.view.SurfaceHolder;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chromoting.Desktop;
 import org.chromium.chromoting.DesktopView;
-import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
-import org.chromium.chromoting.GlDesktopView;
 import org.chromium.chromoting.InputFeedbackRadiusMapper;
 import org.chromium.chromoting.RenderStub;
 import org.chromium.chromoting.SizeChangedEventParameter;
 
 /**
- * This class is the JNI interface class that helps bridging GlDesktopView with the OpenGL renderer
- * in native code. The lifetime of this class is managed by the native JniGlDisplayHandler.
+ * This class is a RenderStub implementation that uses the OpenGL renderer in native code to render
+ * the remote desktop. The lifetime of this class is managed by the native JniGlDisplayHandler.
  *
  * This class works entirely on the UI thread:
  *  Functions should all be called on UI.
@@ -30,13 +27,13 @@ import org.chromium.chromoting.SizeChangedEventParameter;
  */
 @JNINamespace("remoting")
 public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
-    private volatile long mNativeJniGlDisplay;
     private final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
             new Event.Raisable<>();
     private final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
-    private final Event.Raisable<Void> mOnCanvasRendered =
-            new Event.Raisable<>();
+    private final Event.Raisable<Void> mOnCanvasRendered = new Event.Raisable<>();
+
+    private volatile long mNativeJniGlDisplay;
     private InputFeedbackRadiusMapper mFeedbackRadiusMapper;
     private float mScaleFactor = 0;
 
@@ -90,6 +87,7 @@ public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
 
     @Override
     public void setDesktopView(DesktopView view) {
+        view.getHolder().addCallback(this);
         mFeedbackRadiusMapper = new InputFeedbackRadiusMapper(view);
     }
 
@@ -179,12 +177,7 @@ public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
 
     @CalledByNative
     private void initializeClient(Client client) {
-        client.setDesktopViewFactory(new DesktopViewFactory() {
-            @Override
-            public DesktopView createDesktopView(Desktop desktop, Client client) {
-                return new GlDesktopView(GlDisplay.this, desktop, client);
-            }
-        });
+        client.setRenderStub(this);
     }
 
     @CalledByNative

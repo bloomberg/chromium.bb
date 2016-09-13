@@ -5,9 +5,8 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
-import android.graphics.Matrix;
-import android.graphics.PointF;
 import android.text.InputType;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.inputmethod.EditorInfo;
@@ -17,48 +16,56 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.chromoting.jni.Client;
 
 /**
- * The abstract class for viewing and interacting with a specific remote host. Handles logic
- * for touch input and render data.
+ * The class for viewing and interacting with a specific remote host.
  */
-public abstract class DesktopView extends SurfaceView {
-
-    protected final TouchInputHandler mInputHandler;
-
-    /**
-     * Subclass should trigger this event when the client view size is changed.
-     */
-    protected final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
-            new Event.Raisable<>();
-
-    /**
-     * Subclass should trigger this event when the host (desktop frame) size is changed.
-     */
-    protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
-            new Event.Raisable<>();
-
-    /**
-     * Subclass should trigger this event when a frame is rendered.
-     */
-    protected final Event.Raisable<Void> mOnCanvasRendered = new Event.Raisable<>();
-
-    /** The parent Desktop activity. */
-    private final Desktop mDesktop;
+public final class DesktopView extends SurfaceView {
 
     private final Event.Raisable<TouchEventParameter> mOnTouch = new Event.Raisable<>();
 
-    public DesktopView(Desktop desktop, Client client) {
-        super(desktop);
-        Preconditions.notNull(desktop);
-        Preconditions.notNull(client);
-        mDesktop = desktop;
-        mInputHandler = new TouchInputHandler(this, desktop);
-        mInputHandler.init(desktop, new InputEventSender(client));
+    /** The parent Desktop activity. */
+    private Desktop mDesktop;
 
+    private RenderStub mRenderStub;
+
+    private TouchInputHandler mInputHandler;
+
+    private InputEventSender mInputEventSender;
+
+    public DesktopView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
         setFocusableInTouchMode(true);
     }
 
-    // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
+    /**
+     * Initializes the view.
+     */
+    public void init(Client client, Desktop desktop, RenderStub renderStub) {
+        Preconditions.isNull(mDesktop);
+        Preconditions.isNull(mRenderStub);
+        Preconditions.isNull(mInputEventSender);
+        Preconditions.notNull(desktop);
+        Preconditions.notNull(renderStub);
+        mDesktop = desktop;
+        mRenderStub = renderStub;
+        mInputEventSender = new InputEventSender(client);
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        Preconditions.isNull(mInputHandler);
+        super.onAttachedToWindow();
+        mRenderStub.setDesktopView(this);
+        mInputHandler = new TouchInputHandler(this, mDesktop, mRenderStub, mInputEventSender);
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        mInputHandler.detachEventListeners();
+        super.onDetachedFromWindow();
+    }
+
+    // TODO(yuweih): move showActionBar and showKeyboard out of this class.
     /** Shows the action bar. */
     public final void showActionBar() {
         mDesktop.showSystemUi();
@@ -76,22 +83,6 @@ public abstract class DesktopView extends SurfaceView {
         return mOnTouch;
     }
 
-    /** An {@link Event} which is triggered when the client size is changed. */
-    public final Event<SizeChangedEventParameter> onClientSizeChanged() {
-        return mOnClientSizeChanged;
-    }
-
-    /** An {@link Event} which is triggered when the host size is changed. */
-    public final Event<SizeChangedEventParameter> onHostSizeChanged() {
-        return mOnHostSizeChanged;
-    }
-
-    /** An {@link Event} which is triggered when a frame is rendered. */
-    public final Event<Void> onCanvasRendered() {
-        return mOnCanvasRendered;
-    }
-
-    // View overrides.
     /** Called when a software keyboard is requested, and specifies its options. */
     @Override
     public final InputConnection onCreateInputConnection(EditorInfo outAttrs) {
@@ -117,25 +108,4 @@ public abstract class DesktopView extends SurfaceView {
         mOnTouch.raise(parameter);
         return parameter.handled;
     }
-
-    /** Triggers a brief animation to indicate the existence and location of an input event. */
-    public abstract void showInputFeedback(RenderStub.InputFeedbackType feedbackToShow, PointF pos);
-
-    /**
-     * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
-     * has been changed by the TouchInputHandler, which requires repainting.
-     */
-    public abstract void transformationChanged(Matrix matrix);
-
-    /**
-     * Informs the view that the cursor has been moved by the TouchInputHandler, which requires
-     * repainting.
-     */
-    public abstract void cursorMoved(PointF position);
-
-    /**
-     * Informs the view that the cursor visibility has been changed (for different input mode) by
-     * the TouchInputHandler, which requires repainting.
-     */
-    public abstract void cursorVisibilityChanged(boolean visible);
 }

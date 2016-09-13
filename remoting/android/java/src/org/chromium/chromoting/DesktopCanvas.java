@@ -18,7 +18,7 @@ public class DesktopCanvas {
      */
     private static final float MAX_ZOOM_FACTOR = 100.0f;
 
-    private final DesktopView mViewer;
+    private final RenderStub mRenderStub;
     private final RenderData mRenderData;
 
     /**
@@ -34,8 +34,8 @@ public class DesktopCanvas {
      */
     private Rect mSystemUiOffsetPixels = new Rect();
 
-    public DesktopCanvas(DesktopView viewer, RenderData renderData) {
-        mViewer = viewer;
+    public DesktopCanvas(RenderStub renderStub, RenderData renderData) {
+        mRenderStub = renderStub;
         mRenderData = renderData;
     }
 
@@ -208,7 +208,7 @@ public class DesktopCanvas {
 
         mRenderData.transform.postTranslate(xAdjust, yAdjust);
 
-        mViewer.transformationChanged(mRenderData.transform);
+        mRenderStub.setTransformation(mRenderData.transform);
     }
 
     /**

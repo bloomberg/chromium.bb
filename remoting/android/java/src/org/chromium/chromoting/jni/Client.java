@@ -4,17 +4,13 @@
 
 package org.chromium.chromoting.jni;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.CapabilityManager;
-import org.chromium.chromoting.Desktop;
-import org.chromium.chromoting.DesktopView;
-import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.Preconditions;
+import org.chromium.chromoting.RenderStub;
 import org.chromium.chromoting.SessionAuthenticator;
 
 /**
@@ -27,10 +23,9 @@ import org.chromium.chromoting.SessionAuthenticator;
 @JNINamespace("remoting")
 public class Client implements InputStub {
     // Pointer to the C++ object, cast to a |long|.
-    private long mNativeJniClient;
+    private final long mNativeJniClient;
 
-    // The factory to create implementation-dependent desktop view.
-    private DesktopViewFactory mDesktopViewFactory;
+    private RenderStub mRenderStub;
 
     // The global Client instance (may be null). This needs to be a global singleton so that the
     // Client can be passed between Activities.
@@ -45,23 +40,6 @@ public class Client implements InputStub {
         mNativeJniClient = nativeInit();
     }
 
-    /**
-     * Sets the desktop view factory to be used by {@link Client#createDesktopView(Context)}.
-     * @param factory The factory to create implementation-dependent desktop view.
-     */
-    public void setDesktopViewFactory(DesktopViewFactory factory) {
-        mDesktopViewFactory = factory;
-    }
-
-    /**
-     * Creates an implementation specific {@link DesktopView} using the
-     * {@link DesktopViewFactory} set by {@link Client#setDesktopViewFactory(DesktopViewFactory)}.
-     */
-    public DesktopView createDesktopView(Desktop desktop, Client client) {
-        Preconditions.notNull(mDesktopViewFactory);
-        return mDesktopViewFactory.createDesktopView(desktop, client);
-    }
-
     // Suppress FindBugs warning, since |sClient| is only used on the UI thread.
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public void destroy() {
@@ -70,6 +48,16 @@ public class Client implements InputStub {
             nativeDestroy(mNativeJniClient);
             sClient = null;
         }
+    }
+
+    public void setRenderStub(RenderStub stub) {
+        Preconditions.isNull(mRenderStub);
+        Preconditions.notNull(stub);
+        mRenderStub = stub;
+    }
+
+    public RenderStub getRenderStub() {
+        return mRenderStub;
     }
 
     /** Returns the current Client instance, or null. */
