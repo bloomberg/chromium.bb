@@ -80,7 +80,7 @@ class WebLayerImpl : public blink::WebLayer {
   blink::WebBlendMode blendMode() const override;
   void setIsRootForIsolatedGroup(bool root) override;
   bool isRootForIsolatedGroup() override;
-  void setOpaque(bool opaque) override;
+  CC_BLINK_EXPORT void setOpaque(bool opaque) override;
   bool opaque() const override;
   void setPosition(const blink::WebFloatPoint& position) override;
   blink::WebFloatPoint position() const override;
