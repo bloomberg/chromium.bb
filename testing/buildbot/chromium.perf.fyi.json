@@ -13,7 +13,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -39,7 +41,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth.reference",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -64,7 +68,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "sunspider",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -90,7 +96,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "sunspider.reference",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -115,7 +123,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.webview_startup",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -141,7 +151,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.webview_startup.reference",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -166,7 +178,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "page_cycler_v2.intl_hi_ru",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -192,7 +206,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "page_cycler_v2.intl_hi_ru.reference",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -217,7 +233,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.cssqueryjquery",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -243,7 +261,9 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.cssqueryjquery.reference",
-        "override_compile_targets": "telemetry_perf_tests",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

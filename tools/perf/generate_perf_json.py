@@ -311,7 +311,7 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
     'args': test_args,
     'isolate_name': 'telemetry_perf_tests',
     'name': step_name,
-    'override_compile_targets': 'telemetry_perf_tests',
+    'override_compile_targets': ['telemetry_perf_tests'],
     'swarming': swarming,
   }
 
