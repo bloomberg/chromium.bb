@@ -191,7 +191,6 @@ WHITELIST = {
     'ar_sample_test_driver.exe',
     'ash_library.dll',
     'ash_shell_with_content.exe',
-    'ash_sysui_library.dll',
     'ash_unittests.exe',
     'audio_unittests.exe',
     'aura_demo.exe',

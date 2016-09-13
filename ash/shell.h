@@ -385,10 +385,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return is_touch_hud_projection_enabled_;
   }
 
-  // TODO(sky): remove this. This was needed by sysui, but as sysui is going
-  // away it should no longer be needed.
-  bool in_mus() const { return in_mus_; }
-
 #if defined(OS_CHROMEOS)
   // Creates instance of FirstRunHelper. Caller is responsible for deleting
   // returned object.
@@ -559,8 +555,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<GPUSupport> gpu_support_;
 
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
-
-  bool in_mus_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

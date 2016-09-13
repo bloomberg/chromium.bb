@@ -944,17 +944,22 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   virtual_keyboard_enabled_ = enabled;
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  // Note that there are two versions of the on-screen keyboard. A full layout
-  // is provided for accessibility, which includes sticky modifier keys to
-  // enable typing of hotkeys. A compact version is used in touchview mode
-  // to provide a layout with larger keys to facilitate touch typing. In the
-  // event that the a11y keyboard is being disabled, an on-screen keyboard might
-  // still be enabled and a forced reset is required to pick up the layout
-  // change.
-  if (keyboard::IsKeyboardEnabled())
-    ash::Shell::GetInstance()->CreateKeyboard();
-  else
-    ash::Shell::GetInstance()->DeactivateKeyboard();
+  if (!chrome::IsRunningInMash()) {
+    // Note that there are two versions of the on-screen keyboard. A full layout
+    // is provided for accessibility, which includes sticky modifier keys to
+    // enable typing of hotkeys. A compact version is used in touchview mode
+    // to provide a layout with larger keys to facilitate touch typing. In the
+    // event that the a11y keyboard is being disabled, an on-screen keyboard
+    // might still be enabled and a forced reset is required to pick up the
+    // layout change.
+    if (keyboard::IsKeyboardEnabled())
+      ash::Shell::GetInstance()->CreateKeyboard();
+    else
+      ash::Shell::GetInstance()->DeactivateKeyboard();
+  } else {
+    // TODO(mash): Support on-screen keyboard. See http://crbug.com/646565
+    NOTIMPLEMENTED();
+  }
 
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
                                           enabled, ash::A11Y_NOTIFICATION_NONE);

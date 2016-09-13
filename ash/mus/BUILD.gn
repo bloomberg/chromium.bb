@@ -51,6 +51,8 @@ source_set("lib") {
     "frame/detached_title_area_renderer.cc",
     "frame/detached_title_area_renderer.h",
     "frame/detached_title_area_renderer_host.h",
+    "keyboard_ui_mus.cc",
+    "keyboard_ui_mus.h",
     "layout_manager.cc",
     "layout_manager.h",
     "move_event_handler.cc",
@@ -91,6 +93,7 @@ source_set("lib") {
     "//components/wallpaper",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
+    "//ui/keyboard:mojom",
     "//ui/message_center",
   ]
 

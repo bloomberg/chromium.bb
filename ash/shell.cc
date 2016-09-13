@@ -170,15 +170,6 @@ class AshVisibilityController : public ::wm::VisibilityController {
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
-AshWindowTreeHostInitParams ShellInitParamsToAshWindowTreeHostInitParams(
-    const ShellInitParams& shell_init_params) {
-  AshWindowTreeHostInitParams ash_init_params;
-#if defined(OS_WIN)
-  ash_init_params.remote_hwnd = shell_init_params.remote_hwnd;
-#endif
-  return ash_init_params;
-}
-
 }  // namespace
 
 // static
@@ -340,8 +331,6 @@ void Shell::CreateShelf() {
 }
 
 void Shell::CreateKeyboard() {
-  if (in_mus_)
-    return;
   // TODO(bshe): Primary root window controller may not be the controller to
   // attach virtual keyboard. See http://crbug.com/303429
   InitKeyboard();
@@ -352,8 +341,6 @@ void Shell::CreateKeyboard() {
 void Shell::DeactivateKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into WmShell.
   wm_shell_->keyboard_ui()->Hide();
-  if (in_mus_)
-    return;
   if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
     for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -620,28 +607,24 @@ Shell::~Shell() {
 void Shell::Init(const ShellInitParams& init_params) {
   wm_shell_->Initialize(init_params.blocking_pool);
 
-  in_mus_ = init_params.in_mus;
-
   immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  DCHECK(in_mus_) << "linux desktop does not support ash.";
+  NOTREACHED() << "linux desktop does not support ash.";
 #endif
 
   scoped_overview_animation_settings_factory_.reset(
       new ScopedOverviewAnimationSettingsFactoryAura);
   window_positioner_.reset(new WindowPositioner(wm_shell_.get()));
 
-  if (!in_mus_) {
-    native_cursor_manager_ = new AshNativeCursorManager;
+  native_cursor_manager_ = new AshNativeCursorManager;
 #if defined(OS_CHROMEOS)
-    cursor_manager_.reset(
-        new CursorManager(base::WrapUnique(native_cursor_manager_)));
+  cursor_manager_.reset(
+      new CursorManager(base::WrapUnique(native_cursor_manager_)));
 #else
-    cursor_manager_.reset(
-        new ::wm::CursorManager(base::WrapUnique(native_cursor_manager_)));
+  cursor_manager_.reset(
+      new ::wm::CursorManager(base::WrapUnique(native_cursor_manager_)));
 #endif
-  }
 
   wm_shell_->delegate()->PreInit();
   bool display_initialized = display_manager_->InitFromCommandLine();
@@ -650,21 +633,15 @@ void Shell::Init(const ShellInitParams& init_params) {
       display_manager_.get(), window_tree_host_manager_.get()));
 
 #if defined(OS_CHROMEOS)
-  // When running as part of mash display configuration is handled by the mus
-  // process, so we won't try to configure displays here.
-  if (in_mus_) {
-    display_configurator_->set_configure_display(false);
-  } else {
+
 #if defined(USE_OZONE)
-    display_configurator_->Init(
-        ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
-        !gpu_support_->IsPanelFittingDisabled());
+  display_configurator_->Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+      !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
-    display_configurator_->Init(
-        base::MakeUnique<ui::NativeDisplayDelegateX11>(),
-        !gpu_support_->IsPanelFittingDisabled());
+  display_configurator_->Init(base::MakeUnique<ui::NativeDisplayDelegateX11>(),
+                              !gpu_support_->IsPanelFittingDisabled());
 #endif
-  }
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =
@@ -674,8 +651,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   wm_shell_->AddShellObserver(projecting_observer_.get());
 
-  if (!in_mus_ && !display_initialized &&
-      base::SysInfo::IsRunningOnChromeOS()) {
+  if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
@@ -717,8 +693,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   screen_position_controller_.reset(new ScreenPositionController);
 
   window_tree_host_manager_->Start();
-  window_tree_host_manager_->CreatePrimaryHost(
-      ShellInitParamsToAshWindowTreeHostInitParams(init_params));
+  AshWindowTreeHostInitParams ash_init_params;
+  window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
   aura::Window* root_window = window_tree_host_manager_->GetPrimaryRootWindow();
   wm_shell_->set_root_window_for_new_windows(WmWindowAura::Get(root_window));
 
@@ -843,13 +819,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since TouchTransformerController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  if (!in_mus_)
-    touch_transformer_controller_.reset(new TouchTransformerController());
+  touch_transformer_controller_.reset(new TouchTransformerController());
 #endif  // defined(OS_CHROMEOS)
 
-  wm_shell_->SetKeyboardUI(init_params.keyboard_factory.is_null()
-                               ? KeyboardUI::Create()
-                               : init_params.keyboard_factory.Run());
+  wm_shell_->SetKeyboardUI(KeyboardUI::Create());
 
   window_tree_host_manager_->InitHosts();
 
@@ -896,9 +869,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 }
 
 void Shell::InitKeyboard() {
-  if (in_mus_)
-    return;
-
   if (keyboard::IsKeyboardEnabled()) {
     if (keyboard::KeyboardController::GetInstance()) {
       RootWindowControllerList controllers = GetAllRootWindowControllers();

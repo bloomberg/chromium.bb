@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -28,6 +27,7 @@
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "ash/mus/container_ids.h"
 #include "ash/mus/drag_window_resizer.h"
+#include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
@@ -135,10 +135,9 @@ WmShellMus::WmShellMus(
 
   CreateMruWindowTracker();
 
-  SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
+  SetSystemTrayDelegate(base::MakeUnique<DefaultSystemTrayDelegate>());
 
-  // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.
-  SetKeyboardUI(KeyboardUI::Create());
+  SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
 
   wallpaper_delegate()->InitializeWallpaper();
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSUI_KEYBOARD_UI_MUS_H_
-#define ASH_SYSUI_KEYBOARD_UI_MUS_H_
+#ifndef ASH_MUS_KEYBOARD_UI_MUS_H_
+#define ASH_MUS_KEYBOARD_UI_MUS_H_
 
 #include <memory>
 
@@ -48,4 +48,4 @@ class KeyboardUIMus : public KeyboardUI,
 
 }  // namespace ash
 
-#endif  // ASH_SYSUI_KEYBOARD_UI_MUS_H_
+#endif  // ASH_MUS_KEYBOARD_UI_MUS_H_

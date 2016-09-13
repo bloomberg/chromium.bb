@@ -836,22 +836,7 @@ void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
 }
 
 RootWindowController* GetRootWindowController(const aura::Window* root_window) {
-  if (!root_window)
-    return nullptr;
-
-  if (Shell::GetInstance()->in_mus()) {
-    // On mus, like desktop aura, each top-level widget has its own root window,
-    // so |root_window| is not necessarily the display's root. For now, just
-    // the use the primary display root.
-    // TODO(jamescook): Multi-display support. This depends on how mus windows
-    // will be owned by displays.
-    aura::Window* primary_root_window = Shell::GetInstance()
-                                            ->window_tree_host_manager()
-                                            ->GetPrimaryRootWindow();
-    return GetRootWindowSettings(primary_root_window)->controller;
-  }
-
-  return GetRootWindowSettings(root_window)->controller;
+  return root_window ? GetRootWindowSettings(root_window)->controller : nullptr;
 }
 
 }  // namespace ash
