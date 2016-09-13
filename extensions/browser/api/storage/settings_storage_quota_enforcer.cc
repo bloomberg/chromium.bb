@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/extension_api.h"
@@ -46,22 +45,15 @@ void Allocate(
 
 ValueStore::Status QuotaExceededError(Resource resource) {
   const char* name = NULL;
-  // TODO(kalman): These hisograms are both silly and untracked. Fix.
   switch (resource) {
     case QUOTA_BYTES:
       name = "QUOTA_BYTES";
-      UMA_HISTOGRAM_COUNTS_100(
-          "Extensions.SettingsQuotaExceeded.TotalBytes", 1);
       break;
     case QUOTA_BYTES_PER_ITEM:
       name = "QUOTA_BYTES_PER_ITEM";
-      UMA_HISTOGRAM_COUNTS_100(
-          "Extensions.SettingsQuotaExceeded.BytesPerSetting", 1);
       break;
     case MAX_ITEMS:
       name = "MAX_ITEMS";
-      UMA_HISTOGRAM_COUNTS_100(
-          "Extensions.SettingsQuotaExceeded.KeyCount", 1);
       break;
   }
   CHECK(name);

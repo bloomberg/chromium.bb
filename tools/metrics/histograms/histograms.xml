@@ -16599,6 +16599,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Length of the path under which a CRX is unpacked.</summary>
 </histogram>
 
+<histogram name="Extensions.SettingsQuotaExceeded.BytesPerSetting">
+  <obsolete>
+    Removed in September, 2016
+  </obsolete>
+  <summary>
+    Emitted when QuotaExceededError was called due to an extension using too
+    many bytes for a given setting.  The number has no natural numerator
+    (normalizing factor) and thus is not particularly useful.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SettingsQuotaExceeded.KeyCount">
+  <obsolete>
+    Removed in September, 2016
+  </obsolete>
+  <summary>
+    Emitted when QuotaExceededError was called due to an extension using too
+    many keys.  The number has no natural numerator (normalizing factor) and
+    thus is not particularly useful.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SettingsQuotaExceeded.TotalBytes">
+  <obsolete>
+    Removed in September, 2016
+  </obsolete>
+  <summary>
+    Emitted when QuotaExceededError was called due to an extension using too
+    many bytes.  The number has no natural numerator (normalizing factor) and
+    thus is not particularly useful.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.StartupDelay" units="ms">
   <owner>asargent@chromium.org</owner>
   <summary>The time one extension delays network requests at startup.</summary>
