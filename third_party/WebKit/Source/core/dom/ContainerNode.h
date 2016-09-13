@@ -264,6 +264,7 @@ private:
     bool hasRestyleFlagInternal(DynamicRestyleFlags) const;
     bool hasRestyleFlagsInternal() const;
 
+    void collectChildrenAndRemoveFromOldParentWithCheck(const Node* next, const Node* oldChild, Node& newChild, NodeVector&, ExceptionState&) const;
     inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild, const Node* oldChild, ExceptionState&) const;
     inline bool checkAcceptChild(const Node* newChild, const Node* oldChild, ExceptionState&) const;
     inline bool checkParserAcceptChild(const Node& newChild) const;

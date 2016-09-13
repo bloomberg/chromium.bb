@@ -61,6 +61,8 @@ using namespace HTMLNames;
 static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
 
+// This dispatches various events; DOM mutation events, blur events, IFRAME
+// unload events, etc.
 static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& exceptionState)
 {
     if (node.isDocumentFragment()) {
@@ -139,7 +141,11 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
 {
     if (isDocumentNode())
         return toDocument(this)->canAcceptChild(newChild, oldChild, exceptionState);
-    if (newChild.containsIncludingHostElements(*this)) {
+    // Skip containsIncludingHostElements() if !newChild.parentNode() &&
+    // isConnected(). |newChild| typically has no parentNode(), and it means
+    // it's !isConnected(). In such case, the contains check for connected
+    // |this| is unnecessary.
+    if (newChild.isContainerNode() && (newChild.isDocumentNode() || newChild.parentNode() || !isConnected()) && newChild.containsIncludingHostElements(*this)) {
         exceptionState.throwDOMException(HierarchyRequestError, "The new child element contains the parent.");
         return false;
     }
@@ -148,6 +154,32 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
         return false;
     }
     return true;
+}
+
+void ContainerNode::collectChildrenAndRemoveFromOldParentWithCheck(const Node* next, const Node* oldChild, Node& newChild, NodeVector& newChildren, ExceptionState& exceptionState) const
+{
+    collectChildrenAndRemoveFromOldParent(newChild, newChildren, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    if (newChildren.isEmpty())
+        return;
+
+    // We need this extra check because collectChildrenAndRemoveFromOldParent()
+    // can fire various events.
+    for (const auto& child : newChildren) {
+        if (child->parentNode()) {
+            // A new child was added to another parent before adding to this
+            // node.  Firefox and Edge don't throw in this case.
+            newChildren.clear();
+            return;
+        }
+        if (!checkAcceptChildGuaranteedNodeTypes(*child, oldChild, exceptionState))
+            return;
+    }
+    if (next && next->parentNode() != this) {
+        exceptionState.throwDOMException(NotFoundError, "The node before which the new node is to be inserted is not a child of this node.");
+        return;
+    }
 }
 
 template <typename Functor>
@@ -160,10 +192,9 @@ void ContainerNode::insertNodeVector(const NodeVector& targets, Node* next, cons
         ScriptForbiddenScope forbidScript;
         for (const auto& targetNode : targets) {
             DCHECK(targetNode);
+            DCHECK(!targetNode->parentNode());
             Node& child = *targetNode;
-            // TODO(tkent): mutator never returns false because scripts don't run in the loop.
-            if (!mutator(*this, child, next))
-                break;
+            mutator(*this, child, next);
             ChildListMutationScope(*this).childAdded(child);
             if (document().containsV1ShadowTree())
                 child.checkSlotChangeAfterInserted();
@@ -186,36 +217,21 @@ void ContainerNode::insertNodeVector(const NodeVector& targets, Node* next, cons
 
 class ContainerNode::AdoptAndInsertBefore {
 public:
-    bool operator()(ContainerNode& container, Node& child, Node* next) const
+    inline void operator()(ContainerNode& container, Node& child, Node* next) const
     {
         DCHECK(next);
-        // Due to arbitrary code running in response to a DOM mutation event
-        // it's possible that "next" is no longer a child of "container".
-        // It's also possible that "child" has been inserted elsewhere.  In
-        // either of those cases, we'll just stop.
-        if (next->parentNode() != &container)
-            return false;
-        if (child.parentNode())
-            return false;
-
+        DCHECK_EQ(next->parentNode(), &container);
         container.treeScope().adoptIfNeeded(child);
         container.insertBeforeCommon(*next, child);
-        return true;
     }
 };
 
 class ContainerNode::AdoptAndAppendChild {
 public:
-    bool operator()(ContainerNode& container, Node& child, Node* next) const
+    inline void operator()(ContainerNode& container, Node& child, Node*) const
     {
-        // If the child has a parent again, just stop what we're doing, because
-        // that means someone is doing something with DOM mutation -- can't
-        // re-parent a child that already has a parent.
-        if (child.parentNode())
-            return false;
         container.treeScope().adoptIfNeeded(child);
         container.appendChildCommon(child);
-        return true;
     }
 };
 
@@ -247,18 +263,11 @@ Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState
     Node* next = refChild;
 
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
+    collectChildrenAndRemoveFromOldParentWithCheck(next, nullptr, *newChild, targets, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (targets.isEmpty())
         return newChild;
-
-    // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, nullptr, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
-        return newChild;
-    }
 
     ChildListMutationScope mutation(*this);
     insertNodeVector(targets, next, AdoptAndInsertBefore());
@@ -397,18 +406,11 @@ Node* ContainerNode::replaceChild(Node* newChild, Node* oldChild, ExceptionState
     }
 
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
+    collectChildrenAndRemoveFromOldParentWithCheck(next, child, *newChild, targets, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (targets.isEmpty())
         return child;
-
-    // Does this yet another check because collectChildrenAndRemoveFromOldParent() fires a MutationEvent.
-    if (!checkAcceptChild(newChild, child, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
-        return child;
-    }
 
     if (next)
         insertNodeVector(targets, next, AdoptAndInsertBefore());
@@ -628,19 +630,11 @@ Node* ContainerNode::appendChild(Node* newChild, ExceptionState& exceptionState)
         return newChild;
 
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
+    collectChildrenAndRemoveFromOldParentWithCheck(nullptr, nullptr, *newChild, targets, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-
     if (targets.isEmpty())
         return newChild;
-
-    // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, nullptr, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
-        return newChild;
-    }
 
     ChildListMutationScope mutation(*this);
     insertNodeVector(targets, nullptr, AdoptAndAppendChild());
