@@ -16,8 +16,16 @@ test(function() {
     var inputData = NOT_FIRED;
 
     var txt = document.getElementById('txt');
-    txt.addEventListener('beforeinput', event => beforeinputData = event.data);
-    txt.addEventListener('input', event => inputData = event.data);
+    txt.addEventListener('beforeinput', event => {
+        assert_equals(event.dataTransfer, null,
+            'Plain text editing should have null |dataTransfer| field');
+        beforeinputData = event.data;
+    });
+    txt.addEventListener('input', event => {
+        assert_equals(event.dataTransfer, null,
+            'Plain text editing should have null |dataTransfer| field');
+        inputData = event.data;
+    });
 
     function testKeyDownData(key, modifiers, data) {
         beforeinputData = NOT_FIRED;
@@ -31,7 +39,7 @@ test(function() {
     // Typing
     testKeyDownData('a', [], 'a');
     testKeyDownData('4', [], '4');
-    testKeyDownData('Backspace', [], '');
+    testKeyDownData('Backspace', [], null);
     testKeyDownData('L', ['shiftKey'], 'L');
     testKeyDownData('^', ['shiftKey'], '^');
     testKeyDownData(' ', [], ' ');

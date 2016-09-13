@@ -1883,13 +1883,13 @@ DispatchEventResult dispatchBeforeInputFromComposition(EventTarget* target, Inpu
     return target->dispatchEvent(beforeInputEvent);
 }
 
-DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputEvent::InputType inputType, const String& data, const RangeVector* ranges)
+DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputEvent::InputType inputType, const RangeVector* ranges)
 {
     if (!RuntimeEnabledFeatures::inputEventEnabled())
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing, ranges);
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, nullAtom, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing, ranges);
     return target->dispatchEvent(beforeInputEvent);
 }
 

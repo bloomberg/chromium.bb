@@ -158,7 +158,7 @@ String InputEvent::inputType() const
     return convertInputTypeToString(m_inputType);
 }
 
-StaticRangeVector InputEvent::getRanges() const
+StaticRangeVector InputEvent::getTargetRanges() const
 {
     StaticRangeVector staticRanges;
     for (const auto& range : m_ranges)
@@ -204,14 +204,14 @@ DispatchEventResult InputEventDispatchMediator::dispatchEvent(EventDispatcher& d
 {
     DispatchEventResult result = dispatcher.dispatch();
     // It's weird to hold and clear live |Range| objects internally, and only expose |StaticRange|
-    // through |getRanges()|. However there is no better solutions due to the following issues:
+    // through |getTargetRanges()|. However there is no better solutions due to the following issues:
     //   1. We don't want to expose live |Range| objects for the author to hold as it will slow down
     //      all DOM operations. So we just expose |StaticRange|.
     //   2. Event handlers in chain might modify DOM, which means we have to keep a copy of live
     //      |Range| internally and return snapshots.
     //   3. We don't want authors to hold live |Range| indefinitely by holding |InputEvent|, so we
     //      clear them after dispatch.
-    // Authors should explicitly call |getRanges()|->|toRange()| if they want to keep a copy of |Range|.
+    // Authors should explicitly call |getTargetRanges()|->|toRange()| if they want to keep a copy of |Range|.
     // See Editing TF meeting notes:
     // https://docs.google.com/document/d/1hCj6QX77NYIVY0RWrMHT1Yra6t8_Qu8PopaWLG0AM58/edit?usp=sharing
     event().m_ranges.clear();

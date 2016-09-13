@@ -1876,7 +1876,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
     if (m_source == CommandFromMenuOrKeyBinding) {
         InputEvent::InputType inputType = InputTypeFromCommandType(m_command->commandType, *m_frame);
         if (inputType != InputEvent::InputType::None) {
-            if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType, emptyString(), getRanges()) != DispatchEventResult::NotCanceled)
+            if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType, getTargetRanges()) != DispatchEventResult::NotCanceled)
                 return true;
         }
     }
@@ -1943,7 +1943,7 @@ int Editor::Command::idForHistogram() const
     return isSupported() ? static_cast<int>(m_command->commandType) : 0;
 }
 
-RangeVector* Editor::Command::getRanges() const
+RangeVector* Editor::Command::getTargetRanges() const
 {
     if (!isSupported() || !m_frame)
         return nullptr;

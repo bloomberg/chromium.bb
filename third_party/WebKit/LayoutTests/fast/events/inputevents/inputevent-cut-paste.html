@@ -40,6 +40,7 @@ test(function() {
     var lastPlainTextData = "";
     var lastHTMLData = "";
     editable.addEventListener('beforeinput', event => {
+        assert_equals(event.data, null, 'Cut&Paste should have null |data| field')
         lastPlainTextData = event.dataTransfer ? event.dataTransfer.getData('text/plain') : null;
         lastHTMLData = event.dataTransfer ? event.dataTransfer.getData('text/html') : null;
     });
@@ -64,7 +65,7 @@ test(function() {
     testClipboardDataTransfer('Cut', null, null);
     // Paste has |dataTransfer| with additional inline styles.
     testClipboardDataTransfer('Paste', 'abc', /^<b.*>abc<\/b>$/);
-}, 'Testing Cut and Paste dataTransfer');
+}, 'Testing Cut and Paste data&dataTransfer');
 
 test(function() {
     assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');

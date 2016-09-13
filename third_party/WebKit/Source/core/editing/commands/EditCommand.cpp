@@ -55,7 +55,7 @@ InputEvent::InputType EditCommand::inputType() const
 
 String EditCommand::textDataForInputEvent() const
 {
-    return emptyString();
+    return nullAtom;
 }
 
 static inline EditCommandComposition* compositionIfPossible(EditCommand* command)

@@ -750,7 +750,7 @@ void Editor::unappliedEditing(EditCommandComposition* cmd)
     frame().document()->updateStyleAndLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
-    dispatchInputEventEditableContentChanged(cmd->startingRootEditableElement(), cmd->endingRootEditableElement(), InputEvent::InputType::Undo, emptyString(), InputEvent::EventIsComposing::NotComposing);
+    dispatchInputEventEditableContentChanged(cmd->startingRootEditableElement(), cmd->endingRootEditableElement(), InputEvent::InputType::Undo, nullAtom, InputEvent::EventIsComposing::NotComposing);
 
     VisibleSelection newSelection(cmd->startingSelection());
     newSelection.validatePositionsIfNeeded();
@@ -768,7 +768,7 @@ void Editor::reappliedEditing(EditCommandComposition* cmd)
     frame().document()->updateStyleAndLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
-    dispatchInputEventEditableContentChanged(cmd->startingRootEditableElement(), cmd->endingRootEditableElement(), InputEvent::InputType::Redo, emptyString(), InputEvent::EventIsComposing::NotComposing);
+    dispatchInputEventEditableContentChanged(cmd->startingRootEditableElement(), cmd->endingRootEditableElement(), InputEvent::InputType::Redo, nullAtom, InputEvent::EventIsComposing::NotComposing);
 
     // TODO(yosin): Since |dispatchEditableContentChangedEvents()| and
     // |dispatchInputEventEditableContentChanged()|, we would like to know

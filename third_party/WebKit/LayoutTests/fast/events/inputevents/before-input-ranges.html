@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>InputEvent: beforeinput getRanges()</title>
+<title>InputEvent: beforeinput getTargetRanges()</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 </head>
@@ -26,7 +26,7 @@ test(function() {
 
     // Check event for delete-word-backward.
     var handler = function(event) {
-        var ranges = event.getRanges();
+        var ranges = event.getTargetRanges();
         assert_equals(ranges.length, 1);
         var range = ranges[0];
         assert_true(range instanceof StaticRange);
@@ -42,7 +42,7 @@ test(function() {
     var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
     eventSender.keyDown('Backspace', [isMacOSX ? 'altKey' : 'ctrlKey']);
     assert_equals(sample.innerHTML, 'hel<i>lo&nbsp;</i>');
-}, 'Testing getRanges() returns correct range across elements.');
+}, 'Testing getTargetRanges() returns correct range across elements.');
 
 test(function() {
     if (!window.eventSender) {
@@ -63,7 +63,7 @@ test(function() {
     var lastEvent;
     var handler = function(event) {
         lastEvent = event;
-        assert_equals(lastEvent.getRanges().length, 1);
+        assert_equals(lastEvent.getTargetRanges().length, 1);
         sample.removeEventListener('beforeinput', handler);
     };
     sample.addEventListener('beforeinput', handler);
@@ -72,8 +72,8 @@ test(function() {
     eventSender.keyDown('Backspace', []);
     assert_equals(sample.textContent, 'hell');
     // |getRanges| should be cleared after dispatch.
-    assert_equals(lastEvent.getRanges().length, 0);
-}, 'Testing getRanges() cleared after dispatch.');
+    assert_equals(lastEvent.getTargetRanges().length, 0);
+}, 'Testing getTargetRanges() cleared after dispatch.');
 </script>
 </body>
 </html>

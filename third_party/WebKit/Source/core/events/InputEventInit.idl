@@ -8,7 +8,7 @@
     RuntimeEnabled=InputEvent,
 ] dictionary InputEventInit : UIEventInit {
     DOMString inputType = "";
-    DOMString data = "";
+    DOMString? data;
     DataTransfer? dataTransfer;
     boolean isComposing = false;
     sequence<Range> ranges = [];

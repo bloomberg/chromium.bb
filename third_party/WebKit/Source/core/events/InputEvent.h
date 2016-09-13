@@ -97,7 +97,7 @@ public:
     bool isComposing() const { return m_isComposing; }
     // Returns a copy of target ranges during event dispatch, and returns an empty
     // vector after dispatch.
-    StaticRangeVector getRanges() const;
+    StaticRangeVector getTargetRanges() const;
 
     bool isInputEvent() const override;
 

@@ -151,7 +151,7 @@ public:
 
         // Returns target ranges for the command, currently only supports delete related commands.
         // Used by InputEvent.
-        RangeVector* getRanges() const;
+        RangeVector* getTargetRanges() const;
 
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;
