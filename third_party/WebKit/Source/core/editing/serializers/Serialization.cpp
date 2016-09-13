@@ -48,7 +48,6 @@
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/MarkupAccumulator.h"
 #include "core/editing/serializers/StyledMarkupSerializer.h"
 #include "core/frame/LocalFrame.h"

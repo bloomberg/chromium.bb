@@ -37,7 +37,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
