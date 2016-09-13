@@ -323,7 +323,10 @@ BytesConsumer::Result BytesConsumer::read(char* buffer, size_t size, size_t* rea
         return r;
     *readSize = std::min(available, size);
     memcpy(buffer, src, *readSize);
-    return endRead(*readSize);
+    auto result = endRead(*readSize);
+    if (result != BytesConsumer::Result::Ok)
+        *readSize = 0;
+    return result;
 }
 
 void BytesConsumer::tee(ExecutionContext* executionContext, BytesConsumer* src, BytesConsumer** dest1, BytesConsumer** dest2)
