@@ -1,6 +1,5 @@
 [
   {
-    "cmd": [],
     "name": "show cache path",
     "~followup_annotations": [
       "@@@STEP_TEXT@[CACHE]@@@"
