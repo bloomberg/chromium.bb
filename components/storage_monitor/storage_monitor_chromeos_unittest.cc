@@ -257,7 +257,7 @@ void StorageMonitorCrosTest::PostQuitToUIThread() {
 void StorageMonitorCrosTest::WaitForFileThread() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&PostQuitToUIThread));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 void StorageMonitorCrosTest::EjectNotify(StorageMonitor::EjectStatus status) {

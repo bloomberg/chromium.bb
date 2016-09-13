@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/exo/buffer.h"
 #include "components/exo/gamepad.h"
@@ -69,7 +70,7 @@ class GamepadTest : public test::ExoTestBase {
     // Run one polling cycle, which will post a task to the origin task runner.
     polling_task_runner_->RunPendingTasks();
     // Run origin task runner to invoke delegate.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
