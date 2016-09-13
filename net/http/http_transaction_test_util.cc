@@ -266,7 +266,7 @@ int MockNetworkTransaction::RestartWithAuth(
     return ERR_FAILED;
 
   HttpRequestInfo auth_request_info = *request_;
-  auth_request_info.extra_headers.AddHeaderFromString("Authorization: Bar");
+  auth_request_info.extra_headers.SetHeader("Authorization", "Bar");
 
   // Let the MockTransactionHandler worry about this: the only way for this
   // test to succeed is by using an explicit handler for the transaction so

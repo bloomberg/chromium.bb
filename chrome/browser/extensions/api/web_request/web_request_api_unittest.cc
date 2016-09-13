@@ -1756,8 +1756,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses3) {
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders base_headers;
-  base_headers.AddHeaderFromString("key1: value 1");
-  base_headers.AddHeaderFromString("key2: value 2");
+  base_headers.SetHeader("key1", "value 1");
+  base_headers.SetHeader("key2", "value 2");
   net::BoundTestNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
   WarningSet warning_set;
@@ -1782,8 +1782,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   linked_ptr<EventResponseDelta> d1(
       new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
   d1->deleted_request_headers.push_back("key1");
-  d1->modified_request_headers.AddHeaderFromString("key2: value 3");
-  d1->modified_request_headers.AddHeaderFromString("key3: value 3");
+  d1->modified_request_headers.SetHeader("key2", "value 3");
+  d1->modified_request_headers.SetHeader("key3", "value 3");
   deltas.push_back(d1);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
@@ -1804,8 +1804,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   linked_ptr<EventResponseDelta> d2(
       new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
   // This one conflicts:
-  d2->modified_request_headers.AddHeaderFromString("key3: value 0");
-  d2->modified_request_headers.AddHeaderFromString("key4: value 4");
+  d2->modified_request_headers.SetHeader("key3", "value 0");
+  d2->modified_request_headers.SetHeader("key4", "value 4");
   deltas.push_back(d2);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
@@ -1828,8 +1828,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   linked_ptr<EventResponseDelta> d3(
       new EventResponseDelta("extid3", base::Time::FromInternalValue(1000)));
   d3->deleted_request_headers.push_back("key1");
-  d3->modified_request_headers.AddHeaderFromString("key2: value 3");
-  d3->modified_request_headers.AddHeaderFromString("key5: value 5");
+  d3->modified_request_headers.SetHeader("key2", "value 3");
+  d3->modified_request_headers.SetHeader("key5", "value 5");
   deltas.push_back(d3);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
