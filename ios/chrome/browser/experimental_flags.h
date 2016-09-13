@@ -52,6 +52,9 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether the Payment Request API is enabled or not.
 bool IsPaymentRequestEnabled();
 
+// Whether launching actions from Spotlight is enabled.
+bool IsSpotlightActionsEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

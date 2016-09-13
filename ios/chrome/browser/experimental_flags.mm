@@ -185,4 +185,19 @@ bool IsPaymentRequestEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+bool IsSpotlightActionsEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSpotlightActions)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableSpotlightActions)) {
+    return false;
+  }
+
+  // Check if the finch experiment is turned on.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("SpotlightActionsEnabled");
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 }  // namespace experimental_flags

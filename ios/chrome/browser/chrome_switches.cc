@@ -46,6 +46,9 @@ const char kDisablePaymentRequest[] = "disable-payment-request";
 // Disables the QR Code scanner.
 const char kDisableQRScanner[] = "disable-qr-scanner";
 
+// Disables the Spotlight actions.
+const char kDisableSpotlightActions[] = "disable-spotlight-actions";
+
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 
@@ -91,6 +94,9 @@ const char kEnableQRScanner[] = "enable-qr-scanner";
 
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
+
+// Enables the Spotlight actions.
+const char kEnableSpotlightActions[] = "enable-spotlight-actions";
 
 // Enables the tab switcher.
 const char kEnableTabSwitcher[] = "enable-tab-switcher";

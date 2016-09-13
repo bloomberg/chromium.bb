@@ -207,6 +207,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisablePaymentRequest);
   }
 
+  // Populate command line flag for Spotlight Actions.
+  NSString* enableSpotlightActions =
+      [defaults stringForKey:@"EnableSpotlightActions"];
+  if ([enableSpotlightActions isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableSpotlightActions);
+  } else if ([enableSpotlightActions isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableSpotlightActions);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {
