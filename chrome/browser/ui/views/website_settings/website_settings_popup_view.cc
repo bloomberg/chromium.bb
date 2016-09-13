@@ -167,6 +167,7 @@ class InternalPageInfoPopupView : public views::BubbleDialogDelegateView {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  int GetDialogButtons() const override;
 
  private:
   friend class WebsiteSettingsPopupView;
@@ -394,6 +395,10 @@ views::NonClientFrameView* InternalPageInfoPopupView::CreateNonClientFrameView(
 
 void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
   is_popup_showing = false;
+}
+
+int InternalPageInfoPopupView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
