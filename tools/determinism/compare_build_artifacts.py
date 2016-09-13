@@ -451,12 +451,23 @@ def diff_binary(first_filepath, second_filepath, file_len):
       #   2 -  3: # sections.
       #   4 -  7: timestamp.
       #   ....
-      COFF_HEADER_TO_COMPARE_SIZE = 8
+      #
+      # COFF BigObj header:
+      #   0 -  3: signature (0000 FFFF)
+      #   4 -  5: version
+      #   6 -  7: machine
+      #   8 - 11: timestamp.
+      COFF_HEADER_TO_COMPARE_SIZE = 12
       if (sys.platform == 'win32' and first_filepath.endswith('.obj')
           and file_len > COFF_HEADER_TO_COMPARE_SIZE):
         rhs_data = rhs.read(COFF_HEADER_TO_COMPARE_SIZE)
         lhs_data = lhs.read(COFF_HEADER_TO_COMPARE_SIZE)
-        if lhs_data[0:4] == rhs_data[0:4] and lhs_data[4:8] != rhs_data[4:8]:
+        if (lhs_data[0:4] == rhs_data[0:4] and lhs_data[4:8] != rhs_data[4:8]
+            and lhs_data[8:12] == rhs_data[8:12]):
+          offset += COFF_HEADER_TO_COMPARE_SIZE
+        elif (lhs_data[0:4] == '\x00\x00\xff\xff' and
+              lhs_data[0:8] == rhs_data[0:8] and
+              lhs_data[8:12] != rhs_data[8:12]):
           offset += COFF_HEADER_TO_COMPARE_SIZE
         else:
           lhs.seek(0)
