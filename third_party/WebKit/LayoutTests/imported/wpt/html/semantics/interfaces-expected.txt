@@ -56,8 +56,8 @@ PASS Interfaces for col
 PASS Interfaces for COL 
 PASS Interfaces for colgroup 
 PASS Interfaces for COLGROUP 
-FAIL Interfaces for command assert_equals: Element command should have HTMLUnknownElement as its primary interface. expected "[object HTMLUnknownElement]" but got "[object HTMLElement]"
-FAIL Interfaces for COMMAND assert_equals: Element COMMAND should have HTMLUnknownElement as its primary interface. expected "[object HTMLUnknownElement]" but got "[object HTMLElement]"
+PASS Interfaces for command 
+PASS Interfaces for COMMAND 
 FAIL Interfaces for data assert_equals: Element data should have HTMLDataElement as its primary interface. expected "[object HTMLDataElement]" but got "[object HTMLUnknownElement]"
 FAIL Interfaces for DATA assert_equals: Element DATA should have HTMLDataElement as its primary interface. expected "[object HTMLDataElement]" but got "[object HTMLUnknownElement]"
 PASS Interfaces for datalist 
