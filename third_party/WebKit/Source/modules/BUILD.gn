@@ -230,6 +230,8 @@ source_set("unit_tests") {
     "csspaint/PaintWorkletTest.cpp",
     "fetch/BodyStreamBufferTest.cpp",
     "fetch/BytesConsumerForDataConsumerHandleTest.cpp",
+    "fetch/BytesConsumerTest.cpp",
+    "fetch/BytesConsumerTestUtil.cpp",
     "fetch/CompositeDataConsumerHandleTest.cpp",
     "fetch/DataConsumerHandleTestUtil.cpp",
     "fetch/DataConsumerHandleTestUtil.h",

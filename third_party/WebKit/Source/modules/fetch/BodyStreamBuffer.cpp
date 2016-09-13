@@ -166,7 +166,7 @@ void BodyStreamBuffer::startLoading(FetchDataLoader* loader, FetchDataLoader::Cl
     ASSERT(m_scriptState->contextIsValid());
     std::unique_ptr<FetchDataConsumerHandle> handle = releaseHandle();
     m_loader = loader;
-    loader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), new LoaderClient(m_scriptState->getExecutionContext(), this, client));
+    loader->start(new BytesConsumerForDataConsumerHandle(getExecutionContext(), std::move(handle)), new LoaderClient(m_scriptState->getExecutionContext(), this, client));
 }
 
 void BodyStreamBuffer::tee(BodyStreamBuffer** branch1, BodyStreamBuffer** branch2)

@@ -17,11 +17,13 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 class MODULES_EXPORT BytesConsumerForDataConsumerHandle final : public BytesConsumer, public WebDataConsumerHandle::Client {
     EAGERLY_FINALIZE();
     DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 public:
-    explicit BytesConsumerForDataConsumerHandle(std::unique_ptr<FetchDataConsumerHandle>);
+    BytesConsumerForDataConsumerHandle(ExecutionContext*, std::unique_ptr<FetchDataConsumerHandle>);
     ~BytesConsumerForDataConsumerHandle() override;
 
     Result read(char* buffer, size_t /* size */, size_t* readSize) override;
@@ -49,11 +51,15 @@ public:
 private:
     void close();
     void error();
+    void notify();
 
+    Member<ExecutionContext> m_executionContext;
     std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
     Member<BytesConsumer::Client> m_client;
     InternalState m_state = InternalState::Waiting;
     Error m_error;
+    bool m_isInTwoPhaseRead = false;
+    bool m_hasPendingNotification = false;
 };
 
 } // namespace blink

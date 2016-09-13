@@ -68,7 +68,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -110,7 +110,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -141,7 +141,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -175,7 +175,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -214,7 +214,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -254,7 +254,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -295,7 +295,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -324,7 +324,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -358,7 +358,7 @@ TEST(FetchDataLoaderTest, LoadAsString)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -395,7 +395,7 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -432,7 +432,7 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -462,7 +462,7 @@ TEST(FetchDataLoaderTest, LoadAsStringCancel)
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(nullptr, std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);

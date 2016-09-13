@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 // BytesConsumer represents the "consumer" side of a data pipe. A user
 // can read data from it.
 //
@@ -91,6 +93,9 @@ public:
     // When not readable, the caller don't have to (and must not) call
     // endRead, because the read session implicitly ends in that case.
     //
+    // |*buffer| will become invalid when this object becomes unreachable,
+    // even if endRead is not called.
+    //
     // |*buffer| will be set to null and |*available| will be set to 0 if not
     // readable.
     virtual Result beginRead(const char** buffer, size_t* available) = 0;
@@ -119,13 +124,17 @@ public:
     // from an EncodedFormData-convertible value.
     virtual PassRefPtr<EncodedFormData> drainAsFormData() { return nullptr; }
 
-    // Sets a client.
+    // Sets a client. This can be called only when no client is set. When
+    // this object is already closed or errored, this function does nothing.
     virtual void setClient(Client*) = 0;
-    // Clears the set client. This can be called only when a client is set.
+    // Clears the set client.
+    // A client will be implicitly cleared when this object gets closed or
+    // errored (after the state change itself is notified).
     virtual void clearClient() = 0;
 
     // Cancels this ByteConsumer. This function does nothing when |this| is
     // already closed or errored. Otherwise, this object becomes closed.
+    // This function cannot be called in a two-phase read.
     virtual void cancel() = 0;
 
     // Returns the current state.
@@ -138,6 +147,11 @@ public:
     // Each implementation should return a string that represents the
     // implementation for debug purpose.
     virtual String debugName() const = 0;
+
+    // Creates two BytesConsumer both of which represent the data sequence that
+    // would be read from |src| and store them to |*dest1| and |*dest2|.
+    // |src| must not have a client when called.
+    static void tee(ExecutionContext*, BytesConsumer* src, BytesConsumer** dest1, BytesConsumer** dest2);
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
 
