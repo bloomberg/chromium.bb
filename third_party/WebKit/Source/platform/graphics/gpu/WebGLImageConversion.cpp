@@ -427,6 +427,9 @@ template<> void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, uint8_t>(
 #if CPU(X86) || CPU(X86_64)
     SIMD::unpackOneRowOfBGRA8LittleToRGBA8(source32, destination32, pixelsPerRow);
 #endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::unpackOneRowOfBGRA8LittleToRGBA8MSA(source32, destination32, pixelsPerRow);
+#endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint32_t bgra = source32[i];
 #if CPU(BIG_ENDIAN)
@@ -474,6 +477,9 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA4444, uint16_t, uint8
 #endif
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA4444ToRGBA8(source, destination, pixelsPerRow);
+#endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixelsPerRow);
 #endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint16_t packedValue = source[0];
@@ -748,7 +754,10 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
 {
 #if CPU(X86) || CPU(X86_64)
     SIMD::packOneRowOfRGBA8LittleToRGBA8(source, destination, pixelsPerRow);
-#else
+#endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixelsPerRow);
+#endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
@@ -761,7 +770,6 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
         source += 4;
         destination += 4;
     }
-#endif
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConversion::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)
@@ -817,6 +825,9 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConvers
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort5551(source, destination, pixelsPerRow);
 #endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::packOneRowOfRGBA8ToUnsignedShort5551MSA(source, destination, pixelsPerRow);
+#endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         *destination = (((source[0] & 0xF8) << 8)
                         | ((source[1] & 0xF8) << 3)
@@ -864,6 +875,9 @@ template<> void pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversio
 {
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::packOneRowOfRGBA8ToUnsignedShort565(source, destination, pixelsPerRow);
+#endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::packOneRowOfRGBA8ToUnsignedShort565MSA(source, destination, pixelsPerRow);
 #endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         *destination = (((source[0] & 0xF8) << 8)

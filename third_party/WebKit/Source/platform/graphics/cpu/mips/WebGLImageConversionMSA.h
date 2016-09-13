@@ -26,6 +26,12 @@ namespace SIMD {
     out_b = ((v8u16)SLLI_H(out_b, 3)) | (out_b & cnst7);                   \
     out_a = (v8u16)CEQI_H((v8i16)out_a, 1);                                \
 
+#define SEPERATE_RGBA_FRM_16BIT_4444INPUT(in, out_rb, out_ga)  \
+    out_rb = (v16u8)SRLI_B((v16u8)in, 4);                      \
+    out_ga = ANDI_B((v16u8)in, 15);                            \
+    out_rb = ((v16u8)SLLI_B(out_rb, 4)) | out_rb;              \
+    out_ga = ((v16u8)SLLI_B(out_ga, 4)) | out_ga;              \
+
 ALWAYS_INLINE void unpackOneRowOfRGBA5551ToRGBA8MSA(const uint16_t*& source, uint8_t*& destination, unsigned& pixelsPerRow)
 {
     unsigned i;
@@ -99,6 +105,581 @@ ALWAYS_INLINE void unpackOneRowOfRGBA5551ToRGBA8MSA(const uint16_t*& source, uin
     pixelsPerRow &= 7;
 }
 
+ALWAYS_INLINE void unpackOneRowOfBGRA8LittleToRGBA8MSA(const uint32_t*& source, uint32_t*& destination, unsigned& pixelsPerRow)
+{
+    unsigned i;
+    v16u8 src0, src1, src2, src3, src4, src5, src6, src7;
+    v16u8 src8, src9, src10, src11, src12, src13, src14, src15;
+
+    for (i = (pixelsPerRow >> 6); i--;) {
+        LD_UB8(source, 4, src0, src1, src2, src3, src4, src5, src6, src7);
+        LD_UB8(source, 4, src8, src9, src10, src11, src12, src13, src14, src15);
+        SHF_B4_UB(src0, src1, src2, src3, 198);
+        SHF_B4_UB(src4, src5, src6, src7, 198);
+        SHF_B4_UB(src8, src9, src10, src11, 198);
+        SHF_B4_UB(src12, src13, src14, src15, 198);
+        ST_UB8(src0, src1, src2, src3, src4, src5, src6, src7, destination, 4);
+        ST_UB8(src8, src9, src10, src11, src12, src13, src14, src15, destination, 4);
+    }
+
+    if (pixelsPerRow & 63) {
+        if (pixelsPerRow & 32) {
+            if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+                LD_UB8(source, 4, src0, src1, src2, src3, src4, src5, src6, src7);
+                LD_UB6(source, 4, src8, src9, src10, src11, src12, src13);
+                SHF_B4_UB(src0, src1, src2, src3, 198);
+                SHF_B4_UB(src4, src5, src6, src7, 198);
+                SHF_B4_UB(src8, src9, src10, src11, 198);
+                SHF_B2_UB(src12, src13, 198);
+                ST_UB8(src0, src1, src2, src3, src4, src5, src6, src7, destination, 4);
+                ST_UB6(src8, src9, src10, src11, src12, src13, destination, 4);
+            } else if (pixelsPerRow & 16) {
+                LD_UB8(source, 4, src0, src1, src2, src3, src4, src5, src6, src7);
+                LD_UB4(source, 4, src8, src9, src10, src11);
+                SHF_B4_UB(src0, src1, src2, src3, 198);
+                SHF_B4_UB(src4, src5, src6, src7, 198);
+                SHF_B4_UB(src8, src9, src10, src11, 198);
+                ST_UB8(src0, src1, src2, src3, src4, src5, src6, src7, destination, 4);
+                ST_UB4(src8, src9, src10, src11, destination, 4);
+            } else if (pixelsPerRow & 8) {
+                LD_UB8(source, 4, src0, src1, src2, src3, src4, src5, src6, src7);
+                LD_UB2(source, 4, src8, src9);
+                SHF_B4_UB(src0, src1, src2, src3, 198);
+                SHF_B4_UB(src4, src5, src6, src7, 198);
+                SHF_B2_UB(src8, src9, 198);
+                ST_UB8(src0, src1, src2, src3, src4, src5, src6, src7, destination, 4);
+                ST_UB2(src8, src9, destination, 4);
+            } else {
+                LD_UB8(source, 4, src0, src1, src2, src3, src4, src5, src6, src7);
+                SHF_B4_UB(src0, src1, src2, src3, 198);
+                SHF_B4_UB(src4, src5, src6, src7, 198);
+                ST_UB8(src0, src1, src2, src3, src4, src5, src6, src7, destination, 4);
+            }
+        } else if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+            LD_UB6(source, 4, src0, src1, src2, src3, src4, src5);
+            SHF_B4_UB(src0, src1, src2, src3, 198);
+            SHF_B2_UB(src4, src5, 198);
+            ST_UB6(src0, src1, src2, src3, src4, src5, destination, 4);
+        } else if (pixelsPerRow & 16) {
+            LD_UB4(source, 4, src0, src1, src2, src3);
+            SHF_B4_UB(src0, src1, src2, src3, 198);
+            ST_UB4(src0, src1, src2, src3, destination, 4);
+        } else if (pixelsPerRow & 8) {
+            LD_UB2(source, 4, src0, src1);
+            SHF_B2_UB(src0, src1, 198);
+            ST_UB2(src0, src1, destination, 4);
+        }
+
+        if (pixelsPerRow & 4) {
+            src0 = LD_UB(source);
+            source += 4;
+            src0 = (v16u8)__msa_shf_b((v16i8)src0, 198);
+            ST_UB(src0, destination);
+            destination += 4;
+        }
+    }
+
+    pixelsPerRow &= 3;
+}
+
+ALWAYS_INLINE void unpackOneRowOfRGBA4444ToRGBA8MSA(const uint16_t*& source, uint8_t*& destination, unsigned& pixelsPerRow)
+{
+    unsigned i;
+    v8u16 src0, src1, src2, src3;
+    v16u8 src0rb, src0ga, src1rb, src1ga, src2rb, src2ga, src3rb, src3ga;
+    v16u8 dst0, dst1, dst2, dst3, dst4, dst5, dst6, dst7;
+    v16u8 out0, out1, out2, out3, out4, out5, out6, out7;
+
+    for (i = (pixelsPerRow >> 5); i--;) {
+        LD_UH4(source, 8, src0, src1, src2, src3);
+        SEPERATE_RGBA_FRM_16BIT_4444INPUT(src0, src0rb, src0ga);
+        SEPERATE_RGBA_FRM_16BIT_4444INPUT(src1, src1rb, src1ga);
+        SEPERATE_RGBA_FRM_16BIT_4444INPUT(src2, src2rb, src2ga);
+        SEPERATE_RGBA_FRM_16BIT_4444INPUT(src3, src3rb, src3ga);
+        ILVODEV_B2_UB(src0ga, src0rb, dst0, dst1);
+        ILVODEV_B2_UB(src1ga, src1rb, dst2, dst3);
+        ILVODEV_B2_UB(src2ga, src2rb, dst4, dst5);
+        ILVODEV_B2_UB(src3ga, src3rb, dst6, dst7);
+        ILVRL_H2_UB(dst1, dst0, out0, out1);
+        ILVRL_H2_UB(dst3, dst2, out2, out3);
+        ILVRL_H2_UB(dst5, dst4, out4, out5);
+        ILVRL_H2_UB(dst7, dst6, out6, out7);
+        ST_UB8(out0, out1, out2, out3, out4, out5, out6, out7, destination, 16);
+    }
+
+    if (pixelsPerRow & 31) {
+        if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+            LD_UH3(source, 8, src0, src1, src2);
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src0, src0rb, src0ga);
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src1, src1rb, src1ga);
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src2, src2rb, src2ga);
+            ILVODEV_B2_UB(src0ga, src0rb, dst0, dst1);
+            ILVODEV_B2_UB(src1ga, src1rb, dst2, dst3);
+            ILVODEV_B2_UB(src2ga, src2rb, dst4, dst5);
+            ILVRL_H2_UB(dst1, dst0, out0, out1);
+            ILVRL_H2_UB(dst3, dst2, out2, out3);
+            ILVRL_H2_UB(dst5, dst4, out4, out5);
+            ST_UB6(out0, out1, out2, out3, out4, out5, destination, 16);
+        } else if (pixelsPerRow & 16) {
+            LD_UH2(source, 8, src0, src1);
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src0, src0rb, src0ga);
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src1, src1rb, src1ga);
+            ILVODEV_B2_UB(src0ga, src0rb, dst0, dst1);
+            ILVODEV_B2_UB(src1ga, src1rb, dst2, dst3);
+            ILVRL_H2_UB(dst1, dst0, out0, out1);
+            ILVRL_H2_UB(dst3, dst2, out2, out3);
+            ST_UB4(out0, out1, out2, out3, destination, 16);
+        } else if (pixelsPerRow & 8) {
+            src0 = LD_UH(source);
+            source += 8;
+            SEPERATE_RGBA_FRM_16BIT_4444INPUT(src0, src0rb, src0ga);
+            ILVODEV_B2_UB(src0ga, src0rb, dst0, dst1);
+            ILVRL_H2_UB(dst1, dst0, out0, out1);
+            ST_UB2(out0, out1, destination, 16);
+        }
+    }
+
+    pixelsPerRow &= 7;
+}
+
+ALWAYS_INLINE void packOneRowOfRGBA8LittleToRGBA8MSA(const uint8_t*& source, uint8_t*& destination, unsigned& pixelsPerRow)
+{
+    unsigned i;
+    v16u8 src0, src1, src2, src3, out0, out1, out2, out3;
+    v16u8 src0R, src1R, src2R, src3R, src0G, src1G, src2G, src3G;
+    v16u8 src0B, src1B, src2B, src3B, src0A, src1A, src2A, src3A;
+    v16u8 dst0R, dst1R, dst2R, dst3R, dst0G, dst1G, dst2G, dst3G;
+    v16u8 dst0B, dst1B, dst2B, dst3B, dst0A, dst1A, dst2A, dst3A;
+    v16u8 dst0RG, dst1RG, dst2RG, dst3RG, dst0BA, dst1BA, dst2BA, dst3BA;
+    v4f32 fsrc0R, fsrc1R, fsrc2R, fsrc3R, fsrc0G, fsrc1G, fsrc2G, fsrc3G;
+    v4f32 fsrc0B, fsrc1B, fsrc2B, fsrc3B, fsrc0A, fsrc1A, fsrc2A, fsrc3A;
+    v4u32 vCnst255 = (v4u32) __msa_ldi_w(255);
+    v16u8 alphaMask = {0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255};
+    v4f32 vfCnst255 = __msa_ffint_u_w(vCnst255);
+
+    for (i = (pixelsPerRow >> 4); i--;) {
+        LD_UB4(source, 16, src0, src1, src2, src3);
+        CEQI_B4_UB(src0, src1, src2, src3, 0, src0A, src1A, src2A, src3A);
+        src0A = __msa_bmnz_v(src0, alphaMask, src0A);
+        src1A = __msa_bmnz_v(src1, alphaMask, src1A);
+        src2A = __msa_bmnz_v(src2, alphaMask, src2A);
+        src3A = __msa_bmnz_v(src3, alphaMask, src3A);
+        AND_V4_UB(src0A, src1A, src2A, src3A, alphaMask, src0A, src1A, src2A, src3A);
+        src0A = SLDI_UB(src0A, src0A, 3);
+        src1A = SLDI_UB(src1A, src1A, 3);
+        src2A = SLDI_UB(src2A, src2A, 3);
+        src3A = SLDI_UB(src3A, src3A, 3);
+        FFINTU_W4_SP(src0A, src1A, src2A, src3A, fsrc0A, fsrc1A, fsrc2A, fsrc3A);
+        DIV4(vfCnst255, fsrc0A, vfCnst255, fsrc1A, vfCnst255, fsrc2A, vfCnst255, fsrc3A, fsrc0A, fsrc1A, fsrc2A, fsrc3A);
+        AND_V4_UB(src0, src1, src2, src3, vCnst255, src0R, src1R, src2R, src3R);
+        FFINTU_W4_SP(src0R, src1R, src2R, src3R, fsrc0R, fsrc1R, fsrc2R, fsrc3R);
+        MUL4(fsrc0R, fsrc0A, fsrc1R, fsrc1A, fsrc2R, fsrc2A, fsrc3R, fsrc3A, fsrc0R, fsrc1R, fsrc2R, fsrc3R);
+        src0G = SLDI_UB(src0, src0, 1);
+        src1G = SLDI_UB(src1, src1, 1);
+        src2G = SLDI_UB(src2, src2, 1);
+        src3G = SLDI_UB(src3, src3, 1);
+        AND_V4_UB(src0G, src1G, src2G, src3G, vCnst255, src0G, src1G, src2G, src3G);
+        FFINTU_W4_SP(src0G, src1G, src2G, src3G, fsrc0G, fsrc1G, fsrc2G, fsrc3G);
+        MUL4(fsrc0G, fsrc0A, fsrc1G, fsrc1A, fsrc2G, fsrc2A, fsrc3G, fsrc3A, fsrc0G, fsrc1G, fsrc2G, fsrc3G);
+        src0B = SLDI_UB(src0, src0, 2);
+        src1B = SLDI_UB(src1, src1, 2);
+        src2B = SLDI_UB(src2, src2, 2);
+        src3B = SLDI_UB(src3, src3, 2);
+        AND_V4_UB(src0B, src1B, src2B, src3B, vCnst255, src0B, src1B, src2B, src3B);
+        FFINTU_W4_SP(src0B, src1B, src2B, src3B, fsrc0B, fsrc1B, fsrc2B, fsrc3B);
+        MUL4(fsrc0B, fsrc0A, fsrc1B, fsrc1A, fsrc2B, fsrc2A, fsrc3B, fsrc3A, fsrc0B, fsrc1B, fsrc2B, fsrc3B);
+        FTRUNCU_W4_UB(fsrc0R, fsrc1R, fsrc2R, fsrc3R, dst0R, dst1R, dst2R, dst3R);
+        FTRUNCU_W4_UB(fsrc0G, fsrc1G, fsrc2G, fsrc3G, dst0G, dst1G, dst2G, dst3G);
+        FTRUNCU_W4_UB(fsrc0B, fsrc1B, fsrc2B, fsrc3B, dst0B, dst1B, dst2B, dst3B);
+        dst0A = SLDI_UB(src0, src0, 3);
+        dst1A = SLDI_UB(src1, src1, 3);
+        dst2A = SLDI_UB(src2, src2, 3);
+        dst3A = SLDI_UB(src3, src3, 3);
+        ILVEV_B2_UB(dst0R, dst0G, dst1R, dst1G, dst0RG, dst1RG);
+        ILVEV_B2_UB(dst2R, dst2G, dst3R, dst3G, dst2RG, dst3RG);
+        ILVEV_B2_UB(dst0B, dst0A, dst1B, dst1A, dst0BA, dst1BA);
+        ILVEV_B2_UB(dst2B, dst2A, dst3B, dst3A, dst2BA, dst3BA);
+        ILVEV_H2_UB(dst0RG, dst0BA, dst1RG, dst1BA, out0, out1);
+        ILVEV_H2_UB(dst2RG, dst2BA, dst3RG, dst3BA, out2, out3);
+        ST_UB4(out0, out1, out2, out3, destination, 16);
+    }
+
+    if (pixelsPerRow & 15) {
+        if (pixelsPerRow & 8) {
+            LD_UB2(source, 16, src0, src1);
+            CEQI_B2_UB(src0, src1, 0, src0A, src1A);
+            src0A = __msa_bmnz_v(src0, alphaMask, src0A);
+            src1A = __msa_bmnz_v(src1, alphaMask, src1A);
+            AND_V2_UB(src0A, src1A, alphaMask, src0A, src1A);
+            src0A = SLDI_UB(src0A, src0A, 3);
+            src1A = SLDI_UB(src1A, src1A, 3);
+            FFINTU_W2_SP(src0A, src1A, fsrc0A, fsrc1A);
+            DIV2(vfCnst255, fsrc0A, vfCnst255, fsrc1A, fsrc0A, fsrc1A);
+            AND_V2_UB(src0, src1, vCnst255, src0R, src1R);
+            FFINTU_W2_SP(src0R, src1R, fsrc0R, fsrc1R);
+            MUL2(fsrc0R, fsrc0A, fsrc1R, fsrc1A, fsrc0R, fsrc1R);
+            src0G = SLDI_UB(src0, src0, 1);
+            src1G = SLDI_UB(src1, src1, 1);
+            AND_V2_UB(src0G, src1G, vCnst255, src0G, src1G);
+            FFINTU_W2_SP(src0G, src1G, fsrc0G, fsrc1G);
+            MUL2(fsrc0G, fsrc0A, fsrc1G, fsrc1A, fsrc0G, fsrc1G);
+            src0B = SLDI_UB(src0, src0, 2);
+            src1B = SLDI_UB(src1, src1, 2);
+            AND_V2_UB(src0B, src1B, vCnst255, src0B, src1B);
+            FFINTU_W2_SP(src0B, src1B, fsrc0B, fsrc1B);
+            MUL2(fsrc0B, fsrc0A, fsrc1B, fsrc1A, fsrc0B, fsrc1B);
+            FTRUNCU_W2_UB(fsrc0R, fsrc1R, dst0R, dst1R);
+            FTRUNCU_W2_UB(fsrc0G, fsrc1G, dst0G, dst1G);
+            FTRUNCU_W2_UB(fsrc0B, fsrc1B, dst0B, dst1B);
+            dst0A = SLDI_UB(src0, src0, 3);
+            dst1A = SLDI_UB(src1, src1, 3);
+            ILVEV_B2_UB(dst0R, dst0G, dst1R, dst1G, dst0RG, dst1RG);
+            ILVEV_B2_UB(dst0B, dst0A, dst1B, dst1A, dst0BA, dst1BA);
+            ILVEV_H2_UB(dst0RG, dst0BA, dst1RG, dst1BA, out0, out1);
+            ST_UB2(out0, out1, destination, 16);
+        }
+
+        if (pixelsPerRow & 4) {
+            src0 = LD_UB(source);
+            source += 16;
+            src0A = CEQI_B(src0, 0);
+            src0A = __msa_bmnz_v(src0, alphaMask, src0A);
+            src0A = src0A & alphaMask;
+            src0A = SLDI_UB(src0A, src0A, 3);
+            fsrc0A = __msa_ffint_u_w((v4u32)src0A);
+            fsrc0A = vfCnst255 / fsrc0A;
+            src0R = src0 & (v16u8)vCnst255;
+            fsrc0R = __msa_ffint_u_w((v4u32)src0R);
+            fsrc0R *= fsrc0A;
+            src0G = SLDI_UB(src0, src0, 1);
+            src0G &= (v16u8)vCnst255;
+            fsrc0G = __msa_ffint_u_w((v4u32)src0G);
+            fsrc0G *= fsrc0A;
+            src0B = SLDI_UB(src0, src0, 2);
+            src0B &= (v16u8)vCnst255;
+            fsrc0B = __msa_ffint_u_w((v4u32)src0B);
+            fsrc0B *= fsrc0A;
+            dst0R = (v16u8)__msa_ftrunc_u_w(fsrc0R);
+            dst0G = (v16u8)__msa_ftrunc_u_w(fsrc0G);
+            dst0B = (v16u8)__msa_ftrunc_u_w(fsrc0B);
+            dst0A = SLDI_UB(src0, src0, 3);
+            dst0RG = (v16u8)__msa_ilvev_b((v16i8)dst0G, (v16i8)dst0R);
+            dst0BA = (v16u8)__msa_ilvev_b((v16i8)dst0A, (v16i8)dst0B);
+            out0 = (v16u8)__msa_ilvev_h((v8i16)dst0BA, (v8i16)dst0RG);
+            ST_UB(out0, destination);
+            destination += 16;
+        }
+    }
+
+    pixelsPerRow &= 3;
+}
+
+ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort5551MSA(const uint8_t*& source, uint16_t*& destination, unsigned& pixelsPerRow)
+{
+    unsigned i;
+    v16u8 src0, src1, src2, src3, src4, src5, src6, src7;
+    v16u8 src0r, src0b, src1r, src1b, src2r, src2b, src3r, src3b;
+    v16u8 src0g = { 0 }, src0a = { 0 }, src1g = { 0 }, src1a = { 0 };
+    v16u8 src2g = { 0 }, src2a = { 0 }, src3g = { 0 }, src3a = { 0 };
+    v16u8 src0gt, src1gt, src2gt, src3gt;
+    v8u16 dst0, dst1, dst2, dst3;
+
+    for (i = (pixelsPerRow >> 5); i--;) {
+        LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+        PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+        PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+        SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+        SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+        SLDI_B2_UB(src0a, src1a, src0b, src1b, src0a, src1a, 1);
+        SLDI_B2_UB(src2a, src3a, src2b, src3b, src2a, src3a, 1);
+        src0gt = (v16u8)SLLI_B(src0g, 3);
+        src1gt = (v16u8)SLLI_B(src1g, 3);
+        src2gt = (v16u8)SLLI_B(src2g, 3);
+        src3gt = (v16u8)SLLI_B(src3g, 3);
+        SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+        SRLI_B4_UB(src0b, src1b, src2b, src3b, 2);
+        SRLI_B4_UB(src0a, src1a, src2a, src3a, 7);
+        BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+        BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+        BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 5);
+        BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 5);
+        BINSRI_B2_UB(src0b, src0a, src1b, src1a, src0b, src1b, 0);
+        BINSRI_B2_UB(src2b, src2a, src3b, src3a, src2b, src3b, 0);
+        ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+        ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+        ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+    }
+
+    if (pixelsPerRow & 31) {
+        if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+            LD_UB6(source, 16, src0, src1, src2, src3, src4, src5);
+            PCKEV_H3_UB(src1, src0, src3, src2, src5, src4, src0r, src1r, src2r);
+            PCKOD_H3_UB(src1, src0, src3, src2, src5, src4, src0b, src1b, src2b);
+            SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+            SLDI_B2_UB(src2g, src0a, src2r, src0b, src2g, src0a, 1);
+            SLDI_B2_UB(src1a, src2a, src1b, src2b, src1a, src2a, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src1gt = (v16u8)SLLI_B(src1g, 3);
+            src2gt = (v16u8)SLLI_B(src2g, 3);
+            SRLI_B3_UB(src0g, src1g, src2g, 5);
+            SRLI_B3_UB(src0b, src1b, src2b, 2);
+            SRLI_B3_UB(src0a, src1a, src2a, 7);
+            BINSRI_B3_UB(src0r, src0g, src1r, src1g, src2r, src2g, src0r, src1r, src2r, 2);
+            BINSRI_B3_UB(src0gt, src0b, src1gt, src1b, src2gt, src2b, src0b, src1b, src2b, 5);
+            BINSRI_B3_UB(src0b, src0a, src1b, src1a, src2b, src2a, src0b, src1b, src2b, 0);
+            ILVEV_B3_UH(src0b, src0r, src1b, src1r, src2b, src2r, dst0, dst1, dst2);
+            ST_UH3(dst0, dst1, dst2, destination, 8);
+        } else if (pixelsPerRow & 16) {
+            LD_UB4(source, 16, src0, src1, src2, src3);
+            PCKEV_H2_UB(src1, src0, src3, src2, src0r, src1r);
+            PCKOD_H2_UB(src1, src0, src3, src2, src0b, src1b);
+            SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+            SLDI_B2_UB(src0a, src1a, src0b, src1b, src0a, src1a, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src1gt = (v16u8)SLLI_B(src1g, 3);
+            SRLI_B2_UB(src0g, src1g, 5);
+            SRLI_B2_UB(src0b, src1b, 2);
+            SRLI_B2_UB(src0a, src1a, 7);
+            BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+            BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 5);
+            BINSRI_B2_UB(src0b, src0a, src1b, src1a, src0b, src1b, 0);
+            ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+            ST_UH2(dst0, dst1, destination, 8);
+        } else if (pixelsPerRow & 8) {
+            LD_UB2(source, 16, src0, src1);
+            src0r = (v16u8)__msa_pckev_h((v8i16)src1, (v8i16)src0);
+            src0b = (v16u8)__msa_pckod_h((v8i16)src1, (v8i16)src0);
+            SLDI_B2_UB(src0g, src0a, src0r, src0b, src0g, src0a, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src0g = (v16u8)SRLI_B(src0g, 5);
+            src0b = (v16u8)SRLI_B(src0b, 2);
+            src0a = (v16u8)SRLI_B(src0a, 7);
+            src0r = (v16u8)__msa_binsri_b((v16u8)src0r, (v16u8)src0g, 2);
+            src0b = (v16u8)__msa_binsri_b((v16u8)src0gt, (v16u8)src0b, 5);
+            src0b = (v16u8)__msa_binsri_b((v16u8)src0b, (v16u8)src0a, 0);
+            dst0 = (v8u16)__msa_ilvev_b((v16i8)src0r, (v16i8)src0b);
+            ST_UH(dst0, destination);
+            destination += 8;
+        }
+    }
+
+    pixelsPerRow &= 7;
+}
+
+ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort565MSA(const uint8_t*& source, uint16_t*& destination, unsigned& pixelsPerRow)
+{
+    unsigned i;
+    v16u8 src0, src1, src2, src3, src4, src5, src6, src7;
+    v16u8 src0r, src0b, src1r, src1b, src2r, src2b, src3r, src3b;
+    v16u8 src0g = { 0 }, src1g = { 0 }, src2g = { 0 }, src3g = { 0 };
+    v16u8 src0gt, src1gt, src2gt, src3gt;
+    v8u16 dst0, dst1, dst2, dst3;
+
+    for (i = (pixelsPerRow >> 6); i--;) {
+        LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+        PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+        PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+        SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+        SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+        src0gt = (v16u8)SLLI_B(src0g, 3);
+        src1gt = (v16u8)SLLI_B(src1g, 3);
+        src2gt = (v16u8)SLLI_B(src2g, 3);
+        src3gt = (v16u8)SLLI_B(src3g, 3);
+        SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+        SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+        BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+        BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+        BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+        BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+        ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+        ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+        LD_UB4(source, 16, src0, src1, src2, src3);
+        ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+        LD_UB4(source, 16, src4, src5, src6, src7);
+        PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+        PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+        SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+        SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+        src0gt = (v16u8)SLLI_B(src0g, 3);
+        src1gt = (v16u8)SLLI_B(src1g, 3);
+        src2gt = (v16u8)SLLI_B(src2g, 3);
+        src3gt = (v16u8)SLLI_B(src3g, 3);
+        SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+        SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+        BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+        BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+        BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+        BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+        ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+        ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+        ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+    }
+
+    if (pixelsPerRow & 63) {
+        if (pixelsPerRow & 32) {
+            if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+                LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+                PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+                PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+                SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+                SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                src2gt = (v16u8)SLLI_B(src2g, 3);
+                src3gt = (v16u8)SLLI_B(src3g, 3);
+                SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+                SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+                BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+                BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+                BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+                BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+                ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+                ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+                LD_UB6(source, 16, src0, src1, src2, src3, src4, src5);
+                ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+                PCKEV_H3_UB(src1, src0, src3, src2, src5, src4, src0r, src1r, src2r);
+                PCKOD_H3_UB(src1, src0, src3, src2, src5, src4, src0b, src1b, src2b);
+                src0g = SLDI_UB(src0g, src0r, 1);
+                src1g = SLDI_UB(src1g, src1r, 1);
+                src2g = SLDI_UB(src2g, src2r, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                src2gt = (v16u8)SLLI_B(src2g, 3);
+                SRLI_B3_UB(src0g, src1g, src2g, 5);
+                SRLI_B3_UB(src0b, src1b, src2b, 3);
+                BINSRI_B3_UB(src0r, src0g, src1r, src1g, src2r, src2g, src0r, src1r, src2r, 2);
+                BINSRI_B3_UB(src0gt, src0b, src1gt, src1b, src2gt, src2b, src0b, src1b, src2b, 4);
+                ILVEV_B3_UH(src0b, src0r, src1b, src1r, src2b, src2r, dst0, dst1, dst2);
+                ST_UH3(dst0, dst1, dst2, destination, 8);
+            } else if (pixelsPerRow & 16) {
+                LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+                PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+                PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+                SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+                SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                src2gt = (v16u8)SLLI_B(src2g, 3);
+                src3gt = (v16u8)SLLI_B(src3g, 3);
+                SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+                SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+                BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+                BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+                BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+                BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+                ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+                ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+                LD_UB4(source, 16, src0, src1, src2, src3);
+                ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+                PCKEV_H2_UB(src1, src0, src3, src2, src0r, src1r);
+                PCKOD_H2_UB(src1, src0, src3, src2, src0b, src1b);
+                SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                SRLI_B2_UB(src0g, src1g, 5);
+                SRLI_B2_UB(src0b, src1b, 3);
+                BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+                BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+                ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+                ST_UH2(dst0, dst1, destination, 8);
+            } else if (pixelsPerRow & 8) {
+                LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+                PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+                PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+                SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+                SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                src2gt = (v16u8)SLLI_B(src2g, 3);
+                src3gt = (v16u8)SLLI_B(src3g, 3);
+                SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+                SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+                BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+                BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+                BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+                BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+                ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+                ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+                LD_UB2(source, 16, src0, src1);
+                ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+                src0r = (v16u8)__msa_pckev_h((v8i16)src1, (v8i16)src0);
+                src0b = (v16u8)__msa_pckod_h((v8i16)src1, (v8i16)src0);
+                src0g = SLDI_UB(src0g, src0r, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src0g = (v16u8)SRLI_B(src0g, 5);
+                src0b = (v16u8)SRLI_B(src0b, 3);
+                src0r = (v16u8)__msa_binsri_b((v16u8)src0r, (v16u8)src0g, 2);
+                src0b = (v16u8)__msa_binsri_b((v16u8)src0gt, (v16u8)src0b, 4);
+                dst0 = (v8u16)__msa_ilvev_b((v16i8)src0r, (v16i8)src0b);
+                ST_UH(dst0, destination);
+                destination += 8;
+            } else {
+                LD_UB8(source, 16, src0, src1, src2, src3, src4, src5, src6, src7);
+                PCKEV_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0r, src1r, src2r, src3r);
+                PCKOD_H4_UB(src1, src0, src3, src2, src5, src4, src7, src6, src0b, src1b, src2b, src3b);
+                SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+                SLDI_B2_UB(src2g, src3g, src2r, src3r, src2g, src3g, 1);
+                src0gt = (v16u8)SLLI_B(src0g, 3);
+                src1gt = (v16u8)SLLI_B(src1g, 3);
+                src2gt = (v16u8)SLLI_B(src2g, 3);
+                src3gt = (v16u8)SLLI_B(src3g, 3);
+                SRLI_B4_UB(src0g, src1g, src2g, src3g, 5);
+                SRLI_B4_UB(src0b, src1b, src2b, src3b, 3);
+                BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+                BINSRI_B2_UB(src2r, src2g, src3r, src3g, src2r, src3r, 2);
+                BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+                BINSRI_B2_UB(src2gt, src2b, src3gt, src3b, src2b, src3b, 4);
+                ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+                ILVEV_B2_UH(src2b, src2r, src3b, src3r, dst2, dst3);
+                ST_UH4(dst0, dst1, dst2, dst3, destination, 8);
+            }
+        } else if ((pixelsPerRow & 16) && (pixelsPerRow & 8)) {
+            LD_UB6(source, 16, src0, src1, src2, src3, src4, src5);
+            PCKEV_H3_UB(src1, src0, src3, src2, src5, src4, src0r, src1r, src2r);
+            PCKOD_H3_UB(src1, src0, src3, src2, src5, src4, src0b, src1b, src2b);
+            src0g = SLDI_UB(src0g, src0r, 1);
+            src1g = SLDI_UB(src1g, src1r, 1);
+            src2g = SLDI_UB(src2g, src2r, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src1gt = (v16u8)SLLI_B(src1g, 3);
+            src2gt = (v16u8)SLLI_B(src2g, 3);
+            SRLI_B3_UB(src0g, src1g, src2g, 5);
+            SRLI_B3_UB(src0b, src1b, src2b, 3);
+            BINSRI_B3_UB(src0r, src0g, src1r, src1g, src2r, src2g, src0r, src1r, src2r, 2);
+            BINSRI_B3_UB(src0gt, src0b, src1gt, src1b, src2gt, src2b, src0b, src1b, src2b, 4);
+            ILVEV_B3_UH(src0b, src0r, src1b, src1r, src2b, src2r, dst0, dst1, dst2);
+            ST_UH3(dst0, dst1, dst2, destination, 8);
+        } else if  (pixelsPerRow & 16) {
+            LD_UB4(source, 16, src0, src1, src2, src3);
+            PCKEV_H2_UB(src1, src0, src3, src2, src0r, src1r);
+            PCKOD_H2_UB(src1, src0, src3, src2, src0b, src1b);
+            SLDI_B2_UB(src0g, src1g, src0r, src1r, src0g, src1g, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src1gt = (v16u8)SLLI_B(src1g, 3);
+            SRLI_B2_UB(src0g, src1g, 5);
+            SRLI_B2_UB(src0b, src1b, 3);
+            BINSRI_B2_UB(src0r, src0g, src1r, src1g, src0r, src1r, 2);
+            BINSRI_B2_UB(src0gt, src0b, src1gt, src1b, src0b, src1b, 4);
+            ILVEV_B2_UH(src0b, src0r, src1b, src1r, dst0, dst1);
+            ST_UH2(dst0, dst1, destination, 8);
+        } else if (pixelsPerRow & 8) {
+            LD_UB2(source, 16, src0, src1);
+            src0r = (v16u8)__msa_pckev_h((v8i16)src1, (v8i16)src0);
+            src0b = (v16u8)__msa_pckod_h((v8i16)src1, (v8i16)src0);
+            src0g = SLDI_UB(src0g, src0r, 1);
+            src0gt = (v16u8)SLLI_B(src0g, 3);
+            src0g = (v16u8)SRLI_B(src0g, 5);
+            src0b = (v16u8)SRLI_B(src0b, 3);
+            src0r = (v16u8)__msa_binsri_b((v16u8)src0r, (v16u8)src0g, 2);
+            src0b = (v16u8)__msa_binsri_b((v16u8)src0gt, (v16u8)src0b, 4);
+            dst0 = (v8u16)__msa_ilvev_b((v16i8)src0r, (v16i8)src0b);
+            ST_UH(dst0, destination);
+            destination += 8;
+        }
+    }
+
+    pixelsPerRow &= 7;
+}
 } // namespace SIMD
 
 } // namespace blink
