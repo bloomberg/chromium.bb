@@ -910,6 +910,7 @@ test("ui_base_unittests") {
     sources += [
       "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
       "x/selection_requestor_unittest.cc",
+      "x/x11_util_unittest.cc",
     ]
   }
 

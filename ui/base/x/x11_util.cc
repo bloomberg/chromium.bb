@@ -1415,10 +1415,12 @@ void LogErrorEventDescription(XDisplay* dpy,
 void ChooseVisualForWindow(bool enable_transparent_visuals,
                            Visual** visual,
                            int* depth) {
-  static Visual* s_visual = NULL;
-  static int s_depth = 0;
+  static Visual* s_default_visual = nullptr;
+  static Visual* s_transparent_visual = nullptr;
+  static int s_default_depth = 0;
+  static int s_transparent_depth = 0;
 
-  if (!s_visual) {
+  if (!s_default_visual || !s_transparent_visual) {
     XDisplay* display = gfx::GetXDisplay();
     XAtom NET_WM_CM_S0 = XInternAtom(display, "_NET_WM_CM_S0", False);
 
@@ -1439,28 +1441,37 @@ void ChooseVisualForWindow(bool enable_transparent_visuals,
         if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
             info.visual->green_mask == 0x00ff00 &&
             info.visual->blue_mask == 0x0000ff) {
-          s_visual = info.visual;
-          s_depth = info.depth;
+          s_transparent_visual = info.visual;
+          s_transparent_depth = info.depth;
+          DCHECK(s_transparent_visual);
           break;
         }
       }
-    } else {
-      XWindowAttributes windowAttribs;
-      Window root = XDefaultRootWindow(display);
-      Status status = XGetWindowAttributes(display, root, &windowAttribs);
-      DCHECK(status != 0);
-      s_visual = windowAttribs.visual;
-      s_depth = windowAttribs.depth;
     }
-  }  // !s_visual
 
-  DCHECK(s_visual);
-  DCHECK(s_depth > 0);
+    XWindowAttributes attribs;
+    Window root = XDefaultRootWindow(display);
+    Status status = XGetWindowAttributes(display, root, &attribs);
+    DCHECK_NE(0, status);
+    s_default_visual = attribs.visual;
+    s_default_depth = attribs.depth;
+
+    if (!s_transparent_visual) {
+      s_transparent_visual = s_default_visual;
+      s_transparent_depth = s_default_depth;
+    }
+  }  // !s_default_visual || !s_transparent_visual
+
+  DCHECK(s_default_visual);
+  DCHECK(s_default_depth > 0);
+  DCHECK(s_transparent_visual);
+  DCHECK(s_transparent_depth > 0);
 
   if (visual)
-    *visual = s_visual;
+    *visual =
+        enable_transparent_visuals ? s_transparent_visual : s_default_visual;
   if (depth)
-    *depth = s_depth;
+    *depth = enable_transparent_visuals ? s_transparent_depth : s_default_depth;
 }
 #endif
 

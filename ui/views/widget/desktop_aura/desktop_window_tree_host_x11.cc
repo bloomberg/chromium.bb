@@ -1358,10 +1358,14 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
-  Visual* visual;
-  int depth;
-  ui::ChooseVisualForWindow(true, &visual, &depth);
-  if (depth == 32) {
+  const bool enable_transparent_visuals =
+      params.type == Widget::InitParams::TYPE_DRAG ||
+      params.type == Widget::InitParams::TYPE_WINDOW;
+
+  Visual* visual = CopyFromParent;
+  int depth = CopyFromParent;
+  ui::ChooseVisualForWindow(enable_transparent_visuals, &visual, &depth);
+  if (enable_transparent_visuals && depth == 32) {
     attribute_mask |= CWColormap;
     swa.colormap =
         XCreateColormap(xdisplay_, x_root_window_, visual, AllocNone);

@@ -42,6 +42,8 @@ class ViewsTestBase : public PlatformTest {
   // cross-platform tests.
   Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
+  bool HasCompositingManager() const;
+
  protected:
   TestViewsDelegate* views_delegate() const {
     return test_helper_->views_delegate();
@@ -64,6 +66,7 @@ class ViewsTestBase : public PlatformTest {
   std::unique_ptr<ScopedViewsTestHelper> test_helper_;
   bool setup_called_;
   bool teardown_called_;
+  bool has_compositing_manager_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

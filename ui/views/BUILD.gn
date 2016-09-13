@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/ozone/ozone.gni")
 
 config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
@@ -765,6 +766,9 @@ static_library("test_support_internal") {
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
+  }
+  if (ozone_platform_x11) {
+    deps += [ "//ui/base/x" ]
   }
   if (use_ozone || !use_x11) {
     sources -= [
