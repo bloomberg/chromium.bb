@@ -20,7 +20,7 @@ source_set("session") {
     "//blimp/client/core:switches",
     "//blimp/client/core/geolocation",
     "//blimp/common/proto",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//ui/events",
   ]
 

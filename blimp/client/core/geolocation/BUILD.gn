@@ -30,7 +30,7 @@ source_set("geolocation") {
   public_deps = [
     "//blimp/common/proto",
     "//blimp/net",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
   ]
 }
 
@@ -53,7 +53,7 @@ source_set("unit_tests") {
     "//blimp/net:test_support",
     "//blimp/test:support",
     "//cc/proto",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//device/geolocation:test_support",
     "//net",
     "//net:test_support",

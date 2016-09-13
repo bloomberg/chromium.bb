@@ -58,7 +58,7 @@ source_set("app") {
 
   public_deps = [
     ":app_metrics",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//device/geolocation/public/interfaces",
   ]
 
@@ -86,7 +86,7 @@ source_set("app") {
     "//content/public/common",
     "//content/public/renderer",
     "//content/public/utility",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//net",
   ]
 }
@@ -282,7 +282,7 @@ source_set("feature") {
     "//blimp/net",
     "//content/public/browser",
     "//content/public/common",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//net",
     "//ui/base",
     "//ui/base/ime",
@@ -345,7 +345,7 @@ source_set("session") {
     "//blimp/common/proto",
     "//blimp/net",
     "//content/public/browser",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//net",
     "//ui/aura",
     "//ui/base/ime",
@@ -470,7 +470,7 @@ source_set("feature_unit_tests") {
     "//blimp/net:test_support",
     "//content",
     "//content/public/browser",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//net",
     "//net:test_support",
     "//testing/gmock",

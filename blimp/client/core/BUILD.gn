@@ -103,7 +103,7 @@ source_set("context") {
     "//blimp/client/core/contents",
     "//blimp/client/core/session",
     "//blimp/client/public:public_headers",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//url",
   ]
 

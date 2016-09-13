@@ -104,7 +104,7 @@ source_set("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//content/public/utility",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//gpu",
     "//ipc",
     "//media",

@@ -422,7 +422,7 @@ if (!is_ios) {
       "//content/test:browsertest_support",
       "//content/test:test_support",
       "//device/bluetooth",
-      "//device/geolocation:device_geolocation",
+      "//device/geolocation",
       "//ipc:test_support",
       "//net:test_support",
       "//services/shell/public/cpp",

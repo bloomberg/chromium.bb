@@ -8,7 +8,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
-component("device_geolocation") {
+component("geolocation") {
   defines = [ "DEVICE_GEOLOCATION_IMPLEMENTATION" ]
 
   sources = [
@@ -127,7 +127,7 @@ if (is_android) {
     ]
 
     deps = [
-      ":device_geolocation",
+      ":geolocation",
       ":geolocation_jni_headers",
       "//base:base_java",
     ]
@@ -156,7 +156,7 @@ source_set("test_support") {
     "mock_location_provider.h",
   ]
   public_deps = [
-    ":device_geolocation",
+    ":geolocation",
   ]
   deps = [
     "//testing/gmock",
@@ -177,7 +177,7 @@ source_set("unittests") {
     "wifi_data_provider_win_unittest.cc",
   ]
   public_deps = [
-    ":device_geolocation",
+    ":geolocation",
   ]
   deps = [
     ":test_support",

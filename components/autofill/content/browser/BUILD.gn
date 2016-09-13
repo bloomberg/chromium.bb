@@ -33,7 +33,7 @@ static_library("browser") {
     "//components/webdata/common",
     "//content/public/browser",
     "//content/public/common",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//google_apis",
     "//gpu/config",
     "//mojo/common:common_base",

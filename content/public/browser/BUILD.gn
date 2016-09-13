@@ -288,7 +288,7 @@ source_set("browser_sources") {
     "//cc",
     "//content/browser",  # Must not be public_deps!
     "//content/public/common:common_sources",
-    "//device/geolocation:device_geolocation",
+    "//device/geolocation",
     "//device/power_save_blocker",
     "//gpu",
     "//media",
