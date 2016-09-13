@@ -3134,6 +3134,8 @@ std::unique_ptr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON() co
         if (!frame->isLocalFrame())
             continue;
         if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
+            if (!layoutView.frameView()->m_trackedObjectPaintInvalidations)
+                continue;
             for (const auto& item : *layoutView.frameView()->m_trackedObjectPaintInvalidations) {
                 std::unique_ptr<JSONObject> itemJSON = JSONObject::create();
                 itemJSON->setString("object", item.name);
