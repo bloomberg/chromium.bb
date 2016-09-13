@@ -2406,7 +2406,7 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
         return wholeLayerRect;
 
     IntRect newInterestRect = recomputeInterestRect(graphicsLayer);
-    if (interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, expandedIntSize(graphicsLayer->size())))
+    if (needsRepaint(*graphicsLayer) || interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, expandedIntSize(graphicsLayer->size())))
         return newInterestRect;
     return previousInterestRect;
 }

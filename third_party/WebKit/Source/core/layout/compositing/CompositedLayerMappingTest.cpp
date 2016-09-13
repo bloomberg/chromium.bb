@@ -421,6 +421,26 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll)
     EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600), previousInterestRect(rootScrollingLayer));
 }
 
+TEST_F(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  ::-webkit-scrollbar { width: 0; height: 0; }"
+        "  body { margin: 0; }"
+        "</style>"
+        "<div id='div' style='width: 100px; height: 10000px'>Text</div>");
+
+    document().view()->updateAllLifecyclePhases();
+    GraphicsLayer* rootScrollingLayer = document().layoutViewItem().layer()->graphicsLayerBackingForScrolling();
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600), previousInterestRect(rootScrollingLayer));
+
+    document().view()->setFrameRect(IntRect(0, 0, 800, 60));
+    document().view()->updateAllLifecyclePhases();
+    // Repaint required, so interest rect should be updated to shrunken size.
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 4060), recomputeInterestRect(rootScrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 4060), previousInterestRect(rootScrollingLayer));
+}
+
 TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll)
 {
     document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
@@ -469,7 +489,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll)
     EXPECT_RECT_EQ(IntRect(0, 0, 400, 6600), previousInterestRect(scrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectShouldNotChangeOnPaintInvalidation)
+TEST_F(CompositedLayerMappingTest, InterestRectShouldChangeOnPaintInvalidation)
 {
     document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
 
@@ -494,11 +514,11 @@ TEST_F(CompositedLayerMappingTest, InterestRectShouldNotChangeOnPaintInvalidatio
     EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600), recomputeInterestRect(scrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
 
-    // Paint invalidation and repaint should not change previous paint interest rect.
+    // Paint invalidation and repaint should change previous paint interest rect.
     document().getElementById("content")->setTextContent("Change");
     document().view()->updateAllLifecyclePhases();
     EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600), recomputeInterestRect(scrollingLayer));
-    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600), previousInterestRect(scrollingLayer));
 }
 
 TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithNegativeOverflow)
