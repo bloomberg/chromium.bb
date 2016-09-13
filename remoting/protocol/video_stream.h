@@ -28,13 +28,6 @@ class VideoStream {
     virtual void OnVideoSizeChanged(VideoStream* stream,
                                     const webrtc::DesktopSize& size,
                                     const webrtc::DesktopVector& dpi) = 0;
-
-    // Called to notify about an outgoing video frame. |input_event_timestamp|
-    // corresponds to the last input event that was injected before the frame
-    // was captured.
-    virtual void OnVideoFrameSent(VideoStream* stream,
-                                  uint32_t frame_id,
-                                  int64_t event_timestamp) = 0;
   };
 
   VideoStream() {}

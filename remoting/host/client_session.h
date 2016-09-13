@@ -155,9 +155,6 @@ class ClientSession : public base::NonThreadSafe,
   void OnVideoSizeChanged(protocol::VideoStream* stream,
                           const webrtc::DesktopSize& size,
                           const webrtc::DesktopVector& dpi) override;
-  void OnVideoFrameSent(protocol::VideoStream* stream,
-                        uint32_t frame_id,
-                        int64_t input_event_timestamp) override;
 
   EventHandler* event_handler_;
 

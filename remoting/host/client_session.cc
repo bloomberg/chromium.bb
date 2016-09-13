@@ -474,10 +474,4 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
   }
 }
 
-void ClientSession::OnVideoFrameSent(protocol::VideoStream* stream,
-                                     uint32_t frame_id,
-                                     int64_t input_event_timestamp) {
-  // TODO(sergeyu): Send a message to the client to notify about the new frame.
-}
-
 }  // namespace remoting

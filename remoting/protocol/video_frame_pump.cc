@@ -208,12 +208,6 @@ void VideoFramePump::SendPacket(std::unique_ptr<PacketWithTimestamps> packet) {
   packet->timestamps->can_send_time = base::TimeTicks::Now();
   UpdateFrameTimers(packet->packet.get(), packet->timestamps.get());
 
-  if (observer_) {
-    observer_->OnVideoFrameSent(
-        this, packet->packet->frame_id(),
-        packet->timestamps->input_event_client_timestamp);
-  }
-
   send_pending_ = true;
   video_stub_->ProcessVideoPacket(std::move(packet->packet),
                                   base::Bind(&VideoFramePump::OnVideoPacketSent,
