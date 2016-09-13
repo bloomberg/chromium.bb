@@ -42,11 +42,12 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
   // Create a WebContents instance to define and hold a SessionStorageNamespace
   // for this load request.
   DCHECK(!session_contents_.get());
-  session_contents_.reset(content::WebContents::Create(
-      content::WebContents::CreateParams(browser_context_)));
+  std::unique_ptr<content::WebContents> new_web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser_context_)));
   content::SessionStorageNamespace* sessionStorageNamespace =
-      session_contents_->GetController().GetDefaultSessionStorageNamespace();
-  gfx::Size renderWindowSize = session_contents_->GetContainerBounds().size();
+      new_web_contents->GetController().GetDefaultSessionStorageNamespace();
+  gfx::Size renderWindowSize = new_web_contents->GetContainerBounds().size();
   bool accepted = adapter_->StartPrerender(
       browser_context_, url, sessionStorageNamespace, renderWindowSize);
   if (!accepted)
@@ -56,6 +57,7 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
   snapshot_controller_.reset(
       new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
   callback_ = callback;
+  session_contents_.swap(new_web_contents);
   state_ = State::PENDING;
   return true;
 }

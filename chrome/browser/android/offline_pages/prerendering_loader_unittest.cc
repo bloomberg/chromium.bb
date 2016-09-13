@@ -25,6 +25,7 @@ class TestAdapter : public PrerenderAdapter {
       : PrerenderAdapter(observer),
         active_(false),
         disabled_(false),
+        fail_start_(false),
         observer_(observer),
         web_contents_(nullptr),
         final_status_(prerender::FinalStatus::FINAL_STATUS_MAX) {}
@@ -46,6 +47,9 @@ class TestAdapter : public PrerenderAdapter {
   // to return false.
   void Disable();
 
+  // Sets prerendering to fail start prerender requests.
+  void FailStart();
+
   // Configures mocked prerendering details.
   void Configure(content::WebContents* web_contents,
                  prerender::FinalStatus final_status);
@@ -56,6 +60,7 @@ class TestAdapter : public PrerenderAdapter {
  private:
   bool active_;
   bool disabled_;
+  bool fail_start_;
   PrerenderAdapter::Observer* observer_;
   content::WebContents* web_contents_;
   prerender::FinalStatus final_status_;
@@ -65,6 +70,10 @@ class TestAdapter : public PrerenderAdapter {
 
 void TestAdapter::Disable() {
   disabled_ = true;
+}
+
+void TestAdapter::FailStart() {
+  fail_start_ = true;
 }
 
 void TestAdapter::Configure(content::WebContents* web_contents,
@@ -82,6 +91,8 @@ bool TestAdapter::StartPrerender(
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
+  if (fail_start_)
+    return false;
   active_ = true;
   return true;
 }
@@ -312,6 +323,16 @@ TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenNotIdle) {
 
 TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenPrerenderingDisabled) {
   test_adapter()->Disable();
+  GURL gurl("http://testit.sea");
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_FALSE(loader()->LoadPage(
+      gurl,
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+  EXPECT_TRUE(loader()->IsIdle());
+}
+
+TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenStartPrerenderFalse) {
+  test_adapter()->FailStart();
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->LoadPage(
