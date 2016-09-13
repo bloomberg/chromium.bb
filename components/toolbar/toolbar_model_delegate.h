@@ -43,6 +43,9 @@ class ToolbarModelDelegate {
   // Returns the certificate for the current navigation entry.
   virtual scoped_refptr<net::X509Certificate> GetCertificate() const = 0;
 
+  // Returns true if the current page fails the malware check.
+  virtual bool FailsMalwareCheck() const = 0;
+
  protected:
   virtual ~ToolbarModelDelegate() {}
 };

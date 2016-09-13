@@ -87,6 +87,16 @@ scoped_refptr<net::X509Certificate> ChromeToolbarModelDelegate::GetCertificate()
   return entry->GetSSL().certificate;
 }
 
+bool ChromeToolbarModelDelegate::FailsMalwareCheck() const {
+  content::WebContents* web_contents = GetActiveWebContents();
+  // If there is no active WebContents (which can happen during toolbar
+  // initialization), so nothing can fail.
+  return web_contents &&
+         ChromeSecurityStateModelClient::FromWebContents(web_contents)
+             ->GetSecurityInfo()
+             .fails_malware_check;
+}
+
 content::NavigationController*
 ChromeToolbarModelDelegate::GetNavigationController() const {
   // This |current_tab| can be null during the initialization of the toolbar

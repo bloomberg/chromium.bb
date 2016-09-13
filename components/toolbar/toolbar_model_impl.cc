@@ -134,7 +134,9 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
     case SecurityStateModel::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
     case SecurityStateModel::SECURITY_ERROR:
-      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
+      return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
+                                           ? IDS_DANGEROUS_VERBOSE_STATE
+                                           : IDS_NOT_SECURE_VERBOSE_STATE);
     default:
       return base::string16();
   }
