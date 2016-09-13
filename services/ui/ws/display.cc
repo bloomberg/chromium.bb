@@ -250,6 +250,7 @@ void Display::InitWindowManagerDisplayRootsIfNecessary() {
   } else {
     CreateWindowManagerDisplayRootsFromFactories();
   }
+  display_manager()->OnDisplayUpdate(this);
 }
 
 void Display::CreateWindowManagerDisplayRootsFromFactories() {
@@ -322,7 +323,8 @@ void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
     for (auto& pair : window_manager_display_root_map_)
       pair.second->root()->SetBounds(new_bounds);
   }
-  display_manager()->OnDisplayUpdate(this);
+  if (init_called_)
+    display_manager()->OnDisplayUpdate(this);
 }
 
 void Display::OnCompositorFrameDrawn() {
