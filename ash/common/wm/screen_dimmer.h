@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SCREEN_DIMMER_H_
-#define ASH_WM_SCREEN_DIMMER_H_
+#ifndef ASH_COMMON_WM_SCREEN_DIMMER_H_
+#define ASH_COMMON_WM_SCREEN_DIMMER_H_
 
 #include <memory>
 #include <vector>
@@ -77,4 +77,4 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
 
 }  // namespace ash
 
-#endif  // ASH_WM_SCREEN_DIMMER_H_
+#endif  // ASH_COMMON_WM_SCREEN_DIMMER_H_
