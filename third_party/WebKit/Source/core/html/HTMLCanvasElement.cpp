@@ -174,14 +174,36 @@ Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(ContainerNode
     return HTMLElement::insertedInto(node);
 }
 
-void HTMLCanvasElement::setHeight(int value)
+void HTMLCanvasElement::setHeight(int value, ExceptionState& exceptionState)
 {
+    if (surfaceLayerBridge()) {
+        // The existence of surfaceLayerBridge indicates that
+        // canvas.transferControlToOffscreen has been called.
+        exceptionState.throwDOMException(InvalidStateError, "Resizing is not allowed for a canvas that has transferred its control to offscreen.");
+        return;
+    }
     setIntegralAttribute(heightAttr, value);
 }
 
-void HTMLCanvasElement::setWidth(int value)
+void HTMLCanvasElement::setWidth(int value, ExceptionState& exceptionState)
 {
+    if (surfaceLayerBridge()) {
+        // Same comment as above.
+        exceptionState.throwDOMException(InvalidStateError, "Resizing is not allowed for a canvas that has transferred its control to offscreen.");
+        return;
+    }
     setIntegralAttribute(widthAttr, value);
+}
+
+void HTMLCanvasElement::setSize(const IntSize& newSize)
+{
+    if (newSize == size())
+        return;
+    m_ignoreReset = true;
+    setIntegralAttribute(widthAttr, newSize.width());
+    setIntegralAttribute(heightAttr, newSize.height());
+    m_ignoreReset = false;
+    reset();
 }
 
 HTMLCanvasElement::ContextFactoryVector& HTMLCanvasElement::renderingContextFactories()
@@ -640,6 +662,10 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
 
 String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState) const
 {
+    if (surfaceLayerBridge()) {
+        exceptionState.throwDOMException(InvalidStateError, "canvas.toDataURL is not allowed for a canvas that has transferred its control to offscreen.");
+        return String();
+    }
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
@@ -686,6 +712,11 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
 
 void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
 {
+    if (surfaceLayerBridge()) {
+        exceptionState.throwDOMException(InvalidStateError, "canvas.toBlob is not allowed for a canvas that has transferred its control to offscreen.");
+        return;
+    }
+
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return;
@@ -1020,8 +1051,8 @@ ImageBuffer* HTMLCanvasElement::buffer() const
 void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(std::unique_ptr<ImageBufferSurface> surface)
 {
     discardImageBuffer();
-    setWidth(surface->size().width());
-    setHeight(surface->size().height());
+    setIntegralAttribute(widthAttr, surface->size().width());
+    setIntegralAttribute(heightAttr, surface->size().height());
     createImageBufferInternal(std::move(surface));
 }
 

@@ -16,6 +16,6 @@ partial interface HTMLCanvasElement
     // requires throwing TypeError if the incoming argument is not an object type
     // (and is not undefined or null). The binding must ignore this.
     // Related spec issue: https://github.com/whatwg/html/issues/595
-    RenderingContext? getContext(DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
+    [RaisesException] RenderingContext? getContext(DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] OffscreenCanvas transferControlToOffscreen();
 };

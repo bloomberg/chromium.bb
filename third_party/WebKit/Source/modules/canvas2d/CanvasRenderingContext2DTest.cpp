@@ -679,8 +679,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
     Element* canvasElement = document().createElement("canvas", nonThrowableExceptionState);
     EXPECT_FALSE(nonThrowableExceptionState.hadException());
     HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(canvasElement);
-    canvas->setHeight(40);
-    canvas->setWidth(40);
+    canvas->setSize(IntSize(40, 40));
     ImageBitmap* imageBitmapDerived = nullptr;
     {
         const ImageBitmapOptions defaultOptions;
