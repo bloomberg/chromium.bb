@@ -29,14 +29,16 @@ found in the LICENSE file.
             android:name="org.chromium.base.BaseChromiumApplication">
         <activity android:name=".NativeUnitTestActivity"
                 android:label="NativeTest"
-                android:configChanges="orientation|keyboardHidden">
+                android:configChanges="orientation|keyboardHidden"
+                android:process=":test_process">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <service android:name="org.chromium.net.test.DummySpnegoAuthenticatorService"
-                android:exported = "false">
+                android:exported="false"
+                android:process=":test_process">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
