@@ -51,6 +51,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
+    self.Flaky('conformance/glsl/bugs/nested-sequence-operator.html',
+        ['win', 'nvidia'], bug=1517) # ANGLE bug.
 
     # This should be fixed in the latest driver.
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
