@@ -81,13 +81,16 @@ class CacheStorageManagerTest : public testing::Test {
 
     url_request_context->set_job_factory(url_request_job_factory_.get());
 
-    if (!MemoryOnly())
+    const bool is_incognito = MemoryOnly();
+    base::FilePath temp_dir_path;
+    if (!is_incognito) {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+      temp_dir_path = temp_dir_.GetPath();
+    }
 
     quota_policy_ = new MockSpecialStoragePolicy;
     mock_quota_manager_ = new MockQuotaManager(
-        MemoryOnly() /* is incognito */, temp_dir_.path(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
     mock_quota_manager_->SetQuota(
         GURL(origin1_), storage::kStorageTypeTemporary, 1024 * 1024 * 100);
@@ -98,7 +101,7 @@ class CacheStorageManagerTest : public testing::Test {
         mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
 
     cache_manager_ = CacheStorageManager::Create(
-        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+        temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
         quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(

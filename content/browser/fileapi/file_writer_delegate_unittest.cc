@@ -263,8 +263,8 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-  file_system_context_ = CreateFileSystemContextForTesting(
-      NULL, dir_.path());
+  file_system_context_ =
+      CreateFileSystemContextForTesting(NULL, dir_.GetPath());
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             GetFileSystemURL("test")));

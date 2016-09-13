@@ -28,7 +28,7 @@ class ShaderDiskCacheTest : public testing::Test {
 
   ~ShaderDiskCacheTest() override {}
 
-  const base::FilePath& cache_path() { return temp_dir_.path(); }
+  const base::FilePath& cache_path() { return temp_dir_.GetPath(); }
 
   void InitCache() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

@@ -147,7 +147,7 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   const int64_t kSessionStorageNamespaceId = kLocalStorageNamespaceId + 1;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kExpectedOriginFilePath = temp_dir.path().Append(
+  const base::FilePath kExpectedOriginFilePath = temp_dir.GetPath().Append(
       DOMStorageArea::DatabaseFileNameFromOrigin(kOrigin));
 
   // No directory, backing should be null.
@@ -180,7 +180,7 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   // This should set up a DOMStorageArea that is correctly backed to disk.
   {
     scoped_refptr<DOMStorageArea> area(
-        new DOMStorageArea(kOrigin, temp_dir.path(),
+        new DOMStorageArea(kOrigin, temp_dir.GetPath(),
                            new MockDOMStorageTaskRunner(
                                base::ThreadTaskRunnerHandle::Get().get())));
 
@@ -227,7 +227,7 @@ TEST_F(DOMStorageAreaTest, CommitTasks) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.path(),
+      kOrigin, temp_dir.GetPath(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
   // Inject an in-memory db to speed up the test.
   area->backing_.reset(new LocalStorageDatabaseAdapter());
@@ -305,7 +305,7 @@ TEST_F(DOMStorageAreaTest, CommitChangesAtShutdown) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.path(),
+      kOrigin, temp_dir.GetPath(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // Inject an in-memory db to speed up the test and also to verify
@@ -331,7 +331,7 @@ TEST_F(DOMStorageAreaTest, DeleteOrigin) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.path(),
+      kOrigin, temp_dir.GetPath(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // This test puts files on disk.
@@ -391,7 +391,7 @@ TEST_F(DOMStorageAreaTest, PurgeMemory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.path(),
+      kOrigin, temp_dir.GetPath(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // Inject an in-memory db to speed up the test.

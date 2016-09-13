@@ -101,16 +101,16 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     // RenderViewHostImplTestHarness::SetUp.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    save_package_success_ =
-        new SavePackage(contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                        temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
-                        temp_dir_.path().AppendASCII("testfile_files"));
+    save_package_success_ = new SavePackage(
+        contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+        temp_dir_.GetPath().AppendASCII("testfile" HTML_EXTENSION),
+        temp_dir_.GetPath().AppendASCII("testfile_files"));
 
     base::FilePath::StringType long_file_name = GetLongFileName();
     save_package_fail_ = new SavePackage(
         contents(), SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-        temp_dir_.path().Append(long_file_name + FPL_HTML_EXTENSION),
-        temp_dir_.path().Append(long_file_name + FPL("_files")));
+        temp_dir_.GetPath().Append(long_file_name + FPL_HTML_EXTENSION),
+        temp_dir_.GetPath().Append(long_file_name + FPL("_files")));
   }
 
   BrowserContext* CreateBrowserContext() override {
@@ -138,7 +138,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   // Returns a path that is *almost* kMaxFilePathLength long
   base::FilePath::StringType GetLongFileName() const {
     size_t target_length =
-        kMaxFilePathLength - 9 - temp_dir_.path().value().length();
+        kMaxFilePathLength - 9 - temp_dir_.GetPath().value().length();
     return base::FilePath::StringType(target_length, FPL('a'));
   }
 

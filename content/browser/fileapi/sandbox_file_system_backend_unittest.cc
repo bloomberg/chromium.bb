@@ -79,7 +79,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
   void SetUpNewDelegate(const storage::FileSystemOptions& options) {
     delegate_.reset(new SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
-        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.GetPath(),
         NULL /* special_storage_policy */, options));
   }
 
@@ -122,7 +122,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
   }
 
   base::FilePath file_system_path() const {
-    return data_dir_.path().Append(
+    return data_dir_.GetPath().Append(
         SandboxFileSystemBackendDelegate::kFileSystemDirectory);
   }
 

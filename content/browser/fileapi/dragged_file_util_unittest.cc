@@ -112,8 +112,7 @@ class DraggedFileUtilTest : public testing::Test {
     SimulateDropFiles();
 
     file_system_context_ = CreateFileSystemContextForTesting(
-        NULL /* quota_manager */,
-        partition_dir_.path());
+        NULL /* quota_manager */, partition_dir_.GetPath());
 
     isolated_context()->AddReference(filesystem_id_);
   }
@@ -126,9 +125,7 @@ class DraggedFileUtilTest : public testing::Test {
   storage::IsolatedContext* isolated_context() const {
     return storage::IsolatedContext::GetInstance();
   }
-  const base::FilePath& root_path() const {
-    return data_dir_.path();
-  }
+  const base::FilePath& root_path() const { return data_dir_.GetPath(); }
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
@@ -143,7 +140,7 @@ class DraggedFileUtilTest : public testing::Test {
 
   base::FilePath GetTestCaseLocalPath(const base::FilePath& path) {
     base::FilePath relative;
-    if (data_dir_.path().AppendRelativePath(path, &relative))
+    if (data_dir_.GetPath().AppendRelativePath(path, &relative))
       return relative;
     return path;
   }

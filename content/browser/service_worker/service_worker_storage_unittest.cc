@@ -293,14 +293,15 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::FilePath GetUserDataDirectory() { return user_data_directory_.path(); }
-
   bool InitUserDataDirectory() {
-    return user_data_directory_.CreateUniqueTempDir();
+    if (!user_data_directory_.CreateUniqueTempDir())
+      return false;
+    user_data_directory_path_ = user_data_directory_.GetPath();
+    return true;
   }
 
   void InitializeTestHelper() {
-    helper_.reset(new EmbeddedWorkerTestHelper(GetUserDataDirectory()));
+    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory_path_));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -503,6 +504,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   // user_data_directory_ must be declared first to preserve destructor order.
   base::ScopedTempDir user_data_directory_;
+  base::FilePath user_data_directory_path_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle browser_thread_bundle_;
 };

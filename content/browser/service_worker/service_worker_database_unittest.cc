@@ -90,7 +90,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   std::unique_ptr<ServiceWorkerDatabase> database(
-      CreateDatabase(database_dir.path()));
+      CreateDatabase(database_dir.GetPath()));
 
   // Should be false because the database does not exist at the path.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
@@ -98,7 +98,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
-  database.reset(CreateDatabase(database_dir.path()));
+  database.reset(CreateDatabase(database_dir.GetPath()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(false));
 }
 
@@ -150,7 +150,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   std::unique_ptr<ServiceWorkerDatabase> database(
-      CreateDatabase(database_dir.path()));
+      CreateDatabase(database_dir.GetPath()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
   // First writing triggers database initialization and bumps the schema
@@ -181,7 +181,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
   ASSERT_EQ(old_db_version, db_version);
 
   // Opening the database whose schema version is obsolete should fail.
-  database.reset(CreateDatabase(database_dir.path()));
+  database.reset(CreateDatabase(database_dir.GetPath()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_FAILED,
             database->LazyOpen(true));
 }
@@ -190,7 +190,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   std::unique_ptr<ServiceWorkerDatabase> database(
-      CreateDatabase(database_dir.path()));
+      CreateDatabase(database_dir.GetPath()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
   // First writing triggers database initialization and bumps the schema
@@ -220,7 +220,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
             database->ReadDatabaseVersion(&db_version));
 
   // Opening the database whose schema version is corrupted should fail.
-  database.reset(CreateDatabase(database_dir.path()));
+  database.reset(CreateDatabase(database_dir.GetPath()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,
             database->LazyOpen(true));
 }
@@ -229,7 +229,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   std::unique_ptr<ServiceWorkerDatabase> database(
-      CreateDatabase(database_dir.path()));
+      CreateDatabase(database_dir.GetPath()));
 
   GURL origin("http://example.com");
 
@@ -317,7 +317,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
                 std::set<int64_t>(&kLowResourceId, &kLowResourceId + 1)));
 
   // Close and reopen the database to verify the stored values.
-  database.reset(CreateDatabase(database_dir.path()));
+  database.reset(CreateDatabase(database_dir.GetPath()));
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
@@ -1635,13 +1635,13 @@ TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   std::unique_ptr<ServiceWorkerDatabase> database(
-      CreateDatabase(database_dir.path()));
+      CreateDatabase(database_dir.GetPath()));
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
-  ASSERT_TRUE(base::DirectoryExists(database_dir.path()));
+  ASSERT_TRUE(base::DirectoryExists(database_dir.GetPath()));
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->DestroyDatabase());
-  ASSERT_FALSE(base::DirectoryExists(database_dir.path()));
+  ASSERT_FALSE(base::DirectoryExists(database_dir.GetPath()));
 }
 
 TEST(ServiceWorkerDatabaseTest, GetOriginsWithForeignFetchRegistrations) {

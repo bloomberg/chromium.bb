@@ -85,7 +85,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   const url::Origin origin(GURL("http://localhost:81"));
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  const base::FilePath path = temp_directory.path();
+  const base::FilePath path = temp_directory.GetPath();
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 
   BustedLevelDBFactory busted_factory;
@@ -114,7 +114,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  const base::FilePath path = temp_directory.path();
+  const base::FilePath path = temp_directory.GetPath();
   content::IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
   base::SequencedTaskRunner* task_runner = NULL;

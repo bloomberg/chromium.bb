@@ -648,7 +648,7 @@ class StorageMonitorIntegrationTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new QuotaManager(
-        false, data_dir_.path(), base::ThreadTaskRunnerHandle::Get().get(),
+        false, data_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
 
     client_ = new MockStorageClient(quota_manager_->proxy(),

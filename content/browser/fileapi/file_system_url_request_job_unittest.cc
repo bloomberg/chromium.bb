@@ -140,7 +140,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // We use the main thread so that we can get the root path synchronously.
     // TODO(adamk): Run this on the FILE thread we've created as well.
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, temp_dir_.path());
+        CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL("http://remote/"),
@@ -157,7 +157,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   void SetUpAutoMountContext() {
-    base::FilePath mnt_point = temp_dir_.path().AppendASCII("auto_mount_dir");
+    base::FilePath mnt_point =
+        temp_dir_.GetPath().AppendASCII("auto_mount_dir");
     ASSERT_TRUE(base::CreateDirectory(mnt_point));
 
     ScopedVector<storage::FileSystemBackend> additional_providers;
@@ -168,7 +169,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     handlers.push_back(base::Bind(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        NULL, std::move(additional_providers), handlers, temp_dir_.path());
+        NULL, std::move(additional_providers), handlers, temp_dir_.GetPath());
 
     ASSERT_EQ(static_cast<int>(sizeof(kTestFileData)) - 1,
               base::WriteFile(mnt_point.AppendASCII("foo"), kTestFileData,
@@ -421,7 +422,7 @@ TEST_F(FileSystemURLRequestJobTest, Incognito) {
 
   // Creates a new filesystem context for incognito mode.
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.path());
+      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
   // The request should return NOT_FOUND error if it's in incognito mode.
   TestRequestWithContext(CreateFileSystemURL("file"),

@@ -74,8 +74,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_system_context_ = CreateFileSystemContextForTesting(
-        NULL, temp_dir_.path());
+    file_system_context_ =
+        CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL(kURLOrigin),

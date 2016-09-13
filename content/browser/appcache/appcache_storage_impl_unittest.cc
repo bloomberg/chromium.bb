@@ -1675,7 +1675,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Unlike all of the other tests, this one actually read/write files.
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
 
-    AppCacheDatabase db(temp_directory_.path().AppendASCII("Index"));
+    AppCacheDatabase db(temp_directory_.GetPath().AppendASCII("Index"));
     EXPECT_TRUE(db.LazyOpen(true));
 
     if (test_case == CORRUPT_CACHE_ON_INSTALL ||
@@ -1683,7 +1683,7 @@ class AppCacheStorageImplTest : public testing::Test {
       // Create a corrupt/unopenable disk_cache index file.
       const std::string kCorruptData("deadbeef");
       base::FilePath disk_cache_directory =
-          temp_directory_.path().AppendASCII("Cache");
+          temp_directory_.GetPath().AppendASCII("Cache");
       ASSERT_TRUE(base::CreateDirectory(disk_cache_directory));
       base::FilePath index_file = disk_cache_directory.AppendASCII("index");
       EXPECT_EQ(static_cast<int>(kCorruptData.length()),
@@ -1694,7 +1694,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Create records for a degenerate cached manifest that only contains
     // one entry for the manifest file resource.
     if (test_case == CORRUPT_CACHE_ON_LOAD_EXISTING) {
-      AppCacheDatabase db(temp_directory_.path().AppendASCII("Index"));
+      AppCacheDatabase db(temp_directory_.GetPath().AppendASCII("Index"));
       GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
 
       AppCacheDatabase::GroupRecord group_record;
@@ -1721,8 +1721,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Recreate the service to point at the db and corruption on disk.
     service_.reset(new AppCacheServiceImpl(NULL));
     service_->set_request_context(io_thread->request_context());
-    service_->Initialize(temp_directory_.path(),
-                         db_thread->task_runner(),
+    service_->Initialize(temp_directory_.GetPath(), db_thread->task_runner(),
                          db_thread->task_runner());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
@@ -1749,7 +1748,7 @@ class AppCacheStorageImplTest : public testing::Test {
       // Break the db file
       EXPECT_FALSE(database()->was_corruption_detected());
       ASSERT_TRUE(sql::test::CorruptSizeInHeader(
-          temp_directory_.path().AppendASCII("Index")));
+          temp_directory_.GetPath().AppendASCII("Index")));
     }
 
     if (test_case == CORRUPT_CACHE_ON_INSTALL  ||
@@ -1793,9 +1792,8 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(observer_->observed_old_storage_.get());
     EXPECT_TRUE(observer_->observed_old_storage_->storage() != storage());
     EXPECT_FALSE(PathExists(
-        temp_directory_.path().AppendASCII("Cache").AppendASCII("index")));
-    EXPECT_FALSE(PathExists(
-        temp_directory_.path().AppendASCII("Index")));
+        temp_directory_.GetPath().AppendASCII("Cache").AppendASCII("index")));
+    EXPECT_FALSE(PathExists(temp_directory_.GetPath().AppendASCII("Index")));
 
     if (test_case == CORRUPT_SQL_ON_INSTALL) {
       AppCacheStorageImpl* storage = static_cast<AppCacheStorageImpl*>(

@@ -70,14 +70,14 @@ class FileSystemOperationImplWriteTest
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     quota_manager_ =
-        new MockQuotaManager(false /* is_incognito */, dir_.path(),
+        new MockQuotaManager(false /* is_incognito */, dir_.GetPath(),
                              base::ThreadTaskRunnerHandle::Get().get(),
                              base::ThreadTaskRunnerHandle::Get().get(),
                              NULL /* special storage policy */);
     virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 
     file_system_context_ = CreateFileSystemContextForTesting(
-        quota_manager_->proxy(), dir_.path());
+        quota_manager_->proxy(), dir_.GetPath());
     url_request_context_.reset(
         new MockBlobURLRequestContext(file_system_context_.get()));
 

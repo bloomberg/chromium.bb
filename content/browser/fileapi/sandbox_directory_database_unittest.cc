@@ -113,9 +113,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
         FilePathToString(path().Append(kDirectoryDatabaseName)));
   }
 
-  const base::FilePath& path() {
-    return base_.path();
-  }
+  const base::FilePath& path() { return base_.GetPath(); }
 
   // Makes link from |parent_id| to |child_id| with |name|.
   void MakeHierarchyLink(FileId parent_id,

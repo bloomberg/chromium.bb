@@ -20,7 +20,7 @@ base::FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
     bool result = download_dir_.CreateUniqueTempDir();
     CHECK(result);
   }
-  return download_dir_.path();
+  return download_dir_.GetPath();
 }
 
 }  // namespace content

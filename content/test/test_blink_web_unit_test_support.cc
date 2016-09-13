@@ -135,7 +135,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   if (!file_system_root_.CreateUniqueTempDir()) {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";
-    DCHECK(file_system_root_.path().empty());
+    DCHECK(file_system_root_.GetPath().empty());
   }
 
 #if defined(OS_WIN)

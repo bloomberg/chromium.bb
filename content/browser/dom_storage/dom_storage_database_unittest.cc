@@ -115,7 +115,7 @@ TEST(DOMStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_name =
-      temp_dir.path().AppendASCII("TestDOMStorageDatabase.db");
+      temp_dir.GetPath().AppendASCII("TestDOMStorageDatabase.db");
   DOMStorageValuesMap storage;
   CreateMapWithValues(&storage);
 
@@ -173,7 +173,7 @@ TEST(DOMStorageDatabaseTest, TestLazyOpenIsLazy) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_name =
-      temp_dir.path().AppendASCII("TestDOMStorageDatabase.db");
+      temp_dir.GetPath().AppendASCII("TestDOMStorageDatabase.db");
 
   DOMStorageDatabase db(file_name);
   EXPECT_FALSE(db.IsOpen());
@@ -222,7 +222,7 @@ TEST(DOMStorageDatabaseTest, TestLazyOpenUpgradesDatabase) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_name =
-      temp_dir.path().AppendASCII("TestDOMStorageDatabase.db");
+      temp_dir.GetPath().AppendASCII("TestDOMStorageDatabase.db");
 
   DOMStorageDatabase db(file_name);
   db.db_.reset(new sql::Connection());
@@ -341,7 +341,7 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_name =
-      temp_dir.path().AppendASCII("TestDOMStorageDatabase.db");
+      temp_dir.GetPath().AppendASCII("TestDOMStorageDatabase.db");
 
   const char kData[] = "I am not a database.";
   base::WriteFile(file_name, kData, strlen(kData));
@@ -379,7 +379,7 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
     // Try to open a directory, we should fail gracefully and not attempt
     // to delete it.
-    DOMStorageDatabase db(temp_dir.path());
+    DOMStorageDatabase db(temp_dir.GetPath());
     DOMStorageValuesMap values;
     CreateMapWithValues(&values);
     EXPECT_FALSE(db.CommitChanges(true, values));
@@ -392,7 +392,7 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     EXPECT_EQ(0u, values.size());
     EXPECT_FALSE(db.IsOpen());
 
-    EXPECT_TRUE(base::PathExists(temp_dir.path()));
+    EXPECT_TRUE(base::PathExists(temp_dir.GetPath()));
 
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }

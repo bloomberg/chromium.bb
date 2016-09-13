@@ -116,10 +116,11 @@ int LayoutTestBrowserMain(
   base::ScopedTempDir browser_context_path_for_layout_tests;
 
   CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
-  CHECK(!browser_context_path_for_layout_tests.path().MaybeAsASCII().empty());
+  CHECK(
+      !browser_context_path_for_layout_tests.GetPath().MaybeAsASCII().empty());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kContentShellDataPath,
-      browser_context_path_for_layout_tests.path().MaybeAsASCII());
+      browser_context_path_for_layout_tests.GetPath().MaybeAsASCII());
 
 #if defined(OS_ANDROID)
   content::EnsureInitializeForAndroidLayoutTests();

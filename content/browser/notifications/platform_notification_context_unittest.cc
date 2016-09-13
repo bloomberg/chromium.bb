@@ -396,7 +396,7 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
   // Manually construct the PlatformNotificationContextImpl because this test
   // requires the database to be created on the filesystem.
   scoped_refptr<PlatformNotificationContextImpl> context(
-      new PlatformNotificationContextImpl(database_dir.path(),
+      new PlatformNotificationContextImpl(database_dir.GetPath(),
                                           browser_context(), nullptr));
 
   OverrideTaskRunnerForTesting(context.get());
@@ -409,7 +409,7 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsDirectoryEmpty(database_dir.path()));
+  EXPECT_FALSE(IsDirectoryEmpty(database_dir.GetPath()));
   EXPECT_FALSE(success());
 
   // Blow away the database by faking a Service Worker Context wipe-out.
@@ -418,7 +418,7 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
   base::RunLoop().RunUntilIdle();
 
   // The database's directory should be empty at this point.
-  EXPECT_TRUE(IsDirectoryEmpty(database_dir.path()));
+  EXPECT_TRUE(IsDirectoryEmpty(database_dir.GetPath()));
 }
 
 TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataEmpty) {

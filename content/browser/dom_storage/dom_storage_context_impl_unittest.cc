@@ -46,10 +46,9 @@ class DOMStorageContextImplTest : public testing::Test {
     storage_policy_ = new MockSpecialStoragePolicy;
     task_runner_ =
         new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get());
-    context_ = new DOMStorageContextImpl(temp_dir_.path(),
-                                         base::FilePath(),
-                                         storage_policy_.get(),
-                                         task_runner_.get());
+    context_ =
+        new DOMStorageContextImpl(temp_dir_.GetPath(), base::FilePath(),
+                                  storage_policy_.get(), task_runner_.get());
   }
 
   void TearDown() override {
@@ -60,9 +59,8 @@ class DOMStorageContextImplTest : public testing::Test {
 
   void VerifySingleOriginRemains(const GURL& origin) {
     // Use a new instance to examine the contexts of temp_dir_.
-    scoped_refptr<DOMStorageContextImpl> context =
-        new DOMStorageContextImpl(temp_dir_.path(), base::FilePath(),
-                                  NULL, NULL);
+    scoped_refptr<DOMStorageContextImpl> context = new DOMStorageContextImpl(
+        temp_dir_.GetPath(), base::FilePath(), NULL, NULL);
     std::vector<LocalStorageUsageInfo> infos;
     context->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
     ASSERT_EQ(1u, infos.size());
@@ -85,7 +83,7 @@ TEST_F(DOMStorageContextImplTest, Basics) {
   // This test doesn't do much, checks that the constructor
   // initializes members properly and that invoking methods
   // on a newly created object w/o any data on disk do no harm.
-  EXPECT_EQ(temp_dir_.path(), context_->localstorage_directory());
+  EXPECT_EQ(temp_dir_.GetPath(), context_->localstorage_directory());
   EXPECT_EQ(base::FilePath(), context_->sessionstorage_directory());
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
   context_->DeleteLocalStorage(GURL("http://chromium.org/"));
@@ -118,7 +116,7 @@ TEST_F(DOMStorageContextImplTest, UsageInfo) {
 
   // Create a new context that points to the same directory, see that
   // it knows about the origin that we stored data for.
-  context_ = new DOMStorageContextImpl(temp_dir_.path(), base::FilePath(),
+  context_ = new DOMStorageContextImpl(temp_dir_.GetPath(), base::FilePath(),
                                        NULL, NULL);
   context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_EQ(1u, infos.size());
@@ -202,12 +200,11 @@ TEST_F(DOMStorageContextImplTest, PersistentIds) {
 TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   // Create a DOMStorageContextImpl which will save sessionStorage on disk.
   context_->Shutdown();
-  context_ = new DOMStorageContextImpl(temp_dir_.path(),
-                                       temp_dir_.path(),
-                                       storage_policy_.get(),
-                                       task_runner_.get());
+  context_ =
+      new DOMStorageContextImpl(temp_dir_.GetPath(), temp_dir_.GetPath(),
+                                storage_policy_.get(), task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
-  ASSERT_EQ(temp_dir_.path(), context_->sessionstorage_directory());
+  ASSERT_EQ(temp_dir_.GetPath(), context_->sessionstorage_directory());
 
   // Write data.
   const int kSessionStorageNamespaceId = 1 + session_id_offset();
@@ -227,9 +224,9 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   context_->Shutdown();
   context_ = NULL;
   base::RunLoop().RunUntilIdle();
-  context_ = new DOMStorageContextImpl(
-      temp_dir_.path(), temp_dir_.path(),
-      storage_policy_.get(), task_runner_.get());
+  context_ =
+      new DOMStorageContextImpl(temp_dir_.GetPath(), temp_dir_.GetPath(),
+                                storage_policy_.get(), task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
 
   // Read the data back.
@@ -251,9 +248,9 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   context_->Shutdown();
   context_ = NULL;
   base::RunLoop().RunUntilIdle();
-  context_ = new DOMStorageContextImpl(
-      temp_dir_.path(), temp_dir_.path(),
-      storage_policy_.get(), task_runner_.get());
+  context_ =
+      new DOMStorageContextImpl(temp_dir_.GetPath(), temp_dir_.GetPath(),
+                                storage_policy_.get(), task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
 
   // Now there should be no data.

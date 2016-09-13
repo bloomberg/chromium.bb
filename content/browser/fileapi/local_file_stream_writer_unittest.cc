@@ -44,7 +44,7 @@ class LocalFileStreamWriterTest : public testing::Test {
 
  protected:
   base::FilePath Path(const std::string& name) {
-    return temp_dir_.path().AppendASCII(name);
+    return temp_dir_.GetPath().AppendASCII(name);
   }
 
   int WriteStringToWriter(LocalFileStreamWriter* writer,

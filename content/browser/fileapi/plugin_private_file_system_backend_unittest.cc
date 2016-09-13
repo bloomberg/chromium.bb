@@ -50,9 +50,8 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    context_ = CreateFileSystemContextForTesting(
-        NULL /* quota_manager_proxy */,
-        data_dir_.path());
+    context_ = CreateFileSystemContextForTesting(NULL /* quota_manager_proxy */,
+                                                 data_dir_.GetPath());
   }
 
   FileSystemURL CreateURL(const GURL& root_url, const std::string& relative) {

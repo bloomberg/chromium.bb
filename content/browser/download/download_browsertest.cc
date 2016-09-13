@@ -559,7 +559,8 @@ class DownloadContentTest : public ContentBrowserTest {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     test_delegate_.reset(new TestShellDownloadManagerDelegate());
-    test_delegate_->SetDownloadBehaviorForTesting(downloads_directory_.path());
+    test_delegate_->SetDownloadBehaviorForTesting(
+        downloads_directory_.GetPath());
     DownloadManager* manager = DownloadManagerForShell(shell());
     manager->GetDelegate()->Shutdown();
     manager->SetDelegate(test_delegate_.get());
@@ -585,7 +586,7 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   const base::FilePath& GetDownloadDirectory() const {
-    return downloads_directory_.path();
+    return downloads_directory_.GetPath();
   }
 
   // Create a DownloadTestObserverTerminal that will wait for the

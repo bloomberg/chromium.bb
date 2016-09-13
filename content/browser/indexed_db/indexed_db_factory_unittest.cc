@@ -103,14 +103,14 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLifetime) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   scoped_refptr<IndexedDBBackingStore> disk_store1 =
-      factory()->TestOpenBackingStore(origin1, temp_directory.path());
+      factory()->TestOpenBackingStore(origin1, temp_directory.GetPath());
 
   scoped_refptr<IndexedDBBackingStore> disk_store2 =
-      factory()->TestOpenBackingStore(origin1, temp_directory.path());
+      factory()->TestOpenBackingStore(origin1, temp_directory.GetPath());
   EXPECT_EQ(disk_store1.get(), disk_store2.get());
 
   scoped_refptr<IndexedDBBackingStore> disk_store3 =
-      factory()->TestOpenBackingStore(origin2, temp_directory.path());
+      factory()->TestOpenBackingStore(origin2, temp_directory.GetPath());
 
   factory()->TestCloseBackingStore(disk_store1.get());
   factory()->TestCloseBackingStore(disk_store3.get());
@@ -129,7 +129,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   scoped_refptr<IndexedDBBackingStore> store =
-      factory()->TestOpenBackingStore(origin, temp_directory.path());
+      factory()->TestOpenBackingStore(origin, temp_directory.GetPath());
 
   // Give up the local refptr so that the factory has the only
   // outstanding reference.
@@ -139,7 +139,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
   factory()->TestReleaseBackingStore(store_ptr, false);
   EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
 
-  factory()->TestOpenBackingStore(origin, temp_directory.path());
+  factory()->TestOpenBackingStore(origin, temp_directory.GetPath());
   EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
   factory()->TestReleaseBackingStore(store_ptr, false);
   EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
@@ -184,7 +184,7 @@ TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
 TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  const base::FilePath base_path = temp_directory.path();
+  const base::FilePath base_path = temp_directory.GetPath();
 
   int limit = base::GetMaximumPathComponentLength(base_path);
   EXPECT_GT(limit, 0);
@@ -258,7 +258,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
           callbacks, dummy_database_callbacks, 0 /* child_process_id */,
           2 /* transaction_id */, 1 /* version */));
   factory->Open(name, std::move(connection), nullptr /* request_context */,
-                origin, temp_directory.path());
+                origin, temp_directory.GetPath());
   EXPECT_TRUE(callbacks->error_called());
 }
 
@@ -277,7 +277,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
           callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection),
-                  nullptr /* request_context */, origin, temp_directory.path());
+                  nullptr /* request_context */, origin,
+                  temp_directory.GetPath());
 
   EXPECT_TRUE(callbacks->connection());
 
@@ -305,7 +306,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
           callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection),
-                  nullptr /* request_context */, origin, temp_directory.path());
+                  nullptr /* request_context */, origin,
+                  temp_directory.GetPath());
 
   EXPECT_TRUE(callbacks->connection());
   IndexedDBBackingStore* store =
@@ -341,7 +343,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
       new MockIndexedDBCallbacks(expect_connection));
   factory()->DeleteDatabase(ASCIIToUTF16("db"), nullptr /* request_context */,
-                            callbacks, origin, temp_directory.path());
+                            callbacks, origin, temp_directory.GetPath());
 
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
   EXPECT_TRUE(factory()->IsBackingStorePendingClose(origin));
@@ -364,7 +366,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
   const bool expect_connection = false;
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
       new MockIndexedDBCallbacks(expect_connection));
-  factory()->GetDatabaseNames(callbacks, origin, temp_directory.path(),
+  factory()->GetDatabaseNames(callbacks, origin, temp_directory.GetPath(),
                               nullptr /* request_context */);
 
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
@@ -392,7 +394,8 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
           callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection),
-                  nullptr /* request_context */, origin, temp_directory.path());
+                  nullptr /* request_context */, origin,
+                  temp_directory.GetPath());
 
   EXPECT_TRUE(callbacks->connection());
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
@@ -474,7 +477,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
             db_version));
     factory()->Open(db_name, std::move(connection),
                     nullptr /* request_context */, origin,
-                    temp_directory.path());
+                    temp_directory.GetPath());
     EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
 
     // Pump the message loop so the upgrade transaction can run.
@@ -496,7 +499,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
             db_version - 1));
     factory()->Open(db_name, std::move(connection),
                     nullptr /* request_context */, origin,
-                    temp_directory.path());
+                    temp_directory.GetPath());
     EXPECT_TRUE(callbacks->saw_error());
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }

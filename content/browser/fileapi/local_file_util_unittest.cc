@@ -49,8 +49,8 @@ class LocalFileUtilTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_system_context_ = CreateFileSystemContextForTesting(
-        NULL, data_dir_.path());
+    file_system_context_ =
+        CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
   }
 
   void TearDown() override {

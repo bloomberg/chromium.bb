@@ -331,13 +331,16 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     blob_storage_context_ = blob_storage_context->context();
 
-    if (!MemoryOnly())
+    const bool is_incognito = MemoryOnly();
+    base::FilePath temp_dir_path;
+    if (!is_incognito) {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+      temp_dir_path = temp_dir_.GetPath();
+    }
 
     quota_policy_ = new MockSpecialStoragePolicy;
     mock_quota_manager_ = new MockQuotaManager(
-        MemoryOnly() /* is incognito */, temp_dir_.path(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
     mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
                                   1024 * 1024 * 100);
@@ -358,7 +361,7 @@ class CacheStorageCacheTest : public testing::Test {
     CreateRequests(blob_storage_context);
 
     cache_ = base::MakeUnique<TestCacheStorageCache>(
-        GURL(kOrigin), kCacheName, temp_dir_.path(), nullptr /* CacheStorage */,
+        GURL(kOrigin), kCacheName, temp_dir_path, nullptr /* CacheStorage */,
         BrowserContext::GetDefaultStoragePartition(&browser_context_)
             ->GetURLRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());

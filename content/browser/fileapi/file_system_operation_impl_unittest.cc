@@ -62,7 +62,7 @@ class FileSystemOperationImplTest
     update_observers_ =
         storage::MockFileUpdateObserver::CreateList(&update_observer_);
 
-    base::FilePath base_dir = base_.path().AppendASCII("filesystem");
+    base::FilePath base_dir = base_.GetPath().AppendASCII("filesystem");
     quota_manager_ =
         new MockQuotaManager(false /* is_incognito */, base_dir,
                              base::ThreadTaskRunnerHandle::Get().get(),

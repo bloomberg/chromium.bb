@@ -76,11 +76,9 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   // Create the scope which will ensure we run the destructor of the context
   // which should trigger the clean up.
   {
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 quota_manager_proxy_.get(),
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.GetPath(), special_storage_policy_.get(),
+        quota_manager_proxy_.get(), task_runner_.get());
 
     normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
     session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
@@ -109,11 +107,9 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   {
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 quota_manager_proxy_.get(),
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.GetPath(), special_storage_policy_.get(),
+        quota_manager_proxy_.get(), task_runner_.get());
 
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SetForceKeepSessionState();
@@ -178,11 +174,9 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     const Origin kTestOrigin(GURL("http://test/"));
 
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 quota_manager_proxy_.get(),
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.GetPath(), special_storage_policy_.get(),
+        quota_manager_proxy_.get(), task_runner_.get());
 
     scoped_refptr<ForceCloseDBCallbacks> open_callbacks =
         new ForceCloseDBCallbacks(idb_context, kTestOrigin);
@@ -235,7 +229,7 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   const Origin kTestOrigin(GURL("http://test/"));
 
   scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
-      temp_dir.path(), special_storage_policy_.get(),
+      temp_dir.GetPath(), special_storage_policy_.get(),
       quota_manager_proxy_.get(), task_runner_.get());
 
   base::FilePath test_path = idb_context->GetFilePathForTesting(kTestOrigin);
@@ -262,9 +256,9 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<IndexedDBContextImpl> context =
-      new IndexedDBContextImpl(temp_dir.path(), special_storage_policy_.get(),
-                               quota_manager_proxy_.get(), task_runner_.get());
+  scoped_refptr<IndexedDBContextImpl> context = new IndexedDBContextImpl(
+      temp_dir.GetPath(), special_storage_policy_.get(),
+      quota_manager_proxy_.get(), task_runner_.get());
 
   scoped_refptr<IndexedDBFactoryImpl> factory =
       static_cast<IndexedDBFactoryImpl*>(context->GetIDBFactory());
@@ -279,7 +273,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
                 nullptr /* request_context */, Origin(kTestOrigin),
-                temp_dir.path());
+                temp_dir.GetPath());
 
   EXPECT_TRUE(callbacks->connection());
 

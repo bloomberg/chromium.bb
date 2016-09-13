@@ -165,7 +165,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     storage_policy_ = new MockSpecialStoragePolicy();
 
     quota_manager_ = new storage::QuotaManager(
-        false /* is_incognito */, data_dir_.path(),
+        false /* is_incognito */, data_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
 
@@ -174,8 +174,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     // another sandbox_backend, and another OFU.
     // We need to pass in the context to skip all that.
     file_system_context_ = CreateFileSystemContextForTesting(
-        quota_manager_->proxy(),
-        data_dir_.path());
+        quota_manager_->proxy(), data_dir_.GetPath());
 
     sandbox_file_system_.SetUp(file_system_context_.get());
 
@@ -247,9 +246,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return static_cast<ObfuscatedFileUtil*>(sandbox_file_system_.file_util());
   }
 
-  const base::FilePath& test_directory() const {
-    return data_dir_.path();
-  }
+  const base::FilePath& test_directory() const { return data_dir_.GetPath(); }
 
   const GURL& origin() const {
     return origin_;
@@ -551,7 +548,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   void TestCopyInForeignFileHelper(bool overwrite) {
     base::ScopedTempDir source_dir;
     ASSERT_TRUE(source_dir.CreateUniqueTempDir());
-    base::FilePath root_file_path = source_dir.path();
+    base::FilePath root_file_path = source_dir.GetPath();
     base::FilePath src_file_path = root_file_path.AppendASCII("file_name");
     FileSystemURL dest_url = CreateURLFromUTF8("new file");
     int64_t src_file_length = 87;
@@ -800,9 +797,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return sandbox_file_system_.file_system_context();
   }
 
-  const base::FilePath& data_dir_path() const {
-    return data_dir_.path();
-  }
+  const base::FilePath& data_dir_path() const { return data_dir_.GetPath(); }
 
  protected:
   base::ScopedTempDir data_dir_;

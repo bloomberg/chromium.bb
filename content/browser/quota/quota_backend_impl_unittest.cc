@@ -102,7 +102,7 @@ class QuotaBackendImplTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        NULL, data_dir_.path(), in_memory_env_.get(), file_task_runner()));
+        NULL, data_dir_.GetPath(), in_memory_env_.get(), file_task_runner()));
     backend_.reset(new QuotaBackendImpl(file_task_runner(),
                                         file_util_.get(),
                                         &file_system_usage_cache_,

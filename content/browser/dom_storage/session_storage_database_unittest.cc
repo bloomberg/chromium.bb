@@ -106,7 +106,7 @@ void SessionStorageDatabaseTest::SetUp() {
 }
 
 void SessionStorageDatabaseTest::ResetDatabase() {
-  db_ = new SessionStorageDatabase(temp_dir_.path());
+  db_ = new SessionStorageDatabase(temp_dir_.GetPath());
   ASSERT_TRUE(db_->LazyOpen(true));
 }
 

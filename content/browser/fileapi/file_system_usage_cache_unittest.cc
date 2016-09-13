@@ -28,7 +28,7 @@ class FileSystemUsageCacheTest : public testing::Test {
 
  protected:
   base::FilePath GetUsageFilePath() {
-    return data_dir_.path().Append(FileSystemUsageCache::kUsageFileName);
+    return data_dir_.GetPath().Append(FileSystemUsageCache::kUsageFileName);
   }
 
   FileSystemUsageCache* usage_cache() {

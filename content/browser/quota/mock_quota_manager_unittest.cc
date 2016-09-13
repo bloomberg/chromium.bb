@@ -47,10 +47,10 @@ class MockQuotaManagerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     policy_ = new MockSpecialStoragePolicy;
-    manager_ = new MockQuotaManager(false /* is_incognito */, data_dir_.path(),
-                                    base::ThreadTaskRunnerHandle::Get().get(),
-                                    base::ThreadTaskRunnerHandle::Get().get(),
-                                    policy_.get());
+    manager_ = new MockQuotaManager(
+        false /* is_incognito */, data_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(), policy_.get());
   }
 
   void TearDown() override {

@@ -84,10 +84,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                      CanonicalCookieVector* cookies) {
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
-            temp_dir_.path().Append(kTestCookiesFilename),
-            client_task_runner(),
-            background_task_runner(),
-            true, nullptr));
+            temp_dir_.GetPath().Append(kTestCookiesFilename),
+            client_task_runner(), background_task_runner(), true, nullptr));
     store_ = new QuotaPolicyCookieStore(sqlite_store.get(), storage_policy);
     Load(cookies);
   }

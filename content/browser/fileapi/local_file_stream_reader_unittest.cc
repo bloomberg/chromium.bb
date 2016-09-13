@@ -110,8 +110,10 @@ class LocalFileStreamReaderTest : public testing::Test {
     return file_thread_.task_runner().get();
   }
 
-  base::FilePath test_dir() const { return dir_.path(); }
-  base::FilePath test_path() const { return dir_.path().AppendASCII("test"); }
+  base::FilePath test_dir() const { return dir_.GetPath(); }
+  base::FilePath test_path() const {
+    return dir_.GetPath().AppendASCII("test");
+  }
   base::Time test_file_modification_time() const {
     return test_file_modification_time_;
   }

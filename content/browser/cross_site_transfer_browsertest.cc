@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
   base::FilePath file_path;
   std::string file_content("test-file-content");
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file_path));
   ASSERT_LT(
       0, base::WriteFile(file_path, file_content.data(), file_content.size()));
 

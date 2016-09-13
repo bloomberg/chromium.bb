@@ -625,7 +625,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
     // Reinitialize the helper to test on-disk storage.
     base::ScopedTempDir user_data_directory;
     ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
-    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path()));
+    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.GetPath()));
     helper_->context_wrapper()->AddObserver(this);
   }
 

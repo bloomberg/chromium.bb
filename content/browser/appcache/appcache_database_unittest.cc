@@ -58,8 +58,8 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   // Real files on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
-  const base::FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
+  const base::FilePath kDbFile = temp_dir.GetPath().AppendASCII("appcache.db");
+  const base::FilePath kNestedDir = temp_dir.GetPath().AppendASCII("nested");
   const base::FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
   EXPECT_TRUE(base::CreateDirectory(kNestedDir));
   EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
@@ -90,7 +90,7 @@ TEST(AppCacheDatabaseTest, QuickIntegrityCheck) {
   // Real files on disk for this test too, a corrupt database file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath mock_dir = temp_dir.path().AppendASCII("mock");
+  base::FilePath mock_dir = temp_dir.GetPath().AppendASCII("mock");
   ASSERT_TRUE(base::CreateDirectory(mock_dir));
 
   const base::FilePath kDbFile = mock_dir.AppendASCII("appcache.db");
@@ -125,7 +125,7 @@ TEST(AppCacheDatabaseTest, WasCorrutionDetected) {
   // Real files on disk for this test too, a corrupt database file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
+  const base::FilePath kDbFile = temp_dir.GetPath().AppendASCII("appcache.db");
 
   // First create a valid db file.
   AppCacheDatabase db(kDbFile);
@@ -155,8 +155,9 @@ TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   // Real files on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
-  const base::FilePath kOtherFile =  temp_dir.path().AppendASCII("other_file");
+  const base::FilePath kDbFile = temp_dir.GetPath().AppendASCII("appcache.db");
+  const base::FilePath kOtherFile =
+      temp_dir.GetPath().AppendASCII("other_file");
   EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
   EXPECT_TRUE(base::PathExists(kOtherFile));
 
@@ -832,7 +833,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to7) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade4.db");
+  const base::FilePath kDbFile = temp_dir.GetPath().AppendASCII("upgrade4.db");
 
   const GURL kMockOrigin("http://mockorigin/");
   const char kNamespaceUrlFormat[] = "namespace%d";
@@ -1077,7 +1078,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema5or6to7) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath kDbFile =
-      temp_dir.path().AppendASCII("upgrade5or6to7.db");
+      temp_dir.GetPath().AppendASCII("upgrade5or6to7.db");
 
   const GURL kMockOrigin("http://mockorigin/");
   const base::Time kMockTime = base::Time::Now();

@@ -21,7 +21,7 @@ TEST(SandboxIsolatedOriginDatabaseTest, BasicTest) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
 
   std::string kOrigin("origin");
-  SandboxIsolatedOriginDatabase database(kOrigin, dir.path(),
+  SandboxIsolatedOriginDatabase database(kOrigin, dir.GetPath(),
                                          base::FilePath(kOriginDirectory));
 
   EXPECT_TRUE(database.HasOriginPath(kOrigin));

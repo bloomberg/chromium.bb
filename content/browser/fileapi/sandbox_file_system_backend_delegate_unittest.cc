@@ -36,7 +36,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     delegate_.reset(new storage::SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
-        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.GetPath(),
         NULL /* special_storage_policy */, CreateAllowFileAccessOptions()));
   }
 

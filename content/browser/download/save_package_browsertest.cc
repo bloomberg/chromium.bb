@@ -24,8 +24,8 @@ class SavePackageBrowserTest : public ContentBrowserTest {
   void GetDestinationPaths(const std::string& prefix,
                            base::FilePath* full_file_name,
                            base::FilePath* dir) {
-    *full_file_name = save_dir_.path().AppendASCII(prefix + ".htm");
-    *dir = save_dir_.path().AppendASCII(prefix + "_files");
+    *full_file_name = save_dir_.GetPath().AppendASCII(prefix + ".htm");
+    *dir = save_dir_.GetPath().AppendASCII(prefix + "_files");
   }
 
   // Temporary directory we will save pages to.

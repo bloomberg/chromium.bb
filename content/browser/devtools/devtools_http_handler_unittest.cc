@@ -176,7 +176,7 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
                                    run_loop_2.QuitClosure()));
 
   DevToolsAgentHost::StartRemoteDebuggingServer(
-      std::move(factory), std::string(), temp_dir.path(), base::FilePath(),
+      std::move(factory), std::string(), temp_dir.GetPath(), base::FilePath(),
       std::string(), std::string());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
@@ -187,8 +187,8 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
 
   // Now make sure the DevToolsActivePort was written into the
   // temporary directory and its contents are as expected.
-  base::FilePath active_port_file = temp_dir.path().Append(
-      kDevToolsActivePortFileName);
+  base::FilePath active_port_file =
+      temp_dir.GetPath().Append(kDevToolsActivePortFileName);
   EXPECT_TRUE(base::PathExists(active_port_file));
   std::string file_contents;
   EXPECT_TRUE(base::ReadFileToString(active_port_file, &file_contents));

@@ -28,12 +28,10 @@ class NativeFileUtilTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 
  protected:
-  base::FilePath Path() {
-    return data_dir_.path();
-  }
+  base::FilePath Path() { return data_dir_.GetPath(); }
 
   base::FilePath Path(const char* file_name) {
-    return data_dir_.path().AppendASCII(file_name);
+    return data_dir_.GetPath().AppendASCII(file_name);
   }
 
   bool FileExists(const base::FilePath& path) {

@@ -61,7 +61,7 @@ class CopyOrMoveFileValidatorTestHelper {
 
   void SetUp() {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
-    base::FilePath base_dir = base_.path();
+    base::FilePath base_dir = base_.GetPath();
 
     file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 

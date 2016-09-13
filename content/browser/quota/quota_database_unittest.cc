@@ -587,7 +587,7 @@ class QuotaDatabaseTest : public testing::Test {
 TEST_F(QuotaDatabaseTest, LazyOpen) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   LazyOpen(kDbFile);
   LazyOpen(base::FilePath());
 }
@@ -595,14 +595,14 @@ TEST_F(QuotaDatabaseTest, LazyOpen) {
 TEST_F(QuotaDatabaseTest, UpgradeSchema) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   UpgradeSchemaV2toV5(kDbFile);
 }
 
 TEST_F(QuotaDatabaseTest, HostQuota) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   HostQuota(kDbFile);
   HostQuota(base::FilePath());
 }
@@ -610,7 +610,7 @@ TEST_F(QuotaDatabaseTest, HostQuota) {
 TEST_F(QuotaDatabaseTest, GlobalQuota) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   GlobalQuota(kDbFile);
   GlobalQuota(base::FilePath());
 }
@@ -618,7 +618,7 @@ TEST_F(QuotaDatabaseTest, GlobalQuota) {
 TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   OriginLastAccessTimeLRU(kDbFile);
   OriginLastAccessTimeLRU(base::FilePath());
 }
@@ -626,7 +626,7 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
 TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   OriginLastModifiedSince(kDbFile);
   OriginLastModifiedSince(base::FilePath());
 }
@@ -634,7 +634,7 @@ TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
 TEST_F(QuotaDatabaseTest, OriginLastEvicted) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   OriginLastEvicted(kDbFile);
   OriginLastEvicted(base::FilePath());
 }
@@ -643,7 +643,7 @@ TEST_F(QuotaDatabaseTest, BootstrapFlag) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
 
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   QuotaDatabase db(kDbFile);
 
   EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
@@ -656,7 +656,7 @@ TEST_F(QuotaDatabaseTest, BootstrapFlag) {
 TEST_F(QuotaDatabaseTest, RegisterInitialOriginInfo) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   RegisterInitialOriginInfo(kDbFile);
   RegisterInitialOriginInfo(base::FilePath());
 }
@@ -664,7 +664,7 @@ TEST_F(QuotaDatabaseTest, RegisterInitialOriginInfo) {
 TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   DumpQuotaTable(kDbFile);
   DumpQuotaTable(base::FilePath());
 }
@@ -672,7 +672,7 @@ TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
 TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   DumpOriginInfoTable(kDbFile);
   DumpOriginInfoTable(base::FilePath());
 }
@@ -684,7 +684,7 @@ TEST_F(QuotaDatabaseTest, GetOriginInfo) {
 TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {
   base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  const base::FilePath kDbFile = data_dir.GetPath().AppendASCII(kDBFileName);
   LazyOpen(kDbFile);
   ASSERT_TRUE(sql::test::CorruptSizeInHeader(kDbFile));
   {

@@ -242,7 +242,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     idb_context_ = new IndexedDBContextImpl(
-        temp_dir_.path(), special_storage_policy_.get(),
+        temp_dir_.GetPath(), special_storage_policy_.get(),
         quota_manager_proxy_.get(), task_runner_.get());
     idb_factory_ = new TestIDBFactory(idb_context_.get());
     backing_store_ = idb_factory_->OpenBackingStoreForTest(
@@ -1073,7 +1073,7 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   EXPECT_TRUE(message.empty());
   message.clear();
 
-  const base::FilePath path_base = temp_dir_.path();
+  const base::FilePath path_base = temp_dir_.GetPath();
   const Origin origin(GURL("http://www.google.com/"));
   ASSERT_FALSE(path_base.empty());
   ASSERT_TRUE(PathIsWritable(path_base));

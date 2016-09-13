@@ -90,7 +90,7 @@ class QuotaReservationTest : public testing::Test {
   }
 
   base::FilePath MakeFilePath(const base::FilePath::StringType& file_name) {
-    return work_dir_.path().Append(file_name);
+    return work_dir_.GetPath().Append(file_name);
   }
 
   storage::FileSystemURL MakeFileSystemURL(

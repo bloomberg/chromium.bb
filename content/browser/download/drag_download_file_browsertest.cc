@@ -81,7 +81,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
   }
 
   const base::FilePath& downloads_directory() const {
-    return downloads_directory_.path();
+    return downloads_directory_.GetPath();
   }
 
  private:

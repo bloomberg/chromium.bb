@@ -213,7 +213,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 // test is to ensure we were successful in creating the MHTML data from the
 // renderer.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GenerateMHTML(path, embedded_test_server()->GetURL("/simple_page.html"));
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLAndExitRenderer) {
       new GenerateMHTMLAndExitRendererMessageFilter(render_process_host);
   render_process_host->AddFilter(filter.get());
 
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
   GenerateMHTMLForCurrentPage(MHTMLGenerationParams(path));
 
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
 // not contain the 'binary' Content-Transfer-Encoding header, and generates
 // base64 encoding for the image part.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateNonBinaryMHTMLWithImage) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test_binary.mht"));
 
   GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateNonBinaryMHTMLWithImage) {
 // Content-Transfer-Encoding header, and does not contain any base64 encoded
 // parts.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateBinaryMHTMLWithImage) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test_binary.mht"));
 
   GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateBinaryMHTMLWithImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLIgnoreNoStore) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GURL url(embedded_test_server()->GetURL("/nostore.html"));
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLIgnoreNoStore) {
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreMainFrame) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GURL url(embedded_test_server()->GetURL("/nostore.html"));
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreMainFrame) {
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
                        GenerateMHTMLIgnoreNoStoreSubFrame) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GURL url(embedded_test_server()->GetURL("/page_with_nostore_iframe.html"));
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreSubFrame) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GURL url(embedded_test_server()->GetURL("/page_with_nostore_iframe.html"));
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(
     MHTMLGenerationTest,
     MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
   MHTMLGenerationParams params(path);
 
@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
                        MAYBE_ViewedMHTMLDoesNotContainNoStoreContent) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
   MHTMLGenerationParams params(path);
   params.cache_control_policy = blink::WebFrameSerializerCacheControlPolicy::
@@ -604,7 +604,7 @@ class MHTMLGenerationSitePerProcessTest : public MHTMLGenerationTest {
 
 // Test for crbug.com/538766.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest, GenerateMHTML) {
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
   GURL url(embedded_test_server()->GetURL(

@@ -150,7 +150,7 @@ class RecursiveOperationDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
-    sandbox_file_system_.SetUp(base_.path().AppendASCII("filesystem"));
+    sandbox_file_system_.SetUp(base_.GetPath().AppendASCII("filesystem"));
   }
 
   void TearDown() override { sandbox_file_system_.TearDown(); }

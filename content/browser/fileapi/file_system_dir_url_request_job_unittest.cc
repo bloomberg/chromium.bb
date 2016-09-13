@@ -133,8 +133,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
-    file_system_context_ = CreateFileSystemContextForTesting(
-        NULL, temp_dir_.path());
+    file_system_context_ =
+        CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL("http://remote/"),
@@ -152,7 +152,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void SetUpAutoMountContext(base::FilePath* mnt_point) {
-    *mnt_point = temp_dir_.path().AppendASCII("auto_mount_dir");
+    *mnt_point = temp_dir_.GetPath().AppendASCII("auto_mount_dir");
     ASSERT_TRUE(base::CreateDirectory(*mnt_point));
 
     ScopedVector<storage::FileSystemBackend> additional_providers;
@@ -163,7 +163,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     handlers.push_back(base::Bind(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        NULL, std::move(additional_providers), handlers, temp_dir_.path());
+        NULL, std::move(additional_providers), handlers, temp_dir_.GetPath());
   }
 
   void OnOpenFileSystem(const GURL& root_url,
@@ -379,7 +379,7 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
   CreateDirectory("foo");
 
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.path());
+      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
   TestRequestWithContext(CreateFileSystemURL("/"),
                          file_system_context.get());

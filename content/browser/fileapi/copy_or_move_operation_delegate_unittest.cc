@@ -194,7 +194,7 @@ class CopyOrMoveOperationTestHelper {
   void SetUp(bool require_copy_or_move_validator,
              bool init_copy_or_move_validator) {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
-    base::FilePath base_dir = base_.path();
+    base::FilePath base_dir = base_.GetPath();
     quota_manager_ =
         new MockQuotaManager(false /* is_incognito */, base_dir,
                              base::ThreadTaskRunnerHandle::Get().get(),
@@ -723,8 +723,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
 TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  base::FilePath source_path = temp_dir.GetPath().AppendASCII("source");
+  base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.
@@ -778,8 +778,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   // written with or without the flag.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  base::FilePath source_path = temp_dir.GetPath().AppendASCII("source");
+  base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.
@@ -830,8 +830,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
 TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath source_path = temp_dir.path().AppendASCII("source");
-  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  base::FilePath source_path = temp_dir.GetPath().AppendASCII("source");
+  base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
                   arraysize(kTestData) - 1);  // Exclude trailing '\0'.

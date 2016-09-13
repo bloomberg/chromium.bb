@@ -48,7 +48,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   SimpleComparator comparator;
 
   std::unique_ptr<LevelDBDatabase> leveldb;
-  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
   put_value = value;
   leveldb::Status status = leveldb->Put(key, &put_value);
@@ -56,7 +56,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb.reset();
   EXPECT_FALSE(leveldb);
 
-  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
   bool found = false;
   status = leveldb->Get(key, &got_value, &found);
@@ -66,20 +66,22 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb.reset();
   EXPECT_FALSE(leveldb);
 
-  base::FilePath file_path = temp_directory.path().AppendASCII("CURRENT");
+  base::FilePath file_path = temp_directory.GetPath().AppendASCII("CURRENT");
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
   file.SetLength(0);
   file.Close();
 
-  status = LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  status =
+      LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_FALSE(leveldb);
   EXPECT_FALSE(status.ok());
   EXPECT_TRUE(status.IsCorruption());
 
-  status = LevelDBDatabase::Destroy(temp_directory.path());
+  status = LevelDBDatabase::Destroy(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
-  status = LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  status =
+      LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(leveldb);
   status = leveldb->Get(key, &got_value, &found);
@@ -97,7 +99,7 @@ TEST(LevelDBDatabaseTest, Transaction) {
   SimpleComparator comparator;
 
   std::unique_ptr<LevelDBDatabase> leveldb;
-  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
   const std::string old_value("value");
@@ -163,7 +165,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   SimpleComparator comparator;
 
   std::unique_ptr<LevelDBDatabase> leveldb;
-  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
   put_value = value1;
@@ -214,7 +216,7 @@ TEST(LevelDBDatabaseTest, TransactionCommitTest) {
   bool found;
 
   std::unique_ptr<LevelDBDatabase> leveldb;
-  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
   scoped_refptr<LevelDBTransaction> transaction =
@@ -248,7 +250,7 @@ TEST(LevelDB, Locking) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
   leveldb::Env* env = LevelDBEnv::Get();
-  base::FilePath file = temp_directory.path().AppendASCII("LOCK");
+  base::FilePath file = temp_directory.GetPath().AppendASCII("LOCK");
   leveldb::FileLock* lock;
   leveldb::Status status = env->LockFile(file.AsUTF8Unsafe(), &lock);
   EXPECT_TRUE(status.ok());

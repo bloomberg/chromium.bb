@@ -128,7 +128,7 @@ TEST_F(NotificationDatabaseTest, OpenCloseFileSystem) {
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
   std::unique_ptr<NotificationDatabase> database(
-      CreateDatabaseOnFileSystem(database_dir.path()));
+      CreateDatabaseOnFileSystem(database_dir.GetPath()));
 
   // Should return false because the database does not exist on the file system.
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
@@ -143,7 +143,7 @@ TEST_F(NotificationDatabaseTest, OpenCloseFileSystem) {
 
   // Close the database, and re-open it without attempting to create it because
   // the files on the file system should still exist as expected.
-  database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
+  database.reset(CreateDatabaseOnFileSystem(database_dir.GetPath()));
   EXPECT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(false /* create_if_missing */));
 }
@@ -153,7 +153,7 @@ TEST_F(NotificationDatabaseTest, DestroyDatabase) {
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
   std::unique_ptr<NotificationDatabase> database(
-      CreateDatabaseOnFileSystem(database_dir.path()));
+      CreateDatabaseOnFileSystem(database_dir.GetPath()));
 
   EXPECT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
@@ -165,7 +165,7 @@ TEST_F(NotificationDatabaseTest, DestroyDatabase) {
 
   // Try to re-open the database (but not re-create it). This should fail as
   // the files associated with the database should have been blown away.
-  database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
+  database.reset(CreateDatabaseOnFileSystem(database_dir.GetPath()));
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
             database->Open(false /* create_if_missing */));
 }
@@ -175,7 +175,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
   std::unique_ptr<NotificationDatabase> database(
-      CreateDatabaseOnFileSystem(database_dir.path()));
+      CreateDatabaseOnFileSystem(database_dir.GetPath()));
 
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
@@ -196,7 +196,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
                                  0 /* sw_registration_id */, &notification_id));
   EXPECT_EQ(notification_id, 2);
 
-  database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
+  database.reset(CreateDatabaseOnFileSystem(database_dir.GetPath()));
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(false /* create_if_missing */));
 
@@ -235,7 +235,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
 
   std::unique_ptr<NotificationDatabase> database(
-      CreateDatabaseOnFileSystem(database_dir.path()));
+      CreateDatabaseOnFileSystem(database_dir.GetPath()));
 
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
@@ -256,7 +256,7 @@ TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
   ASSERT_NO_FATAL_FAILURE(
       WriteLevelDBKeyValuePair(database.get(), "NEXT_NOTIFICATION_ID", "-42"));
 
-  database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
+  database.reset(CreateDatabaseOnFileSystem(database_dir.GetPath()));
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_CORRUPTED,
             database->Open(false /* create_if_missing */));
 }
