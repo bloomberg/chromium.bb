@@ -266,7 +266,7 @@ public:
     bool done() const { return m_index >= m_buffer.size(); }
     unsigned blobCount() const { return m_blobCount; }
 
-    std::pair<sk_sp<const SkTextBlob>, BlobRotation> next()
+    std::pair<sk_sp<SkTextBlob>, BlobRotation> next()
     {
         ASSERT(!done());
         const BlobRotation currentRotation = m_rotation;
@@ -291,7 +291,7 @@ public:
         }
 
         m_blobCount++;
-        return std::make_pair(sk_sp<const SkTextBlob>(m_builder.build()), currentRotation);
+        return std::make_pair(m_builder.make(), currentRotation);
     }
 
 private:
@@ -350,7 +350,7 @@ void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRun
     const GlyphBuffer& glyphBuffer, const FloatPoint& point, float deviceScaleFactor) const
 {
     GlyphBufferBloberizer bloberizer(glyphBuffer, this, deviceScaleFactor);
-    std::pair<sk_sp<const SkTextBlob>, BlobRotation> blob;
+    std::pair<sk_sp<SkTextBlob>, BlobRotation> blob;
 
     while (!bloberizer.done()) {
         blob = bloberizer.next();
@@ -365,7 +365,7 @@ void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRun
             canvas->concat(m);
         }
 
-        canvas->drawTextBlob(blob.first.get(), point.x(), point.y(), paint);
+        canvas->drawTextBlob(blob.first, point.x(), point.y(), paint);
     }
 
     // Cache results when

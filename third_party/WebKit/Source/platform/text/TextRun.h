@@ -250,7 +250,7 @@ public:
     unsigned from;
     unsigned to;
     FloatRect bounds;
-    sk_sp<const SkTextBlob>* cachedTextBlob;
+    sk_sp<SkTextBlob>* cachedTextBlob;
 };
 
 } // namespace blink
