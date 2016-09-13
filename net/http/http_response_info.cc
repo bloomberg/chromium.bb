@@ -10,6 +10,7 @@
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
@@ -238,6 +239,8 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
           ct::SignedCertificateTimestamp::CreateFromPickle(&iter));
       uint16_t status;
       if (!sct.get() || !iter.ReadUInt16(&status))
+        return false;
+      if (!net::ct::IsValidSCTStatus(status))
         return false;
       ssl_info.signed_certificate_timestamps.push_back(
           SignedCertificateTimestampAndStatus(

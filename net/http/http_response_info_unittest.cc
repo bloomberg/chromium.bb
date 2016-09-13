@@ -5,7 +5,10 @@
 #include "net/http/http_response_info.h"
 
 #include "base/pickle.h"
+#include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -88,6 +91,36 @@ TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredNotPersisted) {
   net::HttpResponseInfo restored_response_info;
   PickleAndRestore(response_info_, &restored_response_info);
   EXPECT_FALSE(restored_response_info.async_revalidation_required);
+}
+
+TEST_F(HttpResponseInfoTest, FailsInitFromPickleWithInvalidSCTStatus) {
+  // A valid certificate is needed for ssl_info.is_valid() to be true
+  // so that the SCTs would be serialized.
+  const std::string der_test_cert(net::ct::GetDerEncodedX509Cert());
+  response_info_.ssl_info.cert = net::X509Certificate::CreateFromBytes(
+      der_test_cert.data(), der_test_cert.length());
+
+  scoped_refptr<ct::SignedCertificateTimestamp> sct;
+  ct::GetX509CertSCT(&sct);
+
+  response_info_.ssl_info.signed_certificate_timestamps.push_back(
+      SignedCertificateTimestampAndStatus(
+          sct, ct::SCTVerifyStatus::SCT_STATUS_LOG_UNKNOWN));
+
+  base::Pickle pickle;
+  response_info_.Persist(&pickle, false, false);
+  bool truncated = false;
+  net::HttpResponseInfo restored_response_info;
+  EXPECT_TRUE(restored_response_info.InitFromPickle(pickle, &truncated));
+
+  response_info_.ssl_info.signed_certificate_timestamps.push_back(
+      SignedCertificateTimestampAndStatus(sct,
+                                          static_cast<ct::SCTVerifyStatus>(2)));
+  base::Pickle pickle_invalid;
+  response_info_.Persist(&pickle_invalid, false, false);
+  net::HttpResponseInfo restored_invalid_response;
+  EXPECT_FALSE(
+      restored_invalid_response.InitFromPickle(pickle_invalid, &truncated));
 }
 
 }  // namespace

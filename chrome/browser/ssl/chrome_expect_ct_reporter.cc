@@ -152,7 +152,6 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
       case net::ct::SCT_STATUS_LOG_UNKNOWN:
         AddUnknownSCT(sct_and_status, unknown_scts.get());
         break;
-      case net::ct::SCT_STATUS_INVALID:
       case net::ct::SCT_STATUS_INVALID_SIGNATURE:
       case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
         AddInvalidSCT(sct_and_status, invalid_scts.get());
