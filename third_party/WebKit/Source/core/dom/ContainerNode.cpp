@@ -90,6 +90,7 @@ ContainerNode::~ContainerNode()
     DCHECK(needsAttach());
 }
 
+DISABLE_CFI_PERF
 bool ContainerNode::isChildTypeAllowed(const Node& child) const
 {
     if (!child.isDocumentFragment())
@@ -109,6 +110,7 @@ bool ContainerNode::containsConsideringHostElements(const Node& newChild) const
     return newChild.contains(this);
 }
 
+DISABLE_CFI_PERF
 bool ContainerNode::checkAcceptChild(const Node* newChild, const Node* oldChild, ExceptionState& exceptionState) const
 {
     // Not mentioned in spec: throw NotFoundError if newChild is null
@@ -672,6 +674,7 @@ void ContainerNode::parserAppendChild(Node* newChild)
     notifyNodeInserted(*newChild, ChildrenChangeSourceParser);
 }
 
+DISABLE_CFI_PERF
 void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 {
 #if DCHECK_IS_ON()
@@ -695,6 +698,7 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
     }
 }
 
+DISABLE_CFI_PERF
 void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInsertionNotificationTargets)
 {
     EventDispatchForbiddenScope assertNoEventDispatch;
@@ -729,6 +733,7 @@ void ContainerNode::notifyNodeRemoved(Node& root)
     }
 }
 
+DISABLE_CFI_PERF
 void ContainerNode::attachLayoutTree(const AttachContext& context)
 {
     AttachContext childrenContext(context);

@@ -282,6 +282,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPrope
     return propertySet().getPropertyValue(propertyID);
 }
 
+DISABLE_CFI_PERF
 void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID unresolvedProperty, const String& customPropertyName, const String& value, bool important, ExceptionState&)
 {
     StyleAttributeMutationScope mutationScope(this);
@@ -304,6 +305,7 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID u
     mutationScope.enqueueMutationRecord();
 }
 
+DISABLE_CFI_PERF
 StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() const
 {
     CSSStyleSheet* cssStyleSheet = parentStyleSheet();

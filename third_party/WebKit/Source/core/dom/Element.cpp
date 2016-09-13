@@ -1173,6 +1173,7 @@ static inline AtomicString makeIdForStyleResolution(const AtomicString& value, b
     return value;
 }
 
+DISABLE_CFI_PERF
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributedForV0(*this)) {
@@ -3296,6 +3297,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
 }
 
+DISABLE_CFI_PERF
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == HTMLNames::idAttr)

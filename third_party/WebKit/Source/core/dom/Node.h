@@ -251,10 +251,10 @@ public:
     bool isHTMLElement() const { return getFlag(IsHTMLFlag); }
     bool isSVGElement() const { return getFlag(IsSVGFlag); }
 
-    bool isPseudoElement() const { return getPseudoId() != PseudoIdNone; }
-    bool isBeforePseudoElement() const { return getPseudoId() == PseudoIdBefore; }
-    bool isAfterPseudoElement() const { return getPseudoId() == PseudoIdAfter; }
-    bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
+    DISABLE_CFI_PERF bool isPseudoElement() const { return getPseudoId() != PseudoIdNone; }
+    DISABLE_CFI_PERF bool isBeforePseudoElement() const { return getPseudoId() == PseudoIdBefore; }
+    DISABLE_CFI_PERF bool isAfterPseudoElement() const { return getPseudoId() == PseudoIdAfter; }
+    DISABLE_CFI_PERF bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
     virtual PseudoId getPseudoId() const { return PseudoIdNone; }
 
     CustomElementState getCustomElementState() const { return static_cast<CustomElementState>(m_nodeFlags & CustomElementStateMask); }

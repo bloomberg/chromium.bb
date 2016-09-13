@@ -176,6 +176,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
     INCREMENT_STYLE_STATS_COUNTER(styleEngine, rulesMatched, matched);
 }
 
+DISABLE_CFI_PERF
 void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)
 {
     ASSERT(matchRequest.ruleSet);

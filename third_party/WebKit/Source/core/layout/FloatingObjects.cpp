@@ -586,6 +586,7 @@ LayoutUnit ComputeFloatOffsetForFloatLayoutAdapter<FloatTypeValue>::heightRemain
 }
 
 template <FloatingObject::Type FloatTypeValue>
+DISABLE_CFI_PERF
 inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const IntervalType& interval)
 {
     const FloatingObject& floatingObject = *(interval.data());

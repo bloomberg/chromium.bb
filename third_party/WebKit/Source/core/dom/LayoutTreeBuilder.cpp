@@ -82,6 +82,7 @@ LayoutObject* LayoutTreeBuilderForElement::parentLayoutObject() const
     return m_layoutObjectParent;
 }
 
+DISABLE_CFI_PERF
 bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const
 {
     if (!m_layoutObjectParent)
@@ -112,6 +113,7 @@ ComputedStyle& LayoutTreeBuilderForElement::style() const
     return *m_style;
 }
 
+DISABLE_CFI_PERF
 void LayoutTreeBuilderForElement::createLayoutObject()
 {
     ComputedStyle& style = this->style();

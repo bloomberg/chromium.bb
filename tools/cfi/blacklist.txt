@@ -116,28 +116,6 @@ fun:*StyleAttributeMutationScope*AbstractPropertySetCSSStyleDeclaration*
 # StyleAttributeMutationScope::~StyleAttributeMutationScope
 fun:*StyleAttributeMutationScopeD2Ev*
 
-fun:*AbstractPropertySetCSSStyleDeclaration*contextStyleSheet*
-fun:*AbstractPropertySetCSSStyleDeclaration*setPropertyInternal*
-fun:*ComputeFloatOffsetAdapter*collectIfNeeded*
-fun:*ContainerNode*isChildTypeAllowed*
-fun:*ContainerNode*checkAcceptChild*
-fun:*ContainerNode*notifyNodeInserted*
-fun:*ContainerNode*attachLayoutTree*
-fun:*ContainerNode*notifyNodeInsertedInternal*
-fun:*SharedStyleFinder*canShareStyleWithElement*
-fun:*ElementRuleCollector*collectMatchingRules*
-fun:*Element*attributeChanged*
-fun:*Element*didAddAttribute*
-fun:*HTMLElement*offsetHeightForBinding*
-fun:*LayoutTreeBuilderForElement*shouldCreateLayoutObject*
-fun:*LayoutTreeBuilderForElement*createLayoutObject*
-fun:*EventTarget*hasEventListeners*
-fun:*HTMLCollection*invalidateCacheForAttribute*
-fun:*Node*isAfterPseudoElement*
-fun:*Node*isBeforePseudoElement*
-fun:*Node*isFirstLetterPseudoElement*
-fun:*Node*isPseudoElement*
-fun:*Node*wrap*
 fun:*PaintInvalidationState*computePaintInvalidationRectInBacking*
 fun:*FrameTree*parent*
 fun:*FrameTree*traverseNext*

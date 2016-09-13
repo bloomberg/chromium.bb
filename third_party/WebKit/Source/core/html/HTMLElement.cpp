@@ -1124,6 +1124,7 @@ int HTMLElement::offsetWidthForBinding()
     return 0;
 }
 
+DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding()
 {
     Element* offsetParent = unclosedOffsetParent();

@@ -2370,6 +2370,7 @@ unsigned Node::lengthOfContents() const
     return 0;
 }
 
+DISABLE_CFI_PERF
 v8::Local<v8::Object> Node::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     DCHECK(!DOMDataStore::containsWrapper(this, isolate));

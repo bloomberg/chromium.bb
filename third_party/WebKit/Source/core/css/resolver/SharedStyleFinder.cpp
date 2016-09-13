@@ -197,6 +197,7 @@ bool SharedStyleFinder::sharingCandidateDistributedToSameInsertionPoint(Element&
     return true;
 }
 
+DISABLE_CFI_PERF
 bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 {
     if (element() == candidate)

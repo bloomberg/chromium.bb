@@ -244,6 +244,7 @@ private:
     EventListener* on##attribute() { return getAttributeEventListener(EventTypeNames::eventName); } \
     void setOn##attribute(EventListener* listener) { setAttributeEventListener(EventTypeNames::eventName, listener); } \
 
+DISABLE_CFI_PERF
 inline bool EventTarget::hasEventListeners() const
 {
     // FIXME: We should have a const version of eventTargetData.
@@ -252,6 +253,7 @@ inline bool EventTarget::hasEventListeners() const
     return false;
 }
 
+DISABLE_CFI_PERF
 inline bool EventTarget::hasEventListeners(const AtomicString& eventType) const
 {
     // FIXME: We should have const version of eventTargetData.

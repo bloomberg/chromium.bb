@@ -157,6 +157,7 @@ private:
 
 DEFINE_TYPE_CASTS(HTMLCollection, LiveNodeListBase, collection, isHTMLCollectionType(collection->type()), isHTMLCollectionType(collection.type()));
 
+DISABLE_CFI_PERF
 inline void HTMLCollection::invalidateCacheForAttribute(const QualifiedName* attrName) const
 {
     if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
