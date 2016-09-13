@@ -631,16 +631,6 @@ int QuicHttpStream::DoLoop(int rv) {
 }
 
 int QuicHttpStream::DoStreamRequest() {
-  // TODO(rtenneti) Bug: b/28676259 - a temporary fix until we find out why
-  // |session_| could be a nullptr. Delete |null_session| check and histogram if
-  // session is never a nullptr.
-  bool null_session = session_ == nullptr;
-  if (null_session) {
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicHttpStream::DoStreamRequest.IsNullSession",
-                          null_session);
-    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
-                                    : ERR_QUIC_HANDSHAKE_FAILED;
-  }
   int rv = stream_request_.StartRequest(
       session_, &stream_,
       base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));

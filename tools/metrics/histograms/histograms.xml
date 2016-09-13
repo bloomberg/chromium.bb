@@ -30675,6 +30675,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicHttpStream::DoStreamRequest.IsNullSession"
     enum="Boolean">
+  <obsolete>
+    Deprecated 2016. No longer tracked.
+  </obsolete>
   <owner>rtenneti@chromium.org</owner>
   <summary>
     The number of times QuicHttpStream's session_ is a nullptr before
