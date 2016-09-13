@@ -317,7 +317,7 @@ public:
     bool canCopyCut(LocalFrame*, bool defaultValue) const override { return defaultValue; }
     bool canPaste(LocalFrame*, bool defaultValue) const override { return defaultValue; }
 
-    bool handleKeyboardEvent() override { return false; }
+    bool handleKeyboardEvent(LocalFrame*) override { return false; }
 };
 
 class EmptyContextMenuClient final : public ContextMenuClient {

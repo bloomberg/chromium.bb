@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/edit_command.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
@@ -178,6 +179,12 @@ class CONTENT_EXPORT RenderWidget
 
   // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
   ScreenInfo screen_info() const { return screen_info_; }
+
+  // Manage edit commands to be used for the next keyboard event.
+  const EditCommands& edit_commands() const { return edit_commands_; }
+  void SetEditCommandForNextKeyEvent(const std::string& name,
+                                     const std::string& value);
+  void ClearEditCommands();
 
   // Functions to track out-of-process frames for special notifications.
   void RegisterRenderFrameProxy(RenderFrameProxy* proxy);
@@ -469,6 +476,7 @@ class CONTENT_EXPORT RenderWidget
                           InputEventDispatchType dispatch_type);
   void OnCursorVisibilityChange(bool is_visible);
   void OnMouseCaptureLost();
+  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   virtual void OnSetFocus(bool enable);
   void OnClose();
   void OnCreatingNewAck();
@@ -807,6 +815,10 @@ class CONTENT_EXPORT RenderWidget
   // This reference is set by the RenderFrame and is used to query the IME-
   // related state from the plugin to later send to the browser.
   PepperPluginInstanceImpl* focused_pepper_plugin_;
+
+  // Stores edit commands associated to the next key event.
+  // Will be cleared as soon as the next key event is processed.
+  EditCommands edit_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

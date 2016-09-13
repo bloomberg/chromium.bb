@@ -34,7 +34,6 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   virtual void RenderWidgetFocusChangeComplete() = 0;
   virtual bool DoesRenderWidgetHaveTouchEventHandlersAt(
       const gfx::Point& point) const = 0;
-  virtual void RenderWidgetDidHandleKeyEvent() = 0;
   virtual bool RenderWidgetWillHandleGestureEvent(
       const blink::WebGestureEvent& event) = 0;
   virtual bool RenderWidgetWillHandleMouseEvent(

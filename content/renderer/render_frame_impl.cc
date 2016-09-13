@@ -49,6 +49,7 @@
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/edit_command.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -3769,6 +3770,21 @@ void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
   GetRenderWidget()->UpdateTextInputState(ShowIme::HIDE_IME,
                                           ChangeSource::FROM_NON_IME);
   SyncSelectionIfRequired();
+}
+
+bool RenderFrameImpl::handleCurrentKeyboardEvent() {
+  bool did_execute_command = false;
+  for (auto command : GetRenderWidget()->edit_commands()) {
+    // In gtk and cocoa, it's possible to bind multiple edit commands to one
+    // key (but it's the exception). Once one edit command is not executed, it
+    // seems safest to not execute the rest.
+    if (!frame_->executeCommand(blink::WebString::fromUTF8(command.name),
+                                blink::WebString::fromUTF8(command.value)))
+      break;
+    did_execute_command = true;
+  }
+
+  return did_execute_command;
 }
 
 blink::WebColorChooser* RenderFrameImpl::createColorChooser(

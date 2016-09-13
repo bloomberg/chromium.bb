@@ -108,6 +108,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual void Repaint(const gfx::Size& size) = 0;
 
   // Inject edit commands to be used for the next keyboard event.
+  // TODO(alexmos): Currently, these are used only by BlinkTestRunner.  They
+  // should be removed from RenderView and instead be plumbed through the
+  // target frame and WebFrameTestProxy.
   virtual void SetEditCommandForNextKeyEvent(const std::string& name,
                                              const std::string& value) = 0;
   virtual void ClearEditCommands() = 0;

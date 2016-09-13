@@ -1260,10 +1260,6 @@ bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
   return webview()->hasTouchEventHandlersAt(point);
 }
 
-void RenderViewImpl::RenderWidgetDidHandleKeyEvent() {
-  ClearEditCommands();
-}
-
 bool RenderViewImpl::RenderWidgetWillHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   possible_drag_event_info_.event_source =
@@ -1309,8 +1305,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
-    IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
-                        OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
@@ -1427,11 +1421,6 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
   has_scrolled_focused_editable_node_into_rect_ = true;
   if (!compositor()->hasPendingPageScaleAnimation())
     GetWidget()->FocusChangeComplete();
-}
-
-void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
-    const EditCommands& edit_commands) {
-  edit_commands_ = edit_commands;
 }
 
 void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
@@ -1671,29 +1660,6 @@ void RenderViewImpl::SetZoomLevel(double zoom_level) {
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
   Send(new InputHostMsg_ImeCancelComposition(GetRoutingID()));
-}
-
-bool RenderViewImpl::handleCurrentKeyboardEvent() {
-  if (edit_commands_.empty())
-    return false;
-
-  WebLocalFrame* frame = webview()->focusedFrame();
-
-  EditCommands::iterator it = edit_commands_.begin();
-  EditCommands::iterator end = edit_commands_.end();
-
-  bool did_execute_command = false;
-  for (; it != end; ++it) {
-    // In gtk and cocoa, it's possible to bind multiple edit commands to one
-    // key (but it's the exception). Once one edit command is not executed, it
-    // seems safest to not execute the rest.
-    if (!frame->executeCommand(WebString::fromUTF8(it->name),
-                               WebString::fromUTF8(it->value)))
-      break;
-    did_execute_command = true;
-  }
-
-  return did_execute_command;
 }
 
 void RenderViewImpl::SetValidationMessageDirection(
@@ -2090,13 +2056,11 @@ void RenderViewImpl::Repaint(const gfx::Size& size) {
 
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
-  EditCommands edit_commands;
-  edit_commands.push_back(EditCommand(name, value));
-  OnSetEditCommandsForNextKeyEvent(edit_commands);
+  GetWidget()->SetEditCommandForNextKeyEvent(name, value);
 }
 
 void RenderViewImpl::ClearEditCommands() {
-  edit_commands_.clear();
+  GetWidget()->ClearEditCommands();
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() const {

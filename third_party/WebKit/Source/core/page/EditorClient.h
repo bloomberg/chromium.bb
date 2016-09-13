@@ -44,7 +44,7 @@ public:
     virtual bool canCopyCut(LocalFrame*, bool defaultValue) const = 0;
     virtual bool canPaste(LocalFrame*, bool defaultValue) const = 0;
 
-    virtual bool handleKeyboardEvent() = 0;
+    virtual bool handleKeyboardEvent(LocalFrame*) = 0;
 };
 
 } // namespace blink

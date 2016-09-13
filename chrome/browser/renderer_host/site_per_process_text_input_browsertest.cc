@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -21,10 +22,16 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "url/gurl.h"
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/base/ime/linux/text_edit_command_auralinux.h"
+#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
+#endif
 
 // TODO(ekaramad): The following tests should be active on all platforms. After
 // fixing https://crbug.com/578168, this test file should be built for android
@@ -859,3 +866,85 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   EXPECT_FALSE(send_and_check_show_ime());
 }
 #endif  // USE_AURA
+
+// Ensure that a cross-process subframe can utilize keyboard edit commands.
+// See https://crbug.com/640706.  This test is Linux-specific, as it relies on
+// overriding TextEditKeyBindingsDelegateAuraLinux, which only exists on Linux.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       SubframeKeyboardEditCommands) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::WebContents* web_contents = active_contents();
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "child0", frame_url));
+
+  // Focus the subframe and then its input field.  The return value
+  // "input-focus" will be sent once the input field's focus event fires.
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "window.focus(); focusInputField();", &result));
+  EXPECT_EQ("input-focus", result);
+  EXPECT_EQ(child, web_contents->GetFocusedFrame());
+
+  // Generate a couple of keystrokes, which will be routed to the subframe.
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('1'),
+                   ui::DomCode::DIGIT1, ui::VKEY_1, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('2'),
+                   ui::DomCode::DIGIT2, ui::VKEY_2, false, false, false, false);
+
+  // Verify that the input field in the subframe received the keystrokes.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "window.domAutomationController.send(getInputFieldText());",
+      &result));
+  EXPECT_EQ("12", result);
+
+  // Define and install a test delegate that translates any keystroke to a
+  // command to delete all text from current cursor position to the beginning
+  // of the line.
+  class TextDeleteDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
+   public:
+    TextDeleteDelegate() {}
+    ~TextDeleteDelegate() override {}
+
+    bool MatchEvent(
+        const ui::Event& event,
+        std::vector<ui::TextEditCommandAuraLinux>* commands) override {
+      if (commands) {
+        commands->emplace_back(ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE,
+                               "");
+      }
+      return true;
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TextDeleteDelegate);
+  };
+
+  TextDeleteDelegate delegate;
+  ui::TextEditKeyBindingsDelegateAuraLinux* old_delegate =
+      ui::GetTextEditKeyBindingsDelegate();
+  ui::SetTextEditKeyBindingsDelegate(&delegate);
+
+  // Press ctrl-alt-shift-D.  The test's delegate will pretend that this
+  // corresponds to the command to delete everyting to the beginning of the
+  // line.  Note the use of SendKeyPressSync instead of SimulateKeyPress, as
+  // the latter doesn't go through
+  // RenderWidgetHostViewAura::ForwardKeyboardEvent, which contains the edit
+  // commands logic that's tested here.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_D,
+                                              true, true, true, false));
+  ui::SetTextEditKeyBindingsDelegate(old_delegate);
+
+  // Verify that the input field in the subframe is erased.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "window.domAutomationController.send(getInputFieldText());",
+      &result));
+  EXPECT_EQ("", result);
+}
+#endif

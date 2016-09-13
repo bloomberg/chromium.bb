@@ -392,6 +392,14 @@ public:
     // operations.
     virtual void didChangeSelection(bool isSelectionEmpty) { }
 
+    // This method is called in response to handleInputEvent() when the
+    // default action for the current keyboard event is not suppressed by the
+    // page, to give the embedder a chance to handle the keyboard event
+    // specially.
+    //
+    // Returns true if the keyboard event was handled by the embedder,
+    // indicating that the default action should be suppressed.
+    virtual bool handleCurrentKeyboardEvent() { return false; }
 
     // Dialogs -------------------------------------------------------------
 

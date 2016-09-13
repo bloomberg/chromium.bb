@@ -71,7 +71,7 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt)
 void Editor::handleKeyboardEvent(KeyboardEvent* evt)
 {
     // Give the embedder a chance to handle the keyboard event.
-    if (client().handleKeyboardEvent() || handleEditingKeyboardEvent(evt))
+    if (client().handleKeyboardEvent(m_frame) || handleEditingKeyboardEvent(evt))
         evt->setDefaultHandled();
 }
 

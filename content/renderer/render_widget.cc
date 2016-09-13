@@ -486,6 +486,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ImeSetComposition, OnImeSetComposition)
     IPC_MESSAGE_HANDLER(InputMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
+    IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
+                        OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
                         OnSyntheticGestureCompleted)
@@ -695,6 +697,11 @@ void RenderWidget::OnMouseCaptureLost() {
     webwidget_->mouseCaptureLost();
 }
 
+void RenderWidget::OnSetEditCommandsForNextKeyEvent(
+    const EditCommands& edit_commands) {
+  edit_commands_ = edit_commands;
+}
+
 void RenderWidget::OnSetFocus(bool enable) {
   has_focus_ = enable;
 
@@ -882,8 +889,17 @@ void RenderWidget::ObserveGestureEventAndResult(
 }
 
 void RenderWidget::OnDidHandleKeyEvent() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidHandleKeyEvent();
+  ClearEditCommands();
+}
+
+void RenderWidget::SetEditCommandForNextKeyEvent(const std::string& name,
+                                                 const std::string& value) {
+  ClearEditCommands();
+  edit_commands_.emplace_back(name, value);
+}
+
+void RenderWidget::ClearEditCommands() {
+  edit_commands_.clear();
 }
 
 void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {

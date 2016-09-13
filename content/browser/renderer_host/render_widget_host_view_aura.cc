@@ -2726,8 +2726,7 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
       edit_commands.push_back(EditCommand(it->GetCommandString(),
                                           it->argument()));
     }
-    // TODO(alexmos): This needs to be refactored to work with subframe
-    // RenderWidgetHosts for OOPIF.  See https://crbug.com/549334.
+
     target_host->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
         target_host->GetRoutingID(), edit_commands));
     target_host->ForwardKeyboardEvent(event);

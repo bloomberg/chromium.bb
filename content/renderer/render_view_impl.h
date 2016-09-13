@@ -28,7 +28,6 @@
 #include "cc/resources/shared_bitmap.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/common/edit_command.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_message_enums.h"
@@ -332,7 +331,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion) override;
   void didCancelCompositionOnSelectionChange() override;
-  bool handleCurrentKeyboardEvent() override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
@@ -534,7 +532,6 @@ class CONTENT_EXPORT RenderViewImpl
   void RenderWidgetFocusChangeComplete() override;
   bool DoesRenderWidgetHaveTouchEventHandlersAt(
       const gfx::Point& point) const override;
-  void RenderWidgetDidHandleKeyEvent() override;
   bool RenderWidgetWillHandleGestureEvent(
       const blink::WebGestureEvent& event) override;
   bool RenderWidgetWillHandleMouseEvent(
@@ -568,7 +565,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnMoveCaret(const gfx::Point& point);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
@@ -891,10 +887,6 @@ class CONTENT_EXPORT RenderViewImpl
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
   int64_t session_storage_namespace_id_;
-
-  // Stores edit commands associated to the next key event.
-  // Shall be cleared as soon as the next key event is processed.
-  EditCommands edit_commands_;
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.

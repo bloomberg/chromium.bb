@@ -73,9 +73,10 @@ bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
     return webFrame->contentSettingsClient()->allowReadFromClipboard(defaultValue);
 }
 
-bool EditorClientImpl::handleKeyboardEvent()
+bool EditorClientImpl::handleKeyboardEvent(LocalFrame* frame)
 {
-    return m_webView->client() && m_webView->client()->handleCurrentKeyboardEvent();
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+    return webFrame->client()->handleCurrentKeyboardEvent();
 }
 
 } // namespace blink

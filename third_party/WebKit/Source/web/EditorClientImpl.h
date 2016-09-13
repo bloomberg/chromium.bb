@@ -48,7 +48,7 @@ public:
     void respondToChangedSelection(LocalFrame*, SelectionType) override;
     bool canCopyCut(LocalFrame*, bool defaultValue) const override;
     bool canPaste(LocalFrame*, bool defaultValue) const override;
-    bool handleKeyboardEvent() override;
+    bool handleKeyboardEvent(LocalFrame*) override;
 
 private:
     WebViewImpl* m_webView;
