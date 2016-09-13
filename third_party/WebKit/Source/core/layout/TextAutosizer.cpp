@@ -109,8 +109,8 @@ void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
     }
     String pageInfo = "";
     if (cluster->m_root->isLayoutView()) {
-        pageInfo = String::format("; pageinfo: afsf %f * dsa %f * (lw %d / fw %d)",
-            m_pageInfo.m_accessibilityFontScaleFactor, m_pageInfo.m_deviceScaleAdjustment, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
+        pageInfo = String::format("; pageinfo: bm %f * (lw %d / fw %d)",
+            m_pageInfo.m_baseMultiplier, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
     }
     float multiplier = cluster->m_flags & SUPPRESSING ? 1.0 : cluster->m_multiplier;
     writeDebugInfo(const_cast<LayoutBlock*>(cluster->m_root),
@@ -552,27 +552,24 @@ void TextAutosizer::updatePageInfo()
         IntSize layoutSize = mainFrame->view()->layoutSize();
         m_pageInfo.m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
 
-        // TODO(pdr): Accessibility should be moved out of the text autosizer. See: crbug.com/645717.
-        m_pageInfo.m_accessibilityFontScaleFactor = m_document->settings()->accessibilityFontScaleFactor();
-
+        // Compute the base font scale multiplier based on device and accessibility settings.
+        m_pageInfo.m_baseMultiplier = m_document->settings()->accessibilityFontScaleFactor();
         // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
-        if (mainFrame->document()->viewportDescription().isSpecifiedByAuthor())
-            m_pageInfo.m_deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
-        else
-            m_pageInfo.m_deviceScaleAdjustment = 1.0f;
+        const ViewportDescription& viewportDescription = mainFrame->document()->viewportDescription();
+        if (!viewportDescription.isSpecifiedByAuthor()) {
+            float deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
+            m_pageInfo.m_baseMultiplier *= deviceScaleAdjustment;
+        }
 
-        // TODO(pdr): pageNeedsAutosizing should take into account whether text-size-adjust is used
-        // anywhere on the page because that also needs to trigger autosizing. See: crbug.com/646237.
         m_pageInfo.m_pageNeedsAutosizing = !!m_pageInfo.m_frameWidth
-            && (m_pageInfo.m_accessibilityFontScaleFactor * m_pageInfo.m_deviceScaleAdjustment * (static_cast<float>(m_pageInfo.m_layoutWidth) / m_pageInfo.m_frameWidth) > 1.0f);
+            && (m_pageInfo.m_baseMultiplier * (static_cast<float>(m_pageInfo.m_layoutWidth) / m_pageInfo.m_frameWidth) > 1.0f);
     }
 
     if (m_pageInfo.m_pageNeedsAutosizing) {
         // If page info has changed, multipliers may have changed. Force a layout to recompute them.
         if (m_pageInfo.m_frameWidth != previousPageInfo.m_frameWidth
             || m_pageInfo.m_layoutWidth != previousPageInfo.m_layoutWidth
-            || m_pageInfo.m_accessibilityFontScaleFactor != previousPageInfo.m_accessibilityFontScaleFactor
-            || m_pageInfo.m_deviceScaleAdjustment != previousPageInfo.m_deviceScaleAdjustment
+            || m_pageInfo.m_baseMultiplier != previousPageInfo.m_baseMultiplier
             || m_pageInfo.m_settingEnabled != previousPageInfo.m_settingEnabled)
             setAllTextNeedsLayout();
     } else if (previousPageInfo.m_hasAutosized) {
@@ -904,10 +901,9 @@ float TextAutosizer::multiplierFromBlock(const LayoutBlock* block)
 
     // Block width, in CSS pixels.
     float blockWidth = widthFromBlock(block);
-    float layoutWidth = std::min(blockWidth, static_cast<float>(m_pageInfo.m_layoutWidth));
-    float multiplier = m_pageInfo.m_frameWidth ? layoutWidth / m_pageInfo.m_frameWidth : 1.0f;
-    multiplier *= m_pageInfo.m_accessibilityFontScaleFactor * m_pageInfo.m_deviceScaleAdjustment;
-    return std::max(multiplier, 1.0f);
+    float multiplier = m_pageInfo.m_frameWidth ? std::min(blockWidth, static_cast<float>(m_pageInfo.m_layoutWidth)) / m_pageInfo.m_frameWidth : 1.0f;
+
+    return std::max(m_pageInfo.m_baseMultiplier * multiplier, 1.0f);
 }
 
 const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(Cluster* cluster)
@@ -992,10 +988,10 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
 {
     ASSERT(layoutObject);
     ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
-    if (!currentStyle.getTextSizeAdjust().isAuto()) {
-        // The accessibility font scale factor is applied by the autosizer so we need to apply that
-        // scale factor on top of the text-size-adjust multiplier.
-        multiplier = currentStyle.getTextSizeAdjust().multiplier() * m_pageInfo.m_accessibilityFontScaleFactor;
+    // TODO(pdr): text-size-adjust is temporarily not honored due to
+    // breaking accessibility settings. See: https://645269.
+    if (false && !currentStyle.getTextSizeAdjust().isAuto()) {
+        multiplier = currentStyle.getTextSizeAdjust().multiplier();
     } else if (multiplier < 1) {
         // Unlike text-size-adjust, the text autosizer should only inflate fonts.
         multiplier = 1;

@@ -237,8 +237,7 @@ private:
         PageInfo()
             : m_frameWidth(0)
             , m_layoutWidth(0)
-            , m_accessibilityFontScaleFactor(1)
-            , m_deviceScaleAdjustment(1)
+            , m_baseMultiplier(0)
             , m_pageNeedsAutosizing(false)
             , m_hasAutosized(false)
             , m_settingEnabled(false)
@@ -247,8 +246,7 @@ private:
 
         int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
         int m_layoutWidth; // Layout width in CSS pixels.
-        float m_accessibilityFontScaleFactor;
-        float m_deviceScaleAdjustment;
+        float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
         bool m_pageNeedsAutosizing;
         bool m_hasAutosized;
         bool m_settingEnabled;
