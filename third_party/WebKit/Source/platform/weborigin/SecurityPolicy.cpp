@@ -68,23 +68,23 @@ static bool referrerPolicyFromStringImpl(const String& policy, ReferrerPolicyLeg
     DCHECK(!policy.isNull());
     bool supportLegacyKeywords = (legacyKeywordsSupport == SupportReferrerPolicyLegacyKeywords);
 
-    if (equalIgnoringCase(policy, "no-referrer") || (supportLegacyKeywords && equalIgnoringCase(policy, "never"))) {
+    if (equalIgnoringASCIICase(policy, "no-referrer") || (supportLegacyKeywords && equalIgnoringASCIICase(policy, "never"))) {
         *result = ReferrerPolicyNever;
         return true;
     }
-    if (equalIgnoringCase(policy, "unsafe-url") || (supportLegacyKeywords && equalIgnoringCase(policy, "always"))) {
+    if (equalIgnoringASCIICase(policy, "unsafe-url") || (supportLegacyKeywords && equalIgnoringASCIICase(policy, "always"))) {
         *result = ReferrerPolicyAlways;
         return true;
     }
-    if (equalIgnoringCase(policy, "origin")) {
+    if (equalIgnoringASCIICase(policy, "origin")) {
         *result = ReferrerPolicyOrigin;
         return true;
     }
-    if (equalIgnoringCase(policy, "origin-when-cross-origin") || (supportLegacyKeywords && equalIgnoringCase(policy, "origin-when-crossorigin"))) {
+    if (equalIgnoringASCIICase(policy, "origin-when-cross-origin") || (supportLegacyKeywords && equalIgnoringASCIICase(policy, "origin-when-crossorigin"))) {
         *result = ReferrerPolicyOriginWhenCrossOrigin;
         return true;
     }
-    if (equalIgnoringCase(policy, "no-referrer-when-downgrade") || (supportLegacyKeywords && equalIgnoringCase(policy, "default"))) {
+    if (equalIgnoringASCIICase(policy, "no-referrer-when-downgrade") || (supportLegacyKeywords && equalIgnoringASCIICase(policy, "default"))) {
         *result = ReferrerPolicyNoReferrerWhenDowngrade;
         return true;
     }

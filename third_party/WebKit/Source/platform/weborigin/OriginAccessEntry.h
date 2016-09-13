@@ -85,8 +85,8 @@ private:
 
 PLATFORM_EXPORT inline bool operator==(const OriginAccessEntry& a, const OriginAccessEntry& b)
 {
-    return equalIgnoringCase(a.protocol(), b.protocol())
-        && equalIgnoringCase(a.host(), b.host())
+    return equalIgnoringASCIICase(a.protocol(), b.protocol())
+        && equalIgnoringASCIICase(a.host(), b.host())
         && a.subdomainSettings() == b.subdomainSettings();
 }
 

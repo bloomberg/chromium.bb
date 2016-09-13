@@ -300,7 +300,7 @@ bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(const String& schem
 
 bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme)
 {
-    return equalIgnoringCase("blob", scheme) || equalIgnoringCase("filesystem", scheme);
+    return equalIgnoringASCIICase("blob", scheme) || equalIgnoringASCIICase("filesystem", scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(const String& scheme)
@@ -353,7 +353,7 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme)
 {
-    return equalIgnoringCase("ftp", scheme) || equalIgnoringCase("gopher", scheme);
+    return equalIgnoringASCIICase("ftp", scheme) || equalIgnoringASCIICase("gopher", scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(const String& scheme)
