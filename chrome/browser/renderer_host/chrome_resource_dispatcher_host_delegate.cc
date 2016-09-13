@@ -760,20 +760,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   if (io_data->resource_prefetch_predictor_observer())
     io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
 
-  // Ignores x-frame-options for the chrome signin UI.
-  const std::string request_spec(
-      request->first_party_for_cookies().GetOrigin().spec());
-#if defined(OS_CHROMEOS)
-  if (request_spec == chrome::kChromeUIOobeURL ||
-      request_spec == chrome::kChromeUIChromeSigninURL) {
-#else
-  if (request_spec == chrome::kChromeUIChromeSigninURL) {
-#endif
-    net::HttpResponseHeaders* response_headers = request->response_headers();
-    if (response_headers && response_headers->HasHeader("x-frame-options"))
-      response_headers->RemoveHeader("x-frame-options");
-  }
-
   mod_pagespeed::RecordMetrics(info->GetResourceType(), request->url(),
                                request->response_headers());
 }
