@@ -14,7 +14,6 @@
 
 namespace rtc {
 class RateLimiter;
-class Timing;
 }
 
 namespace content {
@@ -28,12 +27,10 @@ class CONTENT_EXPORT P2PMessageThrottler {
   P2PMessageThrottler();
   virtual ~P2PMessageThrottler();
 
-  void SetTiming(std::unique_ptr<rtc::Timing> timing);
   bool DropNextPacket(size_t packet_len);
   void SetSendIceBandwidth(int bandwith_kbps);
 
  private:
-  std::unique_ptr<rtc::Timing> timing_;
   std::unique_ptr<rtc::RateLimiter> rate_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PMessageThrottler);

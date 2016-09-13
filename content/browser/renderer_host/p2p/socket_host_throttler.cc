@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "third_party/webrtc/base/ratelimiter.h"
-#include "third_party/webrtc/base/timing.h"
+#include "third_party/webrtc/base/timeutils.h"
 
 namespace content {
 
@@ -19,15 +19,10 @@ const int kMaxIceMessageBandwidth = 256 * 1024;
 
 
 P2PMessageThrottler::P2PMessageThrottler()
-    : timing_(new rtc::Timing()),
-      rate_limiter_(new rtc::RateLimiter(kMaxIceMessageBandwidth, 1.0)) {
+    : rate_limiter_(new rtc::RateLimiter(kMaxIceMessageBandwidth, 1.0)) {
 }
 
 P2PMessageThrottler::~P2PMessageThrottler() {
-}
-
-void P2PMessageThrottler::SetTiming(std::unique_ptr<rtc::Timing> timing) {
-  timing_ = std::move(timing);
 }
 
 void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {
@@ -35,7 +30,8 @@ void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {
 }
 
 bool P2PMessageThrottler::DropNextPacket(size_t packet_len) {
-  double now = timing_->TimerNow();
+  double now =
+      rtc::TimeMicros() / static_cast<double>(rtc::kNumMicrosecsPerMillisec);
   if (!rate_limiter_->CanUse(packet_len, now)) {
     // Exceeding the send rate, this packet should be dropped.
     return true;

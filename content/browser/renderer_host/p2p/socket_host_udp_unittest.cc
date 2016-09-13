@@ -20,7 +20,6 @@
 #include "net/udp/datagram_server_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/base/timing.h"
 
 using ::testing::_;
 using ::testing::DeleteArg;
@@ -29,14 +28,26 @@ using ::testing::Return;
 
 namespace {
 
-class FakeTiming : public rtc::Timing {
- public:
-  FakeTiming() : now_(0.0) {}
-  double TimerNow() override { return now_; }
-  void set_now(double now) { now_ = now; }
+// TODO(nisse): We can't currently use rtc::ScopedFakeClock, because
+// we don't link with webrtc rtc_base_tests_utils. So roll our own,
+// for the special case of a clock standing still at zero.
 
+// Creating an object of this class makes rtc::TimeMicros() and
+// related functions return zero for the lifetime of the object.
+class ScopedFakeZeroClock : public rtc::ClockInterface {
+ public:
+  ScopedFakeZeroClock() {
+    prev_clock_ = rtc::SetClockForTesting(this);
+  }
+  ~ScopedFakeZeroClock() override {
+    rtc::SetClockForTesting(prev_clock_);
+  }
+  // ClockInterface implementation.
+  uint64_t TimeNanos() const override {
+    return 0;
+  }
  private:
-  double now_;
+  ClockInterface* prev_clock_;
 };
 
 class FakeDatagramServerSocket : public net::DatagramServerSocket {
@@ -210,9 +221,6 @@ class P2PSocketHostUdpTest : public testing::Test {
 
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
-
-    std::unique_ptr<rtc::Timing> timing(new FakeTiming());
-    throttler_.SetTiming(std::move(timing));
   }
 
   static FakeDatagramServerSocket* GetSocketFromHost(
@@ -221,6 +229,7 @@ class P2PSocketHostUdpTest : public testing::Test {
   }
 
   P2PMessageThrottler throttler_;
+  ScopedFakeZeroClock fake_clock_;
   std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
   FakeDatagramServerSocket* socket_;  // Owned by |socket_host_|.
   std::unique_ptr<P2PSocketHostUdp> socket_host_;
