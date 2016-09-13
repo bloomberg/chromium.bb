@@ -61,6 +61,7 @@ class POLICY_EXPORT CloudPolicyManager
   const CloudPolicyCore* core() const { return &core_; }
 
   // ConfigurationPolicyProvider:
+  void Init(SchemaRegistry* registry) override;
   void Shutdown() override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
   void RefreshPolicies() override;

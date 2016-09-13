@@ -35,7 +35,13 @@ CloudPolicyManager::CloudPolicyManager(
     : core_(policy_type, settings_entity_id, cloud_policy_store, task_runner),
       waiting_for_policy_refresh_(false),
       file_task_runner_(file_task_runner),
-      io_task_runner_(io_task_runner) {
+      io_task_runner_(io_task_runner) {}
+
+CloudPolicyManager::~CloudPolicyManager() {}
+
+void CloudPolicyManager::Init(SchemaRegistry* registry) {
+  ConfigurationPolicyProvider::Init(registry);
+
   store()->AddObserver(this);
 
   // If the underlying store is already initialized, publish the loaded
@@ -45,8 +51,6 @@ CloudPolicyManager::CloudPolicyManager(
   else
     store()->Load();
 }
-
-CloudPolicyManager::~CloudPolicyManager() {}
 
 void CloudPolicyManager::Shutdown() {
   component_policy_service_.reset();

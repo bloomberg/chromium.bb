@@ -46,6 +46,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
     cloud_policy_manager_.reset(new CloudPolicyManager(
         std::string(), std::string(), &cloud_policy_store_, loop_.task_runner(),
         loop_.task_runner(), loop_.task_runner()));
+    cloud_policy_manager_->Init(&schema_registry_);
   }
 
   void TearDown() override {
