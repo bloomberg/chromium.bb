@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -106,6 +107,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_constants.h"
@@ -162,6 +164,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/sandbox_type.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
@@ -2962,6 +2965,21 @@ void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
   apps->insert(std::make_pair("mojo:media",
                               base::ASCIIToUTF16("Media App")));
 #endif
+}
+
+std::unique_ptr<base::Value>
+ChromeContentBrowserClient::GetServiceManifestOverlay(
+    const std::string& name) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  int id = -1;
+  if (name == content::kBrowserMojoApplicationName)
+    id = IDR_CONTENT_BROWSER_MANIFEST_OVERLAY;
+  if (id == -1)
+    return nullptr;
+
+  base::StringPiece manifest_contents =
+      rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 void ChromeContentBrowserClient::OpenURL(
