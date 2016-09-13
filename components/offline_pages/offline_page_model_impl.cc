@@ -151,8 +151,51 @@ void ReportSavePageResultHistogramAfterSave(const ClientId& client_id,
   histogram->Add(static_cast<int>(result));
 }
 
-void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page,
-                                  const base::Time& save_time) {
+// Goes through the list of offline pages, compiling the following two metrics:
+//   - a count of the pages with the same URL
+//   - The difference between the |created_before| time and the creation time of
+//     the page with the closest creation time before |created_before|.
+// Returns true if there was a page that was saved before |created_before| with
+// a matching URL.
+bool GetMatchingURLCountAndMostRecentCreationTime(
+    const std::map<int64_t, OfflinePageItem>& offline_pages,
+    std::string name_space,
+    const GURL& url,
+    base::Time created_before,
+    int* matching_url_count,
+    base::TimeDelta* most_recent_creation_time) {
+  int count = 0;
+
+  // Create a time that is very old, so that any valid time will be newer than
+  // it.
+  base::Time latest_time;
+  bool matching_page = false;
+
+  for (auto& id_page_pair : offline_pages) {
+    if (id_page_pair.second.client_id.name_space == name_space &&
+        url == id_page_pair.second.url) {
+      count++;
+      base::Time page_creation_time = id_page_pair.second.creation_time;
+      if (page_creation_time < created_before &&
+          page_creation_time > latest_time) {
+        latest_time = page_creation_time;
+        matching_page = true;
+      }
+    }
+  }
+
+  if (matching_url_count != nullptr)
+    *matching_url_count = count;
+  if (most_recent_creation_time != nullptr && latest_time != base::Time())
+    *most_recent_creation_time = created_before - latest_time;
+
+  return matching_page;
+}
+
+void ReportPageHistogramAfterSave(
+    const std::map<int64_t, OfflinePageItem>& offline_pages,
+    const OfflinePageItem& offline_page,
+    const base::Time& save_time) {
   // The histogram below is an expansion of the UMA_HISTOGRAM_TIMES
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
@@ -170,6 +213,25 @@ void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page,
       AddHistogramSuffix(offline_page.client_id, "OfflinePages.PageSize"),
       1, 10000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(offline_page.file_size / 1024);
+
+  if (offline_page.client_id.name_space == kDownloadNamespace) {
+    int matching_url_count;
+    base::TimeDelta time_since_most_recent_duplicate;
+    if (GetMatchingURLCountAndMostRecentCreationTime(
+            offline_pages, offline_page.client_id.name_space, offline_page.url,
+            offline_page.creation_time, &matching_url_count,
+            &time_since_most_recent_duplicate)) {
+      // Using CUSTOM_COUNTS instead of time-oriented histogram to record
+      // samples in seconds rather than milliseconds.
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "OfflinePages.DownloadSavedPageTimeSinceDuplicateSaved",
+          time_since_most_recent_duplicate.InSeconds(),
+          base::TimeDelta::FromSeconds(1).InSeconds(),
+          base::TimeDelta::FromDays(7).InSeconds(), 50);
+    }
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.DownloadSavedPageDuplicateCount",
+                                matching_url_count, 1, 20, 10);
+  }
 }
 
 void ReportPageHistogramsAfterDelete(
@@ -182,8 +244,19 @@ void ReportPageHistogramsAfterDelete(
     auto iter = offline_pages.find(offline_id);
     if (iter == offline_pages.end())
       continue;
+
     total_size += iter->second.file_size;
     ClientId client_id = iter->second.client_id;
+
+    if (client_id.name_space == kDownloadNamespace) {
+      int remaining_pages_with_url;
+      GetMatchingURLCountAndMostRecentCreationTime(
+          offline_pages, iter->second.client_id.name_space, iter->second.url,
+          base::Time::Max(), &remaining_pages_with_url, nullptr);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "OfflinePages.DownloadDeletedPageDuplicateCount",
+          remaining_pages_with_url, 1, 20, 10);
+    }
 
     // The histograms below are an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
     // macro adapted to allow for a dynamically suffixed histogram name.
@@ -740,7 +813,8 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   if (success) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
-    ReportPageHistogramAfterSave(offline_page, GetCurrentTime());
+    ReportPageHistogramAfterSave(offline_pages_, offline_page,
+                                 GetCurrentTime());
     offline_event_logger_.RecordPageSaved(
         offline_page.client_id.name_space, offline_page.url.spec(),
         std::to_string(offline_page.offline_id));

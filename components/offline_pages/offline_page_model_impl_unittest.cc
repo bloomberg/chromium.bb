@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -1038,6 +1039,48 @@ TEST_F(OfflinePageModelImplTest, SaveMultiplePagesWithSameURLBySameClientId) {
   }
 
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
+}
+
+TEST_F(OfflinePageModelImplTest, DownloadMetrics) {
+  EXPECT_FALSE(HasPages(kUserRequestedNamespace));
+  SavePage(kTestUrl, kTestUserRequestedClientId);
+  histograms().ExpectUniqueSample(
+      "OfflinePages.DownloadSavedPageDuplicateCount", 1, 1);
+  FastForwardBy(base::TimeDelta::FromMinutes(1));
+  histograms().ExpectTotalCount(
+      "OfflinePages.DownloadSavedPageTimeSinceDuplicateSaved", 0);
+  SavePage(kTestUrl, kTestUserRequestedClientId);
+  histograms().ExpectTotalCount("OfflinePages.DownloadSavedPageDuplicateCount",
+                                2);
+  histograms().ExpectBucketCount("OfflinePages.DownloadSavedPageDuplicateCount",
+                                 2, 1);
+  histograms().ExpectBucketCount("OfflinePages.DownloadSavedPageDuplicateCount",
+                                 1, 1);
+  histograms().ExpectTotalCount(
+      "OfflinePages.DownloadSavedPageTimeSinceDuplicateSaved", 1);
+  histograms().ExpectTotalCount(
+      "OfflinePages.DownloadDeletedPageDuplicateCount", 0);
+
+  // void DeletePage(int64_t offline_id, const DeletePageCallback& callback) {
+  const std::vector<int64_t> ids =
+      GetOfflineIdsForClientId(kTestUserRequestedClientId);
+  ASSERT_EQ(2U, ids.size());
+
+  DeletePage(ids[0], base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                AsWeakPtr()));
+  PumpLoop();
+  histograms().ExpectUniqueSample(
+      "OfflinePages.DownloadDeletedPageDuplicateCount", 2, 1);
+  DeletePage(ids[1], base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                AsWeakPtr()));
+  PumpLoop();
+  // No change when we delete the last page.
+  histograms().ExpectTotalCount(
+      "OfflinePages.DownloadDeletedPageDuplicateCount", 2);
+  histograms().ExpectBucketCount(
+      "OfflinePages.DownloadDeletedPageDuplicateCount", 1, 1);
+  histograms().ExpectBucketCount(
+      "OfflinePages.DownloadDeletedPageDuplicateCount", 2, 1);
 }
 
 TEST_F(OfflinePageModelImplTest, GetBestPage) {

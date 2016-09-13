@@ -37874,6 +37874,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of removing an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.DownloadDeletedPageDuplicateCount" units="pages">
+  <owner>dewittj@chromium.org</owner>
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    The number of downloaded pages with the same URL that exist at the time that
+    we delete a downloaded page.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.DownloadSavedPageDuplicateCount" units="pages">
+  <owner>dewittj@chromium.org</owner>
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    The number of downloaded pages with the same URL that exist at the time that
+    we save a downloaded page.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.DownloadSavedPageTimeSinceDuplicateSaved"
+    units="seconds">
+  <owner>dewittj@chromium.org</owner>
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    If at save time there is another downloaded page with the same URL, this
+    tracks this amount of time between creation of the most recent existing page
+    and the current page.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Edit.BookmarkUrlChangedForOfflinePage"
     enum="BooleanMatched">
   <obsolete>
