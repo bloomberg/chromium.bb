@@ -135,16 +135,16 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   // the last main frame request.
   bool WasLoFiLoadImageRequestedBefore();
 
-  // Increments the number of times the Lo-Fi snackbar has been shown.
-  void IncrementLoFiSnackbarShown();
+  // Increments the number of times the Lo-Fi UI has been shown.
+  void IncrementLoFiUIShown();
 
   // Sets |lo_fi_load_image_requested_| to true, which means a "Load image"
   // context menu request has been made since the last main frame request.
   void SetLoFiLoadImageRequested();
 
   // Counts the number of requests to reload the page with images from the Lo-Fi
-  // snackbar. If the user requests the page with images a certain number of
-  // times, then Lo-Fi is disabled for the remainder of the session.
+  // UI. If the user requests the page with images a certain number of times,
+  // then Lo-Fi is disabled for the remainder of the session.
   void IncrementLoFiUserRequestsForImages();
 
   // Records UMA for Lo-Fi implicit opt out actions.
@@ -302,8 +302,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   bool lo_fi_load_image_requested_;
 
   // The number of requests to reload the page with images from the Lo-Fi
-  // snackbar until Lo-Fi is disabled for the remainder of the
-  // session.
+  // UI until Lo-Fi is disabled for the remainder of the session.
   int lo_fi_user_requests_for_images_per_session_;
 
   // The number of consecutive sessions where Lo-Fi was disabled for

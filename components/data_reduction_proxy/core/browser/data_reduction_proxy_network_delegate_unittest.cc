@@ -128,21 +128,17 @@ class TestLoFiDecider : public LoFiDecider {
 
 class TestLoFiUIService : public LoFiUIService {
  public:
-  TestLoFiUIService() : on_lofi_response_(false), is_preview_(false) {}
+  TestLoFiUIService() : on_lofi_response_(false) {}
   ~TestLoFiUIService() override {}
 
   bool DidNotifyLoFiResponse() const { return on_lofi_response_; }
-  bool is_preview() const { return is_preview_; }
 
-  void OnLoFiReponseReceived(const net::URLRequest& request,
-                             bool is_preview) override {
+  void OnLoFiReponseReceived(const net::URLRequest& request) override {
     on_lofi_response_ = true;
-    is_preview_ = is_preview;
   }
 
  private:
   bool on_lofi_response_;
-  bool is_preview_;
 };
 
 // Overrides net::NetworkQualityEstimator for testing.
@@ -212,10 +208,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   void VerifyDidNotifyLoFiResponse(bool lofi_response) const {
     EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
-  }
-
-  void VerifyLoFiPreviewResponse(bool is_preview) const {
-    EXPECT_EQ(is_preview, lofi_ui_service_->is_preview());
   }
 
   void VerifyDataReductionProxyData(const net::URLRequest& request,
@@ -791,34 +783,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
                     140);
 
     VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
-  }
-}
-
-TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFiPreview) {
-  // Enable Lo-Fi.
-  const struct {
-    bool is_preview;
-  } tests[] = {
-      {false}, {true},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::string response_headers =
-        "HTTP/1.1 200 OK\r\n"
-        "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-        "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-        "Via: 1.1 Chrome-Compression-Proxy\r\n"
-        "x-original-content-length: 200\r\n";
-
-    if (tests[i].is_preview)
-      response_headers += "Chrome-Proxy: q=preview\r\n";
-
-    response_headers += "\r\n";
-    FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
-                    140);
-
-    VerifyDidNotifyLoFiResponse(tests[i].is_preview);
-    VerifyLoFiPreviewResponse(tests[i].is_preview);
   }
 }
 

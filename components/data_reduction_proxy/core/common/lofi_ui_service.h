@@ -19,10 +19,8 @@ class LoFiUIService {
  public:
   virtual ~LoFiUIService() {}
 
-  // Notifies the UI thread that |request| has a Lo-Fi response. |is_preview|
-  // indicates whether the response was a Lo-Fi preview response.
-  virtual void OnLoFiReponseReceived(const net::URLRequest& request,
-                                     bool is_preview) = 0;
+  // Notifies the UI thread that |request| has a Lo-Fi response.
+  virtual void OnLoFiReponseReceived(const net::URLRequest& request) = 0;
 };
 
 }  // namespace data_reduction_proxy

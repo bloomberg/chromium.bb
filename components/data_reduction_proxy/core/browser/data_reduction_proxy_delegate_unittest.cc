@@ -451,8 +451,7 @@ class TestLoFiUIService : public LoFiUIService {
   TestLoFiUIService() {}
   ~TestLoFiUIService() override {}
 
-  void OnLoFiReponseReceived(const net::URLRequest& request,
-                             bool is_preview) override {}
+  void OnLoFiReponseReceived(const net::URLRequest& request) override {}
 };
 
 class DataReductionProxyDelegateTest : public testing::Test {

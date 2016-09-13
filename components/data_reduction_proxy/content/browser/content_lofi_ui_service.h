@@ -24,8 +24,8 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
-typedef base::Callback<void(content::WebContents* web_contents,
-                            bool is_preview)> OnLoFiResponseReceivedCallback;
+using OnLoFiResponseReceivedCallback =
+    base::Callback<void(content::WebContents* web_contents)>;
 
 // Passes notifications to the UI thread that a Lo-Fi response has been
 // received. These notifications may be used to show Lo-Fi UI. This object lives
@@ -38,17 +38,14 @@ class ContentLoFiUIService : public LoFiUIService {
   ~ContentLoFiUIService() override;
 
   // LoFiUIService implementation:
-  void OnLoFiReponseReceived(const net::URLRequest& request,
-                             bool is_preview) override;
+  void OnLoFiReponseReceived(const net::URLRequest& request) override;
 
  private:
   // Using the |render_process_id| and |render_frame_id|, gets the associated
   // WebContents if it exists and runs the
-  // |notify_lofi_response_received_callback_|. |is_preview| indicates whether
-  // the response was a Lo-Fi preview response.
+  // |notify_lofi_response_received_callback_|.
   void OnLoFiResponseReceivedOnUIThread(int render_process_id,
-                                        int render_frame_id,
-                                        bool is_preview);
+                                        int render_frame_id);
 
   // A task runner to post calls to OnLoFiReponseReceivedOnUI on the UI
   // thread.

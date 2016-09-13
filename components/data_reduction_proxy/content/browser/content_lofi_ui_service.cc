@@ -27,8 +27,8 @@ ContentLoFiUIService::ContentLoFiUIService(
 
 ContentLoFiUIService::~ContentLoFiUIService() {}
 
-void ContentLoFiUIService::OnLoFiReponseReceived(const net::URLRequest& request,
-                                                 bool is_preview) {
+void ContentLoFiUIService::OnLoFiReponseReceived(
+    const net::URLRequest& request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   int render_process_id = -1;
   int render_frame_id = -1;
@@ -37,15 +37,13 @@ void ContentLoFiUIService::OnLoFiReponseReceived(const net::URLRequest& request,
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread,
-                   base::Unretained(this), render_process_id, render_frame_id,
-                   is_preview));
+                   base::Unretained(this), render_process_id, render_frame_id));
   }
 }
 
 void ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread(
     int render_process_id,
-    int render_frame_id,
-    bool is_preview) {
+    int render_frame_id) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
@@ -53,7 +51,7 @@ void ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread(
     DCHECK(!on_lofi_response_received_callback_.is_null());
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
-    on_lofi_response_received_callback_.Run(web_contents, is_preview);
+    on_lofi_response_received_callback_.Run(web_contents);
   }
 }
 

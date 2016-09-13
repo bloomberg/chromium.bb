@@ -27,12 +27,12 @@ namespace data_reduction_proxy {
 
 class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
  public:
-  ContentLoFiUIServiceTest() : callback_called_(false), is_preview_(false) {
+  ContentLoFiUIServiceTest() : callback_called_(false) {
     // Cannot use IO_MAIN_LOOP with RenderViewHostTestHarness.
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
   }
 
-  void RunTestOnIOThread(base::RunLoop* ui_run_loop, bool is_preview) {
+  void RunTestOnIOThread(base::RunLoop* ui_run_loop) {
     ASSERT_TRUE(ui_run_loop);
     EXPECT_TRUE(
         content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -52,7 +52,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(context, &delegate);
 
-    content_lofi_ui_service_->OnLoFiReponseReceived(*request, is_preview);
+    content_lofi_ui_service_->OnLoFiReponseReceived(*request);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -81,25 +81,21 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
     return request;
   }
 
-  void OnLoFiResponseReceivedCallback(content::WebContents* web_contents,
-                                      bool is_preview) {
+  void OnLoFiResponseReceivedCallback(content::WebContents* web_contents) {
     EXPECT_TRUE(
         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     callback_called_ = true;
-    is_preview_ = is_preview;
   }
 
-  void VerifyOnLoFiResponseReceivedCallback(bool is_preview) {
+  void VerifyOnLoFiResponseReceivedCallback() {
     EXPECT_TRUE(
         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     EXPECT_TRUE(callback_called_);
-    EXPECT_EQ(is_preview, is_preview_);
   }
 
  private:
   std::unique_ptr<ContentLoFiUIService> content_lofi_ui_service_;
   bool callback_called_;
-  bool is_preview_;
 };
 
 TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
@@ -107,21 +103,10 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&ContentLoFiUIServiceTest::RunTestOnIOThread,
-                 base::Unretained(this), &ui_run_loop, false));
+                 base::Unretained(this), &ui_run_loop));
   ui_run_loop.Run();
   base::RunLoop().RunUntilIdle();
-  VerifyOnLoFiResponseReceivedCallback(false);
-}
-
-TEST_F(ContentLoFiUIServiceTest, OnLoFiPreviewResponseReceived) {
-  base::RunLoop ui_run_loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&ContentLoFiUIServiceTest::RunTestOnIOThread,
-                 base::Unretained(this), &ui_run_loop, true));
-  ui_run_loop.Run();
-  base::RunLoop().RunUntilIdle();
-  VerifyOnLoFiResponseReceivedCallback(true);
+  VerifyOnLoFiResponseReceivedCallback();
 }
 
 }  // namespace data_reduction_proxy

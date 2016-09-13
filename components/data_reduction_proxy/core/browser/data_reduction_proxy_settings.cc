@@ -186,10 +186,9 @@ void DataReductionProxySettings::SetLoFiLoadImageRequested() {
   lo_fi_load_image_requested_ = true;
 }
 
-void DataReductionProxySettings::IncrementLoFiSnackbarShown() {
-  prefs_->SetInteger(
-      prefs::kLoFiSnackbarsShownPerSession,
-      prefs_->GetInteger(prefs::kLoFiSnackbarsShownPerSession) + 1);
+void DataReductionProxySettings::IncrementLoFiUIShown() {
+  prefs_->SetInteger(prefs::kLoFiUIShownPerSession,
+                     prefs_->GetInteger(prefs::kLoFiUIShownPerSession) + 1);
 }
 
 void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {

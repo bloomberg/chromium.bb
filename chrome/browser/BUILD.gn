@@ -874,6 +874,8 @@ split_static_library("browser") {
     "prerender/prerender_tab_helper.h",
     "prerender/prerender_util.cc",
     "prerender/prerender_util.h",
+    "previews/previews_infobar_delegate.cc",
+    "previews/previews_infobar_delegate.h",
     "previews/previews_service.cc",
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",

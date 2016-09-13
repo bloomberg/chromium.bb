@@ -6391,6 +6391,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
          Uses the Data Reduction Proxy configuration service for authentication and proxy configuration.
       </message>
+      
+      <!-- Preview InfoBar -->
+      <message name="IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE" desc="The text of the infobar notifying the user that a preview page has been shown to save data.">
+         Saved data.
+      </message>
+      <message name="IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE" desc="The text of the infobar notifying the user that a preview page has been shown to load faster.">
+         Faster page loaded.
+      </message>
+      <message name="IDS_PREVIEWS_INFOBAR_LINK" desc="The text of the link to load the original page from the infobar notifying the user that a preview page has been shown.">
+         Show original
+      </message>
+      
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
         LCD text antialiasing
       </message>

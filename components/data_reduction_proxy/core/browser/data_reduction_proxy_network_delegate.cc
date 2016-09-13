@@ -306,13 +306,11 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
       request->response_headers()->HasHeaderValue(
           chrome_proxy_header(), chrome_proxy_lo_fi_directive())) {
     data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
-        *request, false);
+        *request);
   } else if (data_reduction_proxy_io_data_ && request->response_headers() &&
              request->response_headers()->HasHeaderValue(
                  chrome_proxy_header(),
                  chrome_proxy_lo_fi_preview_directive())) {
-    data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
-        *request, true);
     RecordLoFiTransformationType(PREVIEW);
   } else if (request->GetFullRequestHeaders(&request_headers) &&
              request_headers.HasHeader(chrome_proxy_header())) {
