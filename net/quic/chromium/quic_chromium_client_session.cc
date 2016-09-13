@@ -57,6 +57,10 @@ const size_t kMaxReadersPerQuicSession = 5;
 // SSLClientSocketImpl.
 const size_t kTokenBindingSignatureMapSize = 10;
 
+// Time to wait (in seconds) when no networks are available and
+// migrating sessions need to wait for a new network to connect.
+const size_t kWaitTimeForNewNetworkSecs = 10;
+
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
@@ -1000,9 +1004,15 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError() {
   if (!migration_pending_)
     return;
 
-  if (stream_factory_ != nullptr &&
-      stream_factory_->MaybeMigrateSingleSession(this, WRITE_ERROR) ==
-          MigrationResult::SUCCESS) {
+  MigrationResult result = MigrationResult::FAILURE;
+  if (stream_factory_ != nullptr)
+    result = stream_factory_->MaybeMigrateSingleSession(this, WRITE_ERROR);
+
+  if (result == MigrationResult::SUCCESS)
+    return;
+
+  if (result == MigrationResult::NO_NEW_NETWORK) {
+    OnNoNewNetwork();
     return;
   }
 
@@ -1013,14 +1023,25 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError() {
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
+void QuicChromiumClientSession::OnNoNewNetwork() {
+  migration_pending_ = true;
+
+  // Block the packet writer to avoid any writes while migration is in progress.
+  static_cast<QuicChromiumPacketWriter*>(connection()->writer())
+      ->set_write_blocked(true);
+
+  // Post a task to maybe close the session if the alarm fires.
+  task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&QuicChromiumClientSession::OnMigrationTimeout,
+                            weak_factory_.GetWeakPtr(), sockets_.size()),
+      base::TimeDelta::FromSeconds(kWaitTimeForNewNetworkSecs));
+}
+
 void QuicChromiumClientSession::WriteToNewSocket() {
   // Prevent any pending migration from executing.
   migration_pending_ = false;
-
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
       ->set_write_blocked(false);
-  DCHECK(!connection()->writer()->IsWriteBlocked());
-
   if (packet_ == nullptr) {
     // Unblock the connection before sending a PING packet, since it
     // may have been blocked before the migration started.
@@ -1041,13 +1062,40 @@ void QuicChromiumClientSession::WriteToNewSocket() {
   WriteResult result =
       static_cast<QuicChromiumPacketWriter*>(connection()->writer())
           ->WritePacketToSocket(packet);
-
   if (result.error_code == ERR_IO_PENDING)
     return;
+
   // All write errors should be mapped into ERR_IO_PENDING by
   // HandleWriteError.
   DCHECK_LT(0, result.error_code);
   connection()->OnCanWrite();
+}
+
+void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
+  // If number of sockets has changed, this migration task is stale.
+  if (num_sockets != sockets_.size())
+    return;
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration",
+                            MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+                            MIGRATION_STATUS_MAX);
+  CloseSessionOnError(ERR_NETWORK_CHANGED,
+                      QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+}
+
+void QuicChromiumClientSession::OnNetworkConnected(
+    NetworkChangeNotifier::NetworkHandle network,
+    const BoundNetLog& bound_net_log) {
+  // If migration_pending_ is false, there was no migration pending or
+  // an earlier task completed migration.
+  if (!migration_pending_)
+    return;
+
+  // TODO(jri): Ensure that OnSessionGoingAway is called consistently,
+  // and that it's always called at the same time in the whole
+  // migration process. Allows tests to be more uniform.
+  stream_factory_->OnSessionGoingAway(this);
+  stream_factory_->MigrateSessionToNewNetwork(
+      this, network, /*close_session_on_error=*/true, net_log_);
 }
 
 void QuicChromiumClientSession::OnWriteError(int error_code) {

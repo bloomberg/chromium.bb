@@ -39,6 +39,9 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
   // but does not spin the message loop to actually deliver it.
   void QueueNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network);
 
+  // Delivers a CONNECTED notification to observers.
+  void NotifyNetworkConnected(NetworkChangeNotifier::NetworkHandle network);
+
  private:
   bool force_network_handles_supported_;
   NetworkChangeNotifier::NetworkList connected_networks_;

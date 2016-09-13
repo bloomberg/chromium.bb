@@ -63,6 +63,14 @@ void MockNetworkChangeNotifier::QueueNetworkDisconnected(
       NetworkChangeNotifier::DISCONNECTED, network);
 }
 
+void MockNetworkChangeNotifier::NotifyNetworkConnected(
+    NetworkChangeNotifier::NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeNotifier::CONNECTED, network);
+  // Spin the message loop so the notification is delivered.
+  base::RunLoop().RunUntilIdle();
+}
+
 ScopedMockNetworkChangeNotifier::ScopedMockNetworkChangeNotifier()
     : disable_network_change_notifier_for_tests_(
           new NetworkChangeNotifier::DisableForTest()),

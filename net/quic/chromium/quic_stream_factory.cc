@@ -73,18 +73,6 @@ enum CreateSessionFailure {
   CREATION_ERROR_MAX
 };
 
-enum QuicConnectionMigrationStatus {
-  MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
-  MIGRATION_STATUS_ALREADY_MIGRATED,
-  MIGRATION_STATUS_INTERNAL_ERROR,
-  MIGRATION_STATUS_TOO_MANY_CHANGES,
-  MIGRATION_STATUS_SUCCESS,
-  MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
-  MIGRATION_STATUS_DISABLED,
-  MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
-  MIGRATION_STATUS_MAX
-};
-
 // The maximum receive window sizes for QUIC sessions and streams.
 const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
@@ -1448,6 +1436,11 @@ void QuicStreamFactory::OnIPAddressChanged() {
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   num_timeouts_with_open_streams_ = 0;
   status_ = OPEN;
+  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
+                                                     "OnNetworkConnected");
+  for (auto session : all_sessions_) {
+    session.first->OnNetworkConnected(network, scoped_event_log.net_log());
+  }
 }
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
@@ -1492,16 +1485,6 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
     QuicChromiumClientSession* session = it->first;
     ++it;
 
-    // Migration attempted, but no new network was found. Close session.
-    if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-      HistogramAndLogMigrationFailure(
-          bound_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
-          session->connection_id(), "No alternate network found");
-      session->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                   QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
-      continue;
-    }
-
     // If session is already bound to |new_network|, move on.
     if (session->GetDefaultSocket()->GetBoundNetwork() == new_network) {
       HistogramAndLogMigrationFailure(
@@ -1545,6 +1528,13 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
             ERR_NETWORK_CHANGED,
             QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
       }
+      continue;
+    }
+
+    // No new network was found. Notify session, so it can wait for a
+    // new network.
+    if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+      session->OnNoNewNetwork();
       continue;
     }
 
@@ -1852,8 +1842,7 @@ int QuicStreamFactory::CreateSession(
       clock_.get(), transport_security_state_, std::move(server_info),
       server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
       config, &crypto_config_, network_connection_.GetDescription(),
-      dns_resolution_end_time, &push_promise_index_,
-      base::ThreadTaskRunnerHandle::Get().get(),
+      dns_resolution_end_time, &push_promise_index_, task_runner_,
       std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer

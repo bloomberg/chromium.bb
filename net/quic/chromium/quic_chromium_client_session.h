@@ -273,6 +273,19 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                        std::unique_ptr<QuicChromiumPacketReader> reader,
                        std::unique_ptr<QuicChromiumPacketWriter> writer);
 
+  // Called when NetworkChangeNotifier notifies observers of a newly
+  // connected network. Migrates this session to the newly connected
+  // network if the session has a pending migration.
+  void OnNetworkConnected(NetworkChangeNotifier::NetworkHandle network,
+                          const BoundNetLog& bound_net_log);
+
+  // Schedules a migration alarm to wait for a new network.
+  void OnNoNewNetwork();
+
+  // Called when migration alarm fires. If migration has not occurred
+  // since alarm was set, closes session with error.
+  void OnMigrationTimeout(size_t num_sockets);
+
   // Populates network error details for this session.
   void PopulateNetErrorDetails(NetErrorDetails* details);
 
