@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -133,7 +134,7 @@ dbus::Response* ServiceProviderTestHelper::MockCallMethodAndBlock(
                                   base::Unretained(this)));
   // Check for a response.
   if (!response_received_)
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   // Return response.
   return response_.release();
 }

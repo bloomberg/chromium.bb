@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "dbus/message.h"
@@ -207,7 +208,7 @@ TEST_F(GsmSMSClientTest, SmsReceived) {
                                             base::Unretained(&handler)));
 
   // Run the message loop to run the signal connection result callback.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Send signal.
   dbus::Signal signal(modemmanager::kModemManagerSMSInterface,
@@ -240,7 +241,7 @@ TEST_F(GsmSMSClientTest, Delete) {
                              base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(GsmSMSClientTest, Get) {
@@ -280,7 +281,7 @@ TEST_F(GsmSMSClientTest, Get) {
                base::Bind(&MockGetCallback::Run, base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(GsmSMSClientTest, List) {
@@ -323,7 +324,7 @@ TEST_F(GsmSMSClientTest, List) {
                            base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

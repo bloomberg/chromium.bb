@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -36,7 +37,7 @@ class ShillServiceClientTest : public ShillClientUnittestBase {
     client_.reset(ShillServiceClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
@@ -106,7 +107,7 @@ TEST_F(ShillServiceClientTest, GetProperties) {
   client_->GetProperties(dbus::ObjectPath(kExampleServicePath),
                          base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, SetProperty) {
@@ -133,7 +134,7 @@ TEST_F(ShillServiceClientTest, SetProperty) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, SetProperties) {
@@ -160,7 +161,7 @@ TEST_F(ShillServiceClientTest, SetProperties) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, ClearProperty) {
@@ -183,7 +184,7 @@ TEST_F(ShillServiceClientTest, ClearProperty) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, ClearProperties) {
@@ -214,7 +215,7 @@ TEST_F(ShillServiceClientTest, ClearProperties) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, Connect) {
@@ -234,7 +235,7 @@ TEST_F(ShillServiceClientTest, Connect) {
                    mock_error_callback.GetCallback());
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, Disconnect) {
@@ -255,7 +256,7 @@ TEST_F(ShillServiceClientTest, Disconnect) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, Remove) {
@@ -276,7 +277,7 @@ TEST_F(ShillServiceClientTest, Remove) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillServiceClientTest, ActivateCellularModem) {
@@ -299,7 +300,7 @@ TEST_F(ShillServiceClientTest, ActivateCellularModem) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

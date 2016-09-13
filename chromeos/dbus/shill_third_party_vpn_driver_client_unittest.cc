@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
@@ -44,7 +45,7 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
     client_.reset(ShillThirdPartyVpnDriverClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
@@ -122,7 +123,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
 
   testing::Mock::VerifyAndClearExpectations(&observer);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
@@ -148,7 +149,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
                  base::Unretained(this)),
       base::Bind(&Failure));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
@@ -167,7 +168,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
                  base::Unretained(this)),
       base::Bind(&Failure));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
@@ -189,7 +190,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
                  base::Unretained(this)),
       base::Bind(&Failure));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

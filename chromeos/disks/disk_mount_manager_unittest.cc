@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -329,7 +330,7 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -373,7 +374,7 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -435,7 +436,7 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Cros disks will respond asynchronoulsy, so let's drain the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -487,7 +488,7 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Wait for Unmount and Format calls to end.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -542,7 +543,7 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Wait for Unmount and Format calls to end.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -602,7 +603,7 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Wait for Unmount and Format calls to end.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",
@@ -634,7 +635,7 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   DiskMountManager::GetInstance()->FormatMountedDevice("/device/mount_path");
 
   // Wait for Unmount and Format calls to end.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ("/device/mount_path",

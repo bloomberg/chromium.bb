@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -38,7 +39,7 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
     client_.reset(ShillIPConfigClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
@@ -117,7 +118,7 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   client_->GetProperties(dbus::ObjectPath(kExampleIPConfigPath),
                          base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillIPConfigClientTest, SetProperty) {
@@ -139,7 +140,7 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
                        value,
                        base::Bind(&ExpectNoResultValue));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillIPConfigClientTest, ClearProperty) {
@@ -156,7 +157,7 @@ TEST_F(ShillIPConfigClientTest, ClearProperty) {
                        shill::kAddressProperty,
                        base::Bind(&ExpectNoResultValue));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillIPConfigClientTest, Remove) {
@@ -172,7 +173,7 @@ TEST_F(ShillIPConfigClientTest, Remove) {
                   base::Bind(&ExpectNoResultValue));
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

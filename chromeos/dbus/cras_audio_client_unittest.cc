@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -306,7 +307,7 @@ class CrasAudioClientTest : public testing::Test {
     client_.reset(CrasAudioClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { mock_bus_->ShutdownAndBlock(); }
@@ -539,7 +540,7 @@ TEST_F(CrasAudioClientTest, OutputMuteChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendOutputMuteChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, InputMuteChanged) {
@@ -568,7 +569,7 @@ TEST_F(CrasAudioClientTest, InputMuteChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendInputMuteChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, NodesChanged) {
@@ -593,7 +594,7 @@ TEST_F(CrasAudioClientTest, NodesChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendNodesChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, ActiveOutputNodeChanged) {
@@ -621,7 +622,7 @@ TEST_F(CrasAudioClientTest, ActiveOutputNodeChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendActiveOutputNodeChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, ActiveInputNodeChanged) {
@@ -649,7 +650,7 @@ TEST_F(CrasAudioClientTest, ActiveInputNodeChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendActiveInputNodeChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, OutputNodeVolumeChanged) {
@@ -679,7 +680,7 @@ TEST_F(CrasAudioClientTest, OutputNodeVolumeChanged) {
   // Run the signal callback again and make sure the observer isn't called.
   SendOutputNodeVolumeChangedSignal(&signal);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, GetNodes) {
@@ -704,7 +705,7 @@ TEST_F(CrasAudioClientTest, GetNodes) {
                     error_callback.GetCallback());
   EXPECT_CALL(error_callback, Run(_, _)).Times(0);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetOutputNodeVolume) {
@@ -722,7 +723,7 @@ TEST_F(CrasAudioClientTest, SetOutputNodeVolume) {
   // Call method.
   client_->SetOutputNodeVolume(kNodeId, kVolume);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetOutputUserMute) {
@@ -737,7 +738,7 @@ TEST_F(CrasAudioClientTest, SetOutputUserMute) {
   // Call method.
   client_->SetOutputUserMute(kUserMuteOn);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetInputNodeGain) {
@@ -755,7 +756,7 @@ TEST_F(CrasAudioClientTest, SetInputNodeGain) {
   // Call method.
   client_->SetInputNodeGain(kNodeId, kInputGain);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetInputMute) {
@@ -770,7 +771,7 @@ TEST_F(CrasAudioClientTest, SetInputMute) {
   // Call method.
   client_->SetInputMute(kInputMuteOn);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetActiveOutputNode) {
@@ -785,7 +786,7 @@ TEST_F(CrasAudioClientTest, SetActiveOutputNode) {
   // Call method.
   client_->SetActiveOutputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetActiveInputNode) {
@@ -800,7 +801,7 @@ TEST_F(CrasAudioClientTest, SetActiveInputNode) {
   // Call method.
   client_->SetActiveInputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, AddActiveInputNode) {
@@ -815,7 +816,7 @@ TEST_F(CrasAudioClientTest, AddActiveInputNode) {
   // Call method.
   client_->AddActiveInputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, RemoveActiveInputNode) {
@@ -830,7 +831,7 @@ TEST_F(CrasAudioClientTest, RemoveActiveInputNode) {
   // Call method.
   client_->RemoveActiveInputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, AddActiveOutputNode) {
@@ -845,7 +846,7 @@ TEST_F(CrasAudioClientTest, AddActiveOutputNode) {
   // Call method.
   client_->AddActiveOutputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, RemoveActiveOutputNode) {
@@ -860,7 +861,7 @@ TEST_F(CrasAudioClientTest, RemoveActiveOutputNode) {
   // Call method.
   client_->RemoveActiveOutputNode(kNodeId);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SwapLeftRight) {
@@ -878,7 +879,7 @@ TEST_F(CrasAudioClientTest, SwapLeftRight) {
   // Call method.
   client_->SwapLeftRight(kNodeId, kSwap);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrasAudioClientTest, SetGlobalOutputChannelRemix) {
@@ -897,7 +898,7 @@ TEST_F(CrasAudioClientTest, SetGlobalOutputChannelRemix) {
   // Call method.
   client_->SetGlobalOutputChannelRemix(kChannels, kMixer);
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

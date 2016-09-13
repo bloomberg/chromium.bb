@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -207,14 +208,14 @@ class ProcessProxyTest : public testing::Test {
 
     // Wait until all data from output watcher is received (QuitTask will be
     // fired on watcher thread).
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ProcessProxyTest::EndRegistryTest, base::Unretained(this)));
 
     // Wait until we clean up the process proxy.
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   std::unique_ptr<TestRunner> test_runner_;

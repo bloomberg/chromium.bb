@@ -341,7 +341,7 @@ class SimpleGeolocationWiFiTest : public ::testing::TestWithParam<bool> {
     ASSERT_TRUE(manager_test_);
     geolocation_handler_.reset(new GeolocationHandler());
     geolocation_handler_->Init();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -367,7 +367,7 @@ class SimpleGeolocationWiFiTest : public ::testing::TestWithParam<bool> {
     properties.SetStringWithoutPathExpansion(shill::kGeoSignalStrengthProperty,
                                              strength);
     manager_test_->AddGeoNetwork(shill::kTypeWifi, properties);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -408,10 +408,10 @@ TEST_P(SimpleGeolocationWiFiTest, WiFiExists) {
 
   // Add an acces point.
   AddAccessPoint(1);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Inititial call should return false and request access points.
   EXPECT_FALSE(GetWifiAccessPoints());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Second call should return true since we have an access point.
   EXPECT_TRUE(GetWifiAccessPoints());
   ASSERT_EQ(1u, wifi_access_points_.size());

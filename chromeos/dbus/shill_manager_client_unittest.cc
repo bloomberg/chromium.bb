@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -62,7 +63,7 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
     client_.reset(ShillManagerClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
@@ -126,7 +127,7 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   // Call method.
   client_->GetProperties(base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
@@ -176,7 +177,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
                                                 &type_dict_value));
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, SetProperty) {
@@ -200,7 +201,7 @@ TEST_F(ShillManagerClientTest, SetProperty) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, RequestScan) {
@@ -220,7 +221,7 @@ TEST_F(ShillManagerClientTest, RequestScan) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, EnableTechnology) {
@@ -240,7 +241,7 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, DisableTechnology) {
@@ -260,7 +261,7 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, ConfigureService) {
@@ -287,7 +288,7 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, GetService) {
@@ -314,7 +315,7 @@ TEST_F(ShillManagerClientTest, GetService) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, VerifyDestination) {
@@ -353,7 +354,7 @@ TEST_F(ShillManagerClientTest, VerifyDestination) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
@@ -397,7 +398,7 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, VerifyAndEncryptData) {
@@ -438,7 +439,7 @@ TEST_F(ShillManagerClientTest, VerifyAndEncryptData) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

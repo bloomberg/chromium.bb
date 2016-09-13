@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -270,7 +271,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         nullptr /* no ProhibitedTechnologiesHandler */);
     managed_network_configuration_handler_->AddObserver(&policy_observer_);
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -396,7 +397,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, ProfileInitialization) {
   InitializeStandardProfiles();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, RemoveIrrelevantFields) {
@@ -417,7 +418,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, RemoveIrrelevantFields) {
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
             kUser1,
             "policy/policy_wifi1_with_redundant_fields.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
@@ -436,7 +437,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsWiFi) {
@@ -456,7 +457,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsWiFi) {
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
             "policy/policy_wifi1_autoconnect.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsVPN) {
@@ -476,7 +477,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsVPN) {
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
             "policy/policy_vpn_autoconnect.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Ensure that EAP settings for ethernet are matched with the right profile
@@ -517,7 +518,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
 
   SetPolicy(
       ::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_ethernet_eap.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
@@ -527,7 +528,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
   VerifyAndClearExpectations();
 
@@ -543,7 +544,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
@@ -564,7 +565,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, PolicyApplicationRunning) {
       base::DictionaryValue());  // no device global config
 
   EXPECT_TRUE(managed_handler()->IsAnyPolicyApplicationRunning());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(managed_handler()->IsAnyPolicyApplicationRunning());
 
   SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
@@ -574,7 +575,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, PolicyApplicationRunning) {
   SetPolicy(
       ::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1_update.onc");
   EXPECT_TRUE(managed_handler()->IsAnyPolicyApplicationRunning());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(managed_handler()->IsAnyPolicyApplicationRunning());
 }
 
@@ -584,7 +585,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyAfterFinished) {
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
   VerifyAndClearExpectations();
 
@@ -600,7 +601,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyAfterFinished) {
 
   SetPolicy(
       ::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1_update.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
@@ -616,7 +617,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyBeforeFinished) {
   SetPolicy(
       ::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1_update.onc");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
@@ -648,7 +649,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Old ChromeOS versions may not have used the UIData property
@@ -681,7 +682,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
@@ -717,7 +718,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
@@ -741,7 +742,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_vpn.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   VerifyAndClearExpectations();
 }
 
@@ -774,7 +775,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   VerifyAndClearExpectations();
 
   // If we apply the policy again, without change, then the Shill profile will
@@ -787,7 +788,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
@@ -810,7 +811,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
                           _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
@@ -828,7 +829,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
                        _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
@@ -856,7 +857,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
@@ -887,7 +888,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
             kUser1,
             "policy/policy_disallow_autoconnect.onc");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that GetManagedProperties correctly augments the properties with the
   // global config from the user policy.
@@ -911,7 +912,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
                                 "wifi2"),_));
 
   GetManagedProperties(kUser1, "wifi2");
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("wifi2", get_properties_service_path_);
 
@@ -925,7 +926,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
 TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   VerifyAndClearExpectations();
 
   std::unique_ptr<base::DictionaryValue> expected_shill_properties =
@@ -942,7 +943,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
                   _, _));
 
   InitializeStandardProfiles();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 class ManagedNetworkConfigurationHandlerShutdownTest
@@ -980,7 +981,7 @@ TEST_F(ManagedNetworkConfigurationHandlerShutdownTest,
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   managed_network_configuration_handler_->RemoveObserver(&policy_observer_);
   managed_network_configuration_handler_.reset();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

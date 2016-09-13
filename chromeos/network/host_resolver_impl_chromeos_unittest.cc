@@ -61,14 +61,10 @@ class HostResolverImplChromeOSTest : public testing::Test {
     SetDefaultIPConfigs(default_device->path());
 
     // Create the host resolver from the IO message loop.
-    io_message_loop_.PostTask(
+    io_message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&HostResolverImplChromeOSTest::InitializeHostResolver,
                    base::Unretained(this)));
-    io_message_loop_.RunUntilIdle();
-
-    // Run the main message loop to create the network observer and initialize
-    // the ip address values.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -83,7 +79,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
     io_message_loop_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&HostResolverImplChromeOSTest::Resolve,
                               base::Unretained(this), info));
-    io_message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return result_;
   }
 

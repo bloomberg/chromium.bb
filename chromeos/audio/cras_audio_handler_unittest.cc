@@ -335,7 +335,7 @@ class CrasAudioHandlerTest : public testing::Test {
     cras_audio_handler_ = CrasAudioHandler::Get();
     test_observer_.reset(new TestObserver);
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Set up cras audio handlers with |audio_nodes| and set the active state of
@@ -369,7 +369,7 @@ class CrasAudioHandlerTest : public testing::Test {
     cras_audio_handler_ = CrasAudioHandler::Get();
     test_observer_.reset(new TestObserver);
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUpCrasAudioHandlerWithPrimaryActiveNode(
@@ -385,13 +385,13 @@ class CrasAudioHandlerTest : public testing::Test {
     cras_audio_handler_ = CrasAudioHandler::Get();
     test_observer_.reset(new TestObserver);
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
     fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
         audio_nodes);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   const AudioDevice* GetDeviceFromId(uint64_t id) {
@@ -423,7 +423,7 @@ class CrasAudioHandlerTest : public testing::Test {
 
   void RestartAudioClient() {
     cras_audio_handler_->AudioClientRestarted();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

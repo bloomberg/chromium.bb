@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -62,7 +63,7 @@ class ShillDeviceClientTest : public ShillClientUnittestBase {
     client_.reset(ShillDeviceClient::Create());
     client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
@@ -133,7 +134,7 @@ TEST_F(ShillDeviceClientTest, GetProperties) {
   client_->GetProperties(dbus::ObjectPath(kExampleDevicePath),
                          base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, ProposeScan) {
@@ -148,7 +149,7 @@ TEST_F(ShillDeviceClientTest, ProposeScan) {
   client_->ProposeScan(dbus::ObjectPath(kExampleDevicePath),
                        base::Bind(&ExpectNoResultValue));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, SetProperty) {
@@ -175,7 +176,7 @@ TEST_F(ShillDeviceClientTest, SetProperty) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, ClearProperty) {
@@ -192,7 +193,7 @@ TEST_F(ShillDeviceClientTest, ClearProperty) {
                          shill::kCellularAllowRoamingProperty,
                          base::Bind(&ExpectNoResultValue));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, AddIPConfig) {
@@ -211,7 +212,7 @@ TEST_F(ShillDeviceClientTest, AddIPConfig) {
                        shill::kTypeDHCP,
                        base::Bind(&ExpectObjectPathResult, expected_result));
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, RequirePin) {
@@ -237,7 +238,7 @@ TEST_F(ShillDeviceClientTest, RequirePin) {
                       mock_closure.GetCallback(),
                       mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, EnterPin) {
@@ -261,7 +262,7 @@ TEST_F(ShillDeviceClientTest, EnterPin) {
                     mock_closure.GetCallback(),
                     mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, UnblockPin) {
@@ -286,7 +287,7 @@ TEST_F(ShillDeviceClientTest, UnblockPin) {
                       mock_closure.GetCallback(),
                       mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, ChangePin) {
@@ -313,7 +314,7 @@ TEST_F(ShillDeviceClientTest, ChangePin) {
                      mock_closure.GetCallback(),
                      mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, Register) {
@@ -336,7 +337,7 @@ TEST_F(ShillDeviceClientTest, Register) {
                     mock_closure.GetCallback(),
                     mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, SetCarrier) {
@@ -357,7 +358,7 @@ TEST_F(ShillDeviceClientTest, SetCarrier) {
                     mock_closure.GetCallback(),
                     mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ShillDeviceClientTest, Reset) {
@@ -376,7 +377,7 @@ TEST_F(ShillDeviceClientTest, Reset) {
                  mock_closure.GetCallback(),
                  mock_error_callback.GetCallback());
   // Run the message loop.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

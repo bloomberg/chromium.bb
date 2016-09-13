@@ -144,7 +144,7 @@ TEST_F(ProhibitedTechnologiesHandlerTest,
       network_state_handler_->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
   EXPECT_TRUE(network_state_handler_->IsTechnologyEnabled(
       NetworkTypePattern::Cellular()));
-};
+}
 
 TEST_F(ProhibitedTechnologiesHandlerTest,
        ProhibitedTechnologiesNotAllowedUserSession) {
@@ -173,7 +173,7 @@ TEST_F(ProhibitedTechnologiesHandlerTest,
       NetworkTypePattern::WiFi(), true, network_handler::ErrorCallback());
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::Cellular(), true, network_handler::ErrorCallback());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler_->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
   EXPECT_FALSE(network_state_handler_->IsTechnologyEnabled(
@@ -185,11 +185,11 @@ TEST_F(ProhibitedTechnologiesHandlerTest,
       NetworkTypePattern::WiFi(), true, network_handler::ErrorCallback());
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::Cellular(), true, network_handler::ErrorCallback());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler_->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
   EXPECT_TRUE(network_state_handler_->IsTechnologyEnabled(
       NetworkTypePattern::Cellular()));
-};
+}
 
 }  // namespace chromeos
