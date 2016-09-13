@@ -89,6 +89,7 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
                                   const ClipNode* clip_node,
                                   const PropertyTrees* property_trees,
                                   int target_node_id,
+                                  bool for_visible_rect_calculation,
                                   gfx::RectF* clip_rect_in_target_space) {
   DCHECK(layer->clip_tree_index() == clip_node->id);
   DCHECK(clip_node->target_transform_id != target_node_id);
@@ -97,6 +98,12 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
   const EffectNode* target_effect_node =
       ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
   gfx::Transform clip_to_target;
+  // We use the local clip for clip rect calculation and combined clip for
+  // visible rect calculation.
+  gfx::RectF clip_from_clip_node =
+      for_visible_rect_calculation ? clip_node->combined_clip_in_target_space
+                                   : clip_node->clip_in_target_space;
+
   if (clip_node->target_transform_id > target_node_id) {
     // In this case, layer has a scroll parent. We need to keep the scale
     // at the layer's target but remove the scale at the scroll parent's
@@ -124,16 +131,16 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
                                        clip_node->target_transform_id,
                                        effect_tree, transform_tree);
 #endif
-      *clip_rect_in_target_space = MathUtil::MapClippedRect(
-          clip_to_target, clip_node->clip_in_target_space);
+      *clip_rect_in_target_space =
+          MathUtil::MapClippedRect(clip_to_target, clip_from_clip_node);
     } else {
       return false;
     }
   } else {
     if (property_trees->ComputeTransformFromTarget(
             target_node_id, clip_node->target_effect_id, &clip_to_target)) {
-      *clip_rect_in_target_space = MathUtil::ProjectClippedRect(
-          clip_to_target, clip_node->clip_in_target_space);
+      *clip_rect_in_target_space =
+          MathUtil::ProjectClippedRect(clip_to_target, clip_from_clip_node);
     } else {
       return false;
     }
@@ -335,9 +342,10 @@ void CalculateClipRects(
           continue;
 
         // Compute the clip rect in target space and store it.
-        if (!ComputeClipRectInTargetSpace(layer, clip_node, property_trees,
-                                          target_node_id,
-                                          &clip_rect_in_target_space))
+        bool for_visible_rect_calculation = false;
+        if (!ComputeClipRectInTargetSpace(
+                layer, clip_node, property_trees, target_node_id,
+                for_visible_rect_calculation, &clip_rect_in_target_space))
           continue;
       }
 
@@ -348,17 +356,6 @@ void CalculateClipRects(
       }
     }
   }
-}
-
-bool GetLayerClipRect(const LayerImpl* layer,
-                      const ClipNode* clip_node,
-                      const PropertyTrees* property_trees,
-                      int target_node_id,
-                      gfx::RectF* clip_rect_in_target_space) {
-  // This is equivalent of calling ComputeClipRectInTargetSpace.
-  *clip_rect_in_target_space = gfx::RectF(layer->clip_rect());
-  return property_trees->transform_tree.Node(target_node_id)
-      ->ancestors_are_invertible;
 }
 
 void CalculateVisibleRects(const LayerImplList& visible_layer_list,
@@ -456,14 +453,11 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         continue;
       }
 
-      // We use the clip node's clip_in_target_space (and not
-      // combined_clip_in_target_space) here because we want to clip
-      // with respect to clip parent's local clip and not its combined clip as
-      // the combined clip has even the clip parent's target's clip baked into
-      // it and as our target is different, we don't want to use it in our
-      // visible rect computation.
-      if (!GetLayerClipRect(layer, clip_node, property_trees, target_node_id,
-                            &combined_clip_rect_in_target_space)) {
+      bool for_visible_rect_calculation = true;
+      if (!ComputeClipRectInTargetSpace(layer, clip_node, property_trees,
+                                        target_node_id,
+                                        for_visible_rect_calculation,
+                                        &combined_clip_rect_in_target_space)) {
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }

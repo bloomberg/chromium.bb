@@ -6373,8 +6373,12 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
 
   float device_scale_factor = 1.5f;
   LayerImplList render_surface_layer_list_impl;
+  gfx::Size device_viewport_size =
+      gfx::Size(root->bounds().width() * device_scale_factor,
+                root->bounds().height() * device_scale_factor);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), gfx::Transform(), &render_surface_layer_list_impl);
+      root, device_viewport_size, gfx::Transform(),
+      &render_surface_layer_list_impl);
   inputs.device_scale_factor = device_scale_factor;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -9148,7 +9152,7 @@ TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
   clip_parent->test_properties()->clip_children->insert(clip_child);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(40, 40), clip_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(30, 30), clip_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
