@@ -857,6 +857,9 @@ class TemplateTest(GenerateChromeosConfigTestBase):
     for name, config in self.all_configs.iteritems():
       template = config._template
       if template:
+        # We mix '-' and '_' in various name spaces.
+        name = name.replace('_', '-')
+        template = template.replace('_', '-')
         child_configs = config.child_configs
         if not child_configs:
           msg = '%s should end with %s to match its template'
