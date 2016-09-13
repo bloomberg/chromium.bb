@@ -341,8 +341,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/multisample.html',
         ['mac', 'amd'], bug=617290)
-    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/primitiverestart/00.html',
         ['mac', 'amd'], bug=598930)
     self.Fail('deqp/functional/gles3/primitiverestart/01.html',
