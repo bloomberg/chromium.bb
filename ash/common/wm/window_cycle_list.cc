@@ -254,7 +254,6 @@ class WindowCycleView : public views::WidgetDelegateView {
         target_window_(nullptr) {
     DCHECK(!windows.empty());
     SetPaintToLayer(true);
-    layer()->SetBackgroundBlur(4);
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetMasksToBounds(true);
     layer()->SetOpacity(0.0);
@@ -266,7 +265,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     }
 
     set_background(views::Background::CreateSolidBackground(
-        SkColorSetA(SK_ColorBLACK, 0xCC)));
+        SkColorSetA(SK_ColorBLACK, 0xE6)));
 
     const int kInsideBorderPaddingDip = 64;
     const int kBetweenChildPaddingDip = 10;
