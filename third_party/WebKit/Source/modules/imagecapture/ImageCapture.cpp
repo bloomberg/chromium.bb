@@ -166,7 +166,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_red_eye_reduction = photoSettings.hasRedEyeReduction();
     if (settings->has_red_eye_reduction)
         settings->red_eye_reduction = photoSettings.redEyeReduction();
-    settings->has_fill_light_mode = photoSettings.hasExposureMode();
+    settings->has_fill_light_mode = photoSettings.hasFillLightMode();
     if (settings->has_fill_light_mode)
         settings->fill_light_mode = parseFillLightMode(photoSettings.fillLightMode());
     if (photoSettings.hasPointsOfInterest()) {
