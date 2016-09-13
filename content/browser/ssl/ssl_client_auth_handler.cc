@@ -12,9 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/web_contents.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
@@ -56,8 +54,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
 };
 
 void SelectCertificateOnUIThread(
-    int render_process_host_id,
-    int render_frame_host_id,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter,
     net::SSLCertRequestInfo* cert_request_info,
     const base::WeakPtr<SSLClientAuthHandler>& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -65,9 +62,7 @@ void SelectCertificateOnUIThread(
   std::unique_ptr<ClientCertificateDelegate> delegate(
       new ClientCertificateDelegateImpl(handler));
 
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
+  WebContents* web_contents = wc_getter.Run();
   if (!web_contents)
     return;
 
@@ -182,22 +177,12 @@ void SSLClientAuthHandler::DidGetClientCerts() {
     return;
   }
 
-  int render_process_host_id;
-  int render_frame_host_id;
-  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderFrame(
-          &render_process_host_id, &render_frame_host_id)) {
-    NOTREACHED();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientAuthHandler::CancelCertificateSelection,
-                   weak_factory_.GetWeakPtr()));
-    return;
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SelectCertificateOnUIThread, render_process_host_id,
-                 render_frame_host_id, base::RetainedRef(cert_request_info_),
+      base::Bind(&SelectCertificateOnUIThread,
+                 ResourceRequestInfo::ForRequest(request_)->
+                     GetWebContentsGetterForRequest(),
+                 base::RetainedRef(cert_request_info_),
                  weak_factory_.GetWeakPtr()));
 }
 
