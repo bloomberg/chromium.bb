@@ -479,4 +479,33 @@ TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
   tree.SetDelegate(NULL);
 }
 
+// UAF caught by ax_tree_fuzzer
+TEST(AXTreeTest, BogusAXTree) {
+  AXTreeUpdate initial_state;
+  AXNodeData node;
+  node.id = 0;
+  node.state = 0;
+  initial_state.nodes.push_back(node);
+  initial_state.nodes.push_back(node);
+  ui::AXTree tree;
+  tree.Unserialize(initial_state);
+}
+
+// UAF caught by ax_tree_fuzzer
+TEST(AXTreeTest, BogusAXTree2) {
+  AXTreeUpdate initial_state;
+  AXNodeData node;
+  node.id = 0;
+  node.state = 0;
+  initial_state.nodes.push_back(node);
+  AXNodeData node2;
+  node2.id = 0;
+  node2.state = 0;
+  node2.child_ids.push_back(0);
+  node2.child_ids.push_back(0);
+  initial_state.nodes.push_back(node2);
+  ui::AXTree tree;
+  tree.Unserialize(initial_state);
+}
+
 }  // namespace ui
