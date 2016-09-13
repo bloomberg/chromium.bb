@@ -52,7 +52,8 @@ class WindowTreeClientPrivate {
   bool HasPointerWatcher();
 
  private:
-   WindowTreeClient* tree_client_impl_;
+  WindowTreeClient* tree_client_impl_;
+  uint16_t next_window_id_ = 1u;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPrivate);
 };

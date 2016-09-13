@@ -24,8 +24,7 @@ void TestWindowTreeClientSetup::Init(
 
 void TestWindowTreeClientSetup::InitForWindowManager(
     WindowTreeClientDelegate* window_tree_delegate,
-    WindowManagerDelegate* window_manager_delegate,
-    const display::Display& display) {
+    WindowManagerDelegate* window_manager_delegate) {
   CommonInit(window_tree_delegate, window_manager_delegate);
   WindowTreeClientPrivate(window_tree_client_.get())
       .SetTreeAndClientId(window_tree_.get(), 1);

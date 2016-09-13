@@ -79,6 +79,8 @@ void WindowManager::Init(
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
 
+  screen_ = base::MakeUnique<display::ScreenBase>();
+
   pointer_watcher_event_router_.reset(
       new views::PointerWatcherEventRouter(window_tree_client_.get()));
 
@@ -162,11 +164,14 @@ void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
 RootWindowController* WindowManager::CreateRootWindowController(
     ui::Window* window,
     const display::Display& display) {
-  // TODO(sky): There are timing issues with using ScreenMus.
-  if (!screen_) {
-    std::unique_ptr<views::ScreenMus> screen(new views::ScreenMus(nullptr));
-    screen->Init(connector_);
-    screen_ = std::move(screen);
+  // TODO(sky): should be passed whether display is primary.
+
+  // There needs to be at least one display before creating
+  // RootWindowController, otherwise initializing the compositor fails.
+  const bool was_displays_empty = screen_->display_list()->displays().empty();
+  if (was_displays_empty) {
+    screen_->display_list()->AddDisplay(display,
+                                        display::DisplayList::Type::PRIMARY);
   }
 
   std::unique_ptr<RootWindowController> root_window_controller_ptr(
@@ -178,7 +183,34 @@ RootWindowController* WindowManager::CreateRootWindowController(
 
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnRootWindowControllerAdded(root_window_controller));
+
+  if (!was_displays_empty) {
+    // If this isn't the initial display then add the display to Screen after
+    // creating the RootWindowController. We need to do this after creating the
+    // RootWindowController as adding the display triggers OnDisplayAdded(),
+    // which triggers some overrides asking for the RootWindowController for the
+    // new display.
+    screen_->display_list()->AddDisplay(
+        display, display::DisplayList::Type::NOT_PRIMARY);
+  }
   return root_window_controller;
+}
+
+void WindowManager::DestroyRootWindowController(
+    RootWindowController* root_window_controller) {
+  // TODO(sky): WindowManager shouldn't need to observe the windows. Instead
+  // WindowManager should have a specific API that is called when a display is
+  // removed.
+  ui::Window* root_window = root_window_controller->root();
+  auto it = FindRootWindowControllerByWindow(root_window);
+  DCHECK(it != root_window_controllers_.end());
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnWillDestroyRootWindowController((*it).get()));
+  root_window_controllers_.erase(it);
+  // Remove the observer so we don't see the OnWindowDestroying/Destroyed as we
+  // already handled it here.
+  root_window->RemoveObserver(this);
+  root_window->Destroy();
 }
 
 void WindowManager::Shutdown() {
@@ -206,28 +238,28 @@ void WindowManager::Shutdown() {
   window_manager_client_ = nullptr;
 }
 
-void WindowManager::OnWindowDestroying(ui::Window* window) {
+WindowManager::RootWindowControllers::iterator
+WindowManager::FindRootWindowControllerByWindow(ui::Window* window) {
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
-    if ((*it)->root() == window) {
-      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                        OnWillDestroyRootWindowController((*it).get()));
-      return;
-    }
+    if ((*it)->root() == window)
+      return it;
   }
-  NOTREACHED();
+  return root_window_controllers_.end();
+}
+
+void WindowManager::OnWindowDestroying(ui::Window* window) {
+  auto it = FindRootWindowControllerByWindow(window);
+  DCHECK(it != root_window_controllers_.end());
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnWillDestroyRootWindowController((*it).get()));
 }
 
 void WindowManager::OnWindowDestroyed(ui::Window* window) {
+  auto it = FindRootWindowControllerByWindow(window);
+  DCHECK(it != root_window_controllers_.end());
   window->RemoveObserver(this);
-  for (auto it = root_window_controllers_.begin();
-       it != root_window_controllers_.end(); ++it) {
-    if ((*it)->root() == window) {
-      root_window_controllers_.erase(it);
-      return;
-    }
-  }
-  NOTREACHED();
+  root_window_controllers_.erase(it);
 }
 
 void WindowManager::OnEmbed(ui::Window* root) {

@@ -69,10 +69,6 @@ class WmTestBase : public testing::Test {
   void TearDown() override;
 
  private:
-  // Returns the RootWindowControllers ordered by display id (which we assume
-  // correlates with creation order).
-  std::vector<RootWindowController*> GetRootsOrderedByDisplayId();
-
   bool setup_called_ = false;
   bool teardown_called_ = false;
   std::unique_ptr<WmTestHelper> test_helper_;

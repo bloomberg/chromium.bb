@@ -81,7 +81,8 @@ using WorkspaceLayoutManagerTest = WmTestBase;
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
 // there is one).
-TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
+// TODO: disabled because of http://crbug.com/615552.
+TEST_F(WorkspaceLayoutManagerTest, DISABLED_RestoreFromMinimizeKeepsRestore) {
   ui::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
   WmWindow* window = WmWindowMus::Get(mus_window);
   WmWindowMusTestApi(window).set_use_empty_minimum_size(true);

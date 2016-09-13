@@ -339,9 +339,7 @@ void RootWindowController::Shutdown() {
   WmShell::Get()->RemoveShellObserver(this);
 
 #if defined(OS_CHROMEOS)
-  if (touch_exploration_manager_) {
-    touch_exploration_manager_.reset();
-  }
+  touch_exploration_manager_.reset();
 #endif
 
   aura::Window* root_window = GetRootWindow();

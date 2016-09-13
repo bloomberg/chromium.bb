@@ -30,8 +30,7 @@ class TestWindowTreeClientSetup {
   // Initializes the WindowTreeClient.
   void Init(WindowTreeClientDelegate* window_tree_delegate);
   void InitForWindowManager(WindowTreeClientDelegate* window_tree_delegate,
-                            WindowManagerDelegate* window_manager_delegate,
-                            const display::Display& display);
+                            WindowManagerDelegate* window_manager_delegate);
 
   // The WindowTree that WindowTreeClient talks to.
   TestWindowTree* window_tree() { return window_tree_.get(); }

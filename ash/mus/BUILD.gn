@@ -196,8 +196,6 @@ source_set("unittests") {
     "test/wm_test_base.h",
     "test/wm_test_helper.cc",
     "test/wm_test_helper.h",
-    "test/wm_test_screen.cc",
-    "test/wm_test_screen.h",
     "window_manager_unittest.cc",
     "wm/container_finder_unittest.cc",
     "wm/mru_window_tracker_unittest.cc",

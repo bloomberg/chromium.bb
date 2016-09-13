@@ -94,11 +94,24 @@ class WindowManager : public ui::WindowManagerDelegate,
  private:
   friend class WmTestHelper;
 
+  using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
+
   RootWindowController* CreateRootWindowController(
       ui::Window* window,
       const display::Display& display);
 
+  // Deletes the specified RootWindowController. Called when a display is
+  // removed.
+  void DestroyRootWindowController(
+      RootWindowController* root_window_controller);
+
   void Shutdown();
+
+  // Returns an iterator into |root_window_controllers_|. Returns
+  // root_window_controllers_.end() if |window| is not the root of a
+  // RootWindowController.
+  RootWindowControllers::iterator FindRootWindowControllerByWindow(
+      ui::Window* window);
 
   // ui::WindowObserver:
   void OnWindowDestroying(ui::Window* window) override;
@@ -143,7 +156,7 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   std::unique_ptr<ShadowController> shadow_controller_;
 
-  std::set<std::unique_ptr<RootWindowController>> root_window_controllers_;
+  RootWindowControllers root_window_controllers_;
 
   base::ObserverList<WindowManagerObserver> observers_;
 

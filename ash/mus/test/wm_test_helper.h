@@ -22,15 +22,16 @@ class Rect;
 
 namespace ui {
 class Window;
+class WindowTreeClientPrivate;
 }
 
 namespace ash {
 namespace mus {
 
-class WmTestScreen;
+class RootWindowController;
 
 // WMTestHelper is responsible for configuring a WindowTreeClient that
-// does not talk to mus. Additionally a test Screen (WmTestScreen) is created.
+// does not talk to mus.
 class WmTestHelper {
  public:
   WmTestHelper();
@@ -42,13 +43,34 @@ class WmTestHelper {
     return window_manager_app_.get();
   }
 
-  WmTestScreen* screen() { return screen_; }
+  // Returns the RootWindowControllers ordered by display id (which we assume
+  // correlates with creation order).
+  std::vector<RootWindowController*> GetRootsOrderedByDisplayId();
+
+  void UpdateDisplay(const std::string& display_spec);
 
  private:
+  // Creates a new RootWindowController given |display_spec|, which is the
+  // configuration of the display.
+  RootWindowController* CreateRootWindowController(
+      const std::string& display_spec);
+
+  // Updates the display of an existing RootWindowController.
+  void UpdateDisplay(RootWindowController* root_window_controller,
+                     const std::string& display_spec);
+
+  // Destroys a RootWindowController.
+  void DestroyRootWindowController(
+      RootWindowController* root_window_controller);
+
   std::unique_ptr<base::MessageLoop> message_loop_;
   ui::TestWindowTreeClientSetup window_tree_client_setup_;
   std::unique_ptr<WindowManagerApplication> window_manager_app_;
-  WmTestScreen* screen_ = nullptr;  // Owned by |window_manager_app_|.
+  std::unique_ptr<ui::WindowTreeClientPrivate> window_tree_client_private_;
+
+  // Id for the next Display created by CreateRootWindowController().
+  int64_t next_display_id_ = 1;
+
   std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(WmTestHelper);

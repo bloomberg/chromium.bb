@@ -9,11 +9,8 @@
 
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
-#include "ash/mus/test/wm_test_screen.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display.h"
@@ -51,41 +48,6 @@ ui::mojom::WindowType MusWindowTypeFromWmWindowType(
   return ui::mojom::WindowType::CONTROL;
 }
 
-bool CompareByDisplayId(const RootWindowController* root1,
-                        const RootWindowController* root2) {
-  return root1->display().id() < root2->display().id();
-}
-
-// TODO(sky): at some point this needs to support everything in DisplayInfo,
-// for now just the bare minimum, which is [x+y-]wxh.
-gfx::Rect ParseDisplayBounds(const std::string& spec) {
-  gfx::Rect bounds;
-  const std::vector<std::string> parts =
-      base::SplitString(spec, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::string size_spec;
-  if (parts.size() == 2u) {
-    size_spec = parts[1];
-    const std::vector<std::string> origin_parts = base::SplitString(
-        parts[0], "+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    CHECK_EQ(2u, origin_parts.size());
-    int x, y;
-    CHECK(base::StringToInt(origin_parts[0], &x));
-    CHECK(base::StringToInt(origin_parts[1], &y));
-    bounds.set_origin(gfx::Point(x, y));
-  } else {
-    CHECK_EQ(1u, parts.size());
-    size_spec = spec;
-  }
-  const std::vector<std::string> size_parts = base::SplitString(
-      size_spec, "x", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  CHECK_EQ(2u, size_parts.size());
-  int w, h;
-  CHECK(base::StringToInt(size_parts[0], &w));
-  CHECK(base::StringToInt(size_parts[1], &h));
-  bounds.set_size(gfx::Size(w, h));
-  return bounds;
-}
-
 }  // namespace
 
 WmTestBase::WmTestBase() {}
@@ -98,51 +60,36 @@ WmTestBase::~WmTestBase() {
 }
 
 bool WmTestBase::SupportsMultipleDisplays() const {
-  return false;
+  return true;
 }
 
 void WmTestBase::UpdateDisplay(const std::string& display_spec) {
-  const std::vector<std::string> parts = base::SplitString(
-      display_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  // TODO(sky): allow > 1 once http://crbug.com/611563 is fixed.
-  DCHECK_EQ(1u, parts.size());
-  gfx::Rect bounds = ParseDisplayBounds(parts[0]);
-  std::vector<RootWindowController*> roots =
-      WmTestBase::GetRootsOrderedByDisplayId();
-  roots[0]->display_.set_bounds(bounds);
-  gfx::Rect work_area(bounds);
-  // Offset the height slightly to give a different work area. -2 is arbitrary,
-  // it could be anything.
-  work_area.set_height(std::max(0, work_area.height() - 2));
-  roots[0]->display_.set_work_area(work_area);
-  roots[0]->root()->SetBounds(gfx::Rect(bounds.size()));
-  test_helper_->screen()->display_list()->UpdateDisplay(
-      roots[0]->display(), display::DisplayList::Type::PRIMARY);
+  test_helper_->UpdateDisplay(display_spec);
 }
 
 ui::Window* WmTestBase::GetPrimaryRootWindow() {
   std::vector<RootWindowController*> roots =
-      WmTestBase::GetRootsOrderedByDisplayId();
+      test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
   return roots[0]->root();
 }
 
 ui::Window* WmTestBase::GetSecondaryRootWindow() {
   std::vector<RootWindowController*> roots =
-      WmTestBase::GetRootsOrderedByDisplayId();
+      test_helper_->GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? nullptr : roots[1]->root();
 }
 
 display::Display WmTestBase::GetPrimaryDisplay() {
   std::vector<RootWindowController*> roots =
-      WmTestBase::GetRootsOrderedByDisplayId();
+      test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
   return roots[0]->display();
 }
 
 display::Display WmTestBase::GetSecondaryDisplay() {
   std::vector<RootWindowController*> roots =
-      WmTestBase::GetRootsOrderedByDisplayId();
+      test_helper_->GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? display::Display() : roots[1]->display();
 }
 
@@ -166,9 +113,9 @@ ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
           ui::mojom::kResizeBehaviorCanMaximize |
           ui::mojom::kResizeBehaviorCanMinimize);
 
-  ui::Window* window =
-      GetRootsOrderedByDisplayId()[0]->window_manager()->NewTopLevelWindow(
-          &properties);
+  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
+                           ->window_manager()
+                           ->NewTopLevelWindow(&properties);
   window->SetVisible(true);
   return window;
 }
@@ -178,9 +125,9 @@ ui::Window* WmTestBase::CreateFullscreenTestWindow() {
   properties[ui::mojom::WindowManager::kShowState_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
-  ui::Window* window =
-      GetRootsOrderedByDisplayId()[0]->window_manager()->NewTopLevelWindow(
-          &properties);
+  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
+                           ->window_manager()
+                           ->NewTopLevelWindow(&properties);
   window->SetVisible(true);
   return window;
 }
@@ -191,9 +138,10 @@ ui::Window* WmTestBase::CreateChildTestWindow(ui::Window* parent,
   properties[ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
           MusWindowTypeFromWmWindowType(ui::wm::WINDOW_TYPE_NORMAL)));
-  ui::Window* window =
-      GetRootsOrderedByDisplayId()[0]->root()->window_tree()->NewWindow(
-          &properties);
+  ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
+                           ->root()
+                           ->window_tree()
+                           ->NewWindow(&properties);
   window->SetBounds(bounds);
   window->SetVisible(true);
   parent->AddChild(window);
@@ -209,16 +157,6 @@ void WmTestBase::SetUp() {
 void WmTestBase::TearDown() {
   teardown_called_ = true;
   test_helper_.reset();
-}
-
-std::vector<RootWindowController*> WmTestBase::GetRootsOrderedByDisplayId() {
-  std::set<RootWindowController*> roots = test_helper_->window_manager_app()
-                                              ->window_manager()
-                                              ->GetRootWindowControllers();
-  std::vector<RootWindowController*> ordered_roots;
-  ordered_roots.insert(ordered_roots.begin(), roots.begin(), roots.end());
-  std::sort(ordered_roots.begin(), ordered_roots.end(), &CompareByDisplayId);
-  return ordered_roots;
 }
 
 }  // namespace mus
