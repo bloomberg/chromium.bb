@@ -472,16 +472,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(v8::Isolate* isolate
 
     if (!depth)
         TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
-    v8::MaybeLocal<v8::Value> result;
-    {
-        // Create an extra block so FunctionCall trace event end phase is recorded after
-        // v8::MicrotasksScope destructor, as the latter is running microtasks.
-        v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
-        ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
-        result = constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
-        crashIfIsolateIsDead(isolate);
-        ThreadDebugger::didExecuteScript(isolate);
-    }
+    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+    ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
+    v8::MaybeLocal<v8::Value> result = constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
+    crashIfIsolateIsDead(isolate);
+    ThreadDebugger::didExecuteScript(isolate);
     if (!depth)
         TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
     return result;
@@ -506,18 +501,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
     if (!depth)
         TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
 
-    v8::MaybeLocal<v8::Value> result;
-    {
-        // Create an extra block so FunctionCall trace event end phase is recorded after
-        // v8::MicrotasksScope destructor, as the latter is running microtasks.
-        v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
-        InspectorInstrumentation::willExecuteScript(context);
-        ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
-        result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-        crashIfIsolateIsDead(isolate);
-        ThreadDebugger::didExecuteScript(isolate);
-        InspectorInstrumentation::didExecuteScript(context);
-    }
+    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+    InspectorInstrumentation::willExecuteScript(context);
+    ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
+    v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
+    crashIfIsolateIsDead(isolate);
+    ThreadDebugger::didExecuteScript(isolate);
+    InspectorInstrumentation::didExecuteScript(context);
     if (!depth)
         TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
     return result;
