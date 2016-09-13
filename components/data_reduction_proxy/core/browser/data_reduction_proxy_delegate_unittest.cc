@@ -81,25 +81,56 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
       const DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator,
       DataReductionProxyBypassStats* bypass_stats,
+      bool proxy_supports_quic,
       net::NetLog* net_log)
       : DataReductionProxyDelegate(config,
                                    configurator,
                                    event_creator,
                                    bypass_stats,
-                                   net_log) {}
+                                   net_log),
+        proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}
 
   bool SupportsQUIC(const net::ProxyServer& proxy_server) const override {
-    return proxy_server ==
-           net::ProxyServer::FromURI("https://origin.net:443",
-                                     net::ProxyServer::SCHEME_HTTPS);
+    return proxy_supports_quic_;
+  }
+
+  // Verifies if the histograms related to use of QUIC proxy are recorded
+  // correctly.
+  void VerifyQuicHistogramCounts(const base::HistogramTester& histogram_tester,
+                                 bool expect_alternative_proxy_server,
+                                 bool supports_quic,
+                                 bool broken) const {
+    if (expect_alternative_proxy_server && !broken) {
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.Quic.ProxyStatus",
+          TestDataReductionProxyDelegate::QuicProxyStatus::
+              QUIC_PROXY_STATUS_AVAILABLE,
+          1);
+    } else if (!supports_quic && !broken) {
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.Quic.ProxyStatus",
+          TestDataReductionProxyDelegate::QuicProxyStatus::
+              QUIC_PROXY_NOT_SUPPORTED,
+          1);
+    } else {
+      ASSERT_TRUE(broken);
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.Quic.ProxyStatus",
+          TestDataReductionProxyDelegate::QuicProxyStatus::
+              QUIC_PROXY_STATUS_MARKED_AS_BROKEN,
+          1);
+    }
   }
 
   using DataReductionProxyDelegate::GetAlternativeProxy;
   using DataReductionProxyDelegate::OnAlternativeProxyBroken;
+  using DataReductionProxyDelegate::QuicProxyStatus;
 
  private:
+  const bool proxy_supports_quic_;
+
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyDelegate);
 };
 
@@ -207,61 +238,65 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
 
   const struct {
     bool is_in_quic_field_trial;
+    bool proxy_supports_quic;
     GURL gurl;
     net::ProxyServer::Scheme first_proxy_scheme;
     net::ProxyServer::Scheme second_proxy_scheme;
   } tests[] = {
-      {false, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
-       net::ProxyServer::SCHEME_DIRECT},
-      {false, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
-       net::ProxyServer::SCHEME_HTTP},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
-       net::ProxyServer::SCHEME_DIRECT},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
-       net::ProxyServer::SCHEME_DIRECT},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_DIRECT,
-       net::ProxyServer::SCHEME_DIRECT},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
-       net::ProxyServer::SCHEME_DIRECT},
-      {true, GURL("https://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
-       net::ProxyServer::SCHEME_DIRECT},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_DIRECT,
-       net::ProxyServer::SCHEME_HTTPS},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTPS,
-       net::ProxyServer::SCHEME_HTTPS},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_HTTP,
-       net::ProxyServer::SCHEME_HTTPS},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
-       net::ProxyServer::SCHEME_HTTP},
-      {true, GURL("http://www.example.com"), net::ProxyServer::SCHEME_QUIC,
-       net::ProxyServer::SCHEME_HTTPS},
-  };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+      {false, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_DIRECT},
+      {false, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTP},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_DIRECT},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_DIRECT},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_DIRECT, net::ProxyServer::SCHEME_DIRECT},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_DIRECT},
+      {true, true, GURL("https://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_DIRECT},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_DIRECT, net::ProxyServer::SCHEME_HTTPS},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTPS},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_HTTPS},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTP},
+      {true, true, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTPS},
+      {true, false, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTP},
+      {true, false, GURL("http://www.example.com"),
+       net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTPS}};
+  for (const auto test : tests) {
     // True if there should exist a valid alternative proxy server corresponding
     // to the first proxy in the list of proxies available to the data reduction
     // proxy.
     const bool expect_alternative_proxy_server_to_first_proxy =
-        tests[i].is_in_quic_field_trial &&
-        !tests[i].gurl.SchemeIsCryptographic() &&
-        tests[i].first_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
+        test.is_in_quic_field_trial && test.proxy_supports_quic &&
+        !test.gurl.SchemeIsCryptographic() &&
+        test.first_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
 
     // True if there should exist a valid alternative proxy server corresponding
     // to the second proxy in the list of proxies available to the data
     // reduction proxy.
     const bool expect_alternative_proxy_server_to_second_proxy =
-        tests[i].is_in_quic_field_trial &&
-        !tests[i].gurl.SchemeIsCryptographic() &&
-        tests[i].second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
+        test.is_in_quic_field_trial && test.proxy_supports_quic &&
+        !test.gurl.SchemeIsCryptographic() &&
+        test.second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
 
     std::vector<net::ProxyServer> proxies_for_http;
     net::ProxyServer first_proxy;
     net::ProxyServer second_proxy;
-    if (tests[i].first_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
-      first_proxy = GetProxyWithScheme(tests[i].first_proxy_scheme);
+    if (test.first_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
+      first_proxy = GetProxyWithScheme(test.first_proxy_scheme);
       proxies_for_http.push_back(first_proxy);
     }
-    if (tests[i].second_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
-      second_proxy = GetProxyWithScheme(tests[i].second_proxy_scheme);
+    if (test.second_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
+      second_proxy = GetProxyWithScheme(test.second_proxy_scheme);
       proxies_for_http.push_back(second_proxy);
     }
 
@@ -279,34 +314,88 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
     TestDataReductionProxyDelegate delegate(
         config.get(), test_context->io_data()->configurator(),
         test_context->io_data()->event_creator(),
-        test_context->io_data()->bypass_stats(),
+        test_context->io_data()->bypass_stats(), test.proxy_supports_quic,
         test_context->io_data()->net_log());
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(
         params::GetQuicFieldTrialName(),
-        tests[i].is_in_quic_field_trial ? "Enabled" : "Control");
+        test.is_in_quic_field_trial ? "Enabled" : "Control");
 
     net::ProxyServer alternative_proxy_server_to_first_proxy;
     net::ProxyServer alternative_proxy_server_to_second_proxy;
 
-    delegate.GetAlternativeProxy(tests[i].gurl, first_proxy,
-                                 &alternative_proxy_server_to_first_proxy);
-    EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
-              alternative_proxy_server_to_first_proxy.is_valid())
-        << i;
+    {
+      // Test if the alternative proxy is correctly set if the resolved proxy is
+      // |first_proxy|.
+      base::HistogramTester histogram_tester;
+      delegate.GetAlternativeProxy(test.gurl, first_proxy,
+                                   &alternative_proxy_server_to_first_proxy);
+      EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
+                alternative_proxy_server_to_first_proxy.is_valid());
 
-    delegate.GetAlternativeProxy(tests[i].gurl, second_proxy,
-                                 &alternative_proxy_server_to_second_proxy);
-    EXPECT_EQ(expect_alternative_proxy_server_to_second_proxy,
-              alternative_proxy_server_to_second_proxy.is_valid());
+      // Verify that the metrics are recorded correctly.
+      if (test.is_in_quic_field_trial && !test.gurl.SchemeIsCryptographic() &&
+          test.first_proxy_scheme == net::ProxyServer::SCHEME_HTTPS) {
+        delegate.VerifyQuicHistogramCounts(
+            histogram_tester, expect_alternative_proxy_server_to_first_proxy,
+            test.proxy_supports_quic, false);
+      } else {
+        histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
+                                          0);
+      }
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
+    }
 
-    EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
-              alternative_proxy_server_to_first_proxy.is_valid());
-    EXPECT_EQ(expect_alternative_proxy_server_to_second_proxy,
-              alternative_proxy_server_to_second_proxy.is_valid());
+    {
+      // Test if the alternative proxy is correctly set if the resolved proxy is
+      // |second_proxy|.
+      base::HistogramTester histogram_tester;
+      delegate.GetAlternativeProxy(test.gurl, second_proxy,
+                                   &alternative_proxy_server_to_second_proxy);
+      EXPECT_EQ(expect_alternative_proxy_server_to_first_proxy,
+                alternative_proxy_server_to_first_proxy.is_valid());
+      EXPECT_EQ(expect_alternative_proxy_server_to_second_proxy,
+                alternative_proxy_server_to_second_proxy.is_valid());
 
+      // Verify that the metrics are recorded correctly.
+      if (test.is_in_quic_field_trial && !test.gurl.SchemeIsCryptographic() &&
+          test.second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS) {
+        delegate.VerifyQuicHistogramCounts(
+            histogram_tester, expect_alternative_proxy_server_to_second_proxy,
+            test.proxy_supports_quic, false);
+      } else {
+        histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
+                                          0);
+      }
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
+    }
+
+    {
+      // Test if the alternative proxy is correctly set if the resolved proxy is
+      // a not a data reduction proxy.
+      base::HistogramTester histogram_tester;
+      net::ProxyServer alternative_proxy_server_to_non_data_reduction_proxy;
+      delegate.GetAlternativeProxy(
+          test.gurl,
+          net::ProxyServer::FromURI("not.data.reduction.proxy.net:443",
+                                    net::ProxyServer::SCHEME_HTTPS),
+          &alternative_proxy_server_to_non_data_reduction_proxy);
+      EXPECT_FALSE(
+          alternative_proxy_server_to_non_data_reduction_proxy.is_valid());
+
+      // Verify that the metrics are recorded correctly.
+      histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
+                                        0);
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
+    }
+
+    // Test if the alternative proxy is correctly marked as broken.
     if (expect_alternative_proxy_server_to_first_proxy) {
+      base::HistogramTester histogram_tester;
       // Verify that when the alternative proxy server is reported as broken,
       // then it is no longer returned when GetAlternativeProxy is called.
       EXPECT_EQ(
@@ -320,8 +409,14 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
 
       delegate.OnAlternativeProxyBroken(first_proxy);
       alternative_proxy_server_to_first_proxy = net::ProxyServer();
-      delegate.GetAlternativeProxy(tests[i].gurl, first_proxy,
+      delegate.GetAlternativeProxy(test.gurl, first_proxy,
                                    &alternative_proxy_server_to_first_proxy);
+
+      delegate.VerifyQuicHistogramCounts(
+          histogram_tester, expect_alternative_proxy_server_to_first_proxy,
+          test.proxy_supports_quic, true);
+      histogram_tester.ExpectTotalCount(
+          "DataReductionProxy.Quic.OnAlternativeProxyBroken", 1);
       EXPECT_FALSE(alternative_proxy_server_to_first_proxy.is_valid());
     }
   }

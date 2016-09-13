@@ -8142,6 +8142,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.Quic.OnAlternativeProxyBroken"
+    units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Number of times an alternative QUIC proxy was marked as broken.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.Quic.ProxyStatus"
+    enum="DataReductionProxyQuicProxyStatus">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the result of the attempt to use a data reduction proxy that
+    supports QUIC. The metric is logged for every request for which the resolved
+    proxy is a data reduction HTTPS proxy.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.RequestCompletionErrorCodes"
     enum="NetErrorCodes">
   <obsolete>
@@ -74579,6 +74597,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5"
       label="Proxy pref of an embedded PAC script containing a
              *.googlezip.net proxy was cleared"/>
+</enum>
+
+<enum name="DataReductionProxyQuicProxyStatus" type="int">
+  <int value="0" label="QUIC proxy was available"/>
+  <int value="1"
+      label="Resolved HTTPS data reduction proxy does not support QUIC"/>
+  <int value="2" label="QUIC proxies have been marked as broken"/>
 </enum>
 
 <enum name="DataReductionProxyResponseProxyServerStatus" type="int">

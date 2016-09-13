@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -107,7 +106,7 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
     return;
   }
 
-  if (alternative_proxies_broken_ || !params::IsIncludedInQuicFieldTrial())
+  if (!params::IsIncludedInQuicFieldTrial())
     return;
 
   if (!resolved_proxy_server.is_valid() || !resolved_proxy_server.is_https())
@@ -119,25 +118,33 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
     return;
   }
 
-  if (!SupportsQUIC(resolved_proxy_server))
+  if (alternative_proxies_broken_) {
+    RecordQuicProxyStatus(QUIC_PROXY_STATUS_MARKED_AS_BROKEN);
     return;
+  }
 
-  // TODO(tbansal): Record UMA to measure how frequently this happens.
+  if (!SupportsQUIC(resolved_proxy_server)) {
+    RecordQuicProxyStatus(QUIC_PROXY_NOT_SUPPORTED);
+    return;
+  }
+
   *alternative_proxy_server = net::ProxyServer(
       net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair());
   DCHECK(alternative_proxy_server->is_valid());
+  RecordQuicProxyStatus(QUIC_PROXY_STATUS_AVAILABLE);
   return;
 }
 
 void DataReductionProxyDelegate::OnAlternativeProxyBroken(
     const net::ProxyServer& alternative_proxy_server) {
-  // TODO(tbansal): Record UMA to measure how frequently this happens.
   // TODO(tbansal): Reset this on connection change events.
   // Currently, DataReductionProxyDelegate does not maintain a list of broken
   // proxies. If one alternative proxy is broken, use of all alternative proxies
   // is disabled because it is likely that other QUIC proxies would be
-  // broken  too.
+  // broken   too.
   alternative_proxies_broken_ = true;
+  UMA_HISTOGRAM_COUNTS_100("DataReductionProxy.Quic.OnAlternativeProxyBroken",
+                           1);
 }
 
 bool DataReductionProxyDelegate::SupportsQUIC(
@@ -147,6 +154,12 @@ bool DataReductionProxyDelegate::SupportsQUIC(
   return proxy_server ==
          net::ProxyServer::FromURI("proxy.googlezip.net:443",
                                    net::ProxyServer::SCHEME_HTTPS);
+}
+
+void DataReductionProxyDelegate::RecordQuicProxyStatus(
+    QuicProxyStatus status) const {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
+                            QUIC_PROXY_STATUS_BOUNDARY);
 }
 
 void OnResolveProxyHandler(const GURL& url,

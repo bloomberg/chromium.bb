@@ -76,7 +76,19 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   // Returns true if |proxy_server| supports QUIC.
   virtual bool SupportsQUIC(const net::ProxyServer& proxy_server) const;
 
+  // Availability status of data reduction QUIC proxy.
+  // Protected so that the enum values are accessible for testing.
+  enum QuicProxyStatus {
+    QUIC_PROXY_STATUS_AVAILABLE,
+    QUIC_PROXY_NOT_SUPPORTED,
+    QUIC_PROXY_STATUS_MARKED_AS_BROKEN,
+    QUIC_PROXY_STATUS_BOUNDARY
+  };
+
  private:
+  // Records the availability status of data reduction proxy.
+  void RecordQuicProxyStatus(QuicProxyStatus status) const;
+
   const DataReductionProxyConfig* config_;
   const DataReductionProxyConfigurator* configurator_;
   DataReductionProxyEventCreator* event_creator_;
