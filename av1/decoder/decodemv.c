@@ -81,7 +81,7 @@ static PREDICTION_MODE read_inter_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
 
   mode_prob = cm->fc->refmv_prob[mode_ctx];
-  if (aom_read(r, mode_prob) == 0, ACCT_STR) {
+  if (aom_read(r, mode_prob, ACCT_STR) == 0) {
     if (counts) ++counts->refmv_mode[mode_ctx][0];
     return NEARESTMV;
   } else {
@@ -113,7 +113,7 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
         aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
-        if (!aom_read(r, drl_prob), ACCT_STR) {
+        if (!aom_read(r, drl_prob, ACCT_STR)) {
           mbmi->ref_mv_idx = idx;
           if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
           return;
@@ -133,7 +133,7 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
         aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
-        if (!aom_read(r, drl_prob), ACCT_STR) {
+        if (!aom_read(r, drl_prob, ACCT_STR)) {
           mbmi->ref_mv_idx = idx - 1;
           if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
           return;
