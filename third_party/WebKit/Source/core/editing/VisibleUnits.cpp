@@ -1241,10 +1241,7 @@ bool inSameLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& position1
     if (position1.isNull() || position2.isNull())
         return false;
     DCHECK_EQ(position1.position().document(), position2.position().document());
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    position1.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!position1.position().document()->needsLayoutTreeUpdate());
 
     PositionWithAffinityTemplate<Strategy> startOfLine1 = startOfLine(position1);
     PositionWithAffinityTemplate<Strategy> startOfLine2 = startOfLine(position2);

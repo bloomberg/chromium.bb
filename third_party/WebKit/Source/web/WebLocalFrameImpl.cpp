@@ -1199,6 +1199,11 @@ WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange)
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelectionExtent");
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     frame()->selection().moveRangeSelectionExtent(frame()->view()->viewportToContents(point));
 }
 
