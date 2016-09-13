@@ -132,6 +132,11 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const
         }
     }
 
+    // TODO(flackr): When we correctly clip the scrolling contents layer we can
+    // paint locally equivalent backgrounds into it. https://crbug.com/645957
+    if (!style()->hasAutoClip())
+        return false;
+
     // TODO(flackr): We should be able to paint locally attached borders with a border-radius
     // but these currently do not paint correctly. https://crbug.com/645949
     if (style()->hasBorderRadius())
