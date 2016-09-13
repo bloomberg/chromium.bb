@@ -83,6 +83,7 @@ PermissionRequestManager::PermissionRequestManager(
 #endif
       view_(nullptr),
       main_frame_has_fully_loaded_(false),
+      persist_(true),
       auto_response_for_test_(NONE),
       weak_factory_(this) {
 }
@@ -310,6 +311,10 @@ void PermissionRequestManager::ToggleAccept(int request_index, bool new_value) {
   accept_states_[request_index] = new_value;
 }
 
+void PermissionRequestManager::TogglePersist(bool new_value) {
+  persist_ = new_value;
+}
+
 void PermissionRequestManager::Accept() {
   PermissionUmaUtil::PermissionPromptAccepted(requests_, accept_states_);
 
@@ -445,19 +450,25 @@ void PermissionRequestManager::PermissionGrantedIncludingDuplicates(
     PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
+  request->set_persist(persist_);
   request->PermissionGranted();
   auto range = duplicate_requests_.equal_range(request);
-  for (auto it = range.first; it != range.second; ++it)
+  for (auto it = range.first; it != range.second; ++it) {
+    it->second->set_persist(persist_);
     it->second->PermissionGranted();
+  }
 }
 void PermissionRequestManager::PermissionDeniedIncludingDuplicates(
     PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
+  request->set_persist(persist_);
   request->PermissionDenied();
   auto range = duplicate_requests_.equal_range(request);
-  for (auto it = range.first; it != range.second; ++it)
+  for (auto it = range.first; it != range.second; ++it) {
+    it->second->set_persist(persist_);
     it->second->PermissionDenied();
+  }
 }
 void PermissionRequestManager::CancelledIncludingDuplicates(
     PermissionRequest* request) {

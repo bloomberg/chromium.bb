@@ -220,18 +220,16 @@ void PermissionContextBase::PermissionDecided(
   PermissionRequestGestureType gesture_type =
       user_gesture ? PermissionRequestGestureType::GESTURE
                    : PermissionRequestGestureType::NO_GESTURE;
-  if (persist) {
-    DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-           content_setting == CONTENT_SETTING_BLOCK);
-    if (content_setting == CONTENT_SETTING_ALLOW) {
-      PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
-                                           requesting_origin, profile_);
-    } else {
-      PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
-                                          requesting_origin, profile_);
-    }
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK ||
+         content_setting == CONTENT_SETTING_DEFAULT);
+  if (content_setting == CONTENT_SETTING_ALLOW) {
+    PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
+                                         requesting_origin, profile_);
+  } else if (content_setting == CONTENT_SETTING_BLOCK) {
+    PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
+                                        requesting_origin, profile_);
   } else {
-    DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
     PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
                                            requesting_origin, profile_);
   }
@@ -239,7 +237,7 @@ void PermissionContextBase::PermissionDecided(
 
   // Check if we should convert a dismiss decision into a block decision. This
   // is gated on enabling the kBlockPromptsIfDismissedOften feature.
-  if (!persist &&
+  if (content_setting == CONTENT_SETTING_DEFAULT &&
       decision_auto_blocker_->ShouldChangeDismissalToBlock(requesting_origin,
                                                            permission_type_)) {
     persist = true;

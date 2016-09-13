@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
@@ -58,6 +59,7 @@ enum class PermissionRequestGestureType {
 // requests, or depending on the situation, not shown at all.
 class PermissionRequest {
  public:
+  PermissionRequest();
   virtual ~PermissionRequest() {}
 
   // Returns a vector icon id if the icon should be drawn as a vector
@@ -94,6 +96,9 @@ class PermissionRequest {
   // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
 
+  // True if a persistence toggle should be shown in the UI for this request.
+  virtual bool ShouldShowPersistenceToggle() const;
+
   // Used to record UMA metrics for permission requests.
   virtual PermissionRequestType GetPermissionRequestType() const;
 
@@ -101,6 +106,17 @@ class PermissionRequest {
   // To keep things simple this metric is only recorded for the most popular
   // request types.
   virtual PermissionRequestGestureType GetGestureType() const;
+
+  void set_persist(bool persist) { persist_ = persist; }
+
+ protected:
+  bool persist() const { return persist_; }
+
+ private:
+  // Whether or not the response for this prompt should be persisted.
+  bool persist_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequest);
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_

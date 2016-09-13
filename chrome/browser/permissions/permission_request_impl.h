@@ -47,6 +47,7 @@ class PermissionRequestImpl : public PermissionRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
+  bool ShouldShowPersistenceToggle() const override;
   PermissionRequestType GetPermissionRequestType() const override;
   PermissionRequestGestureType GetGestureType() const override;
 

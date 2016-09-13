@@ -6,8 +6,14 @@
 
 #include "ui/gfx/vector_icons_public.h"
 
+PermissionRequest::PermissionRequest() : persist_(true) {}
+
 gfx::VectorIconId PermissionRequest::GetVectorIconId() const {
   return gfx::VectorIconId::VECTOR_ICON_NONE;
+}
+
+bool PermissionRequest::ShouldShowPersistenceToggle() const {
+  return false;
 }
 
 PermissionRequestType PermissionRequest::GetPermissionRequestType() const {

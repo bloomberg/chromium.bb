@@ -414,6 +414,9 @@ are declared in build/common.gypi.
         <ph name="PERMISSION_TYPE_LABEL">$1<ex>Plugins</ex></ph>:
       </message>
 
+      <message name="IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT" desc="The label for the checkbox used to allow users to optionally persist a permission request decision">
+        Remember my decision
+      </message>
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a papup.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to:
       </message>

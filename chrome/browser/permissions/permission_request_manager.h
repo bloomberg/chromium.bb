@@ -125,6 +125,7 @@ class PermissionRequestManager
 
   // PermissionPrompt::Delegate:
   void ToggleAccept(int request_index, bool new_value) override;
+  void TogglePersist(bool new_value) override;
   void Accept() override;
   void Deny() override;
   void Closing() override;
@@ -185,6 +186,9 @@ class PermissionRequestManager
   // TODO(gbillock): if there are iframes in the page, we need to deal with it.
   GURL request_url_;
   bool main_frame_has_fully_loaded_;
+
+  // Whether the response to each request should be persisted.
+  bool persist_;
 
   // Whether each of the requests in |requests_| is accepted by the user.
   std::vector<bool> accept_states_;

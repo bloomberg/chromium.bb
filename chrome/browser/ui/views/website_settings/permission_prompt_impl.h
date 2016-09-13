@@ -37,7 +37,8 @@ class PermissionPromptImpl : public PermissionPrompt {
   gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
-  void Toggle(int index, bool value);
+  void ToggleAccept(int index, bool value);
+  void TogglePersist(bool value);
   void Accept();
   void Deny();
 

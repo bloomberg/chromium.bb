@@ -20,6 +20,7 @@ class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
   TestPermissionBubbleViewDelegate();
 
   void ToggleAccept(int, bool) override {}
+  void TogglePersist(bool) override {}
   void Accept() override {}
   void Deny() override {}
   void Closing() override {}

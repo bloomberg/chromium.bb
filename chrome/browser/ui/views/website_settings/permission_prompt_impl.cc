@@ -179,6 +179,7 @@ class PermissionsBubbleDialogDelegateView
   base::string16 display_origin_;
   std::unique_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
+  views::Checkbox* persist_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
 };
@@ -188,7 +189,8 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state)
     : owner_(owner),
-      multiple_requests_(requests.size() > 1) {
+      multiple_requests_(requests.size() > 1),
+      persist_checkbox_(nullptr) {
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -201,6 +203,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  bool show_persistence_toggle = true;
   for (size_t index = 0; index < requests.size(); index++) {
     DCHECK(index < accept_state.size());
     // The row is laid out containing a leading-aligned label area and a
@@ -237,6 +240,9 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     label_container->AddChildView(label);
     row_layout->AddView(label_container);
 
+    // Only show the toggle if every request wants to show it.
+    show_persistence_toggle = show_persistence_toggle &&
+                              requests[index]->ShouldShowPersistenceToggle();
     if (requests.size() > 1) {
       PermissionCombobox* combobox = new PermissionCombobox(
           this, index, requests[index]->GetOrigin(),
@@ -248,6 +254,14 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     }
 
     AddChildView(row);
+  }
+
+  if (show_persistence_toggle) {
+    persist_checkbox_ = new views::Checkbox(
+        l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT));
+    persist_checkbox_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    persist_checkbox_->SetChecked(true);
+    AddChildView(persist_checkbox_);
   }
 }
 
@@ -327,14 +341,18 @@ base::string16 PermissionsBubbleDialogDelegateView::GetDialogButtonLabel(
 }
 
 bool PermissionsBubbleDialogDelegateView::Cancel() {
-  if (owner_)
+  if (owner_) {
+    owner_->TogglePersist(!persist_checkbox_ || persist_checkbox_->checked());
     owner_->Deny();
+  }
   return true;
 }
 
 bool PermissionsBubbleDialogDelegateView::Accept() {
-  if (owner_)
+  if (owner_) {
+    owner_->TogglePersist(!persist_checkbox_ || persist_checkbox_->checked());
     owner_->Accept();
+  }
   return true;
 }
 
@@ -346,7 +364,7 @@ bool PermissionsBubbleDialogDelegateView::Close() {
 void PermissionsBubbleDialogDelegateView::PermissionSelectionChanged(
     int index,
     bool allowed) {
-  owner_->Toggle(index, allowed);
+  owner_->ToggleAccept(index, allowed);
 }
 
 void PermissionsBubbleDialogDelegateView::UpdateAnchor(
@@ -446,9 +464,14 @@ void PermissionPromptImpl::Closing() {
     delegate_->Closing();
 }
 
-void PermissionPromptImpl::Toggle(int index, bool value) {
+void PermissionPromptImpl::ToggleAccept(int index, bool value) {
   if (delegate_)
     delegate_->ToggleAccept(index, value);
+}
+
+void PermissionPromptImpl::TogglePersist(bool value) {
+  if (delegate_)
+    delegate_->TogglePersist(value);
 }
 
 void PermissionPromptImpl::Accept() {

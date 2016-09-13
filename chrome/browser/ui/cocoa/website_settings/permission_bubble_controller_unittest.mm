@@ -70,6 +70,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
  public:
 
   MOCK_METHOD2(ToggleAccept, void(int, bool));
+  MOCK_METHOD1(TogglePersist, void(bool));
   MOCK_METHOD0(SetCustomizationMode, void());
   MOCK_METHOD0(Accept, void());
   MOCK_METHOD0(Deny, void());

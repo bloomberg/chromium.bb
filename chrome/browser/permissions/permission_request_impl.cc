@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
@@ -120,12 +121,12 @@ GURL PermissionRequestImpl::GetOrigin() const {
 
 void PermissionRequestImpl::PermissionGranted() {
   RegisterActionTaken();
-  permission_decided_callback_.Run(true, CONTENT_SETTING_ALLOW);
+  permission_decided_callback_.Run(persist(), CONTENT_SETTING_ALLOW);
 }
 
 void PermissionRequestImpl::PermissionDenied() {
   RegisterActionTaken();
-  permission_decided_callback_.Run(true, CONTENT_SETTING_BLOCK);
+  permission_decided_callback_.Run(persist(), CONTENT_SETTING_BLOCK);
 }
 
 void PermissionRequestImpl::Cancelled() {
@@ -136,6 +137,11 @@ void PermissionRequestImpl::Cancelled() {
 void PermissionRequestImpl::RequestFinished() {
   is_finished_ = true;
   delete_callback_.Run();
+}
+
+bool PermissionRequestImpl::ShouldShowPersistenceToggle() const {
+  return (permission_type_ == content::PermissionType::GEOLOCATION) &&
+         PermissionUtil::ShouldShowPersistenceToggle();
 }
 
 PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()

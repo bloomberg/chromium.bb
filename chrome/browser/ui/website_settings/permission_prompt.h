@@ -28,6 +28,7 @@ class PermissionPrompt {
     virtual ~Delegate() {}
 
     virtual void ToggleAccept(int index, bool new_value) = 0;
+    virtual void TogglePersist(bool new_value) = 0;
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;

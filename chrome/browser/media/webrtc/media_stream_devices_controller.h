@@ -63,8 +63,7 @@ class MediaStreamDevicesController : public PermissionRequest {
   // PermissionRequest instead of a custom infobar delegate.
   void GroupedRequestFinished(bool audio_accepted, bool video_accepted);
 
-  bool persist() const { return persist_; }
-  void set_persist(bool persist) { persist_ = persist; }
+  bool ShouldShowPersistenceToggle() const override;
 
   // PermissionRequest:
   int GetIconId() const override;
@@ -139,9 +138,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   // The callback that needs to be Run to notify WebRTC of whether access to
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
-
-  // Whether the permissions granted or denied by the user should be persisted.
-  bool persist_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

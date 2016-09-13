@@ -128,23 +128,23 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   void RespondToPermission(TestPermissionContext* context,
                            const PermissionRequestID& id,
                            const GURL& url,
+                           bool persist,
                            ContentSetting response) {
     DCHECK(response == CONTENT_SETTING_ALLOW ||
            response == CONTENT_SETTING_BLOCK ||
            response == CONTENT_SETTING_ASK);
 #if defined(OS_ANDROID)
-    bool update_content_setting = response != CONTENT_SETTING_ASK;
     PermissionAction decision = DISMISSED;
     if (response == CONTENT_SETTING_ALLOW)
       decision = GRANTED;
     else if (response == CONTENT_SETTING_BLOCK)
       decision = DENIED;
     context->GetInfoBarController()->OnPermissionSet(
-        id, url, url, false /* user_gesture */, update_content_setting,
-        decision);
+        id, url, url, false /* user_gesture */, persist, decision);
 #else
     PermissionRequestManager* manager =
         PermissionRequestManager::FromWebContents(web_contents());
+    manager->TogglePersist(persist);
     switch (response) {
       case CONTENT_SETTING_ALLOW:
         manager->Accept();
@@ -161,11 +161,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 #endif
   }
 
-  void TestAskAndGrant_TestContent() {
-    TestPermissionContext permission_context(
-        profile(), content::PermissionType::NOTIFICATIONS,
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-    GURL url("http://www.google.com");
+  void TestAskAndDecide_TestContent(content::PermissionType permission,
+                                    ContentSettingsType content_settings_type,
+                                    ContentSetting decision,
+                                    bool persist) {
+    TestPermissionContext permission_context(profile(), permission,
+                                             content_settings_type);
+    GURL url("https://www.google.com");
     NavigateAndCommit(url);
     base::HistogramTester histograms;
 
@@ -179,48 +181,37 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
-    RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ALLOW);
+    RespondToPermission(&permission_context, id, url, persist, decision);
     EXPECT_EQ(1u, permission_context.decisions().size());
-    EXPECT_EQ(CONTENT_SETTING_ALLOW, permission_context.decisions()[0]);
+    EXPECT_EQ(decision, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
-    EXPECT_EQ(CONTENT_SETTING_ALLOW,
-              permission_context.GetContentSettingFromMap(url, url));
 
-    histograms.ExpectUniqueSample(
-        "Permissions.Prompt.Accepted.PriorDismissCount.Notifications", 0, 1);
-    histograms.ExpectUniqueSample(
-        "Permissions.Prompt.Accepted.PriorIgnoreCount.Notifications", 0, 1);
-  }
+    std::string decision_string = "";
+    if (decision == CONTENT_SETTING_ALLOW)
+      decision_string = "Accepted";
+    else if (decision == CONTENT_SETTING_BLOCK)
+      decision_string = "Denied";
+    else if (decision == CONTENT_SETTING_ASK)
+      decision_string = "Dismissed";
 
-  void TestAskAndDismiss_TestContent() {
-    TestPermissionContext permission_context(
-        profile(), content::PermissionType::MIDI_SYSEX,
-        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-    GURL url("http://www.google.es");
-    NavigateAndCommit(url);
-    base::HistogramTester histograms;
+    if (decision_string.size()) {
+      histograms.ExpectUniqueSample(
+          "Permissions.Prompt." + decision_string + ".PriorDismissCount." +
+              PermissionUtil::GetPermissionString(permission),
+          0, 1);
+      histograms.ExpectUniqueSample(
+          "Permissions.Prompt." + decision_string + ".PriorIgnoreCount." +
+              PermissionUtil::GetPermissionString(permission),
+          0, 1);
+    }
 
-    const PermissionRequestID id(
-        web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(),
-        -1);
-    permission_context.RequestPermission(
-        web_contents(),
-        id, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
-
-    RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
-    EXPECT_EQ(1u, permission_context.decisions().size());
-    EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
-    EXPECT_TRUE(permission_context.tab_context_updated());
-    EXPECT_EQ(CONTENT_SETTING_ASK,
-              permission_context.GetContentSettingFromMap(url, url));
-
-    histograms.ExpectUniqueSample(
-        "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", 0, 1);
-    histograms.ExpectUniqueSample(
-        "Permissions.Prompt.Dismissed.PriorIgnoreCount.MidiSysEx", 0, 1);
+    if (persist) {
+      EXPECT_EQ(decision,
+                permission_context.GetContentSettingFromMap(url, url));
+    } else {
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                permission_context.GetContentSettingFromMap(url, url));
+    }
   }
 
   void DismissMultipleTimesAndExpectBlock(
@@ -246,7 +237,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           base::Bind(&TestPermissionContext::TrackPermissionDecision,
                     base::Unretained(&permission_context)));
 
-      RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
+      RespondToPermission(&permission_context, id, url, false, /* persist */
+                          CONTENT_SETTING_ASK);
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
               PermissionUtil::GetPermissionString(permission_type),
@@ -289,7 +281,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           base::Bind(&TestPermissionContext::TrackPermissionDecision,
                     base::Unretained(&permission_context)));
 
-      RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
+      RespondToPermission(&permission_context, id, url, false, /* persist */
+                          CONTENT_SETTING_ASK);
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation",
           i + 1);
@@ -379,7 +372,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           base::Bind(&TestPermissionContext::TrackPermissionDecision,
                     base::Unretained(&permission_context)));
 
-      RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
+      RespondToPermission(&permission_context, id, url, false, /* persist */
+                          CONTENT_SETTING_ASK);
       EXPECT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
@@ -446,7 +440,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
-    RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ALLOW);
+    RespondToPermission(&permission_context, id, url, true, /* persist */
+                        CONTENT_SETTING_ALLOW);
     EXPECT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
@@ -509,7 +504,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     EXPECT_EQ(0u, permission_context.decisions().size());
 
-    RespondToPermission(&permission_context, id0, url, response);
+    bool persist = (response == CONTENT_SETTING_ALLOW ||
+                    response == CONTENT_SETTING_BLOCK);
+    RespondToPermission(&permission_context, id0, url, persist, response);
 
     EXPECT_EQ(2u, permission_context.decisions().size());
     EXPECT_EQ(response, permission_context.decisions()[0]);
@@ -535,14 +532,41 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
 // Simulates clicking Accept. The permission should be granted and
 // saved for future use.
-TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
-  TestAskAndGrant_TestContent();
+TEST_F(PermissionContextBaseTests, TestAskAndGrantPersist) {
+  TestAskAndDecide_TestContent(content::PermissionType::NOTIFICATIONS,
+                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                               CONTENT_SETTING_ALLOW, true);
+}
+
+// Simulates clicking Accept. The permission should be granted, but not
+// persisted.
+TEST_F(PermissionContextBaseTests, TestAskAndGrantNoPersist) {
+  TestAskAndDecide_TestContent(content::PermissionType::NOTIFICATIONS,
+                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                               CONTENT_SETTING_ALLOW, false);
+}
+
+// Simulates clicking Block. The permission should be denied and
+// saved for future use.
+TEST_F(PermissionContextBaseTests, TestAskAndBlockPersist) {
+  TestAskAndDecide_TestContent(content::PermissionType::GEOLOCATION,
+                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                               CONTENT_SETTING_BLOCK, true);
+}
+
+// Simulates clicking Block. The permission should be denied, but not persisted.
+TEST_F(PermissionContextBaseTests, TestAskAndBlockNoPersist) {
+  TestAskAndDecide_TestContent(content::PermissionType::GEOLOCATION,
+                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                               CONTENT_SETTING_BLOCK, false);
 }
 
 // Simulates clicking Dismiss (X) in the infobar/bubble.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
-  TestAskAndDismiss_TestContent();
+  TestAskAndDecide_TestContent(content::PermissionType::MIDI_SYSEX,
+                               CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                               CONTENT_SETTING_ASK, false);
 }
 
 // Simulates clicking Dismiss (X) in the infobar/bubble with the block on too
