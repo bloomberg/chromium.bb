@@ -43,21 +43,6 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   StoreState state() const override;
 
  private:
-  // Synchronous implementations, these are run on the background thread
-  // and actually do the work to access SQL.  The implementations above
-  // simply dispatch to the corresponding *Sync method on the background thread.
-  // 'runner' is where to run the callback.
-  static void AddOrUpdateOfflinePageSync(
-      const OfflinePageItem& offline_page,
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const UpdateCallback& callback);
-  static void RemoveOfflinePagesSync(
-      const std::vector<int64_t>& offline_ids,
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const UpdateCallback& callback);
-
   // Used to initialize DB connection.
   void OpenConnection();
   void OnOpenConnectionDone(StoreState state);
@@ -75,9 +60,13 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
 
   // Path to the database on disk.
   base::FilePath db_file_path_;
+
+  // Database connection.
   std::unique_ptr<sql::Connection> db_;
 
+  // State of the store.
   StoreState state_;
+
   base::WeakPtrFactory<OfflinePageMetadataStoreSQL> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMetadataStoreSQL);

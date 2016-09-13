@@ -267,6 +267,42 @@ void GetOfflinePagesSync(
   }
 }
 
+void AddOrUpdateOfflinePageSync(
+    const OfflinePageItem& offline_page,
+    sql::Connection* db,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const OfflinePageMetadataStore::UpdateCallback& callback) {
+  // TODO(bburns): add UMA metrics here (and for levelDB).
+  bool ok = InsertOrReplace(db, offline_page);
+  runner->PostTask(FROM_HERE, base::Bind(callback, ok));
+}
+
+void RemoveOfflinePagesSync(
+    const std::vector<int64_t>& offline_ids,
+    sql::Connection* db,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const OfflinePageMetadataStore::UpdateCallback& callback) {
+  // TODO(bburns): add UMA metrics here (and for levelDB).
+
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    runner->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  for (auto offline_id : offline_ids) {
+    if (!DeleteByOfflineId(db, offline_id)) {
+      runner->PostTask(FROM_HERE, base::Bind(callback, false));
+      return;
+    }
+  }
+
+  bool success = transaction.Commit();
+  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+
 void ResetSync(sql::Connection* db,
                const base::FilePath& db_file_path,
                scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -304,41 +340,6 @@ OfflinePageMetadataStoreSQL::~OfflinePageMetadataStoreSQL() {
   }
 }
 
-void OfflinePageMetadataStoreSQL::AddOrUpdateOfflinePageSync(
-    const OfflinePageItem& offline_page,
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const UpdateCallback& callback) {
-  // TODO(bburns): add UMA metrics here (and for levelDB).
-  bool ok = InsertOrReplace(db, offline_page);
-  runner->PostTask(FROM_HERE, base::Bind(callback, ok));
-}
-
-void OfflinePageMetadataStoreSQL::RemoveOfflinePagesSync(
-    const std::vector<int64_t>& offline_ids,
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const UpdateCallback& callback) {
-  // TODO(bburns): add UMA metrics here (and for levelDB).
-
-  // If you create a transaction but don't Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    runner->PostTask(FROM_HERE, base::Bind(callback, false));
-    return;
-  }
-  for (auto offline_id : offline_ids) {
-    if (!DeleteByOfflineId(db, offline_id)) {
-      runner->PostTask(FROM_HERE, base::Bind(callback, false));
-      return;
-    }
-  }
-
-  bool success = transaction.Commit();
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
-}
-
 void OfflinePageMetadataStoreSQL::GetOfflinePages(
     const LoadCallback& callback) {
   background_task_runner_->PostTask(
@@ -352,9 +353,8 @@ void OfflinePageMetadataStoreSQL::AddOrUpdateOfflinePage(
   DCHECK(db_.get());
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&OfflinePageMetadataStoreSQL::AddOrUpdateOfflinePageSync,
-                 offline_page, db_.get(), base::ThreadTaskRunnerHandle::Get(),
-                 callback));
+      base::Bind(&AddOrUpdateOfflinePageSync, offline_page, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 void OfflinePageMetadataStoreSQL::RemoveOfflinePages(
@@ -371,10 +371,8 @@ void OfflinePageMetadataStoreSQL::RemoveOfflinePages(
   }
 
   background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&OfflinePageMetadataStoreSQL::RemoveOfflinePagesSync,
-                 offline_ids, db_.get(), base::ThreadTaskRunnerHandle::Get(),
-                 callback));
+      FROM_HERE, base::Bind(&RemoveOfflinePagesSync, offline_ids, db_.get(),
+                            base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 void OfflinePageMetadataStoreSQL::Reset(const ResetCallback& callback) {
