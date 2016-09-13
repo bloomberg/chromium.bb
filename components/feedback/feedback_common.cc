@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_util.h"
 #include "components/feedback/proto/common.pb.h"
 #include "components/feedback/proto/dom.pb.h"
@@ -22,24 +23,24 @@ constexpr int kChromeOSProductId = 208;
 constexpr int kChromeBrowserProductId = 237;
 #endif
 
-const char kMultilineIndicatorString[] = "<multiline>\n";
-const char kMultilineStartString[] = "---------- START ----------\n";
-const char kMultilineEndString[] = "---------- END ----------\n\n";
+constexpr char kMultilineIndicatorString[] = "<multiline>\n";
+constexpr char kMultilineStartString[] = "---------- START ----------\n";
+constexpr char kMultilineEndString[] = "---------- END ----------\n\n";
 
 // The below thresholds were chosen arbitrarily to conveniently show small data
 // as part of the report itself without having to look into the system_logs.zip
 // file.
-const size_t kFeedbackMaxLength = 1024;
-const size_t kFeedbackMaxLineCount = 10;
+constexpr size_t kFeedbackMaxLength = 1024;
+constexpr size_t kFeedbackMaxLineCount = 10;
 
-const base::FilePath::CharType kLogsFilename[] =
+constexpr base::FilePath::CharType kLogsFilename[] =
     FILE_PATH_LITERAL("system_logs.txt");
-const char kLogsAttachmentName[] = "system_logs.zip";
+constexpr char kLogsAttachmentName[] = "system_logs.zip";
 
-const char kZipExt[] = ".zip";
+constexpr char kZipExt[] = ".zip";
 
-const char kPngMimeType[] = "image/png";
-const char kArbitraryMimeType[] = "application/octet-stream";
+constexpr char kPngMimeType[] = "image/png";
+constexpr char kArbitraryMimeType[] = "application/octet-stream";
 
 // Determine if the given feedback value is small enough to not need to
 // be compressed.
@@ -65,6 +66,11 @@ std::unique_ptr<std::string> LogsToString(
 
     base::TrimString(key, "\n ", &key);
     base::TrimString(value, "\n ", &value);
+
+    // We must avoid adding the crash IDs to the system_logs.txt file for
+    // privacy reasons. They should just be part of the product specific data.
+    if (key == feedback::FeedbackReport::kCrashReportIdsKey)
+      continue;
 
     if (value.find("\n") != std::string::npos) {
       syslogs_string->append(key + "=" + kMultilineIndicatorString +
@@ -234,6 +240,7 @@ void FeedbackCommon::CompressLogs() {
                  std::move(logs));
   }
 }
+
 void FeedbackCommon::AddFilesAndLogsToReport(
     userfeedback::ExtensionSubmit* feedback_data) const {
   for (size_t i = 0; i < attachments(); ++i) {

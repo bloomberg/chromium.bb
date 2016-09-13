@@ -54,12 +54,8 @@ FeedbackReport::FeedbackReport(
       &WriteReportOnBlockingPool, reports_path_, file_, data_));
 }
 
-FeedbackReport::~FeedbackReport() {}
-
-void FeedbackReport::DeleteReportOnDisk() {
-  reports_task_runner_->PostTask(FROM_HERE, base::Bind(
-      base::IgnoreResult(&base::DeleteFile), file_, false));
-}
+// static
+const char FeedbackReport::kCrashReportIdsKey[]  = "crash_report_ids";
 
 // static
 void FeedbackReport::LoadReportsAndQueue(
@@ -80,5 +76,13 @@ void FeedbackReport::LoadReportsAndQueue(
     base::DeleteFile(name, false);
   }
 }
+
+void FeedbackReport::DeleteReportOnDisk() {
+  reports_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::DeleteFile), file_, false));
+}
+
+FeedbackReport::~FeedbackReport() {}
 
 }  // namespace feedback

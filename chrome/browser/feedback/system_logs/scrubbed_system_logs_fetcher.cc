@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
+#include "chrome/browser/feedback/system_logs/log_sources/crash_ids_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -26,6 +27,7 @@ namespace system_logs {
 
 ScrubbedSystemLogsFetcher::ScrubbedSystemLogsFetcher() {
   data_sources_.push_back(new ChromeInternalLogSource());
+  data_sources_.push_back(new CrashIdsSource());
   data_sources_.push_back(new MemoryDetailsLogSource());
 
 #if defined(OS_CHROMEOS)
