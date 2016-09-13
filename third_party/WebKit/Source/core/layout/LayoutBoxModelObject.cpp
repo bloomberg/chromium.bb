@@ -137,6 +137,11 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const
     if (style()->hasBorderRadius())
         return false;
 
+    // TODO(flackr): Remove this when box shadows are still painted correctly when painting
+    // into the composited scrolling contents layer. https://crbug.com/646464
+    if (style()->boxShadow())
+        return false;
+
     const FillLayer* layer = &(style()->backgroundLayers());
     for (; layer; layer = layer->next()) {
         if (layer->attachment() == LocalBackgroundAttachment)
