@@ -48,6 +48,7 @@ namespace cc {
 namespace {
 
 static const bool kUseGpuMemoryBufferResources = false;
+static const bool kEnableColorCorrectRendering = false;
 static const bool kDelegatedSyncPointsRequired = true;
 
 MATCHER_P(MatchesSyncToken, sync_token, "") {
@@ -467,13 +468,14 @@ class ResourceProviderTest
         output_surface_->context_provider(), shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
         kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+        kEnableColorCorrectRendering,
         DefaultBufferToTextureTargetMapForTesting());
     child_resource_provider_ = base::MakeUnique<ResourceProvider>(
         child_output_surface_->context_provider(), shared_bitmap_manager_.get(),
         child_gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
         0, 1,
         child_output_surface_->capabilities().delegated_sync_points_required,
-        kUseGpuMemoryBufferResources,
+        kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
         DefaultBufferToTextureTargetMapForTesting());
   }
 
@@ -1491,7 +1493,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
           child_output_surface->context_provider(),
           shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
           nullptr, 0, 1, kDelegatedSyncPointsRequired,
-          kUseGpuMemoryBufferResources,
+          kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2016,6 +2018,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
             child_output_surface->context_provider(),
             shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+            kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     std::unique_ptr<TextureStateTrackingContext> parent_context_owned(
@@ -2032,6 +2035,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
             parent_output_surface->context_provider(),
             shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+            kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     gfx::Size size(1, 1);
@@ -2672,6 +2676,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2754,6 +2759,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2800,6 +2806,7 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2847,6 +2854,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2908,6 +2916,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0,
           1, kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken release_sync_token;
@@ -2959,6 +2968,7 @@ class ResourceProviderTestTextureMailboxGLFilters
             output_surface->context_provider(), shared_bitmap_manager,
             gpu_memory_buffer_manager, main_thread_task_runner, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+            kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     unsigned texture_id = 1;
@@ -3106,6 +3116,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -3178,6 +3189,7 @@ TEST_P(ResourceProviderTest,
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -3236,6 +3248,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token;
@@ -3360,6 +3373,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
@@ -3420,6 +3434,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
@@ -3478,6 +3493,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
@@ -3539,6 +3555,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   id = resource_provider->CreateResource(
@@ -3620,6 +3637,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
   int texture_id = 123;
 
@@ -3654,6 +3672,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
   int texture_id = 123;
   uint8_t pixels[8];
@@ -3713,6 +3732,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             output_surface->context_provider(), shared_bitmap_manager.get(),
             nullptr, nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+            kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(
@@ -3732,6 +3752,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             output_surface->context_provider(), shared_bitmap_manager.get(),
             nullptr, nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+            kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(

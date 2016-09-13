@@ -2317,7 +2317,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
       output_surface_->capabilities().delegated_sync_points_required,
-      settings_.renderer_settings.use_gpu_memory_buffer_resources,
+      settings_.renderer_settings.use_gpu_memory_buffer_resources, false,
       settings_.renderer_settings.buffer_to_texture_target_map);
 
   // Make sure the main context visibility is restored. Worker context

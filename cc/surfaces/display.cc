@@ -173,7 +173,7 @@ void Display::InitializeRenderer() {
       gpu_memory_buffer_manager_, nullptr, settings_.highp_threshold_min,
       settings_.texture_id_allocation_chunk_size,
       output_surface_->capabilities().delegated_sync_points_required,
-      settings_.use_gpu_memory_buffer_resources,
+      settings_.use_gpu_memory_buffer_resources, false,
       settings_.buffer_to_texture_target_map));
 
   if (output_surface_->context_provider()) {

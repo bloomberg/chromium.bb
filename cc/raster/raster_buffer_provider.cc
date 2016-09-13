@@ -52,6 +52,7 @@ void RasterBufferProvider::PlaybackToMemory(
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
     float scale,
+    sk_sp<SkColorSpace> dst_color_space,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
                "RasterBufferProvider::PlaybackToMemory");
@@ -59,8 +60,8 @@ void RasterBufferProvider::PlaybackToMemory(
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
-  SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
+  SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(),
+                                          kPremul_SkAlphaType, dst_color_space);
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);

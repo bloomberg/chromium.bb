@@ -41,6 +41,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/icc_profile.h"
 #include "ui/gl/trace_util.h"
 
 using gpu::gles2::GLES2Interface;
@@ -391,6 +392,7 @@ ResourceProvider::ResourceProvider(
     size_t id_allocation_chunk_size,
     bool delegated_sync_points_required,
     bool use_gpu_memory_buffer_resources,
+    bool enable_color_correct_rendering,
     const BufferToTextureTargetMap& buffer_to_texture_target_map)
     : compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -412,6 +414,7 @@ ResourceProvider::ResourceProvider(
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
       best_render_buffer_format_(RGBA_8888),
+      enable_color_correct_rendering_(enable_color_correct_rendering),
       id_allocation_chunk_size_(id_allocation_chunk_size),
       use_sync_query_(false),
       buffer_to_texture_target_map_(buffer_to_texture_target_map),
@@ -820,8 +823,8 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
   return GetResource(id)->hint;
 }
 
-static sk_sp<SkColorSpace> ColorSpaceToSkColorSpace(
-    const gfx::ColorSpace& color_space) {
+sk_sp<SkColorSpace> ResourceProvider::GetResourceSkColorSpace(
+    const Resource* resource) const {
   // TODO(crbug.com/634102): Implement conversion for skia-based compositing to
   // be color-managed
   return nullptr;
@@ -847,9 +850,9 @@ void ResourceProvider::CopyToResource(ResourceId id,
     DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
     DCHECK(resource->allocated);
     DCHECK_EQ(RGBA_8888, resource->format);
-    SkImageInfo source_info = SkImageInfo::MakeN32Premul(
-        image_size.width(), image_size.height(),
-        ColorSpaceToSkColorSpace(resource->color_space));
+    SkImageInfo source_info =
+        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height(),
+                                   GetResourceSkColorSpace(resource));
     size_t image_stride = image_size.width() * 4;
 
     ScopedWriteLockSoftware lock(this, id);
@@ -1097,6 +1100,7 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
   format_ = resource->format;
   size_ = resource->size;
   mailbox_ = resource->mailbox();
+  sk_color_space_ = resource_provider->GetResourceSkColorSpace(resource);
 }
 
 ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
@@ -1161,7 +1165,8 @@ ResourceProvider::ScopedSkSurfaceProvider::ScopedSkSurfaceProvider(
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      context_provider->GrContext(), desc, &surface_props);
+      context_provider->GrContext(), desc, resource_lock->sk_color_space(),
+      &surface_props);
 }
 
 ResourceProvider::ScopedSkSurfaceProvider::~ScopedSkSurfaceProvider() {
@@ -1176,7 +1181,7 @@ void ResourceProvider::PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
   DCHECK_EQ(RGBA_8888, resource->format);
   SkImageInfo info = SkImageInfo::MakeN32Premul(
       resource->size.width(), resource->size.height(),
-      ColorSpaceToSkColorSpace(resource->color_space));
+      GetResourceSkColorSpace(resource));
   sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
 }
 
@@ -1185,7 +1190,7 @@ ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
-  ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
+  resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 
 ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
@@ -1210,11 +1215,11 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(), desc,
-        kPremul_SkAlphaType, ColorSpaceToSkColorSpace(resource->color_space),
-        nullptr, nullptr);
+        kPremul_SkAlphaType,
+        resource_provider->GetResourceSkColorSpace(resource), nullptr, nullptr);
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;
-    ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap, resource);
+    resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
     sk_bitmap.setImmutable();
     sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
   } else {
@@ -1236,7 +1241,7 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  ResourceProvider::PopulateSkBitmapWithResource(
+  resource_provider->PopulateSkBitmapWithResource(
       &sk_bitmap_, resource_provider->LockForWrite(resource_id));
   DCHECK(valid());
 }
@@ -1268,6 +1273,8 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   Resource* resource = resource_provider_->GetResource(resource_id_);
   DCHECK(resource);
   if (gpu_memory_buffer_) {
+    if (resource_provider_->enable_color_correct_rendering_)
+      gpu_memory_buffer_->SetColorSpaceForScanout(resource->color_space);
     DCHECK(!resource->gpu_memory_buffer);
     resource_provider_->LazyCreate(resource);
     resource->gpu_memory_buffer = std::move(gpu_memory_buffer_);
@@ -1849,6 +1856,11 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
             size, BufferFormat(format), resource->usage,
             gpu::kNullSurfaceHandle);
+    if (resource->gpu_memory_buffer && enable_color_correct_rendering_) {
+      resource->gpu_memory_buffer->SetColorSpaceForScanout(
+          resource->color_space);
+    }
+
     LazyCreateImage(resource);
     resource->dirty_image = true;
     resource->is_overlay_candidate = true;

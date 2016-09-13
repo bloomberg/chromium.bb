@@ -54,7 +54,7 @@ class RasterBufferImpl : public RasterBuffer {
     RasterBufferProvider::PlaybackToMemory(
         lock_.sk_bitmap().getPixels(), resource_->format(), resource_->size(),
         stride, raster_source, raster_full_rect, playback_rect, scale,
-        playback_settings);
+        lock_.sk_color_space(), playback_settings);
   }
 
  private:
