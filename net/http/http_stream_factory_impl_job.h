@@ -432,15 +432,15 @@ class HttpStreamFactoryImpl::Job {
   // AlternativeService for the other Job if this is not an alternative Job.
   AlternativeService other_job_alternative_service_;
 
-  // Unowned. |this| job is owned by |delegate_|.
-  Delegate* delegate_;
-
   // Alternative proxy server that should be used by |this| to fetch the
   // request.
   const ProxyServer alternative_proxy_server_;
 
   // Alternative proxy server for the other job.
   ProxyServer other_job_alternative_proxy_server_;
+
+  // Unowned. |this| job is owned by |delegate_|.
+  Delegate* delegate_;
 
   const JobType job_type_;
 
