@@ -62,7 +62,7 @@ void FrameTree::setName(const AtomicString& name)
     // This assert helps ensure that early return (a few lines below) won't
     // result in an uninitialized m_uniqueName.
     DCHECK(!m_uniqueName.isNull()
-        || (m_uniqueName.isNull() && m_name.isNull() && !parent()));
+        || (m_uniqueName.isNull() && !parent()));
 
     // Do not recalculate m_uniqueName if there is no real change of m_name.
     // This is not just a performance optimization - other code relies on the
@@ -72,6 +72,11 @@ void FrameTree::setName(const AtomicString& name)
         return;
 
     m_name = name;
+
+    // https://crbug.com/607205: Make sure m_uniqueName doesn't change after
+    // initial navigation - session history depends on this.
+    if (toLocalFrame(m_thisFrame)->loader().stateMachine()->committedFirstRealDocumentLoad())
+        return;
 
     // Remove our old frame name so it's not considered in calculateUniqueNameForChildFrame
     // and appendUniqueSuffix calls below.
@@ -92,13 +97,10 @@ void FrameTree::setName(const AtomicString& name)
 
 void FrameTree::setPrecalculatedName(const AtomicString& name, const AtomicString& uniqueName)
 {
-    if (!parent()) {
-        DCHECK(uniqueName == name);
-    } else {
-        DCHECK(!uniqueName.isEmpty());
-    }
-
     m_name = name;
+
+    // Non-main frames should have a non-empty unique name.
+    DCHECK(!parent() || !uniqueName.isEmpty());
 
     // TODO(lukasza): We would like to assert uniqueness below (i.e. by calling
     // setUniqueName), but
@@ -317,7 +319,8 @@ AtomicString FrameTree::calculateUniqueNameForChildFrame(
     //                 2) assignedName is empty for a non-main frame)
     //
     //   assignedName ::= value of iframe's name attribute
-    //                 or value assigned to window.name
+    //                 or value assigned to window.name (*before* the first
+    //                    real commit - afterwards unique name stays immutable).
     //
     //   generatedName ::= oldGeneratedName newUniqueSuffix?
     //                  (newUniqueSuffix is only present if oldGeneratedName was

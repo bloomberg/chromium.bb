@@ -7600,9 +7600,10 @@ TEST_F(WebFrameSwapTest, UniqueNameAfterRemoteToLocalSwap)
     EXPECT_EQ(uniqueName.utf8(), WebString(toWebLocalFrameImpl(localFrame)->frame()->loader().currentItem()->target()).utf8());
 
     // Repeat with no name on the frame.
+    // (note that uniqueName is immutable after first real commit).
     localFrame->setName("");
     WebString uniqueName2 = localFrame->uniqueName();
-    EXPECT_EQ("<!--framePath //<!--frame2-->-->", uniqueName2.utf8());
+    EXPECT_EQ("frame1", uniqueName2.utf8());
 
     FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
     WebRemoteFrameImpl* remoteFrame2 = WebRemoteFrameImpl::create(WebTreeScopeType::Document, &remoteFrameClient2);
