@@ -28,63 +28,31 @@ namespace {
 // it can be used inline in other SQL statements below.
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
 
-// New columns should be added at the end of the list in order to avoid
-// complicated table upgrade.
-const char kOfflinePagesColumns[] =
-    "(offline_id INTEGER PRIMARY KEY NOT NULL,"
-    " creation_time INTEGER NOT NULL,"
-    " file_size INTEGER NOT NULL,"
-    " version INTEGER NOT NULL,"
-    " last_access_time INTEGER NOT NULL,"
-    " access_count INTEGER NOT NULL,"
-    " status INTEGER NOT NULL DEFAULT 0,"
-    // A note on this field:  It will be NULL for now and is reserved for
-    // later use.  We will treat NULL as "Unknown" in any subsequent queries
-    // for user_initiated values.
-    " user_initiated INTEGER,"  // this is actually a boolean
-    " expiration_time INTEGER NOT NULL DEFAULT 0,"
-    " client_namespace VARCHAR NOT NULL,"
-    " client_id VARCHAR NOT NULL,"
-    " online_url VARCHAR NOT NULL,"
-    " offline_url VARCHAR NOT NULL DEFAULT '',"
-    " file_path VARCHAR NOT NULL,"
-    " title VARCHAR NOT NULL DEFAULT ''"
-    ")";
-
-// This is cloned from //content/browser/appcache/appcache_database.cc
-struct TableInfo {
-  const char* table_name;
-  const char* columns;
-};
-
-const TableInfo kOfflinePagesTable{OFFLINE_PAGES_TABLE_NAME,
-                                   kOfflinePagesColumns};
-
-// This enum is used to define the indices for the columns in each row
-// that hold the different pieces of offline page.
-enum : int {
-  OP_OFFLINE_ID = 0,
-  OP_CREATION_TIME,
-  OP_FILE_SIZE,
-  OP_VERSION,
-  OP_LAST_ACCESS_TIME,
-  OP_ACCESS_COUNT,
-  OP_STATUS,
-  OP_USER_INITIATED,
-  OP_EXPIRATION_TIME,  // Added in M53.
-  OP_CLIENT_NAMESPACE,
-  OP_CLIENT_ID,
-  OP_ONLINE_URL,
-  OP_OFFLINE_URL,
-  OP_FILE_PATH,
-  OP_TITLE,  // Added in M54.
-};
-
-bool CreateTable(sql::Connection* db, const TableInfo& table_info) {
-  std::string sql("CREATE TABLE ");
-  sql += table_info.table_name;
-  sql += table_info.columns;
-  return db->Execute(sql.c_str());
+bool CreateOfflinePagesTable(sql::Connection* db) {
+  const char kSql[] = "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
+                      "(offline_id INTEGER PRIMARY KEY NOT NULL,"
+                      " creation_time INTEGER NOT NULL,"
+                      " file_size INTEGER NOT NULL,"
+                      " version INTEGER NOT NULL,"
+                      " last_access_time INTEGER NOT NULL,"
+                      " access_count INTEGER NOT NULL,"
+                      // TODO(fgorski): Remove. Never used.
+                      " status INTEGER NOT NULL DEFAULT 0,"
+                      // A note on this field:  It will be NULL for now and is
+                      // reserved for later use.  We will treat NULL as
+                      // "Unknown" in any subsequent queries for user_initiated
+                      // values.
+                      " user_initiated INTEGER,"  // this is actually a boolean
+                      " expiration_time INTEGER NOT NULL DEFAULT 0,"
+                      " client_namespace VARCHAR NOT NULL,"
+                      " client_id VARCHAR NOT NULL,"
+                      " online_url VARCHAR NOT NULL,"
+                      // TODO(fgorski): Remove. Never used.
+                      " offline_url VARCHAR NOT NULL DEFAULT '',"
+                      " file_path VARCHAR NOT NULL,"
+                      " title VARCHAR NOT NULL DEFAULT ''"
+                      ")";
+  return db->Execute(kSql);
 }
 
 bool RefreshColumnsFrom52To54(sql::Connection* db) {
@@ -92,7 +60,7 @@ bool RefreshColumnsFrom52To54(sql::Connection* db) {
                    " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
     return false;
   }
-  if (!CreateTable(db, kOfflinePagesTable))
+  if (!CreateOfflinePagesTable(db))
     return false;
   if (!db->Execute(
           "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
@@ -117,7 +85,7 @@ bool RefreshColumnsFrom53To54(sql::Connection* db) {
                    " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
     return false;
   }
-  if (!CreateTable(db, kOfflinePagesTable))
+  if (!CreateOfflinePagesTable(db))
     return false;
   if (!db->Execute(
           "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
@@ -144,15 +112,15 @@ bool CreateSchema(sql::Connection* db) {
   if (!transaction.Begin())
     return false;
 
-  if (!db->DoesTableExist(kOfflinePagesTable.table_name)) {
-    if (!CreateTable(db, kOfflinePagesTable))
+  if (!db->DoesTableExist(OFFLINE_PAGES_TABLE_NAME)) {
+    if (!CreateOfflinePagesTable(db))
       return false;
   }
 
-  if (!db->DoesColumnExist(kOfflinePagesTable.table_name, "expiration_time")) {
+  if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "expiration_time")) {
     if (!RefreshColumnsFrom52To54(db))
       return false;
-  } else if (!db->DoesColumnExist(kOfflinePagesTable.table_name, "title")) {
+  } else if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "title")) {
     if (!RefreshColumnsFrom53To54(db))
       return false;
   }
@@ -172,29 +140,29 @@ bool DeleteByOfflineId(sql::Connection* db, int64_t offline_id) {
 // Create an offline page item from a SQL result.  Expects complete rows with
 // all columns present.
 OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
-  int64_t id = statement->ColumnInt64(OP_OFFLINE_ID);
-  GURL url(statement->ColumnString(OP_ONLINE_URL));
-  ClientId client_id(statement->ColumnString(OP_CLIENT_NAMESPACE),
-                     statement->ColumnString(OP_CLIENT_ID));
+  int64_t id = statement->ColumnInt64(0);
+  base::Time creation_time =
+      base::Time::FromInternalValue(statement->ColumnInt64(1));
+  int64_t file_size = statement->ColumnInt64(2);
+  ClientId client_id(statement->ColumnString(9),
+                     statement->ColumnString(10));
+  GURL url(statement->ColumnString(11));
 #if defined(OS_POSIX)
-  base::FilePath path(statement->ColumnString(OP_FILE_PATH));
+  base::FilePath path(statement->ColumnString(13));
 #elif defined(OS_WIN)
-  base::FilePath path(base::UTF8ToWide(statement->ColumnString(OP_FILE_PATH)));
+  base::FilePath path(base::UTF8ToWide(statement->ColumnString(13)));
 #else
 #error Unknown OS
 #endif
-  int64_t file_size = statement->ColumnInt64(OP_FILE_SIZE);
-  base::Time creation_time =
-      base::Time::FromInternalValue(statement->ColumnInt64(OP_CREATION_TIME));
 
   OfflinePageItem item(url, id, client_id, path, file_size, creation_time);
+  item.version = statement->ColumnInt(3);
   item.last_access_time = base::Time::FromInternalValue(
-      statement->ColumnInt64(OP_LAST_ACCESS_TIME));
-  item.version = statement->ColumnInt(OP_VERSION);
-  item.access_count = statement->ColumnInt(OP_ACCESS_COUNT);
+      statement->ColumnInt64(4));
+  item.access_count = statement->ColumnInt(5);
   item.expiration_time =
-      base::Time::FromInternalValue(statement->ColumnInt64(OP_EXPIRATION_TIME));
-  item.title = statement->ColumnString16(OP_TITLE);
+      base::Time::FromInternalValue(statement->ColumnInt64(8));
+  item.title = statement->ColumnString16(14);
   return item;
 }
 
