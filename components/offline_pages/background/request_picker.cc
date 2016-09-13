@@ -242,7 +242,6 @@ void RequestPicker::SplitRequests(
     std::vector<std::unique_ptr<SavePageRequest>> requests,
     std::vector<std::unique_ptr<SavePageRequest>>* valid_requests,
     std::vector<std::unique_ptr<SavePageRequest>>* expired_requests) {
-  std::vector<std::unique_ptr<SavePageRequest>>::iterator request;
   for (auto& request : requests) {
     if (base::Time::Now() - request->creation_time() >=
         base::TimeDelta::FromSeconds(kRequestExpirationTimeInSeconds)) {
@@ -258,14 +257,13 @@ void RequestPicker::SplitRequests(
 void RequestPicker::OnRequestExpired(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  std::vector<std::unique_ptr<SavePageRequest>>::const_iterator request;
-  for (request = requests.begin(); request != requests.end(); ++request) {
+    for (const auto& request : requests) {
     const RequestCoordinator::BackgroundSavePageResult result(
         RequestCoordinator::BackgroundSavePageResult::EXPIRED);
     event_logger_->RecordDroppedSavePageRequest(
-        request->get()->client_id().name_space, result,
-        request->get()->request_id());
-    notifier_->NotifyCompleted(*(request->get()), result);
+        request->client_id().name_space, result,
+        request->request_id());
+    notifier_->NotifyCompleted(*request, result);
   }
 }
 
