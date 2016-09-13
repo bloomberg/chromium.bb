@@ -14,6 +14,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/streams/Stream.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/BytesConsumer.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
@@ -263,7 +264,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     response->populateWebServiceWorkerResponse(webResponse);
     BodyStreamBuffer* buffer = response->internalBodyBuffer();
     if (buffer) {
-        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize);
         if (blobDataHandle) {
             webResponse.setBlobDataHandle(blobDataHandle);
         } else {

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/html/FormData.h"
+#include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
@@ -78,8 +79,9 @@ TEST_F(BodyStreamBufferTest, Tee)
     MockFetchDataLoaderClient* client2 = MockFetchDataLoaderClient::create();
 
     InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*client1, didFetchDataLoadedString(String("hello, world")));
+    EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("hello, world")));
     EXPECT_CALL(checkpoint, Call(3));
@@ -99,6 +101,7 @@ TEST_F(BodyStreamBufferTest, Tee)
     EXPECT_TRUE(buffer->isStreamDisturbed());
     EXPECT_FALSE(buffer->hasPendingActivity());
 
+    checkpoint.Call(0);
     new1->startLoading(FetchDataLoader::createLoaderAsString(), client1);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -176,7 +179,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
     EXPECT_FALSE(buffer->hasPendingActivity());
-    RefPtr<BlobDataHandle> outputBlobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+    RefPtr<BlobDataHandle> outputBlobDataHandle = buffer->drainAsBlobDataHandle(BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize);
 
     EXPECT_TRUE(buffer->isStreamLocked());
     EXPECT_TRUE(buffer->isStreamDisturbed());
@@ -195,7 +198,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull)
     EXPECT_FALSE(buffer->isStreamDisturbed());
     EXPECT_FALSE(buffer->hasPendingActivity());
 
-    EXPECT_FALSE(buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize));
+    EXPECT_FALSE(buffer->drainAsBlobDataHandle(BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize));
 
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -213,7 +216,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobFromBufferMadeFromBufferMadeFromStream)
     EXPECT_FALSE(buffer->isStreamDisturbed());
     EXPECT_TRUE(buffer->isStreamReadable());
 
-    EXPECT_FALSE(buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize));
+    EXPECT_FALSE(buffer->drainAsBlobDataHandle(BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize));
 
     EXPECT_FALSE(buffer->hasPendingActivity());
     EXPECT_FALSE(buffer->isStreamLocked());
@@ -461,42 +464,16 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     checkpoint.Call(2);
 }
 
-// TODO(hiroshige): Merge this class into MockFetchDataConsumerHandle.
-class MockFetchDataConsumerHandleWithMockDestructor : public DataConsumerHandleTestUtil::MockFetchDataConsumerHandle {
-public:
-    static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>> create() { return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerHandleWithMockDestructor>); }
-
-    ~MockFetchDataConsumerHandleWithMockDestructor() override
-    {
-        destruct();
-    }
-
-    MOCK_METHOD0(destruct, void());
-};
-
-TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled)
+TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled)
 {
     V8TestingScope scope;
-    using MockHandle = MockFetchDataConsumerHandleWithMockDestructor;
-    using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
-    std::unique_ptr<MockHandle> handle = MockHandle::create();
-    // |reader| will be adopted by |obtainFetchDataReader|.
-    MockReader* reader = MockReader::create().release();
+    BytesConsumerTestUtil::ReplayingBytesConsumer* consumer = new BytesConsumerTestUtil::ReplayingBytesConsumer(scope.getExecutionContext());
 
-    Checkpoint checkpoint;
-    InSequence s;
-
-    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*reader, destruct());
-    EXPECT_CALL(*handle, destruct());
-    EXPECT_CALL(checkpoint, Call(2));
-
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), std::move(handle));
-    checkpoint.Call(1);
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), consumer);
     ScriptValue reason(scope.getScriptState(), v8String(scope.getScriptState()->isolate(), "reason"));
+    EXPECT_FALSE(consumer->isCancelled());
     buffer->cancel(scope.getScriptState(), reason);
-    checkpoint.Call(2);
+    EXPECT_TRUE(consumer->isCancelled());
 }
 
 } // namespace

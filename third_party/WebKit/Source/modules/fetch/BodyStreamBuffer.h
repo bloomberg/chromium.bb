@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/streams/UnderlyingSourceBase.h"
 #include "modules/ModulesExport.h"
+#include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
@@ -21,15 +22,16 @@ namespace blink {
 class EncodedFormData;
 class ScriptState;
 
-class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase, public WebDataConsumerHandle::Client {
+class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase, public BytesConsumer::Client {
     WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 public:
-    // Needed because we have to release |m_reader| promptly.
-    EAGERLY_FINALIZE();
     // |handle| cannot be null and cannot be locked.
     // This function must be called with entering an appropriate V8 context.
     BodyStreamBuffer(ScriptState*, std::unique_ptr<FetchDataConsumerHandle> /* handle */);
+    // |consumer| must not have a client.
+    // This function must be called with entering an appropriate V8 context.
+    BodyStreamBuffer(ScriptState*, BytesConsumer* /* consumer */);
     // |ReadableStreamOperations::isReadableStream(stream)| must hold.
     // This function must be called with entering an appropriate V8 context.
     BodyStreamBuffer(ScriptState*, ScriptValue stream);
@@ -37,7 +39,7 @@ public:
     ScriptValue stream();
 
     // Callable only when neither locked nor disturbed.
-    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BytesConsumer::BlobSizePolicy);
     PassRefPtr<EncodedFormData> drainAsFormData();
     void startLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
     void tee(BodyStreamBuffer**, BodyStreamBuffer**);
@@ -48,8 +50,8 @@ public:
     bool hasPendingActivity() const override;
     void stop() override;
 
-    // WebDataConsumerHandle::Client
-    void didGetReadable() override;
+    // BytesConsumer::Client
+    void onStateChange() override;
 
     bool isStreamReadable();
     bool isStreamClosed();
@@ -61,6 +63,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
+        visitor->trace(m_consumer);
         visitor->trace(m_loader);
         UnderlyingSourceBase::trace(visitor);
     }
@@ -68,16 +71,16 @@ public:
 private:
     class LoaderClient;
 
+    BytesConsumer* releaseHandle();
     void close();
     void error();
+    void cancelConsumer();
     void processData();
     void endLoading();
     void stopLoading();
-    std::unique_ptr<FetchDataConsumerHandle> releaseHandle();
 
     RefPtr<ScriptState> m_scriptState;
-    std::unique_ptr<FetchDataConsumerHandle> m_handle;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
+    Member<BytesConsumer> m_consumer;
     // We need this member to keep it alive while loading.
     Member<FetchDataLoader> m_loader;
     bool m_streamNeedsMore = false;

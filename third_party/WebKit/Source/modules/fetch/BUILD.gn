@@ -19,8 +19,6 @@ blink_modules_sources("fetch") {
     "CrossThreadHolder.h",
     "DataConsumerHandleUtil.cpp",
     "DataConsumerHandleUtil.h",
-    "DataConsumerTee.cpp",
-    "DataConsumerTee.h",
     "FetchBlobDataConsumerHandle.cpp",
     "FetchBlobDataConsumerHandle.h",
     "FetchDataConsumerHandle.cpp",

@@ -236,7 +236,6 @@ source_set("unit_tests") {
     "fetch/DataConsumerHandleTestUtil.cpp",
     "fetch/DataConsumerHandleTestUtil.h",
     "fetch/DataConsumerHandleUtilTest.cpp",
-    "fetch/DataConsumerTeeTest.cpp",
     "fetch/FetchBlobDataConsumerHandleTest.cpp",
     "fetch/FetchDataLoaderTest.cpp",
     "fetch/FetchFormDataConsumerHandleTest.cpp",
