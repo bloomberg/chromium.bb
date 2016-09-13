@@ -4259,9 +4259,10 @@ void FrameView::updateViewportIntersectionsForSubtree(DocumentLifecycle::Lifecyc
 
 void FrameView::updateThrottlingStatus()
 {
-    // Only offscreen frames can be throttled.
+    // Only offscreen frames can be throttled. Note that we disallow throttling
+    // of 0x0 frames because some sites use them to drive UI logic.
     DCHECK(m_viewportIntersectionValid);
-    m_hiddenForThrottling = m_viewportIntersection.isEmpty();
+    m_hiddenForThrottling = m_viewportIntersection.isEmpty() && !frameRect().isEmpty();
 
     // We only throttle the rendering pipeline in cross-origin frames. This is
     // to avoid a situation where an ancestor frame directly depends on the

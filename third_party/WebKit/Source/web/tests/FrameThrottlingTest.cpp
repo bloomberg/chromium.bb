@@ -105,24 +105,6 @@ TEST_F(FrameThrottlingTest, ThrottleInvisibleFrames)
     EXPECT_FALSE(frameDocument->view()->isHiddenForThrottling());
 }
 
-TEST_F(FrameThrottlingTest, ViewportVisibilityFullyClipped)
-{
-    SimRequest mainResource("https://example.com/", "text/html");
-
-    loadURL("https://example.com/");
-    mainResource.complete("<iframe sandbox id=frame></iframe>");
-
-    // A child which is fully clipped away by its ancestor should become invisible.
-    webView().resize(WebSize(0, 0));
-    compositeFrame();
-
-    EXPECT_TRUE(document().view()->isHiddenForThrottling());
-
-    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
-    auto* frameDocument = frameElement->contentDocument();
-    EXPECT_TRUE(frameDocument->view()->isHiddenForThrottling());
-}
-
 TEST_F(FrameThrottlingTest, HiddenSameOriginFramesAreNotThrottled)
 {
     SimRequest mainResource("https://example.com/", "text/html");
@@ -176,6 +158,34 @@ TEST_F(FrameThrottlingTest, HiddenCrossOriginFramesAreThrottled)
     EXPECT_FALSE(document().view()->canThrottleRendering());
     EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
     EXPECT_TRUE(innerFrameDocument->view()->canThrottleRendering());
+}
+
+TEST_F(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreNotThrottled)
+{
+    // Create a document with doubly nested iframes.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame src=iframe.html></iframe>");
+    frameResource.complete("<iframe id=innerFrame width=0 height=0 sandbox></iframe>");
+
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    auto* frameDocument = frameElement->contentDocument();
+
+    auto* innerFrameElement = toHTMLIFrameElement(frameDocument->getElementById("innerFrame"));
+    auto* innerFrameDocument = innerFrameElement->contentDocument();
+
+    EXPECT_FALSE(document().view()->canThrottleRendering());
+    EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
+    EXPECT_FALSE(innerFrameDocument->view()->canThrottleRendering());
+
+    // The frame is not throttled because its dimensions are 0x0.
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositeFrame();
+    EXPECT_FALSE(document().view()->canThrottleRendering());
+    EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
+    EXPECT_FALSE(innerFrameDocument->view()->canThrottleRendering());
 }
 
 TEST_F(FrameThrottlingTest, ThrottledLifecycleUpdate)
@@ -422,52 +432,6 @@ TEST_F(FrameThrottlingTest, ThrottledFrameWithFocus)
     document().body()->setAttribute(styleAttr, "background: green");
     compositeFrame();
     EXPECT_FALSE(compositor().hasSelection());
-}
-
-TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
-{
-    FrameTestHelpers::TestWebViewClient viewClient;
-    WebViewImpl* webView = WebViewImpl::create(&viewClient, WebPageVisibilityStateVisible);
-    webView->resize(WebSize(640, 480));
-
-    // Create a remote root frame with a local child frame.
-    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
-    webView->setMainFrame(remoteClient.frame());
-    remoteClient.frame()->setReplicatedOrigin(WebSecurityOrigin::createUnique());
-
-    WebFrameOwnerProperties properties;
-    WebRemoteFrame* rootFrame = webView->mainFrame()->toWebRemoteFrame();
-    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(rootFrame);
-
-    WebString baseURL("http://internal.test/");
-    URLTestHelpers::registerMockedURLFromBaseURL(baseURL, "simple_div.html");
-    FrameTestHelpers::loadFrame(localFrame, baseURL.utf8() + "simple_div.html");
-
-    FrameView* frameView = toWebLocalFrameImpl(localFrame)->frameView();
-    EXPECT_TRUE(frameView->frame().isLocalRoot());
-
-    // Enable throttling for the child frame.
-    frameView->setFrameRect(IntRect(0, 480, frameView->width(), frameView->height()));
-    frameView->frame().securityContext()->setSecurityOrigin(SecurityOrigin::createUnique());
-    frameView->updateAllLifecyclePhases();
-    testing::runPendingTasks();
-    EXPECT_TRUE(frameView->canThrottleRendering());
-
-    Document* frameDocument = frameView->frame().document();
-    EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
-
-    // Mutate the local child frame contents.
-    auto* divElement = frameDocument->getElementById("div");
-    divElement->setAttribute(styleAttr, "width: 50px");
-    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameDocument->lifecycle().state());
-
-    // Update the lifecycle again. The frame's lifecycle should not advance
-    // because of throttling even though it is the local root.
-    DocumentLifecycle::AllowThrottlingScope throttlingScope(frameDocument->lifecycle());
-    frameView->updateAllLifecyclePhases();
-    testing::runPendingTasks();
-    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameDocument->lifecycle().state());
-    webView->close();
 }
 
 TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame)
