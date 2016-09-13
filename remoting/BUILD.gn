@@ -170,6 +170,7 @@ test("remoting_unittests") {
     defines += [ "_ALT_NO_EXCEPTIONS" ]
 
     libs += [
+      "comctl32.lib",
       "rpcrt4.lib",
       "wtsapi32.lib",
     ]

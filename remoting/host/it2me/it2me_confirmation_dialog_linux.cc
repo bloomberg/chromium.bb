@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 
 namespace remoting {
 
-It2MeConfirmationDialogFactory::It2MeConfirmationDialogFactory() {}
-
-It2MeConfirmationDialogFactory::~It2MeConfirmationDialogFactory() {}
+std::unique_ptr<It2MeConfirmationDialog>
+It2MeConfirmationDialogFactory::Create() {
+  return nullptr;
+}
 
 }  // namespace remoting

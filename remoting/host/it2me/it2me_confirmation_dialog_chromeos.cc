@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/chromeos/message_box.h"
@@ -69,8 +70,7 @@ void It2MeConfirmationDialogChromeOS::OnMessageBoxResult(
 
 std::unique_ptr<It2MeConfirmationDialog>
 It2MeConfirmationDialogFactory::Create() {
-  return std::unique_ptr<It2MeConfirmationDialog>(
-      new It2MeConfirmationDialogChromeOS());
+  return base::MakeUnique<It2MeConfirmationDialogChromeOS>();
 }
 
 }  // namespace remoting

@@ -6,11 +6,10 @@
 #define REMOTING_HOST_IT2ME_IT2ME_CONFIRMATION_DIALOG_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 
 namespace remoting {
 
@@ -34,7 +33,7 @@ class It2MeConfirmationDialog {
                     const ResultCallback& callback) = 0;
 };
 
-// Used to create an platform specific instance of It2MeConfirmationDialog.
+// Used to create a platform specific instance of It2MeConfirmationDialog.
 class It2MeConfirmationDialogFactory {
  public:
   It2MeConfirmationDialogFactory();

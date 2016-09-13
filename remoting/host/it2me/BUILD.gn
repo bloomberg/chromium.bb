@@ -19,9 +19,12 @@ source_set("common") {
   sources = [
     "it2me_confirmation_dialog.cc",
     "it2me_confirmation_dialog.h",
-    "it2me_confirmation_dialog_chromeos.cc",
+    "it2me_confirmation_dialog_android.cc",
+    "it2me_confirmation_dialog_linux.cc",
+    "it2me_confirmation_dialog_mac.cc",
     "it2me_confirmation_dialog_proxy.cc",
     "it2me_confirmation_dialog_proxy.h",
+    "it2me_confirmation_dialog_win.cc",
     "it2me_host.cc",
     "it2me_host.h",
     "it2me_native_messaging_host.cc",
@@ -33,6 +36,12 @@ source_set("common") {
       "it2me_native_messaging_host.cc",
       "it2me_native_messaging_host.h",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "it2me_confirmation_dialog_chromeos.cc" ]
+
+    sources -= [ "it2me_confirmation_dialog_linux.cc" ]
   }
 
   configs += [
