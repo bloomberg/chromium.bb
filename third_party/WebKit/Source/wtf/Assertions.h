@@ -179,7 +179,7 @@ private:
 //  They are deprecated. We should use:
 //    - DCHECK() for ASSERT()
 //    - NOTREACHED() for ASSERT_NOT_REACHED()
-//    - DCHECK() and ALLOW_UNUSED_LOCAL() for ASSERT_UNUSED().
+//    - DCHECK() for ASSERT_UNUSED().
 #if OS(WIN)
 // FIXME: Change to use something other than ASSERT to avoid this conflict with
 // the underlying platform.
