@@ -1321,7 +1321,7 @@ group("extra_resources") {
   }
 }
 
-if (is_chrome_branded) {
+if (is_chrome_branded && !is_android) {
   if (!is_mac) {
     _default_apps_target_type = "copy"
   } else {
@@ -1367,7 +1367,7 @@ group("packed_resources") {
     ":repack_pseudo_locales_pack",
   ]
 
-  if (is_chrome_branded && !is_mac) {
+  if (is_chrome_branded && !is_mac && !is_android) {
     public_deps += [ ":default_apps" ]
   }
 
