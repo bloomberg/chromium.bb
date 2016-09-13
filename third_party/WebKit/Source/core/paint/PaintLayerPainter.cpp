@@ -275,7 +275,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         else
             referenceBox.moveBy(offsetFromRoot);
         clipPathClipper.emplace(
-            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatPoint(referenceBox.location()));
+            context, *m_paintLayer.layoutObject()->styleRef().clipPath(), *m_paintLayer.layoutObject(),
+            FloatRect(referenceBox), FloatPoint(referenceBox.location()));
     }
 
     Optional<CompositingRecorder> compositingRecorder;

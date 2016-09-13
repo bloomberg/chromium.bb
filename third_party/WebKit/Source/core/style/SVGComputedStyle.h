@@ -87,7 +87,7 @@ public:
     static float initialFloodOpacity() { return 1; }
     static Color initialFloodColor() { return Color(0, 0, 0); }
     static Color initialLightingColor() { return Color(255, 255, 255); }
-    static const AtomicString& initialClipperResource() { return nullAtom; }
+    static ClipPathOperation* initialClipPath() { return nullptr; }
     static const AtomicString& initialMaskerResource() { return nullAtom; }
     static const AtomicString& initialMarkerStartResource() { return nullAtom; }
     static const AtomicString& initialMarkerMidResource() { return nullAtom; }
@@ -273,10 +273,10 @@ public:
     }
 
     // Setters for non-inherited resources
-    void setClipperResource(const AtomicString& obj)
+    void setClipPath(PassRefPtr<ClipPathOperation> operation)
     {
-        if (!(resources->clipper == obj))
-            resources.access()->clipper = obj;
+        if (resources->clipPath != operation)
+            resources.access()->clipPath = operation;
     }
 
     void setMaskerResource(const AtomicString& obj)
@@ -345,7 +345,7 @@ public:
     const Length& r() const { return geometry->r; }
     const Length& rx() const { return geometry->rx; }
     const Length& ry() const { return geometry->ry; }
-    const AtomicString& clipperResource() const { return resources->clipper; }
+    ClipPathOperation* clipPath() const { return resources->clipPath.get(); }
     const AtomicString& maskerResource() const { return resources->masker; }
     const AtomicString& markerStartResource() const { return inheritedResources->markerStart; }
     const AtomicString& markerMidResource() const { return inheritedResources->markerMid; }
@@ -378,7 +378,6 @@ public:
     }
 
     // convenience
-    bool hasClipper() const { return !clipperResource().isEmpty(); }
     bool hasMasker() const { return !maskerResource().isEmpty(); }
     bool hasMarkers() const { return !markerStartResource().isEmpty() || !markerMidResource().isEmpty() || !markerEndResource().isEmpty(); }
     bool hasStroke() const { return strokePaintType() != SVG_PAINTTYPE_NONE; }

@@ -2651,7 +2651,9 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyCounterReset:
         return valueForCounterDirectives(style, propertyID);
     case CSSPropertyWebkitClipPath:
-        if (ClipPathOperation* operation = style.clipPath()) {
+    case CSSPropertyClipPath:
+        if (ClipPathOperation* operation = propertyID == CSSPropertyWebkitClipPath
+            ? style.clipPath() : style.svgStyle().clipPath()) {
             if (operation->type() == ClipPathOperation::SHAPE)
                 return valueForBasicShape(style, toShapeClipPathOperation(operation)->basicShape());
             if (operation->type() == ClipPathOperation::REFERENCE)
@@ -2847,10 +2849,6 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         return CSSPrimitiveValue::create(svgStyle.dominantBaseline());
     case CSSPropertyTextAnchor:
         return CSSPrimitiveValue::create(svgStyle.textAnchor());
-    case CSSPropertyClipPath:
-        if (!svgStyle.clipperResource().isEmpty())
-            return CSSURIValue::create(serializeAsFragmentIdentifier(svgStyle.clipperResource()));
-        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
     case CSSPropertyMask:
         if (!svgStyle.maskerResource().isEmpty())
             return CSSURIValue::create(serializeAsFragmentIdentifier(svgStyle.maskerResource()));

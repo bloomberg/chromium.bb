@@ -214,10 +214,13 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* o
 
     std::unique_ptr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
-        if (style.hasClipper()) {
-            AtomicString id = style.clipperResource();
-            if (!ensureResources(resources).setClipper(getLayoutSVGResourceById<LayoutSVGResourceClipper>(treeScope, id)))
-                registerPendingResource(extensions, id, element);
+        if (ClipPathOperation* clipPathOperation = style.clipPath()) {
+            if (clipPathOperation->type() == ClipPathOperation::REFERENCE) {
+                const ReferenceClipPathOperation& clipPathReference = toReferenceClipPathOperation(*clipPathOperation);
+                AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(clipPathReference.url(), treeScope);
+                if (!ensureResources(resources).setClipper(getLayoutSVGResourceById<LayoutSVGResourceClipper>(treeScope, id)))
+                    registerPendingResource(extensions, id, element);
+            }
         }
 
         if (computedStyle.hasFilter() && !object->isSVGRoot())  {

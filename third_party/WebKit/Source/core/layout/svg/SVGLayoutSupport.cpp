@@ -370,16 +370,18 @@ bool SVGLayoutSupport::hasFilterResource(const LayoutObject& object)
 
 bool SVGLayoutSupport::pointInClippingArea(const LayoutObject& object, const FloatPoint& point)
 {
-    // We just take clippers into account to determine if a point is on the node. The Specification may
-    // change later and we also need to check maskers.
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object);
-    if (!resources)
+    ClipPathOperation* clipPathOperation = object.styleRef().svgStyle().clipPath();
+    if (!clipPathOperation)
         return true;
-
-    if (LayoutSVGResourceClipper* clipper = resources->clipper())
-        return clipper->hitTestClipContent(object.objectBoundingBox(), point);
-
-    return true;
+    if (clipPathOperation->type() == ClipPathOperation::SHAPE) {
+        ShapeClipPathOperation& clipPath = toShapeClipPathOperation(*clipPathOperation);
+        return clipPath.path(object.objectBoundingBox()).contains(point);
+    }
+    DCHECK_EQ(clipPathOperation->type(), ClipPathOperation::REFERENCE);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object);
+    if (!resources || !resources->clipper())
+        return true;
+    return resources->clipper()->hitTestClipContent(object.objectBoundingBox(), point);
 }
 
 bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(const LayoutObject& object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
@@ -435,7 +437,7 @@ bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const ComputedStyl
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
     return style.hasIsolation() || style.opacity() < 1 || style.hasBlendMode()
-        || style.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
+        || style.hasFilter() || svgStyle.hasMasker() || svgStyle.clipPath();
 }
 
 bool SVGLayoutSupport::willIsolateBlendingDescendantsForObject(const LayoutObject* object)

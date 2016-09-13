@@ -184,7 +184,7 @@ buffered-rendering svg
 caption-side inherited
 clear
 clip interpolable, converter=convertClip, custom_all
-clip-path svg, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
+clip-path svg, converter=convertClipPath
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation

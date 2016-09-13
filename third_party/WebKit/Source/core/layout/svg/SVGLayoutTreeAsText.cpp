@@ -649,14 +649,18 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             ts << " " << masker->resourceBoundingBox(&object) << "\n";
         }
     }
-    if (!svgStyle.clipperResource().isEmpty()) {
-        if (LayoutSVGResourceClipper* clipper = getLayoutSVGResourceById<LayoutSVGResourceClipper>(object.document(), svgStyle.clipperResource())) {
-            writeIndent(ts, indent);
-            ts << " ";
-            writeNameAndQuotedValue(ts, "clipPath", svgStyle.clipperResource());
-            ts << " ";
-            writeStandardPrefix(ts, *clipper, 0);
-            ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox()) << "\n";
+    if (ClipPathOperation* clipPathOperation = svgStyle.clipPath()) {
+        if (clipPathOperation->type() == ClipPathOperation::REFERENCE) {
+            const ReferenceClipPathOperation& clipPathReference = toReferenceClipPathOperation(*clipPathOperation);
+            AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(clipPathReference.url(), object.document());
+            if (LayoutSVGResourceClipper* clipper = getLayoutSVGResourceById<LayoutSVGResourceClipper>(object.document(), id)) {
+                writeIndent(ts, indent);
+                ts << " ";
+                writeNameAndQuotedValue(ts, "clipPath", id);
+                ts << " ";
+                writeStandardPrefix(ts, *clipper, 0);
+                ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox()) << "\n";
+            }
         }
     }
     if (style.hasFilter()) {

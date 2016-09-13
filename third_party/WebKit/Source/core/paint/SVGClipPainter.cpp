@@ -9,10 +9,12 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/ClipPathClipper.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
+#include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -35,8 +37,8 @@ private:
 bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& targetBoundingBox,
     const FloatRect& paintInvalidationRect, const FloatPoint& layerPositionOffset, GraphicsContext& context, ClipperState& clipperState)
 {
-    ASSERT(clipperState == ClipperNotApplied);
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_clip.needsLayout());
+    DCHECK_EQ(clipperState, ClipperState::NotApplied);
+    SECURITY_DCHECK(!m_clip.needsLayout());
 
     m_clip.clearInvalidationMask();
 
@@ -50,7 +52,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     // In this case, we need to apply the zoom scale explicitly - but only for clips with
     // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
     if (!target.isSVG() && m_clip.clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-        ASSERT(m_clip.style());
+        DCHECK(m_clip.style());
         animatedLocalTransform.scale(m_clip.style()->effectiveZoom());
     }
 
@@ -60,13 +62,13 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
         AffineTransform positionTransform;
         positionTransform.translate(layerPositionOffset.x(), layerPositionOffset.y());
         clipPath.transform(positionTransform);
-        clipperState = ClipperAppliedPath;
+        clipperState = ClipperState::AppliedPath;
         context.getPaintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
     }
 
     // Fall back to masking.
-    clipperState = ClipperAppliedMask;
+    clipperState = ClipperState::AppliedMask;
 
     // Begin compositing the clip mask.
     CompositingRecorder::beginCompositing(context, target, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
@@ -87,11 +89,11 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
 void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& context, ClipperState& clipperState)
 {
     switch (clipperState) {
-    case ClipperAppliedPath:
+    case ClipperState::AppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
         context.getPaintController().endItem<EndClipPathDisplayItem>(target);
         break;
-    case ClipperAppliedMask:
+    case ClipperState::AppliedMask:
         // Transfer content -> clip mask (SrcIn)
         CompositingRecorder::endCompositing(context, target);
 
@@ -99,7 +101,7 @@ void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& c
         CompositingRecorder::endCompositing(context, target);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -114,12 +116,10 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
     {
         TransformRecorder recorder(maskContext, layoutObject, localTransform);
 
-        // Create a clipPathClipper if this clipPath is clipped by another clipPath.
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_clip);
-        LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : nullptr;
-        ClipperState clipPathClipperState = ClipperNotApplied;
-        if (clipPathClipper && !SVGClipPainter(*clipPathClipper).prepareEffect(m_clip, targetBoundingBox, targetPaintInvalidationRect, layerPositionOffset, maskContext, clipPathClipperState))
-            return false;
+        // Apply any clip-path clipping this clipPath (nested shape/clipPath.)
+        Optional<ClipPathClipper> nestedClipPathClipper;
+        if (ClipPathOperation* clipPathOperation = m_clip.styleRef().svgStyle().clipPath())
+            nestedClipPathClipper.emplace(maskContext, *clipPathOperation, m_clip, targetBoundingBox, layerPositionOffset);
 
         {
             AffineTransform contentTransform;
@@ -132,9 +132,6 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
             TransformRecorder contentTransformRecorder(maskContext, layoutObject, contentTransform);
             maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(layoutObject, DisplayItem::kSVGClip, m_clip.createContentPicture());
         }
-
-        if (clipPathClipper)
-            SVGClipPainter(*clipPathClipper).finishEffect(m_clip, maskContext, clipPathClipperState);
     }
 
     LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, DisplayItem::kSVGClip, targetPaintInvalidationRect);

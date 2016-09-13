@@ -2271,7 +2271,7 @@ static CSSValue* consumeBasicShape(CSSParserTokenRange& range, const CSSParserCo
     return shape;
 }
 
-static CSSValue* consumeWebkitClipPath(CSSParserTokenRange& range, const CSSParserContext& context)
+static CSSValue* consumeClipPath(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -3358,7 +3358,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
-    case CSSPropertyClipPath:
     case CSSPropertyMask:
         return consumeNoneOrURI(m_range);
     case CSSPropertyFlexBasis:
@@ -3429,7 +3428,8 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyShapeOutside:
         return consumeShapeOutside(m_range, m_context);
     case CSSPropertyWebkitClipPath:
-        return consumeWebkitClipPath(m_range, m_context);
+    case CSSPropertyClipPath:
+        return consumeClipPath(m_range, m_context);
     case CSSPropertyJustifyContent:
     case CSSPropertyAlignContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
