@@ -135,6 +135,10 @@ content_settings::PatternPair GetPatternsFromScopingType(
   content_settings::PatternPair patterns;
 
   switch (scoping_type) {
+    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
+      patterns.first = ContentSettingsPattern::FromURL(primary_url);
+      patterns.second = ContentSettingsPattern::Wildcard();
+      break;
     case WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE:
     case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);

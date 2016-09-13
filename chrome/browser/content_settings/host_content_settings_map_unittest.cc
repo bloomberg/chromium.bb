@@ -378,7 +378,7 @@ TEST_F(HostContentSettingsMapTest, Observer) {
 
   GURL host("http://example.com/");
   ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromString("http://example.com:80");
+      ContentSettingsPattern::FromString("[*.]example.com");
   ContentSettingsPattern secondary_pattern =
       ContentSettingsPattern::Wildcard();
   EXPECT_CALL(observer, OnContentSettingsChanged(host_content_settings_map,
@@ -959,7 +959,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
     base::DictionaryValue* dummy_payload = new base::DictionaryValue;
     dummy_payload->SetInteger("setting", CONTENT_SETTING_ALLOW);
-    all_settings_dictionary->SetWithoutPathExpansion("www.\xC4\x87ira.com,*",
+    all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
                                                      dummy_payload);
   }
 
@@ -969,9 +969,9 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
       prefs->GetDictionary(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES));
   const base::DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-      "www.\xC4\x87ira.com,*", &result));
+      "[*.]\xC4\x87ira.com,*", &result));
   EXPECT_TRUE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-      "www.xn--ira-ppa.com,*", &result));
+      "[*.]xn--ira-ppa.com,*", &result));
 }
 
 // If both Unicode and its punycode pattern exist, make sure we don't touch the
@@ -1224,7 +1224,7 @@ TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("http://example.com:80");
+      ContentSettingsPattern::FromString("[*.]example.com");
   EXPECT_CALL(mock_observer, OnContentSettingChanged(
                                  pattern, ContentSettingsPattern::Wildcard(),
                                  CONTENT_SETTINGS_TYPE_COOKIES, ""));

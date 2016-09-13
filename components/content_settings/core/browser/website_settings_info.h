@@ -27,6 +27,10 @@ class WebsiteSettingsInfo {
   enum LossyStatus { LOSSY, NOT_LOSSY };
 
   enum ScopingType {
+    // Settings scoped to the domain of the requesting frame only. This should
+    // not generally be used.
+    REQUESTING_DOMAIN_ONLY_SCOPE,
+
     // Settings scoped to the origin of the main frame only.
     TOP_LEVEL_ORIGIN_ONLY_SCOPE,
 
