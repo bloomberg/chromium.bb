@@ -432,6 +432,36 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
+<action name="AboutFlags_top-chrome-md@1">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    User enabled flag that sets Chrome's style to be non-material design. The
+    action is emitted once per startup when the flag is active.
+  </description>
+  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+</action>
+
+<action name="AboutFlags_top-chrome-md@2">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    User enabled flag that sets Chrome's style to be material design. The action
+    is emitted once per startup when the flag is active.
+  </description>
+  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+</action>
+
+<action name="AboutFlags_top-chrome-md@3">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    User enabled flag that sets Chrome's style to be hybrid material design. The
+    action is emitted once per startup when the flag is active.
+  </description>
+  <obsolete>Deprecated in favor of  Launch.FlagsAtStartup histogram.</obsolete>
+</action>
+
 <action name="AboutFlags_verbatim-instant">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
