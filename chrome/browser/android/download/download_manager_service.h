@@ -130,15 +130,20 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
 
   bool is_history_query_complete_;
 
+  enum PendingGetDownloadsFlags {
+    NONE = 0,
+    REGULAR = 1 << 0,
+    OFF_THE_RECORD = 1 << 1,
+  };
+  int pending_get_downloads_actions_;
+
   enum DownloadAction {
     RESUME,
     PAUSE,
     CANCEL,
     REMOVE,
-    INITIALIZE_UI,
-    INITIALIZE_OFF_THE_RECORD_UI,
-    UNKNOWN };
-
+    UNKNOWN
+  };
   using PendingDownloadActions = std::map<std::string, DownloadAction>;
   PendingDownloadActions pending_actions_;
 

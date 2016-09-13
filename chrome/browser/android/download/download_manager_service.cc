@@ -82,7 +82,8 @@ DownloadManagerService::DownloadManagerService(
     JNIEnv* env,
     jobject obj)
     : java_ref_(env, obj),
-      is_history_query_complete_(false) {
+      is_history_query_complete_(false),
+      pending_get_downloads_actions_(NONE) {
   DownloadControllerBase::Get()->SetDefaultDownloadFileName(
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }
@@ -131,9 +132,9 @@ void DownloadManagerService::GetAllDownloads(JNIEnv* env,
   if (is_history_query_complete_)
     GetAllDownloadsInternal(is_off_the_record);
   else if (is_off_the_record)
-    EnqueueDownloadAction(std::string(), INITIALIZE_OFF_THE_RECORD_UI);
+    pending_get_downloads_actions_ |= OFF_THE_RECORD;
   else
-    EnqueueDownloadAction(std::string(), INITIALIZE_UI);
+    pending_get_downloads_actions_ |= REGULAR;
 }
 
 void DownloadManagerService::GetAllDownloadsInternal(bool is_off_the_record) {
@@ -218,18 +219,18 @@ void DownloadManagerService::OnHistoryQueryComplete() {
       case CANCEL:
         CancelDownloadInternal(download_guid, false);
         break;
-      case INITIALIZE_UI:
-        GetAllDownloadsInternal(false);
-        break;
-      case INITIALIZE_OFF_THE_RECORD_UI:
-        GetAllDownloadsInternal(true);
-        break;
       default:
         NOTREACHED();
         break;
     }
   }
   pending_actions_.clear();
+
+  // Respond to any requests to get all downloads.
+  if (pending_get_downloads_actions_ & REGULAR)
+    GetAllDownloadsInternal(false);
+  if (pending_get_downloads_actions_ & OFF_THE_RECORD)
+    GetAllDownloadsInternal(true);
 
   // Monitor all DownloadItems for changes.
   updateNotifier(this, GetDownloadManager(false), original_notifier_);
@@ -349,10 +350,6 @@ void DownloadManagerService::EnqueueDownloadAction(
       iter->second = action;
       break;
     case REMOVE:
-      iter->second = action;
-      break;
-    case INITIALIZE_UI:
-    case INITIALIZE_OFF_THE_RECORD_UI:
       iter->second = action;
       break;
     default:
