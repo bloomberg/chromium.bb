@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/serial_device_enumerator.h"
 #include "device/serial/serial_service_impl.h"
@@ -16,6 +17,7 @@
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 // A test launcher for tests for the serial API defined in
 // extensions/test/data/serial_unittest.js. Each C++ test function sets up a
@@ -434,13 +436,13 @@ class SerialApiTest : public ApiTestBase {
 
   void CreateSerialService(
       mojo::InterfaceRequest<device::serial::SerialService> request) {
-    new device::SerialServiceImpl(
-        new device::SerialConnectionFactory(
-            base::Bind(&SerialApiTest::GetIoHandler, base::Unretained(this)),
-            base::ThreadTaskRunnerHandle::Get()),
-        std::unique_ptr<device::SerialDeviceEnumerator>(
-            new FakeSerialDeviceEnumerator),
-        std::move(request));
+    mojo::MakeStrongBinding(base::MakeUnique<device::SerialServiceImpl>(
+                                new device::SerialConnectionFactory(
+                                    base::Bind(&SerialApiTest::GetIoHandler,
+                                               base::Unretained(this)),
+                                    base::ThreadTaskRunnerHandle::Get()),
+                                base::MakeUnique<FakeSerialDeviceEnumerator>()),
+                            std::move(request));
   }
 
   DISALLOW_COPY_AND_ASSIGN(SerialApiTest);

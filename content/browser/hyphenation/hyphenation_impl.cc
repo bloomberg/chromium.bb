@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace {
@@ -50,14 +51,14 @@ static base::File& GetDictionaryFile(const std::string& locale) {
 
 namespace hyphenation {
 
-HyphenationImpl::HyphenationImpl(blink::mojom::HyphenationRequest request)
-    : binding_(this, std::move(request)) {}
+HyphenationImpl::HyphenationImpl() {}
 
 HyphenationImpl::~HyphenationImpl() {}
 
 // static
 void HyphenationImpl::Create(blink::mojom::HyphenationRequest request) {
-  new HyphenationImpl(std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<HyphenationImpl>(),
+                          std::move(request));
 }
 
 void HyphenationImpl::OpenDictionary(const mojo::String& locale,

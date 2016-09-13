@@ -6,13 +6,12 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/strong_binding.h"
+
 namespace device {
 
-SensorImpl::SensorImpl(mojo::InterfaceRequest<Sensor> request,
-                       scoped_refptr<PlatformSensor> sensor)
-    : sensor_(std::move(sensor)),
-      binding_(this, std::move(request)),
-      suspended_(false) {
+SensorImpl::SensorImpl(scoped_refptr<PlatformSensor> sensor)
+    : sensor_(std::move(sensor)), suspended_(false) {
   sensor_->AddClient(this);
 }
 

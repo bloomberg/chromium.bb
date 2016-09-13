@@ -13,12 +13,10 @@ namespace gpu {
 
 CompositorFrameSinkFactoryImpl::CompositorFrameSinkFactoryImpl(
     uint32_t client_id,
-    mojo::InterfaceRequest<mojom::CompositorFrameSinkFactory> request,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : client_id_(client_id),
       surfaces_state_(surfaces_state),
-      allocator_(client_id),
-      binding_(this, std::move(request)) {}
+      allocator_(client_id) {}
 
 CompositorFrameSinkFactoryImpl::~CompositorFrameSinkFactoryImpl() {}
 

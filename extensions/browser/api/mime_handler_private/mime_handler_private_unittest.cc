@@ -12,6 +12,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -47,11 +48,13 @@ class MimeHandlerServiceImplTest : public testing::Test {
     stream_info->original_url = GURL("test://extensions_unittests");
     stream_container_.reset(
         new StreamContainer(std::move(stream_info), 1, true, GURL(), ""));
-    service_.reset(new MimeHandlerServiceImpl(stream_container_->GetWeakPtr(),
-                                              mojo::GetProxy(&service_ptr_)));
+    service_binding_ =
+        mojo::MakeStrongBinding(base::MakeUnique<MimeHandlerServiceImpl>(
+                                    stream_container_->GetWeakPtr()),
+                                mojo::GetProxy(&service_ptr_));
   }
   void TearDown() override {
-    service_.reset();
+    service_binding_->Close();
     stream_container_.reset();
   }
 
@@ -63,30 +66,30 @@ class MimeHandlerServiceImplTest : public testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<StreamContainer> stream_container_;
   mime_handler::MimeHandlerServicePtr service_ptr_;
-  std::unique_ptr<mime_handler::MimeHandlerService> service_;
+  mojo::StrongBindingPtr<mime_handler::MimeHandlerService> service_binding_;
   bool abort_called_ = false;
   mime_handler::StreamInfoPtr stream_info_;
 };
 
 TEST_F(MimeHandlerServiceImplTest, Abort) {
-  service_->AbortStream(base::Bind(&MimeHandlerServiceImplTest::AbortCallback,
-                                   base::Unretained(this)));
+  service_binding_->impl()->AbortStream(base::Bind(
+      &MimeHandlerServiceImplTest::AbortCallback, base::Unretained(this)));
   EXPECT_TRUE(abort_called_);
 
   abort_called_ = false;
-  service_->AbortStream(base::Bind(&MimeHandlerServiceImplTest::AbortCallback,
-                                   base::Unretained(this)));
+  service_binding_->impl()->AbortStream(base::Bind(
+      &MimeHandlerServiceImplTest::AbortCallback, base::Unretained(this)));
   EXPECT_TRUE(abort_called_);
 
   stream_container_.reset();
   abort_called_ = false;
-  service_->AbortStream(base::Bind(&MimeHandlerServiceImplTest::AbortCallback,
-                                   base::Unretained(this)));
+  service_binding_->impl()->AbortStream(base::Bind(
+      &MimeHandlerServiceImplTest::AbortCallback, base::Unretained(this)));
   EXPECT_TRUE(abort_called_);
 }
 
 TEST_F(MimeHandlerServiceImplTest, GetStreamInfo) {
-  service_->GetStreamInfo(
+  service_binding_->impl()->GetStreamInfo(
       base::Bind(&MimeHandlerServiceImplTest::GetStreamInfoCallback,
                  base::Unretained(this)));
   ASSERT_TRUE(stream_info_);
@@ -96,16 +99,16 @@ TEST_F(MimeHandlerServiceImplTest, GetStreamInfo) {
   EXPECT_EQ("test://extensions_unittests", stream_info_->original_url);
   EXPECT_EQ("stream://url", stream_info_->stream_url);
 
-  service_->AbortStream(base::Bind(&MimeHandlerServiceImplTest::AbortCallback,
-                                   base::Unretained(this)));
+  service_binding_->impl()->AbortStream(base::Bind(
+      &MimeHandlerServiceImplTest::AbortCallback, base::Unretained(this)));
   EXPECT_TRUE(abort_called_);
-  service_->GetStreamInfo(
+  service_binding_->impl()->GetStreamInfo(
       base::Bind(&MimeHandlerServiceImplTest::GetStreamInfoCallback,
                  base::Unretained(this)));
   ASSERT_FALSE(stream_info_);
 
   stream_container_.reset();
-  service_->GetStreamInfo(
+  service_binding_->impl()->GetStreamInfo(
       base::Bind(&MimeHandlerServiceImplTest::GetStreamInfoCallback,
                  base::Unretained(this)));
   ASSERT_FALSE(stream_info_);

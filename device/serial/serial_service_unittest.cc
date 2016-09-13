@@ -15,6 +15,7 @@
 #include "device/serial/test_serial_io_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -78,12 +79,13 @@ class SerialServiceTest : public testing::Test {
     if (!io_handler_.get())
       io_handler_ = new TestSerialIoHandler;
     mojo::InterfacePtr<serial::SerialService> service;
-    new SerialServiceImpl(
-        new SerialConnectionFactory(
-            base::Bind(&SerialServiceTest::ReturnIoHandler,
-                       base::Unretained(this)),
-            base::ThreadTaskRunnerHandle::Get()),
-        std::unique_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator),
+    mojo::MakeStrongBinding(
+        base::MakeUnique<SerialServiceImpl>(
+            new SerialConnectionFactory(
+                base::Bind(&SerialServiceTest::ReturnIoHandler,
+                           base::Unretained(this)),
+                base::ThreadTaskRunnerHandle::Get()),
+            base::MakeUnique<FakeSerialDeviceEnumerator>()),
         mojo::GetProxy(&service));
     mojo::InterfacePtr<serial::Connection> connection;
     mojo::InterfacePtr<serial::DataSink> sink;

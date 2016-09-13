@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 using media::mojom::OutputProtection;
 
@@ -16,17 +17,14 @@ void OutputProtectionImpl::Create(
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
-
-  // The created object is strongly bound to (and owned by) the pipe.
-  new OutputProtectionImpl(render_frame_host, std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<OutputProtectionImpl>(render_frame_host),
+      std::move(request));
 }
 
 OutputProtectionImpl::OutputProtectionImpl(
-    content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<OutputProtection> request)
-    : binding_(this, std::move(request)),
-      render_frame_host_(render_frame_host),
-      weak_factory_(this) {
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host), weak_factory_(this) {
   DCHECK(render_frame_host_);
 }
 

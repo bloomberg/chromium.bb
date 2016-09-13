@@ -18,7 +18,6 @@
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -42,8 +41,7 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
                      mojo::InterfaceRequest<DeviceManager> request);
 
   DeviceManagerImpl(base::WeakPtr<PermissionProvider> permission_provider,
-                    UsbService* usb_service,
-                    mojo::InterfaceRequest<DeviceManager> request);
+                    UsbService* usb_service);
   ~DeviceManagerImpl() override;
 
   void set_connection_error_handler(const base::Closure& error_handler) {
@@ -78,7 +76,6 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
 
   base::Closure connection_error_handler_;
 
-  mojo::StrongBinding<DeviceManager> binding_;
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerImpl);

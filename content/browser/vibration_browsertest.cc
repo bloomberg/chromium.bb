@@ -50,16 +50,15 @@ void ResetGlobalValues() {
 
 class FakeVibrationManager : public device::VibrationManager {
  public:
-  static void Create(mojo::InterfaceRequest<VibrationManager> request) {
-    new FakeVibrationManager(std::move(request));
+  FakeVibrationManager() {}
+  ~FakeVibrationManager() override {}
+
+  static void Create(device::VibrationManagerRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<FakeVibrationManager>(),
+                            std::move(request));
   }
 
  private:
-  FakeVibrationManager(mojo::InterfaceRequest<VibrationManager> request)
-      : binding_(this, std::move(request)) {}
-
-  ~FakeVibrationManager() override {}
-
   void Vibrate(int64_t milliseconds, const VibrateCallback& callback) override {
     g_vibrate_milliseconds = milliseconds;
     callback.Run();
@@ -71,8 +70,6 @@ class FakeVibrationManager : public device::VibrationManager {
     callback.Run();
     g_wait_cancel_runner->Quit();
   }
-
-  mojo::StrongBinding<VibrationManager> binding_;
 };
 
 class VibrationTest : public ContentBrowserTest {

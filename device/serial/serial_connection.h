@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "device/serial/serial.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -27,8 +26,7 @@ class SerialConnection : public serial::Connection {
   SerialConnection(scoped_refptr<SerialIoHandler> io_handler,
                    mojo::InterfaceRequest<serial::DataSink> sink,
                    mojo::InterfaceRequest<serial::DataSource> source,
-                   mojo::InterfacePtr<serial::DataSourceClient> source_client,
-                   mojo::InterfaceRequest<serial::Connection> request);
+                   mojo::InterfacePtr<serial::DataSourceClient> source_client);
   ~SerialConnection() override;
 
   // serial::Connection overrides.
@@ -48,8 +46,6 @@ class SerialConnection : public serial::Connection {
   scoped_refptr<SerialIoHandler> io_handler_;
   scoped_refptr<DataSinkReceiver> receiver_;
   scoped_refptr<DataSourceSender> sender_;
-
-  mojo::StrongBinding<serial::Connection> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialConnection);
 };

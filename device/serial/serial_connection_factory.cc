@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "device/serial/serial_connection.h"
 #include "device/serial/serial_io_handler.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 namespace {
@@ -128,9 +129,10 @@ void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
     return;
   }
 
-  new SerialConnection(io_handler_, std::move(sink_), std::move(source_),
-                       mojo::MakeProxy(std::move(source_client_)),
-                       std::move(connection_request_));
+  mojo::MakeStrongBinding(base::MakeUnique<SerialConnection>(
+                              io_handler_, std::move(sink_), std::move(source_),
+                              mojo::MakeProxy(std::move(source_client_))),
+                          std::move(connection_request_));
 }
 
 }  // namespace device

@@ -12,7 +12,6 @@
 #include "components/metrics/leak_detector/leak_detector.mojom.h"
 #include "components/metrics/proto/memory_leak_report.pb.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace metrics {
 
@@ -56,13 +55,11 @@ class LeakDetectorRemoteController : public mojom::LeakDetector {
   static void SetLocalControllerInstance(LocalController* controller);
 
  private:
-  explicit LeakDetectorRemoteController(mojom::LeakDetectorRequest request);
+  LeakDetectorRemoteController();
 
   // Gets called when the remote process terminates and the Mojo connection gets
   // closed as a result.
   void OnRemoteProcessShutdown();
-
-  mojo::StrongBinding<mojom::LeakDetector> binding_;
 
   // Indicates whether remote process received MemoryLeakReportProto::Params
   // with a non-zero sampling rate, i.e. enabled leak detector.

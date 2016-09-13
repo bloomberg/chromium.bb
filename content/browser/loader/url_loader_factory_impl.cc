@@ -9,14 +9,13 @@
 #include "content/common/resource_request.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
-    scoped_refptr<ResourceMessageFilter> resource_message_filter,
-    mojo::InterfaceRequest<mojom::URLLoaderFactory> request)
-    : resource_message_filter_(std::move(resource_message_filter)),
-      binding_(this, std::move(request)) {
+    scoped_refptr<ResourceMessageFilter> resource_message_filter)
+    : resource_message_filter_(std::move(resource_message_filter)) {
   DCHECK(resource_message_filter_);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -43,8 +42,9 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
 void URLLoaderFactoryImpl::Create(
     scoped_refptr<ResourceMessageFilter> filter,
     mojo::InterfaceRequest<mojom::URLLoaderFactory> request) {
-  // The created instance is held by the StrongBinding.
-  new URLLoaderFactoryImpl(std::move(filter), std::move(request));
+  mojo::MakeStrongBinding(
+      base::WrapUnique(new URLLoaderFactoryImpl(std::move(filter))),
+      std::move(request));
 }
 
 }  // namespace content

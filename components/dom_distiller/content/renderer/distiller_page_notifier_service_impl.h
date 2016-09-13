@@ -8,7 +8,6 @@
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 #include "components/dom_distiller/content/renderer/distiller_native_javascript.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace dom_distiller {
 
@@ -23,15 +22,13 @@ class DistillerPageNotifierServiceImpl
     : public mojom::DistillerPageNotifierService {
  public:
   explicit DistillerPageNotifierServiceImpl(
-      DistillerJsRenderFrameObserver* observer,
-      mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request);
+      DistillerJsRenderFrameObserver* observer);
   ~DistillerPageNotifierServiceImpl() override;
 
   // Implementation of mojo interface DistillerPageNotifierService.
   void NotifyIsDistillerPage() override;
 
  private:
-  mojo::StrongBinding<mojom::DistillerPageNotifierService> binding_;
   DistillerJsRenderFrameObserver* distiller_js_observer_;
 };
 

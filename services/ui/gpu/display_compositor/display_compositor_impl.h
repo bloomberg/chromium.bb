@@ -5,7 +5,6 @@
 #ifndef SERVICES_UI_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_
 #define SERVICES_UI_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/gpu/display_compositor.mojom.h"
 #include "services/ui/public/interfaces/gpu/display_compositor_host.mojom.h"
 
@@ -14,8 +13,7 @@ namespace gpu {
 
 class DisplayCompositorImpl : public mojom::DisplayCompositor {
  public:
-  explicit DisplayCompositorImpl(
-      mojo::InterfaceRequest<mojom::DisplayCompositor> request);
+  DisplayCompositorImpl();
   ~DisplayCompositorImpl() override;
 
   // mojom::DisplayCompositor implementation.
@@ -26,8 +24,6 @@ class DisplayCompositorImpl : public mojom::DisplayCompositor {
                      mojom::CompositorFrameSinkClientPtr client) override;
 
  private:
-  mojo::StrongBinding<mojom::DisplayCompositor> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositorImpl);
 };
 

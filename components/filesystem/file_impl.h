@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace base {
 class FilePath;
@@ -25,13 +24,11 @@ class SharedTempDir;
 
 class FileImpl : public mojom::File {
  public:
-  FileImpl(mojo::InterfaceRequest<mojom::File> request,
-           const base::FilePath& path,
+  FileImpl(const base::FilePath& path,
            uint32_t flags,
            scoped_refptr<SharedTempDir> temp_dir,
            scoped_refptr<LockTable> lock_table);
-  FileImpl(mojo::InterfaceRequest<mojom::File> request,
-           const base::FilePath& path,
+  FileImpl(const base::FilePath& path,
            base::File file,
            scoped_refptr<SharedTempDir> temp_dir,
            scoped_refptr<LockTable> lock_table);
@@ -66,15 +63,13 @@ class FileImpl : public mojom::File {
   void Touch(mojom::TimespecOrNowPtr atime,
              mojom::TimespecOrNowPtr mtime,
              const TouchCallback& callback) override;
-  void Dup(mojo::InterfaceRequest<mojom::File> file,
-           const DupCallback& callback) override;
+  void Dup(mojom::FileRequest file, const DupCallback& callback) override;
   void Flush(const FlushCallback& callback) override;
   void Lock(const LockCallback& callback) override;
   void Unlock(const UnlockCallback& callback) override;
   void AsHandle(const AsHandleCallback& callback) override;
 
  private:
-  mojo::StrongBinding<mojom::File> binding_;
   base::File file_;
   base::FilePath path_;
   scoped_refptr<SharedTempDir> temp_dir_;

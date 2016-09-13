@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/decode_status.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -24,8 +23,7 @@ class VideoFrame;
 // and wraps a media::VideoDecoder.
 class MojoVideoDecoderService : public mojom::VideoDecoder {
  public:
-  MojoVideoDecoderService(mojo::InterfaceRequest<mojom::VideoDecoder> request,
-                          MojoMediaClient* mojo_media_client);
+  explicit MojoVideoDecoderService(MojoMediaClient* mojo_media_client);
   ~MojoVideoDecoderService() final;
 
   // mojom::VideoDecoder implementation
@@ -44,7 +42,6 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
   void OnDecoderReset(const ResetCallback& callback);
 
-  mojo::StrongBinding<mojom::VideoDecoder> binding_;
   mojom::VideoDecoderClientPtr client_;
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 

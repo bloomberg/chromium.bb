@@ -5,6 +5,8 @@
 #include "chrome/gpu/chrome_content_gpu_client.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
@@ -17,23 +19,18 @@ namespace {
 
 void DeprecatedCreateGpuArcVideoService(
     const gpu::GpuPreferences& gpu_preferences,
-    ::arc::mojom::VideoAcceleratorServiceClientRequest request) {
-  // GpuArcVideoService is strongly bound to the Mojo message pipe it
-  // is connected to. When that message pipe is closed, either explicitly on the
-  // other end (in the browser process), or by a connection error, this object
-  // will be destroyed.
-  auto* service = new chromeos::arc::GpuArcVideoService(gpu_preferences);
-  service->Connect(std::move(request));
+    ::arc::mojom::VideoAcceleratorServiceClientRequest client_request) {
+  chromeos::arc::GpuArcVideoService::DeprecatedConnect(
+      base::MakeUnique<chromeos::arc::GpuArcVideoService>(gpu_preferences),
+      std::move(client_request));
 }
 
 void CreateGpuArcVideoService(
     const gpu::GpuPreferences& gpu_preferences,
     ::arc::mojom::VideoAcceleratorServiceRequest request) {
-  // GpuArcVideoService is strongly bound to the Mojo message pipe it
-  // is connected to. When that message pipe is closed, either explicitly on the
-  // other end (in the browser process), or by a connection error, this object
-  // will be destroyed.
-  new chromeos::arc::GpuArcVideoService(std::move(request), gpu_preferences);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<chromeos::arc::GpuArcVideoService>(gpu_preferences),
+      std::move(request));
 }
 
 }  // namespace

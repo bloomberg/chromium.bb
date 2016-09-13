@@ -103,7 +103,7 @@ void OnIsochronousTransferOut(
 DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
                        DeviceInfoPtr device_info,
                        base::WeakPtr<PermissionProvider> permission_provider,
-                       mojo::InterfaceRequest<Device> request)
+                       DeviceRequest request)
     : device_(device),
       device_info_(std::move(device_info)),
       permission_provider_(permission_provider),
@@ -116,6 +116,8 @@ DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
   //  * the message pipe it is bound to is closed or the message loop is
   //  * destructed.
   observer_.Add(device_.get());
+  binding_.set_connection_error_handler(
+      base::Bind([](DeviceImpl* self) { delete self; }, this));
 }
 
 DeviceImpl::~DeviceImpl() {

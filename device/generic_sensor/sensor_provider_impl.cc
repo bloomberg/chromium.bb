@@ -8,6 +8,7 @@
 
 #include "device/generic_sensor/platform_sensor_provider.h"
 #include "device/generic_sensor/sensor_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -22,17 +23,16 @@ uint64_t GetBufferOffset(mojom::SensorType type) {
 }  // namespace
 
 // static
-void SensorProviderImpl::Create(
-    mojo::InterfaceRequest<mojom::SensorProvider> request) {
+void SensorProviderImpl::Create(mojom::SensorProviderRequest request) {
   PlatformSensorProvider* provider = PlatformSensorProvider::GetInstance();
-  if (provider)
-    new SensorProviderImpl(std::move(request), provider);
+  if (provider) {
+    mojo::MakeStrongBinding(base::WrapUnique(new SensorProviderImpl(provider)),
+                            std::move(request));
+  }
 }
 
-SensorProviderImpl::SensorProviderImpl(
-    mojo::InterfaceRequest<mojom::SensorProvider> request,
-    PlatformSensorProvider* provider)
-    : binding_(this, std::move(request)), provider_(provider) {
+SensorProviderImpl::SensorProviderImpl(PlatformSensorProvider* provider)
+    : provider_(provider) {
   DCHECK(provider_);
 }
 
@@ -58,7 +58,7 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
     return;
   }
 
-  auto sensor_impl = new SensorImpl(std::move(sensor_request), sensor);
+  auto sensor_impl = base::MakeUnique<SensorImpl>(sensor);
 
   auto sensor_read_buffer = mojom::SensorReadBuffer::New();
   sensor_read_buffer->memory = std::move(cloned_handle);
@@ -66,6 +66,8 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
   sensor_read_buffer->mode = sensor->GetReportingMode();
 
   callback.Run(std::move(sensor_read_buffer), sensor_impl->GetClient());
+
+  mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
 }
 
 }  // namespace device

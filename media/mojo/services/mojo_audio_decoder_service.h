@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -25,8 +24,7 @@ class MojoAudioDecoderService : public mojom::AudioDecoder {
  public:
   MojoAudioDecoderService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-      std::unique_ptr<media::AudioDecoder> decoder,
-      mojo::InterfaceRequest<mojom::AudioDecoder> request);
+      std::unique_ptr<media::AudioDecoder> decoder);
 
   ~MojoAudioDecoderService() final;
 
@@ -58,10 +56,6 @@ class MojoAudioDecoderService : public mojom::AudioDecoder {
 
   // Called by |decoder_| for each decoded buffer.
   void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
-
-  // A binding represents the association between the service and the
-  // communication channel, i.e. the pipe.
-  mojo::StrongBinding<mojom::AudioDecoder> binding_;
 
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 

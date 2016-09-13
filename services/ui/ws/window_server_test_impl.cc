@@ -23,10 +23,8 @@ bool WindowHasValidFrame(const ServerWindow* window) {
 
 }  // namespace
 
-WindowServerTestImpl::WindowServerTestImpl(
-    WindowServer* window_server,
-    mojo::InterfaceRequest<WindowServerTest> request)
-    : window_server_(window_server), binding_(this, std::move(request)) {}
+WindowServerTestImpl::WindowServerTestImpl(WindowServer* window_server)
+    : window_server_(window_server) {}
 
 WindowServerTestImpl::~WindowServerTestImpl() {}
 

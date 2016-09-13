@@ -5,18 +5,19 @@
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace startup_metric_utils {
-// static
-void StartupMetricHostImpl::Create(mojom::StartupMetricHostRequest request) {
-  new StartupMetricHostImpl(std::move(request));
-}
 
-StartupMetricHostImpl::StartupMetricHostImpl(
-    mojom::StartupMetricHostRequest request)
-    : binding_(this, std::move(request)) {}
+StartupMetricHostImpl::StartupMetricHostImpl() = default;
 
 StartupMetricHostImpl::~StartupMetricHostImpl() = default;
+
+// static
+void StartupMetricHostImpl::Create(mojom::StartupMetricHostRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<StartupMetricHostImpl>(),
+                          std::move(request));
+}
 
 void StartupMetricHostImpl::RecordRendererMainEntryTime(
     base::TimeTicks renderer_main_entry_time) {

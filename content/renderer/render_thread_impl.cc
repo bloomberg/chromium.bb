@@ -326,8 +326,7 @@ void NotifyTimezoneChangeOnThisThread() {
 
 class FrameFactoryImpl : public mojom::FrameFactory {
  public:
-  explicit FrameFactoryImpl(mojom::FrameFactoryRequest request)
-      : routing_id_highmark_(-1), binding_(this, std::move(request)) {}
+  FrameFactoryImpl() : routing_id_highmark_(-1) {}
 
  private:
   // mojom::FrameFactory:
@@ -354,11 +353,11 @@ class FrameFactoryImpl : public mojom::FrameFactory {
 
  private:
   int32_t routing_id_highmark_;
-  mojo::StrongBinding<mojom::FrameFactory> binding_;
 };
 
 void CreateFrameFactory(mojom::FrameFactoryRequest request) {
-  new FrameFactoryImpl(std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<FrameFactoryImpl>(),
+                          std::move(request));
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
@@ -377,9 +376,7 @@ void SetupEmbeddedWorkerOnWorkerThread(
 
 class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
  public:
-  explicit EmbeddedWorkerSetupImpl(
-      mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request)
-      : binding_(this, std::move(request)) {}
+  EmbeddedWorkerSetupImpl() = default;
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
@@ -390,14 +387,11 @@ class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&request),
                    base::Passed(remote_interfaces.PassInterface())));
   }
-
- private:
-  mojo::StrongBinding<mojom::EmbeddedWorkerSetup> binding_;
 };
 
-void CreateEmbeddedWorkerSetup(
-    mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request) {
-  new EmbeddedWorkerSetupImpl(std::move(request));
+void CreateEmbeddedWorkerSetup(mojom::EmbeddedWorkerSetupRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<EmbeddedWorkerSetupImpl>(),
+                          std::move(request));
 }
 
 scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(

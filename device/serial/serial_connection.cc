@@ -18,9 +18,8 @@ SerialConnection::SerialConnection(
     scoped_refptr<SerialIoHandler> io_handler,
     mojo::InterfaceRequest<serial::DataSink> sink,
     mojo::InterfaceRequest<serial::DataSource> source,
-    mojo::InterfacePtr<serial::DataSourceClient> source_client,
-    mojo::InterfaceRequest<serial::Connection> request)
-    : io_handler_(io_handler), binding_(this, std::move(request)) {
+    mojo::InterfacePtr<serial::DataSourceClient> source_client)
+    : io_handler_(io_handler) {
   receiver_ = new DataSinkReceiver(
       std::move(sink),
       base::Bind(&SerialConnection::OnSendPipeReady, base::Unretained(this)),

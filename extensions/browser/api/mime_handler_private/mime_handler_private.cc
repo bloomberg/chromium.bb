@@ -13,6 +13,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_response_headers.h"
 
 namespace extensions {
@@ -47,21 +48,19 @@ mojo::Map<mojo::String, mojo::String> CreateResponseHeadersMap(
 
 }  // namespace
 
+MimeHandlerServiceImpl::MimeHandlerServiceImpl(
+    base::WeakPtr<StreamContainer> stream_container)
+    : stream_(stream_container), weak_factory_(this) {}
+
+MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {}
+
 // static
 void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
-    mojo::InterfaceRequest<mime_handler::MimeHandlerService> request) {
-  new MimeHandlerServiceImpl(stream_container, std::move(request));
-}
-
-MimeHandlerServiceImpl::MimeHandlerServiceImpl(
-    base::WeakPtr<StreamContainer> stream_container,
-    mojo::InterfaceRequest<mime_handler::MimeHandlerService> request)
-    : stream_(stream_container),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {}
-
-MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {
+    mime_handler::MimeHandlerServiceRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MimeHandlerServiceImpl>(stream_container),
+      std::move(request));
 }
 
 void MimeHandlerServiceImpl::GetStreamInfo(

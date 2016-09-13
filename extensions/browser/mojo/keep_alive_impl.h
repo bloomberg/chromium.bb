@@ -10,8 +10,7 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -28,12 +27,12 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   // |request|. When the requester closes its pipe, the keep alive ends.
   static void Create(content::BrowserContext* context,
                      const Extension* extension,
-                     mojo::InterfaceRequest<KeepAlive> request);
+                     KeepAliveRequest request);
 
  private:
   KeepAliveImpl(content::BrowserContext* context,
                 const Extension* extension,
-                mojo::InterfaceRequest<KeepAlive> request);
+                KeepAliveRequest request);
   ~KeepAliveImpl() override;
 
   // ExtensionRegistryObserver overrides.
@@ -48,7 +47,7 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   content::BrowserContext* context_;
   const Extension* extension_;
   ScopedObserver<ExtensionRegistry, KeepAliveImpl> extension_registry_observer_;
-  mojo::StrongBinding<KeepAlive> binding_;
+  mojo::Binding<KeepAlive> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveImpl);
 };

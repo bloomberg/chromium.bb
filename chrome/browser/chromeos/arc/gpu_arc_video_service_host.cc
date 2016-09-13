@@ -42,9 +42,7 @@ void ConnectToVideoAcceleratorServiceOnIOThread(
 
 class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
  public:
-  explicit VideoAcceleratorFactoryService(
-      mojom::VideoAcceleratorFactoryRequest request)
-      : binding_(this, std::move(request)) {}
+  VideoAcceleratorFactoryService() = default;
 
   void Create(mojom::VideoAcceleratorServiceRequest request) override {
     content::BrowserThread::PostTask(
@@ -54,8 +52,6 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
   }
 
  private:
-  mojo::StrongBinding<VideoAcceleratorFactory> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
 };
 
@@ -150,11 +146,9 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
   }
   callback.Run(std::move(child_handle), token);
 
-  // The lifetime is managed by the StrongBinding insides the
-  // VideoAcceleratorFactoryService.
-  new VideoAcceleratorFactoryService(
-      mojo::MakeRequest<mojom::VideoAcceleratorFactory>(
-          std::move(server_pipe)));
+  mojo::MakeStrongBinding(base::MakeUnique<VideoAcceleratorFactoryService>(),
+                          mojo::MakeRequest<mojom::VideoAcceleratorFactory>(
+                              std::move(server_pipe)));
 }
 
 }  // namespace arc

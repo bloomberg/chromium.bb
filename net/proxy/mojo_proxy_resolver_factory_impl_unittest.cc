@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_resolver_v8_tracing.h"
@@ -104,8 +105,9 @@ class MojoProxyResolverFactoryImplTest
  public:
   void SetUp() override {
     mock_factory_ = new TestProxyResolverFactory(&waiter_);
-    new MojoProxyResolverFactoryImpl(base::WrapUnique(mock_factory_),
-                                     mojo::GetProxy(&factory_));
+    mojo::MakeStrongBinding(base::MakeUnique<MojoProxyResolverFactoryImpl>(
+                                base::WrapUnique(mock_factory_)),
+                            mojo::GetProxy(&factory_));
   }
 
   void OnConnectionError() { waiter_.NotifyEvent(CONNECTION_ERROR); }

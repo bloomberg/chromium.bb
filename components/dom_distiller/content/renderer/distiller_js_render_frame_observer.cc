@@ -10,6 +10,7 @@
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "v8/include/v8.h"
 
@@ -59,8 +60,9 @@ void DistillerJsRenderFrameObserver::RegisterMojoInterface() {
 
 void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
     mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request) {
-  // This is strongly bound to and owned by the pipe.
-  new DistillerPageNotifierServiceImpl(this, std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<DistillerPageNotifierServiceImpl>(this),
+      std::move(request));
 }
 
 void DistillerJsRenderFrameObserver::SetIsDistillerPage() {

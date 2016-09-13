@@ -10,6 +10,7 @@
 #include "components/leveldb/env_mojo.h"
 #include "components/leveldb/leveldb_database_impl.h"
 #include "components/leveldb/public/cpp/util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -60,8 +61,9 @@ void LevelDBServiceImpl::OpenWithOptions(
   leveldb::Status s = leveldb::DB::Open(options, dbname, &db);
 
   if (s.ok()) {
-    new LevelDBDatabaseImpl(std::move(database), std::move(env_mojo),
-                            base::WrapUnique(db));
+    mojo::MakeStrongBinding(base::MakeUnique<LevelDBDatabaseImpl>(
+                                std::move(env_mojo), base::WrapUnique(db)),
+                            std::move(database));
   }
 
   callback.Run(LeveldbStatusToError(s));
@@ -82,8 +84,9 @@ void LevelDBServiceImpl::OpenInMemory(
   leveldb::Status s = leveldb::DB::Open(options, "", &db);
 
   if (s.ok()) {
-    new LevelDBDatabaseImpl(std::move(database), std::move(env),
-                            base::WrapUnique(db));
+    mojo::MakeStrongBinding(base::MakeUnique<LevelDBDatabaseImpl>(
+                                std::move(env), base::WrapUnique(db)),
+                            std::move(database));
   }
 
   callback.Run(LeveldbStatusToError(s));

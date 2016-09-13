@@ -9,6 +9,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace content {
@@ -16,24 +17,20 @@ namespace content {
 // static
 void ProvisionFetcherImpl::Create(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<media::mojom::ProvisionFetcher> request) {
+    media::mojom::ProvisionFetcherRequest request) {
   net::URLRequestContextGetter* context_getter =
       BrowserContext::GetDefaultStoragePartition(
           render_frame_host->GetProcess()->GetBrowserContext())->
               GetURLRequestContext();
   DCHECK(context_getter);
-
-  // The created object is strongly bound to (and owned by) the pipe.
-  new ProvisionFetcherImpl(CreateProvisionFetcher(context_getter),
-                           std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ProvisionFetcherImpl>(
+                              CreateProvisionFetcher(context_getter)),
+                          std::move(request));
 }
 
 ProvisionFetcherImpl::ProvisionFetcherImpl(
-    std::unique_ptr<media::ProvisionFetcher> provision_fetcher,
-    mojo::InterfaceRequest<ProvisionFetcher> request)
-    : binding_(this, std::move(request)),
-      provision_fetcher_(std::move(provision_fetcher)),
-      weak_factory_(this) {
+    std::unique_ptr<media::ProvisionFetcher> provision_fetcher)
+    : provision_fetcher_(std::move(provision_fetcher)), weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 }
 

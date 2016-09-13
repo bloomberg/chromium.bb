@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 
@@ -51,9 +52,10 @@ bool FileSystemApp::OnConnect(const shell::Identity& remote_identity,
 
 // |InterfaceFactory<Files>| implementation:
 void FileSystemApp::Create(const shell::Identity& remote_identity,
-                           mojo::InterfaceRequest<mojom::FileSystem> request) {
-  new FileSystemImpl(remote_identity, std::move(request), GetUserDataDir(),
-                     lock_table_);
+                           mojom::FileSystemRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<FileSystemImpl>(
+                              remote_identity, GetUserDataDir(), lock_table_),
+                          std::move(request));
 }
 
 //static

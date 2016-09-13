@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace chromeos {
 namespace attestation {
@@ -26,9 +25,8 @@ class PlatformVerificationImpl : public media::mojom::PlatformVerification {
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<media::mojom::PlatformVerification> request);
 
-  PlatformVerificationImpl(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<PlatformVerification> request);
+  explicit PlatformVerificationImpl(
+      content::RenderFrameHost* render_frame_host);
   ~PlatformVerificationImpl() override;
 
   // mojo::InterfaceImpl<PlatformVerification> implementation.
@@ -44,8 +42,6 @@ class PlatformVerificationImpl : public media::mojom::PlatformVerification {
                             const std::string& signed_data,
                             const std::string& signature,
                             const std::string& platform_key_certificate);
-
-  mojo::StrongBinding<media::mojom::PlatformVerification> binding_;
 
   content::RenderFrameHost* const render_frame_host_;
 

@@ -23,6 +23,7 @@
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
 #include "device/usb/mojo/mock_permission_provider.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;
@@ -62,11 +63,11 @@ class USBDeviceManagerImplTest : public testing::Test {
 
 class MockDeviceManagerClient : public DeviceManagerClient {
  public:
-  MockDeviceManagerClient() : m_binding(this) {}
+  MockDeviceManagerClient() : binding_(this) {}
   ~MockDeviceManagerClient() {}
 
   DeviceManagerClientPtr CreateInterfacePtrAndBind() {
-    return m_binding.CreateInterfacePtrAndBind();
+    return binding_.CreateInterfacePtrAndBind();
   }
 
   MOCK_METHOD1(DoOnDeviceAdded, void(DeviceInfo*));
@@ -80,7 +81,7 @@ class MockDeviceManagerClient : public DeviceManagerClient {
   }
 
  private:
-  mojo::Binding<DeviceManagerClient> m_binding;
+  mojo::Binding<DeviceManagerClient> binding_;
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,

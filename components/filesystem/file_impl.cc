@@ -17,6 +17,7 @@
 #include "components/filesystem/shared_temp_dir.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
@@ -32,26 +33,22 @@ const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 
 }  // namespace
 
-FileImpl::FileImpl(mojo::InterfaceRequest<mojom::File> request,
-                   const base::FilePath& path,
+FileImpl::FileImpl(const base::FilePath& path,
                    uint32_t flags,
                    scoped_refptr<SharedTempDir> temp_dir,
                    scoped_refptr<LockTable> lock_table)
-    : binding_(this, std::move(request)),
-      file_(path, flags),
+    : file_(path, flags),
       path_(path),
       temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {
   DCHECK(file_.IsValid());
 }
 
-FileImpl::FileImpl(mojo::InterfaceRequest<mojom::File> request,
-                   const base::FilePath& path,
+FileImpl::FileImpl(const base::FilePath& path,
                    base::File file,
                    scoped_refptr<SharedTempDir> temp_dir,
                    scoped_refptr<LockTable> lock_table)
-    : binding_(this, std::move(request)),
-      file_(std::move(file)),
+    : file_(std::move(file)),
       path_(path),
       temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {
@@ -288,8 +285,7 @@ void FileImpl::Touch(mojom::TimespecOrNowPtr atime,
   callback.Run(mojom::FileError::OK);
 }
 
-void FileImpl::Dup(mojo::InterfaceRequest<mojom::File> file,
-                   const DupCallback& callback) {
+void FileImpl::Dup(mojom::FileRequest file, const DupCallback& callback) {
   if (!file_.IsValid()) {
     callback.Run(GetError(file_));
     return;
@@ -301,9 +297,12 @@ void FileImpl::Dup(mojo::InterfaceRequest<mojom::File> file,
     return;
   }
 
-  if (file.is_pending())
-    new FileImpl(std::move(file), path_, std::move(new_file), temp_dir_,
-                 lock_table_);
+  if (file.is_pending()) {
+    mojo::MakeStrongBinding(
+        base::MakeUnique<FileImpl>(path_, std::move(new_file), temp_dir_,
+                                   lock_table_),
+        std::move(file));
+  }
   callback.Run(mojom::FileError::OK);
 }
 

@@ -56,8 +56,8 @@ int ImportedInterfaceImpl::do_something_count_ = 0;
 
 class SampleNamedObjectImpl : public sample::NamedObject {
  public:
-  explicit SampleNamedObjectImpl(InterfaceRequest<sample::NamedObject> request)
-      : binding_(this, std::move(request)) {}
+  SampleNamedObjectImpl() {}
+
   void SetName(const std::string& name) override { name_ = name; }
 
   void GetName(const GetNameCallback& callback) override {
@@ -66,7 +66,6 @@ class SampleNamedObjectImpl : public sample::NamedObject {
 
  private:
   std::string name_;
-  StrongBinding<sample::NamedObject> binding_;
 };
 
 class SampleFactoryImpl : public sample::Factory {
@@ -133,7 +132,8 @@ class SampleFactoryImpl : public sample::Factory {
   void CreateNamedObject(
       InterfaceRequest<sample::NamedObject> object_request) override {
     EXPECT_TRUE(object_request.is_pending());
-    new SampleNamedObjectImpl(std::move(object_request));
+    MakeStrongBinding(base::MakeUnique<SampleNamedObjectImpl>(),
+                      std::move(object_request));
   }
 
   // These aren't called or implemented, but exist here to test that the

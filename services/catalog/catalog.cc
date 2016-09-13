@@ -14,6 +14,7 @@
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/constants.h"
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
@@ -130,9 +131,11 @@ void Catalog::Create(const shell::Identity& remote_identity,
     lock_table_ = new filesystem::LockTable;
   base::FilePath resources_path =
       GetPathForApplicationName(remote_identity.name());
-  new filesystem::DirectoryImpl(std::move(request), resources_path,
-                                scoped_refptr<filesystem::SharedTempDir>(),
-                                lock_table_);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<filesystem::DirectoryImpl>(
+          resources_path, scoped_refptr<filesystem::SharedTempDir>(),
+          lock_table_),
+      std::move(request));
 }
 
 Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {

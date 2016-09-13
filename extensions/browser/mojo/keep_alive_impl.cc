@@ -15,13 +15,14 @@ namespace extensions {
 // static
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
-                           mojo::InterfaceRequest<KeepAlive> request) {
+                           KeepAliveRequest request) {
+  // Owns itself.
   new KeepAliveImpl(context, extension, std::move(request));
 }
 
 KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
                              const Extension* extension,
-                             mojo::InterfaceRequest<KeepAlive> request)
+                             KeepAliveRequest request)
     : context_(context),
       extension_(extension),
       extension_registry_observer_(this),
@@ -48,6 +49,7 @@ void KeepAliveImpl::OnShutdown(ExtensionRegistry* registry) {
 
 void KeepAliveImpl::OnDisconnected() {
   ProcessManager::Get(context_)->DecrementLazyKeepaliveCount(extension_);
+  delete this;
 }
 
 }  // namespace extensions

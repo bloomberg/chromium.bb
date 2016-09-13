@@ -8,19 +8,20 @@
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+
+BudgetServiceImpl::BudgetServiceImpl(int render_process_id)
+    : render_process_id_(render_process_id) {}
+
+BudgetServiceImpl::~BudgetServiceImpl() = default;
 
 // static
 void BudgetServiceImpl::Create(int render_process_id,
                                blink::mojom::BudgetServiceRequest request) {
-  new BudgetServiceImpl(render_process_id, std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<BudgetServiceImpl>(render_process_id),
+      std::move(request));
 }
-
-BudgetServiceImpl::BudgetServiceImpl(int render_process_id,
-                                     blink::mojom::BudgetServiceRequest request)
-    : render_process_id_(render_process_id),
-      binding_(this, std::move(request)) {}
-
-BudgetServiceImpl::~BudgetServiceImpl() = default;
 
 void BudgetServiceImpl::GetCost(blink::mojom::BudgetOperationType type,
                                 const GetCostCallback& callback) {

@@ -46,12 +46,9 @@ leveldb::Status ForEachWithPrefix(leveldb::DB* db,
 }  // namespace
 
 LevelDBDatabaseImpl::LevelDBDatabaseImpl(
-    leveldb::mojom::LevelDBDatabaseRequest request,
     std::unique_ptr<leveldb::Env> environment,
     std::unique_ptr<leveldb::DB> db)
-    : binding_(this, std::move(request)),
-      environment_(std::move(environment)),
-      db_(std::move(db)) {}
+    : environment_(std::move(environment)), db_(std::move(db)) {}
 
 LevelDBDatabaseImpl::~LevelDBDatabaseImpl() {
   for (auto& p : iterator_map_)

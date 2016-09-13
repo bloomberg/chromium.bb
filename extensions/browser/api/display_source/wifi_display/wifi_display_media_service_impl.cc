@@ -9,6 +9,7 @@
 
 #include "base/big_endian.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
@@ -41,7 +42,8 @@ WiFiDisplayMediaServiceImpl::PacketIOBuffer::~PacketIOBuffer() {
 void WiFiDisplayMediaServiceImpl::Create(
     WiFiDisplayMediaServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  new WiFiDisplayMediaServiceImpl(std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<WiFiDisplayMediaServiceImpl>(),
+                          std::move(request));
 }
 
 // static
@@ -54,9 +56,7 @@ void WiFiDisplayMediaServiceImpl::BindToRequest(
 
 WiFiDisplayMediaServiceImpl::WiFiDisplayMediaServiceImpl(
     WiFiDisplayMediaServiceRequest request)
-    : binding_(this, std::move(request)),
-      last_send_code_(net::OK),
-      weak_factory_(this) {}
+    : last_send_code_(net::OK), weak_factory_(this) {}
 
 WiFiDisplayMediaServiceImpl::~WiFiDisplayMediaServiceImpl() {}
 

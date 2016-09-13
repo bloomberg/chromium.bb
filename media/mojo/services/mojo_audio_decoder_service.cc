@@ -17,10 +17,8 @@ namespace media {
 
 MojoAudioDecoderService::MojoAudioDecoderService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-    std::unique_ptr<media::AudioDecoder> decoder,
-    mojo::InterfaceRequest<mojom::AudioDecoder> request)
-    : binding_(this, std::move(request)),
-      mojo_cdm_service_context_(mojo_cdm_service_context),
+    std::unique_ptr<media::AudioDecoder> decoder)
+    : mojo_cdm_service_context_(mojo_cdm_service_context),
       decoder_(std::move(decoder)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();

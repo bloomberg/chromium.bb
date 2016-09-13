@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -134,37 +136,31 @@ namespace arc {
 
 GpuArcVideoService::GpuArcVideoService(
     const gpu::GpuPreferences& gpu_preferences)
-    : gpu_preferences_(gpu_preferences), binding_(this) {}
-
-GpuArcVideoService::GpuArcVideoService(
-    ::arc::mojom::VideoAcceleratorServiceRequest request,
-    const gpu::GpuPreferences& gpu_preferences)
     : gpu_preferences_(gpu_preferences),
-      accelerator_(new ArcGpuVideoDecodeAccelerator(gpu_preferences_)),
-      binding_(this, std::move(request)) {
-  DVLOG(2) << "GpuArcVideoService connected";
-  binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
-}
+      accelerator_(new ArcGpuVideoDecodeAccelerator(gpu_preferences_)) {}
 
 GpuArcVideoService::~GpuArcVideoService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void GpuArcVideoService::Connect(
-    ::arc::mojom::VideoAcceleratorServiceClientRequest request) {
+// static
+void GpuArcVideoService::DeprecatedConnect(
+    std::unique_ptr<GpuArcVideoService> service,
+    ::arc::mojom::VideoAcceleratorServiceClientRequest client_request) {
   DVLOG(2) << "Connect";
 
-  client_.Bind(::arc::mojom::VideoAcceleratorServiceClientPtrInfo(
-      request.PassMessagePipe(), 0u));
-  client_.set_connection_error_handler(base::Bind(&OnConnectionError));
+  service->client_.Bind(::arc::mojom::VideoAcceleratorServiceClientPtrInfo(
+      client_request.PassMessagePipe(), 0u));
+  service->client_.set_connection_error_handler(base::Bind(&OnConnectionError));
 
-  accelerator_.reset(new ArcGpuVideoDecodeAccelerator(gpu_preferences_));
+  ::arc::mojom::VideoAcceleratorServicePtr service_proxy;
+  ::arc::mojom::VideoAcceleratorServiceRequest request =
+      mojo::GetProxy(&service_proxy);
+  service->client_->DeprecatedInit(std::move(service_proxy));
 
-  ::arc::mojom::VideoAcceleratorServicePtr service;
-  binding_.Bind(GetProxy(&service));
-  binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
-
-  client_->DeprecatedInit(std::move(service));
+  auto binding = mojo::MakeStrongBinding(std::move(service),
+                                         mojo::GetProxy(&service_proxy));
+  binding->set_connection_error_handler(base::Bind(&OnConnectionError));
 }
 
 void GpuArcVideoService::OnError(ArcVideoAccelerator::Result error) {

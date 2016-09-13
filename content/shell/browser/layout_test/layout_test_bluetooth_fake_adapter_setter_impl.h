@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 class RenderProcessHost;
@@ -15,18 +14,15 @@ class RenderProcessHost;
 class LayoutTestBluetoothFakeAdapterSetterImpl
     : public mojom::LayoutTestBluetoothFakeAdapterSetter {
  public:
+  LayoutTestBluetoothFakeAdapterSetterImpl();
+  ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
+
   static void Create(
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
 
  private:
-  LayoutTestBluetoothFakeAdapterSetterImpl(
-      mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
-  ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
-
   void Set(const std::string& adapter_name,
            const SetCallback& callback) override;
-
-  mojo::StrongBinding<LayoutTestBluetoothFakeAdapterSetter> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBluetoothFakeAdapterSetterImpl);
 };

@@ -12,7 +12,6 @@
 #include "content/public/browser/android/provision_fetcher_factory.h"
 #include "media/base/android/provision_fetcher.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
@@ -22,13 +21,11 @@ class RenderFrameHost;
 // media::ProvisionFetcher.
 class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
  public:
-  static void Create(
-      RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<media::mojom::ProvisionFetcher> request);
+  static void Create(RenderFrameHost* render_frame_host,
+                     media::mojom::ProvisionFetcherRequest request);
 
-  ProvisionFetcherImpl(
-      std::unique_ptr<media::ProvisionFetcher> provision_fetcher,
-      mojo::InterfaceRequest<ProvisionFetcher> request);
+  explicit ProvisionFetcherImpl(
+      std::unique_ptr<media::ProvisionFetcher> provision_fetcher);
   ~ProvisionFetcherImpl() override;
 
   // media::mojom::ProvisionFetcher implementation.
@@ -42,7 +39,6 @@ class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
                   bool success,
                   const std::string& response);
 
-  mojo::StrongBinding<media::mojom::ProvisionFetcher> binding_;
   std::unique_ptr<media::ProvisionFetcher> provision_fetcher_;
 
   base::WeakPtrFactory<ProvisionFetcherImpl> weak_factory_;

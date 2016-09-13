@@ -889,9 +889,10 @@ TEST_F(AssociatedInterfaceTest, BindingFlushForTestingWithClosedPeer) {
 
 TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTesting) {
   IntegerSenderConnectionPtr ptr;
-  IntegerSenderConnectionImpl impl(IntegerSenderConnectionRequest{});
-  mojo::StrongBinding<IntegerSenderConnection> binding(&impl, GetProxy(&ptr));
-  binding.set_connection_error_handler(base::Bind(&Fail));
+  auto binding =
+      MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
+                            IntegerSenderConnectionRequest{}),
+                        GetProxy(&ptr));
   bool called = false;
   IntegerSenderAssociatedPtr sender_ptr;
   ptr->GetSender(GetProxy(&sender_ptr, ptr.associated_group()));
@@ -900,23 +901,27 @@ TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTesting) {
   // Because the flush is sent from the binding, it only guarantees that the
   // request has been received, not the response. The second flush waits for the
   // response to be received.
-  binding.FlushForTesting();
-  binding.FlushForTesting();
+  ASSERT_TRUE(binding);
+  binding->FlushForTesting();
+  ASSERT_TRUE(binding);
+  binding->FlushForTesting();
   EXPECT_TRUE(called);
 }
 
 TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTestingWithClosedPeer) {
   IntegerSenderConnectionPtr ptr;
-  mojo::StrongBinding<IntegerSenderConnection> binding(
-      new IntegerSenderConnectionImpl(IntegerSenderConnectionRequest{}),
-      GetProxy(&ptr));
   bool called = false;
-  binding.set_connection_error_handler(base::Bind(&SetBool, &called));
+  auto binding =
+      MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
+                            IntegerSenderConnectionRequest{}),
+                        GetProxy(&ptr));
+  binding->set_connection_error_handler(base::Bind(&SetBool, &called));
   ptr.reset();
   EXPECT_FALSE(called);
-  binding.FlushForTesting();
+  ASSERT_TRUE(binding);
+  binding->FlushForTesting();
   EXPECT_TRUE(called);
-  binding.FlushForTesting();
+  ASSERT_FALSE(binding);
 }
 
 TEST_F(AssociatedInterfaceTest, PtrFlushForTesting) {

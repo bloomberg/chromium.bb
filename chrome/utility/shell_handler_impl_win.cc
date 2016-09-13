@@ -17,6 +17,7 @@
 #include "base/win/shortcut.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/utility/utility_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 
@@ -206,15 +207,15 @@ bool IsPinnedToTaskbarHelper::GetResult() {
 
 }  // namespace
 
-// static
-void ShellHandlerImpl::Create(mojom::ShellHandlerRequest request) {
-  new ShellHandlerImpl(std::move(request));
-}
-
-ShellHandlerImpl::ShellHandlerImpl(mojom::ShellHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+ShellHandlerImpl::ShellHandlerImpl() = default;
 
 ShellHandlerImpl::~ShellHandlerImpl() = default;
+
+// static
+void ShellHandlerImpl::Create(mojom::ShellHandlerRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<ShellHandlerImpl>(),
+                          std::move(request));
+}
 
 void ShellHandlerImpl::IsPinnedToTaskbar(
     const IsPinnedToTaskbarCallback& callback) {

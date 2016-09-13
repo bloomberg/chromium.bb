@@ -7,14 +7,13 @@
 #include <utility>
 
 #include "components/contextual_search/browser/contextual_search_js_api_handler.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace contextual_search {
 
 ContextualSearchJsApiServiceImpl::ContextualSearchJsApiServiceImpl(
-    ContextualSearchJsApiHandler* contextual_search_js_api_handler,
-    mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request)
-    : binding_(this, std::move(request)),
-      contextual_search_js_api_handler_(contextual_search_js_api_handler) {}
+    ContextualSearchJsApiHandler* contextual_search_js_api_handler)
+    : contextual_search_js_api_handler_(contextual_search_js_api_handler) {}
 
 ContextualSearchJsApiServiceImpl::~ContextualSearchJsApiServiceImpl() {}
 
@@ -28,9 +27,9 @@ void ContextualSearchJsApiServiceImpl::HandleSetCaption(
 void CreateContextualSearchJsApiService(
     ContextualSearchJsApiHandler* contextual_search_js_api_handler,
     mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request) {
-  // This is strongly bound and owned by the pipe.
-  new ContextualSearchJsApiServiceImpl(contextual_search_js_api_handler,
-                                       std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ContextualSearchJsApiServiceImpl>(
+                              contextual_search_js_api_handler),
+                          std::move(request));
 }
 
 }  // namespace contextual_search

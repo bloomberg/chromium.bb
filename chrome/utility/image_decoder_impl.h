@@ -7,13 +7,11 @@
 
 #include "base/macros.h"
 #include "chrome/common/image_decoder.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 class ImageDecoderImpl : public mojom::ImageDecoder {
  public:
+  ImageDecoderImpl();
   explicit ImageDecoderImpl(int64_t max_message_size);
-  explicit ImageDecoderImpl(
-      mojo::InterfaceRequest<mojom::ImageDecoder> request);
   ~ImageDecoderImpl() override;
 
   // Overridden from mojom::ImageDecoder:
@@ -25,7 +23,6 @@ class ImageDecoderImpl : public mojom::ImageDecoder {
 
  private:
   int64_t max_message_size_;
-  mojo::StrongBinding<ImageDecoder> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderImpl);
 };

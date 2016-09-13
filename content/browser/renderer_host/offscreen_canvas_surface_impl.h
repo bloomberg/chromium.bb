@@ -11,7 +11,6 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 namespace content {
@@ -19,8 +18,10 @@ namespace content {
 class OffscreenCanvasSurfaceImpl : public blink::mojom::OffscreenCanvasSurface,
                                    public cc::SurfaceFactoryClient {
  public:
-  static void Create(
-      mojo::InterfaceRequest<blink::mojom::OffscreenCanvasSurface> request);
+  OffscreenCanvasSurfaceImpl();
+  ~OffscreenCanvasSurfaceImpl() override;
+
+  static void Create(blink::mojom::OffscreenCanvasSurfaceRequest request);
 
   // blink::mojom::OffscreenCanvasSurface implementation.
   void GetSurfaceId(const GetSurfaceIdCallback& callback) override;
@@ -36,16 +37,10 @@ class OffscreenCanvasSurfaceImpl : public blink::mojom::OffscreenCanvasSurface,
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
  private:
-  ~OffscreenCanvasSurfaceImpl() override;
-  explicit OffscreenCanvasSurfaceImpl(
-      mojo::InterfaceRequest<blink::mojom::OffscreenCanvasSurface> request);
-
   // Surface-related state
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   cc::SurfaceId surface_id_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-
-  mojo::StrongBinding<blink::mojom::OffscreenCanvasSurface> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceImpl);
 };

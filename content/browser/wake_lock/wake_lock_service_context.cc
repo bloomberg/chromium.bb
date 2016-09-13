@@ -13,6 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/power_save_blocker/power_save_blocker.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
@@ -25,8 +26,10 @@ void WakeLockServiceContext::CreateService(
     int render_process_id,
     int render_frame_id,
     mojo::InterfaceRequest<blink::mojom::WakeLockService> request) {
-  new WakeLockServiceImpl(weak_factory_.GetWeakPtr(), render_process_id,
-                          render_frame_id, std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<WakeLockServiceImpl>(weak_factory_.GetWeakPtr(),
+                                            render_process_id, render_frame_id),
+      std::move(request));
 }
 
 void WakeLockServiceContext::RenderFrameDeleted(

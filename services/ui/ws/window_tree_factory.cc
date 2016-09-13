@@ -15,12 +15,10 @@ namespace ws {
 
 WindowTreeFactory::WindowTreeFactory(WindowServer* window_server,
                                      const UserId& user_id,
-                                     const std::string& client_name,
-                                     mojom::WindowTreeFactoryRequest request)
+                                     const std::string& client_name)
     : window_server_(window_server),
       user_id_(user_id),
-      client_name_(client_name),
-      binding_(this, std::move(request)) {}
+      client_name_(client_name) {}
 
 WindowTreeFactory::~WindowTreeFactory() {}
 

@@ -4,6 +4,7 @@
 
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/ime/test_ime_driver/test_ime_driver.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
@@ -22,7 +23,8 @@ bool TestIMEApplication::OnConnect(const shell::Identity& remote_identity,
 
 void TestIMEApplication::OnStart(const shell::Identity& identity) {
   mojom::IMEDriverPtr ime_driver_ptr;
-  new TestIMEDriver(GetProxy(&ime_driver_ptr));
+  mojo::MakeStrongBinding(base::MakeUnique<TestIMEDriver>(),
+                          GetProxy(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
   connector()->ConnectToInterface("mojo:ui", &ime_registrar);

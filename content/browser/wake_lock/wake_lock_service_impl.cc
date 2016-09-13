@@ -13,12 +13,10 @@ namespace content {
 WakeLockServiceImpl::WakeLockServiceImpl(
     base::WeakPtr<WakeLockServiceContext> context,
     int render_process_id,
-    int render_frame_id,
-    mojo::InterfaceRequest<blink::mojom::WakeLockService> request)
+    int render_frame_id)
     : context_(context),
       render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
-      binding_(this, std::move(request)) {}
+      render_frame_id_(render_frame_id) {}
 
 WakeLockServiceImpl::~WakeLockServiceImpl() {}
 

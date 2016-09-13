@@ -5,9 +5,12 @@
 #ifndef SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_DRIVER_H_
 #define SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_DRIVER_H_
 
-#include <map>
+#include <stdint.h>
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include <map>
+#include <memory>
+
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 
 namespace ui {
@@ -15,7 +18,7 @@ namespace test {
 
 class TestIMEDriver : public ui::mojom::IMEDriver {
  public:
-  explicit TestIMEDriver(mojom::IMEDriverRequest request);
+  TestIMEDriver();
   ~TestIMEDriver() override;
 
  private:
@@ -26,7 +29,6 @@ class TestIMEDriver : public ui::mojom::IMEDriver {
       ui::mojom::InputMethodRequest input_method_request) override;
   void CancelSession(int32_t session_id) override;
 
-  mojo::StrongBinding<mojom::IMEDriver> driver_binding_;
   std::map<int32_t, std::unique_ptr<mojo::Binding<mojom::InputMethod>>>
       input_method_bindings_;
 

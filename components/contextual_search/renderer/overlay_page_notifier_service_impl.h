@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/contextual_search/common/overlay_page_notifier_service.mojom.h"
 #include "components/contextual_search/renderer/overlay_js_render_frame_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace contextual_search {
 
@@ -24,15 +23,13 @@ class OverlayPageNotifierServiceImpl
     : public mojom::OverlayPageNotifierService {
  public:
   explicit OverlayPageNotifierServiceImpl(
-      base::WeakPtr<OverlayJsRenderFrameObserver> observer,
-      mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request);
+      base::WeakPtr<OverlayJsRenderFrameObserver> observer);
   ~OverlayPageNotifierServiceImpl() override;
 
   // Implementation of mojo interface OverlayPageNotifierService.
   void NotifyIsContextualSearchOverlay() override;
 
  private:
-  mojo::StrongBinding<mojom::OverlayPageNotifierService> binding_;
   base::WeakPtr<OverlayJsRenderFrameObserver> overlay_js_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayPageNotifierServiceImpl);

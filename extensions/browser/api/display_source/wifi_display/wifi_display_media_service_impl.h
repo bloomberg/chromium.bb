@@ -10,7 +10,6 @@
 
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
@@ -29,10 +28,9 @@ class WiFiDisplayMediaServiceImpl : public WiFiDisplayMediaService {
 
  private:
   static void Create(WiFiDisplayMediaServiceRequest request);
-  explicit WiFiDisplayMediaServiceImpl(WiFiDisplayMediaServiceRequest request);
+  WiFiDisplayMediaServiceImpl();
   void Send();
   void OnSent(int code);
-  mojo::StrongBinding<WiFiDisplayMediaService> binding_;
   std::unique_ptr<net::UDPSocket> rtp_socket_;
   class PacketIOBuffer;
   std::queue<scoped_refptr<PacketIOBuffer>> write_buffers_;

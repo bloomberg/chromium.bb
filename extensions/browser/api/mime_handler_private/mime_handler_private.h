@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/api/mime_handler.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace extensions {
 class StreamContainer;
@@ -16,17 +15,15 @@ class MimeHandlerServiceImplTest;
 
 class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
  public:
-  static void Create(
-      base::WeakPtr<StreamContainer> stream_container,
-      mojo::InterfaceRequest<mime_handler::MimeHandlerService> request);
+  explicit MimeHandlerServiceImpl(
+      base::WeakPtr<StreamContainer> stream_container);
+  ~MimeHandlerServiceImpl() override;
+
+  static void Create(base::WeakPtr<StreamContainer> stream_container,
+                     mime_handler::MimeHandlerServiceRequest request);
 
  private:
   friend class MimeHandlerServiceImplTest;
-
-  MimeHandlerServiceImpl(
-      base::WeakPtr<StreamContainer> stream_container,
-      mojo::InterfaceRequest<mime_handler::MimeHandlerService> request);
-  ~MimeHandlerServiceImpl() override;
 
   // mime_handler::MimeHandlerService overrides.
   void GetStreamInfo(const GetStreamInfoCallback& callback) override;
@@ -37,8 +34,6 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
 
   // A handle to the stream being handled by the MimeHandlerViewGuest.
   base::WeakPtr<StreamContainer> stream_;
-
-  mojo::StrongBinding<mime_handler::MimeHandlerService> binding_;
 
   base::WeakPtrFactory<MimeHandlerServiceImpl> weak_factory_;
 };

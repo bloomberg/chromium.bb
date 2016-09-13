@@ -11,19 +11,17 @@
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "device/battery/battery_status_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
 class BatteryMonitorImpl : public BatteryMonitor {
  public:
-  DEVICE_BATTERY_EXPORT static void Create(
-      mojo::InterfaceRequest<BatteryMonitor> request);
+  DEVICE_BATTERY_EXPORT static void Create(BatteryMonitorRequest request);
 
- private:
-  explicit BatteryMonitorImpl(mojo::InterfaceRequest<BatteryMonitor> request);
+  BatteryMonitorImpl();
   ~BatteryMonitorImpl() override;
 
+ private:
   // BatteryMonitor methods:
   void QueryNextStatus(const QueryNextStatusCallback& callback) override;
 
@@ -31,7 +29,6 @@ class BatteryMonitorImpl : public BatteryMonitor {
   void DidChange(const BatteryStatus& battery_status);
   void ReportStatus();
 
-  mojo::StrongBinding<BatteryMonitor> binding_;
   std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>
       subscription_;
   QueryNextStatusCallback callback_;

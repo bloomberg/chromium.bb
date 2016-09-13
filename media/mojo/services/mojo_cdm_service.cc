@@ -77,12 +77,9 @@ scoped_refptr<MediaKeys> MojoCdmService::LegacyGetCdm(int cdm_id) {
   return g_cdm_manager.Get().GetCdm(cdm_id);
 }
 
-MojoCdmService::MojoCdmService(
-    base::WeakPtr<MojoCdmServiceContext> context,
-    CdmFactory* cdm_factory,
-    mojo::InterfaceRequest<mojom::ContentDecryptionModule> request)
-    : binding_(this, std::move(request)),
-      context_(context),
+MojoCdmService::MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
+                               CdmFactory* cdm_factory)
+    : context_(context),
       cdm_factory_(cdm_factory),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {

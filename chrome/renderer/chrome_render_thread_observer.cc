@@ -127,13 +127,9 @@ static const int kWaitForWorkersStatsTimeoutMS = 20;
 
 class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
-  ResourceUsageReporterImpl(
-      base::WeakPtr<ChromeRenderThreadObserver> observer,
-      mojo::InterfaceRequest<mojom::ResourceUsageReporter> req)
-      : workers_to_go_(0),
-        binding_(this, std::move(req)),
-        observer_(observer),
-        weak_factory_(this) {}
+  explicit ResourceUsageReporterImpl(
+      base::WeakPtr<ChromeRenderThreadObserver> observer)
+      : workers_to_go_(0), observer_(observer), weak_factory_(this) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
@@ -216,7 +212,6 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
   mojom::ResourceUsageDataPtr usage_data_;
   GetUsageDataCallback callback_;
   int workers_to_go_;
-  mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
   base::WeakPtr<ChromeRenderThreadObserver> observer_;
 
   base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
@@ -227,7 +222,8 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
 void CreateResourceUsageReporter(
     base::WeakPtr<ChromeRenderThreadObserver> observer,
     mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
-  new ResourceUsageReporterImpl(observer, std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(observer),
+                          std::move(request));
 }
 
 }  // namespace

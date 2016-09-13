@@ -10,22 +10,19 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace startup_metric_utils {
 
 class StartupMetricHostImpl : public mojom::StartupMetricHost {
  public:
+  StartupMetricHostImpl();
+  ~StartupMetricHostImpl() override;
+
   static void Create(mojom::StartupMetricHostRequest request);
 
  private:
-  explicit StartupMetricHostImpl(mojom::StartupMetricHostRequest request);
-  ~StartupMetricHostImpl() override;
-
   void RecordRendererMainEntryTime(
       base::TimeTicks renderer_main_entry_time) override;
-
-  mojo::StrongBinding<mojom::StartupMetricHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupMetricHostImpl);
 };

@@ -26,6 +26,7 @@
 #include "device/usb/mojo/mock_permission_provider.h"
 #include "device/usb/mojo/type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -175,6 +176,8 @@ class USBDeviceImplTest : public testing::Test {
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
     DevicePtr proxy;
+
+    // Owns itself.
     new DeviceImpl(
         mock_device_,
         DeviceInfo::From(static_cast<const UsbDevice&>(*mock_device_)),

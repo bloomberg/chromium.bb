@@ -22,7 +22,8 @@ namespace {
 class TestMojoServiceImpl : public mojom::TestMojoService {
  public:
   static void Create(mojo::InterfaceRequest<mojom::TestMojoService> request) {
-    new TestMojoServiceImpl(std::move(request));
+    mojo::MakeStrongBinding(base::WrapUnique(new TestMojoServiceImpl),
+                            std::move(request));
   }
 
   // mojom::TestMojoService implementation:
@@ -45,11 +46,7 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
   }
 
  private:
-  explicit TestMojoServiceImpl(
-      mojo::InterfaceRequest<mojom::TestMojoService> request)
-      : binding_(this, std::move(request)) {}
-
-  mojo::StrongBinding<mojom::TestMojoService> binding_;
+  explicit TestMojoServiceImpl() {}
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoServiceImpl);
 };

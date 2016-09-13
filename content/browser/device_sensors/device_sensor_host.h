@@ -12,7 +12,6 @@
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
@@ -26,15 +25,13 @@ class DeviceSensorHost : public MojoInterface {
   ~DeviceSensorHost() override;
 
  private:
-  explicit DeviceSensorHost(mojo::InterfaceRequest<MojoInterface> request);
+  DeviceSensorHost();
 
   void StartPolling(
       const typename MojoInterface::StartPollingCallback& callback) override;
   void StopPolling() override;
 
   bool is_started_;
-
-  mojo::StrongBinding<MojoInterface> binding_;
 
   base::ThreadChecker thread_checker_;
 

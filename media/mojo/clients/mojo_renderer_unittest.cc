@@ -27,6 +27,7 @@
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -61,10 +62,11 @@ class MojoRendererTest : public ::testing::Test {
     mock_renderer_ = mock_renderer.get();
 
     mojom::RendererPtr remote_renderer;
-
-    mojo_renderer_service_ = new MojoRendererService(
-        mojo_cdm_service_context_.GetWeakPtr(), nullptr, nullptr,
-        std::move(mock_renderer), mojo::GetProxy(&remote_renderer));
+    renderer_binding_ =
+        mojo::MakeStrongBinding(base::MakeUnique<MojoRendererService>(
+                                    mojo_cdm_service_context_.GetWeakPtr(),
+                                    nullptr, nullptr, std::move(mock_renderer)),
+                                mojo::GetProxy(&remote_renderer));
 
     mojo_renderer_.reset(
         new MojoRenderer(message_loop_.task_runner(),
@@ -154,7 +156,8 @@ class MojoRendererTest : public ::testing::Test {
   // on it. Otherwise the test will crash.
   void ConnectionError() {
     DVLOG(1) << __FUNCTION__;
-    delete mojo_renderer_service_;
+    DCHECK(renderer_binding_);
+    renderer_binding_->Close();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -167,8 +170,10 @@ class MojoRendererTest : public ::testing::Test {
   }
 
   void CreateCdm() {
-    new MojoCdmService(mojo_cdm_service_context_.GetWeakPtr(), &cdm_factory_,
-                       mojo::GetProxy(&remote_cdm_));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<MojoCdmService>(mojo_cdm_service_context_.GetWeakPtr(),
+                                         &cdm_factory_),
+        mojo::GetProxy(&remote_cdm_));
     remote_cdm_->Initialize(
         kClearKeyKeySystem, "https://www.test.com",
         mojom::CdmConfig::From(CdmConfig()),
@@ -209,9 +214,7 @@ class MojoRendererTest : public ::testing::Test {
   RendererClient* remote_renderer_client_;
   DefaultCdmFactory cdm_factory_;
 
-  // Owned by the connection. But we can delete it manually to trigger a
-  // connection error at the client side. See ConnectionError();
-  MojoRendererService* mojo_renderer_service_;
+  mojo::StrongBindingPtr<mojom::Renderer> renderer_binding_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoRendererTest);

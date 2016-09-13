@@ -9,7 +9,6 @@
 
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace leveldb {
@@ -19,8 +18,7 @@ class MojoEnv;
 // The backing to a database object that we pass to our called.
 class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
  public:
-  LevelDBDatabaseImpl(leveldb::mojom::LevelDBDatabaseRequest request,
-                      std::unique_ptr<leveldb::Env> environment,
+  LevelDBDatabaseImpl(std::unique_ptr<leveldb::Env> environment,
                       std::unique_ptr<leveldb::DB> db);
   ~LevelDBDatabaseImpl() override;
 
@@ -70,7 +68,6 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
                                        leveldb::WriteBatch* batch);
 
-  mojo::StrongBinding<mojom::LevelDBDatabase> binding_;
   std::unique_ptr<leveldb::Env> environment_;
   std::unique_ptr<leveldb::DB> db_;
 

@@ -51,8 +51,6 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;
 
-  // mojo::StrongBinding<mojom::DistillerPageNotifierService> binding_;
-
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;
   base::WeakPtrFactory<DistillerJsRenderFrameObserver> weak_factory_;

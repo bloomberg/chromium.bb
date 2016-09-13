@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/navigation/view_impl.h"
 #include "services/shell/public/cpp/connector.h"
 
@@ -20,9 +21,10 @@ void CreateViewOnViewTaskRunner(
     mojom::ViewClientPtr client,
     mojom::ViewRequest request,
     std::unique_ptr<shell::ServiceContextRef> context_ref) {
-  // Owns itself.
-  new ViewImpl(std::move(connector), client_user_id, std::move(client),
-               std::move(request), std::move(context_ref));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ViewImpl>(std::move(connector), client_user_id,
+                                 std::move(client), std::move(context_ref)),
+      std::move(request));
 }
 
 }  // namespace

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "components/metrics/leak_detector/protobuf_to_mojo_converter.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace metrics {
 
@@ -23,7 +26,14 @@ LeakDetectorRemoteController::~LeakDetectorRemoteController() {}
 // static
 void LeakDetectorRemoteController::Create(mojom::LeakDetectorRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  new LeakDetectorRemoteController(std::move(request));
+  std::unique_ptr<LeakDetectorRemoteController> controller =
+      base::WrapUnique(new LeakDetectorRemoteController);
+  base::Closure error_handler =
+      base::Bind(&LeakDetectorRemoteController::OnRemoteProcessShutdown,
+                 base::Unretained(controller.get()));
+  auto binding =
+      mojo::MakeStrongBinding(std::move(controller), std::move(request));
+  binding->set_connection_error_handler(error_handler);
 }
 
 void LeakDetectorRemoteController::GetParams(
@@ -68,14 +78,8 @@ void LeakDetectorRemoteController::OnRemoteProcessShutdown() {
   }
 }
 
-LeakDetectorRemoteController::LeakDetectorRemoteController(
-    mojom::LeakDetectorRequest request)
-    : binding_(this, std::move(request)),
-      leak_detector_enabled_on_remote_process_(false) {
-  binding_.set_connection_error_handler(
-      base::Bind(&LeakDetectorRemoteController::OnRemoteProcessShutdown,
-                 base::Unretained(this)));
-}
+LeakDetectorRemoteController::LeakDetectorRemoteController()
+    : leak_detector_enabled_on_remote_process_(false) {}
 
 // static
 void LeakDetectorRemoteController::SetLocalControllerInstance(

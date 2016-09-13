@@ -40,8 +40,7 @@ class TestInputMethod : public mojom::InputMethod {
   DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
 };
 
-TestIMEDriver::TestIMEDriver(mojom::IMEDriverRequest request)
-    : driver_binding_(this, std::move(request)) {}
+TestIMEDriver::TestIMEDriver() {}
 
 TestIMEDriver::~TestIMEDriver() {}
 

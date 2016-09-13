@@ -7,22 +7,20 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-// static
-void OffscreenCanvasFrameReceiverImpl::Create(
-    mojo::InterfaceRequest<blink::mojom::OffscreenCanvasFrameReceiver>
-        request) {
-  // |binding_| will take ownership of OffscreenCanvasFrameReceiverImpl
-  new OffscreenCanvasFrameReceiverImpl(std::move(request));
-}
-
-OffscreenCanvasFrameReceiverImpl::OffscreenCanvasFrameReceiverImpl(
-    mojo::InterfaceRequest<blink::mojom::OffscreenCanvasFrameReceiver> request)
-    : binding_(this, std::move(request)) {}
+OffscreenCanvasFrameReceiverImpl::OffscreenCanvasFrameReceiverImpl() {}
 
 OffscreenCanvasFrameReceiverImpl::~OffscreenCanvasFrameReceiverImpl() {}
+
+// static
+void OffscreenCanvasFrameReceiverImpl::Create(
+    blink::mojom::OffscreenCanvasFrameReceiverRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<OffscreenCanvasFrameReceiverImpl>(),
+                          std::move(request));
+}
 
 void OffscreenCanvasFrameReceiverImpl::SubmitCompositorFrame(
     const cc::SurfaceId& surface_id,

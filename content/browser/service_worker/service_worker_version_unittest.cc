@@ -163,7 +163,8 @@ base::Time GetYesterday() {
 class TestMojoServiceImpl : public mojom::TestMojoService {
  public:
   static void Create(mojo::InterfaceRequest<mojom::TestMojoService> request) {
-    new TestMojoServiceImpl(std::move(request));
+    mojo::MakeStrongBinding(base::WrapUnique(new TestMojoServiceImpl),
+                            std::move(request));
   }
 
   void DoSomething(const DoSomethingCallback& callback) override {
@@ -183,11 +184,7 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
   }
 
  private:
-  explicit TestMojoServiceImpl(
-      mojo::InterfaceRequest<mojom::TestMojoService> request)
-      : binding_(this, std::move(request)) {}
-
-  mojo::StrongBinding<mojom::TestMojoService> binding_;
+  explicit TestMojoServiceImpl() {}
 };
 
 }  // namespace

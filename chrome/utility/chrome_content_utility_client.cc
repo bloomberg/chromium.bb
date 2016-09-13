@@ -25,6 +25,7 @@
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_channel.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"
@@ -68,19 +69,14 @@ void ReleaseProcessIfNeeded() {
 
 #if !defined(OS_ANDROID)
 void CreateProxyResolverFactory(
-    mojo::InterfaceRequest<net::interfaces::ProxyResolverFactory> request) {
-  // MojoProxyResolverFactoryImpl is strongly bound to the Mojo message pipe it
-  // is connected to. When that message pipe is closed, either explicitly on the
-  // other end (in the browser process), or by a connection error, this object
-  // will be destroyed.
-  new net::MojoProxyResolverFactoryImpl(std::move(request));
+    net::interfaces::ProxyResolverFactoryRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<net::MojoProxyResolverFactoryImpl>(),
+                          std::move(request));
 }
 
 class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
-  explicit ResourceUsageReporterImpl(
-      mojo::InterfaceRequest<mojom::ResourceUsageReporter> req)
-      : binding_(this, std::move(req)) {}
+  ResourceUsageReporterImpl() {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
@@ -94,19 +90,19 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
     }
     callback.Run(std::move(data));
   }
-
-  mojo::StrongBinding<mojom::ResourceUsageReporter> binding_;
 };
 
 void CreateResourceUsageReporter(
     mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
-  new ResourceUsageReporterImpl(std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(),
+                          std::move(request));
 }
 #endif  // !defined(OS_ANDROID)
 
 void CreateImageDecoder(mojo::InterfaceRequest<mojom::ImageDecoder> request) {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
-  new ImageDecoderImpl(std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ImageDecoderImpl>(),
+                          std::move(request));
 }
 
 }  // namespace

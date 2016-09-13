@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -18,21 +17,20 @@ class PlatformSensorProvider;
 // of PlatformSensor which are used by SensorImpl.
 class SensorProviderImpl final : public mojom::SensorProvider {
  public:
-  static void Create(mojo::InterfaceRequest<mojom::SensorProvider> request);
+  static void Create(mojom::SensorProviderRequest request);
 
   ~SensorProviderImpl() override;
 
  private:
-  SensorProviderImpl(mojo::InterfaceRequest<mojom::SensorProvider> request,
-                     PlatformSensorProvider* provider);
+  explicit SensorProviderImpl(PlatformSensorProvider* provider);
 
   // SensorProvider implementation.
   void GetSensor(mojom::SensorType type,
                  mojom::SensorRequest sensor_request,
                  const GetSensorCallback& callback) override;
 
-  mojo::StrongBinding<mojom::SensorProvider> binding_;
   PlatformSensorProvider* provider_;
+
   DISALLOW_COPY_AND_ASSIGN(SensorProviderImpl);
 };
 

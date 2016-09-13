@@ -63,9 +63,7 @@ class Setup {
 
 class TracingInterfaceProvider : public mojom::InterfaceProvider {
  public:
-  TracingInterfaceProvider(Tracer* tracer,
-                           mojom::InterfaceProviderRequest request)
-      : tracer_(tracer), binding_(this, std::move(request)) {}
+  explicit TracingInterfaceProvider(Tracer* tracer) : tracer_(tracer) {}
   ~TracingInterfaceProvider() override {}
 
   // mojom::InterfaceProvider:
@@ -80,7 +78,6 @@ class TracingInterfaceProvider : public mojom::InterfaceProvider {
 
  private:
   Tracer* tracer_;
-  mojo::StrongBinding<mojom::InterfaceProvider> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
@@ -174,7 +171,8 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 
   mojom::InterfaceProviderPtr tracing_remote_interfaces;
   mojom::InterfaceProviderPtr tracing_local_interfaces;
-  new TracingInterfaceProvider(&tracer_, GetProxy(&tracing_local_interfaces));
+  mojo::MakeStrongBinding(base::MakeUnique<TracingInterfaceProvider>(&tracer_),
+                          mojo::GetProxy(&tracing_local_interfaces));
 
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());

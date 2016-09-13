@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace content {
@@ -20,22 +19,17 @@ namespace content {
 class CONTENT_EXPORT BackgroundSyncClientImpl
     : public NON_EXPORTED_BASE(blink::mojom::BackgroundSyncServiceClient) {
  public:
-  static void Create(mojo::InterfaceRequest<
-                     blink::mojom::BackgroundSyncServiceClient> request);
+  static void Create(blink::mojom::BackgroundSyncServiceClientRequest request);
 
   ~BackgroundSyncClientImpl() override;
 
  private:
-  explicit BackgroundSyncClientImpl(
-      mojo::InterfaceRequest<blink::mojom::BackgroundSyncServiceClient>
-          request);
+  BackgroundSyncClientImpl();
 
   // BackgroundSyncServiceClient methods:
   void Sync(const mojo::String& tag,
             blink::mojom::BackgroundSyncEventLastChance last_chance,
             const SyncCallback& callback) override;
-
-  mojo::StrongBinding<blink::mojom::BackgroundSyncServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncClientImpl);
 };

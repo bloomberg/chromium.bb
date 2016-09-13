@@ -481,17 +481,7 @@ TEST_F(InterfacePtrTest, RequireVersion) {
 
 class StrongMathCalculatorImpl : public math::Calculator {
  public:
-  StrongMathCalculatorImpl(ScopedMessagePipeHandle handle,
-                           bool* error_received,
-                           bool* destroyed,
-                           const base::Closure& closure)
-      : error_received_(error_received),
-        destroyed_(destroyed),
-        closure_(closure),
-        binding_(this, std::move(handle)) {
-    binding_.set_connection_error_handler(
-        base::Bind(&SetFlagAndRunClosure, error_received_, closure_));
-  }
+  StrongMathCalculatorImpl(bool* destroyed) : destroyed_(destroyed) {}
   ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
 
   // math::Calculator implementation.
@@ -509,11 +499,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
 
  private:
   double total_ = 0.0;
-  bool* error_received_;
   bool* destroyed_;
-  base::Closure closure_;
-
-  StrongBinding<math::Calculator> binding_;
 };
 
 TEST(StrongConnectorTest, Math) {
@@ -521,13 +507,13 @@ TEST(StrongConnectorTest, Math) {
 
   bool error_received = false;
   bool destroyed = false;
-  MessagePipe pipe;
-  base::RunLoop run_loop;
-  new StrongMathCalculatorImpl(std::move(pipe.handle0), &error_received,
-                               &destroyed, run_loop.QuitClosure());
-
   math::CalculatorPtr calc;
-  calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
+  base::RunLoop run_loop;
+
+  auto binding = MakeStrongBinding(
+      base::MakeUnique<StrongMathCalculatorImpl>(&destroyed), GetProxy(&calc));
+  binding->set_connection_error_handler(base::Bind(
+      &SetFlagAndRunClosure, &error_received, run_loop.QuitClosure()));
 
   {
     // Suppose this is instantiated in a process that has the other end of the
@@ -628,10 +614,8 @@ TEST(WeakConnectorTest, Math) {
 
 class CImpl : public C {
  public:
-  CImpl(bool* d_called, InterfaceRequest<C> request,
-        const base::Closure& closure)
-      : d_called_(d_called), binding_(this, std::move(request)),
-        closure_(closure) {}
+  CImpl(bool* d_called, const base::Closure& closure)
+      : d_called_(d_called), closure_(closure) {}
   ~CImpl() override {}
 
  private:
@@ -641,25 +625,22 @@ class CImpl : public C {
   }
 
   bool* d_called_;
-  StrongBinding<C> binding_;
   base::Closure closure_;
 };
 
 class BImpl : public B {
  public:
-  BImpl(bool* d_called, InterfaceRequest<B> request,
-        const base::Closure& closure)
-      : d_called_(d_called), binding_(this, std::move(request)),
-        closure_(closure) {}
+  BImpl(bool* d_called, const base::Closure& closure)
+      : d_called_(d_called), closure_(closure) {}
   ~BImpl() override {}
 
  private:
   void GetC(InterfaceRequest<C> c) override {
-    new CImpl(d_called_, std::move(c), closure_);
+    MakeStrongBinding(base::MakeUnique<CImpl>(d_called_, closure_),
+                      std::move(c));
   }
 
   bool* d_called_;
-  StrongBinding<B> binding_;
   base::Closure closure_;
 };
 
@@ -674,7 +655,8 @@ class AImpl : public A {
 
  private:
   void GetB(InterfaceRequest<B> b) override {
-    new BImpl(&d_called_, std::move(b), closure_);
+    MakeStrongBinding(base::MakeUnique<BImpl>(&d_called_, closure_),
+                      std::move(b));
   }
 
   bool d_called_;

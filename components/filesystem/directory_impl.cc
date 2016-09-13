@@ -16,16 +16,15 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace filesystem {
 
-DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<mojom::Directory> request,
-                             base::FilePath directory_path,
+DirectoryImpl::DirectoryImpl(base::FilePath directory_path,
                              scoped_refptr<SharedTempDir> temp_dir,
                              scoped_refptr<LockTable> lock_table)
-    : binding_(this, std::move(request)),
-      directory_path_(directory_path),
+    : directory_path_(directory_path),
       temp_dir_(std::move(temp_dir)),
       lock_table_(std::move(lock_table)) {}
 
@@ -55,7 +54,7 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
 
 // TODO(vtl): Move the implementation to a thread pool.
 void DirectoryImpl::OpenFile(const mojo::String& raw_path,
-                             mojo::InterfaceRequest<mojom::File> file,
+                             mojom::FileRequest file,
                              uint32_t open_flags,
                              const OpenFileCallback& callback) {
   base::FilePath path;
@@ -80,8 +79,10 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
   }
 
   if (file.is_pending()) {
-    new FileImpl(std::move(file), path, std::move(base_file), temp_dir_,
-                 lock_table_);
+    mojo::MakeStrongBinding(
+        base::MakeUnique<FileImpl>(path, std::move(base_file), temp_dir_,
+                                   lock_table_),
+        std::move(file));
   }
   callback.Run(mojom::FileError::OK);
 }
@@ -110,11 +111,10 @@ void DirectoryImpl::OpenFileHandles(
   callback.Run(std::move(results));
 }
 
-void DirectoryImpl::OpenDirectory(
-    const mojo::String& raw_path,
-    mojo::InterfaceRequest<mojom::Directory> directory,
-    uint32_t open_flags,
-    const OpenDirectoryCallback& callback) {
+void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
+                                  mojom::DirectoryRequest directory,
+                                  uint32_t open_flags,
+                                  const OpenDirectoryCallback& callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
@@ -143,8 +143,12 @@ void DirectoryImpl::OpenDirectory(
     }
   }
 
-  if (directory.is_pending())
-    new DirectoryImpl(std::move(directory), path, temp_dir_, lock_table_);
+  if (directory.is_pending()) {
+    mojo::MakeStrongBinding(
+        base::MakeUnique<DirectoryImpl>(path, temp_dir_, lock_table_),
+        std::move(directory));
+  }
+
   callback.Run(mojom::FileError::OK);
 }
 
@@ -257,10 +261,11 @@ void DirectoryImpl::StatFile(const mojo::String& raw_path,
   callback.Run(mojom::FileError::OK, MakeFileInformation(info));
 }
 
-void DirectoryImpl::Clone(mojo::InterfaceRequest<mojom::Directory> directory) {
+void DirectoryImpl::Clone(mojom::DirectoryRequest directory) {
   if (directory.is_pending()) {
-    new DirectoryImpl(std::move(directory), directory_path_,
-                      temp_dir_, lock_table_);
+    mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
+                                directory_path_, temp_dir_, lock_table_),
+                            std::move(directory));
   }
 }
 

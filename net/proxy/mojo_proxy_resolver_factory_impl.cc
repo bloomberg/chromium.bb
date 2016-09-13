@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mojo_proxy_resolver_impl.h"
 #include "net/proxy/mojo_proxy_resolver_v8_tracing_bindings.h"
@@ -17,40 +18,6 @@
 #include "net/proxy/proxy_resolver_v8_tracing.h"
 
 namespace net {
-namespace {
-
-// A class to manage the lifetime of a MojoProxyResolverImpl. An instance will
-// remain while the message pipe for the mojo connection remains open.
-class MojoProxyResolverHolder {
- public:
-  MojoProxyResolverHolder(
-      std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
-      mojo::InterfaceRequest<interfaces::ProxyResolver> request);
-
- private:
-  // Mojo error handler.
-  void OnConnectionError();
-
-  MojoProxyResolverImpl mojo_proxy_resolver_;
-  mojo::Binding<interfaces::ProxyResolver> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverHolder);
-};
-
-MojoProxyResolverHolder::MojoProxyResolverHolder(
-    std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
-    mojo::InterfaceRequest<interfaces::ProxyResolver> request)
-    : mojo_proxy_resolver_(std::move(proxy_resolver_impl)),
-      binding_(&mojo_proxy_resolver_, std::move(request)) {
-  binding_.set_connection_error_handler(base::Bind(
-      &MojoProxyResolverHolder::OnConnectionError, base::Unretained(this)));
-}
-
-void MojoProxyResolverHolder::OnConnectionError() {
-  delete this;
-}
-
-}  // namespace
 
 class MojoProxyResolverFactoryImpl::Job {
  public:
@@ -109,25 +76,20 @@ void MojoProxyResolverFactoryImpl::Job::OnConnectionError() {
 
 void MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
   if (error == OK) {
-    // The MojoProxyResolverHolder will delete itself if |proxy_request_|
-    // encounters a connection error.
-    new MojoProxyResolverHolder(std::move(proxy_resolver_impl_),
-                                std::move(proxy_request_));
+    mojo::MakeStrongBinding(base::MakeUnique<MojoProxyResolverImpl>(
+                                std::move(proxy_resolver_impl_)),
+                            std::move(proxy_request_));
   }
   client_ptr_->ReportResult(error);
   parent_->RemoveJob(this);
 }
 
 MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
-    std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
-    mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request)
-    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)),
-      binding_(this, std::move(request)) {}
+    std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory)
+    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)) {}
 
-MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
-    mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request)
-    : MojoProxyResolverFactoryImpl(ProxyResolverV8TracingFactory::Create(),
-                                   std::move(request)) {}
+MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl()
+    : MojoProxyResolverFactoryImpl(ProxyResolverV8TracingFactory::Create()) {}
 
 MojoProxyResolverFactoryImpl::~MojoProxyResolverFactoryImpl() {
   base::STLDeleteElements(&jobs_);

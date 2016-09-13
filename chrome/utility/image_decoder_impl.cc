@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "ipc/ipc_channel.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,14 +26,10 @@ int64_t kMaxMessageSize = IPC::Channel::kMaximumMessageSize;
 int64_t kPadding = 64;
 }
 
-ImageDecoderImpl::ImageDecoderImpl(int64_t max_message_size)
-    : max_message_size_(max_message_size), binding_(this) {
-}
+ImageDecoderImpl::ImageDecoderImpl() : ImageDecoderImpl(kMaxMessageSize) {}
 
-ImageDecoderImpl::ImageDecoderImpl(
-    mojo::InterfaceRequest<mojom::ImageDecoder> request)
-    : max_message_size_(kMaxMessageSize), binding_(this, std::move(request)) {
-}
+ImageDecoderImpl::ImageDecoderImpl(int64_t max_message_size)
+    : max_message_size_(max_message_size) {}
 
 ImageDecoderImpl::~ImageDecoderImpl() {
 }

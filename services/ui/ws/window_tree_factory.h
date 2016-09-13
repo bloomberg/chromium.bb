@@ -6,7 +6,6 @@
 #define SERVICES_UI_WS_WINDOW_TREE_FACTORY_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/user_id.h"
 
@@ -19,11 +18,10 @@ class WindowTreeFactory : public ui::mojom::WindowTreeFactory {
  public:
   WindowTreeFactory(WindowServer* window_server,
                     const UserId& user_id,
-                    const std::string& client_name,
-                    mojom::WindowTreeFactoryRequest request);
- private:
+                    const std::string& client_name);
   ~WindowTreeFactory() override;
 
+ private:
   // ui::mojom::WindowTreeFactory:
   void CreateWindowTree(mojo::InterfaceRequest<mojom::WindowTree> tree_request,
                         mojom::WindowTreeClientPtr client) override;
@@ -31,7 +29,6 @@ class WindowTreeFactory : public ui::mojom::WindowTreeFactory {
   WindowServer* window_server_;
   const UserId user_id_;
   const std::string client_name_;
-  mojo::StrongBinding<ui::mojom::WindowTreeFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };

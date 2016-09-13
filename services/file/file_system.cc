@@ -12,6 +12,7 @@
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connection.h"
 
 namespace file {
@@ -26,9 +27,10 @@ FileSystem::~FileSystem() {}
 
 void FileSystem::GetDirectory(filesystem::mojom::DirectoryRequest request,
                               const GetDirectoryCallback& callback) {
-  new filesystem::DirectoryImpl(std::move(request), path_,
-                                scoped_refptr<filesystem::SharedTempDir>(),
-                                lock_table_);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<filesystem::DirectoryImpl>(
+          path_, scoped_refptr<filesystem::SharedTempDir>(), lock_table_),
+      std::move(request));
   callback.Run();
 }
 
@@ -48,9 +50,10 @@ void FileSystem::GetSubDirectory(const std::string& sub_directory_path,
     return;
   }
 
-  new filesystem::DirectoryImpl(std::move(request), subdir,
-                                scoped_refptr<filesystem::SharedTempDir>(),
-                                lock_table_);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<filesystem::DirectoryImpl>(
+          subdir, scoped_refptr<filesystem::SharedTempDir>(), lock_table_),
+      std::move(request));
   callback.Run(filesystem::mojom::FileError::OK);
 }
 

@@ -49,15 +49,15 @@ void UpdateBattery(const device::BatteryStatus& battery_status) {
 
 class FakeBatteryMonitor : public device::BatteryMonitor {
  public:
+  FakeBatteryMonitor() {}
+  ~FakeBatteryMonitor() override {}
+
   static void Create(mojo::InterfaceRequest<BatteryMonitor> request) {
-    new FakeBatteryMonitor(std::move(request));
+    mojo::MakeStrongBinding(base::MakeUnique<FakeBatteryMonitor>(),
+                            std::move(request));
   }
 
  private:
-  FakeBatteryMonitor(mojo::InterfaceRequest<BatteryMonitor> request)
-      : binding_(this, std::move(request)) {}
-  ~FakeBatteryMonitor() override {}
-
   void QueryNextStatus(const QueryNextStatusCallback& callback) override {
     // We don't expect overlapped calls to QueryNextStatus.
     DCHECK(callback_.is_null());
@@ -81,7 +81,6 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
   }
 
   std::unique_ptr<BatteryUpdateSubscription> subscription_;
-  mojo::StrongBinding<BatteryMonitor> binding_;
   QueryNextStatusCallback callback_;
 };
 

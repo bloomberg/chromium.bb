@@ -9,22 +9,23 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 #include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
+
+LayoutTestBluetoothFakeAdapterSetterImpl::
+    LayoutTestBluetoothFakeAdapterSetterImpl() {}
+
+LayoutTestBluetoothFakeAdapterSetterImpl::
+    ~LayoutTestBluetoothFakeAdapterSetterImpl() {}
 
 // static
 void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
     mojom::LayoutTestBluetoothFakeAdapterSetterRequest request) {
-  new LayoutTestBluetoothFakeAdapterSetterImpl(std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<LayoutTestBluetoothFakeAdapterSetterImpl>(),
+      std::move(request));
 }
-
-LayoutTestBluetoothFakeAdapterSetterImpl::
-    LayoutTestBluetoothFakeAdapterSetterImpl(
-        mojom::LayoutTestBluetoothFakeAdapterSetterRequest request)
-    : binding_(this, std::move(request)) {}
-
-LayoutTestBluetoothFakeAdapterSetterImpl::
-    ~LayoutTestBluetoothFakeAdapterSetterImpl() {}
 
 void LayoutTestBluetoothFakeAdapterSetterImpl::Set(
     const std::string& adapter_name,

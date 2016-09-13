@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connection.h"
@@ -333,8 +334,10 @@ void Service::Create(const shell::Identity& remote_identity,
     return;
   }
   AddUserIfNecessary(remote_identity);
-  new ws::WindowTreeFactory(window_server_.get(), remote_identity.user_id(),
-                            remote_identity.name(), std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<ws::WindowTreeFactory>(
+                              window_server_.get(), remote_identity.user_id(),
+                              remote_identity.name()),
+                          std::move(request));
 }
 
 void Service::Create(const shell::Identity& remote_identity,
@@ -351,7 +354,9 @@ void Service::Create(const shell::Identity& remote_identity,
                      mojom::WindowServerTestRequest request) {
   if (!test_config_)
     return;
-  new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ws::WindowServerTestImpl>(window_server_.get()),
+      std::move(request));
 }
 
 

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 
 // Implementation of the BudgetService Mojo service provided by the browser
@@ -14,6 +13,9 @@
 // BudgetManager.
 class BudgetServiceImpl : public blink::mojom::BudgetService {
  public:
+  explicit BudgetServiceImpl(int render_process_id);
+  ~BudgetServiceImpl() override;
+
   static void Create(int render_process_id,
                      blink::mojom::BudgetServiceRequest request);
 
@@ -27,15 +29,8 @@ class BudgetServiceImpl : public blink::mojom::BudgetService {
                const ReserveCallback& callback) override;
 
  private:
-  BudgetServiceImpl(int render_process_id,
-                    blink::mojom::BudgetServiceRequest request);
-  ~BudgetServiceImpl() override;
-
   // Render process ID is used to get the browser context.
   int render_process_id_;
-
-  // The lifetime of the mojo service is tied to the lifetime of the connection.
-  mojo::StrongBinding<blink::mojom::BudgetService> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BudgetServiceImpl);
 };

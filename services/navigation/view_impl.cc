@@ -61,10 +61,8 @@ mojom::NavigationEntryPtr EntryPtrFromNavEntry(
 ViewImpl::ViewImpl(std::unique_ptr<shell::Connector> connector,
                    const std::string& client_user_id,
                    mojom::ViewClientPtr client,
-                   mojom::ViewRequest request,
                    std::unique_ptr<shell::ServiceContextRef> ref)
     : connector_(std::move(connector)),
-      binding_(this, std::move(request)),
       client_(std::move(client)),
       ref_(std::move(ref)),
       web_view_(new views::WebView(
@@ -152,17 +150,19 @@ void ViewImpl::AddNewContents(content::WebContents* source,
   const std::string new_user_id =
       content::BrowserContext::GetShellUserIdFor(
           new_contents->GetBrowserContext());
-  ViewImpl* impl = new ViewImpl(
-      connector_->Clone(), new_user_id, std::move(client),
-      std::move(view_request), ref_->Clone());
+  auto impl = base::MakeUnique<ViewImpl>(connector_->Clone(), new_user_id,
+                                         std::move(client), ref_->Clone());
+
   // TODO(beng): This is a bit crappy. should be able to create the ViewImpl
   //             with |new_contents| instead.
   impl->web_view_->SetWebContents(new_contents);
-  impl->web_view_->GetWebContents()->SetDelegate(impl);
+  impl->web_view_->GetWebContents()->SetDelegate(impl.get());
 
   // TODO(beng): this reply is currently synchronous, figure out a fix.
   if (was_blocked)
     *was_blocked = false;
+
+  mojo::MakeStrongBinding(std::move(impl), std::move(view_request));
 }
 
 void ViewImpl::CloseContents(content::WebContents* source) {

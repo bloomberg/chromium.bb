@@ -12,36 +12,32 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "device/serial/serial_io_handler.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
 SerialServiceImpl::SerialServiceImpl(
-    scoped_refptr<SerialConnectionFactory> connection_factory,
-    mojo::InterfaceRequest<serial::SerialService> request)
-    : connection_factory_(connection_factory),
-      binding_(this, std::move(request)) {}
+    scoped_refptr<SerialConnectionFactory> connection_factory)
+    : connection_factory_(connection_factory) {}
 
 SerialServiceImpl::SerialServiceImpl(
     scoped_refptr<SerialConnectionFactory> connection_factory,
-    std::unique_ptr<SerialDeviceEnumerator> device_enumerator,
-    mojo::InterfaceRequest<serial::SerialService> request)
+    std::unique_ptr<SerialDeviceEnumerator> device_enumerator)
     : device_enumerator_(std::move(device_enumerator)),
-      connection_factory_(connection_factory),
-      binding_(this, std::move(request)) {}
+      connection_factory_(connection_factory) {}
 
-SerialServiceImpl::~SerialServiceImpl() {
-}
+SerialServiceImpl::~SerialServiceImpl() {}
 
 // static
 void SerialServiceImpl::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     mojo::InterfaceRequest<serial::SerialService> request) {
-  new SerialServiceImpl(
-      new SerialConnectionFactory(
+  mojo::MakeStrongBinding(
+      base::MakeUnique<SerialServiceImpl>(new SerialConnectionFactory(
           base::Bind(SerialIoHandler::Create,
                      base::ThreadTaskRunnerHandle::Get(), ui_task_runner),
-          io_task_runner),
+          io_task_runner)),
       std::move(request));
 }
 

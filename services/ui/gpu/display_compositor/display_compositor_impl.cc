@@ -9,9 +9,7 @@
 namespace ui {
 namespace gpu {
 
-DisplayCompositorImpl::DisplayCompositorImpl(
-    mojo::InterfaceRequest<mojom::DisplayCompositor> request)
-    : binding_(this, std::move(request)) {}
+DisplayCompositorImpl::DisplayCompositorImpl() {}
 
 DisplayCompositorImpl::~DisplayCompositorImpl() {}
 

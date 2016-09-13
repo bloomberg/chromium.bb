@@ -20,7 +20,6 @@
 #include "media/base/renderer_client.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -43,8 +42,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
       scoped_refptr<AudioRendererSink> audio_sink,
       std::unique_ptr<VideoRendererSink> video_sink,
-      std::unique_ptr<media::Renderer> renderer,
-      mojo::InterfaceRequest<mojom::Renderer> request);
+      std::unique_ptr<media::Renderer> renderer);
   ~MojoRendererService() final;
 
   // mojom::Renderer implementation.
@@ -101,8 +99,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void OnCdmAttached(scoped_refptr<MediaKeys> cdm,
                      const base::Callback<void(bool)>& callback,
                      bool success);
-
-  mojo::StrongBinding<mojom::Renderer> binding_;
 
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 

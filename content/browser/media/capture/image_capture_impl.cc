@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/video_capture_device.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
@@ -116,14 +117,15 @@ void TakePhotoOnIOThread(
 
 }  // anonymous namespace
 
-// static
-void ImageCaptureImpl::Create(
-    mojo::InterfaceRequest<media::mojom::ImageCapture> request) {
-  // |binding_| will take ownership of ImageCaptureImpl.
-  new ImageCaptureImpl(std::move(request));
-}
+ImageCaptureImpl::ImageCaptureImpl() {}
 
 ImageCaptureImpl::~ImageCaptureImpl() {}
+
+// static
+void ImageCaptureImpl::Create(media::mojom::ImageCaptureRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<ImageCaptureImpl>(),
+                          std::move(request));
+}
 
 void ImageCaptureImpl::GetCapabilities(
     const std::string& source_id,
@@ -171,9 +173,5 @@ void ImageCaptureImpl::TakePhoto(const std::string& source_id,
                  BrowserMainLoop::GetInstance()->media_stream_manager(),
                  base::Passed(&scoped_callback)));
 }
-
-ImageCaptureImpl::ImageCaptureImpl(
-    mojo::InterfaceRequest<media::mojom::ImageCapture> request)
-    : binding_(this, std::move(request)) {}
 
 }  // namespace content

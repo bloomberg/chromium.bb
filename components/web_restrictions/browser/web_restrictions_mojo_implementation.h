@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace web_restrictions {
 
@@ -17,21 +16,18 @@ class WebRestrictionsClient;
 
 class WebRestrictionsMojoImplementation : public mojom::WebRestrictions {
  public:
+  explicit WebRestrictionsMojoImplementation(WebRestrictionsClient* client);
+  ~WebRestrictionsMojoImplementation() override;
+
   static void Create(WebRestrictionsClient* client,
                      mojo::InterfaceRequest<mojom::WebRestrictions> request);
 
  private:
-  WebRestrictionsMojoImplementation(
-      WebRestrictionsClient* client,
-      mojo::InterfaceRequest<mojom::WebRestrictions> request);
-  ~WebRestrictionsMojoImplementation() override;
-
   void GetResult(const std::string& url,
                  const GetResultCallback& callback) override;
   void RequestPermission(const std::string& url,
                          const RequestPermissionCallback& callback) override;
 
-  mojo::StrongBinding<mojom::WebRestrictions> binding_;
   WebRestrictionsClient* web_restrictions_client_;
 };
 

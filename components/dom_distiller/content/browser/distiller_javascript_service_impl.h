@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLER_JAVASCRIPT_SERVICE_IMPL_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLER_JAVASCRIPT_SERVICE_IMPL_H_
 
+#include "base/macros.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -16,10 +17,8 @@ namespace dom_distiller {
 class DistillerJavaScriptServiceImpl
     : public mojom::DistillerJavaScriptService {
  public:
-  DistillerJavaScriptServiceImpl(
-      content::RenderFrameHost* render_frame_host,
-      DistillerUIHandle* distiller_ui_handle,
-      mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request);
+  DistillerJavaScriptServiceImpl(content::RenderFrameHost* render_frame_host,
+                                 DistillerUIHandle* distiller_ui_handle);
   ~DistillerJavaScriptServiceImpl() override;
 
   // Mojo mojom::DistillerJavaScriptService implementation.
@@ -38,9 +37,10 @@ class DistillerJavaScriptServiceImpl
   void HandleDistillerOpenSettingsCall() override;
 
  private:
-  mojo::StrongBinding<mojom::DistillerJavaScriptService> binding_;
   content::RenderFrameHost* render_frame_host_;
   DistillerUIHandle* distiller_ui_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(DistillerJavaScriptServiceImpl);
 };
 
 // static

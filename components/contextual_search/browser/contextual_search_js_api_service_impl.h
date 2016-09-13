@@ -9,7 +9,6 @@
 #include "components/contextual_search/browser/contextual_search_js_api_handler.h"
 #include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace contextual_search {
 
@@ -17,17 +16,14 @@ namespace contextual_search {
 class ContextualSearchJsApiServiceImpl
     : public mojom::ContextualSearchJsApiService {
  public:
-  ContextualSearchJsApiServiceImpl(
-      ContextualSearchJsApiHandler* contextual_search_js_api_handler,
-      mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request);
+  explicit ContextualSearchJsApiServiceImpl(
+      ContextualSearchJsApiHandler* contextual_search_js_api_handler);
   ~ContextualSearchJsApiServiceImpl() override;
 
   // Mojo ContextualSearchApiService implementation.
   void HandleSetCaption(const mojo::String& message, bool does_answer) override;
 
  private:
-  mojo::StrongBinding<mojom::ContextualSearchJsApiService> binding_;
-
   // The UI handler for calls through the JavaScript API.
   ContextualSearchJsApiHandler* contextual_search_js_api_handler_;
 

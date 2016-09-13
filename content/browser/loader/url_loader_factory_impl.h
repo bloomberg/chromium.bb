@@ -10,7 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
@@ -31,15 +30,13 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
   // StrongBinding in it, so this function doesn't return the instance.
   CONTENT_EXPORT static void Create(
       scoped_refptr<ResourceMessageFilter> resource_message_filter,
-      mojo::InterfaceRequest<mojom::URLLoaderFactory> request);
+      mojom::URLLoaderFactoryRequest request);
 
  private:
-  URLLoaderFactoryImpl(
-      scoped_refptr<ResourceMessageFilter> resource_message_filter,
-      mojo::InterfaceRequest<mojom::URLLoaderFactory> request);
+  explicit URLLoaderFactoryImpl(
+      scoped_refptr<ResourceMessageFilter> resource_message_filter);
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
-  mojo::StrongBinding<mojom::URLLoaderFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);
 };

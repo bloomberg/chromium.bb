@@ -22,11 +22,8 @@
 namespace media {
 
 MojoVideoDecoderService::MojoVideoDecoderService(
-    mojo::InterfaceRequest<mojom::VideoDecoder> request,
     MojoMediaClient* mojo_media_client)
-    : binding_(this, std::move(request)),
-      mojo_media_client_(mojo_media_client),
-      weak_factory_(this) {
+    : mojo_media_client_(mojo_media_client), weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 

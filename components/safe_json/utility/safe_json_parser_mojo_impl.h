@@ -9,23 +9,19 @@
 
 #include "base/macros.h"
 #include "components/safe_json/public/interfaces/safe_json.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace safe_json {
 
 class SafeJsonParserMojoImpl : public mojom::SafeJsonParser {
  public:
+  SafeJsonParserMojoImpl();
+  ~SafeJsonParserMojoImpl() override;
+
   static void Create(mojo::InterfaceRequest<mojom::SafeJsonParser> request);
 
  private:
-  explicit SafeJsonParserMojoImpl(
-      mojo::InterfaceRequest<mojom::SafeJsonParser> request);
-  ~SafeJsonParserMojoImpl() override;
-
   // mojom::SafeJsonParser implementation.
   void Parse(const mojo::String& json, const ParseCallback& callback) override;
-
-  mojo::StrongBinding<mojom::SafeJsonParser> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserMojoImpl);
 };

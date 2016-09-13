@@ -5,12 +5,14 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -21,78 +23,33 @@
 
 namespace mojo {
 
+template <typename Interface>
+class StrongBinding;
+
+template <typename Interface>
+using StrongBindingPtr = base::WeakPtr<StrongBinding<Interface>>;
+
 // This connects an interface implementation strongly to a pipe. When a
-// connection error is detected the implementation is deleted. Deleting the
-// connector also closes the pipe.
+// connection error is detected the implementation is deleted.
 //
-// Example of an implementation that is always bound strongly to a pipe
+// To use, call StrongBinding<T>::Create() (see below) or the helper
+// MakeStrongBinding function:
 //
-//   class StronglyBound : public Foo {
-//    public:
-//     explicit StronglyBound(InterfaceRequest<Foo> request)
-//         : binding_(this, std::move(request)) {}
+//   mojo::MakeStrongBinding(base::MakeUnique<FooImpl>(),
+//                           std::move(foo_request));
 //
-//     // Foo implementation here
-//
-//    private:
-//     StrongBinding<Foo> binding_;
-//   };
-//
-//   class MyFooFactory : public InterfaceFactory<Foo> {
-//    public:
-//     void Create(..., InterfaceRequest<Foo> request) override {
-//       new StronglyBound(std::move(request));  // The binding now owns the
-//                                               // instance of StronglyBound.
-//     }
-//   };
-//
-// This class is thread hostile once it is bound to a message pipe. Until it is
-// bound, it may be bound or destroyed on any thread.
 template <typename Interface>
 class StrongBinding {
  public:
-  explicit StrongBinding(Interface* impl) : binding_(impl) {}
-
-  StrongBinding(Interface* impl, ScopedMessagePipeHandle handle)
-      : StrongBinding(impl) {
-    Bind(std::move(handle));
-  }
-
-  StrongBinding(Interface* impl, InterfacePtr<Interface>* ptr)
-      : StrongBinding(impl) {
-    Bind(ptr);
-  }
-
-  StrongBinding(Interface* impl, InterfaceRequest<Interface> request)
-      : StrongBinding(impl) {
-    Bind(std::move(request));
-  }
-
-  ~StrongBinding() {}
-
-  void Bind(ScopedMessagePipeHandle handle) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(handle));
-    binding_.set_connection_error_handler(
-        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
-  }
-
-  void Bind(InterfacePtr<Interface>* ptr) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(ptr);
-    binding_.set_connection_error_handler(
-        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
-  }
-
-  void Bind(InterfaceRequest<Interface> request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
-    binding_.set_connection_error_handler(
-        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
-  }
-
-  bool WaitForIncomingMethodCall() {
-    return binding_.WaitForIncomingMethodCall();
+  // Create a new StrongBinding instance. The instance owns itself, cleaning up
+  // only in the event of a pipe connection error. Returns a WeakPtr to the new
+  // StrongBinding instance.
+  static StrongBindingPtr<Interface> Create(
+      std::unique_ptr<Interface> impl,
+      InterfaceRequest<Interface> request) {
+    StrongBinding* binding =
+        new StrongBinding(std::move(impl), std::move(request));
+    return binding->weak_factory_.GetWeakPtr();
   }
 
   // Note: The error handler must not delete the interface implementation.
@@ -104,15 +61,13 @@ class StrongBinding {
     connection_error_handler_ = error_handler;
   }
 
-  Interface* impl() { return binding_.impl(); }
+  // Forces the binding to close. This destroys the StrongBinding instance.
+  void Close() { delete this; }
+
+  Interface* impl() { return impl_.get(); }
+
   // Exposed for testing, should not generally be used.
   internal::Router* internal_router() { return binding_.internal_router(); }
-
-  void OnConnectionError() {
-    if (!connection_error_handler_.is_null())
-      connection_error_handler_.Run();
-    delete binding_.impl();
-  }
 
   // Sends a message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to
@@ -121,11 +76,37 @@ class StrongBinding {
   void FlushForTesting() { binding_.FlushForTesting(); }
 
  private:
+  StrongBinding(std::unique_ptr<Interface> impl,
+                InterfaceRequest<Interface> request)
+      : impl_(std::move(impl)),
+        binding_(impl_.get(), std::move(request)),
+        weak_factory_(this) {
+    binding_.set_connection_error_handler(
+        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
+  }
+
+  ~StrongBinding() {}
+
+  void OnConnectionError() {
+    if (!connection_error_handler_.is_null())
+      connection_error_handler_.Run();
+    Close();
+  }
+
+  std::unique_ptr<Interface> impl_;
   base::Closure connection_error_handler_;
   Binding<Interface> binding_;
+  base::WeakPtrFactory<StrongBinding> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StrongBinding);
 };
+
+template <typename Interface, typename Impl>
+StrongBindingPtr<Interface> MakeStrongBinding(
+    std::unique_ptr<Impl> impl,
+    InterfaceRequest<Interface> request) {
+  return StrongBinding<Interface>::Create(std::move(impl), std::move(request));
+}
 
 }  // namespace mojo
 

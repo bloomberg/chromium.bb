@@ -123,10 +123,13 @@ namespace content {
 
 ImageDownloaderImpl::ImageDownloaderImpl(
     RenderFrame* render_frame,
-    mojo::InterfaceRequest<content::mojom::ImageDownloader> request)
-    : RenderFrameObserver(render_frame), binding_(this, std::move(request)) {
+    mojom::ImageDownloaderRequest request)
+    : RenderFrameObserver(render_frame),
+      binding_(this, std::move(request)) {
   DCHECK(render_frame);
   RenderThread::Get()->AddObserver(this);
+  binding_.set_connection_error_handler(
+      base::Bind(&ImageDownloaderImpl::OnDestruct, base::Unretained(this)));
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {
@@ -141,10 +144,11 @@ ImageDownloaderImpl::~ImageDownloaderImpl() {
 // static
 void ImageDownloaderImpl::CreateMojoService(
     RenderFrame* render_frame,
-    mojo::InterfaceRequest<content::mojom::ImageDownloader> request) {
-  DVLOG(1) << "ImageDownloaderImpl::CreateService";
+    mojom::ImageDownloaderRequest request) {
+  DVLOG(1) << "ImageDownloaderImpl::CreateMojoService";
   DCHECK(render_frame);
 
+  // Owns itself.
   new ImageDownloaderImpl(render_frame, std::move(request));
 }
 

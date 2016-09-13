@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 
 namespace net {
@@ -18,10 +19,8 @@ InProcessMojoProxyResolverFactory::GetInstance() {
 }
 
 InProcessMojoProxyResolverFactory::InProcessMojoProxyResolverFactory() {
-  // Implementation lifetime is strongly bound to the life of the connection via
-  // |factory_|. When |factory_| is destroyed, the Mojo connection is terminated
-  // which causes this object to be destroyed.
-  new MojoProxyResolverFactoryImpl(mojo::GetProxy(&factory_));
+  mojo::MakeStrongBinding(base::MakeUnique<MojoProxyResolverFactoryImpl>(),
+                          mojo::GetProxy(&factory_));
 }
 
 InProcessMojoProxyResolverFactory::~InProcessMojoProxyResolverFactory() =

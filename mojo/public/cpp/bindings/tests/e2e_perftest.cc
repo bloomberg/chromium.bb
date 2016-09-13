@@ -23,8 +23,7 @@ namespace {
 
 class EchoServiceImpl : public test::EchoService {
  public:
-  EchoServiceImpl(InterfaceRequest<EchoService> request,
-                  const base::Closure& quit_closure);
+  explicit EchoServiceImpl(const base::Closure& quit_closure);
   ~EchoServiceImpl() override;
 
   // |EchoService| methods:
@@ -32,13 +31,11 @@ class EchoServiceImpl : public test::EchoService {
             const EchoCallback& callback) override;
 
  private:
-  const StrongBinding<EchoService> binding_;
   const base::Closure quit_closure_;
 };
 
-EchoServiceImpl::EchoServiceImpl(InterfaceRequest<EchoService> request,
-                                 const base::Closure& quit_closure)
-    : binding_(this, std::move(request)), quit_closure_(quit_closure) {}
+EchoServiceImpl::EchoServiceImpl(const base::Closure& quit_closure)
+    : quit_closure_(quit_closure) {}
 
 EchoServiceImpl::~EchoServiceImpl() {
   quit_closure_.Run();
@@ -163,7 +160,7 @@ class MojoE2EPerftest : public edk::test::MojoTestBase {
 
 void CreateAndRunService(InterfaceRequest<test::EchoService> request,
                          const base::Closure& cb) {
-  new EchoServiceImpl(std::move(request), cb);
+  MakeStrongBinding(base::MakeUnique<EchoServiceImpl>(cb), std::move(request));
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {

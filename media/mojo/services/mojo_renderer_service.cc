@@ -24,10 +24,8 @@ MojoRendererService::MojoRendererService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     scoped_refptr<AudioRendererSink> audio_sink,
     std::unique_ptr<VideoRendererSink> video_sink,
-    std::unique_ptr<media::Renderer> renderer,
-    mojo::InterfaceRequest<mojom::Renderer> request)
-    : binding_(this, std::move(request)),
-      mojo_cdm_service_context_(mojo_cdm_service_context),
+    std::unique_ptr<media::Renderer> renderer)
+    : mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
       playback_rate_(0),
       audio_sink_(std::move(audio_sink)),

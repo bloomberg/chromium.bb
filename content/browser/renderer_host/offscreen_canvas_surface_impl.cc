@@ -9,20 +9,12 @@
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-// static
-void OffscreenCanvasSurfaceImpl::Create(
-    mojo::InterfaceRequest<blink::mojom::OffscreenCanvasSurface> request) {
-  // |binding_| will take ownership of OffscreenCanvasSurfaceImpl
-  new OffscreenCanvasSurfaceImpl(std::move(request));
-}
-
-OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
-    mojo::InterfaceRequest<blink::mojom::OffscreenCanvasSurface> request)
-    : id_allocator_(new cc::SurfaceIdAllocator(AllocateSurfaceClientId())),
-      binding_(this, std::move(request)) {
+OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl()
+    : id_allocator_(new cc::SurfaceIdAllocator(AllocateSurfaceClientId())) {
   GetSurfaceManager()->RegisterSurfaceClientId(id_allocator_->client_id());
 }
 
@@ -36,6 +28,13 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
     GetSurfaceManager()->InvalidateSurfaceClientId(id_allocator_->client_id());
   }
   surface_factory_->Destroy(surface_id_);
+}
+
+// static
+void OffscreenCanvasSurfaceImpl::Create(
+    mojo::InterfaceRequest<blink::mojom::OffscreenCanvasSurface> request) {
+  mojo::MakeStrongBinding(base::MakeUnique<OffscreenCanvasSurfaceImpl>(),
+                          std::move(request));
 }
 
 void OffscreenCanvasSurfaceImpl::GetSurfaceId(

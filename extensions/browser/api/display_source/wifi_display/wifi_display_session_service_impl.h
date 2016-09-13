@@ -9,7 +9,6 @@
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 class BrowserContext;
@@ -44,8 +43,7 @@ class WiFiDisplaySessionServiceImpl
                          const std::string& description) override;
 
   explicit WiFiDisplaySessionServiceImpl(
-      DisplaySourceConnectionDelegate* delegate,
-      mojo::InterfaceRequest<WiFiDisplaySessionService> request);
+      DisplaySourceConnectionDelegate* delegate);
 
   // Called if a message is received from the connected sink.
   void OnSinkMessage(const std::string& message);
@@ -57,7 +55,6 @@ class WiFiDisplaySessionServiceImpl
   // Mojo error callback.
   void OnClientConnectionError();
 
-  mojo::StrongBinding<WiFiDisplaySessionService> binding_;
   WiFiDisplaySessionServiceClientPtr client_;
   DisplaySourceConnectionDelegate* delegate_;
 

@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
@@ -33,12 +34,11 @@
 namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
-    mojo::InterfaceRequest<mojom::ServiceFactory> request,
     shell::mojom::InterfaceProviderPtr interfaces,
     scoped_refptr<MediaLog> media_log,
     std::unique_ptr<shell::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
-    : binding_(this, std::move(request)),
+    :
 #if defined(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
@@ -68,15 +68,19 @@ void ServiceFactoryImpl::CreateAudioDecoder(
     return;
   }
 
-  new MojoAudioDecoderService(cdm_service_context_.GetWeakPtr(),
-                              std::move(audio_decoder), std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MojoAudioDecoderService>(
+          cdm_service_context_.GetWeakPtr(), std::move(audio_decoder)),
+      std::move(request));
 #endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
 }
 
 void ServiceFactoryImpl::CreateVideoDecoder(
     mojom::VideoDecoderRequest request) {
 #if defined(ENABLE_MOJO_VIDEO_DECODER)
-  new MojoVideoDecoderService(std::move(request), mojo_media_client_);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MojoVideoDecoderService>(mojo_media_client_),
+      std::move(request));
 #endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 }
 
@@ -101,10 +105,11 @@ void ServiceFactoryImpl::CreateRenderer(
     return;
   }
 
-  // The created object is owned by the pipe.
-  new MojoRendererService(cdm_service_context_.GetWeakPtr(),
-                          std::move(audio_sink), std::move(video_sink),
-                          std::move(renderer), std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MojoRendererService>(
+          cdm_service_context_.GetWeakPtr(), std::move(audio_sink),
+          std::move(video_sink), std::move(renderer)),
+      std::move(request));
 #endif  // defined(ENABLE_MOJO_RENDERER)
 }
 
@@ -115,9 +120,9 @@ void ServiceFactoryImpl::CreateCdm(
   if (!cdm_factory)
     return;
 
-  // The created object is owned by the pipe.
-  new MojoCdmService(cdm_service_context_.GetWeakPtr(), cdm_factory,
-                     std::move(request));
+  mojo::MakeStrongBinding(base::MakeUnique<MojoCdmService>(
+                              cdm_service_context_.GetWeakPtr(), cdm_factory),
+                          std::move(request));
 #endif  // defined(ENABLE_MOJO_CDM)
 }
 

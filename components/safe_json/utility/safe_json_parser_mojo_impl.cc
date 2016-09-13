@@ -9,20 +9,19 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace safe_json {
+
+SafeJsonParserMojoImpl::SafeJsonParserMojoImpl() = default;
+
+SafeJsonParserMojoImpl::~SafeJsonParserMojoImpl() = default;
 
 // static
 void SafeJsonParserMojoImpl::Create(
     mojo::InterfaceRequest<mojom::SafeJsonParser> request) {
-  new SafeJsonParserMojoImpl(std::move(request));
-}
-
-SafeJsonParserMojoImpl::SafeJsonParserMojoImpl(
-    mojo::InterfaceRequest<mojom::SafeJsonParser> request)
-    : binding_(this, std::move(request)) {}
-
-SafeJsonParserMojoImpl::~SafeJsonParserMojoImpl() {
+  mojo::MakeStrongBinding(base::MakeUnique<SafeJsonParserMojoImpl>(),
+                          std::move(request));
 }
 
 void SafeJsonParserMojoImpl::Parse(const mojo::String& json,
