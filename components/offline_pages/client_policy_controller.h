@@ -33,6 +33,12 @@ class ClientPolicyController {
   // Get the client policy for |name_space|.
   const OfflinePageClientPolicy& GetPolicy(const std::string& name_space) const;
 
+  // Returns whether pages for |name_space| should be removed on cache reset.
+  bool IsRemovedOnCacheReset(const std::string& name_space) const;
+
+  // Returns whether pages for |name_space| are shown in Download UI.
+  bool IsSupportedByDownload(const std::string& name_space) const;
+
  private:
   // The map from name_space to a client policy. Will be generated
   // as pre-defined values for now.

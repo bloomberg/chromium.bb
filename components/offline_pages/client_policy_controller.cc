@@ -25,26 +25,29 @@ ClientPolicyController::ClientPolicyController() {
                                   base::TimeDelta::FromDays(2), kUnlimitedPages,
                                   kUnlimitedPages)));
   policies_.insert(std::make_pair(
-      kAsyncNamespace, MakePolicy(kAsyncNamespace, LifetimeType::PERSISTENT,
-                                  base::TimeDelta::FromDays(2), kUnlimitedPages,
-                                  kUnlimitedPages)));
+      kAsyncNamespace,
+      OfflinePageClientPolicyBuilder(kAsyncNamespace, LifetimeType::PERSISTENT,
+                                     kUnlimitedPages, kUnlimitedPages)
+          .SetIsSupportedByDownload(true)
+          .SetIsRemovedOnCacheReset(false)
+          .Build()));
   policies_.insert(std::make_pair(
       kCCTNamespace,
       MakePolicy(kCCTNamespace, LifetimeType::TEMPORARY,
                  base::TimeDelta::FromDays(2), kUnlimitedPages, 1)));
-
   policies_.insert(std::make_pair(
-      kDownloadNamespace, MakePolicy(kDownloadNamespace,
-                                     LifetimeType::PERSISTENT,
-                                     base::TimeDelta::FromDays(0),
-                                     kUnlimitedPages,
-                                     kUnlimitedPages)));
+      kDownloadNamespace, OfflinePageClientPolicyBuilder(
+                              kDownloadNamespace, LifetimeType::PERSISTENT,
+                              kUnlimitedPages, kUnlimitedPages)
+                              .SetIsRemovedOnCacheReset(false)
+                              .SetIsSupportedByDownload(true)
+                              .Build()));
   policies_.insert(std::make_pair(
-      kNTPSuggestionsNamespace, MakePolicy(kNTPSuggestionsNamespace,
-                                           LifetimeType::PERSISTENT,
-                                           base::TimeDelta::FromDays(0),
-                                           kUnlimitedPages,
-                                           kUnlimitedPages)));
+      kNTPSuggestionsNamespace,
+      OfflinePageClientPolicyBuilder(kNTPSuggestionsNamespace,
+                                     LifetimeType::PERSISTENT, kUnlimitedPages,
+                                     kUnlimitedPages)
+          .Build()));
 
   // Fallback policy.
   policies_.insert(std::make_pair(
@@ -61,10 +64,10 @@ const OfflinePageClientPolicy ClientPolicyController::MakePolicy(
     const base::TimeDelta& expire_period,
     size_t page_limit,
     size_t pages_allowed_per_url) {
-  OfflinePageClientPolicy policy({name_space,
-                                  {lifetime_type, expire_period, page_limit},
-                                  pages_allowed_per_url});
-  return policy;
+  return OfflinePageClientPolicyBuilder(name_space, lifetime_type, page_limit,
+                                        pages_allowed_per_url)
+      .SetExpirePeriod(expire_period)
+      .Build();
 }
 
 const OfflinePageClientPolicy& ClientPolicyController::GetPolicy(
@@ -74,6 +77,16 @@ const OfflinePageClientPolicy& ClientPolicyController::GetPolicy(
     return iter->second;
   // Fallback when the namespace isn't defined.
   return policies_.at(kDefaultNamespace);
+}
+
+bool ClientPolicyController::IsRemovedOnCacheReset(
+    const std::string& name_space) const {
+  return GetPolicy(name_space).feature_policy.is_removed_on_cache_reset;
+}
+
+bool ClientPolicyController::IsSupportedByDownload(
+    const std::string& name_space) const {
+  return GetPolicy(name_space).feature_policy.is_supported_by_download;
 }
 
 }  // namespace offline_pages

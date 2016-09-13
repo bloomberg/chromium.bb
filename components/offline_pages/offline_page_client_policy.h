@@ -32,11 +32,28 @@ struct LifetimePolicy {
   LifetimeType lifetime_type;
 
   // The time after which the page expires.
+  // A TimeDelta of 0 means no expiration.
   base::TimeDelta expiration_period;
 
   // The maximum number of pages allowed to be saved by the namespace.
   // kUnlimitedPages (defined above) means no limit set.
   size_t page_limit;
+
+  LifetimePolicy(LifetimeType init_lifetime_type, size_t init_page_limit)
+      : lifetime_type(init_lifetime_type),
+        expiration_period(base::TimeDelta::FromDays(0)),
+        page_limit(init_page_limit){};
+};
+
+// The struct describing feature set of the offline pages.
+struct FeaturePolicy {
+  // Whether pages are shown in download ui.
+  bool is_supported_by_download;
+  // Whether pages are removed on user-initiated cache reset. Defaults to true.
+  bool is_removed_on_cache_reset;
+
+  FeaturePolicy()
+      : is_supported_by_download(false), is_removed_on_cache_reset(true){};
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -52,6 +69,65 @@ struct OfflinePageClientPolicy {
   // How many pages for the same online URL can be stored at any time.
   // kUnlimitedPages means there's no limit.
   size_t pages_allowed_per_url;
+
+  FeaturePolicy feature_policy;
+
+  OfflinePageClientPolicy(std::string namespace_val,
+                          LifetimePolicy lifetime_policy_val,
+                          size_t pages_allowed_per_url_val,
+                          FeaturePolicy feature_policy_val)
+      : name_space(namespace_val),
+        lifetime_policy(lifetime_policy_val),
+        pages_allowed_per_url(pages_allowed_per_url_val),
+        feature_policy(feature_policy_val){};
+
+  OfflinePageClientPolicy(std::string namespace_val,
+                          LifetimePolicy lifetime_policy_val,
+                          size_t pages_allowed_per_url_val)
+      : OfflinePageClientPolicy(namespace_val,
+                                lifetime_policy_val,
+                                pages_allowed_per_url_val,
+                                FeaturePolicy()){};
+};
+
+class OfflinePageClientPolicyBuilder {
+ public:
+  OfflinePageClientPolicyBuilder(const std::string& name_space,
+                                 LifetimePolicy::LifetimeType lifetime_type,
+                                 size_t page_limit,
+                                 size_t pages_allowed_per_url)
+      : policy_(
+            OfflinePageClientPolicy(name_space,
+                                    LifetimePolicy(lifetime_type, page_limit),
+                                    pages_allowed_per_url)){};
+
+  ~OfflinePageClientPolicyBuilder() {}
+
+  // Calling build does not reset the object inside.
+  const OfflinePageClientPolicy Build() const { return policy_; }
+
+  OfflinePageClientPolicyBuilder& SetExpirePeriod(
+      const base::TimeDelta& expire_period) {
+    policy_.lifetime_policy.expiration_period = expire_period;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetIsSupportedByDownload(
+      const bool is_downloaded) {
+    policy_.feature_policy.is_supported_by_download = is_downloaded;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetIsRemovedOnCacheReset(
+      const bool removed_on_cache_reset) {
+    policy_.feature_policy.is_removed_on_cache_reset = removed_on_cache_reset;
+    return *this;
+  }
+
+ private:
+  OfflinePageClientPolicy policy_;
+
+  DISALLOW_COPY_AND_ASSIGN(OfflinePageClientPolicyBuilder);
 };
 
 }  // namespace offline_pages
