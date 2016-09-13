@@ -2452,7 +2452,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   base::ScopedTempDir temporary_download_dir;
   ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
   DownloadPrefs::FromBrowserContext(guest_web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.path());
+      ->SetDownloadPath(temporary_download_dir.GetPath());
 
   std::unique_ptr<content::DownloadTestObserver> completion_observer(
       new content::DownloadTestObserverTerminal(
@@ -2609,7 +2609,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
   base::ScopedTempDir temporary_download_dir;
   ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
   DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.path());
+      ->SetDownloadPath(temporary_download_dir.GetPath());
 
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
@@ -2694,7 +2694,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   base::ScopedTempDir temporary_download_dir;
   ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
   DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
-      ->SetDownloadPath(temporary_download_dir.path());
+      ->SetDownloadPath(temporary_download_dir.GetPath());
 
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
@@ -2791,8 +2791,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
 
   for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
-    ASSERT_TRUE(
-        temporary_download_dir.path().IsParent(download->GetTargetFilePath()));
+    ASSERT_TRUE(temporary_download_dir.GetPath().IsParent(
+        download->GetTargetFilePath()));
     ASSERT_TRUE(download->GetFullPath().empty());
     EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());

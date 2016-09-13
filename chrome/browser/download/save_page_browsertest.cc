@@ -315,9 +315,9 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, save_dir_.path());
+        prefs::kDownloadDefaultDirectory, save_dir_.GetPath());
     browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kSaveFileDefaultDirectory, save_dir_.path());
+        prefs::kSaveFileDefaultDirectory, save_dir_.GetPath());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -338,8 +338,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
                                content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     std::string extension =
         (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML) ? ".mht" : ".htm";
-    *full_file_name = save_dir_.path().AppendASCII(prefix + extension);
-    *dir = save_dir_.path().AppendASCII(prefix + "_files");
+    *full_file_name = save_dir_.GetPath().AppendASCII(prefix + extension);
+    *dir = save_dir_.GetPath().AppendASCII(prefix + "_files");
   }
 
   WebContents* GetCurrentTab(Browser* browser) const {
@@ -612,9 +612,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
-  base::FilePath full_file_name = save_dir_.path().AppendASCII(
+  base::FilePath full_file_name = save_dir_.GetPath().AppendASCII(
       std::string("Test page for saving page feature") + kAppendedExtension);
-  base::FilePath dir = save_dir_.path().AppendASCII(
+  base::FilePath dir = save_dir_.GetPath().AppendASCII(
       "Test page for saving page feature_files");
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
@@ -822,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveUnauthorizedResource) {
   base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   base::FilePath file_path =
-      temp_dir2.path().Append(FILE_PATH_LITERAL("should-not-save.jpg"));
+      temp_dir2.GetPath().Append(FILE_PATH_LITERAL("should-not-save.jpg"));
   std::string file_content("fake-jpg");
   ASSERT_LT(
       0, base::WriteFile(file_path, file_content.data(), file_content.size()));

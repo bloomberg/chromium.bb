@@ -317,7 +317,7 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
   entry->set_parent_local_id(parent_resource_id);
 
   base::FilePath cache_path =
-      cache_dir_.path().AppendASCII(entry->resource_id());
+      cache_dir_.GetPath().AppendASCII(entry->resource_id());
   if (entry->file_specific_info().is_hosted_document()) {
     // For hosted documents return a dummy cache without server request.
     int result = base::WriteFile(cache_path, "", 0);

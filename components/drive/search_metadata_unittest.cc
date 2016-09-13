@@ -54,11 +54,10 @@ class SearchMetadataTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+        temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    cache_.reset(new FileCache(metadata_storage_.get(),
-                               temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(), temp_dir_.GetPath(),
                                base::ThreadTaskRunnerHandle::Get().get(),
                                fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
@@ -74,7 +73,8 @@ class SearchMetadataTest : public testing::Test {
 
   void AddEntriesToMetadata() {
     base::FilePath temp_file;
-    EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
+    EXPECT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file));
     const std::string temp_file_md5 = "md5";
 
     ResourceEntry entry;

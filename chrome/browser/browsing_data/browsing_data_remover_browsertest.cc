@@ -77,7 +77,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     base::ScopedTempDir downloads_directory;
     ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
     browser()->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory, downloads_directory.path());
+        prefs::kDownloadDefaultDirectory, downloads_directory.GetPath());
 
     // Start a download.
     content::DownloadManager* download_manager =

@@ -55,7 +55,7 @@ class STHSetComponentInstallerTest : public PlatformTest {
   }
 
   base::FilePath GetSTHsDir() {
-    return temp_dir_.path()
+    return temp_dir_.GetPath()
         .Append(FILE_PATH_LITERAL("_platform_specific"))
         .Append(FILE_PATH_LITERAL("all"))
         .Append(FILE_PATH_LITERAL("sths"));
@@ -63,13 +63,13 @@ class STHSetComponentInstallerTest : public PlatformTest {
 
   void CreateSTHsDir(const base::DictionaryValue& manifest,
                      const base::FilePath& sths_dir) {
-    ASSERT_FALSE(traits_->VerifyInstallation(manifest, temp_dir_.path()));
+    ASSERT_FALSE(traits_->VerifyInstallation(manifest, temp_dir_.GetPath()));
     ASSERT_TRUE(base::CreateDirectory(sths_dir));
   }
 
   void LoadSTHs(const base::DictionaryValue& manifest,
                 const base::FilePath& sths_dir) {
-    ASSERT_TRUE(traits_->VerifyInstallation(manifest, temp_dir_.path()));
+    ASSERT_TRUE(traits_->VerifyInstallation(manifest, temp_dir_.GetPath()));
 
     const base::Version v("1.0");
     traits_->LoadSTHsFromDisk(sths_dir, v);

@@ -478,7 +478,7 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   base::FilePath GetDownloadsDirectory() {
-    return downloads_directory_.path();
+    return downloads_directory_.GetPath();
   }
 
   // Location of the file source (the place from which it is downloaded).
@@ -503,11 +503,9 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     browser->profile()->GetPrefs()->SetFilePath(
-        prefs::kDownloadDefaultDirectory,
-        downloads_directory_.path());
+        prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
     browser->profile()->GetPrefs()->SetFilePath(
-        prefs::kSaveFileDefaultDirectory,
-        downloads_directory_.path());
+        prefs::kSaveFileDefaultDirectory, downloads_directory_.GetPath());
 
     return true;
   }
@@ -744,7 +742,7 @@ class DownloadTest : public InProcessBrowserTest {
     base::FilePath basefilename(filename.BaseName());
     net::FileURLToFilePath(url, &filename);
     base::FilePath download_path =
-        downloads_directory_.path().Append(basefilename);
+        downloads_directory_.GetPath().Append(basefilename);
 
     bool downloaded_path_exists = base::PathExists(download_path);
     EXPECT_TRUE(downloaded_path_exists);
@@ -2158,8 +2156,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   base::ScopedTempDir other_directory;
   ASSERT_TRUE(other_directory.CreateUniqueTempDir());
-  base::FilePath target_file_full_path
-      = other_directory.path().Append(file.BaseName());
+  base::FilePath target_file_full_path =
+      other_directory.GetPath().Append(file.BaseName());
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(

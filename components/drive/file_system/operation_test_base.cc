@@ -85,7 +85,7 @@ void OperationTestBase::SetUp() {
       blocking_task_runner_.get()));
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
-      temp_dir_.path(), blocking_task_runner_.get()));
+      temp_dir_.GetPath(), blocking_task_runner_.get()));
   bool success = false;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -97,10 +97,9 @@ void OperationTestBase::SetUp() {
   ASSERT_TRUE(success);
 
   fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
-  cache_.reset(new internal::FileCache(metadata_storage_.get(),
-                                       temp_dir_.path(),
-                                       blocking_task_runner_.get(),
-                                       fake_free_disk_space_getter_.get()));
+  cache_.reset(new internal::FileCache(
+      metadata_storage_.get(), temp_dir_.GetPath(), blocking_task_runner_.get(),
+      fake_free_disk_space_getter_.get()));
   success = false;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),

@@ -71,7 +71,7 @@ TEST(DriveAPIUtilTest, GetMd5Digest) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  base::FilePath path = temp_dir.path().AppendASCII("test.txt");
+  base::FilePath path = temp_dir.GetPath().AppendASCII("test.txt");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, kTestData));
 

@@ -37,7 +37,7 @@ class ServerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(xdg_temp_dir_.CreateUniqueTempDir());
-    setenv("XDG_RUNTIME_DIR", xdg_temp_dir_.path().MaybeAsASCII().c_str(),
+    setenv("XDG_RUNTIME_DIR", xdg_temp_dir_.GetPath().MaybeAsASCII().c_str(),
            1 /* overwrite */);
     testing::Test::SetUp();
   }

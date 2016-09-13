@@ -46,7 +46,7 @@ class ImportantSitesUtilTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    g_temp_history_dir = temp_dir_.path();
+    g_temp_history_dir = temp_dir_.GetPath();
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
     SiteEngagementScore::SetParamValuesForTesting();

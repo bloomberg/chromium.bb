@@ -63,7 +63,7 @@ class LocalFileReaderTest : public ::testing::Test {
 
 TEST_F(LocalFileReaderTest, NonExistingFile) {
   const base::FilePath kTestFile =
-      temp_dir_.path().AppendASCII("non-existing");
+      temp_dir_.GetPath().AppendASCII("non-existing");
 
   net::TestCompletionCallback callback;
   file_reader_->Open(kTestFile, 0, callback.callback());
@@ -74,7 +74,7 @@ TEST_F(LocalFileReaderTest, FullRead) {
   base::FilePath test_file;
   std::string expected_content;
   ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), 1024, &test_file, &expected_content));
+      temp_dir_.GetPath(), 1024, &test_file, &expected_content));
 
   net::TestCompletionCallback callback;
   file_reader_->Open(test_file, 0, callback.callback());
@@ -90,7 +90,7 @@ TEST_F(LocalFileReaderTest, OpenWithOffset) {
   base::FilePath test_file;
   std::string expected_content;
   ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), 1024, &test_file, &expected_content));
+      temp_dir_.GetPath(), 1024, &test_file, &expected_content));
 
   size_t offset = expected_content.size() / 2;
   expected_content.erase(0, offset);

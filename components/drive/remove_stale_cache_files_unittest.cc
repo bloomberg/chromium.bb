@@ -32,10 +32,9 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+        temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
 
-    cache_.reset(new FileCache(metadata_storage_.get(),
-                               temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(), temp_dir_.GetPath(),
                                base::ThreadTaskRunnerHandle::Get().get(),
                                fake_free_disk_space_getter_.get()));
 
@@ -61,7 +60,7 @@ class RemoveStaleCacheFilesTest : public testing::Test {
 
 TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
   base::FilePath dummy_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &dummy_file));
   std::string md5_metadata("abcdef0123456789"), md5_cache("ABCDEF9876543210");
 
   // Create a stale cache file.
@@ -87,7 +86,7 @@ TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
 
 TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   base::FilePath dummy_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &dummy_file));
 
   // Dirty entry.
   std::string md5_metadata("abcdef0123456789");

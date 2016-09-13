@@ -252,7 +252,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
                             const DownloadTargetInfo* target_info);
 
   const base::FilePath& test_download_dir() const {
-    return test_download_dir_.path();
+    return test_download_dir_.GetPath();
   }
 
   const base::FilePath& test_virtual_dir() const {

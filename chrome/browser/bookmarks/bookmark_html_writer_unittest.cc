@@ -58,7 +58,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    path_ = temp_dir_.path().AppendASCII("bookmarks.html");
+    path_ = temp_dir_.GetPath().AppendASCII("bookmarks.html");
   }
 
   // Converts an ImportedBookmarkEntry to a string suitable for assertion

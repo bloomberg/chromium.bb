@@ -123,11 +123,10 @@ class SyncClientTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get()));
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+        temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    cache_.reset(new FileCache(metadata_storage_.get(),
-                               temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(), temp_dir_.GetPath(),
                                base::ThreadTaskRunnerHandle::Get().get(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
@@ -148,13 +147,10 @@ class SyncClientTest : public testing::Test {
         loader_controller_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
-    sync_client_.reset(new SyncClient(base::ThreadTaskRunnerHandle::Get().get(),
-                                      &delegate_,
-                                      scheduler_.get(),
-                                      metadata_.get(),
-                                      cache_.get(),
-                                      loader_controller_.get(),
-                                      temp_dir_.path()));
+    sync_client_.reset(
+        new SyncClient(base::ThreadTaskRunnerHandle::Get().get(), &delegate_,
+                       scheduler_.get(), metadata_.get(), cache_.get(),
+                       loader_controller_.get(), temp_dir_.GetPath()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
@@ -181,7 +177,8 @@ class SyncClientTest : public testing::Test {
   void SetUpTestData() {
     // Prepare a temp file.
     base::FilePath temp_file;
-    EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
+    EXPECT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file));
     ASSERT_TRUE(google_apis::test_util::WriteStringToFile(temp_file,
                                                           kLocalContent));
 

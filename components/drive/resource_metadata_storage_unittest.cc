@@ -31,7 +31,7 @@ class ResourceMetadataStorageTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+        temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(storage_->Initialize());
   }
 
@@ -271,7 +271,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
   // Close DB and reopen.
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -315,9 +315,9 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Resource-ID-to-local-ID mapping is added.
@@ -367,9 +367,9 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased, except cache and id mapping entries.
@@ -428,9 +428,9 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // No data is lost.
@@ -466,9 +466,9 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   // Set newer version, upgrade and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion + 1);
   storage_.reset();
-  EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
+  EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -499,9 +499,9 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Only the unused entry is deleted.
@@ -515,7 +515,7 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
   // Create a file.
   base::FilePath path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &path));
 
   storage_.reset(new ResourceMetadataStorage(
       path, base::ThreadTaskRunnerHandle::Get().get()));
@@ -547,7 +547,7 @@ TEST_F(ResourceMetadataStorageTest, RecoverCacheEntriesFromTrashedResourceMap) {
 
   // Reopen. This should result in trashing the DB.
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Recover cache entries from the trashed DB.

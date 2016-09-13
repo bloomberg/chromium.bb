@@ -68,7 +68,7 @@ class FileWriteWatcherTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   base::FilePath GetTempPath(const std::string& name) {
-    return temp_dir_.path().Append(name);
+    return temp_dir_.GetPath().Append(name);
   }
 
  private:

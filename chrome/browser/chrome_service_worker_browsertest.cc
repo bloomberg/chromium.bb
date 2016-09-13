@@ -45,9 +45,8 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
   void WriteFile(const base::FilePath::StringType& filename,
                  base::StringPiece contents) {
     EXPECT_EQ(base::checked_cast<int>(contents.size()),
-              base::WriteFile(service_worker_dir_.path().Append(filename),
-                              contents.data(),
-                              contents.size()));
+              base::WriteFile(service_worker_dir_.GetPath().Append(filename),
+                              contents.data(), contents.size()));
   }
 
   base::ScopedTempDir service_worker_dir_;
@@ -70,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
             "HTTP/1.1 200 OK\nContent-Type: text/javascript");
 
-  embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+  embedded_test_server()->ServeFilesFromDirectory(
+      service_worker_dir_.GetPath());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::ServiceWorkerContext* sw_context =
@@ -98,7 +98,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
             "HTTP/1.1 200 OK\nContent-Type: text/javascript");
   WriteFile(FILE_PATH_LITERAL("test.html"), "");
 
-  embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+  embedded_test_server()->ServeFilesFromDirectory(
+      service_worker_dir_.GetPath());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   Browser* incognito = CreateIncognitoBrowser();
@@ -131,7 +132,8 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
 
   void SetUpOnMainThread() override {
     WriteServiceWorkerFetchTestFiles();
-    embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+    embedded_test_server()->ServeFilesFromDirectory(
+        service_worker_dir_.GetPath());
     ASSERT_TRUE(embedded_test_server()->Start());
     InitializeServiceWorkerFetchTestPage();
   }
@@ -561,7 +563,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest, MouseDown) {
       "<a href='./scope/' style='position:fixed; width:1px; height:1px;'></a>"
       "</body>");
 
-  embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+  embedded_test_server()->ServeFilesFromDirectory(
+      service_worker_dir_.GetPath());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::ServiceWorkerContext* sw_context =

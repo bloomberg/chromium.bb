@@ -36,11 +36,12 @@ TEST(ChromeProcessSingletonTest, Basic) {
   int callback_count = 0;
 
   ChromeProcessSingleton ps1(
-      profile_dir.path(),
+      profile_dir.GetPath(),
       base::Bind(&ServerCallback, base::Unretained(&callback_count)));
   ps1.Unlock();
 
-  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ChromeProcessSingleton ps2(profile_dir.GetPath(),
+                             base::Bind(&ClientCallback));
   ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();
@@ -61,10 +62,11 @@ TEST(ChromeProcessSingletonTest, Lock) {
   int callback_count = 0;
 
   ChromeProcessSingleton ps1(
-      profile_dir.path(),
+      profile_dir.GetPath(),
       base::Bind(&ServerCallback, base::Unretained(&callback_count)));
 
-  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ChromeProcessSingleton ps2(profile_dir.GetPath(),
+                             base::Bind(&ClientCallback));
   ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();
@@ -98,13 +100,14 @@ TEST(ChromeProcessSingletonTest, LockWithModalDialog) {
   bool called_set_foreground_window = false;
 
   ChromeProcessSingleton ps1(
-      profile_dir.path(),
+      profile_dir.GetPath(),
       base::Bind(&ServerCallback, base::Unretained(&callback_count)),
       base::Bind(&SetForegroundWindowHandler,
                  base::Unretained(&called_set_foreground_window)));
   ps1.SetActiveModalDialog(::GetShellWindow());
 
-  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ChromeProcessSingleton ps2(profile_dir.GetPath(),
+                             base::Bind(&ClientCallback));
   ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();

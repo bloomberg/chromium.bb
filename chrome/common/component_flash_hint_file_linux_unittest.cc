@@ -117,7 +117,7 @@ TEST_F(ComponentFlashHintFileTest, CorruptionTest) {
 TEST_F(ComponentFlashHintFileTest, ExecTest1) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_path = temp_dir.path().Append("plugin.so");
+  base::FilePath file_path = temp_dir.GetPath().Append("plugin.so");
   const uint8_t file[] = {0x55, 0x62, 0x79, 0x71, 0x20,
                           0x6c, 0x62, 0x68, 0x65, 0x20};
 
@@ -136,9 +136,9 @@ MULTIPROCESS_TEST_MAIN(NoExecMountTest) {
   const unsigned long tmpfs_flags = MS_NODEV | MS_NOSUID | MS_NOEXEC;
   base::ScopedTempDir temp_dir;
   CHECK(temp_dir.CreateUniqueTempDir());
-  CHECK_EQ(0, mount("tmpfs", temp_dir.path().value().c_str(), "tmpfs",
+  CHECK_EQ(0, mount("tmpfs", temp_dir.GetPath().value().c_str(), "tmpfs",
                     tmpfs_flags, nullptr));
-  const base::FilePath file_path = temp_dir.path().Append("plugin.so");
+  const base::FilePath file_path = temp_dir.GetPath().Append("plugin.so");
   const uint8_t file[] = {0x56, 0x61, 0x20, 0x67, 0x75, 0x72,
                           0x20, 0x70, 0x76, 0x67, 0x6c, 0x20};
   bool test_exec = false;
@@ -148,8 +148,8 @@ MULTIPROCESS_TEST_MAIN(NoExecMountTest) {
   if (file_written)
     test_exec = component_flash_hint_file::TestExecutableMapping(file_path);
 
-  if (umount(temp_dir.path().value().c_str()) != 0)
-    LOG(ERROR) << "Could not unmount directory " << temp_dir.path().value();
+  if (umount(temp_dir.GetPath().value().c_str()) != 0)
+    LOG(ERROR) << "Could not unmount directory " << temp_dir.GetPath().value();
 
   CHECK(file_written);
   CHECK(!test_exec);

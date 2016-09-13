@@ -98,7 +98,7 @@ class OperationTestBase : public testing::Test {
   void SetUp() override;
 
   // Returns the path of the temporary directory for putting test files.
-  base::FilePath temp_dir() const { return temp_dir_.path(); }
+  base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
 
   // Synchronously gets the resource entry corresponding to the path from local
   // ResourceMetadta.

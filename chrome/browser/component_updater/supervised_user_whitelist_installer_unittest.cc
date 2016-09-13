@@ -346,7 +346,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath unpacked_path = temp_dir.path();
+  base::FilePath unpacked_path = temp_dir.GetPath();
   ASSERT_NO_FATAL_FAILURE(PrepareWhitelistDirectory(unpacked_path));
 
   const CrxComponent* component =

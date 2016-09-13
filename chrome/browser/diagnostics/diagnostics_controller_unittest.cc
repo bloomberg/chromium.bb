@@ -37,8 +37,8 @@ class DiagnosticsControllerTest : public testing::Test {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data);
     test_data = test_data.Append(FILE_PATH_LITERAL("diagnostics"));
     test_data = test_data.Append(FILE_PATH_LITERAL("user"));
-    base::CopyDirectory(test_data, temp_dir_.path(), true);
-    profile_dir_ = temp_dir_.path().Append(FILE_PATH_LITERAL("user"));
+    base::CopyDirectory(test_data, temp_dir_.GetPath(), true);
+    profile_dir_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("user"));
 
 #if defined(OS_CHROMEOS)
     // Redirect the home dir to the profile directory. We have to do this

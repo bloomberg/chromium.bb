@@ -98,7 +98,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
     std::unique_ptr<subresource_filter::RulesetService> service(
         new TestRulesetService(&pref_service_, task_runner_,
-                               ruleset_service_dir_.path()));
+                               ruleset_service_dir_.GetPath()));
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(std::move(service));
     traits_.reset(new SubresourceFilterComponentInstallerTraits());
@@ -119,7 +119,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   }
 
   base::FilePath component_install_dir() {
-    return component_install_dir_.path();
+    return component_install_dir_.GetPath();
   }
 
   // If |license_contents| is null, no license file will be created.

@@ -41,7 +41,9 @@ class BookmarkNodeDataTest : public testing::Test {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  const base::FilePath& GetProfilePath() const { return profile_dir_.path(); }
+  const base::FilePath& GetProfilePath() const {
+    return profile_dir_.GetPath();
+  }
 
   BookmarkModel* model() { return model_.get(); }
 
@@ -134,7 +136,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   // Make sure asking for the node with a different profile returns NULL.
   base::ScopedTempDir other_profile_dir;
   EXPECT_TRUE(other_profile_dir.CreateUniqueTempDir());
-  EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.path()) ==
+  EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.GetPath()) ==
               NULL);
 
   // Writing should also put the URL and title on the clipboard.
@@ -183,7 +185,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   // A different profile should return NULL for the node.
   base::ScopedTempDir other_profile_dir;
   EXPECT_TRUE(other_profile_dir.CreateUniqueTempDir());
-  EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.path()) ==
+  EXPECT_TRUE(read_data.GetFirstNode(model(), other_profile_dir.GetPath()) ==
               NULL);
 }
 

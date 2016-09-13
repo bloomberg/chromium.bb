@@ -351,9 +351,8 @@ class ContentExtractor : public ContentBrowserTest {
         command_line, &file_to_url_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
-    service_ = CreateDomDistillerService(context,
-                                         db_dir_.path(),
-                                         file_to_url_map);
+    service_ =
+        CreateDomDistillerService(context, db_dir_.GetPath(), file_to_url_map);
     PumpQueue();
   }
 

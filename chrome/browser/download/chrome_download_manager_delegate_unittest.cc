@@ -209,7 +209,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
   web_contents()->SetDelegate(&web_contents_delegate_);
 
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
-  SetDefaultDownloadPath(test_download_dir_.path());
+  SetDefaultDownloadPath(test_download_dir_.GetPath());
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
@@ -264,7 +264,7 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
 base::FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
     const char* relative_path) {
   base::FilePath full_path =
-      test_download_dir_.path().AppendASCII(relative_path);
+      test_download_dir_.GetPath().AppendASCII(relative_path);
   return full_path.NormalizePathSeparators();
 }
 
@@ -317,7 +317,7 @@ bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
 
 const base::FilePath& ChromeDownloadManagerDelegateTest::default_download_path()
     const {
-  return test_download_dir_.path();
+  return test_download_dir_.GetPath();
 }
 
 TestChromeDownloadManagerDelegate*

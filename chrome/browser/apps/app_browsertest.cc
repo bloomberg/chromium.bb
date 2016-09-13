@@ -614,11 +614,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath test_file;
-  ASSERT_TRUE(CopyTestDataAndGetTestFilePath(
-      test_data_dir_.AppendASCII(kTestFilePath),
-      temp_dir.path(),
-      "test.",
-      &test_file));
+  ASSERT_TRUE(
+      CopyTestDataAndGetTestFilePath(test_data_dir_.AppendASCII(kTestFilePath),
+                                     temp_dir.GetPath(), "test.", &test_file));
   ASSERT_TRUE(RunPlatformAppTestWithFile(
       "platform_apps/launch_file_with_no_extension", test_file)) << message_;
 }
@@ -630,11 +628,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath test_file;
-  ASSERT_TRUE(CopyTestDataAndGetTestFilePath(
-      test_data_dir_.AppendASCII(kTestFilePath),
-      temp_dir.path(),
-      "test.",
-      &test_file));
+  ASSERT_TRUE(
+      CopyTestDataAndGetTestFilePath(test_data_dir_.AppendASCII(kTestFilePath),
+                                     temp_dir.GetPath(), "test.", &test_file));
   ASSERT_TRUE(RunPlatformAppTestWithFile(
       "platform_apps/launch_file_with_any_extension", test_file)) << message_;
 }
@@ -741,7 +737,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(RunPlatformAppTestWithFile(
       "platform_apps/launch_new_file",
-      temp_dir.path().AppendASCII("new_file.txt"))) << message_;
+      temp_dir.GetPath().AppendASCII("new_file.txt")))
+      << message_;
 }
 
 #endif  // !defined(OS_CHROMEOS)
