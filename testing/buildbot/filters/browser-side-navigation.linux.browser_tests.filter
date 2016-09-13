@@ -209,6 +209,7 @@
 -SubresourceFilterBrowserTest.MainFrameActivationOnStartup
 -SubresourceFilterBrowserTest.SubFrameActivation
 -TabManagerTest.ProtectPDFPages
+-TabManagerTest.TabManagerBasics
 -TaskManagerBrowserTest.*
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -TracingBrowserTest.TestBackgroundMemoryInfra
