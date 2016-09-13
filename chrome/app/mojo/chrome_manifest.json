@@ -17,9 +17,6 @@
         ]
       }
     },
-    "provided": {
-      "mash:launchable": [ "mash::mojom::Launchable" ],
-      "app_list:presenter": [ "app_list::mojom::AppListPresenter" ]
-    }
+    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] }
   }
 }

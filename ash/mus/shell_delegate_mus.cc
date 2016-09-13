@@ -103,11 +103,8 @@ class MediaDelegateStub : public MediaDelegate {
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus(
-    std::unique_ptr<app_list::AppListPresenter> app_list_presenter,
-    shell::Connector* connector)
-    : app_list_presenter_(std::move(app_list_presenter)),
-      connector_(connector) {
+ShellDelegateMus::ShellDelegateMus(shell::Connector* connector)
+    : connector_(connector), app_list_presenter_(connector) {
   // |connector_| may be null in tests.
 }
 
@@ -165,7 +162,7 @@ void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
 }
 
 app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
-  return app_list_presenter_.get();
+  return &app_list_presenter_;
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {

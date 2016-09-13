@@ -9,8 +9,6 @@ import("//services/shell/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "app_list_presenter_mus.cc",
-    "app_list_presenter_mus.h",
     "keyboard_ui_mus.cc",
     "keyboard_ui_mus.h",
     "shell_delegate_mus.cc",
@@ -36,8 +34,6 @@ source_set("lib") {
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
-    "//ui/app_list/presenter",
-    "//ui/app_list/presenter:mojom",
     "//ui/aura",
     "//ui/events",
     "//ui/events/devices",

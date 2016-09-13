@@ -11,11 +11,9 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/sysui/app_list_presenter_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
@@ -99,9 +97,7 @@ class MediaDelegateStub : public MediaDelegate {
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus(
-    std::unique_ptr<AppListPresenterMus> app_list_presenter)
-    : app_list_presenter_(std::move(app_list_presenter)) {}
+ShellDelegateMus::ShellDelegateMus() {}
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
@@ -157,10 +153,12 @@ void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
 }
 
 app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
-  return app_list_presenter_.get();
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
+  NOTIMPLEMENTED();
   return nullptr;
 }
 

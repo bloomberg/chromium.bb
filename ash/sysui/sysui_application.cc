@@ -21,7 +21,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/sysui/app_list_presenter_mus.h"
 #include "ash/sysui/keyboard_ui_mus.h"
 #include "ash/sysui/shell_delegate_mus.h"
 #include "ash/sysui/stub_context_factory.h"
@@ -235,9 +234,7 @@ class AshInit {
 
     AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
 
-    std::unique_ptr<AppListPresenterMus> app_list_presenter =
-        base::MakeUnique<AppListPresenterMus>(connector);
-    ash_delegate_ = new ShellDelegateMus(std::move(app_list_presenter));
+    ash_delegate_ = new ShellDelegateMus();
 
     InitializeComponents();
 

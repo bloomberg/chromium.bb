@@ -20,6 +20,8 @@ source_set("lib") {
     "accelerators/accelerator_registrar_impl.h",
     "accessibility_delegate_mus.cc",
     "accessibility_delegate_mus.h",
+    "app_list_presenter_mus.cc",
+    "app_list_presenter_mus.h",
     "bridge/immersive_handler_factory_mus.cc",
     "bridge/immersive_handler_factory_mus.h",
     "bridge/mus_layout_manager_adapter.cc",
@@ -88,6 +90,7 @@ source_set("lib") {
     "//components/user_manager",
     "//components/wallpaper",
     "//ui/app_list/presenter",
+    "//ui/app_list/presenter:mojom",
     "//ui/message_center",
   ]
 

@@ -9,7 +9,10 @@
     "required": {
       "*": { "classes": [ "accessibility", "app" ] },
       "exe:chrome" : {
-        "interfaces": [ "ash::mojom::WallpaperManager" ]
+        "interfaces": [
+          "ash::mojom::WallpaperManager",
+          "app_list::mojom::AppListPresenter"
+        ]
       },
       "mojo:mash_session": {
         "interfaces": [ "mash::session::mojom::Session" ]

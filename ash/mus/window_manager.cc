@@ -11,6 +11,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
+#include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
@@ -22,6 +23,7 @@
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/window_manager_observer.h"
 #include "ash/public/interfaces/container.mojom.h"
+#include "base/memory/ptr_util.h"
 #include "services/ui/common/event_matcher_util.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -30,38 +32,10 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
-
-namespace {
-
-// TODO(jamescook): Port ash::sysui::AppListPresenterMus and eliminate this.
-class AppListPresenterStub : public app_list::AppListPresenter {
- public:
-  AppListPresenterStub() {}
-  ~AppListPresenterStub() override {}
-
-  // app_list::AppListPresenter:
-  void Show(int64_t display_id) override { NOTIMPLEMENTED(); }
-  void Dismiss() override { NOTIMPLEMENTED(); }
-  void ToggleAppList(int64_t display_id) override { NOTIMPLEMENTED(); }
-  bool IsVisible() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-  bool GetTargetVisibility() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterStub);
-};
-
-}  // namespace
 
 namespace ash {
 namespace mus {
@@ -100,10 +74,8 @@ void WindowManager::Init(
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
 
-  std::unique_ptr<ShellDelegate> shell_delegate(new ShellDelegateMus(
-      base::MakeUnique<AppListPresenterStub>(), connector_));
-  shell_.reset(new WmShellMus(std::move(shell_delegate), this,
-                              pointer_watcher_event_router_.get()));
+  shell_.reset(new WmShellMus(base::MakeUnique<ShellDelegateMus>(connector_),
+                              this, pointer_watcher_event_router_.get()));
   shell_->Initialize(blocking_pool);
   lookup_.reset(new WmLookupMus);
 }

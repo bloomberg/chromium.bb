@@ -8,11 +8,8 @@
 #include <memory>
 
 #include "ash/common/shell_delegate.h"
+#include "ash/mus/app_list_presenter_mus.h"
 #include "base/macros.h"
-
-namespace app_list {
-class AppListPresenter;
-}
 
 namespace shell {
 class Connector;
@@ -22,9 +19,7 @@ namespace ash {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  ShellDelegateMus(
-      std::unique_ptr<app_list::AppListPresenter> app_list_presenter,
-      shell::Connector* connector);
+  explicit ShellDelegateMus(shell::Connector* connector);
   ~ShellDelegateMus() override;
 
   bool IsFirstRunAfterBoot() const override;
@@ -54,8 +49,8 @@ class ShellDelegateMus : public ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
-  std::unique_ptr<app_list::AppListPresenter> app_list_presenter_;
   shell::Connector* connector_;
+  AppListPresenterMus app_list_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };

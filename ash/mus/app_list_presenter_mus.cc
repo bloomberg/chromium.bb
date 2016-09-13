@@ -2,19 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/sysui/app_list_presenter_mus.h"
+#include "ash/mus/app_list_presenter_mus.h"
 
 #include "services/shell/public/cpp/connector.h"
 
 namespace ash {
-namespace {
 
-// TODO(mfomitchev): Remove when http://crbug.com/607300 is fixed.
-// This method should not exist. Sys_ui has different display ids because it
-// uses ScreenAsh instead of ScreenMus.
-int64_t GetMusDisplayId(int64_t sysui_display_id) {
-  return 1;
-}
+namespace {
 
 bool HasConnection(app_list::mojom::AppListPresenterPtr* interface_ptr) {
   return interface_ptr->is_bound() && !interface_ptr->encountered_error();
@@ -23,14 +17,12 @@ bool HasConnection(app_list::mojom::AppListPresenterPtr* interface_ptr) {
 }  // namespace
 
 AppListPresenterMus::AppListPresenterMus(::shell::Connector* connector)
-    : connector_(connector) {
-  ConnectIfNeeded();
-}
+    : connector_(connector) {}
 
 AppListPresenterMus::~AppListPresenterMus() {}
 
 void AppListPresenterMus::Show(int64_t display_id) {
-  display_id = GetMusDisplayId(display_id);
+  ConnectIfNeeded();
   presenter_->Show(display_id);
 }
 
@@ -40,7 +32,6 @@ void AppListPresenterMus::Dismiss() {
 }
 
 void AppListPresenterMus::ToggleAppList(int64_t display_id) {
-  display_id = GetMusDisplayId(display_id);
   ConnectIfNeeded();
   presenter_->ToggleAppList(display_id);
 }
@@ -57,13 +48,12 @@ bool AppListPresenterMus::GetTargetVisibility() const {
   return false;
 }
 
-bool AppListPresenterMus::ConnectIfNeeded() {
-  if (HasConnection(&presenter_))
-    return true;
+void AppListPresenterMus::ConnectIfNeeded() {
+  if (!connector_ || HasConnection(&presenter_))
+    return;
   connector_->ConnectToInterface("exe:chrome", &presenter_);
   CHECK(HasConnection(&presenter_))
       << "Could not connect to app_list::mojom::AppListPresenter.";
-  return true;
 }
 
 }  // namespace ash

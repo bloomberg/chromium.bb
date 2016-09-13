@@ -4,10 +4,7 @@
   "display_name": "System UI",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] },
-      "exe:chrome" : {
-        "classes": [ "app_list:presenter" ]
-      }
+      "*": { "classes": [ "app" ] }
     }
   }
 }

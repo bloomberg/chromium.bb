@@ -15,14 +15,11 @@ class KeyboardUI;
 }
 
 namespace ash {
-
-class AppListPresenterMus;
-
 namespace sysui {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  explicit ShellDelegateMus(std::unique_ptr<AppListPresenterMus>);
+  ShellDelegateMus();
   ~ShellDelegateMus() override;
 
   bool IsFirstRunAfterBoot() const override;
@@ -52,8 +49,6 @@ class ShellDelegateMus : public ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
-  std::unique_ptr<app_list::AppListPresenter> app_list_presenter_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };
 
