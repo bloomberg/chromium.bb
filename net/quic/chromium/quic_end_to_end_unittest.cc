@@ -179,7 +179,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
         kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    server_config_options_.token_binding_enabled = true;
+    server_config_options_.token_binding_params = QuicTagVector{kTB10, kP256};
     server_.reset(new QuicSimpleServer(CryptoTestUtils::ProofSourceForTesting(),
                                        server_config_, server_config_options_,
                                        AllSupportedVersions()));

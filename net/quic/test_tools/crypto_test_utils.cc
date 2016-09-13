@@ -262,13 +262,14 @@ class TestChannelIDSource : public ChannelIDSource {
 
 }  // anonymous namespace
 
-CryptoTestUtils::FakeServerOptions::FakeServerOptions()
-    : token_binding_enabled(false) {}
+CryptoTestUtils::FakeServerOptions::FakeServerOptions() {}
+
+CryptoTestUtils::FakeServerOptions::~FakeServerOptions() {}
 
 CryptoTestUtils::FakeClientOptions::FakeClientOptions()
-    : channel_id_enabled(false),
-      channel_id_source_async(false),
-      token_binding_enabled(false) {}
+    : channel_id_enabled(false), channel_id_source_async(false) {}
+
+CryptoTestUtils::FakeClientOptions::~FakeClientOptions() {}
 
 namespace {
 // This class is used by GenerateFullCHLO() to extract SCID and STK from
@@ -397,8 +398,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     }
     crypto_config.SetChannelIDSource(source);
   }
-  if (options.token_binding_enabled) {
-    crypto_config.tb_key_params.push_back(kP256);
+  if (!options.token_binding_params.empty()) {
+    crypto_config.tb_key_params = options.token_binding_params;
   }
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
                                            server_id, &crypto_config);
@@ -438,7 +439,7 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
     const FakeServerOptions& fake_options) {
   QuicCryptoServerConfig::ConfigOptions options;
   options.channel_id_enabled = true;
-  options.token_binding_enabled = fake_options.token_binding_enabled;
+  options.token_binding_params = fake_options.token_binding_params;
   std::unique_ptr<CryptoHandshakeMessage> scfg(
       crypto_config->AddDefaultConfig(rand, clock, options));
 }

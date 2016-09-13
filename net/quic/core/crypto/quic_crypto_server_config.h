@@ -139,6 +139,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   struct NET_EXPORT_PRIVATE ConfigOptions {
     ConfigOptions();
     ConfigOptions(const ConfigOptions& other);
+    ~ConfigOptions();
 
     // expiry_time is the time, in UNIX seconds, when the server config will
     // expire. If unset, it defaults to the current time plus six months.
@@ -146,9 +147,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // channel_id_enabled controls whether the server config will indicate
     // support for ChannelIDs.
     bool channel_id_enabled;
-    // token_binding_enabled controls whether the server config will indicate
-    // support for Token Binding.
-    bool token_binding_enabled;
+    // token_binding_params contains the list of Token Binding params (e.g.
+    // P256, TB10) that the server config will include.
+    QuicTagVector token_binding_params;
     // id contains the server config id for the resulting config. If empty, a
     // random id is generated.
     std::string id;

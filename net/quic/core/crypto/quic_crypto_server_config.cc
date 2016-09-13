@@ -209,11 +209,12 @@ void ValidateClientHelloResultCallback::Run(
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
       channel_id_enabled(false),
-      token_binding_enabled(false),
       p256(false) {}
 
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions(
     const ConfigOptions& other) = default;
+
+QuicCryptoServerConfig::ConfigOptions::~ConfigOptions() {}
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
@@ -328,8 +329,8 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
     msg.SetVector(kPDMD, QuicTagVector{kCHID});
   }
 
-  if (options.token_binding_enabled) {
-    msg.SetVector(kTBKP, QuicTagVector{kP256});
+  if (!options.token_binding_params.empty()) {
+    msg.SetVector(kTBKP, options.token_binding_params);
   }
 
   if (options.id.empty()) {
