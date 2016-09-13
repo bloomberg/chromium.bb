@@ -11,13 +11,8 @@
 
 namespace blink {
 
-void HTMLCanvasElementModule::getContext(HTMLCanvasElement& canvas, const String& type, const CanvasContextCreationAttributes& attributes, ExceptionState& exceptionState, RenderingContext& result)
+void HTMLCanvasElementModule::getContext(HTMLCanvasElement& canvas, const String& type, const CanvasContextCreationAttributes& attributes, RenderingContext& result)
 {
-    if (canvas.surfaceLayerBridge()) {
-        // The existence of canvas surfaceLayerBridge indicates that HTMLCanvasElement.transferControlToOffscreen() has been called.
-        exceptionState.throwDOMException(InvalidStateError, "Cannot get context from a canvas that has transferred its control to offscreen.");
-    }
-
     CanvasRenderingContext* context = canvas.getCanvasRenderingContext(type, attributes);
     if (context) {
         context->setCanvasGetContextResult(result);

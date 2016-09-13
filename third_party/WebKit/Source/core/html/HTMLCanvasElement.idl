@@ -32,8 +32,8 @@ interface HTMLCanvasElement : HTMLElement
     // interface in HTMLCanvasElementModule.idl
 
     // FIXME: width and height should be unsigned long.
-    [RaisesException=Setter, CEReactions] attribute long width;
-    [RaisesException=Setter, CEReactions] attribute long height;
+    [CEReactions] attribute long width;
+    [CEReactions] attribute long height;
 
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.
