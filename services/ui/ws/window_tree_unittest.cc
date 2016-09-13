@@ -68,6 +68,12 @@ ui::PointerEvent CreatePointerUpEvent(int x, int y) {
       ui::ET_TOUCH_RELEASED, gfx::Point(x, y), 1, ui::EventTimeForNow()));
 }
 
+ui::PointerEvent CreatePointerWheelEvent(int x, int y) {
+  return ui::PointerEvent(
+      ui::MouseWheelEvent(gfx::Vector2d(), gfx::Point(x, y), gfx::Point(x, y),
+                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
+}
+
 ui::PointerEvent CreateMouseMoveEvent(int x, int y) {
   return ui::PointerEvent(
       ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(x, y), gfx::Point(x, y),
@@ -331,10 +337,31 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
             ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
+  // Create a pointer wheel event outside the bounds of the client.
+  ui::PointerEvent pointer_wheel = CreatePointerWheelEvent(5, 5);
+
+  // Pointer-wheel events are sent to the client.
+  DispatchEventAndAckImmediately(pointer_wheel);
+  ASSERT_EQ(1u, client->tracker()->changes()->size());
+  EXPECT_EQ("PointerWatcherEvent event_action=22 window=null",
+            ChangesToDescription1(*client->tracker()->changes())[0]);
+  client->tracker()->changes()->clear();
+
   // Stopping the watcher stops sending events to the client.
   WindowTreeTestApi(tree).StopPointerWatcher();
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(0u, client->tracker()->changes()->size());
+  DispatchEventAndAckImmediately(pointer_wheel);
+  ASSERT_EQ(0u, client->tracker()->changes()->size());
+
+  // Create a watcher for all events including move events.
+  WindowTreeTestApi(tree).StartPointerWatcher(true);
+
+  // Pointer-wheel events are sent to the client.
+  DispatchEventAndAckImmediately(pointer_wheel);
+  ASSERT_EQ(1u, client->tracker()->changes()->size());
+  EXPECT_EQ("PointerWatcherEvent event_action=22 window=null",
+            ChangesToDescription1(*client->tracker()->changes())[0]);
 }
 
 // Verifies PointerWatcher sees windows known to it.

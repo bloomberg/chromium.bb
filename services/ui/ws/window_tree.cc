@@ -1050,7 +1050,8 @@ bool WindowTree::EventMatchesPointerWatcher(const ui::Event& event) const {
   if (pointer_watcher_want_moves_ && event.type() == ui::ET_POINTER_MOVED)
     return true;
   return event.type() == ui::ET_POINTER_DOWN ||
-         event.type() == ui::ET_POINTER_UP;
+         event.type() == ui::ET_POINTER_UP ||
+         event.type() == ui::ET_POINTER_WHEEL_CHANGED;
 }
 
 void WindowTree::NewWindow(
