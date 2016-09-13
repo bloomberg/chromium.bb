@@ -709,13 +709,15 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_tests': {
     'tester_configs': [
       {
+        'allow_on_android': True,
         'fyi_only': True,
         # Run this on the optional tryservers.
         'run_on_optional': True,
         # Run only on the Win7 and Linux Release NVIDIA 32- and 64-bit bots
         # (and trybots) for the time being, at least until more capacity is
         # added. Also run on the AMD R7 240 bots.
-        'build_configs': ['Release', 'Release_x64'],
+        # Also run on Nexus 5X swarmed bots.
+        'build_configs': ['Release', 'Release_x64', 'android-chromium'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
@@ -728,11 +730,16 @@ COMMON_GTESTS = {
           {
             'gpu': '10de:104a',
             'os': 'Linux'
-          }
+          },
+          {
+            'device_type': 'bullhead',
+            'device_os': 'M',
+            'os': 'Android'
+          },
         ],
       },
     ],
-    'swarming': {
+    'desktop_swarming': {
       'shards': 4,
     }
   },
@@ -904,6 +911,9 @@ COMMON_GTESTS = {
 
 NON_SWARMED_GTESTS = {
   'tab_capture_end2end_tests': {
+     'swarming': {
+       'can_use_on_swarming_builders': False
+     },
      'test': 'browser_tests',
      'args': [
        '--enable-gpu',
@@ -1278,6 +1288,11 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
       result['args'] += result['desktop_args']
     # Don't put the desktop args in the JSON.
     result.pop('desktop_args')
+  if 'desktop_swarming' in result:
+    if not is_android(tester_config):
+      result['swarming'].update(result['desktop_swarming'])
+    # Don't put the desktop_swarming in the JSON.
+    result.pop('desktop_swarming')
 
   # This flag only has an effect on the Linux bots that run tests
   # locally (as opposed to via Swarming), which are only those couple
