@@ -53,7 +53,7 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  [self drawBackground:dirtyRect];
+  [super drawRect:dirtyRect];
 
   // Draw top stroke
   NSRect borderRect, contentRect;

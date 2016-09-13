@@ -66,7 +66,7 @@
     NSRect backgroundRect = [self bounds];
     backgroundRect.size.height = 2 * [self cr_lineWidth];
     if (NSIntersectsRect(backgroundRect, dirtyRect))
-      [self drawBackground:backgroundRect];
+      [super drawRect:backgroundRect];
 
     // Draw the border bitmap, which is partially transparent.
     NSImage* image = themeProvider->GetNSImageNamed(IDR_TOOLBAR_SHADE_TOP);
@@ -90,7 +90,7 @@
     NSRect backgroundRect = [self bounds];
     backgroundRect.size.height = [self cr_lineWidth];
     if (NSIntersectsRect(backgroundRect, dirtyRect)) {
-      [self drawBackground:backgroundRect];
+      [super drawRect:backgroundRect];
     }
 
     // Pre-MD the IDR_TOOLBAR_SHADE_TOP image would lay down a light highlight

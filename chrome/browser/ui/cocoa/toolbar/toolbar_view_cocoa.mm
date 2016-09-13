@@ -17,10 +17,6 @@
   return NO;
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-  [self drawBackground:dirtyRect];
-}
-
 // Override of |-[BackgroundGradientView strokeColor]|; make it respect opacity.
 - (NSColor*)strokeColor {
   // Only return a transparent color if not Material Design.

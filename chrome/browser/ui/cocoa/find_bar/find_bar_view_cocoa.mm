@@ -75,7 +75,7 @@ CGFloat kCurveSize = 8;
   {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     [path addClip];
-    [self drawBackground:dirtyRect];
+    [super drawRect:dirtyRect];
   }
 
   [[self strokeColor] set];

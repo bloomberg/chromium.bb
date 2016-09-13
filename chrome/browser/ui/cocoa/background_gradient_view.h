@@ -22,14 +22,11 @@
 // The color used for the bottom stroke. Public so subclasses can use.
 - (NSColor*)strokeColor;
 
-// The pattern phase that will be used by -drawBackground:.
+// The pattern phase that will be used by -drawRect:.
 // Defaults to align the top of the theme image with the top of the tabs.
 // Views that draw at the bottom of the window (download bar) can override to
 // change the pattern phase.
 - (NSPoint)patternPhase;
-
-// Draws the background image into the current NSGraphicsContext.
-- (void)drawBackground:(NSRect)dirtyRect;
 
 @end
 

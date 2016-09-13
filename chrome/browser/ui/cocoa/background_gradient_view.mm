@@ -51,7 +51,7 @@
       themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
 }
 
-- (void)drawBackground:(NSRect)dirtyRect {
+- (void)drawRect:(NSRect)dirtyRect {
   [[NSGraphicsContext currentContext]
       cr_setPatternPhase:[self patternPhase]
                  forView:[self cr_viewBeingDrawnTo]];
