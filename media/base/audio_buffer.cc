@@ -44,15 +44,29 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   DCHECK(channel_layout == CHANNEL_LAYOUT_DISCRETE ||
          ChannelLayoutToChannelCount(channel_layout) == channel_count);
 
-  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
-  DCHECK_LE(bytes_per_channel, kChannelAlignment);
-
   // Empty buffer?
   if (!create_buffer)
     return;
 
-  int data_size_per_channel = frame_count * bytes_per_channel;
-  if (IsPlanar(sample_format)) {
+  AllocateAndCopy(data, frame_count, 0);
+}
+
+AudioBuffer::~AudioBuffer() {}
+
+void AudioBuffer::AllocateAndCopy(const uint8_t* const* data,
+                                  int frame_count,
+                                  int silence_frames) {
+  if (!channel_data_.empty())
+    channel_data_.clear();
+
+  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
+  DCHECK_LE(bytes_per_channel, kChannelAlignment);
+  DCHECK_GT(bytes_per_channel, 0);
+
+  int data_size_per_channel =
+      (frame_count + silence_frames) * bytes_per_channel;
+
+  if (IsPlanar(sample_format_)) {
     // Planar data, so need to allocate buffer for each channel.
     // Determine per channel data size, taking into account alignment.
     int block_size_per_channel =
@@ -66,17 +80,23 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
         base::AlignedAlloc(data_size_, kChannelAlignment)));
     channel_data_.reserve(channel_count_);
 
+    // Size of silence per channel.
+    int silence_bytes = silence_frames * bytes_per_channel;
+
     // Copy each channel's data into the appropriate spot.
     for (int i = 0; i < channel_count_; ++i) {
       channel_data_.push_back(data_.get() + i * block_size_per_channel);
-      if (data)
-        memcpy(channel_data_[i], data[i], data_size_per_channel);
+      memset(channel_data_[i], 0, silence_bytes);
+      if (data) {
+        memcpy(channel_data_[i] + silence_bytes, data[i],
+               data_size_per_channel - silence_bytes);
+      }
     }
     return;
   }
 
   // Remaining formats are interleaved data.
-  DCHECK(IsInterleaved(sample_format)) << sample_format_;
+  DCHECK(IsInterleaved(sample_format_)) << sample_format_;
   // Allocate our own buffer and copy the supplied data into it. Buffer must
   // contain the data for all channels.
   data_size_ = data_size_per_channel * channel_count_;
@@ -84,11 +104,31 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
       static_cast<uint8_t*>(base::AlignedAlloc(data_size_, kChannelAlignment)));
   channel_data_.reserve(1);
   channel_data_.push_back(data_.get());
+
+  int silence_bytes = silence_frames * channel_count_ * bytes_per_channel;
+  memset(data_.get(), 0, silence_bytes);
   if (data)
-    memcpy(data_.get(), data[0], data_size_);
+    memcpy(data_.get() + silence_bytes, data[0], data_size_ - silence_bytes);
 }
 
-AudioBuffer::~AudioBuffer() {}
+void AudioBuffer::PadStart(int silence_frames) {
+  DCHECK_GE(silence_frames, 0);
+
+  if (silence_frames > 0) {
+    // Only adjust allocation if not currently an empty buffer. Empty buffer's
+    // are implicitly silent, so just increase the frame count for that case.
+    if (data_) {
+      std::unique_ptr<uint8_t, base::AlignedFreeDeleter> orig_data =
+          std::move(data_);
+      std::vector<uint8_t*> orig_channel_data(channel_data_);
+      AllocateAndCopy(&orig_channel_data[0], adjusted_frame_count_,
+                      silence_frames);
+    }
+
+    adjusted_frame_count_ += silence_frames;
+    duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
+  }
+}
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
@@ -151,51 +191,12 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
                                             NULL, kNoTimestamp));
 }
 
-template <typename Target, typename Dest>
-static inline Dest ConvertSample(Target value);
-
 // Convert int16_t values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].
-template <>
-inline float ConvertSample<int16_t, float>(int16_t value) {
+inline float ConvertSample(int16_t value) {
   return value * (value < 0 ? -1.0f / std::numeric_limits<int16_t>::min()
                             : 1.0f / std::numeric_limits<int16_t>::max());
 }
 
-// Specializations for int32_t
-template <>
-inline int32_t ConvertSample<int16_t, int32_t>(int16_t value) {
-  return static_cast<int32_t>(value) << 16;
-}
-
-template <>
-inline int32_t ConvertSample<int32_t, int32_t>(int32_t value) {
-  return value;
-}
-
-template <>
-inline int32_t ConvertSample<float, int32_t>(float value) {
-  return static_cast<int32_t>(
-      value < 0 ? (-value) * std::numeric_limits<int32_t>::min()
-                : value * std::numeric_limits<int32_t>::max());
-}
-
-// Specializations for int16_t
-template <>
-inline int16_t ConvertSample<int16_t, int16_t>(int16_t sample) {
-  return sample;
-}
-
-template <>
-inline int16_t ConvertSample<int32_t, int16_t>(int32_t sample) {
-  return sample >> 16;
-}
-
-template <>
-inline int16_t ConvertSample<float, int16_t>(float sample) {
-  return static_cast<int16_t>(
-      nearbyint(sample < 0 ? (-sample) * std::numeric_limits<int16_t>::min()
-                           : sample * std::numeric_limits<int16_t>::max()));
-}
 
 void AudioBuffer::AdjustSampleRate(int sample_rate) {
   DCHECK(!end_of_stream_);
@@ -245,7 +246,7 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
           source_frame_offset;
       float* dest_data = dest->channel(ch) + dest_frame_offset;
       for (int i = 0; i < frames_to_copy; ++i) {
-        dest_data[i] = ConvertSample<int16_t, float>(source_data[i]);
+        dest_data[i] = ConvertSample(source_data[i]);
       }
     }
     return;
@@ -275,75 +276,6 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   const uint8_t* source_data = data_.get() + source_frame_offset * frame_size;
   dest->FromInterleavedPartial(
       source_data, dest_frame_offset, frames_to_copy, bytes_per_channel);
-}
-
-template <class Target, typename Dest>
-void InterleaveAndConvert(const std::vector<uint8_t*>& channel_data,
-                          size_t frames_to_copy,
-                          Dest* dest_data) {
-  for (size_t ch = 0; ch < channel_data.size(); ++ch) {
-    const Target* source_data =
-        reinterpret_cast<const Target*>(channel_data[ch]);
-    for (size_t i = 0, offset = ch; i < frames_to_copy;
-         ++i, offset += channel_data.size()) {
-      dest_data[offset] = ConvertSample<Target, Dest>(source_data[i]);
-    }
-  }
-}
-
-template <typename Dest>
-void ReadFramesInterleaved(const std::vector<uint8_t*>& channel_data,
-                           int channel_count,
-                           SampleFormat sample_format,
-                           int frames_to_copy,
-                           Dest* dest_data) {
-  switch (sample_format) {
-    case kSampleFormatU8:
-      NOTREACHED();
-      break;
-    case kSampleFormatS16:
-      InterleaveAndConvert<int16_t, Dest>(
-          channel_data, frames_to_copy * channel_count, dest_data);
-      break;
-    case kSampleFormatS24:
-    case kSampleFormatS32:
-      InterleaveAndConvert<int32_t, Dest>(
-          channel_data, frames_to_copy * channel_count, dest_data);
-      break;
-    case kSampleFormatF32:
-      InterleaveAndConvert<float, Dest>(
-          channel_data, frames_to_copy * channel_count, dest_data);
-      break;
-    case kSampleFormatPlanarS16:
-      InterleaveAndConvert<int16_t, Dest>(channel_data, frames_to_copy,
-                                          dest_data);
-      break;
-    case kSampleFormatPlanarF32:
-      InterleaveAndConvert<float, Dest>(channel_data, frames_to_copy,
-                                        dest_data);
-      break;
-    case kSampleFormatPlanarS32:
-      InterleaveAndConvert<int32_t, Dest>(channel_data, frames_to_copy,
-                                          dest_data);
-      break;
-    case kUnknownSampleFormat:
-      NOTREACHED();
-      break;
-  }
-}
-
-void AudioBuffer::ReadFramesInterleavedS32(int frames_to_copy,
-                                           int32_t* dest_data) {
-  DCHECK_LE(frames_to_copy, adjusted_frame_count_);
-  ReadFramesInterleaved<int32_t>(channel_data_, channel_count_, sample_format_,
-                                 frames_to_copy, dest_data);
-}
-
-void AudioBuffer::ReadFramesInterleavedS16(int frames_to_copy,
-                                           int16_t* dest_data) {
-  DCHECK_LE(frames_to_copy, adjusted_frame_count_);
-  ReadFramesInterleaved<int16_t>(channel_data_, channel_count_, sample_format_,
-                                 frames_to_copy, dest_data);
 }
 
 void AudioBuffer::TrimStart(int frames_to_trim) {

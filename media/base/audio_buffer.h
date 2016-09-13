@@ -94,15 +94,9 @@ class MEDIA_EXPORT AudioBuffer
                   int dest_frame_offset,
                   AudioBus* dest);
 
-  // Copy |frames_to_copy| frames into |dest|, |frames_to_copy| is the number of
-  // frames to copy. The frames are converted from their source format into
-  // interleaved int32_t.
-  void ReadFramesInterleavedS32(int frames_to_copy, int32_t* dest);
-
-  // Copy |frames_to_copy| frames into |dest|, |frames_to_copy| is the number of
-  // frames to copy. The frames are converted from their source format into
-  // interleaved int16_t.
-  void ReadFramesInterleavedS16(int frames_to_copy, int16_t* dest);
+  // Add |silence_frames| frames of silence to the start of the buffer. Silence
+  // padding can be removed using any of the Trim*() methods.
+  void PadStart(int silence_frames);
 
   // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
   // Timestamp and duration are adjusted to reflect the fewer frames.
@@ -170,6 +164,10 @@ class MEDIA_EXPORT AudioBuffer
               const base::TimeDelta timestamp);
 
   virtual ~AudioBuffer();
+
+  void AllocateAndCopy(const uint8_t* const* data,
+                       int frame_count,
+                       int silence_frames);
 
   const SampleFormat sample_format_;
   const ChannelLayout channel_layout_;

@@ -14,7 +14,7 @@
 
 namespace media {
 
-static const int kSampleRate = 48000;
+static const int kSampleRate = 4800;
 
 static void VerifyBusWithOffset(AudioBus* bus,
                                 int offset,
@@ -24,6 +24,7 @@ static void VerifyBusWithOffset(AudioBus* bus,
                                 float increment) {
   for (int ch = 0; ch < bus->channels(); ++ch) {
     const float v = start_offset + start + ch * bus->frames() * increment;
+
     for (int i = offset; i < offset + frames; ++i) {
       ASSERT_FLOAT_EQ(v + i * increment, bus->channel(ch)[i]) << "i=" << i
                                                               << ", ch=" << ch;
@@ -154,6 +155,40 @@ static void TrimRangeTest(SampleFormat sample_format) {
                       buffer->frame_count() - trim_start,
                       trim_length * 2,
                       trim_length * 2,
+                      1);
+}
+
+void PadStartTest(SampleFormat sample_format) {
+  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
+  const int channels = ChannelLayoutToChannelCount(channel_layout);
+  const int frames = 100;
+  const int silence_frames = frames / 5;
+  const base::TimeDelta start_time;
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<float>(sample_format, channel_layout, channels,
+                             kSampleRate, 0.0f, 1.0f, frames, start_time);
+
+  // Read all 100 frames from the buffer.
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  buffer->ReadFrames(frames, 0, 0, bus.get());
+  VerifyBus(bus.get(), frames, 0, 1);
+
+  // Now trim off some frames and add in leading silence.
+  buffer->TrimStart(silence_frames);
+  buffer->PadStart(silence_frames);
+
+  // Re-read. Verify first 20 frames of silence, next 80 frames same as before.
+  bus->Zero();
+  buffer->ReadFrames(frames, 0, 0, bus.get());
+  VerifyBus(bus.get(), silence_frames, 0, 0);
+  VerifyBusWithOffset(bus.get(), silence_frames, frames - silence_frames, 0, 0,
+                      1);
+
+  // Now trim off the silence. Verify silence is gone.
+  buffer->TrimStart(silence_frames);
+  bus->Zero();
+  buffer->ReadFrames(frames - silence_frames, 0, 0, bus.get());
+  VerifyBusWithOffset(bus.get(), 0, frames - silence_frames, silence_frames, 0,
                       1);
 }
 
@@ -434,124 +469,49 @@ TEST(AudioBufferTest, TrimRangeInterleaved) {
   TrimRangeTest(kSampleFormatF32);
 }
 
-static scoped_refptr<AudioBuffer> MakeReadFramesInterleavedTestBuffer(
-    SampleFormat sample_format,
-    int sample_rate,
-    ChannelLayout channel_layout,
-    int channel_count,
-    int frames) {
-  switch (sample_format) {
-    case kSampleFormatS16:
-    case kSampleFormatPlanarS16:
-      return MakeAudioBuffer<int16_t>(sample_format, channel_layout,
-                                      channel_count, sample_rate, 0, 1, frames,
-                                      base::TimeDelta::FromSeconds(0));
-    case kSampleFormatS24:
-    case kSampleFormatS32:
-      return MakeAudioBuffer<int32_t>(kSampleFormatS32, channel_layout,
-                                      channel_count, sample_rate, 0, 65536,
-                                      frames, base::TimeDelta::FromSeconds(0));
-    case kSampleFormatF32:
-    case kSampleFormatPlanarF32:
-      return MakeAudioBuffer<float>(
-          sample_format, channel_layout, channel_count, sample_rate, 0.0f,
-          65536.0f / std::numeric_limits<int32_t>::max(), frames,
-          base::TimeDelta::FromSeconds(0));
-    case kSampleFormatPlanarS32:
-      return MakeAudioBuffer<int32_t>(
-          sample_format, channel_layout, channel_count, sample_rate, 0.0f,
-          65536.0f / std::numeric_limits<int32_t>::max(), frames,
-          base::TimeDelta::FromSeconds(0));
-    case kSampleFormatU8:
-    case kUnknownSampleFormat:
-      EXPECT_FALSE(true);
-      break;
-  }
-  return AudioBuffer::CreateEOSBuffer();
+TEST(AudioBufferTest, PadStartPlanar) {
+  PadStartTest(kSampleFormatPlanarF32);
 }
 
-static void ReadFramesInterleavedS32Test(SampleFormat sample_format) {
+TEST(AudioBufferTest, PadStartInterleaved) {
+  PadStartTest(kSampleFormatF32);
+}
+
+TEST(AudioBufferTest, PadStartEmptyBuffer) {
   const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
   const int channels = ChannelLayoutToChannelCount(channel_layout);
-  const int frames = kSampleRate / 100;
-  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(10);
-  scoped_refptr<AudioBuffer> buffer = MakeReadFramesInterleavedTestBuffer(
-      sample_format, kSampleRate, channel_layout, channels, frames);
+  const int frames = kSampleRate / 10;
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta start_time;
+  scoped_refptr<AudioBuffer> buffer = AudioBuffer::CreateEmptyBuffer(
+      channel_layout, channels, kSampleRate, frames, start_time);
+
+  // Empty buffer should zero data size with non-zero frame count and duration.
+  EXPECT_EQ(std::size_t{0}, buffer->data_size());
   EXPECT_EQ(frames, buffer->frame_count());
   EXPECT_EQ(duration, buffer->duration());
 
-  int32_t* dest = new int32_t[frames * channels];
-  buffer->ReadFramesInterleavedS32(frames, dest);
+  // Read all frames from the buffer. All data should be 0.
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  buffer->ReadFrames(frames, 0, 0, bus.get());
+  VerifyBus(bus.get(), frames, 0, 0);
 
-  int count = 0;
-  for (int i = 0; i < frames; ++i) {
-    for (int ch = 0; ch < channels; ++ch) {
-      EXPECT_EQ(dest[count++], (frames * ch + i) << 16);
-    }
-  }
-  delete[] dest;
-}
+  // Double the number of frames by padding the start of the buffer with
+  // |frames| of silence.
+  buffer->PadStart(frames);
+  const int new_frame_count = frames * 2;
+  const base::TimeDelta new_duration = base::TimeDelta::FromMilliseconds(200);
 
-TEST(AudioBufferTest, ReadFramesInterleavedS32FromS16) {
-  ReadFramesInterleavedS32Test(kSampleFormatS16);
-}
+  // Adding silence should not trigger an allocation, but the frame count and
+  // duration should be increased.
+  EXPECT_EQ(std::size_t{0}, buffer->data_size());
+  EXPECT_EQ(new_frame_count, buffer->frame_count());
+  EXPECT_EQ(new_duration, buffer->duration());
 
-TEST(AudioBufferTest, ReadFramesInterleavedS32FromS32) {
-  ReadFramesInterleavedS32Test(kSampleFormatS32);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS32FromF32) {
-  ReadFramesInterleavedS32Test(kSampleFormatF32);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS32FromPlanarS16) {
-  ReadFramesInterleavedS32Test(kSampleFormatPlanarS16);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS32FromPlanarF32) {
-  ReadFramesInterleavedS32Test(kSampleFormatPlanarF32);
-}
-
-static void ReadFramesInterleavedS16Test(SampleFormat sample_format) {
-  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
-  const int channels = ChannelLayoutToChannelCount(channel_layout);
-  const int frames = kSampleRate / 100;
-  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(10);
-  scoped_refptr<AudioBuffer> buffer = MakeReadFramesInterleavedTestBuffer(
-      sample_format, kSampleRate, channel_layout, channels, frames);
-  EXPECT_EQ(frames, buffer->frame_count());
-  EXPECT_EQ(duration, buffer->duration());
-
-  int16_t* dest = new int16_t[frames * channels];
-  buffer->ReadFramesInterleavedS16(frames, dest);
-
-  int count = 0;
-  for (int i = 0; i < frames; ++i) {
-    for (int ch = 0; ch < channels; ++ch) {
-      EXPECT_EQ(dest[count++], (frames * ch + i));
-    }
-  }
-  delete[] dest;
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS16FromS16) {
-  ReadFramesInterleavedS16Test(kSampleFormatS16);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS16FromS32) {
-  ReadFramesInterleavedS16Test(kSampleFormatS32);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS16FromF32) {
-  ReadFramesInterleavedS16Test(kSampleFormatF32);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS16FromPlanarS16) {
-  ReadFramesInterleavedS16Test(kSampleFormatPlanarS16);
-}
-
-TEST(AudioBufferTest, ReadFramesInterleavedS16FromPlanarF32) {
-  ReadFramesInterleavedS16Test(kSampleFormatPlanarF32);
+  // Read all frames from the buffer. All data should be 0.
+  bus = AudioBus::Create(channels, new_frame_count);
+  buffer->ReadFrames(new_frame_count, 0, 0, bus.get());
+  VerifyBus(bus.get(), new_frame_count, 0, 0);
 }
 
 }  // namespace media
