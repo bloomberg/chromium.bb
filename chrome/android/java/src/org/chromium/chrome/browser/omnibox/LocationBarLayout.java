@@ -785,6 +785,15 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
+     * @param focusable Whether the url bar should be focusable.
+     */
+    public void setUrlBarFocusable(boolean focusable) {
+        if (mUrlBar == null) return;
+        mUrlBar.setFocusable(focusable);
+        mUrlBar.setFocusableInTouchMode(focusable);
+    }
+
+    /**
      * @return The WindowDelegate for the LocationBar. This should be used for all Window related
      * state queries.
      */

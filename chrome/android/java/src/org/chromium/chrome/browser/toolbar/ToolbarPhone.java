@@ -470,6 +470,9 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public void onClick(View v) {
+        // Don't allow clicks while the omnibox is being focused.
+        if (mLocationBar != null && mLocationBar.hasFocus()) return;
+
         if (mToggleTabStackButton == v) {
             // The button is clickable before the native library is loaded
             // and the listener is setup.
@@ -1513,6 +1516,8 @@ public class ToolbarPhone extends ToolbarLayout
         }
         mTabSwitcherState = inTabSwitcherMode ? ENTERING_TAB_SWITCHER : EXITING_TAB_SWITCHER;
 
+        mLocationBar.setUrlBarFocusable(false);
+
         finishAnimations();
 
         mDelayingTabSwitcherAnimation = delayAnimation;
@@ -1551,7 +1556,10 @@ public class ToolbarPhone extends ToolbarLayout
         mClipRect = null;
 
         // Detect what was being transitioned from and set the new state appropriately.
-        if (mTabSwitcherState == EXITING_TAB_SWITCHER) mTabSwitcherState = STATIC_TAB;
+        if (mTabSwitcherState == EXITING_TAB_SWITCHER) {
+            mLocationBar.setUrlBarFocusable(true);
+            mTabSwitcherState = STATIC_TAB;
+        }
         if (mTabSwitcherState == ENTERING_TAB_SWITCHER) mTabSwitcherState = TAB_SWITCHER;
 
         mTabSwitcherModePercent = mTabSwitcherState != STATIC_TAB ? 1.0f : 0.0f;
@@ -1768,11 +1776,6 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void onUrlFocusChange(final boolean hasFocus) {
         super.onUrlFocusChange(hasFocus);
-
-        if (mTabSwitcherState != STATIC_TAB) {
-            mLocationBar.setUrlBarFocus(false);
-            return;
-        }
 
         triggerUrlFocusAnimation(hasFocus);
 
