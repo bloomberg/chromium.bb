@@ -714,8 +714,8 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
     // If the nigori is already migrated and we have pending keys, we might
     // be able to decrypt them using either the keystore decryptor token
     // or the existing keystore keys.
-    DecryptPendingKeysWithKeystoreKey(
-        keystore_key_, nigori.keystore_decryptor_token(), cryptographer);
+    DecryptPendingKeysWithKeystoreKey(nigori.keystore_decryptor_token(),
+                                      cryptographer);
   }
 
   // Note that triggering migration will have no effect if we're already
@@ -948,8 +948,7 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
       cryptographer->SetPendingKeys(nigori.encryption_keybag());
       if (!nigori.keystore_decryptor_token().blob().empty() &&
           !keystore_key_.empty()) {
-        if (DecryptPendingKeysWithKeystoreKey(keystore_key_,
-                                              nigori.keystore_decryptor_token(),
+        if (DecryptPendingKeysWithKeystoreKey(nigori.keystore_decryptor_token(),
                                               cryptographer)) {
           nigori_needs_new_keys =
               cryptographer->KeybagIsStale(nigori.encryption_keybag());
@@ -1592,7 +1591,6 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverythingImpl(
 }
 
 bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
-    const std::string& keystore_key,
     const sync_pb::EncryptedData& keystore_decryptor_token,
     Cryptographer* cryptographer) {
   DCHECK(cryptographer->has_pending_keys());

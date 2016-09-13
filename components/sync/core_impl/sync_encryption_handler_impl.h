@@ -260,7 +260,6 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // If successful, the default will become the key encrypted in the keystore
   // bootstrap, and will return true. Else will return false.
   bool DecryptPendingKeysWithKeystoreKey(
-      const std::string& keystore_key,
       const sync_pb::EncryptedData& keystore_bootstrap,
       Cryptographer* cryptographer);
 
