@@ -51,6 +51,7 @@ void OffscreenCanvasRenderingContext2D::commit(ExceptionState& exceptionState)
         // it is not an OffscreenCanvas created by transfering control from html
         // canvas.
         exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a context whose OffscreenCanvas is not associated with a canvas element.");
+        return;
     }
     getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame();
 }
