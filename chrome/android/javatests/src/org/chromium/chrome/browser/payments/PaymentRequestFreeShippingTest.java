@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -43,6 +44,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Submit the shipping address to the merchant when the user clicks "Pay." */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
@@ -70,6 +72,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Add a valid address and complete the transaction. */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -88,6 +91,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Change the country in the spinner, add a valid address, and complete the transaction. */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testChangeCountryAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -107,6 +111,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Quickly pressing on "add address" and then [X] should not crash. */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -155,6 +160,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Quickly pressing on "add address" and then "cancel" should not crash. */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -206,6 +212,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.

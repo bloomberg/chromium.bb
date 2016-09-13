@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that requests email address from a user that has
  * incomplete email address stored on disk.
  */
+@RetryOnFailure
 public class PaymentRequestIncompleteEmailTest extends PaymentRequestTestBase {
     public PaymentRequestIncompleteEmailTest() {
         // This merchant requests an email address.

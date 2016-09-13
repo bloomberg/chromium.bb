@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
@@ -145,6 +146,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNearestEntryInGroupSelectedAfterChange() throws InterruptedException {
         // Ensure the Physical Web is enabled.
         PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance();

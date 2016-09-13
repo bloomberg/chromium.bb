@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
@@ -112,6 +113,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testClearNearbyUrlsWorks() {
         addPwsResult1();
         addPwsResult2();
@@ -204,6 +206,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddTwoUrlsMakesOneNotification() throws Exception {
         addPwsResult1();
         addPwsResult2();
@@ -220,6 +223,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddUrlGarbageCollectsForSize() throws Exception {
         // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
         addEmptyPwsResult();
@@ -303,6 +307,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddUrlInCacheWithNoOthersMakesNotification() throws Exception {
         addPwsResult1();
         addPwsResult1();
@@ -400,6 +405,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testSerializationWorksWithoutGarbageCollection() throws Exception {
         addPwsResult1();
         addPwsResult2();

@@ -18,6 +18,7 @@ import android.widget.EditText;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.HomepageEditor;
@@ -64,6 +65,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
      */
     @MediumTest
     @Feature({"Homepage" })
+    @RetryOnFailure
     public void testHomepageInitialLoading() {
         assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
                 Uri.parse(getActivity().getActivityTab().getUrl()));
@@ -107,6 +109,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
      */
     @MediumTest
     @Feature({"Homepage"})
+    @RetryOnFailure
     public void testHomepageButtonEnableDisable() throws InterruptedException {
         // Disable homepage.
         Preferences homepagePreferenceActivity =
@@ -168,6 +171,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
     @MediumTest
     @Feature({"Homepage"})
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @RetryOnFailure
     public void testPreferenceCustomUriFixup() throws InterruptedException {
         // Change home page custom URI on hompage edit screen.
         final Preferences editHomepagePreferenceActivity =
@@ -199,6 +203,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
     @MediumTest
     @Feature({"Homepage" })
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @RetryOnFailure
     public void testLastTabClosed() throws InterruptedException {
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), (ChromeTabbedActivity) getActivity());
         assertTrue("Activity was not closed.",

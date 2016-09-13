@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
@@ -110,6 +111,7 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
      */
     @MediumTest
     @CommandLineFlags.Add({ChromeSwitches.ENABLE_OSK_OVERSCROLL})
+    @RetryOnFailure
     public void testOnlyVisualViewportResizes()
             throws InterruptedException, TimeoutException, ExecutionException {
         startMainActivityWithURL(FIXED_FOOTER_PAGE);

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -37,6 +38,7 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
 
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testSecondShowRequestCancelled()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);

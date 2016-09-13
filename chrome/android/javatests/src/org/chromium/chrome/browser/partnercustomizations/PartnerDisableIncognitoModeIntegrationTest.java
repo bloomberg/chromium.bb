@@ -15,6 +15,7 @@ import android.widget.PopupMenu;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
@@ -114,6 +115,7 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
 
     @MediumTest
     @Feature({"DisableIncognitoMode"})
+    @RetryOnFailure
     public void testIncognitoEnabledIfNoParentalControls() throws InterruptedException {
         setParentalControlsEnabled(false);
         startMainActivityOnBlankPage();

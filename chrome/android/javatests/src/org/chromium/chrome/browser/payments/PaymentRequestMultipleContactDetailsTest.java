@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -80,6 +81,7 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
      */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testContactDetailsSuggestionOrdering()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);

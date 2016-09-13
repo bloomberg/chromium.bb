@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that requests a phone number and provides free shipping
  * regardless of address.
  */
+@RetryOnFailure
 public class PaymentRequestPhoneAndFreeShippingTest extends PaymentRequestTestBase {
     public PaymentRequestPhoneAndFreeShippingTest() {
         // This merchant requests a phone number and provides free shipping worldwide.

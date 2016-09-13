@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 
@@ -102,6 +103,7 @@ public class PartnerHomepageUnitTest extends BasePartnerBrowserCustomizationUnit
      */
     @SmallTest
     @Feature({"Homepage"})
+    @RetryOnFailure
     public void testHomepageDisabled() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(false);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
@@ -135,6 +137,7 @@ public class PartnerHomepageUnitTest extends BasePartnerBrowserCustomizationUnit
      */
     @SmallTest
     @Feature({"Homepage"})
+    @RetryOnFailure
     public void testCustomHomepage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(false);

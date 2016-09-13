@@ -10,6 +10,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testRecordUMA_NativeLibraryNotLoaded() {
         // Tests that events are saved in preferences when native library is not loaded.
         List<Integer> events = new ArrayList<>();
@@ -95,6 +97,7 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testRecordUMA_NativeLibraryLoaded() {
         // Test that events are recorded as UMA metric when library is initialized.
         List<Integer> events = new ArrayList<>();

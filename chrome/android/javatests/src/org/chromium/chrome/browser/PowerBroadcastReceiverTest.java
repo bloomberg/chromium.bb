@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -17,6 +18,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 /**
  * Tests for the PowerBroadcastReceiver.
  */
+@RetryOnFailure
 public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
     private static final long MS_INTERVAL = 1000;
     private static final long MS_RUNNABLE_DELAY = 2500;

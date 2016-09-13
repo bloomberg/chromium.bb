@@ -19,6 +19,7 @@ import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -43,6 +44,7 @@ import java.util.Set;
 /**
  * Integration tests for ClearBrowsingDataPreferences.
  */
+@RetryOnFailure
 public class ClearBrowsingDataPreferencesTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
     private EmbeddedTestServer mTestServer;

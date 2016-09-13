@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -32,6 +33,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for everything under Settings > Site Settings.
  */
+@RetryOnFailure
 public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private EmbeddedTestServer mTestServer;
