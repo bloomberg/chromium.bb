@@ -251,8 +251,9 @@ struct FunctorTraits<IgnoreResultHelper<T>> : FunctorTraits<T> {
 };
 
 // For Callbacks.
-template <typename R, typename... Args, CopyMode copy_mode>
-struct FunctorTraits<Callback<R(Args...), copy_mode>> {
+template <typename R, typename... Args,
+          CopyMode copy_mode, RepeatMode repeat_mode>
+struct FunctorTraits<Callback<R(Args...), copy_mode, repeat_mode>> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
@@ -315,6 +316,19 @@ struct Invoker;
 
 template <typename StorageType, typename R, typename... UnboundArgs>
 struct Invoker<StorageType, R(UnboundArgs...)> {
+  static R RunOnce(BindStateBase* base, UnboundArgs&&... unbound_args) {
+    // Local references to make debugger stepping easier. If in a debugger,
+    // you really want to warp ahead and step through the
+    // InvokeHelper<>::MakeItSo() call below.
+    StorageType* storage = static_cast<StorageType*>(base);
+    static constexpr size_t num_bound_args =
+        std::tuple_size<decltype(storage->bound_args_)>::value;
+    return RunImpl(std::move(storage->functor_),
+                   std::move(storage->bound_args_),
+                   MakeIndexSequence<num_bound_args>(),
+                   std::forward<UnboundArgs>(unbound_args)...);
+  }
+
   static R Run(BindStateBase* base, UnboundArgs&&... unbound_args) {
     // Local references to make debugger stepping easier. If in a debugger,
     // you really want to warp ahead and step through the

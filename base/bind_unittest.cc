@@ -1056,6 +1056,96 @@ TEST_F(BindTest, Cancellation) {
   cb2.Run();
 }
 
+TEST_F(BindTest, OnceCallback) {
+  using internal::OnceClosure;
+  using internal::RepeatingClosure;
+  using internal::BindOnce;
+  using internal::BindRepeating;
+  using internal::OnceCallback;
+
+  // Check if Callback variants have declarations of conversions as expected.
+  // Copy constructor and assignment of RepeatingCallback.
+  static_assert(std::is_constructible<
+      RepeatingClosure, const RepeatingClosure&>::value,
+      "RepeatingClosure should be copyable.");
+  static_assert(is_assignable<
+      RepeatingClosure, const RepeatingClosure&>::value,
+      "RepeatingClosure should be copy-assignable.");
+
+  // Move constructor and assignment of RepeatingCallback.
+  static_assert(std::is_constructible<
+      RepeatingClosure, RepeatingClosure&&>::value,
+      "RepeatingClosure should be movable.");
+  static_assert(is_assignable<
+      RepeatingClosure, RepeatingClosure&&>::value,
+      "RepeatingClosure should be move-assignable");
+
+  // Conversions from OnceCallback to RepeatingCallback.
+  static_assert(!std::is_constructible<
+      RepeatingClosure, const OnceClosure&>::value,
+      "OnceClosure should not be convertible to RepeatingClosure.");
+  static_assert(!is_assignable<
+      RepeatingClosure, const OnceClosure&>::value,
+      "OnceClosure should not be convertible to RepeatingClosure.");
+
+  // Destructive conversions from OnceCallback to RepeatingCallback.
+  static_assert(!std::is_constructible<
+      RepeatingClosure, OnceClosure&&>::value,
+      "OnceClosure should not be convertible to RepeatingClosure.");
+  static_assert(!is_assignable<
+      RepeatingClosure, OnceClosure&&>::value,
+      "OnceClosure should not be convertible to RepeatingClosure.");
+
+  // Copy constructor and assignment of OnceCallback.
+  static_assert(!std::is_constructible<
+      OnceClosure, const OnceClosure&>::value,
+      "OnceClosure should not be copyable.");
+  static_assert(!is_assignable<
+      OnceClosure, const OnceClosure&>::value,
+      "OnceClosure should not be copy-assignable");
+
+  // Move constructor and assignment of OnceCallback.
+  static_assert(std::is_constructible<
+      OnceClosure, OnceClosure&&>::value,
+      "OnceClosure should be movable.");
+  static_assert(is_assignable<
+      OnceClosure, OnceClosure&&>::value,
+      "OnceClosure should be move-assignable.");
+
+  // Conversions from RepeatingCallback to OnceCallback.
+  static_assert(std::is_constructible<
+      OnceClosure, const RepeatingClosure&>::value,
+      "RepeatingClosure should be convertible to OnceClosure.");
+  static_assert(is_assignable<
+      OnceClosure, const RepeatingClosure&>::value,
+      "RepeatingClosure should be convertible to OnceClosure.");
+
+  // Destructive conversions from RepeatingCallback to OnceCallback.
+  static_assert(std::is_constructible<
+      OnceClosure, RepeatingClosure&&>::value,
+      "RepeatingClosure should be convertible to OnceClosure.");
+  static_assert(is_assignable<
+      OnceClosure, RepeatingClosure&&>::value,
+      "RepeatingClosure should be covretible to OnceClosure.");
+
+  OnceClosure cb = BindOnce(&VoidPolymorphic<>::Run);
+  std::move(cb).Run();
+
+  // RepeatingCallback should be convertible to OnceCallback.
+  OnceClosure cb2 = BindRepeating(&VoidPolymorphic<>::Run);
+  std::move(cb2).Run();
+
+  RepeatingClosure cb3 = BindRepeating(&VoidPolymorphic<>::Run);
+  cb = cb3;
+  std::move(cb).Run();
+
+  cb = std::move(cb2);
+
+  OnceCallback<void(int)> cb4 = BindOnce(
+      &VoidPolymorphic<std::unique_ptr<int>, int>::Run, MakeUnique<int>(0));
+  BindOnce(std::move(cb4), 1).Run();
+}
+
 // Callback construction and assignment tests.
 //   - Construction from an InvokerStorageHolder should not cause ref/deref.
 //   - Assignment from other callback should only cause one ref

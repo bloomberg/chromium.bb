@@ -31,6 +31,16 @@ CallbackBase<CopyMode::MoveOnly>::CallbackBase(CallbackBase&& c) = default;
 CallbackBase<CopyMode::MoveOnly>&
 CallbackBase<CopyMode::MoveOnly>::operator=(CallbackBase&& c) = default;
 
+CallbackBase<CopyMode::MoveOnly>::CallbackBase(
+    const CallbackBase<CopyMode::Copyable>& c)
+    : bind_state_(c.bind_state_) {}
+
+CallbackBase<CopyMode::MoveOnly>& CallbackBase<CopyMode::MoveOnly>::operator=(
+    const CallbackBase<CopyMode::Copyable>& c) {
+  bind_state_ = c.bind_state_;
+  return *this;
+}
+
 void CallbackBase<CopyMode::MoveOnly>::Reset() {
   // NULL the bind_state_ last, since it may be holding the last ref to whatever
   // object owns us, and we may be deleted after that.
