@@ -12,10 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
-
-class MessageReceiverWithResponder;
 
 namespace internal {
 
@@ -35,12 +34,15 @@ class ControlMessageProxy {
 
   void OnConnectionError();
 
+  static Message ConstructDisconnectReasonMessage(
+      uint32_t custom_reason,
+      const std::string& description);
+
  private:
   void RunFlushForTestingClosure();
 
   // Not owned.
   MessageReceiverWithResponder* receiver_;
-  SerializationContext context_;
   bool encountered_error_ = false;
 
   base::Closure run_loop_quit_closure_;

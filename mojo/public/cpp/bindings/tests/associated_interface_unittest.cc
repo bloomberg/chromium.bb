@@ -968,6 +968,29 @@ TEST_F(AssociatedInterfaceTest, AssociatedPtrConnectionErrorWithReason) {
   run_loop.Run();
 }
 
+TEST_F(AssociatedInterfaceTest, AssociatedRequestResetWithReason) {
+  AssociatedInterfaceRequest<IntegerSender> request;
+  IntegerSenderAssociatedPtrInfo ptr_info;
+  CreateIntegerSender(&ptr_info, &request);
+
+  AssociatedInterfacePtr<IntegerSender> ptr;
+  ptr.Bind(std::move(ptr_info));
+
+  base::RunLoop run_loop;
+  ptr.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(789u, custom_reason);
+        EXPECT_EQ("long time no see", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  request.ResetWithReason(789u, "long time no see");
+
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

@@ -771,6 +771,25 @@ TEST_F(InterfacePtrTest, ConnectionErrorWithReason) {
   run_loop.Run();
 }
 
+TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
+  math::CalculatorPtr calc;
+  auto request = GetProxy(&calc);
+
+  base::RunLoop run_loop;
+  calc.set_connection_error_with_reason_handler(base::Bind(
+      [](const base::Closure& quit_closure, uint32_t custom_reason,
+         const std::string& description) {
+        EXPECT_EQ(88u, custom_reason);
+        EXPECT_EQ("greetings", description);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  request.ResetWithReason(88u, "greetings");
+
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

@@ -5,9 +5,15 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_REQUEST_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_REQUEST_H_
 
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -62,6 +68,28 @@ class AssociatedInterfaceRequest {
     // Now that the two refer to different objects, they are equivalent if
     // and only if they are both invalid.
     return !is_pending() && !other.is_pending();
+  }
+
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    if (!handle_.is_valid())
+      return;
+
+    if (!handle_.is_local()) {
+      // This handle is supposed to be sent to the other end of the message
+      // pipe and used there.
+      NOTREACHED();
+      handle_.reset();
+      return;
+    }
+
+    InterfaceEndpointClient client(std::move(handle_), nullptr,
+                                   base::MakeUnique<PassThroughFilter>(), false,
+                                   base::ThreadTaskRunnerHandle::Get(), 0u);
+    Message message =
+        internal::ControlMessageProxy::ConstructDisconnectReasonMessage(
+            custom_reason, description);
+    bool result = client.Accept(&message);
+    DCHECK(result);
   }
 
  private:

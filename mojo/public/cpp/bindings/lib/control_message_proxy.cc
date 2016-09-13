@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
-#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
@@ -72,39 +71,48 @@ bool RunResponseForwardToCallback::Accept(Message* message) {
 
 void SendRunMessage(MessageReceiverWithResponder* receiver,
                     interface_control::RunInputPtr input_ptr,
-                    const RunCallback& callback,
-                    SerializationContext* context) {
+                    const RunCallback& callback) {
+  SerializationContext context;
+
   auto params_ptr = interface_control::RunMessageParams::New();
   params_ptr->input = std::move(input_ptr);
   size_t size = PrepareToSerialize<interface_control::RunMessageParamsDataView>(
-      params_ptr, context);
+      params_ptr, &context);
   RequestMessageBuilder builder(interface_control::kRunMessageId, size);
 
   interface_control::internal::RunMessageParams_Data* params = nullptr;
   Serialize<interface_control::RunMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, context);
+      params_ptr, builder.buffer(), &params, &context);
   MessageReceiver* responder = new RunResponseForwardToCallback(callback);
   if (!receiver->AcceptWithResponder(builder.message(), responder))
     delete responder;
 }
 
-void SendRunOrClosePipeMessage(
-    MessageReceiverWithResponder* receiver,
-    interface_control::RunOrClosePipeInputPtr input_ptr,
-    SerializationContext* context) {
+Message ConstructRunOrClosePipeMessage(
+    interface_control::RunOrClosePipeInputPtr input_ptr) {
+  SerializationContext context;
+
   auto params_ptr = interface_control::RunOrClosePipeMessageParams::New();
   params_ptr->input = std::move(input_ptr);
 
   size_t size = PrepareToSerialize<
       interface_control::RunOrClosePipeMessageParamsDataView>(params_ptr,
-                                                              context);
+                                                              &context);
   MessageBuilder builder(interface_control::kRunOrClosePipeMessageId, size);
 
   interface_control::internal::RunOrClosePipeMessageParams_Data* params =
       nullptr;
   Serialize<interface_control::RunOrClosePipeMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, context);
-  bool ok = receiver->Accept(builder.message());
+      params_ptr, builder.buffer(), &params, &context);
+  return std::move(*builder.message());
+}
+
+void SendRunOrClosePipeMessage(
+    MessageReceiverWithResponder* receiver,
+    interface_control::RunOrClosePipeInputPtr input_ptr) {
+  Message message(ConstructRunOrClosePipeMessage(std::move(input_ptr)));
+
+  bool ok = receiver->Accept(&message);
   ALLOW_UNUSED_LOCAL(ok);
 }
 
@@ -135,7 +143,7 @@ void ControlMessageProxy::QueryVersion(
   auto input_ptr = interface_control::RunInput::New();
   input_ptr->set_query_version(interface_control::QueryVersion::New());
   SendRunMessage(receiver_, std::move(input_ptr),
-                 base::Bind(&RunVersionCallback, callback), &context_);
+                 base::Bind(&RunVersionCallback, callback));
 }
 
 void ControlMessageProxy::RequireVersion(uint32_t version) {
@@ -143,7 +151,7 @@ void ControlMessageProxy::RequireVersion(uint32_t version) {
   require_version->version = version;
   auto input_ptr = interface_control::RunOrClosePipeInput::New();
   input_ptr->set_require_version(std::move(require_version));
-  SendRunOrClosePipeMessage(receiver_, std::move(input_ptr), &context_);
+  SendRunOrClosePipeMessage(receiver_, std::move(input_ptr));
 }
 
 void ControlMessageProxy::FlushForTesting() {
@@ -158,19 +166,16 @@ void ControlMessageProxy::FlushForTesting() {
       receiver_, std::move(input_ptr),
       base::Bind(&RunClosure,
                  base::Bind(&ControlMessageProxy::RunFlushForTestingClosure,
-                            base::Unretained(this))),
-      &context_);
+                            base::Unretained(this))));
   run_loop.Run();
 }
 
 void ControlMessageProxy::SendDisconnectReason(uint32_t custom_reason,
                                                const std::string& description) {
-  auto send_disconnect_reason = interface_control::SendDisconnectReason::New();
-  send_disconnect_reason->custom_reason = custom_reason;
-  send_disconnect_reason->description = description;
-  auto input_ptr = interface_control::RunOrClosePipeInput::New();
-  input_ptr->set_send_disconnect_reason(std::move(send_disconnect_reason));
-  SendRunOrClosePipeMessage(receiver_, std::move(input_ptr), &context_);
+  Message message =
+      ConstructDisconnectReasonMessage(custom_reason, description);
+  bool ok = receiver_->Accept(&message);
+  ALLOW_UNUSED_LOCAL(ok);
 }
 
 void ControlMessageProxy::RunFlushForTestingClosure() {
@@ -182,6 +187,18 @@ void ControlMessageProxy::OnConnectionError() {
   encountered_error_ = true;
   if (!run_loop_quit_closure_.is_null())
     RunFlushForTestingClosure();
+}
+
+// static
+Message ControlMessageProxy::ConstructDisconnectReasonMessage(
+    uint32_t custom_reason,
+    const std::string& description) {
+  auto send_disconnect_reason = interface_control::SendDisconnectReason::New();
+  send_disconnect_reason->custom_reason = custom_reason;
+  send_disconnect_reason->description = description;
+  auto input_ptr = interface_control::RunOrClosePipeInput::New();
+  input_ptr->set_send_disconnect_reason(std::move(send_disconnect_reason));
+  return ConstructRunOrClosePipeMessage(std::move(input_ptr));
 }
 
 }  // namespace internal
