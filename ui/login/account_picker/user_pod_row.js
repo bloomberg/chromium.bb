@@ -756,8 +756,10 @@ cr.define('login', function() {
       this.passwordElement.addEventListener('input',
           this.handleInputChanged_.bind(this));
 
-      this.submitButton.addEventListener('click',
-          this.handleSubmitButtonClick_.bind(this));
+      if (this.submitButton) {
+        this.submitButton.addEventListener('click',
+            this.handleSubmitButtonClick_.bind(this));
+      }
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
@@ -1131,7 +1133,8 @@ cr.define('login', function() {
     },
 
     set showError(visible) {
-      this.submitButton.classList.toggle('error-shown', visible);
+      if (this.submitButton)
+        this.submitButton.classList.toggle('error-shown', visible);
     },
 
     toggleTransitions: function(enable) {
@@ -1854,7 +1857,8 @@ cr.define('login', function() {
      * button color and state and hides the error popup bubble.
      */
     updateInput_: function() {
-      this.submitButton.disabled = this.passwordElement.value.length <= 0;
+      if (this.submitButton)
+        this.submitButton.disabled = this.passwordElement.value.length <= 0;
       this.showError = false;
       $('bubble').hide();
     },
@@ -1875,6 +1879,8 @@ cr.define('login', function() {
     handleInputChanged_: function(e) {
       if (this.pinKeyboard)
         this.pinKeyboard.value = this.passwordElement.value;
+      if (this.submitButton)
+        this.submitButton.disabled = this.passwordElement.value.length <= 0;
       this.updateInput_();
     },
 

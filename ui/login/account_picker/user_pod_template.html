@@ -49,6 +49,7 @@
           <input type="password" class="password"
                  i18n-values="placeholder:passwordHint">
         </div>
+<if expr="chromeos">
         <div class="capslock-hint-container">
           <img class="capslock-hint"
                src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
@@ -56,6 +57,7 @@
         <paper-icon-button class="submit-button" disabled
                            icon="user-pod:arrow-forward">
         </paper-icon-button>
+</if>
       </div>
       <!-- User Click Authentication -->
       <div class="password-label"></div>

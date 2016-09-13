@@ -161,7 +161,15 @@ html[dir=rtl] .main-pane {
   display: flex;
   position: absolute;
   top: 160px;
+/* On chromeos we extend the width to cover the padding on the user pods. This
+ is so the submit button on chromeos can extend onto the padding as shown on
+ mocks. */
+<if expr="not chromeos">
+  width: 160px;
+</if>
+<if expr="chromeos">
   width: 170px;
+</if>
 }
 
 .auth-container .submit-button[disabled] {
@@ -246,6 +254,7 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
+<if expr="chromeos">
 .capslock-on .capslock-hint-container {
   display: block;
   flex: none;
@@ -253,6 +262,7 @@ html[dir=rtl] .main-pane {
   position: relative;
   width: 20px;
 }
+</if>
 
 .capslock-hint {
   -webkit-margin-end: 6px;
