@@ -9607,6 +9607,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileQRScannerClose">
+  <owner>jif@chromium.org</owner>
+  <description>User closed the QR Scanner without scanning a code.</description>
+</action>
+
+<action name="MobileQRScannerError">
+  <owner>jif@chromium.org</owner>
+  <description>User closed the QR Scanner from an error dialog.</description>
+</action>
+
+<action name="MobileQRScannerScannedCode">
+  <owner>jif@chromium.org</owner>
+  <description>User scanned a code using the QR Scanner.</description>
+</action>
+
+<action name="MobileQRScannerTorchOn">
+  <owner>jif@chromium.org</owner>
+  <description>User switched on torch in the QR Scanner.</description>
+</action>
+
 <action name="MobileReceivedExternalIntent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
