@@ -339,8 +339,6 @@ bool KURL::hasPath() const
     return m_parsed.path.len >= 0;
 }
 
-// We handle "parameters" separated by a semicolon, while KURL.cpp does not,
-// which can lead to different results in some cases.
 String KURL::lastPathComponent() const
 {
     if (!m_isValid)

@@ -40,20 +40,7 @@
 
 namespace blink {
 
-struct ComponentCase {
-    const char* url;
-    const char* protocol;
-    const char* host;
-    const int port;
-    const char* user;
-    const char* pass;
-    const char* lastPath;
-    const char* query;
-    const char* ref;
-};
-
-// Test the cases where we should be the same as WebKit's old KURL.
-TEST(KURLTest, SameGetters)
+TEST(KURLTest, Getters)
 {
     struct GetterCase {
         const char* url;
@@ -62,111 +49,72 @@ TEST(KURLTest, SameGetters)
         int port;
         const char* user;
         const char* pass;
+        const char* path;
         const char* lastPathComponent;
         const char* query;
-        const char* ref;
-        bool hasRef;
+        const char* fragmentIdentifier;
+        bool hasFragmentIdentifier;
     } cases[] = {
-        {"http://www.google.com/foo/blah?bar=baz#ref", "http", "www.google.com", 0, "", 0, "blah", "bar=baz", "ref", true},
-        {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", 0, "bar", 0, 0, false},
-        {"http://www.google.com?#", "http", "www.google.com", 0, "", 0, 0, "", "", true},
-        {"https://me:pass@google.com:23#foo", "https", "google.com", 23, "me", "pass", 0, 0, "foo", true},
-        {"javascript:hello!//world", "javascript", "", 0, "", 0, "world", 0, 0, false},
+        {
+            "http://www.google.com/foo/blah?bar=baz#ref",
+            "http", "www.google.com", 0, "", 0, "/foo/blah", "blah", "bar=baz", "ref", true
+        }, {
+            // Non-ASCII code points in the fragment part. fragmentIdentifier()
+            // shouldn't return it in percent-encoded form.
+            "http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2",
+            "http", "www.google.com", 0, "", 0, "/foo/blah", "blah", "bar=baz", "\xce\xb1\xce\xb2", true
+        }, {
+            "http://foo.com:1234/foo/bar/",
+            "http", "foo.com", 1234, "", 0, "/foo/bar/", "bar", 0, 0, false
+        }, {
+            "http://www.google.com?#",
+            "http", "www.google.com", 0, "", 0, "/", 0, "", "", true
+        }, {
+            "https://me:pass@google.com:23#foo",
+            "https", "google.com", 23, "me", "pass", "/", 0, 0, "foo", true
+        }, {
+            "javascript:hello!//world",
+            "javascript", "", 0, "", 0, "hello!//world", "world", 0, 0, false
+        }, {
+            // Recognize a query and a fragment in the path portion of a path
+            // URL.
+            "javascript:hello!?#/\\world",
+            "javascript", "", 0, "", 0, "hello!", "hello!", "", "/\\world", true
+        }, {
+            // lastPathComponent() method handles "parameters" in a path. path()
+            // method doesn't.
+            "http://a.com/hello;world",
+            "http", "a.com", 0, "", 0, "/hello;world", "hello", 0, 0, false
+        }, {
+            // IDNA
+            "http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/",
+            "http", "xn--6qqa088eba", 0, "", 0, "/", 0, 0, 0, false
+        },
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
-        // UTF-8
-        KURL kurl(ParsedURLString, cases[i].url);
+        const GetterCase& c = cases[i];
 
-        EXPECT_EQ(cases[i].protocol, kurl.protocol());
-        EXPECT_EQ(cases[i].host, kurl.host());
-        EXPECT_EQ(cases[i].port, kurl.port());
-        EXPECT_EQ(cases[i].user, kurl.user());
-        EXPECT_EQ(cases[i].pass, kurl.pass());
-        EXPECT_EQ(cases[i].lastPathComponent, kurl.lastPathComponent());
-        EXPECT_EQ(cases[i].query, kurl.query());
-        EXPECT_EQ(cases[i].ref, kurl.fragmentIdentifier());
-        EXPECT_EQ(cases[i].hasRef, kurl.hasFragmentIdentifier());
+        const String& url = String::fromUTF8(c.url);
 
-        // UTF-16
-        String utf16(cases[i].url);
-        kurl = KURL(ParsedURLString, utf16);
+        const KURL kurl(ParsedURLString, url);
 
-        EXPECT_EQ(cases[i].protocol, kurl.protocol());
-        EXPECT_EQ(cases[i].host, kurl.host());
-        EXPECT_EQ(cases[i].port, kurl.port());
-        EXPECT_EQ(cases[i].user, kurl.user());
-        EXPECT_EQ(cases[i].pass, kurl.pass());
-        EXPECT_EQ(cases[i].lastPathComponent, kurl.lastPathComponent());
-        EXPECT_EQ(cases[i].query, kurl.query());
-        EXPECT_EQ(cases[i].ref, kurl.fragmentIdentifier());
-        EXPECT_EQ(cases[i].hasRef, kurl.hasFragmentIdentifier());
-    }
-}
-
-// Test a few cases where we're different just to make sure we give reasonable
-// output.
-TEST(KURLTest, DISABLED_DifferentGetters)
-{
-    ComponentCase cases[] = {
-        // url                                    protocol      host        port  user  pass             lastPath  query      ref
-
-        // Old WebKit allows references and queries in what we call "path" URLs
-        // like javascript, so the path here will only consist of "hello!".
-        {"javascript:hello!?#/\\world",           "javascript", "",         0,    "",   0,               "world",  0,         0},
-
-        // Old WebKit doesn't handle "parameters" in paths, so will
-        // disagree with us about where the path is for this URL.
-        {"http://a.com/hello;world",              "http",       "a.com",    0,    "",   0,               "hello",  0,         0},
-
-        // WebKit doesn't like UTF-8 or UTF-16 input.
-        {"http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http", "xn--6qqa088eba", 0, "", 0, 0,        0,         0},
-
-        // WebKit %-escapes non-ASCII characters in reference, but we don't.
-        {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", 0,  "blah", "bar=baz", "\xce\xb1\xce\xb2"},
-    };
-
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
-        KURL kurl(ParsedURLString, cases[i].url);
-
-        EXPECT_EQ(cases[i].protocol, kurl.protocol());
-        EXPECT_EQ(cases[i].host, kurl.host());
-        EXPECT_EQ(cases[i].port, kurl.port());
-        EXPECT_EQ(cases[i].user, kurl.user());
-        EXPECT_EQ(cases[i].pass, kurl.pass());
-        EXPECT_EQ(cases[i].lastPath, kurl.lastPathComponent());
-        EXPECT_EQ(cases[i].query, kurl.query());
-        // Want to compare UCS-16 refs (or to null).
-        if (cases[i].ref)
-            EXPECT_EQ(String::fromUTF8(cases[i].ref), kurl.fragmentIdentifier());
+        // Casted to the String (or coverted to using fromUTF8() for
+        // expectations which may include non-ASCII code points) so that the
+        // contents are printed on failure.
+        EXPECT_EQ(String(c.protocol), kurl.protocol()) << url;
+        EXPECT_EQ(String(c.host), kurl.host()) << url;
+        EXPECT_EQ(c.port, kurl.port()) << url;
+        EXPECT_EQ(String(c.user), kurl.user()) << url;
+        EXPECT_EQ(String(c.pass), kurl.pass()) << url;
+        EXPECT_EQ(String(c.path), kurl.path()) << url;
+        EXPECT_EQ(String(c.lastPathComponent), kurl.lastPathComponent()) << url;
+        EXPECT_EQ(String(c.query), kurl.query()) << url;
+        if (c.hasFragmentIdentifier)
+            EXPECT_EQ(String::fromUTF8(c.fragmentIdentifier), kurl.fragmentIdentifier()) << url;
         else
-            EXPECT_TRUE(kurl.fragmentIdentifier().isNull());
+            EXPECT_TRUE(kurl.fragmentIdentifier().isNull()) << url;
     }
-}
-
-// Ensures that both ASCII and UTF-8 canonical URLs are handled properly and we
-// get the correct string object out.
-TEST(KURLTest, DISABLED_UTF8)
-{
-    const char asciiURL[] = "http://foo/bar#baz";
-    KURL asciiKURL(ParsedURLString, asciiURL);
-    EXPECT_TRUE(asciiKURL.getString() == String(asciiURL));
-
-    // When the result is ASCII, we should get an ASCII String. Some
-    // code depends on being able to compare the result of the .string()
-    // getter with another String, and the isASCIIness of the two
-    // strings must match for these functions (like equalIgnoringCase).
-    EXPECT_TRUE(equalIgnoringCase(asciiKURL, String(asciiURL)));
-
-    // Reproduce code path in FrameLoader.cpp -- equalIgnoringCase implicitly
-    // expects gkurl.protocol() to have been created as ascii.
-    KURL mailto(ParsedURLString, "mailto:foo@foo.com");
-    EXPECT_TRUE(equalIgnoringCase(mailto.protocol(), "mailto"));
-
-    const char utf8URL[] = "http://foo/bar#\xe4\xbd\xa0\xe5\xa5\xbd";
-    KURL utf8KURL(ParsedURLString, utf8URL);
-
-    EXPECT_TRUE(utf8KURL.getString() == String::fromUTF8(utf8URL));
 }
 
 TEST(KURLTest, Setters)
@@ -267,7 +215,7 @@ TEST(KURLTest, Setters)
 }
 
 // Tests that KURL::decodeURLEscapeSequences works as expected
-TEST(KURLTest, Decode)
+TEST(KURLTest, DecodeURLEscapeSequences)
 {
     struct DecodeCase {
         const char* input;
@@ -310,7 +258,7 @@ TEST(KURLTest, Decode)
     EXPECT_EQ(invalidExpected, invalid);
 }
 
-TEST(KURLTest, Encode)
+TEST(KURLTest, EncodeWithURLEscapeSequences)
 {
     struct EncodeCase {
         const char* input;

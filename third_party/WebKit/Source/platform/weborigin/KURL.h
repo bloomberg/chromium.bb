@@ -124,6 +124,7 @@ public:
     String user() const;
     String pass() const;
     String path() const;
+    // This method handles "parameters" separated by a semicolon.
     String lastPathComponent() const;
     String query() const;
     String fragmentIdentifier() const;
