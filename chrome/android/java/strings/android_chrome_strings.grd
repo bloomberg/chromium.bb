@@ -227,7 +227,7 @@ CHAR-LIMIT guidelines:
         Advanced
       </message>
       <message name="IDS_ENTER_VR" desc="Menu item for entering VR. [CHAR-LIMIT=27]">
-        &#128083;&#128083;&#128083; Enter VR &#128083;&#128083;&#128083;
+        Enter VR
       </message>
 
       <!-- Sign-in preference -->
