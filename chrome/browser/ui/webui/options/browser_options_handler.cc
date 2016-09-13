@@ -226,8 +226,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
 #if defined(OS_CHROMEOS)
   const int device_type_resource_id = ash::GetChromeOSDeviceTypeResourceId();
+  const int enable_logging_resource_id =
+      IDS_OPTIONS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA;
 #else
   const int device_type_resource_id = IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE;
+  const int enable_logging_resource_id = IDS_OPTIONS_ENABLE_LOGGING;
 #endif  // defined(OS_CHROMEOS)
 
   static OptionsStringResource resources[] = {
@@ -285,7 +288,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON },
     { "easyUnlockSetupIntro", IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO,
       device_type_resource_id },
-    { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
+    { "enableLogging", enable_logging_resource_id },
     { "extensionControlled", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED },
     { "extensionDisable", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED_DISABLE },
     { "fontSettingsCustomizeFontsButton",

@@ -1123,7 +1123,11 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
       {"safeBrowsingEnableExtendedReporting",
        IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING},
       {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
+#if defined(OS_CHROMEOS)
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA},
+#else
       {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING},
+#endif
       {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
       {"enableContentProtectionAttestation",
        IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
