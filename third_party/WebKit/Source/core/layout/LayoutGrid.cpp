@@ -565,6 +565,12 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t st
             gapAccumulator += gap;
     }
 
+    // The above loop adds one extra gap for trailing collapsed tracks.
+    if (gapAccumulator && isEmptyAutoRepeatTrack(direction, endLine - 1)) {
+        DCHECK_GE(gapAccumulator, gap);
+        gapAccumulator -= gap;
+    }
+
     // If the startLine is the start line of a collapsed track we need to go backwards till we reach
     // a non collapsed track. If we find a non collapsed track we need to add that gap.
     if (startLine && isEmptyAutoRepeatTrack(direction, startLine)) {
