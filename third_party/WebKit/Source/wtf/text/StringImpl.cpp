@@ -286,6 +286,19 @@ void StringImpl::destroyIfNotStatic()
         delete this;
 }
 
+bool StringImpl::isSafeToSendToAnotherThread() const
+{
+    if (isStatic())
+        return true;
+    // AtomicStrings are not safe to send between threads as ~StringImpl()
+    // will try to remove them from the wrong AtomicStringTable.
+    if (isAtomic())
+        return false;
+    if (hasOneRef())
+        return true;
+    return false;
+}
+
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& data)
 {
     if (!length) {

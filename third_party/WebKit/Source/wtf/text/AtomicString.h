@@ -150,6 +150,8 @@ public:
 
     size_t charactersSizeInBytes() const { return m_string.charactersSizeInBytes(); }
 
+    bool isSafeToSendToAnotherThread() const { return m_string.isSafeToSendToAnotherThread(); }
+
 #ifndef NDEBUG
     void show() const;
 #endif

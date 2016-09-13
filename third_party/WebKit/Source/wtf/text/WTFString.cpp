@@ -571,17 +571,7 @@ String String::isolatedCopy() const
 
 bool String::isSafeToSendToAnotherThread() const
 {
-    if (!impl())
-        return true;
-    if (impl()->isStatic())
-        return true;
-    // AtomicStrings are not safe to send between threads as ~StringImpl()
-    // will try to remove them from the wrong AtomicStringTable.
-    if (impl()->isAtomic())
-        return false;
-    if (impl()->hasOneRef())
-        return true;
-    return false;
+    return !m_impl || m_impl->isSafeToSendToAnotherThread();
 }
 
 void String::split(const String& separator, bool allowEmptyEntries, Vector<String>& result) const
