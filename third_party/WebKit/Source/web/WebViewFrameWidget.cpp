@@ -232,6 +232,16 @@ WebPagePopup* WebViewFrameWidget::pagePopup() const
     return m_webView->pagePopup();
 }
 
+bool WebViewFrameWidget::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
+{
+    return m_webView->getCompositionCharacterBounds(bounds);
+}
+
+void WebViewFrameWidget::applyReplacementRange(const WebRange& range)
+{
+    m_webView->applyReplacementRange(range);
+}
+
 void WebViewFrameWidget::updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate)
 {
     return m_webView->updateTopControlsState(constraints, current, animate);

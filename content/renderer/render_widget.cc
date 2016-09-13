@@ -222,7 +222,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
                            bool never_visible)
     : routing_id_(MSG_ROUTING_NONE),
       compositor_deps_(compositor_deps),
-      webwidget_(nullptr),
+      webwidget_internal_(nullptr),
       owner_delegate_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
       next_paint_flags_(0),
@@ -274,7 +274,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
 }
 
 RenderWidget::~RenderWidget() {
-  DCHECK(!webwidget_) << "Leaking our WebWidget!";
+  DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
 
   // If we are swapped out, we have released already.
   if (!is_swapped_out_ && RenderProcess::current())
@@ -390,13 +390,14 @@ bool RenderWidget::Init(int32_t opener_id) {
 bool RenderWidget::DoInit(int32_t opener_id,
                           WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
-  DCHECK(!webwidget_);
+  DCHECK(!webwidget_internal_);
 
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
-  webwidget_ = web_widget;
-  webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
+  webwidget_internal_ = web_widget;
+  webwidget_mouse_lock_target_.reset(
+      new WebWidgetLockTarget(webwidget_internal_));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   bool result = true;
@@ -631,8 +632,8 @@ void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
   if (resizer_rect_ == resizer_rect)
     return;
   resizer_rect_ = resizer_rect;
-  if (webwidget_)
-    webwidget_->didChangeWindowResizerRect();
+  if (GetWebWidget())
+    GetWebWidget()->didChangeWindowResizerRect();
 }
 
 void RenderWidget::OnWasHidden() {
@@ -647,7 +648,7 @@ void RenderWidget::OnWasShown(bool needs_repainting,
                               const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
   // During shutdown we can just ignore this message.
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
 
   // See OnWasHidden
@@ -688,13 +689,13 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
-  if (webwidget_)
-    webwidget_->setCursorVisibilityState(is_visible);
+  if (GetWebWidget())
+    GetWebWidget()->setCursorVisibilityState(is_visible);
 }
 
 void RenderWidget::OnMouseCaptureLost() {
-  if (webwidget_)
-    webwidget_->mouseCaptureLost();
+  if (GetWebWidget())
+    GetWebWidget()->mouseCaptureLost();
 }
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
@@ -705,8 +706,8 @@ void RenderWidget::OnSetEditCommandsForNextKeyEvent(
 void RenderWidget::OnSetFocus(bool enable) {
   has_focus_ = enable;
 
-  if (webwidget_)
-    webwidget_->setFocus(enable);
+  if (GetWebWidget())
+    GetWebWidget()->setFocus(enable);
 
   FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
                     RenderWidgetSetFocus(enable));
@@ -728,9 +729,9 @@ void RenderWidget::ApplyViewportDeltas(
     const gfx::Vector2dF& elastic_overscroll_delta,
     float page_scale,
     float top_controls_delta) {
-  webwidget_->applyViewportDeltas(inner_delta, outer_delta,
-                                  elastic_overscroll_delta, page_scale,
-                                  top_controls_delta);
+  GetWebWidget()->applyViewportDeltas(inner_delta, outer_delta,
+                                      elastic_overscroll_delta, page_scale,
+                                      top_controls_delta);
 }
 
 void RenderWidget::BeginMainFrame(double frame_time_sec) {
@@ -741,12 +742,12 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
   if (input_handler_manager)
     input_handler_manager->ProcessRafAlignedInputOnMainThread(routing_id_);
 
-  webwidget_->beginFrame(frame_time_sec);
+  GetWebWidget()->beginFrame(frame_time_sec);
 }
 
 std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     bool fallback) {
-  DCHECK(webwidget_);
+  DCHECK(GetWebWidget());
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::OutputSurface.
   DCHECK(!compositor_never_visible_);
@@ -830,7 +831,7 @@ void RenderWidget::RequestScheduleAnimation() {
 }
 
 void RenderWidget::UpdateVisualState() {
-  webwidget_->updateAllLifecyclePhases();
+  GetWebWidget()->updateAllLifecyclePhases();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
@@ -942,10 +943,10 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     return;
   }
 
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
 
-  blink::WebTextInputInfo new_info = webwidget_->textInputInfo();
+  blink::WebTextInputInfo new_info = GetWebWidget()->textInputInfo();
 
   const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
 
@@ -1018,7 +1019,7 @@ void RenderWidget::Redraw() {
 }
 
 void RenderWidget::ResizeWebWidget() {
-  webwidget_->resize(GetSizeForWebWidget());
+  GetWebWidget()->resize(GetSizeForWebWidget());
 }
 
 gfx::Size RenderWidget::GetSizeForWebWidget() const {
@@ -1048,7 +1049,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
   }
 
   // Ignore this during shutdown.
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
 
   if (compositor_) {
@@ -1080,7 +1081,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
     visual_viewport_size = visible_viewport_size_;
   }
 
-  webwidget()->resizeVisualViewport(visual_viewport_size);
+  GetWebWidget()->resizeVisualViewport(visual_viewport_size);
 
   // When resizing, we want to wait to paint before ACK'ing the resize.  This
   // ensures that we only resize as fast as we can paint.  We only need to
@@ -1153,8 +1154,8 @@ void RenderWidget::WillCloseLayerTreeView() {
 
   // Always send this notification to prevent new layer tree views from
   // being created, even if one hasn't been created yet.
-  if (webwidget_)
-    webwidget_->willCloseLayerTreeView();
+  if (blink::WebWidget* widget = GetWebWidget())
+    widget->willCloseLayerTreeView();
 }
 
 blink::WebLayerTreeView* RenderWidget::layerTreeView() {
@@ -1315,9 +1316,9 @@ void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
   WillCloseLayerTreeView();
   compositor_.reset();
-  if (webwidget_) {
-    webwidget_->close();
-    webwidget_ = nullptr;
+  if (webwidget_internal_) {
+    webwidget_internal_->close();
+    webwidget_internal_ = nullptr;
   }
 }
 
@@ -1390,16 +1391,16 @@ void RenderWidget::OnImeSetComposition(
   }
 #endif
   if (replacement_range.IsValid()) {
-    webwidget_->applyReplacementRange(
+    GetWebWidget()->applyReplacementRange(
         WebRange(replacement_range.start(), replacement_range.length()));
   }
 
   if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
-  if (!webwidget_->setComposition(
-      text, WebVector<WebCompositionUnderline>(underlines),
-      selection_start, selection_end)) {
+  if (!GetWebWidget()->setComposition(
+          text, WebVector<WebCompositionUnderline>(underlines), selection_start,
+          selection_end)) {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
@@ -1419,7 +1420,7 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   }
 #endif
   if (replacement_range.IsValid()) {
-    webwidget_->applyReplacementRange(
+    GetWebWidget()->applyReplacementRange(
         WebRange(replacement_range.start(), replacement_range.length()));
   }
 
@@ -1428,11 +1429,11 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
   if (text.length())
-    webwidget_->confirmComposition(text);
+    GetWebWidget()->confirmComposition(text);
   else if (keep_selection)
-    webwidget_->confirmComposition(WebWidget::KeepSelection);
+    GetWebWidget()->confirmComposition(WebWidget::KeepSelection);
   else
-    webwidget_->confirmComposition(WebWidget::DoNotKeepSelection);
+    GetWebWidget()->confirmComposition(WebWidget::DoNotKeepSelection);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
@@ -1448,7 +1449,7 @@ void RenderWidget::OnDeviceScaleFactorChanged() {
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   // During shutdown we can just ignore this message.
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
 
   // Even if the browser provides an empty damage rect, it's still expecting to
@@ -1470,9 +1471,9 @@ void RenderWidget::OnSyntheticGestureCompleted() {
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
-  webwidget_->setTextDirection(direction);
+  GetWebWidget()->setTextDirection(direction);
 }
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -1514,8 +1515,8 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   if (focused_pepper_plugin_)
     return focused_pepper_plugin_->text_input_type();
 #endif
-  if (webwidget_)
-    return WebKitToUiTextInputType(webwidget_->textInputType());
+  if (GetWebWidget())
+    return WebKitToUiTextInputType(GetWebWidget()->textInputType());
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
@@ -1607,7 +1608,7 @@ void RenderWidget::OnRequestCompositionUpdate(bool immediate_request,
 
 bool RenderWidget::ShouldHandleImeEvent() {
 #if defined(OS_ANDROID)
-  if (!webwidget_)
+  if (!GetWebWidget())
     return false;
   if (IsUsingImeThread())
     return true;
@@ -1624,7 +1625,7 @@ bool RenderWidget::ShouldHandleImeEvent() {
   }
   return true;
 #else
-  return !!webwidget_;
+  return !!GetWebWidget();
 #endif
 }
 
@@ -1680,13 +1681,13 @@ void RenderWidget::SetHidden(bool hidden) {
 }
 
 void RenderWidget::DidToggleFullscreen() {
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
 
   if (is_fullscreen_granted_) {
-    webwidget_->didEnterFullscreen();
+    GetWebWidget()->didEnterFullscreen();
   } else {
-    webwidget_->didExitFullscreen();
+    GetWebWidget()->didExitFullscreen();
   }
 }
 
@@ -1757,7 +1758,7 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 #endif
   WebRect focus_webrect;
   WebRect anchor_webrect;
-  webwidget_->selectionBounds(focus_webrect, anchor_webrect);
+  GetWebWidget()->selectionBounds(focus_webrect, anchor_webrect);
   convertViewportToWindow(&focus_webrect);
   convertViewportToWindow(&anchor_webrect);
   *focus = focus_webrect;
@@ -1766,7 +1767,7 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 
 void RenderWidget::UpdateSelectionBounds() {
   TRACE_EVENT0("renderer", "RenderWidget::UpdateSelectionBounds");
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
   if (ime_event_guard_)
     return;
@@ -1791,8 +1792,9 @@ void RenderWidget::UpdateSelectionBounds() {
         selection_focus_rect_ != params.focus_rect) {
       selection_anchor_rect_ = params.anchor_rect;
       selection_focus_rect_ = params.focus_rect;
-      webwidget_->selectionTextDirection(params.focus_dir, params.anchor_dir);
-      params.is_anchor_first = webwidget_->isSelectionAnchorFirst();
+      GetWebWidget()->selectionTextDirection(params.focus_dir,
+                                             params.anchor_dir);
+      params.is_anchor_first = GetWebWidget()->isSelectionAnchorFirst();
       Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
     }
   }
@@ -1870,10 +1872,10 @@ void RenderWidget::GetCompositionCharacterBounds(
     return;
 #endif
 
-  if (!webwidget_)
+  if (!GetWebWidget())
     return;
   blink::WebVector<blink::WebRect> bounds_from_blink;
-  if (!webwidget_->getCompositionCharacterBounds(bounds_from_blink))
+  if (!GetWebWidget()->getCompositionCharacterBounds(bounds_from_blink))
     return;
 
   for (size_t i = 0; i < bounds_from_blink.size(); ++i) {
@@ -1887,12 +1889,12 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
   if (focused_pepper_plugin_)
     return;
 #endif
-  WebRange web_range = webwidget_->compositionRange();
+  WebRange web_range = GetWebWidget()->compositionRange();
   if (!web_range.isNull()) {
     range->set_start(web_range.startOffset());
     range->set_end(web_range.endOffset());
   } else {
-    web_range = webwidget_->caretOrSelectionRange();
+    web_range = GetWebWidget()->caretOrSelectionRange();
     range->set_start(web_range.startOffset());
     range->set_end(web_range.endOffset());
   }
@@ -1961,7 +1963,7 @@ void RenderWidget::resetInputMethod() {
   if (text_input_info_.type != blink::WebTextInputTypeNone) {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
-    if (webwidget_->confirmComposition())
+    if (GetWebWidget()->confirmComposition())
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 
@@ -1993,8 +1995,8 @@ void RenderWidget::didHandleGestureEvent(
   if (event.type == WebInputEvent::GestureTap) {
     UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   } else if (event.type == WebInputEvent::GestureLongPress) {
-    DCHECK(webwidget_);
-    if (webwidget_->textInputInfo().value.isEmpty())
+    DCHECK(GetWebWidget());
+    if (GetWebWidget()->textInputInfo().value.isEmpty())
       UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
     else
       UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
@@ -2130,6 +2132,10 @@ void RenderWidget::requestPointerUnlock() {
 bool RenderWidget::isPointerLocked() {
   return mouse_lock_dispatcher_->IsMouseLockedTo(
       webwidget_mouse_lock_target_.get());
+}
+
+blink::WebWidget* RenderWidget::GetWebWidget() const {
+  return webwidget_internal_;
 }
 
 }  // namespace content

@@ -1602,7 +1602,7 @@ WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
     widget->SetPopupOriginAdjustmentsForEmulation(
         screen_metrics_emulator_.get());
   }
-  return widget->webwidget();
+  return widget->GetWebWidget();
 }
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
@@ -2563,6 +2563,13 @@ void RenderViewImpl::OnSetActive(bool active) {
     webview()->setIsActive(active);
 }
 
+blink::WebWidget* RenderViewImpl::GetWebWidget() const {
+  if (frame_widget_)
+    return frame_widget_;
+
+  return RenderWidget::GetWebWidget();
+}
+
 void RenderViewImpl::CloseForFrame() {
   DCHECK(frame_widget_);
   frame_widget_->close();
@@ -2866,8 +2873,8 @@ bool RenderViewImpl::didTapMultipleTargets(
         canvas.translate(-zoom_rect.x() * device_scale_factor_,
                          -zoom_rect.y() * device_scale_factor_);
 
-        DCHECK(webwidget_->isAcceleratedCompositingActive());
-        webwidget_->paintIgnoringCompositing(&canvas, zoom_rect);
+        DCHECK(webview_->isAcceleratedCompositingActive());
+        webview_->paintIgnoringCompositing(&canvas, zoom_rect);
       }
 
       gfx::Rect zoom_rect_in_screen =

@@ -160,8 +160,6 @@ public:
     void didNotAcquirePointerLock() override;
     void didLosePointerLock() override;
     void didChangeWindowResizerRect() override;
-    bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-    void applyReplacementRange(const WebRange&) override;
 
     // WebView methods:
     virtual bool isWebView() const { return true; }
@@ -542,6 +540,8 @@ private:
 
     // TODO(lfg): Remove once WebViewFrameWidget is deleted.
     void scheduleAnimationForWidget();
+    bool getCompositionCharacterBounds(WebVector<WebRect>&) override;
+    void applyReplacementRange(const WebRange&) override;
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WebViewFrameWidget;

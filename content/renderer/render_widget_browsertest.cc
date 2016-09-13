@@ -101,7 +101,7 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
 
 TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
   EXPECT_EQ(initial_size_, widget()->size());
-  EXPECT_EQ(initial_size_, gfx::Size(widget()->webwidget()->size()));
+  EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->size()));
   EXPECT_TRUE(next_paint_is_resize_ack());
 }
 
@@ -110,7 +110,7 @@ TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {
       "<div contenteditable>EDITABLE</div>"
       "<script> document.querySelector('div').focus(); </script>");
   blink::WebVector<blink::WebCompositionUnderline> emptyUnderlines;
-  widget()->webwidget()->setComposition("hello", emptyUnderlines, 3, 3);
+  widget()->GetWebWidget()->setComposition("hello", emptyUnderlines, 3, 3);
   gfx::Range range;
   GetCompositionRange(&range);
   EXPECT_TRUE(range.IsValid());

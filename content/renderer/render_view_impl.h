@@ -431,6 +431,7 @@ class CONTENT_EXPORT RenderViewImpl
 
  protected:
   // RenderWidget overrides:
+  blink::WebWidget* GetWebWidget() const override;
   void CloseForFrame() override;
   void Close() override;
   void OnResize(const ResizeParams& params) override;

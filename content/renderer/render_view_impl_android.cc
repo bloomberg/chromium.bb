@@ -51,10 +51,9 @@ void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
 void RenderViewImpl::UpdateTopControlsState(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) {
-  if (webwidget())
-    webwidget()->updateTopControlsState(ContentToBlink(constraints),
-                                        ContentToBlink(current),
-                                        animate);
+  if (GetWebWidget())
+    GetWebWidget()->updateTopControlsState(ContentToBlink(constraints),
+                                           ContentToBlink(current), animate);
 
   top_controls_constraints_ = constraints;
 }

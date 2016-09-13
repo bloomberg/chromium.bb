@@ -41,7 +41,7 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
 }
 
 bool RenderWidgetFullscreen::Init(int32_t opener_id) {
-  DCHECK(!webwidget_);
+  DCHECK(!GetWebWidget());
 
   bool success = RenderWidget::DoInit(
       opener_id, CreateWebWidget(),

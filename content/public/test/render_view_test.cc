@@ -616,9 +616,8 @@ void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  return impl->webwidget();
+  return impl->GetWebWidget();
 }
-
 
 ContentClient* RenderViewTest::CreateContentClient() {
   return new TestContentClient;

@@ -119,7 +119,7 @@ void RenderWidgetInitialized(RenderWidget* render_widget) {
   WebWidgetTestProxyType* render_widget_proxy =
       static_cast<WebWidgetTestProxyType*>(render_widget);
   if (!g_widget_test_proxy_callback.Get().is_null()) {
-    g_widget_test_proxy_callback.Get().Run(render_widget->webwidget(),
+    g_widget_test_proxy_callback.Get().Run(render_widget->GetWebWidget(),
                                            render_widget_proxy);
   }
 }

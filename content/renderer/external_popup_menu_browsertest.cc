@@ -60,8 +60,8 @@ class ExternalPopupMenuTest : public RenderViewTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->webwidget()->resize(blink::WebSize(500, 500));
-    view()->GetWidget()->webwidget()->setFocus(true);
+    view()->GetWidget()->GetWebWidget()->resize(blink::WebSize(500, 500));
+    view()->GetWidget()->GetWebWidget()->setFocus(true);
   }
 
   int GetSelectedIndex() {
@@ -176,8 +176,8 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->webwidget()->resize(blink::WebSize(500, 500));
-    view()->GetWidget()->webwidget()->setFocus(true);
+    view()->GetWidget()->GetWebWidget()->resize(blink::WebSize(500, 500));
+    view()->GetWidget()->GetWebWidget()->setFocus(true);
   }
 
 };

@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderWidget
   void SetRoutingID(int32_t routing_id);
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
-  blink::WebWidget* webwidget() const { return webwidget_; }
+  virtual blink::WebWidget* GetWebWidget() const;
   const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
@@ -620,9 +620,10 @@ class CONTENT_EXPORT RenderWidget
   // features.
   CompositorDependencies* const compositor_deps_;
 
+  // Use GetWebWidget() instead of using webwidget_internal_ directly.
   // We are responsible for destroying this object via its Close method.
   // May be NULL when the window is closing.
-  blink::WebWidget* webwidget_;
+  blink::WebWidget* webwidget_internal_;
 
   // The delegate of the owner of this object.
   RenderWidgetOwnerDelegate* owner_delegate_;

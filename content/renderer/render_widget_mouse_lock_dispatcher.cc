@@ -58,8 +58,8 @@ void RenderWidgetMouseLockDispatcher::OnLockMouseACK(bool succeeded) {
   // Mouse Capture is implicitly given for the duration of a drag event, and
   // sends all mouse events to the initial target of the drag.
   // If Lock is entered it supercedes any in progress Capture.
-  if (succeeded && render_widget_->webwidget())
-    render_widget_->webwidget()->mouseCaptureLost();
+  if (succeeded && render_widget_->GetWebWidget())
+    render_widget_->GetWebWidget()->mouseCaptureLost();
 }
 
 }  // namespace content

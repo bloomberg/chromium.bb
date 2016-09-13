@@ -1390,8 +1390,8 @@ void RenderFrameImpl::OnImeConfirmComposition(
         char_event.unmodifiedText[i - char_start] = last_text[i];
       }
 
-      if (GetRenderWidget()->webwidget())
-        GetRenderWidget()->webwidget()->handleInputEvent(char_event);
+      if (GetRenderWidget()->GetWebWidget())
+        GetRenderWidget()->GetWebWidget()->handleInputEvent(char_event);
     }
   } else {
     // Mimics the order of events sent by WebKit.
@@ -1816,7 +1816,7 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
 
 void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
                                                          int end_adjust) {
-  WebRange range = GetRenderWidget()->webwidget()->caretOrSelectionRange();
+  WebRange range = GetRenderWidget()->GetWebWidget()->caretOrSelectionRange();
   if (range.isNull())
     return;
 
@@ -5706,13 +5706,13 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 #endif
   {
     WebRange selection =
-        GetRenderWidget()->webwidget()->caretOrSelectionRange();
+        GetRenderWidget()->GetWebWidget()->caretOrSelectionRange();
     if (selection.isNull())
       return;
 
     range = gfx::Range(selection.startOffset(), selection.endOffset());
 
-    if (GetRenderWidget()->webwidget()->textInputType() !=
+    if (GetRenderWidget()->GetWebWidget()->textInputType() !=
         blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
@@ -5729,7 +5729,8 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
       text = frame_->selectionAsText();
       // http://crbug.com/101435
       // In some case, frame->selectionAsText() returned text's length is not
-      // equal to the length returned from webwidget()->caretOrSelectionRange().
+      // equal to the length returned from
+      // GetWebWidget()->caretOrSelectionRange().
       // So we have to set the range according to text.length().
       range.set_end(range.start() + text.length());
     }

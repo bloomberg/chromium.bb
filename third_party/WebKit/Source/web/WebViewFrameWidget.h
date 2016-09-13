@@ -87,6 +87,8 @@ public:
     void didChangeWindowResizerRect() override;
     WebColor backgroundColor() const override;
     WebPagePopup* pagePopup() const override;
+    bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
+    void applyReplacementRange(const WebRange&) override;
     void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) override;
     void setVisibilityState(WebPageVisibilityState) override;
     bool isTransparent() const override;

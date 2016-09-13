@@ -57,7 +57,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      false),
         always_overscroll_(false) {
-    webwidget_ = &mock_webwidget_;
+    webwidget_internal_ = &mock_webwidget_;
     // A RenderWidget is not fully initialized until it has a routing ID.
     SetRoutingID(++next_routing_id_);
   }
@@ -83,7 +83,7 @@ class InteractiveRenderWidget : public RenderWidget {
   MockWebWidget* mock_webwidget() { return &mock_webwidget_; }
 
  protected:
-  ~InteractiveRenderWidget() override { webwidget_ = nullptr; }
+  ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
   // Overridden from RenderWidget:
   bool HasTouchEventHandlersAt(const gfx::Point& point) const override {

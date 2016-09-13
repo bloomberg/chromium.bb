@@ -321,8 +321,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
                                       : WebInputEventResult::NotHandled;
   if (input_event.type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
-    if (processed == WebInputEventResult::NotHandled && widget_->webwidget())
-      processed = widget_->webwidget()->handleInputEvent(input_event);
+    if (processed == WebInputEventResult::NotHandled && widget_->GetWebWidget())
+      processed = widget_->GetWebWidget()->handleInputEvent(input_event);
   }
 
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
