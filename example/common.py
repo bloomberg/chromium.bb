@@ -56,6 +56,12 @@ def parse_args(use_isolate_server, use_swarming):
     parser.add_option(
         '-t', '--task-name', default=task_name,
         help='Swarming task name, default is based on time: %default')
+    parser.add_option(
+        '--service-account',
+        help='Name of a service account to run the task as. Only literal "bot" '
+             'string can be specified currently (to run the task under bot\'s '
+             'account). Don\'t use task service accounts if not given '
+             '(default).')
   parser.add_option('-v', '--verbose', action='count', default=0)
   parser.add_option(
       '--priority', metavar='INT', type='int', help='Priority to use')
