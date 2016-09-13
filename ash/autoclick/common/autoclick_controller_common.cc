@@ -50,9 +50,12 @@ void AutoclickControllerCommon::HandleMouseEvent(const ui::MouseEvent& event) {
     mouse_event_flags_ = event.flags();
 
     // TODO(riajiang): Make getting screen location work for mus as well.
-    // (crbug.com/608547)
-    ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event.target()),
-                               &mouse_location);
+    // Also switch to take in a PointerEvent instead of a MouseEvent after
+    // this is done. (crbug.com/608547)
+    if (event.target() != nullptr) {
+      ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event.target()),
+                                 &mouse_location);
+    }
     UpdateRingWidget(mouse_location);
 
     // The distance between the mouse location and the anchor location
@@ -65,10 +68,9 @@ void AutoclickControllerCommon::HandleMouseEvent(const ui::MouseEvent& event) {
     if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
       anchor_location_ = mouse_location;
       autoclick_timer_->Reset();
-      autoclick_ring_handler_->StartGesture(delay_, anchor_location_,
-                                            widget_.get());
+      autoclick_ring_handler_->StartGesture(delay_, anchor_location_, widget_);
     } else if (autoclick_timer_->IsRunning()) {
-      autoclick_ring_handler_->SetGestureCenter(mouse_location, widget_.get());
+      autoclick_ring_handler_->SetGestureCenter(mouse_location, widget_);
     }
   } else if (event.type() == ui::ET_MOUSE_PRESSED) {
     CancelAutoclick();
@@ -76,8 +78,7 @@ void AutoclickControllerCommon::HandleMouseEvent(const ui::MouseEvent& event) {
              autoclick_timer_->IsRunning()) {
     autoclick_timer_->Reset();
     UpdateRingWidget(mouse_location);
-    autoclick_ring_handler_->StartGesture(delay_, anchor_location_,
-                                          widget_.get());
+    autoclick_ring_handler_->StartGesture(delay_, anchor_location_, widget_);
   }
 }
 
@@ -120,10 +121,9 @@ void AutoclickControllerCommon::DoAutoclick() {
 void AutoclickControllerCommon::UpdateRingWidget(
     const gfx::Point& mouse_location) {
   if (!widget_) {
-    widget_.reset(
-        (delegate_->CreateAutoclickRingWidget(mouse_location)).release());
+    widget_ = delegate_->CreateAutoclickRingWidget(mouse_location);
   } else {
-    delegate_->UpdateAutoclickRingWidget(widget_.get(), mouse_location);
+    delegate_->UpdateAutoclickRingWidget(widget_, mouse_location);
   }
 }
 

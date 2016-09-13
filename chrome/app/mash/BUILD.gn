@@ -10,9 +10,7 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
-    "//ash/mus:lib",
     "//ash/resources",
-    "//ash/touch_hud/mus:lib",
     "//base:i18n",
     "//components/tracing:startup_tracing",
     "//content/public/common",
@@ -40,6 +38,7 @@ service_manifest("manifest") {
   name = "chrome_mash"
   source = "chrome_mash_manifest.json"
   deps = [
+    "//ash/autoclick/mus:manifest",
     "//ash/mus:manifest",
     "//ash/touch_hud/mus:manifest",
     "//mash/app_driver:manifest",
@@ -50,6 +49,7 @@ service_manifest("manifest") {
     "//services/ui/ime/test_ime_driver:manifest",
   ]
   packaged_services = [
+    "accessibility_autoclick",
     "app_driver",
     "ash",
     "mash_session",

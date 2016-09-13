@@ -12,6 +12,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -70,6 +72,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_registry.h"
@@ -80,7 +83,9 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
+#include "mash/public/interfaces/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "services/shell/public/cpp/connector.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -861,6 +866,15 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   autoclick_enabled_ = enabled;
 
+  if (chrome::IsRunningInMash()) {
+    shell::Connector* connector =
+        content::MojoShellConnection::GetForProcess()->GetConnector();
+    mash::mojom::LaunchablePtr launchable;
+    connector->ConnectToInterface("mojo:accessibility_autoclick", &launchable);
+    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
+    return;
+  }
+
   ash::Shell::GetInstance()->autoclick_controller()->SetEnabled(enabled);
 }
 
@@ -874,7 +888,7 @@ void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
 }
 
 int AccessibilityManager::GetAutoclickDelay() const {
-  return int{autoclick_delay_ms_.InMilliseconds()};
+  return static_cast<int>(autoclick_delay_ms_.InMilliseconds());
 }
 
 void AccessibilityManager::UpdateAutoclickDelayFromPref() {
@@ -888,6 +902,17 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
   if (autoclick_delay_ms == autoclick_delay_ms_)
     return;
   autoclick_delay_ms_ = autoclick_delay_ms;
+
+  if (chrome::IsRunningInMash()) {
+    shell::Connector* connector =
+        content::MojoShellConnection::GetForProcess()->GetConnector();
+    ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
+    connector->ConnectToInterface("mojo:accessibility_autoclick",
+                                  &autoclick_controller);
+    autoclick_controller->SetAutoclickDelay(
+        autoclick_delay_ms_.InMilliseconds());
+    return;
+  }
 
   ash::Shell::GetInstance()->autoclick_controller()->SetAutoclickDelay(
       autoclick_delay_ms_);
@@ -1183,9 +1208,11 @@ void AccessibilityManager::InputMethodChanged(
     bool show_message) {
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.
-  ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
-      manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
-      manager->IsAltGrUsedByCurrentInputMethod());
+  if (!chrome::IsRunningInMash()) {
+    ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
+        manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
+        manager->IsAltGrUsedByCurrentInputMethod());
+  }
   const chromeos::input_method::InputMethodDescriptor descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =

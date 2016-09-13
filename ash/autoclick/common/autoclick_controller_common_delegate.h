@@ -22,9 +22,10 @@ class AutoclickControllerCommonDelegate {
   AutoclickControllerCommonDelegate() {}
   virtual ~AutoclickControllerCommonDelegate() {}
 
-  // Creates a ring widget at |event_location|. AutoclickControllerCommon
-  // takes ownership of the created widget.
-  virtual std::unique_ptr<views::Widget> CreateAutoclickRingWidget(
+  // Creates a ring widget at |event_location|.
+  // AutoclickControllerCommonDelegate still has ownership of the widget they
+  // created.
+  virtual views::Widget* CreateAutoclickRingWidget(
       const gfx::Point& event_location) = 0;
 
   // Moves |widget| to |event_location|.

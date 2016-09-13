@@ -4,6 +4,7 @@
 
 #include "mash/package/mash_packaged_service.h"
 
+#include "ash/autoclick/mus/autoclick_application.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/touch_hud/mus/touch_hud_application.h"
 #include "mash/app_driver/app_driver.h"
@@ -52,10 +53,13 @@ void MashPackagedService::CreateService(shell::mojom::ServiceRequest request,
   NOTREACHED();
 }
 
+// Please see header file for details on adding new services.
 std::unique_ptr<shell::Service> MashPackagedService::CreateService(
     const std::string& name) {
   if (name == "mojo:ash")
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
+  if (name == "mojo:accessibility_autoclick")
+    return base::WrapUnique(new ash::autoclick::AutoclickApplication);
   if (name == "mojo:touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
   if (name == "mojo:mash_session")

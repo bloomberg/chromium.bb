@@ -1,0 +1,10 @@
+include_rules = [
+  "-ash",
+  "+ash/autoclick/common",
+  "+ash/autoclick/mus",
+  "+ash/public",
+  "+mash/public/interfaces",
+  "+mojo/public",
+  "+services/shell/public",
+  "+services/ui/public",
+]

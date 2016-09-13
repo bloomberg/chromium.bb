@@ -29,7 +29,7 @@ class AutoclickControllerCommonDelegate;
 // animate at the mouse event location and an automatic click event will happen
 // after a certain amout of time at that location.
 // AutoclickControllerCommon is the common code for both ash and mus to handle
-// events and to manage autoclick time delay, timer and ring widget.
+// events and to manage autoclick time delay and timer.
 class AutoclickControllerCommon {
  public:
   AutoclickControllerCommon(base::TimeDelta delay,
@@ -53,7 +53,7 @@ class AutoclickControllerCommon {
   int mouse_event_flags_;
   std::unique_ptr<base::Timer> autoclick_timer_;
   AutoclickControllerCommonDelegate* delegate_;
-  std::unique_ptr<views::Widget> widget_;
+  views::Widget* widget_;
   // The position in screen coordinates used to determine
   // the distance the mouse has moved.
   gfx::Point anchor_location_;

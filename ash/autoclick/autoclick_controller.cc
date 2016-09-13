@@ -53,7 +53,7 @@ class AutoclickControllerImpl : public AutoclickController,
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // AutoclickControllerCommonDelegate overrides:
-  std::unique_ptr<views::Widget> CreateAutoclickRingWidget(
+  views::Widget* CreateAutoclickRingWidget(
       const gfx::Point& event_location) override;
   void UpdateAutoclickRingWidget(views::Widget* widget,
                                  const gfx::Point& event_location) override;
@@ -68,6 +68,7 @@ class AutoclickControllerImpl : public AutoclickController,
   // The target window is observed by AutoclickControllerImpl for the duration
   // of a autoclick gesture.
   aura::Window* tap_down_target_;
+  std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<AutoclickControllerCommon> autoclick_controller_common_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickControllerImpl);
@@ -135,14 +136,13 @@ void AutoclickControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   autoclick_controller_common_->CancelAutoclick();
 }
 
-std::unique_ptr<views::Widget>
-AutoclickControllerImpl::CreateAutoclickRingWidget(
+views::Widget* AutoclickControllerImpl::CreateAutoclickRingWidget(
     const gfx::Point& event_location) {
   aura::Window* target =
       WmWindowAura::GetAuraWindow(ash::wm::GetRootWindowAt(event_location));
   SetTapDownTarget(target);
   aura::Window* root_window = target->GetRootWindow();
-  std::unique_ptr<views::Widget> widget(new views::Widget);
+  widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = false;
@@ -152,9 +152,9 @@ AutoclickControllerImpl::CreateAutoclickRingWidget(
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
-  widget->Init(params);
-  widget->SetOpacity(1.f);
-  return widget;
+  widget_->Init(params);
+  widget_->SetOpacity(1.f);
+  return widget_.get();
 }
 
 void AutoclickControllerImpl::UpdateAutoclickRingWidget(

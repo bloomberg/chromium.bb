@@ -17,6 +17,17 @@ namespace mash {
 // MashPackagedService is a Service implementation that starts all the mash
 // apps. It's used when mash is packaged inside chrome or tests. To use you'll
 // need a manifest similar to what is used by chrome and browser_tests.
+// Things to do when adding a new service/app:
+//   - Add a manifest to the new service.
+//   - Update manifests of services that are going to use this new service. e.g.
+//     chrome_manifest.
+//   - Add the new serivce to be a data_dep of the service that is using this
+//     new service.
+//   - Add the new service to chrome_mash's deps section and packaged_services
+//     section.
+//   - Add the new service to mash_browser_tests's deps section and
+//     packaged_services section.
+//   - Add an entry for the new service in MashPackagedService::CreateService().
 class MashPackagedService
     : public shell::Service,
       public shell::mojom::ServiceFactory,

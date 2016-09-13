@@ -472,6 +472,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   media::SoundsManager::Create();
 
+  AccessibilityManager::Initialize();
+
   if (!chrome::IsRunningInMash()) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
@@ -479,7 +481,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // created. However, when running as a mus-client, an ash::Shell instance is
     // not created. These accessibility services should instead be exposed as
     // separate services. crbug.com/557401
-    AccessibilityManager::Initialize();
     MagnificationManager::Initialize();
   }
 
