@@ -43,4 +43,16 @@ if (!is_component_build) {
       ":fuzzer_support",
     ]
   }
+
+  fuzzer_test("clear_site_data_fuzzer") {
+    sources = [
+      "clear_site_data_fuzzer.cc",
+    ]
+    deps = [
+      ":fuzzer_support",
+      "//base",
+      "//content/browser:for_content_tests",
+    ]
+    seed_corpus = "//content/test/data/fuzzer_corpus/clear_site_data/"
+  }
 }

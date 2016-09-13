@@ -44,6 +44,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public NavigationThrottle {
   ThrottleCheckResult WillProcessResponse() override;
 
  private:
+  friend class ClearSiteDataFuzzerTest;
   friend class ClearSiteDataThrottleTest;
   FRIEND_TEST_ALL_PREFIXES(ClearSiteDataThrottleTest, ParseHeader);
   FRIEND_TEST_ALL_PREFIXES(ClearSiteDataThrottleTest, InvalidHeader);

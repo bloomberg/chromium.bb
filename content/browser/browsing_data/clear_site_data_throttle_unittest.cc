@@ -88,7 +88,6 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeader) {
   }
 }
 
-// TODO(msramek): Also test invalid inputs using libFuzzer.
 TEST_F(ClearSiteDataThrottleTest, InvalidHeader) {
   struct TestCase {
     const char* header;
