@@ -126,7 +126,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   dispatcher_.reset(new QuicSimpleDispatcher(
       config_, &crypto_config_, &version_manager_,
       std::unique_ptr<QuicConnectionHelperInterface>(helper_),
-      std::unique_ptr<QuicServerSessionBase::Helper>(
+      std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleServerSessionHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicAlarmFactory>(alarm_factory_)));
   QuicSimpleServerPacketWriter* writer =

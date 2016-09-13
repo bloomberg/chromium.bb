@@ -1765,7 +1765,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
                 << " from host " << (self_address().address().empty()
                                          ? " empty address "
                                          : self_address().ToStringWithoutPort())
-                << " to address " << peer_address().ToString();
+                << " to address " << peer_address().ToString()
+                << " with error code " << result.error_code;
     return false;
   }
 

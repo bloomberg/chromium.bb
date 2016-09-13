@@ -291,14 +291,97 @@ TEST(QuicProtocolTest, FilterSupportedVersions) {
       QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
 
   FLAGS_quic_disable_pre_32 = true;
+  FLAGS_quic_disable_pre_34 = true;
   FLAGS_quic_enable_version_35 = false;
   FLAGS_quic_enable_version_36_v2 = false;
 
   QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(3u, filtered_versions.size());
-  EXPECT_EQ(QUIC_VERSION_32, filtered_versions[0]);
-  EXPECT_EQ(QUIC_VERSION_33, filtered_versions[1]);
-  EXPECT_EQ(QUIC_VERSION_34, filtered_versions[2]);
+  ASSERT_EQ(1u, filtered_versions.size());
+  EXPECT_EQ(QUIC_VERSION_34, filtered_versions[0]);
+}
+
+TEST(QuicProtocolTest, FilterSupportedVersionsAllVersions) {
+  QuicFlagSaver flags;
+  QuicVersionVector all_versions = {
+      QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
+      QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
+
+  FLAGS_quic_disable_pre_32 = false;
+  FLAGS_quic_disable_pre_34 = false;
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36_v2 = true;
+
+  QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
+  ASSERT_EQ(all_versions, filtered_versions);
+}
+
+TEST(QuicProtocolTest, FilterSupportedVersionsNo36) {
+  QuicFlagSaver flags;
+  QuicVersionVector all_versions = {
+      QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
+      QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
+
+  FLAGS_quic_disable_pre_32 = false;
+  FLAGS_quic_disable_pre_34 = false;
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36_v2 = false;
+
+  all_versions.pop_back();  // Remove 36
+
+  ASSERT_EQ(all_versions, FilterSupportedVersions(all_versions));
+}
+
+TEST(QuicProtocolTest, FilterSupportedVersionsNo35) {
+  QuicFlagSaver flags;
+  QuicVersionVector all_versions = {
+      QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
+      QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
+
+  FLAGS_quic_disable_pre_32 = false;
+  FLAGS_quic_disable_pre_34 = false;
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36_v2 = true;
+
+  all_versions.pop_back();  // Remove 36
+  all_versions.pop_back();  // Remove 35
+
+  ASSERT_EQ(all_versions, FilterSupportedVersions(all_versions));
+}
+
+TEST(QuicProtocolTest, FilterSupportedVersionsNoPre32) {
+  QuicFlagSaver flags;
+  QuicVersionVector all_versions = {
+      QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
+      QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
+
+  FLAGS_quic_disable_pre_32 = true;
+  FLAGS_quic_disable_pre_34 = false;
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36_v2 = true;
+
+  all_versions.erase(all_versions.begin());  // Remove 30
+  all_versions.erase(all_versions.begin());  // Remove 31
+
+  ASSERT_EQ(all_versions, FilterSupportedVersions(all_versions));
+}
+
+TEST(QuicProtocolTest, FilterSupportedVersionsNoPre34) {
+  QuicFlagSaver flags;
+  QuicVersionVector all_versions = {
+      QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
+      QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
+
+  FLAGS_quic_disable_pre_32 = false;
+  FLAGS_quic_disable_pre_34 = true;
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36_v2 = true;
+
+  all_versions.erase(all_versions.begin());  // Remove 30
+  all_versions.erase(all_versions.begin());  // Remove 31
+  all_versions.erase(all_versions.begin());  // Remove 32
+  all_versions.erase(all_versions.begin());  // Remove 33
+
+  ASSERT_EQ(all_versions, FilterSupportedVersions(all_versions));
 }
 
 TEST(QuicProtocolTest, QuicVersionManager) {

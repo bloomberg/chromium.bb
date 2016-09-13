@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/proof_source.h"
@@ -80,15 +81,16 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
         config_peer_(&config_),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        rejector_(GetParam().version,
-                  AllSupportedVersions(),
-                  &config_,
-                  &compressed_certs_cache_,
-                  &clock_,
-                  QuicRandom::GetInstance(),
-                  kDefaultMaxPacketSize,
-                  IPEndPoint(net::test::Loopback4(), 12345),
-                  IPEndPoint(net::test::Loopback4(), 443)) {
+        rejector_(base::MakeUnique<StatelessRejector>(
+            GetParam().version,
+            AllSupportedVersions(),
+            &config_,
+            &compressed_certs_cache_,
+            &clock_,
+            QuicRandom::GetInstance(),
+            kDefaultMaxPacketSize,
+            IPEndPoint(net::test::Loopback4(), 12345),
+            IPEndPoint(net::test::Loopback4(), 443))) {
     FLAGS_enable_quic_stateless_reject_support =
         GetParam().flags == ENABLED || GetParam().flags == CHEAP_DISABLED;
     FLAGS_quic_use_cheap_stateless_rejects =
@@ -130,14 +132,26 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
   }
 
  protected:
+  class ProcessDoneCallback : public StatelessRejector::ProcessDoneCallback {
+   public:
+    explicit ProcessDoneCallback(StatelessRejectorTest* test) : test_(test) {}
+    void Run(std::unique_ptr<StatelessRejector> rejector) override {
+      test_->rejector_ = std::move(rejector);
+    }
+
+   private:
+    StatelessRejectorTest* test_;
+  };
+
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+
   std::unique_ptr<ProofSource> proof_source_;
   MockClock clock_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfigPeer config_peer_;
   QuicCompressedCertsCache compressed_certs_cache_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
-  StatelessRejector rejector_;
+  std::unique_ptr<StatelessRejector> rejector_;
 
   // Values used in CHLO messages
   string scid_hex_;
@@ -160,16 +174,21 @@ TEST_P(StatelessRejectorTest, InvalidChlo) {
       "COPT", "SREJ",
       nullptr);
   // clang-format on
-  rejector_.OnChlo(GetParam().version, kConnectionId,
-                   kServerDesignateConnectionId, client_hello);
+  rejector_->OnChlo(GetParam().version, kConnectionId,
+                    kServerDesignateConnectionId, client_hello);
 
   if (GetParam().flags != ENABLED || GetParam().version <= QUIC_VERSION_32) {
-    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_.state());
+    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
     return;
   }
 
-  EXPECT_EQ(StatelessRejector::FAILED, rejector_.state());
-  EXPECT_EQ(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER, rejector_.error());
+  // The StatelessRejector is undecided - proceed with async processing
+  ASSERT_EQ(StatelessRejector::UNKNOWN, rejector_->state());
+  StatelessRejector::Process(std::move(rejector_),
+                             base::MakeUnique<ProcessDoneCallback>(this));
+
+  EXPECT_EQ(StatelessRejector::FAILED, rejector_->state());
+  EXPECT_EQ(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER, rejector_->error());
 }
 
 TEST_P(StatelessRejectorTest, ValidChloWithoutSrejSupport) {
@@ -186,9 +205,9 @@ TEST_P(StatelessRejectorTest, ValidChloWithoutSrejSupport) {
       nullptr);
   // clang-format on
 
-  rejector_.OnChlo(GetParam().version, kConnectionId,
-                   kServerDesignateConnectionId, client_hello);
-  EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_.state());
+  rejector_->OnChlo(GetParam().version, kConnectionId,
+                    kServerDesignateConnectionId, client_hello);
+  EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
 }
 
 TEST_P(StatelessRejectorTest, RejectChlo) {
@@ -208,14 +227,20 @@ TEST_P(StatelessRejectorTest, RejectChlo) {
       nullptr);
   // clang-format on
 
-  rejector_.OnChlo(GetParam().version, kConnectionId,
-                   kServerDesignateConnectionId, client_hello);
+  rejector_->OnChlo(GetParam().version, kConnectionId,
+                    kServerDesignateConnectionId, client_hello);
   if (GetParam().flags != ENABLED || GetParam().version <= QUIC_VERSION_32) {
-    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_.state());
+    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
     return;
   }
-  ASSERT_EQ(StatelessRejector::REJECTED, rejector_.state());
-  const CryptoHandshakeMessage& reply = rejector_.reply();
+
+  // The StatelessRejector is undecided - proceed with async processing
+  ASSERT_EQ(StatelessRejector::UNKNOWN, rejector_->state());
+  StatelessRejector::Process(std::move(rejector_),
+                             base::MakeUnique<ProcessDoneCallback>(this));
+
+  ASSERT_EQ(StatelessRejector::REJECTED, rejector_->state());
+  const CryptoHandshakeMessage& reply = rejector_->reply();
   EXPECT_EQ(kSREJ, reply.tag());
   const uint32_t* reject_reasons;
   size_t num_reject_reasons;
@@ -248,13 +273,19 @@ TEST_P(StatelessRejectorTest, AcceptChlo) {
       nullptr);
   // clang-format on
 
-  rejector_.OnChlo(GetParam().version, kConnectionId,
-                   kServerDesignateConnectionId, client_hello);
+  rejector_->OnChlo(GetParam().version, kConnectionId,
+                    kServerDesignateConnectionId, client_hello);
   if (GetParam().flags != ENABLED || GetParam().version <= QUIC_VERSION_32) {
-    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_.state());
+    EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
     return;
   }
-  EXPECT_EQ(StatelessRejector::ACCEPTED, rejector_.state());
+
+  // The StatelessRejector is undecided - proceed with async processing
+  ASSERT_EQ(StatelessRejector::UNKNOWN, rejector_->state());
+  StatelessRejector::Process(std::move(rejector_),
+                             base::MakeUnique<ProcessDoneCallback>(this));
+
+  EXPECT_EQ(StatelessRejector::ACCEPTED, rejector_->state());
 }
 
 }  // namespace

@@ -148,8 +148,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       ContainsQuicTag(config.ReceivedConnectionOptions(), kATIM)) {
     general_loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
   }
-  if (FLAGS_quic_loss_recovery_use_largest_acked &&
-      config.HasClientSentConnectionOption(kUNDO, perspective_)) {
+  if (config.HasClientSentConnectionOption(kUNDO, perspective_)) {
     undo_pending_retransmits_ = true;
   }
   send_algorithm_->SetFromConfig(config, perspective_);
@@ -305,8 +304,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // packet, then inform the caller.
     if (it->in_flight) {
       packets_acked_.push_back(std::make_pair(packet_number, it->bytes_sent));
-    } else if (FLAGS_quic_loss_recovery_use_largest_acked &&
-               !it->is_unackable) {
+    } else if (!it->is_unackable) {
+      // Packets are marked unackable after they've been acked once.
       largest_newly_acked_ = packet_number;
     }
     MarkPacketHandled(packet_number, &(*it), ack_delay_time);
@@ -514,9 +513,7 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   }
   unacked_packets_.RemoveFromInFlight(info);
   unacked_packets_.RemoveRetransmittability(info);
-  if (FLAGS_quic_loss_recovery_use_largest_acked) {
-    info->is_unackable = true;
-  }
+  info->is_unackable = true;
 }
 
 bool QuicSentPacketManager::HasUnackedPackets() const {
@@ -699,13 +696,13 @@ QuicSentPacketManager::GetRetransmissionMode() const {
 }
 
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
-  if (FLAGS_quic_loss_recovery_use_largest_acked && !packets_acked_.empty()) {
+  if (!packets_acked_.empty()) {
     DCHECK_LE(packets_acked_.front().first, packets_acked_.back().first);
     largest_newly_acked_ = packets_acked_.back().first;
   }
   loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
                                 largest_newly_acked_, &packets_lost_);
-  for (const pair<QuicPacketNumber, QuicByteCount>& pair : packets_lost_) {
+  for (const auto& pair : packets_lost_) {
     ++stats_->packets_lost;
     if (debug_delegate_ != nullptr) {
       debug_delegate_->OnPacketLoss(pair.first, LOSS_RETRANSMISSION, time);

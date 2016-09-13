@@ -46,7 +46,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 ReliableQuicStream::PendingData::PendingData(
     string data_in,
     QuicAckListenerInterface* ack_listener_in)
-    : data(data_in), offset(0), ack_listener(ack_listener_in) {}
+    : data(std::move(data_in)), offset(0), ack_listener(ack_listener_in) {}
 
 ReliableQuicStream::PendingData::~PendingData() {}
 
