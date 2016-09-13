@@ -14,6 +14,7 @@ import java.util.Map;
 /**
  * Network request using {@link java.net.HttpURLConnection}.
  * @deprecated Use {@link CronetEngine} instead.
+ * {@hide as it's deprecated}
  */
 @Deprecated
 class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {

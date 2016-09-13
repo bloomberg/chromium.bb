@@ -17,10 +17,10 @@ events during the lifetime of a request. For example:
                 UrlResponseInfo responseInfo, String newLocationUrl) {
             if (followRedirect) {
                 // Let's tell Cronet to follow the redirect!
-                mRequest.followRedirect();
+                request.followRedirect();
             } else {
                 // Not worth following the redirect? Abandon the request.
-                mRequest.cancel();
+                request.cancel();
             }
         }
 
@@ -37,7 +37,7 @@ events during the lifetime of a request. For example:
                  // errors from Cronet's perspective since the response is
                  // successfully read.
              }
-             responseHeaders = responseInfo.getAllHeaders();
+             mResponseHeaders = responseInfo.getAllHeaders();
         }
 
         @Override
@@ -47,7 +47,7 @@ events during the lifetime of a request. For example:
              doSomethingWithResponseData(byteBuffer);
              // Let's tell Cronet to continue reading the response body or
              // inform us that the response is complete!
-             request.read(myBuffer);
+             request.read(mBuffer);
         }
 
         @Override

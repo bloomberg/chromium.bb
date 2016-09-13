@@ -29,6 +29,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Network request using the HttpUrlConnection implementation.
  * @deprecated Use {@link UrlRequest} instead.
+ * {@hide as it's deprecated}
  */
 @Deprecated
 class HttpUrlConnectionUrlRequest implements HttpUrlRequest {

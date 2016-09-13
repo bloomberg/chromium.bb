@@ -15,6 +15,7 @@ import java.util.Map;
  * A factory for {@link HttpUrlRequest}'s, which uses the best HTTP stack
  * available on the current platform.
  * @deprecated Use {@link CronetEngine} instead.
+ * {@hide as it's deprecated}
  */
 @Deprecated
 public abstract class HttpUrlRequestFactory {

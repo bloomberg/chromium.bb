@@ -5,16 +5,9 @@
                bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-23/android.jar:../../../../third_party/android_tools/sdk/extras/android/support/annotations/android-support-annotations.jar:${lib.java.dir}/cronet_javadoc_classpath.jar"
                docletpath="../../../../buildtools/android/doclava/jsilver.jar:../../../../buildtools/android/doclava/doclava.jar"
                >
-        <fileset dir="${source.dir}" defaultexcludes="yes">
-          <include name="**/*.java"/>
-          <!-- exclude legacy API -->
-          <exclude name="**/Chromium*.java"/>
-          <exclude name="**/ChunkedWritableByteChannel*.java"/>
-          <exclude name="**/HttpUrl*.java"/>
-          <exclude name="**/ResponseTooLargeException.java"/>
-          <!-- This file is removed but it still appears in the checkout of one bot. See crbug.com/637887 -->
-          <!-- TODO(xunjieli): Remove this. -->
-          <exclude name="**/RequestFinishedListener.java"/>
+        <fileset dir="${source.dir}">
+          <!-- Leave empty to facilitate building javadocs outside Chromium
+               where this file might not be used. -->
         </fileset>
         <doclet name="com.google.doclava.Doclava">
           <param name="-title" /><param name="Cronet API"/>

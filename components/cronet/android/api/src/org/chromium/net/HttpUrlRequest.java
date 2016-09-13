@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * HTTP request (GET or POST).
  * @deprecated Use {@link UrlRequest} instead.
+ * {@hide as it's deprecated}
  */
 @Deprecated
 public interface HttpUrlRequest {

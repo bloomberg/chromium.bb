@@ -16,6 +16,7 @@ import java.util.ArrayList;
  * of those byte buffers are combined on demand. This approach allows to avoid
  * the cost of reallocating a byte buffer.
  * @deprecated This is no longer used in the new async API.
+ * {@hide as it's deprecated}
  */
 @Deprecated
 public class ChunkedWritableByteChannel implements WritableByteChannel {
