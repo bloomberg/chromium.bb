@@ -5,7 +5,6 @@
 // http://mozvr.github.io/webvr-spec/webvr.html#vrfieldofview
 [
     RuntimeEnabled=WebVR,
-    Constructor(optional VRFieldOfViewInit fov),
 ] interface VRFieldOfView {
     attribute double upDegrees;
     attribute double downDegrees;

@@ -6,7 +6,6 @@
 [
     RuntimeEnabled=WebVR,
 ] interface VRPose {
-    readonly attribute DOMHighResTimeStamp timestamp;
     readonly attribute Float32Array? position;
     readonly attribute Float32Array? linearVelocity;
     readonly attribute Float32Array? linearAcceleration;

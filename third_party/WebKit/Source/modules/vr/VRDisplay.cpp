@@ -11,6 +11,7 @@
 #include "modules/vr/VRController.h"
 #include "modules/vr/VRDisplayCapabilities.h"
 #include "modules/vr/VREyeParameters.h"
+#include "modules/vr/VRFrameData.h"
 #include "modules/vr/VRLayer.h"
 #include "modules/vr/VRPose.h"
 #include "modules/vr/VRStageParameters.h"
@@ -42,6 +43,8 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR)
     , m_capabilities(new VRDisplayCapabilities())
     , m_eyeParametersLeft(new VREyeParameters())
     , m_eyeParametersRight(new VREyeParameters())
+    , m_depthNear(0.01)
+    , m_depthFar(10000.0)
     , m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck)
 {
 }
@@ -79,22 +82,38 @@ void VRDisplay::update(const device::blink::VRDisplayPtr& display)
     }
 }
 
-VRPose* VRDisplay::getPose()
+bool VRDisplay::getFrameData(VRFrameData* frameData)
 {
-    if (m_canUpdateFramePose) {
-        m_framePose = getImmediatePose();
-        Platform::current()->currentThread()->addTaskObserver(this);
-        m_canUpdateFramePose = false;
-    }
+    updatePose();
 
-    return m_framePose;
+    if (!frameData)
+        return false;
+
+    if (m_depthNear == m_depthFar)
+        return false;
+
+    return frameData->update(m_framePose, m_eyeParametersLeft, m_eyeParametersRight, m_depthNear, m_depthFar);
 }
 
-VRPose* VRDisplay::getImmediatePose()
+VRPose* VRDisplay::getPose()
 {
+    updatePose();
+
+    if (!m_framePose)
+        return nullptr;
+
     VRPose* pose = VRPose::create();
-    pose->setPose(controller()->getPose(m_displayId));
+    pose->setPose(m_framePose);
     return pose;
+}
+
+void VRDisplay::updatePose()
+{
+    if (m_canUpdateFramePose) {
+        m_framePose = controller()->getPose(m_displayId);
+        if (m_isPresenting)
+            m_canUpdateFramePose = false;
+    }
 }
 
 void VRDisplay::resetPose()
@@ -268,18 +287,10 @@ HeapVector<VRLayer> VRDisplay::getLayers()
     return layers;
 }
 
-void VRDisplay::submitFrame(VRPose* pose)
+void VRDisplay::submitFrame()
 {
     controller()->submitFrame(m_displayId);
-}
-
-void VRDisplay::didProcessTask()
-{
-    // Pose should be stable until control is returned to the user agent.
-    if (!m_canUpdateFramePose) {
-        Platform::current()->currentThread()->removeTaskObserver(this);
-        m_canUpdateFramePose = true;
-    }
+    m_canUpdateFramePose = true;
 }
 
 void VRDisplay::onFullscreenCheck(TimerBase*)
@@ -304,7 +315,6 @@ DEFINE_TRACE(VRDisplay)
     visitor->trace(m_stageParameters);
     visitor->trace(m_eyeParametersLeft);
     visitor->trace(m_eyeParametersRight);
-    visitor->trace(m_framePose);
     visitor->trace(m_layer);
 }
 

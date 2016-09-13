@@ -6,7 +6,6 @@
 #define VRFieldOfView_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/vr/VRFieldOfViewInit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -16,11 +15,6 @@ namespace blink {
 class VRFieldOfView final : public GarbageCollected<VRFieldOfView>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static VRFieldOfView* create(const VRFieldOfViewInit& fov)
-    {
-        return new VRFieldOfView(fov);
-    }
-
     VRFieldOfView() : m_upDegrees(0.0), m_downDegrees(0.0), m_leftDegrees(0.0), m_rightDegrees(0.0)
     {
     }
@@ -30,14 +24,6 @@ public:
         , m_downDegrees(0.0)
         , m_leftDegrees(0.0)
         , m_rightDegrees(0.0)
-    {
-    }
-
-    explicit VRFieldOfView(const VRFieldOfViewInit& fov)
-        : m_upDegrees(fov.upDegrees())
-        , m_downDegrees(fov.downDegrees())
-        , m_leftDegrees(fov.leftDegrees())
-        , m_rightDegrees(fov.rightDegrees())
     {
     }
 

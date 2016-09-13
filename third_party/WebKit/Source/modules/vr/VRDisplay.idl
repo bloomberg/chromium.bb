@@ -25,9 +25,12 @@ enum VREye {
 
     readonly attribute VRStageParameters stageParameters;
 
+    boolean getFrameData(VRFrameData frameData);
     VRPose getPose();
-    VRPose getImmediatePose();
     void resetPose();
+
+    attribute double depthNear;
+    attribute double depthFar;
 
     VREyeParameters getEyeParameters(VREye whichEye);
 
@@ -48,5 +51,5 @@ enum VREye {
     // in the HMD. Calling this function has the same effect on the source
     // canvas as any other operation that uses its source image, and canvases
     // created without preserveDrawingBuffer set to true will be cleared.
-    void submitFrame(optional VRPose pose = null);
+    void submitFrame();
 };

@@ -14,7 +14,6 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -29,6 +28,7 @@ namespace blink {
 class NavigatorVR;
 class VRController;
 class VREyeParameters;
+class VRFrameData;
 class VRStageParameters;
 class VRPose;
 
@@ -40,7 +40,7 @@ enum VREye {
     VREyeRight
 };
 
-class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>, public ScriptWrappable, public WebThread::TaskObserver {
+class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~VRDisplay();
@@ -54,9 +54,15 @@ public:
     bool isConnected() const { return m_isConnected; }
     bool isPresenting() const { return m_isPresenting; }
 
+    bool getFrameData(VRFrameData*);
     VRPose* getPose();
-    VRPose* getImmediatePose();
     void resetPose();
+
+    double depthNear() const { return m_depthNear; }
+    double depthFar() const { return m_depthFar; }
+
+    void setDepthNear(double value) { m_depthNear = value; }
+    void setDepthFar(double value) { m_depthFar = value; }
 
     VREyeParameters* getEyeParameters(const String&);
 
@@ -68,7 +74,7 @@ public:
 
     HeapVector<VRLayer> getLayers();
 
-    void submitFrame(VRPose*);
+    void submitFrame();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -78,14 +84,11 @@ protected:
     VRDisplay(NavigatorVR*);
 
     void update(const device::blink::VRDisplayPtr&);
+    void updatePose();
 
     VRController* controller();
 
 private:
-    // TaskObserver implementation.
-    void didProcessTask() override;
-    void willProcessTask() override { }
-
     void onFullscreenCheck(TimerBase*);
 
     Member<NavigatorVR> m_navigatorVR;
@@ -99,8 +102,10 @@ private:
     Member<VRStageParameters> m_stageParameters;
     Member<VREyeParameters> m_eyeParametersLeft;
     Member<VREyeParameters> m_eyeParametersRight;
-    Member<VRPose> m_framePose;
+    device::blink::VRPosePtr m_framePose;
     VRLayer m_layer;
+    double m_depthNear;
+    double m_depthFar;
 
     Timer<VRDisplay> m_fullscreenCheckTimer;
 };

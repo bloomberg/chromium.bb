@@ -19,6 +19,8 @@ blink_modules_sources("vr") {
     "VREyeParameters.cpp",
     "VREyeParameters.h",
     "VRFieldOfView.h",
+    "VRFrameData.cpp",
+    "VRFrameData.h",
     "VRGetDevicesCallback.cpp",
     "VRGetDevicesCallback.h",
     "VRPose.cpp",
