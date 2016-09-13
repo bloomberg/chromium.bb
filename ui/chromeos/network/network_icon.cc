@@ -30,7 +30,9 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 using chromeos::DeviceState;
 using chromeos::NetworkConnectionHandler;
@@ -64,15 +66,10 @@ bool UseMd() {
 //------------------------------------------------------------------------------
 // Struct to pass icon badges to NetworkIconImageSource.
 struct Badges {
-  Badges()
-      : top_left(nullptr),
-        top_right(nullptr),
-        bottom_left(nullptr),
-        bottom_right(nullptr) {}
-  const gfx::ImageSkia* top_left;
-  const gfx::ImageSkia* top_right;
-  const gfx::ImageSkia* bottom_left;
-  const gfx::ImageSkia* bottom_right;
+  gfx::ImageSkia top_left;
+  gfx::ImageSkia top_right;
+  gfx::ImageSkia bottom_left;
+  gfx::ImageSkia bottom_right;
 };
 
 //------------------------------------------------------------------------------
@@ -119,10 +116,10 @@ class NetworkIconImpl {
   int strength_index_;
 
   // Cached technology badge for the network when the icon was last generated.
-  const gfx::ImageSkia* technology_badge_;
+  gfx::ImageSkia technology_badge_;
 
   // Cached vpn badge for the network when the icon was last generated.
-  const gfx::ImageSkia* vpn_badge_;
+  gfx::ImageSkia vpn_badge_;
 
   // Cached roaming state of the network when the icon was last generated.
   std::string roaming_state_;
@@ -224,19 +221,19 @@ class NetworkIconImageSource : public gfx::CanvasImageSource {
   void Draw(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(icon_, 0, 0);
 
-    if (badges_.top_left)
-      canvas->DrawImageInt(*badges_.top_left, 0, 0);
-    if (badges_.top_right)
-      canvas->DrawImageInt(*badges_.top_right,
-                           icon_.width() - badges_.top_right->width(), 0);
-    if (badges_.bottom_left) {
-      canvas->DrawImageInt(*badges_.bottom_left, 0,
-                           icon_.height() - badges_.bottom_left->height());
+    if (!badges_.top_left.isNull())
+      canvas->DrawImageInt(badges_.top_left, 0, 0);
+    if (!badges_.top_right.isNull())
+      canvas->DrawImageInt(badges_.top_right,
+                           icon_.width() - badges_.top_right.width(), 0);
+    if (!badges_.bottom_left.isNull()) {
+      canvas->DrawImageInt(badges_.bottom_left, 0,
+                           icon_.height() - badges_.bottom_left.height());
     }
-    if (badges_.bottom_right) {
-      canvas->DrawImageInt(*badges_.bottom_right,
-                           icon_.width() - badges_.bottom_right->width(),
-                           icon_.height() - badges_.bottom_right->height());
+    if (!badges_.bottom_right.isNull()) {
+      canvas->DrawImageInt(badges_.bottom_right,
+                           icon_.width() - badges_.bottom_right.width(),
+                           icon_.height() - badges_.bottom_right.height());
     }
   }
 
@@ -268,20 +265,20 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
     // The badges are flush against the edges of the canvas, except at the top,
     // where the badge is only 1dp higher than the base image.
     const int top_badge_y = icon_y - 1;
-    if (badges_.top_left)
-      canvas->DrawImageInt(*badges_.top_left, 0, top_badge_y);
-    if (badges_.top_right) {
-      canvas->DrawImageInt(*badges_.top_right,
-                           width - badges_.top_right->width(), top_badge_y);
+    if (!badges_.top_left.isNull())
+      canvas->DrawImageInt(badges_.top_left, 0, top_badge_y);
+    if (!badges_.top_right.isNull()) {
+      canvas->DrawImageInt(badges_.top_right, width - badges_.top_right.width(),
+                           top_badge_y);
     }
-    if (badges_.bottom_left) {
-      canvas->DrawImageInt(*badges_.bottom_left, 0,
-                           height - badges_.bottom_left->height());
+    if (!badges_.bottom_left.isNull()) {
+      canvas->DrawImageInt(badges_.bottom_left, 0,
+                           height - badges_.bottom_left.height());
     }
-    if (badges_.bottom_right) {
-      canvas->DrawImageInt(*badges_.bottom_right,
-                           width - badges_.bottom_right->width(),
-                           height - badges_.bottom_right->height());
+    if (!badges_.bottom_right.isNull()) {
+      canvas->DrawImageInt(badges_.bottom_right,
+                           width - badges_.bottom_right.width(),
+                           height - badges_.bottom_right.height());
     }
   }
 
@@ -539,7 +536,7 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
   return images[index];
 }
 
-gfx::ImageSkia* ConnectingVpnImage(double animation) {
+gfx::ImageSkia ConnectingVpnImage(double animation) {
   int index = animation * nextafter(static_cast<float>(kNumFadeImages), 0);
   static gfx::ImageSkia* s_vpn_images[kNumFadeImages];
   if (!s_vpn_images[index]) {
@@ -549,10 +546,10 @@ gfx::ImageSkia* ConnectingVpnImage(double animation) {
     s_vpn_images[index] = new gfx::ImageSkia(
         gfx::ImageSkiaOperations::CreateTransparentImage(*icon, animation));
   }
-  return s_vpn_images[index];
+  return *s_vpn_images[index];
 }
 
-gfx::ImageSkia* ConnectingVpnBadge(double animation) {
+gfx::ImageSkia ConnectingVpnBadge(double animation) {
   int index = animation * nextafter(static_cast<float>(kNumFadeImages), 0);
   static gfx::ImageSkia* s_vpn_badges[kNumFadeImages];
   if (!s_vpn_badges[index]) {
@@ -563,7 +560,7 @@ gfx::ImageSkia* ConnectingVpnBadge(double animation) {
     s_vpn_badges[index] = new gfx::ImageSkia(
         gfx::ImageSkiaOperations::CreateTransparentImage(*badge, animation));
   }
-  return s_vpn_badges[index];
+  return *s_vpn_badges[index];
 }
 
 int StrengthIndex(int strength) {
@@ -575,54 +572,71 @@ int StrengthIndex(int strength) {
   return index;
 }
 
-const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
-                                                IconType icon_type) {
-  const int kUnknownBadgeType = -1;
-  int id = kUnknownBadgeType;
+gfx::ImageSkia BadgeForNetworkTechnology(const NetworkState* network,
+                                         IconType icon_type) {
   const std::string& technology = network->network_technology();
+  if (UseMd()) {
+    gfx::VectorIconId id = gfx::VectorIconId::VECTOR_ICON_NONE;
+    if (technology == shill::kNetworkTechnologyEvdo) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_EVDO;
+    } else if (technology == shill::kNetworkTechnology1Xrtt) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_1X;
+    } else if (technology == shill::kNetworkTechnologyGprs ||
+               technology == shill::kNetworkTechnologyGsm) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_GPRS;
+    } else if (technology == shill::kNetworkTechnologyEdge) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_EDGE;
+    } else if (technology == shill::kNetworkTechnologyUmts) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_3G;
+    } else if (technology == shill::kNetworkTechnologyHspa) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_HSPA;
+    } else if (technology == shill::kNetworkTechnologyHspaPlus) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_HSPA_PLUS;
+    } else if (technology == shill::kNetworkTechnologyLte) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_LTE;
+    } else if (technology == shill::kNetworkTechnologyLteAdvanced) {
+      id = gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_LTE_ADVANCED;
+    } else {
+      return gfx::ImageSkia();
+    }
+    return gfx::CreateVectorIcon(id, GetBaseColorForIconType(icon_type));
+  }
+
+  int id = -1;
   if (technology == shill::kNetworkTechnologyEvdo) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_EVDO_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_EVDO_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_EVDO_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_EVDO_LIGHT;
   } else if (technology == shill::kNetworkTechnology1Xrtt) {
     id = IDR_AURA_UBER_TRAY_NETWORK_1X;
   } else if (technology == shill::kNetworkTechnologyGprs) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   } else if (technology == shill::kNetworkTechnologyEdge) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
   } else if (technology == shill::kNetworkTechnologyUmts) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_3G_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
   } else if (technology == shill::kNetworkTechnologyHspa) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
   } else if (technology == shill::kNetworkTechnologyHspaPlus) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
   } else if (technology == shill::kNetworkTechnologyLte) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
   } else if (technology == shill::kNetworkTechnologyLteAdvanced) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
+    id = IconTypeIsDark(icon_type)
+             ? IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK
+             : IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
   } else if (technology == shill::kNetworkTechnologyGsm) {
-    id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
+    id = IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK
+                                   : IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
+  } else {
+    return gfx::ImageSkia();
   }
-  if (id == kUnknownBadgeType)
-    return nullptr;
-  else
-    return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
 gfx::ImageSkia GetIcon(const NetworkState* network,
@@ -662,7 +676,7 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
     icon = GetImageForNetwork(connected_network, icon_type);
     badges.bottom_left = ConnectingVpnBadge(animation);
   } else {
-    icon = *ConnectingVpnImage(animation);
+    icon = ConnectingVpnImage(animation);
   }
   return UseMd() ? NetworkIconImageSourceMd::CreateImage(icon, badges)
                  : gfx::ImageSkia(new NetworkIconImageSource(icon, badges),
@@ -693,8 +707,6 @@ NetworkIconImpl::NetworkIconImpl(const std::string& path, IconType icon_type)
     : network_path_(path),
       icon_type_(icon_type),
       strength_index_(-1),
-      technology_badge_(nullptr),
-      vpn_badge_(nullptr),
       behind_captive_portal_(false) {
   // Default image
   image_ = GetDisconnectedImage(icon_type, shill::kTypeWifi);
@@ -742,9 +754,9 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
 
 bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   bool dirty = false;
-  const gfx::ImageSkia* technology_badge =
+  const gfx::ImageSkia technology_badge =
       BadgeForNetworkTechnology(network, icon_type_);
-  if (technology_badge != technology_badge_) {
+  if (!technology_badge.BackedBySameObjectAs(technology_badge_)) {
     technology_badge_ = technology_badge;
     dirty = true;
   }
@@ -775,12 +787,16 @@ bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
 bool NetworkIconImpl::UpdateVPNBadge() {
   const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
       ConnectedNetworkByType(NetworkTypePattern::VPN());
-  if (vpn && vpn_badge_ == nullptr) {
-    vpn_badge_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
+  if (vpn && vpn_badge_.isNull()) {
+    vpn_badge_ =
+        UseMd() ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_VPN,
+                                        GetBaseColorForIconType(icon_type_))
+                : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                      IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     return true;
-  } else if (!vpn && vpn_badge_ != nullptr) {
-    vpn_badge_ = nullptr;
+  }
+  if (!vpn && !vpn_badge_.isNull()) {
+    vpn_badge_ = gfx::ImageSkia();
     return true;
   }
   return false;
@@ -792,17 +808,24 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   const std::string& type = network->type();
+  const SkColor icon_color = GetBaseColorForIconType(icon_type_);
   if (type == shill::kTypeWifi) {
     if (network->security_class() != shill::kSecurityNone &&
         IconTypeIsDark(icon_type_)) {
-      badges->bottom_right = rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
+      badges->bottom_right =
+          UseMd()
+              ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_SECURE,
+                                      icon_color)
+              : *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
     }
   } else if (type == shill::kTypeWimax) {
-    technology_badge_ = rb.GetImageSkiaNamed(
-        IconTypeIsDark(icon_type_) ?
-        IDR_AURA_UBER_TRAY_NETWORK_4G_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
+    technology_badge_ =
+        UseMd()
+            ? gfx::CreateVectorIcon(
+                  gfx::VectorIconId::NETWORK_BADGE_TECHNOLOGY_4G, icon_color)
+            : *rb.GetImageSkiaNamed(IconTypeIsDark(icon_type_)
+                                        ? IDR_AURA_UBER_TRAY_NETWORK_4G_DARK
+                                        : IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
   } else if (type == shill::kTypeCellular) {
     if (network->roaming() == shill::kRoamingStateRoaming) {
       // For networks that are always in roaming don't show roaming badge.
@@ -811,10 +834,13 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       LOG_IF(WARNING, !device) << "Could not find device state for "
                                << network->device_path();
       if (!device || !device->provider_requires_roaming()) {
-        badges->bottom_right = rb.GetImageSkiaNamed(
-            IconTypeIsDark(icon_type_) ?
-            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK :
-            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT);
+        badges->bottom_right =
+            UseMd() ? gfx::CreateVectorIcon(
+                          gfx::VectorIconId::NETWORK_BADGE_ROAMING, icon_color)
+                    : *rb.GetImageSkiaNamed(
+                          IconTypeIsDark(icon_type_)
+                              ? IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK
+                              : IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT);
       }
     }
   }
@@ -824,11 +850,14 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   }
 
   if (behind_captive_portal_) {
-    gfx::ImageSkia* badge = rb.GetImageSkiaNamed(
-       IconTypeIsDark(icon_type_) ?
-       IDR_AURA_UBER_TRAY_NETWORK_PORTAL_DARK :
-       IDR_AURA_UBER_TRAY_NETWORK_PORTAL_LIGHT);
-    badges->bottom_right = badge;
+    badges->bottom_right =
+        UseMd()
+            ? gfx::CreateVectorIcon(
+                  gfx::VectorIconId::NETWORK_BADGE_CAPTIVE_PORTAL, icon_color)
+            : *rb.GetImageSkiaNamed(
+                  IconTypeIsDark(icon_type_)
+                      ? IDR_AURA_UBER_TRAY_NETWORK_PORTAL_DARK
+                      : IDR_AURA_UBER_TRAY_NETWORK_PORTAL_LIGHT);
   }
 }
 
