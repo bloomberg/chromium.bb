@@ -1,0 +1,99 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var outerInput = document.createElement("input");
+    WebInspector.inspectorView.element.appendChild(outerInput);
+
+    var mainWidget = new WebInspector.Widget();
+    mainWidget.show(WebInspector.inspectorView.element);
+
+    var widget1 = new WebInspector.Widget();
+    widget1.show(mainWidget.element);
+    var input1 = document.createElement("input");
+    input1.id = "input1";
+    widget1.element.appendChild(input1);
+    widget1.setDefaultFocusedElement(input1);
+
+    var widget2 = new WebInspector.Widget();
+    widget2.show(mainWidget.element);
+    var input2 = document.createElement("input");
+    input2.id = "input2";
+    widget2.element.appendChild(input2);
+    widget2.setDefaultFocusedElement(input2);
+
+    outerInput.focus();
+    dumpFocus();
+
+    widget1.focus();
+    dumpFocus();
+
+    input2.focus();
+    dumpFocus();
+
+    outerInput.focus();
+    dumpFocus();
+
+    mainWidget.focus();
+    dumpFocus();
+
+    outerInput.focus();
+    dumpFocus();
+
+    widget2.hideWidget();
+    mainWidget.focus();
+    dumpFocus();
+
+    var splitWidget = new WebInspector.SplitWidget();
+    splitWidget.show(mainWidget.element);
+    var widget3 = new WebInspector.Widget();
+    var input3 = document.createElement("input");
+    input1.id = "input3";
+    widget3.element.appendChild(input3);
+    widget3.setDefaultFocusedElement(input3);
+    splitWidget.setSidebarWidget(widget3);
+    var widget4 = new WebInspector.Widget();
+    var input4 = document.createElement("input");
+    input4.id = "input4";
+    widget4.element.appendChild(input4);
+    widget4.setDefaultFocusedElement(input4);
+    splitWidget.setMainWidget(widget4);
+
+    splitWidget.focus();
+    dumpFocus();
+
+    widget3.focus();
+    dumpFocus();
+
+    mainWidget.focus();
+    dumpFocus();
+
+    InspectorTest.completeTest();
+
+    function dumpFocus()
+    {
+        var focused = WebInspector.currentFocusElement();
+        if (focused === outerInput) {
+            InspectorTest.addResult("Outer Focused");
+        } else if (focused === input1) {
+            InspectorTest.addResult("Input1 Focused");
+        } else if (focused === input2) {
+            InspectorTest.addResult("Input2 Focused");
+        } else if (focused === input3) {
+            InspectorTest.addResult("Input3 Focused");
+        } else if (focused === input4) {
+            InspectorTest.addResult("Input4 Focused");
+        } else {
+            InspectorTest.addResult("No focus");
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests whether focus is properly remembered on widgets.</p>
+</body>
+</html>

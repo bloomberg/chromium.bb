@@ -1,0 +1,13 @@
+Tests whether focus is properly remembered on widgets.
+
+Outer Focused
+Input1 Focused
+Input2 Focused
+Outer Focused
+Input2 Focused
+Outer Focused
+Input1 Focused
+Input4 Focused
+Input3 Focused
+Input3 Focused
+
