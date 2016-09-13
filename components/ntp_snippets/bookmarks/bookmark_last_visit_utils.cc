@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -27,6 +28,10 @@ struct RecentBookmark {
   bool visited_recently;
 };
 
+const char* kBookmarksURLBlacklist[] = {"chrome://newtab/",
+                                        "chrome-native://newtab/",
+                                        "chrome://bookmarks/"};
+
 const char kBookmarkLastVisitDateKey[] = "last_visited";
 const char kBookmarkDismissedFromNTP[] = "dismissed_from_ntp";
 
@@ -48,10 +53,23 @@ bool CompareBookmarksByLastVisitDate(const BookmarkNode* a,
          GetLastVisitDateForBookmark(b, creation_date_fallback);
 }
 
+bool IsBlacklisted(const GURL& url) {
+  for (const char* blacklisted : kBookmarksURLBlacklist) {
+    if (url.spec() == blacklisted)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
                                            const GURL& url) {
+  // Skip URLs that are blacklisted.
+  if (IsBlacklisted(url))
+    return;
+
+  // Skip URLs that are not bookmarked.
   std::vector<const BookmarkNode*> bookmarks_for_url;
   bookmark_model->GetNodesByURL(url, &bookmarks_for_url);
   if (bookmarks_for_url.empty())
@@ -136,6 +154,10 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
   // Find for each bookmark the most recently visited BookmarkNode and find out
   // whether it is visited since |min_visit_time|.
   for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+    // Skip URLs that are blacklisted.
+    if (IsBlacklisted(url_and_title.url))
+      continue;
+
     // Get all bookmarks for the given URL.
     std::vector<const BookmarkNode*> bookmarks_for_url;
     bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
