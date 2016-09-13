@@ -153,7 +153,22 @@ def OverrideConfigForTrybot(build_config, options):
   return copy_config
 
 
-class BuildConfig(dict):
+class AttrDict(dict):
+  """Dictionary with 'attribute' access.
+
+  This is identical to a dictionary, except that string keys can be addressed as
+  read-only attributes.
+  """
+  def __getattr__(self, name):
+    """Support attribute-like access to each dict entry."""
+    if name in self:
+      return self[name]
+
+    # Super class (dict) has no __getattr__ method, so use __getattribute__.
+    return super(AttrDict, self).__getattribute__(name)
+
+
+class BuildConfig(AttrDict):
   """Dictionary of explicit configuration settings for a cbuildbot config
 
   Each dictionary entry is in turn a dictionary of config_param->value.
@@ -181,13 +196,7 @@ class BuildConfig(dict):
     """
     return {k: cls._delete_key_sentinel for k in keys}
 
-  def __getattr__(self, name):
-    """Support attribute-like access to each dict entry."""
-    if name in self:
-      return self[name]
 
-    # Super class (dict) has no __getattr__ method, so use __getattribute__.
-    return super(BuildConfig, self).__getattribute__(name)
 
   def GetBotId(self, remote_trybot=False):
     """Get the 'bot id' of a particular bot.
@@ -1009,7 +1018,7 @@ class SiteConfig(dict):
     """
     super(SiteConfig, self).__init__()
     self._defaults = DefaultSettings() if defaults is None else defaults
-    self._templates = {} if templates is None else templates
+    self._templates = AttrDict() if templates is None else AttrDict(templates)
     self._site_params = (
         DefaultSiteParameters() if site_params is None else site_params)
 
@@ -1021,6 +1030,10 @@ class SiteConfig(dict):
 
   def GetTemplates(self):
     """Create the canonical default build configuration."""
+    return self._templates
+
+  @property
+  def templates(self):
     return self._templates
 
   @property

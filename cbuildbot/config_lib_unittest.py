@@ -376,6 +376,21 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     with self.assertRaises(AssertionError):
       site_config.Add('bar', fake_template)
 
+  def testTemplateAttr(self):
+    """Test the SiteConfig.templates.name behavior."""
+
+    site_config = config_lib.SiteConfig()
+    template1 = site_config.AddTemplate('template1', value='template')
+    template2 = site_config.AddTemplate('template2', value='template')
+
+    self.assertIs(template1, site_config.templates.template1)
+    self.assertIs(template2, site_config.templates.template2)
+
+    # Try to fetch a non-existent template.
+    with self.assertRaises(AttributeError):
+      _ = site_config.templates.no_such_template
+
+
   def testSaveLoadEmpty(self):
     config = config_lib.SiteConfig(defaults={}, site_params={})
     config_str = config.SaveConfigToString()

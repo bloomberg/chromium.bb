@@ -2173,7 +2173,7 @@ def _GetConfig(site_config, ge_build_config):
 
   _release = site_config.AddTemplate(
       'release',
-      full,
+      site_config.templates.full,
       official,
       internal,
       default_hw_tests_override,
