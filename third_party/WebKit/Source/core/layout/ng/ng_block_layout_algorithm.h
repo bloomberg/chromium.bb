@@ -64,6 +64,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGFragmentBuilder> builder_;
   Member<NGConstraintSpace> constraint_space_for_children_;
   Member<NGBox> current_child_;
+  NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   // MarginStrut for the previous child.

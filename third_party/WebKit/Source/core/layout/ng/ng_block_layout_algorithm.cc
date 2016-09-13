@@ -37,17 +37,20 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
                                     NGPhysicalFragment** out) {
   switch (state_) {
     case kStateInit: {
+      border_and_padding_ =
+          computeBorders(*style_) + computePadding(*constraint_space, *style_);
+
       LayoutUnit inline_size =
           computeInlineSizeForFragment(*constraint_space, *style_);
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
       // -1?
       LayoutUnit block_size = computeBlockSizeForFragment(
           *constraint_space, *style_, LayoutUnit(-1));
-      constraint_space_for_children_ =
-          new NGConstraintSpace(*constraint_space, NGLogicalOffset(),
-                                NGLogicalSize(inline_size, block_size));
-      content_size_ =
-          computeBorderAndPaddingBlockStart(*constraint_space, *style_);
+      constraint_space_for_children_ = new NGConstraintSpace(
+          *constraint_space, NGLogicalOffset(),
+          NGLogicalSize(inline_size - border_and_padding_.InlineSum(),
+                        block_size - border_and_padding_.BlockSum()));
+      content_size_ = border_and_padding_.block_start;
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -66,21 +69,17 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         LayoutUnit margin_block_start =
             CollapseMargins(child_margins, fragment->MarginStrut());
 
-        // TODO(layout-ng): This is probably something we shouldn't calculate
-        // over and over again for each child.
-        LayoutUnit content_inline_start_edge =
-            computeBorderAndPaddingInlineStart(*constraint_space, *style_);
-
         // TODO(layout-ng): Support auto margins
         builder_->AddChild(fragment,
-                           NGLogicalOffset(content_inline_start_edge +
+                           NGLogicalOffset(border_and_padding_.inline_start +
                                                child_margins.inline_start,
                                            content_size_ + margin_block_start));
 
         content_size_ += fragment->BlockSize() + margin_block_start;
         max_inline_size_ =
-            std::max(max_inline_size_,
-                     fragment->InlineSize() + child_margins.InlineSum());
+            std::max(max_inline_size_, fragment->InlineSize() +
+                                           child_margins.InlineSum() +
+                                           border_and_padding_.InlineSum());
         current_child_ = current_child_->NextSibling();
         if (current_child_)
           return false;
@@ -89,6 +88,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
       return false;
     }
     case kStateFinalize: {
+      content_size_ += border_and_padding_.block_end;
       // Recompute the block-axis size now that we know our content size.
       LayoutUnit block_size = computeBlockSizeForFragment(
           *constraint_space, *style_, content_size_);

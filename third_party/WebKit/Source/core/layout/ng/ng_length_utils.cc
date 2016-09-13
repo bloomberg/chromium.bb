@@ -78,8 +78,10 @@ LayoutUnit computeInlineSizeForFragment(
   extent = std::max(extent, min);
 
   if (style.boxSizing() == BoxSizingContentBox) {
-    extent += computeBorderAndPaddingInlineStart(constraintSpace, style);
-    extent += computeBorderAndPaddingInlineEnd(constraintSpace, style);
+    // TODO(layout-ng): Don't do this for auto/other keywords
+    NGBoxStrut border_and_padding =
+        computeBorders(style) + computePadding(constraintSpace, style);
+    extent += border_and_padding.InlineSum();
   }
 
   return extent;
@@ -111,51 +113,13 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   extent = std::max(extent, min);
 
   if (style.boxSizing() == BoxSizingContentBox) {
-    extent += computeBorderAndPaddingBlockStart(constraintSpace, style);
-    extent += computeBorderAndPaddingBlockEnd(constraintSpace, style);
+    // TODO(layout-ng): Don't do this for auto/other keywords
+    NGBoxStrut border_and_padding =
+        computeBorders(style) + computePadding(constraintSpace, style);
+    extent += border_and_padding.BlockSum();
   }
 
   return extent;
-}
-
-LayoutUnit computeBorderAndPaddingBlockStart(
-    const NGConstraintSpace& constraintSpace,
-    const ComputedStyle& style) {
-  // Percentages on block-direction padding are resolved against the containing
-  // block *inline size* - hence the call to resolveInlineLength().
-  LayoutUnit padding =
-      resolveInlineLength(constraintSpace, style.paddingBefore(),
-                          LengthResolveType::MarginBorderPaddingSize);
-  return padding + LayoutUnit(style.borderBeforeWidth());
-}
-
-LayoutUnit computeBorderAndPaddingBlockEnd(
-    const NGConstraintSpace& constraintSpace,
-    const ComputedStyle& style) {
-  // Percentages on block-direction padding are resolved against the containing
-  // block *inline size* - hence the call to resolveInlineLength().
-  LayoutUnit padding =
-      resolveInlineLength(constraintSpace, style.paddingAfter(),
-                          LengthResolveType::MarginBorderPaddingSize);
-  return padding + LayoutUnit(style.borderAfterWidth());
-}
-
-LayoutUnit computeBorderAndPaddingInlineStart(
-    const NGConstraintSpace& constraintSpace,
-    const ComputedStyle& style) {
-  LayoutUnit padding =
-      resolveInlineLength(constraintSpace, style.paddingStart(),
-                          LengthResolveType::MarginBorderPaddingSize);
-  return padding + LayoutUnit(style.borderStartWidth());
-}
-
-LayoutUnit computeBorderAndPaddingInlineEnd(
-    const NGConstraintSpace& constraintSpace,
-    const ComputedStyle& style) {
-  LayoutUnit padding =
-      resolveInlineLength(constraintSpace, style.paddingEnd(),
-                          LengthResolveType::MarginBorderPaddingSize);
-  return padding + LayoutUnit(style.borderEndWidth());
 }
 
 NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
