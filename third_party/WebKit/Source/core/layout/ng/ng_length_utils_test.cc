@@ -36,7 +36,8 @@ class NGLengthUtilsTest : public ::testing::Test {
       const Length& length,
       LengthResolveType type = LengthResolveType::ContentSize) {
     NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200, 300);
-    return ::blink::resolveInlineLength(*constraintSpace, length, type);
+    return ::blink::resolveInlineLength(*constraintSpace, *style_, length,
+                                        type);
   }
 
   LayoutUnit resolveBlockLength(
@@ -44,8 +45,8 @@ class NGLengthUtilsTest : public ::testing::Test {
       LengthResolveType type = LengthResolveType::ContentSize,
       LayoutUnit contentSize = LayoutUnit()) {
     NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200, 300);
-    return ::blink::resolveBlockLength(*constraintSpace, length, contentSize,
-                                       type);
+    return ::blink::resolveBlockLength(*constraintSpace, *style_, length,
+                                       contentSize, type);
   }
 
   LayoutUnit computeInlineSizeForFragment(
@@ -122,6 +123,17 @@ TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
   style_->setMinWidth(Length(80, Percent));
   EXPECT_EQ(LayoutUnit(160), computeInlineSizeForFragment());
 
+  style_ = ComputedStyle::create();
+  style_->setMarginRight(Length(20, Fixed));
+  EXPECT_EQ(LayoutUnit(180), computeInlineSizeForFragment());
+
+  style_->setLogicalWidth(Length(100, Fixed));
+  style_->setPaddingLeft(Length(50, Fixed));
+  EXPECT_EQ(LayoutUnit(150), computeInlineSizeForFragment());
+
+  style_->setBoxSizing(BoxSizingBorderBox);
+  EXPECT_EQ(LayoutUnit(100), computeInlineSizeForFragment());
+
   // TODO(layout-ng): test {min,max}-content on max-width.
 }
 
@@ -159,6 +171,18 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
   style_->setLogicalHeight(Length(100, Fixed));
   style_->setMinHeight(Length(80, Percent));
   EXPECT_EQ(LayoutUnit(240), computeBlockSizeForFragment());
+
+  style_ = ComputedStyle::create();
+  style_->setMarginTop(Length(20, Fixed));
+  style_->setLogicalHeight(Length(FillAvailable));
+  EXPECT_EQ(LayoutUnit(280), computeBlockSizeForFragment());
+
+  style_->setLogicalHeight(Length(100, Fixed));
+  style_->setPaddingBottom(Length(50, Fixed));
+  EXPECT_EQ(LayoutUnit(150), computeBlockSizeForFragment());
+
+  style_->setBoxSizing(BoxSizingBorderBox);
+  EXPECT_EQ(LayoutUnit(100), computeBlockSizeForFragment());
 
   // TODO(layout-ng): test {min,max}-content on max-height.
 }

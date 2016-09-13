@@ -26,12 +26,14 @@ enum class LengthResolveType {
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
 CORE_EXPORT LayoutUnit resolveInlineLength(const NGConstraintSpace&,
+                                           const ComputedStyle&,
                                            const Length&,
                                            LengthResolveType);
 
 // Convert a block-axis length to a layout unit using the given constraint
 // space and content size.
 CORE_EXPORT LayoutUnit resolveBlockLength(const NGConstraintSpace&,
+                                          const ComputedStyle&,
                                           const Length&,
                                           LayoutUnit contentSize,
                                           LengthResolveType);
