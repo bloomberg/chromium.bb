@@ -160,6 +160,10 @@ class ASH_EXPORT DisplayManager
                           display::Display::Rotation rotation,
                           display::Display::RotationSource source);
 
+  // Sets the UI scale for the |display_id|. Returns false if the
+  // display_id is not an internal display.
+  bool SetDisplayUIScale(int64_t display_id, float scale);
+
   // Sets the external display's configuration, including resolution change,
   // ui-scale change, and device scale factor change. Returns true if it changes
   // the display resolution so that the caller needs to show a notification in

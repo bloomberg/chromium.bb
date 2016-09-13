@@ -35,11 +35,6 @@ std::unique_ptr<MouseWarpController> CreateMouseWarpController(
     DisplayManager* manager,
     aura::Window* drag_source);
 
-// TODO(rjkroege): Move this into display_manager.h
-// Sets the UI scale for the |display_id|. Returns false if the
-// display_id is not an internal display.
-ASH_EXPORT bool SetDisplayUIScale(int64_t display_id, float scale);
-
 // Creates edge bounds from |bounds_in_screen| that fits the edge
 // of the native window for |ash_host|.
 ASH_EXPORT gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,

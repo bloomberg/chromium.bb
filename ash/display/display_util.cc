@@ -71,21 +71,6 @@ void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
   host->ConvertPointToNativeScreen(point);
 }
 
-scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
-    const display::ManagedDisplayInfo& info,
-    float ui_scale) {
-  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
-      info.display_modes();
-  auto iter = std::find_if(
-      modes.begin(), modes.end(),
-      [ui_scale](const scoped_refptr<display::ManagedDisplayMode>& mode) {
-        return mode->ui_scale() == ui_scale;
-      });
-  if (iter == modes.end())
-    return scoped_refptr<display::ManagedDisplayMode>();
-  return *iter;
-}
-
 }  // namespace
 
 std::unique_ptr<MouseWarpController> CreateMouseWarpController(
@@ -98,21 +83,6 @@ std::unique_ptr<MouseWarpController> CreateMouseWarpController(
   if (manager->GetNumDisplays() < 2 || manager->num_connected_displays() < 2)
     return base::MakeUnique<NullMouseWarpController>();
   return base::MakeUnique<ExtendedMouseWarpController>(drag_source);
-}
-
-bool SetDisplayUIScale(int64_t id, float ui_scale) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->IsActiveDisplayId(id) ||
-      !display::Display::IsInternalDisplayId(id)) {
-    return false;
-  }
-  const display::ManagedDisplayInfo& info = display_manager->GetDisplayInfo(id);
-
-  scoped_refptr<display::ManagedDisplayMode> mode =
-      GetDisplayModeForUIScale(info, ui_scale);
-  if (!mode)
-    return false;
-  return display_manager->SetDisplayMode(id, mode);
 }
 
 gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,

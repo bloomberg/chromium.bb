@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/display_util.h"
-#include "ash/screen_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -116,6 +114,21 @@ gfx::Size GetMaxNativeSize(const display::ManagedDisplayInfo& info) {
       size = mode->size();
   }
   return size;
+}
+
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
+    const display::ManagedDisplayInfo& info,
+    float ui_scale) {
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+  auto iter = std::find_if(
+      modes.begin(), modes.end(),
+      [ui_scale](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+        return mode->ui_scale() == ui_scale;
+      });
+  if (iter == modes.end())
+    return scoped_refptr<display::ManagedDisplayMode>();
+  return *iter;
 }
 
 }  // namespace
@@ -1084,6 +1097,19 @@ bool DisplayManager::ZoomInternalDisplay(bool up) {
   }
 
   return mode ? SetDisplayMode(display_id, mode) : false;
+}
+
+bool DisplayManager::SetDisplayUIScale(int64_t id, float ui_scale) {
+  if (!IsActiveDisplayId(id) || !display::Display::IsInternalDisplayId(id)) {
+    return false;
+  }
+  const display::ManagedDisplayInfo& info = GetDisplayInfo(id);
+
+  scoped_refptr<display::ManagedDisplayMode> mode =
+      GetDisplayModeForUIScale(info, ui_scale);
+  if (!mode)
+    return false;
+  return SetDisplayMode(id, mode);
 }
 
 void DisplayManager::ResetInternalDisplayZoom() {

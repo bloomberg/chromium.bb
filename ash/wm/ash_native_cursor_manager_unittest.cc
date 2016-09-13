@@ -183,13 +183,13 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  SetDisplayUIScale(display_id, 0.5f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
-  SetDisplayUIScale(display_id, 1.0f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 1.0f);
 
   // 2x display should keep using 2x cursor regardless of the UI scale.
   UpdateDisplay("800x800*2");
@@ -197,7 +197,7 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_UIScaleShouldNotChangeCursor) {
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
-  SetDisplayUIScale(display_id, 2.0f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());

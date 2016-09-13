@@ -713,19 +713,23 @@ TEST_P(WindowTreeHostManagerTest, BoundsUpdated) {
       secondary_id);
   EXPECT_EQ(1, observer.CountAndReset());
 
-  SetDisplayUIScale(secondary_id, 1.125f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(secondary_id,
+                                                             1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  SetDisplayUIScale(secondary_id, 1.125f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(secondary_id,
+                                                             1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  SetDisplayUIScale(primary_id, 1.125f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(primary_id,
+                                                             1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  SetDisplayUIScale(primary_id, 1.125f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(primary_id,
+                                                             1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -1108,7 +1112,8 @@ TEST_P(WindowTreeHostManagerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  SetDisplayUIScale(display1.id(), 1.25f);
+  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display1.id(),
+                                                             1.25f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
