@@ -9,11 +9,11 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 class ContextLostExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+    # self.Fail('ContextLost_WebGLContextLostFromGPUProcessExit',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     # AMD Radeon 6450
-    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+    self.Fail('ContextLost_WebGLContextLostFromGPUProcessExit',
         ['linux', ('amd', 0x6779)], bug=479975)
 
     # Win7 bots
@@ -21,11 +21,11 @@ class ContextLostExpectations(GpuTestExpectations):
     # Flaky retries aren't working well in this case. Need to shut
     # down the browser between runs. This will be done in the new test
     # harness (http://crbug.com/352807).
-    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+    self.Fail('ContextLost_WebGLContextLostFromGPUProcessExit',
               ['win7'], bug=619196)
 
     # Win8 Release and Debug NVIDIA bots.
-    self.Skip('ContextLost.WebGLContextLostFromSelectElement',
+    self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['win8', 'nvidia'], bug=524808)
 
     # Flakily timing out on Win x64 Debug bot.
@@ -33,27 +33,27 @@ class ContextLostExpectations(GpuTestExpectations):
     # Also unfortunately, the flaky retry mechanism doesn't work well in
     # this harness if the test times out. Skip it on this configuration for
     # now.
-    self.Skip('ContextLost.WebGLContextLostFromQuantity',
+    self.Skip('ContextLost_WebGLContextLostFromQuantity',
               ['win', 'debug'], bug=628697)
 
     # Flaky on Mac 10.7 and 10.8 resulting in crashes during browser
     # startup, so skip this test in those configurations.
-    self.Skip('ContextLost.WebGLContextLostFromSelectElement',
+    self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['mountainlion', 'debug'], bug=497411)
-    self.Skip('ContextLost.WebGLContextLostFromSelectElement',
+    self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['lion', 'debug'], bug=498149)
 
     # 'Browser must support tab control' raised on Android
-    self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
+    self.Skip('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
               ['android'], bug=609629)
-    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+    self.Skip('ContextLost_WebGLContextLostFromGPUProcessExit',
               ['android'], bug=609629)
-    self.Fail('ContextLost.WebGLContextLostInHiddenTab',
+    self.Skip('ContextLost_WebGLContextLostInHiddenTab',
               ['android'], bug=609629)
 
     # Nexus 6
     # The Nexus 6 times out on these tests while waiting for the JS to complete
-    self.Fail('ContextLost.WebGLContextLostFromLoseContextExtension',
+    self.Fail('ContextLost_WebGLContextLostFromLoseContextExtension',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
-    self.Fail('ContextLost.WebGLContextLostFromQuantity',
+    self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)

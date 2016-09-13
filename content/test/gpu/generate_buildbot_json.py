@@ -928,13 +928,6 @@ NON_SWARMED_GTESTS = {
 }
 
 TELEMETRY_TESTS = {
-  'context_lost': {
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ]
-  },
   'gpu_process_launch_tests': {
       'target_name': 'gpu_process',
       'tester_configs': [
@@ -1017,6 +1010,13 @@ TELEMETRY_TESTS = {
 # Eventually all of the Telemetry based tests above will be ported to
 # this harness, and the old harness will be deleted.
 TELEMETRY_GPU_INTEGRATION_TESTS = {
+  'context_lost': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ]
+  },
   'webgl_conformance': {
     'tester_configs': [
       {
