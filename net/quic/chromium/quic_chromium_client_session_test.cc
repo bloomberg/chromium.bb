@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
@@ -426,9 +427,10 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
 
   // Migrate session.
-  EXPECT_TRUE(session_->MigrateToSocket(std::move(new_socket),
-                                        std::move(new_reader),
-                                        std::move(new_writer), nullptr));
+  EXPECT_TRUE(session_->MigrateToSocket(
+      std::move(new_socket), std::move(new_reader), std::move(new_writer)));
+  // Spin message loop to complete migration.
+  base::RunLoop().RunUntilIdle();
 
   // Write data to session.
   QuicChromiumClientStream* stream =
@@ -476,17 +478,16 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 
     // Migrate session.
     if (i < kMaxReadersPerQuicSession - 1) {
-      EXPECT_TRUE(session_->MigrateToSocket(std::move(new_socket),
-                                            std::move(new_reader),
-                                            std::move(new_writer), nullptr));
+      EXPECT_TRUE(session_->MigrateToSocket(
+          std::move(new_socket), std::move(new_reader), std::move(new_writer)));
+      // Spin message loop to complete migration.
+      base::RunLoop().RunUntilIdle();
       EXPECT_TRUE(socket_data.AllReadDataConsumed());
       EXPECT_TRUE(socket_data.AllWriteDataConsumed());
     } else {
       // Max readers exceeded.
-      EXPECT_FALSE(session_->MigrateToSocket(std::move(new_socket),
-                                             std::move(new_reader),
-                                             std::move(new_writer), nullptr));
-
+      EXPECT_FALSE(session_->MigrateToSocket(
+          std::move(new_socket), std::move(new_reader), std::move(new_writer)));
       EXPECT_FALSE(socket_data.AllReadDataConsumed());
       EXPECT_FALSE(socket_data.AllWriteDataConsumed());
     }
@@ -537,9 +538,10 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
       CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
 
   // Store old socket and migrate session.
-  EXPECT_TRUE(session_->MigrateToSocket(std::move(new_socket),
-                                        std::move(new_reader),
-                                        std::move(new_writer), nullptr));
+  EXPECT_TRUE(session_->MigrateToSocket(
+      std::move(new_socket), std::move(new_reader), std::move(new_writer)));
+  // Spin message loop to complete migration.
+  base::RunLoop().RunUntilIdle();
 
   // Read error on old socket does not impact session.
   EXPECT_TRUE(socket_data_->IsPaused());
@@ -558,50 +560,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   EXPECT_TRUE(socket_data_->AllWriteDataConsumed());
   EXPECT_TRUE(new_socket_data.AllReadDataConsumed());
   EXPECT_TRUE(new_socket_data.AllWriteDataConsumed());
-}
-
-TEST_P(QuicChromiumClientSessionTest, MigrateToSocketWriteError) {
-  Initialize();
-  CompleteCryptoHandshake();
-
-  std::unique_ptr<QuicEncryptedPacket> ping(
-      client_maker_.MakePingPacket(1, /*include_version=*/true));
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 1),
-                        MockWrite(SYNCHRONOUS, ERR_FAILED, 2)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
-
-  // Create connected socket.
-  std::unique_ptr<DatagramClientSocket> new_socket =
-      socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
-                                                 base::Bind(&base::RandInt),
-                                                 &net_log_, NetLog::Source());
-  EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
-
-  // Create reader and writer.
-  std::unique_ptr<QuicChromiumPacketReader> new_reader(
-      new QuicChromiumPacketReader(new_socket.get(), &clock_, session_.get(),
-                                   kQuicYieldAfterPacketsRead,
-                                   QuicTime::Delta::FromMilliseconds(
-                                       kQuicYieldAfterDurationMilliseconds),
-                                   bound_net_log_.bound()));
-  std::unique_ptr<QuicChromiumPacketWriter> new_writer(
-      CreateQuicChromiumPacketWriter(new_socket.get(), session_.get()));
-
-  // Migrate session.
-  EXPECT_TRUE(session_->MigrateToSocket(std::move(new_socket),
-                                        std::move(new_reader),
-                                        std::move(new_writer), nullptr));
-
-  // Write error on new socket causes session close.
-  EXPECT_TRUE(session_->connection()->connected());
-  session_->connection()->SendPing();
-  EXPECT_FALSE(session_->connection()->connected());
-
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 }  // namespace

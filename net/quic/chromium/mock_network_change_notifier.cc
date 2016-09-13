@@ -39,18 +39,28 @@ void MockNetworkChangeNotifier::GetCurrentConnectedNetworks(
 
 void MockNetworkChangeNotifier::NotifyNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle network) {
-  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
-      NetworkChangeNotifier::MADE_DEFAULT, network);
+  QueueNetworkMadeDefault(network);
   // Spin the message loop so the notification is delivered.
   base::RunLoop().RunUntilIdle();
 }
 
+void MockNetworkChangeNotifier::QueueNetworkMadeDefault(
+    NetworkChangeNotifier::NetworkHandle network) {
+  NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+      NetworkChangeNotifier::MADE_DEFAULT, network);
+}
+
 void MockNetworkChangeNotifier::NotifyNetworkDisconnected(
+    NetworkChangeNotifier::NetworkHandle network) {
+  QueueNetworkDisconnected(network);
+  // Spin the message loop so the notification is delivered.
+  base::RunLoop().RunUntilIdle();
+}
+
+void MockNetworkChangeNotifier::QueueNetworkDisconnected(
     NetworkChangeNotifier::NetworkHandle network) {
   NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
       NetworkChangeNotifier::DISCONNECTED, network);
-  // Spin the message loop so the notification is delivered.
-  base::RunLoop().RunUntilIdle();
 }
 
 ScopedMockNetworkChangeNotifier::ScopedMockNetworkChangeNotifier()

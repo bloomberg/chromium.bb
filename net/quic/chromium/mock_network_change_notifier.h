@@ -25,9 +25,19 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
 
   void GetCurrentConnectedNetworks(NetworkList* network_list) const override;
 
+  // Delivers a MADE_DEFAULT notification to observers.
   void NotifyNetworkMadeDefault(NetworkChangeNotifier::NetworkHandle network);
 
+  // Queues a MADE_DEFAULT notification to be delivered to observers
+  // but does not spin the message loop to actually deliver it.
+  void QueueNetworkMadeDefault(NetworkChangeNotifier::NetworkHandle network);
+
+  // Delivers a DISCONNECTED notification to observers.
   void NotifyNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network);
+
+  // Queues a DISCONNECTED notification to be delivered to observers
+  // but does not spin the message loop to actually deliver it.
+  void QueueNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network);
 
  private:
   bool force_network_handles_supported_;

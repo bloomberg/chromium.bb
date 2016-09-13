@@ -1549,15 +1549,13 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
     }
 
     MigrateSessionToNewNetwork(session, new_network,
-                               /*close_session_on_error=*/true, bound_net_log,
-                               nullptr);
+                               /*close_session_on_error=*/true, bound_net_log);
   }
 }
 
-void QuicStreamFactory::MaybeMigrateSingleSession(
+MigrationResult QuicStreamFactory::MaybeMigrateSingleSession(
     QuicChromiumClientSession* session,
-    MigrationCause migration_cause,
-    scoped_refptr<StringIOBuffer> packet) {
+    MigrationCause migration_cause) {
   ScopedConnectionMigrationEventLog scoped_event_log(
       net_log_,
       migration_cause == EARLY_MIGRATION ? "EarlyMigration" : "WriteError");
@@ -1568,7 +1566,7 @@ void QuicStreamFactory::MaybeMigrateSingleSession(
     HistogramAndLogMigrationFailure(
         scoped_event_log.net_log(), MIGRATION_STATUS_DISABLED,
         session->connection_id(), "Migration disabled");
-    return;
+    return MigrationResult::FAILURE;
   }
   NetworkHandle new_network =
       FindAlternateNetwork(session->GetDefaultSocket()->GetBoundNetwork());
@@ -1577,12 +1575,12 @@ void QuicStreamFactory::MaybeMigrateSingleSession(
     HistogramAndLogMigrationFailure(
         scoped_event_log.net_log(), MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
         session->connection_id(), "No alternate network found");
-    return;
+    return MigrationResult::NO_NEW_NETWORK;
   }
   OnSessionGoingAway(session);
-  MigrateSessionToNewNetwork(session, new_network,
-                             migration_cause != WRITE_ERROR,
-                             scoped_event_log.net_log(), packet);
+  return MigrateSessionToNewNetwork(session, new_network,
+                                    migration_cause != WRITE_ERROR,
+                                    scoped_event_log.net_log());
 }
 
 void QuicStreamFactory::MigrateSessionToNewPeerAddress(
@@ -1598,27 +1596,26 @@ void QuicStreamFactory::MigrateSessionToNewPeerAddress(
 
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.
-  MigrateSession(session, peer_address,
-                 NetworkChangeNotifier::kInvalidNetworkHandle,
-                 /*close_session_on_error=*/true, bound_net_log, nullptr);
+  MigrateSessionInner(session, peer_address,
+                      NetworkChangeNotifier::kInvalidNetworkHandle,
+                      /*close_session_on_error=*/true, bound_net_log);
 }
 
-void QuicStreamFactory::MigrateSessionToNewNetwork(
+MigrationResult QuicStreamFactory::MigrateSessionToNewNetwork(
     QuicChromiumClientSession* session,
     NetworkHandle network,
     bool close_session_on_error,
-    const BoundNetLog& bound_net_log,
-    scoped_refptr<StringIOBuffer> packet) {
-  MigrateSession(session, session->connection()->peer_address(), network,
-                 close_session_on_error, bound_net_log, packet);
+    const BoundNetLog& bound_net_log) {
+  return MigrateSessionInner(session, session->connection()->peer_address(),
+                             network, close_session_on_error, bound_net_log);
 }
 
-void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
-                                       IPEndPoint peer_address,
-                                       NetworkHandle network,
-                                       bool close_session_on_error,
-                                       const BoundNetLog& bound_net_log,
-                                       scoped_refptr<StringIOBuffer> packet) {
+MigrationResult QuicStreamFactory::MigrateSessionInner(
+    QuicChromiumClientSession* session,
+    IPEndPoint peer_address,
+    NetworkHandle network,
+    bool close_session_on_error,
+    const BoundNetLog& bound_net_log) {
   // Use OS-specified port for socket (DEFAULT_BIND) instead of
   // using the PortSuggester since the connection is being migrated
   // and not being newly created.
@@ -1633,7 +1630,7 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
     if (close_session_on_error) {
       session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
     }
-    return;
+    return MigrationResult::FAILURE;
   }
   std::unique_ptr<QuicChromiumPacketReader> new_reader(
       new QuicChromiumPacketReader(socket.get(), clock_.get(), session,
@@ -1644,12 +1641,7 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
   new_writer->set_delegate(session);
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
-                                std::move(new_writer), packet)) {
-    // TODO(jokulik): It's not clear how we could end up on this code
-    // path.  We would theoretically hit this failure if we've
-    // performed too many migrations on this session.  However, the
-    // session will be marked as going away after a previous
-    // migration, making subsequent migration impossible.
+                                std::move(new_writer))) {
     HistogramAndLogMigrationFailure(
         bound_net_log, MIGRATION_STATUS_TOO_MANY_CHANGES,
         session->connection_id(), "Too many migrations");
@@ -1657,13 +1649,14 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
       session->CloseSessionOnError(ERR_NETWORK_CHANGED,
                                    QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
     }
-    return;
+    return MigrationResult::FAILURE;
   }
   HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
   bound_net_log.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS,
       base::Bind(&NetLogQuicConnectionMigrationSuccessCallback,
                  session->connection_id()));
+  return MigrationResult::SUCCESS;
 }
 
 void QuicStreamFactory::OnSSLConfigChanged() {

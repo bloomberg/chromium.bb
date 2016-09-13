@@ -73,6 +73,13 @@ enum MigrationCause {
   WRITE_ERROR       // Migration due to socket write error.
 };
 
+// Result of a session migration attempt.
+enum class MigrationResult {
+  SUCCESS,         // Migration succeeded.
+  NO_NEW_NETWORK,  // Migration failed since no new network was found.
+  FAILURE          // Migration failed for other reasons.
+};
+
 // Encapsulates a pending request for a QuicHttpStream.
 // If the request is still pending when it is destroyed, it will
 // cancel the request with the factory.
@@ -303,21 +310,17 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Method that initiates migration of |session| if |session| is
   // active and if there is an alternate network than the one to which
-  // |session| is currently bound. If not null, |packet| is sent on
-  // the new network, else a PING frame is sent.
-  void MaybeMigrateSingleSession(QuicChromiumClientSession* session,
-                                 MigrationCause migration_cause,
-                                 scoped_refptr<StringIOBuffer> packet);
+  // |session| is currently bound.
+  MigrationResult MaybeMigrateSingleSession(QuicChromiumClientSession* session,
+                                            MigrationCause migration_cause);
 
   // Migrates |session| over to using |network|. If |network| is
-  // kInvalidNetworkHandle, default network is used. If |packet| is
-  // not null, it is sent on the new network, else a PING frame is
-  // sent.
-  void MigrateSessionToNewNetwork(QuicChromiumClientSession* session,
-                                  NetworkChangeNotifier::NetworkHandle network,
-                                  bool close_session_on_error,
-                                  const BoundNetLog& bound_net_log,
-                                  scoped_refptr<StringIOBuffer> packet);
+  // kInvalidNetworkHandle, default network is used.
+  MigrationResult MigrateSessionToNewNetwork(
+      QuicChromiumClientSession* session,
+      NetworkChangeNotifier::NetworkHandle network,
+      bool close_session_on_error,
+      const BoundNetLog& bound_net_log);
 
   // Migrates |session| over to using |peer_address|. Causes a PING frame
   // to be sent to the new peer address.
@@ -382,6 +385,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
 
   bool delay_tcp_race() const { return delay_tcp_race_; }
+
+  bool migrate_sessions_on_network_change() const {
+    return migrate_sessions_on_network_change_;
+  }
 
  private:
   class Job;
@@ -480,15 +487,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void MaybeDisableQuic(uint16_t port);
 
   // Internal method that migrates |session| over to using
-  // |peer_address| and |network|. If |network| is kInvalidNetworkHandle,
-  // default network is used. If |packet| is not null, it is sent
-  // on the new network, else a PING frame is sent.
-  void MigrateSession(QuicChromiumClientSession* session,
-                      IPEndPoint peer_address,
-                      NetworkChangeNotifier::NetworkHandle network,
-                      bool close_session_on_error,
-                      const BoundNetLog& bound_net_log,
-                      scoped_refptr<StringIOBuffer> packet);
+  // |peer_address| and |network|. If |network| is
+  // kInvalidNetworkHandle, default network is used. If the migration
+  // fails and |close_session_on_error| is true, connection is closed.
+  MigrationResult MigrateSessionInner(
+      QuicChromiumClientSession* session,
+      IPEndPoint peer_address,
+      NetworkChangeNotifier::NetworkHandle network,
+      bool close_session_on_error,
+      const BoundNetLog& bound_net_log);
 
   bool require_confirmation_;
   NetLog* net_log_;

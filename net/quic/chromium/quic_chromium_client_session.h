@@ -253,19 +253,25 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   QuicDisabledReason disabled_reason() const { return disabled_reason_; }
 
+  // Attempts to migrate session when a write error is encountered.
+  void MigrateSessionOnWriteError();
+
+  // Helper method that writes a packet on the new socket after
+  // migration completes. If not null, the packet_ member is written,
+  // otherwise a PING packet is written.
+  void WriteToNewSocket();
+
   // Migrates session onto new socket, i.e., starts reading from
   // |socket| in addition to any previous sockets, and sets |writer|
   // to be the new default writer. Returns true if socket was
   // successfully added to the session and the session was
-  // successfully migrated to using the new socket. If not null,
-  // |packet| is sent on the new network, else a PING frame is
-  // sent. Returns true on successful migration, or false if number of
-  // migrations exceeds kMaxReadersPerQuicSession.  Takes ownership of
-  // |socket|, |reader|, and |writer|.
+  // successfully migrated to using the new socket. Returns true on
+  // successful migration, or false if number of migrations exceeds
+  // kMaxReadersPerQuicSession. Takes ownership of |socket|, |reader|,
+  // and |writer|.
   bool MigrateToSocket(std::unique_ptr<DatagramClientSocket> socket,
                        std::unique_ptr<QuicChromiumPacketReader> reader,
-                       std::unique_ptr<QuicChromiumPacketWriter> writer,
-                       scoped_refptr<StringIOBuffer> packet);
+                       std::unique_ptr<QuicChromiumPacketWriter> writer);
 
   // Populates network error details for this session.
   void PopulateNetErrorDetails(NetErrorDetails* details);
@@ -365,10 +371,14 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // UMA histogram counters for streams pushed to this session.
   int streams_pushed_count_;
   int streams_pushed_and_claimed_count_;
-  // Return value from packet rewrite packet on new socket. Used
-  // during connection migration on socket write error.
-  int error_code_from_rewrite_;
-  bool use_error_code_from_rewrite_;
+  // Stores packet that witnesses socket write error. This packet is
+  // written to a new socket after migration completes.
+  scoped_refptr<StringIOBuffer> packet_;
+  // TODO(jri): Replace use of migration_pending_ sockets_.size().
+  // When a task is posted for MigrateSessionOnError, pass in
+  // sockets_.size(). Then in MigrateSessionOnError, check to see if
+  // the current sockets_.size() == the passed in value.
+  bool migration_pending_;  // True while migration is underway.
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);
