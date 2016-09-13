@@ -913,7 +913,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                             priority, timeout_mins, retry, max_retries,
                             minimum_duts, suite_min_duts, offload_failures_only,
                             subsystems, skip_duts_check)
-    swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
+    swarming_args = _CreateSwarmingArgs(build, suite, board, priority,
+                                        timeout_mins)
     running_json_dump_flag = False
     json_dump_result = None
     job_id = _HWTestCreate(cmd, debug, **swarming_args)
@@ -943,9 +944,11 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
           '** Failed to fullfill request with proxy server, code(%d) **'
           % result.returncode)
     else:
-      logging.debug('swarming info: name: %s, bot_id: %s, created_ts: %s',
+      logging.debug('swarming info: name: %s, bot_id: %s, task_id: %s, '
+                    'created_ts: %s',
                     result.GetValue('name'),
                     result.GetValue('bot_id'),
+                    result.GetValue('id'),
                     result.GetValue('created_ts'))
       # If running json_dump cmd, write the pass/fail subsys dict into console,
       # otherwise, write the cmd output to the console.
@@ -1062,8 +1065,7 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
   return args
 
 
-# pylint: disable=docstring-missing-args
-def _CreateSwarmingArgs(build, suite, timeout_mins=None):
+def _CreateSwarmingArgs(build, suite, board, priority, timeout_mins=None):
   """Create args for swarming client.
 
   Args:
@@ -1071,6 +1073,8 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
     suite: Name of the suite, will be part of the swarming task name.
     timeout_mins: run_suite timeout mins, will be used to figure out
                   timeouts for swarming task.
+    board: Name of the board.
+    priority: Priority of this call.
 
   Returns:
     A dictionary of args for swarming client.
@@ -1079,7 +1083,7 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
   swarming_timeout = timeout_mins or _DEFAULT_HWTEST_TIMEOUT_MINS
   swarming_timeout = swarming_timeout * 60 + _SWARMING_ADDITIONAL_TIMEOUT
 
-  swarming_args = {
+  return {
       'swarming_server': topology.topology.get(
           topology.SWARMING_PROXY_HOST_KEY),
       'task_name': '-'.join([build, suite]),
@@ -1089,8 +1093,15 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
       'timeout_secs': swarming_timeout,
       'io_timeout_secs': swarming_timeout,
       'hard_timeout_secs': swarming_timeout,
-      'expiration_secs': _SWARMING_EXPIRATION}
-  return swarming_args
+      'expiration_secs': _SWARMING_EXPIRATION,
+      'tags': {
+          'task_name': '-'.join([build, suite]),
+          'build': build,
+          'suite': suite,
+          'board': board,
+          'priority': priority,
+      },
+  }
 
 
 def _HWTestCreate(cmd, debug=False, **kwargs):

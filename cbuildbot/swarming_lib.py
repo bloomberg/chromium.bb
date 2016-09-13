@@ -30,7 +30,7 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
                        print_status_updates=False,
                        timeout_secs=None, io_timeout_secs=None,
                        hard_timeout_secs=None, expiration_secs=None,
-                       temp_json_path=None,
+                       temp_json_path=None, tags=None,
                        *args, **kwargs):
   """Run command via swarming proxy.
 
@@ -50,6 +50,7 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
     expiration_secs: Seconds to allow the task to be pending for a bot to
                      run before this task request expires.
     temp_json_path: Where swarming client should dump the result.
+    tags: Dict, representing tags to add to the swarming command.
   """
   with osutils.TempDir() as tempdir:
     if temp_json_path is None:
@@ -79,6 +80,10 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
 
     if expiration_secs is not None:
       swarming_cmd += ['--expiration', str(expiration_secs)]
+
+    if tags is not None:
+      for k, v in tags.items():
+        swarming_cmd += ['--tags=%s:%s' % (k, v)]
 
     swarming_cmd += ['--']
     swarming_cmd += cmd
