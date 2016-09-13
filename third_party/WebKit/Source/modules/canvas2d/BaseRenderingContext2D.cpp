@@ -26,7 +26,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
 

@@ -15,6 +15,7 @@
 #include "modules/canvas2d/CanvasStyle.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/effects/SkComposeImageFilter.h"
 
 namespace blink {
 
@@ -315,13 +316,11 @@ void BaseRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas* 
         SkPaint shadowPaint = *state().getPaint(paintType, DrawShadowOnly, imageType);
         int saveCount = c->getSaveCount();
         if (filter) {
-            SkPaint filterPaint;
-            filterPaint.setImageFilter(filter);
-            // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
-            // does not affect transparent black regions.
-            c->saveLayer(nullptr, &shadowPaint);
-            c->saveLayer(nullptr, &filterPaint);
             SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
+            sk_sp<SkImageFilter> composedFilter = sk_ref_sp(foregroundPaint.getImageFilter());
+            composedFilter = SkComposeImageFilter::Make(std::move(composedFilter), sk_ref_sp(shadowPaint.getImageFilter()));
+            composedFilter = SkComposeImageFilter::Make(std::move(composedFilter), sk_ref_sp(filter));
+            foregroundPaint.setImageFilter(std::move(composedFilter));
             c->setMatrix(ctm);
             drawFunc(c, &foregroundPaint);
         } else {
