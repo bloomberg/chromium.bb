@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
@@ -553,8 +554,15 @@ void BaseAudioContext::recordUserGestureState()
             userGestureHistogram.count(UserGestureNotRequiredAndNotAvailable);
         return;
     }
+
+    DCHECK(m_userGestureRequired);
     if (!UserGestureIndicator::processingUserGesture()) {
         userGestureHistogram.count(UserGestureRequiredAndNotAvailable);
+
+        Document* document = toDocument(getExecutionContext());
+        if (document)
+            Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::WebAudioAutoplayCrossOriginIframe);
+
         return;
     }
     userGestureHistogram.count(UserGestureRequiredAndAvailable);

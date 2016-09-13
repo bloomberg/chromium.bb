@@ -80899,6 +80899,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1554" label="DragAndDropScrollStart"/>
   <int value="1555"
       label="PresentationConnectionListConnectionAvailableEventListener"/>
+  <int value="1556" label="WebAudioAutoplayCrossOriginIframe"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -373,6 +373,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::NavigatorPointerEnabled:
         return "Navigator.pointerEnabled is a non-standard API added for experiments only. It will be removed in near future.";
 
+    case UseCounter::WebAudioAutoplayCrossOriginIframe:
+        return willBeRemoved("Web Audio autoplay (without user gesture) from cross-origin iframes", 55, "6406908126691328");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
