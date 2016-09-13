@@ -219,8 +219,9 @@ public class OfflinePageTabObserver
     }
 
     void maybeShowReloadSnackbar(Tab tab, boolean isNetworkEvent) {
-        if (tab.isFrozen() || tab.isHidden() || !tab.isOfflinePage() || !isConnected()
-                || !isLoadedTab(tab) || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
+        if (tab == null || tab.isFrozen() || tab.isHidden() || !tab.isOfflinePage()
+                || !isConnected() || !isLoadedTab(tab)
+                || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
             // Conditions to show a snackbar are not met.
             return;
         }

@@ -515,6 +515,25 @@ public class OfflinePageTabObserverTest {
 
     @Test
     @Feature({"OfflinePages"})
+    public void testOnConnectionTypeChanged_noCurrentTab() {
+        OfflinePageTabObserver observer = createObserver();
+
+        disconnect(observer, false);
+        showTab(null);
+        observer.startObservingTab(mTab);
+        hideTab(observer);
+        // That resets the page to not loaded.
+        observer.onUrlUpdated(mTab);
+
+        assertTrue(observer.isObservingNetworkChanges());
+        connect(observer, true);
+
+        verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
+        assertTrue(observer.isObservingNetworkChanges());
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
     public void testShowSnackbar_ignoreEventsAfterShownOnce() {
         OfflinePageTabObserver observer = createObserver();
 
