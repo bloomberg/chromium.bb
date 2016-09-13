@@ -5,6 +5,7 @@
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/core/contents/blimp_contents_view.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
@@ -90,10 +91,12 @@ gfx::NativeView BlimpContentsImpl::GetNativeView() {
 
 void BlimpContentsImpl::Show() {
   compositor_manager_.SetVisible(true);
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Tab.Visible", true);
 }
 
 void BlimpContentsImpl::Hide() {
   compositor_manager_.SetVisible(false);
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Tab.Visible", false);
 }
 
 bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {

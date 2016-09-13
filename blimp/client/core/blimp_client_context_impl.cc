@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/blimp_client_switches.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
@@ -104,6 +105,8 @@ BlimpClientContextImpl::BlimpClientContextImpl(
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientNetworkComponents::Initialize,
                             base::Unretained(net_components_.get())));
+
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Supported", true);
 }
 
 BlimpClientContextImpl::~BlimpClientContextImpl() {
@@ -143,9 +146,13 @@ void BlimpClientContextImpl::ConnectToAssignmentSource(
                  weak_factory_.GetWeakPtr()));
 }
 
-void BlimpClientContextImpl::OnConnected() {}
+void BlimpClientContextImpl::OnConnected() {
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", true);
+}
 
-void BlimpClientContextImpl::OnDisconnected(int result) {}
+void BlimpClientContextImpl::OnDisconnected(int result) {
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", false);
+}
 
 GURL BlimpClientContextImpl::GetAssignerURL() {
   return GURL(kDefaultAssignerUrl);

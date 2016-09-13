@@ -3776,6 +3776,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blimp.Compositor.CommitSizeKb" units="KB">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the size of the uncompressed commit messages received by Blimp
+    compositor.
+  </summary>
+</histogram>
+
+<histogram name="Blimp.Connected" enum="BooleanConnected">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records whether connection attempt to the Blimp engine was successful.
+  </summary>
+</histogram>
+
+<histogram name="Blimp.Supported" enum="BooleanSupported">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>Records whether Blimp is supported.</summary>
+</histogram>
+
+<histogram name="Blimp.Tab.Visible" enum="BooleanVisible">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>Records whenever a Blimp tab toggles visibility.</summary>
+</histogram>
+
 <histogram name="Blink.Binding.InitializeWindowProxy" units="microseconds">
   <owner>peria@chromium.org</owner>
   <summary>Time spent initializing WindowProxy during a page loading.</summary>

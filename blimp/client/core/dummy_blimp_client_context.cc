@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 
@@ -32,7 +33,9 @@ BlimpClientContext* BlimpClientContext::Create(
 #endif  // defined(OS_ANDROID)
 }
 
-DummyBlimpClientContext::DummyBlimpClientContext() : BlimpClientContext() {}
+DummyBlimpClientContext::DummyBlimpClientContext() : BlimpClientContext() {
+  UMA_HISTOGRAM_BOOLEAN("Blimp.Supported", false);
+}
 
 DummyBlimpClientContext::~DummyBlimpClientContext() {}
 
