@@ -168,6 +168,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/jumplist.h"
+#include "chrome/browser/win/jumplist_factory.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme_dark_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
@@ -465,14 +466,6 @@ BrowserView::~BrowserView() {
   immersive_mode_controller_.reset();
 
   browser_->tab_strip_model()->RemoveObserver(this);
-
-#if defined(OS_WIN)
-  // Terminate the jumplist (must be called before browser_->profile() is
-  // destroyed.
-  if (jumplist_.get()) {
-    jumplist_->Terminate();
-  }
-#endif
 
   extensions::ExtensionCommandsGlobalRegistry* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
@@ -2167,7 +2160,7 @@ void BrowserView::LoadingAnimationCallback() {
 void BrowserView::OnLoadCompleted() {
 #if defined(OS_WIN)
   DCHECK(!jumplist_.get());
-  jumplist_ = new JumpList(browser_->profile());
+  jumplist_ = JumpListFactory::GetForProfile(browser_->profile());
 #endif
 }
 

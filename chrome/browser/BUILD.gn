@@ -1217,6 +1217,8 @@ split_static_library("browser") {
     "win/enumerate_modules_model.h",
     "win/jumplist.cc",
     "win/jumplist.h",
+    "win/jumplist_factory.cc",
+    "win/jumplist_factory.h",
     "win/jumplist_updater.cc",
     "win/jumplist_updater.h",
     "win/settings_app_monitor.cc",
