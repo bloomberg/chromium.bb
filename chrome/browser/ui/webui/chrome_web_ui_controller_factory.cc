@@ -158,6 +158,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
+#include "chrome/browser/ui/webui/welcome_ui.h"
 #endif
 
 #if defined(OS_WIN)
@@ -260,7 +261,14 @@ WebUIController* NewWebUI<settings::MdSettingsUI>(WebUI* web_ui,
                                                   const GURL& url) {
   return new settings::MdSettingsUI(web_ui, url);
 }
-#endif
+
+#if !defined(OS_CHROMEOS)
+template <>
+WebUIController* NewWebUI<WelcomeUI>(WebUI* web_ui, const GURL& url) {
+  return new WelcomeUI(web_ui, url);
+}
+#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(ENABLE_EXTENSIONS)
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
@@ -534,6 +542,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncConfirmationUI>;
   if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
     return &NewWebUI<ProfileSigninConfirmationUI>;
+  if (url.host() == chrome::kChromeUIWelcomeHost)
+    return &NewWebUI<WelcomeUI>;
 #endif
 
   /****************************************************************************

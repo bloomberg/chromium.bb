@@ -186,6 +186,8 @@ without changes to the corresponding grd file. -->
                file="images/disabled_select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_ERROR"
                file="images/error.svg" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_GOOGLE_LOGO"
+               file="images/google_logo.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
                file="images/select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_THROBBER_MEDIUM"

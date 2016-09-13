@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <title>$i18n{headerText}</title>
+
+  <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+  <link rel="stylesheet" href="chrome://welcome/welcome.css">
+
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://welcome/welcome.js"></script>
+
+</head>
+<body>
+  <div class="spacer"></div>
+  <div class="content">
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="chrome://welcome/logo.png" class="logo-bw">
+        <img src="chrome://welcome/logo.png" class="logo-color">
+      </div>
+      <div class="logo-shadow"></div>
+    </div>
+    <div class="heading">$i18n{headerText}</div>
+<if expr="_google_chrome">
+    <div class="subheading">$i18n{subheaderText}</div>
+</if>
+    <div class="signin">
+      <div class="signin-description">$i18n{descriptionText}</div>
+      <div class="signin-buttons">
+        <paper-button class="action">$i18n{acceptText}</paper-button>
+        <a href="#" class="link">$i18n{declineText}</a>
+      </div>
+    </div>
+  </div>
+  <div class="watermark"></div>
+</body>
+</html>

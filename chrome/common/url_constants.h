@@ -86,6 +86,7 @@ extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIUserActionsURL[];
 extern const char kChromeUIUserManagerURL[];
 extern const char kChromeUIVersionURL[];
+extern const char kChromeUIWelcomeURL[];
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kChromeUIContextualSearchPromoURL[];
@@ -235,6 +236,7 @@ extern const char kChromeUIUberHost[];
 extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
+extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWorkersHost[];
 
 #if defined(ENABLE_PRINT_PREVIEW)

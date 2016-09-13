@@ -441,6 +441,11 @@
         <include name="IDR_FIRST_RUN_DIALOG_MANIFEST" file="resources\chromeos\first_run\app/manifest.json" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_MANIFEST" file="resources\chromeos\arc_support\manifest.json" type="BINDATA" />
       </if>
+      <if expr="not is_android and not is_ios and not chromeos">
+        <include name="IDR_WELCOME_CSS" file="resources\welcome\welcome.css" type="BINDATA" />
+        <include name="IDR_WELCOME_HTML" file="resources\welcome\welcome.html" type="BINDATA" />
+        <include name="IDR_WELCOME_JS" file="resources\welcome\welcome.js" type="BINDATA" />
+      </if>
       <if expr="chromeos and _google_chrome">
         <include name="IDR_GENIUS_APP_MANIFEST" file="resources\chromeos\genius_app\manifest.json" type="BINDATA" />
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />

@@ -1,0 +1,191 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  align-items: center;
+  color: var(--paper-grey-900);
+  display: flex;
+  flex-direction: column;
+  font-size: 100%;
+  justify-content: center;
+  min-height: 96vh;
+  overflow-y: hidden;
+  padding: 16px;
+}
+
+@keyframes slideUpContent {
+  from {
+    transform: translateY(186px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+
+@keyframes fadeInAndSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(-1440deg);
+  }
+}
+
+@keyframes fadeInAndSlideDownShadow {
+  from {
+    opacity: .6;
+    top: 8px;
+  }
+}
+
+@keyframes scaleUp {
+  0% {
+    transform: scale(.8);
+  }
+}
+
+.spacer {
+  flex: 1;
+  max-height: 96px;
+}
+
+.content {
+  align-items: center;
+  animation: slideUpContent 600ms 1.8s cubic-bezier(.4, .2, 0, 1) both;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 500px;
+}
+
+.heading {
+  animation: fadeInAndSlideUp 600ms 1.9s cubic-bezier(.4, .2, 0, 1) both;
+  font-size: 2.125em;
+  margin-bottom: .25em;
+  margin-top: 1.5em;
+}
+
+.subheading {
+  animation: fadeInAndSlideUp 600ms 1.9s cubic-bezier(.4, .2, 0, 1) both;
+  color: var(--google-grey-500);
+  font-size: 1em;
+  margin-top: .25em;
+}
+
+.logo {
+  animation: fadeIn 600ms both;
+  height: 96px;
+  position: relative;
+  width: 96px;
+}
+
+.logo-icon {
+  animation: scaleUp 600ms 500ms cubic-bezier(.5, -.5, 0, 2.25) both;
+  background: white;
+  border-radius: 50%;
+  height: 96px;
+  width: 96px;
+}
+
+.logo-bw,
+.logo-color {
+  animation: fadeIn 600ms 500ms both,
+             spin 2.4s cubic-bezier(.4, .2, 0, 1) both;
+  content: -webkit-image-set(url(logo.png) 1x, url(logo2x.png) 2x);
+  left: -5px;
+  position: absolute;
+  top: -5px;
+  width: 106px;
+}
+
+.logo-bw {
+  -webkit-filter: grayscale(100%);
+}
+
+.logo-color {
+  animation: fadeIn 300ms 700ms both,
+             spin 2.4s cubic-bezier(.4, .2, 0, 1) both;
+}
+
+.logo-shadow {
+  -webkit-filter: blur(16px);
+  animation: fadeInAndSlideDownShadow 300ms 600ms both;
+  background: rgba(0, 0, 0, .2);
+  border-radius: 50%;
+  height: 96px;
+  position: absolute;
+  top: 16px;
+  width: 96px;
+  z-index: -1;
+}
+
+.signin {
+  animation: fadeInAndSlideUp 600ms 2s cubic-bezier(.4, .2, 0, 1) both;
+  margin-top: 3em;
+  text-align: left;
+}
+
+.signin-description {
+  font-size: .875em;
+  line-height: 1.725em;
+  max-width: 344px;
+}
+
+.signin-buttons {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-top: 2em;
+}
+
+.action {
+  background: var(--google-blue-500);
+  color: white;
+  font-size: .75em;
+  font-weight: 500;
+  line-height: 2.5em;
+  padding: 0 1.25em;
+}
+
+.action:focus {
+  background: var(--google-blue-700);
+}
+
+.link {
+  color: var(--google-blue-500);
+  display: inline-block;
+  font-size: .75em;
+  margin: 1.5em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.watermark {
+  -webkit-mask-image: url(chrome://welcome/watermark.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: var(--paper-grey-400);
+  height: 24px;
+  margin-top: 48px;
+  width: 74px;
+}

@@ -1928,6 +1928,8 @@ split_static_library("ui") {
       "webui/signin/user_manager_screen_handler.h",
       "webui/signin/user_manager_ui.cc",
       "webui/signin/user_manager_ui.h",
+      "webui/welcome_ui.cc",
+      "webui/welcome_ui.h",
     ]
     if (is_mac && !mac_views_browser) {
       sources -= [
