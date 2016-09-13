@@ -77,6 +77,8 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ElementShadowV0.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
@@ -1295,7 +1297,7 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* el
     DCHECK(elementShadow);
     if (elementShadow->isV1())
         return false;
-    const SelectRuleFeatureSet& featureSet = elementShadow->ensureSelectFeatureSet();
+    const SelectRuleFeatureSet& featureSet = elementShadow->v0().ensureSelectFeatureSet();
 
     if (name == HTMLNames::idAttr) {
         AtomicString oldId = elementData()->idForStyleResolution();

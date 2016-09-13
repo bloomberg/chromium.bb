@@ -180,7 +180,7 @@ bool SharedStyleFinder::sharingCandidateCanShareHostStyles(Element& candidate) c
     if (static_cast<bool>(elementShadow) != static_cast<bool>(candidateShadow))
         return false;
 
-    return elementShadow->hasSameStyles(candidateShadow);
+    return elementShadow->hasSameStyles(*candidateShadow);
 }
 
 bool SharedStyleFinder::sharingCandidateDistributedToSameInsertionPoint(Element& candidate) const

@@ -372,6 +372,8 @@ blink_core_sources("dom") {
     "shadow/DistributedNodes.h",
     "shadow/ElementShadow.cpp",
     "shadow/ElementShadow.h",
+    "shadow/ElementShadowV0.cpp",
+    "shadow/ElementShadowV0.h",
     "shadow/FlatTreeTraversal.cpp",
     "shadow/FlatTreeTraversal.h",
     "shadow/InsertionPoint.cpp",

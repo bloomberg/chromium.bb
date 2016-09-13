@@ -31,6 +31,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ElementShadowV0.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -77,7 +78,7 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
     if (name == selectAttr) {
         if (ShadowRoot* root = containingShadowRoot()) {
             if (!root->isV1() && root->owner())
-                root->owner()->willAffectSelector();
+                root->owner()->v0().willAffectSelector();
         }
         m_shouldParseSelect = true;
         m_select = value;

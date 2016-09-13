@@ -60,6 +60,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ElementShadowV0.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -440,34 +441,34 @@ Node* Internals::parentTreeScope(Node* node)
 bool Internals::hasSelectorForIdInShadow(Element* host, const AtomicString& idValue, ExceptionState& exceptionState)
 {
     ASSERT(host);
-    if (!host->shadow()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
+    if (!host->shadow() || host->shadow()->isV1()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a v0 shadow.");
         return false;
     }
 
-    return host->shadow()->ensureSelectFeatureSet().hasSelectorForId(idValue);
+    return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForId(idValue);
 }
 
 bool Internals::hasSelectorForClassInShadow(Element* host, const AtomicString& className, ExceptionState& exceptionState)
 {
     ASSERT(host);
-    if (!host->shadow()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
+    if (!host->shadow() || host->shadow()->isV1()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a v0 shadow.");
         return false;
     }
 
-    return host->shadow()->ensureSelectFeatureSet().hasSelectorForClass(className);
+    return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForClass(className);
 }
 
 bool Internals::hasSelectorForAttributeInShadow(Element* host, const AtomicString& attributeName, ExceptionState& exceptionState)
 {
     ASSERT(host);
-    if (!host->shadow()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
+    if (!host->shadow() || host->shadow()->isV1()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a v0 shadow.");
         return false;
     }
 
-    return host->shadow()->ensureSelectFeatureSet().hasSelectorForAttribute(attributeName);
+    return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForAttribute(attributeName);
 }
 
 unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node* node2, ExceptionState& exceptionState) const

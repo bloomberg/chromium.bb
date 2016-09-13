@@ -31,12 +31,12 @@
 #include "core/dom/shadow/InsertionPoint.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ElementShadowV0.h"
 
 namespace blink {
 
@@ -204,13 +204,15 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
 {
     HTMLElement::insertedInto(insertionPoint);
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (ElementShadow* rootOwner = root->owner()) {
-            rootOwner->setNeedsDistributionRecalc();
-            if (canBeActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope().rootNode() == root) {
-                m_registeredWithShadowRoot = true;
-                root->didAddInsertionPoint(this);
-                if (canAffectSelector())
-                    rootOwner->willAffectSelector();
+        if (!root->isV1()) {
+            if (ElementShadow* rootOwner = root->owner()) {
+                rootOwner->setNeedsDistributionRecalc();
+                if (canBeActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope().rootNode() == root) {
+                    m_registeredWithShadowRoot = true;
+                    root->didAddInsertionPoint(this);
+                    if (canAffectSelector())
+                        rootOwner->v0().willAffectSelector();
+                }
             }
         }
     }
@@ -243,9 +245,9 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
         DCHECK(root);
         m_registeredWithShadowRoot = false;
         root->didRemoveInsertionPoint(this);
-        if (rootOwner) {
+        if (!root->isV1() && rootOwner) {
             if (canAffectSelector())
-                rootOwner->willAffectSelector();
+                rootOwner->v0().willAffectSelector();
         }
     }
 
@@ -269,7 +271,7 @@ const InsertionPoint* resolveReprojection(const Node* projectedNode)
         if (!shadow || shadow->isV1() || shadow == lastElementShadow)
             break;
         lastElementShadow = shadow;
-        const InsertionPoint* insertedTo = shadow->finalDestinationInsertionPointFor(projectedNode);
+        const InsertionPoint* insertedTo = shadow->v0().finalDestinationInsertionPointFor(projectedNode);
         if (!insertedTo)
             break;
         DCHECK_NE(current, insertedTo);
@@ -288,7 +290,7 @@ void collectDestinationInsertionPoints(const Node& node, HeapVector<Member<Inser
         if (!shadow || shadow->isV1() || shadow == lastElementShadow)
             return;
         lastElementShadow = shadow;
-        const DestinationInsertionPoints* insertionPoints = shadow->destinationInsertionPointsFor(&node);
+        const DestinationInsertionPoints* insertionPoints = shadow->v0().destinationInsertionPointsFor(&node);
         if (!insertionPoints)
             return;
         for (size_t i = 0; i < insertionPoints->size(); ++i)
