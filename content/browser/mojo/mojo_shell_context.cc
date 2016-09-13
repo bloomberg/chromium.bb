@@ -9,12 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/mojo/constants.h"
+#include "content/browser/mojo/merge_dictionary.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_names.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
@@ -101,6 +103,39 @@ void StartServiceInGpuProcess(const std::string& service_name,
 
 #endif  // ENABLE_MOJO_MEDIA_IN_GPU_PROCESS
 
+void MergeDictionary(base::DictionaryValue* target,
+                     const base::DictionaryValue* source) {
+  for (base::DictionaryValue::Iterator it(*source); !it.IsAtEnd();
+       it.Advance()) {
+    const base::Value* merge_value = &it.value();
+    // Check whether we have to merge dictionaries.
+    if (merge_value->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* sub_dict;
+      if (target->GetDictionaryWithoutPathExpansion(it.key(), &sub_dict)) {
+        MergeDictionary(
+            sub_dict,
+            static_cast<const base::DictionaryValue*>(merge_value));
+        continue;
+      }
+    }
+    if (merge_value->IsType(base::Value::TYPE_LIST)) {
+      const base::ListValue* merge_list = nullptr;
+      if (merge_value->GetAsList(&merge_list)) {
+        base::ListValue* target_list = nullptr;
+        DCHECK(target->GetListWithoutPathExpansion(it.key(), &target_list));
+        for (size_t i = 0; i < merge_list->GetSize(); ++i) {
+          std::string value;
+          DCHECK(merge_list->GetString(i, &value));
+          target_list->AppendString(value);
+        }
+      }
+    } else {
+      // All other cases: Make a copy and hook it up.
+      target->SetWithoutPathExpansion(it.key(), merge_value->DeepCopy());
+    }
+  }
+}
+
 // A ManifestProvider which resolves application names to builtin manifest
 // resources for the catalog service to consume.
 class BuiltinManifestProvider : public catalog::ManifestProvider {
@@ -126,15 +161,28 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
 
  private:
   // catalog::ManifestProvider:
-  bool GetApplicationManifest(const base::StringPiece& name,
-                              std::string* manifest_contents) override {
-    auto manifest_it = manifests_->find(name.as_string());
-    if (manifest_it != manifests_->end()) {
-      *manifest_contents = manifest_it->second;
-      DCHECK(!manifest_contents->empty());
-      return true;
+  std::unique_ptr<base::Value> GetManifest(const std::string& name) override {
+    auto manifest_it = manifests_->find(name);
+    std::unique_ptr<base::Value> manifest_root;
+    if (manifest_it != manifests_->end())
+      manifest_root = base::JSONReader::Read(manifest_it->second);
+
+    base::DictionaryValue* manifest_dictionary = nullptr;
+    if (manifest_root && !manifest_root->GetAsDictionary(&manifest_dictionary))
+      return nullptr;
+
+    std::unique_ptr<base::Value> overlay_root =
+        GetContentClient()->browser()->GetServiceManifestOverlay(name);
+    if (overlay_root) {
+      if (!manifest_root) {
+        manifest_root = std::move(overlay_root);
+      } else {
+        base::DictionaryValue* overlay_dictionary = nullptr;
+        if (overlay_root->GetAsDictionary(&overlay_dictionary))
+          MergeDictionary(manifest_dictionary, overlay_dictionary);
+      }
     }
-    return false;
+    return manifest_root;
   }
 
   std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests_;

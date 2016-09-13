@@ -1090,6 +1090,7 @@ test("content_unittests") {
     "../browser/media/session/audio_focus_manager_unittest.cc",
     "../browser/media/session/media_session_controller_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
+    "../browser/mojo/merge_dictionary_unittest.cc",
     "../browser/net/quota_policy_cookie_store_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/notification_database_data_unittest.cc",

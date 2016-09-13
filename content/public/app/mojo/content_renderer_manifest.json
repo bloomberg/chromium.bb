@@ -4,12 +4,20 @@
   "display_name": "Content Renderer",
   "capabilities": {
     "provided": {
-      "all_interfaces": [ "*" ]
+      "all_interfaces": [ "*" ],
+      "browser": [
+        "content::mojom::EmbeddedWorkerSetup",
+        "content::mojom::FrameFactory",
+        "content::mojom::TestMojoService",
+        "IPC::mojom::ChannelBootstrap",
+        "mojom::ResourceUsageReporter",
+        "web_cache::mojom::WebCache"
+      ]
     },
     "required": {
       // Remove this once http://crbug.com/632818 is fixed.
       "exe:content_browser": {
-        "classes":  [ "all_interfaces" ]
+        "classes":  [ "web" ]
       },
       "mojo:ui": {
         "interfaces": [

@@ -216,8 +216,6 @@ source_set("common") {
     "media/video_capture_messages.h",
     "memory_messages.h",
     "message_port_messages.h",
-    "mojo/constants.cc",
-    "mojo/constants.h",
     "mojo/embedded_application_runner.cc",
     "mojo/embedded_application_runner.h",
     "mojo/mojo_shell_connection_impl.cc",
