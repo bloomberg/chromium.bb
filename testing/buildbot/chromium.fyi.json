@@ -867,7 +867,7 @@
       {
         "args": [
           "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/browser-side-navigation.linux.browser_tests.filter",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/browser-side-navigation.linux.browser_tests.filter",
           "--test-launcher-retry-limit=6"
         ],
         "swarming": {
@@ -878,7 +878,7 @@
       {
         "args": [
           "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
