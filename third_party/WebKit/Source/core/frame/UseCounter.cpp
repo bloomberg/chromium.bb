@@ -45,18 +45,6 @@ int totalPagesMeasuredCSSSampleId() { return 1; }
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
 int maximumCSSSampleId() { return 539; }
 
-blink::EnumerationHistogram& useCounterHistogram()
-{
-    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.Features", blink::UseCounter::NumberOfFeatures));
-    return histogram;
-}
-
-blink::EnumerationHistogram& CSSUseCounterHistogram()
-{
-    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.CSSProperties", maximumCSSSampleId()));
-    return histogram;
-}
-
 } // namespace
 
 namespace blink {
@@ -598,8 +586,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPrope
     return 0;
 }
 
-UseCounter::UseCounter()
+UseCounter::UseCounter(Context context)
     : m_muteCount(0)
+    , m_context(context)
     , m_featuresRecorded(NumberOfFeatures)
     , m_CSSRecorded(lastUnresolvedCSSProperty + 1)
 {
@@ -626,7 +615,7 @@ void UseCounter::recordMeasurement(Feature feature)
     if (!m_featuresRecorded.quickGet(feature)) {
         // Note that HTTPArchive tooling looks specifically for this event - see https://github.com/HTTPArchive/httparchive/issues/59
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "FeatureFirstUsed", "feature", feature);
-        useCounterHistogram().count(feature);
+        featuresHistogram().count(feature);
         m_featuresRecorded.quickSet(feature);
     }
     m_legacyCounter.countFeature(feature);
@@ -645,16 +634,13 @@ bool UseCounter::hasRecordedMeasurement(Feature feature) const
 
 void UseCounter::didCommitLoad()
 {
-    // TODO(rbyers): This gets invoked more than expected.  crbug.com/236262
-    // Eg. every SVGImage has it's own Page instance, they should probably all be delegating
-    // their UseCounter to the containing Page.
     m_legacyCounter.updateMeasurements();
 
     // TODO: Is didCommitLoad really the right time to do this?  crbug.com/608040
     m_featuresRecorded.clearAll();
-    useCounterHistogram().count(PageVisits);
+    featuresHistogram().count(PageVisits);
     m_CSSRecorded.clearAll();
-    CSSUseCounterHistogram().count(totalPagesMeasuredCSSSampleId());
+    cssHistogram().count(totalPagesMeasuredCSSSampleId());
 }
 
 void UseCounter::count(const Frame* frame, Feature feature)
@@ -755,7 +741,7 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property)
     if (!m_CSSRecorded.quickGet(property)) {
         // Note that HTTPArchive tooling looks specifically for this event - see https://github.com/HTTPArchive/httparchive/issues/59
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "CSSFeatureFirstUsed", "feature", property);
-        CSSUseCounterHistogram().count(mapCSSPropertyIdToCSSSampleIdForHistogram(property));
+        cssHistogram().count(mapCSSPropertyIdToCSSSampleIdForHistogram(property));
         m_CSSRecorded.quickSet(property);
     }
     m_legacyCounter.countCSS(property);
@@ -788,6 +774,25 @@ UseCounter* UseCounter::getFrom(const StyleSheetContents* sheetContents)
     if (sheetContents && sheetContents->hasSingleOwnerNode())
         return getFrom(sheetContents->singleOwnerDocument());
     return 0;
+}
+
+EnumerationHistogram& UseCounter::featuresHistogram() const
+{
+    // TODO(rbyers): Fix the SVG case.  crbug.com/236262
+    // Eg. every SVGImage has it's own Page instance, they should probably all be delegating
+    // their UseCounter to the containing Page.  For now just use a separate histogram.
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.Features", blink::UseCounter::NumberOfFeatures));
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svgHistogram, ("WebCore.UseCounter_TEST.SVGImage.Features", blink::UseCounter::NumberOfFeatures));
+
+    return m_context == SVGImageContext ? svgHistogram : histogram;
+}
+
+EnumerationHistogram& UseCounter::cssHistogram() const
+{
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.CSSProperties", maximumCSSSampleId()));
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svgHistogram, ("WebCore.UseCounter_TEST.SVGImage.CSSProperties", maximumCSSSampleId()));
+
+    return m_context == SVGImageContext ? svgHistogram : histogram;
 }
 
 /*

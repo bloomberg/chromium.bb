@@ -38,6 +38,7 @@ namespace blink {
 
 class CSSStyleSheet;
 class Document;
+class EnumerationHistogram;
 class ExecutionContext;
 class Frame;
 class LocalFrame;
@@ -58,7 +59,13 @@ class CORE_EXPORT UseCounter {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(UseCounter);
 public:
-    UseCounter();
+    enum Context {
+        DefaultContext,
+        // Counters for SVGImages (lifetime independent from other pages).
+        SVGImageContext
+    };
+
+    UseCounter(Context = DefaultContext);
 
     enum Feature {
         // Do not change assigned numbers of existing items: add new features
@@ -1338,7 +1345,17 @@ public:
 
     bool hasRecordedMeasurement(Feature) const;
 
-protected:
+private:
+    EnumerationHistogram& featuresHistogram() const;
+    EnumerationHistogram& cssHistogram() const;
+
+    unsigned m_muteCount;
+    Context m_context;
+
+    // Track what features/properties have been reported to the (non-legacy) histograms.
+    BitVector m_featuresRecorded;
+    BitVector m_CSSRecorded;
+
     // Encapsulates the work to preserve the old "FeatureObserver" histogram with original semantics
     // TODO(rbyers): remove this - http://crbug.com/597963
     class LegacyCounter {
@@ -1353,12 +1370,6 @@ protected:
         BitVector m_featureBits;
         BitVector m_CSSBits;
     } m_legacyCounter;
-
-    unsigned m_muteCount;
-
-    // Track what features/properties have been reported to the (non-legacy) histograms.
-    BitVector m_featuresRecorded;
-    BitVector m_CSSRecorded;
 };
 
 } // namespace blink

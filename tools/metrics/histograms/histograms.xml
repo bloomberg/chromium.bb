@@ -66481,10 +66481,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <details>
     The first time a CSS property is parsed on a page, the histogram is updated
     to increment the counter.  Each histogram bucket corresponds to a CSS
-    property (eg. width, border-radius). The exception is the bucket numbered
-    '1' - this counts the number of pages that CSS properties were counted on.
-    When a page navigation occurs the page count bucket is incremented and
-    tracking of the set of which properties have been seen is reset.
+    property (eg. width, border-radius). The exception is the 'Total pages
+    measured' bucket - this counts the number of pages that CSS properties were
+    counted on.  When a page navigation occurs the page count bucket is
+    incremented and tracking of the set of which properties have been seen is
+    reset.
 
     These numbers give the percentage of pages that use a CSS property. For
     example, if the 'border-radius' histogram bucket has a count of 250, and the
@@ -66510,6 +66511,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <details>
     TODO: The exact definition of &quot;page load&quot; is still
     incorrect/fuzzy. https://crbug.com/236262
+  </details>
+</histogram>
+
+<histogram name="WebCore.UseCounter_TEST.SVGImage.CSSProperties"
+    enum="MappedCSSProperties">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Like WebCore.UseCounter_TEST.CSSProperties but specifically for the case of
+    CSS properties used inside of an SVG image.
+  </summary>
+  <details>
+    The 'Total pages measured' bucket is incremented each time a new SVG image
+    is created.  Note that the same SVG image can be used across multiple tabs
+    in a single renderer but this counts as a single usage. See
+    http://crbug.com/236262.
+  </details>
+</histogram>
+
+<histogram name="WebCore.UseCounter_TEST.SVGImage.Features"
+    enum="FeatureObserver">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Like WebCore.UseCounter_TEST.Features except specifically for the case of
+    SVG Images.
+  </summary>
+  <details>
+    Count of how many SVG images use various features. The PageVisits bucket is
+    incremented each time a new SVG image is created.  Note that the same SVG
+    image can be used across multiple tabs in a single renderer but this counts
+    as a single usage.  See http://crbug.com/236262.
   </details>
 </histogram>
 

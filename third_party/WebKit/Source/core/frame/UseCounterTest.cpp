@@ -13,6 +13,8 @@ namespace {
 // Note that the new histogram names will change once the semantics stabilize;
 const char* const kFeaturesHistogramName = "WebCore.UseCounter_TEST.Features";
 const char* const kCSSHistogramName = "WebCore.UseCounter_TEST.CSSProperties";
+const char* const kSVGFeaturesHistogramName = "WebCore.UseCounter_TEST.SVGImage.Features";
+const char* const kSVGCSSHistogramName = "WebCore.UseCounter_TEST.SVGImage.CSSProperties";
 const char* const kLegacyFeaturesHistogramName = "WebCore.FeatureObserver";
 const char* const kLegacyCSSHistogramName = "WebCore.FeatureObserver.CSSProperties";
 }
@@ -72,6 +74,10 @@ TEST(UseCounterTest, RecordingFeatures)
     histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::FetchBodyStream, 1);
     histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::PageVisits, 2);
     histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 5);
+
+    // None of this should update any of the SVG histograms
+    histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 0);
+    histogramTester.expectTotalCount(kSVGCSSHistogramName, 0);
 }
 
 TEST(UseCounterTest, RecordingCSSProperties)
@@ -127,6 +133,47 @@ TEST(UseCounterTest, RecordingCSSProperties)
     histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyZoom), 1);
     histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 2);
     histogramTester.expectTotalCount(kLegacyCSSHistogramName, 5);
+
+    // None of this should update any of the SVG histograms
+    histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 0);
+    histogramTester.expectTotalCount(kSVGCSSHistogramName, 0);
+}
+
+TEST(UseCounterTest, SVGImageContext)
+{
+    UseCounter useCounter(UseCounter::SVGImageContext);
+    HistogramTester histogramTester;
+
+    // Verify that SVGImage related feature counters get recorded in a separate histogram.
+    EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::SVGSMILAdditiveAnimation));
+    useCounter.recordMeasurement(UseCounter::SVGSMILAdditiveAnimation);
+    EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::SVGSMILAdditiveAnimation));
+    histogramTester.expectUniqueSample(kSVGFeaturesHistogramName, UseCounter::SVGSMILAdditiveAnimation, 1);
+
+    // And for the CSS counters
+    EXPECT_FALSE(useCounter.isCounted(CSSPropertyFont));
+    useCounter.count(HTMLStandardMode, CSSPropertyFont);
+    EXPECT_TRUE(useCounter.isCounted(CSSPropertyFont));
+    histogramTester.expectUniqueSample(kSVGCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+
+    // After a page load, the histograms will be updated
+    useCounter.didCommitLoad();
+    histogramTester.expectBucketCount(kSVGFeaturesHistogramName, UseCounter::PageVisits, 1);
+    histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 2);
+    histogramTester.expectBucketCount(kSVGCSSHistogramName, 1, 1);
+    histogramTester.expectTotalCount(kSVGCSSHistogramName, 2);
+
+    // And the legacy histogram will be updated to include these
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::SVGSMILAdditiveAnimation, 1);
+    histogramTester.expectBucketCount(kLegacyFeaturesHistogramName, UseCounter::PageVisits, 1);
+    histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 2);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont), 1);
+    histogramTester.expectBucketCount(kLegacyCSSHistogramName, 1, 1);
+    histogramTester.expectTotalCount(kLegacyCSSHistogramName, 2);
+
+    // None of this should update the non-legacy non-SVG histograms
+    histogramTester.expectTotalCount(kCSSHistogramName, 0);
+    histogramTester.expectTotalCount(kFeaturesHistogramName, 0);
 }
 
 TEST(UseCounterTest, InspectorDisablesMeasurement)
