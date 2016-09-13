@@ -46,6 +46,8 @@ source_set("test_support") {
   sources = [
     "signin/fake_chrome_identity.h",
     "signin/fake_chrome_identity.mm",
+    "signin/fake_chrome_identity_interaction_manager.h",
+    "signin/fake_chrome_identity_interaction_manager.mm",
     "signin/fake_chrome_identity_service.h",
     "signin/fake_chrome_identity_service.mm",
     "test_chrome_browser_provider.h",

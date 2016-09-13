@@ -25,6 +25,13 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   static FakeChromeIdentityService* GetInstanceFromChromeProvider();
 
   // ChromeIdentityService implementation.
+  base::scoped_nsobject<UINavigationController> NewAccountDetails(
+      ChromeIdentity* identity,
+      id<ChromeIdentityBrowserOpener> browser_opener) override;
+  ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
+
   bool IsValidIdentity(ChromeIdentity* identity) const override;
   ChromeIdentity* GetIdentityWithGaiaID(
       const std::string& gaia_id) const override;
