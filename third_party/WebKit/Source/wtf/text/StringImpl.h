@@ -347,6 +347,10 @@ public:
     template <typename CharType>
     ALWAYS_INLINE PassRefPtr<StringImpl> removeCharacters(const CharType* characters, CharacterMatchFunctionPtr);
 
+    // Remove characters between [start, start+lengthToRemove). The range is
+    // clamped to the size of the string. Does nothing if start >= length().
+    PassRefPtr<StringImpl> remove(unsigned start, unsigned lengthToRemove = 1);
+
     // Find characters.
     size_t find(LChar character, unsigned start = 0);
     size_t find(char character, unsigned start = 0);

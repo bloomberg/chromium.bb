@@ -255,7 +255,7 @@ public:
     void ensure16Bit();
 
     void truncate(unsigned len);
-    void remove(unsigned pos, int len = 1);
+    void remove(unsigned start, unsigned length = 1);
 
     String substring(unsigned pos, unsigned len = UINT_MAX) const;
     String left(unsigned len) const { return substring(0, len); }
@@ -372,9 +372,6 @@ public:
 private:
     typedef struct ImplicitConversionFromWTFStringToBoolDisallowed* (String::*UnspecifiedBoolType);
     operator UnspecifiedBoolType() const;
-
-    template <typename CharacterType>
-    void removeInternal(const CharacterType*, unsigned, int);
 
     template <typename CharacterType>
     void appendInternal(CharacterType);

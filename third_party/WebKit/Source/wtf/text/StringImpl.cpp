@@ -986,6 +986,28 @@ PassRefPtr<StringImpl> StringImpl::removeCharacters(CharacterMatchFunctionPtr fi
     return removeCharacters(characters16(), findMatch);
 }
 
+PassRefPtr<StringImpl> StringImpl::remove(unsigned start, unsigned lengthToRemove)
+{
+    if (lengthToRemove <= 0)
+        return this;
+    if (start >= m_length)
+        return this;
+
+    lengthToRemove = std::min(m_length - start, lengthToRemove);
+    unsigned removedEnd = start + lengthToRemove;
+
+    if (is8Bit()) {
+        StringBuffer<LChar> buffer(m_length - lengthToRemove);
+        copyChars(buffer.characters(), characters8(), start);
+        copyChars(buffer.characters() + start, characters8() + removedEnd, m_length - removedEnd);
+        return buffer.release();
+    }
+    StringBuffer<UChar> buffer(m_length - lengthToRemove);
+    copyChars(buffer.characters(), characters16(), start);
+    copyChars(buffer.characters() + start, characters16() + removedEnd, m_length - removedEnd);
+    return buffer.release();
+}
+
 template <typename CharType, class UCharPredicate>
 inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UCharPredicate predicate, StripBehavior stripBehavior)
 {
