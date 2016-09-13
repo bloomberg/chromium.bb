@@ -154,9 +154,9 @@ base::Lock g_characteristic_value_changed_registrations_lock;
 
 // Function to be registered to OS to monitor Bluetooth LE GATT event. It is
 // invoked in BluetoothApis.dll thread.
-void OnGetGattEventWin(BTH_LE_GATT_EVENT_TYPE type,
-                       PVOID event_parameter,
-                       PVOID context) {
+void CALLBACK OnGetGattEventWin(BTH_LE_GATT_EVENT_TYPE type,
+                                PVOID event_parameter,
+                                PVOID context) {
   if (type != CharacteristicValueChangedEvent) {
     // Right now, only characteristic value changed event is supported.
     NOTREACHED();

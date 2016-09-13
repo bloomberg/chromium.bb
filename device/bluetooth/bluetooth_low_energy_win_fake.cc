@@ -250,7 +250,7 @@ HRESULT BluetoothLowEnergyWrapperFake::RegisterGattEvents(
     base::FilePath& service_path,
     BTH_LE_GATT_EVENT_TYPE type,
     PVOID event_parameter,
-    PFNBLUETOOTH_GATT_EVENT_CALLBACK callback,
+    PFNBLUETOOTH_GATT_EVENT_CALLBACK_CORRECTED callback,
     PVOID context,
     BLUETOOTH_GATT_EVENT_HANDLE* out_handle) {
   // Right now, only CharacteristicValueChangedEvent is supported.

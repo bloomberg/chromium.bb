@@ -79,7 +79,7 @@ struct GattDescriptor {
 struct GattCharacteristicObserver {
   GattCharacteristicObserver();
   ~GattCharacteristicObserver();
-  PFNBLUETOOTH_GATT_EVENT_CALLBACK callback;
+  PFNBLUETOOTH_GATT_EVENT_CALLBACK_CORRECTED callback;
   PVOID context;
 };
 
@@ -131,12 +131,13 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
       base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
       PBTH_LE_GATT_CHARACTERISTIC_VALUE new_value) override;
-  HRESULT RegisterGattEvents(base::FilePath& service_path,
-                             BTH_LE_GATT_EVENT_TYPE type,
-                             PVOID event_parameter,
-                             PFNBLUETOOTH_GATT_EVENT_CALLBACK callback,
-                             PVOID context,
-                             BLUETOOTH_GATT_EVENT_HANDLE* out_handle) override;
+  HRESULT RegisterGattEvents(
+      base::FilePath& service_path,
+      BTH_LE_GATT_EVENT_TYPE type,
+      PVOID event_parameter,
+      PFNBLUETOOTH_GATT_EVENT_CALLBACK_CORRECTED callback,
+      PVOID context,
+      BLUETOOTH_GATT_EVENT_HANDLE* out_handle) override;
   HRESULT UnregisterGattEvent(
       BLUETOOTH_GATT_EVENT_HANDLE event_handle) override;
   HRESULT WriteDescriptorValue(
