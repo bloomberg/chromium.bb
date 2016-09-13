@@ -38,7 +38,8 @@ class PlatformNotificationContextTest : public ::testing::Test {
   }
 
   // Callback to provide when writing a notification to the database.
-  void DidWriteNotificationData(bool success, int64_t notification_id) {
+  void DidWriteNotificationData(bool success,
+                                const std::string& notification_id) {
     success_ = success;
     notification_id_ = notification_id;
   }
@@ -111,7 +112,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
   }
 
   // Returns the notification id of the notification last written.
-  int64_t notification_id() const { return notification_id_; }
+  const std::string& notification_id() const { return notification_id_; }
 
  private:
   TestBrowserThreadBundle thread_bundle_;
@@ -119,7 +120,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
 
   bool success_;
   NotificationDatabaseData database_data_;
-  int64_t notification_id_;
+  std::string notification_id_;
 };
 
 TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
@@ -127,7 +128,7 @@ TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
       CreatePlatformNotificationContext();
 
   context->ReadNotificationData(
-      42 /* notification_id */, GURL("https://example.com"),
+      "invalid-notification-id", GURL("https://example.com"),
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -154,7 +155,7 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
 
   // The write operation should have succeeded with a notification id.
   ASSERT_TRUE(success());
-  EXPECT_GT(notification_id(), 0);
+  EXPECT_FALSE(notification_id().empty());
 
   context->ReadNotificationData(
       notification_id(), origin,
@@ -193,11 +194,11 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
 
   base::RunLoop().RunUntilIdle();
 
-  int64_t read_notification_id = notification_id();
+  std::string read_notification_id = notification_id();
 
   // The write operation should have succeeded with a notification id.
   ASSERT_TRUE(success());
-  EXPECT_GT(read_notification_id, 0);
+  EXPECT_FALSE(read_notification_id.empty());
 
   notification_database_data.notification_data.title =
       base::ASCIIToUTF16("Second");
@@ -211,8 +212,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(success());
-  ASSERT_NE(notification_id(), read_notification_id);
-  ASSERT_GT(notification_id(), 0);
+  ASSERT_FALSE(notification_id().empty());
+  ASSERT_EQ(notification_id(), read_notification_id);
 
   // Reading the notifications should only yield the second, replaced one.
   std::vector<NotificationDatabaseData> notification_database_datas;
@@ -238,7 +239,7 @@ TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
       CreatePlatformNotificationContext();
 
   context->DeleteNotificationData(
-      42 /* notification_id */, GURL("https://example.com"),
+      "invalid-notification-id", GURL("https://example.com"),
       base::Bind(&PlatformNotificationContextTest::DidDeleteNotificationData,
                  base::Unretained(this)));
 
@@ -266,7 +267,7 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 
   // The write operation should have succeeded with a notification id.
   ASSERT_TRUE(success());
-  EXPECT_GT(notification_id(), 0);
+  EXPECT_FALSE(notification_id().empty());
 
   context->DeleteNotificationData(
       notification_id(), origin,
@@ -330,7 +331,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(success());
-  EXPECT_GT(notification_id(), 0);
+  EXPECT_FALSE(notification_id().empty());
 
   ServiceWorkerStatusCode unregister_status;
 
@@ -370,7 +371,7 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
 
   // The write operation should have succeeded with a notification id.
   ASSERT_TRUE(success());
-  EXPECT_GT(notification_id(), 0);
+  EXPECT_FALSE(notification_id().empty());
 
   // Call the OnStorageWiped override from the ServiceWorkerContextObserver,
   // which indicates that the database should go away entirely.
@@ -403,7 +404,7 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
 
   // Trigger a read-operation to force creating the database.
   context->ReadNotificationData(
-      42 /* notification_id */, GURL("https://example.com"),
+      "invalid-notification-id", GURL("https://example.com"),
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 

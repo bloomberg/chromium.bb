@@ -6,19 +6,18 @@
 
 #include <utility>
 
-#include "base/guid.h"
 #include "base/logging.h"
-#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 
 NotificationObjectProxy::NotificationObjectProxy(
     content::BrowserContext* browser_context,
+    const std::string& notification_id,
     std::unique_ptr<content::DesktopNotificationDelegate> delegate)
     : browser_context_(browser_context),
       delegate_(std::move(delegate)),
       displayed_(false),
-      id_(base::GenerateGUID()) {}
+      notification_id_(notification_id) {}
 
 NotificationObjectProxy::~NotificationObjectProxy() {}
 
@@ -27,6 +26,7 @@ void NotificationObjectProxy::Display() {
   // but we only want to fire the event the first time.
   if (displayed_)
     return;
+
   displayed_ = true;
 
   delegate_->NotificationDisplayed();
@@ -43,12 +43,12 @@ void NotificationObjectProxy::Click() {
 void NotificationObjectProxy::ButtonClick(int button_index) {
   // Notification buttons not are supported for non persistent notifications.
   DCHECK_EQ(button_index, 0);
+
   NotificationCommon::OpenNotificationSettings(browser_context_);
 }
 
 void NotificationObjectProxy::SettingsClick() {
   NotificationCommon::OpenNotificationSettings(browser_context_);
-  return;
 }
 
 bool NotificationObjectProxy::ShouldDisplaySettingsButton() {
@@ -56,5 +56,5 @@ bool NotificationObjectProxy::ShouldDisplaySettingsButton() {
 }
 
 std::string NotificationObjectProxy::id() const {
-  return id_;
+  return notification_id_;
 }

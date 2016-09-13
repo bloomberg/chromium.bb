@@ -11,9 +11,12 @@
 
 namespace content {
 
-PageNotificationDelegate::PageNotificationDelegate(int render_process_id,
-                                                   int notification_id)
+PageNotificationDelegate::PageNotificationDelegate(
+    int render_process_id,
+    int non_persistent_notification_id,
+    const std::string& notification_id)
     : render_process_id_(render_process_id),
+      non_persistent_notification_id_(non_persistent_notification_id),
       notification_id_(notification_id) {}
 
 PageNotificationDelegate::~PageNotificationDelegate() {}
@@ -23,7 +26,8 @@ void PageNotificationDelegate::NotificationDisplayed() {
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidShow(notification_id_));
+  sender->Send(
+      new PlatformNotificationMsg_DidShow(non_persistent_notification_id_));
 }
 
 void PageNotificationDelegate::NotificationClosed() {
@@ -31,7 +35,9 @@ void PageNotificationDelegate::NotificationClosed() {
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidClose(notification_id_));
+  sender->Send(
+      new PlatformNotificationMsg_DidClose(non_persistent_notification_id_));
+
   static_cast<RenderProcessHostImpl*>(sender)
       ->notification_message_filter()
       ->DidCloseNotification(notification_id_);
@@ -42,7 +48,8 @@ void PageNotificationDelegate::NotificationClick() {
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidClick(notification_id_));
+  sender->Send(
+      new PlatformNotificationMsg_DidClick(non_persistent_notification_id_));
 }
 
 }  // namespace content

@@ -37,8 +37,7 @@ class BrowserContext;
 // notification id can outlive the browser process responsible for creating it.
 class CONTENT_EXPORT NotificationIdGenerator {
  public:
-  NotificationIdGenerator(BrowserContext* browser_context,
-                          int render_process_id);
+  explicit NotificationIdGenerator(BrowserContext* browser_context);
   ~NotificationIdGenerator();
 
   // Returns whether |notification_id| belongs to a persistent notification.
@@ -59,17 +58,16 @@ class CONTENT_EXPORT NotificationIdGenerator {
 
   // Generates an id for a non-persistent notification given the notification's
   // origin, tag and non-persistent notification id. The non-persistent
-  // notification id will have created by the renderer with |render_process_id|.
+  // notification id must've been created by the |render_process_id|.
   std::string GenerateForNonPersistentNotification(
       const GURL& origin,
       const std::string& tag,
-      int non_persistent_notification_id) const;
+      int non_persistent_notification_id,
+      int render_process_id) const;
 
  private:
   // The NotificationMessageFilter that owns |this| will outlive the context.
   BrowserContext* browser_context_;
-
-  int render_process_id_;
 };
 
 }  // namespace context

@@ -215,13 +215,13 @@ class ServiceWorkerContextClient
                     const ServiceWorkerFetchRequest& request);
   void OnNotificationClickEvent(
       int request_id,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       const PlatformNotificationData& notification_data,
       int action_index);
   void OnPushEvent(int request_id, const PushEventPayload& payload);
   void OnNotificationCloseEvent(
       int request_id,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       const PlatformNotificationData& notification_data);
 
   void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);

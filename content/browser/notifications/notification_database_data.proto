@@ -11,9 +11,12 @@ package content;
 // Stores information about a Web Notification. This message is the protocol
 // buffer meant to serialize the content::NotificationDatabaseData structure.
 //
-// Next tag: 5
+// Next tag: 6
 message NotificationDatabaseDataProto {
-  optional int64 notification_id = 1;
+  // DEPRECATED: Use |notification_id| instead.
+  optional int64 persistent_notification_id = 1;
+
+  optional string notification_id = 5;
 
   optional string origin = 2;
   optional int64 service_worker_registration_id = 3;

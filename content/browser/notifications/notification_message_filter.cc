@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -97,9 +98,9 @@ NotificationMessageFilter::NotificationMessageFilter(
 
 NotificationMessageFilter::~NotificationMessageFilter() {}
 
-void NotificationMessageFilter::DidCloseNotification(int notification_id) {
+void NotificationMessageFilter::DidCloseNotification(
+    const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   close_closures_.erase(notification_id);
 }
 
@@ -135,7 +136,7 @@ void NotificationMessageFilter::OverrideThreadForMessage(
 }
 
 void NotificationMessageFilter::OnShowPlatformNotification(
-    int notification_id,
+    int non_persistent_notification_id,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources) {
@@ -148,9 +149,6 @@ void NotificationMessageFilter::OnShowPlatformNotification(
     return;
   }
 
-  std::unique_ptr<DesktopNotificationDelegate> delegate(
-      new PageNotificationDelegate(process_id_, notification_id));
-
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
@@ -158,10 +156,20 @@ void NotificationMessageFilter::OnShowPlatformNotification(
   if (!VerifyNotificationPermissionGranted(service, origin))
     return;
 
+  std::string notification_id =
+      GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
+          origin, notification_data.tag, non_persistent_notification_id,
+          process_id_);
+
+  std::unique_ptr<DesktopNotificationDelegate> delegate(
+      new PageNotificationDelegate(process_id_, non_persistent_notification_id,
+                                   notification_id));
+
   base::Closure close_closure;
-  service->DisplayNotification(
-      browser_context_, origin, SanitizeNotificationData(notification_data),
-      notification_resources, std::move(delegate), &close_closure);
+  service->DisplayNotification(browser_context_, notification_id, origin,
+                               SanitizeNotificationData(notification_data),
+                               notification_resources, std::move(delegate),
+                               &close_closure);
 
   if (!close_closure.is_null())
     close_closures_[notification_id] = close_closure;
@@ -193,8 +201,6 @@ void NotificationMessageFilter::OnShowPersistentNotification(
       SanitizeNotificationData(notification_data);
   database_data.notification_data = sanitized_notification_data;
 
-  // TODO(peter): Significantly reduce the amount of information we need to
-  // retain outside of the database for displaying notifications.
   notification_context_->WriteNotificationData(
       origin, database_data,
       base::Bind(&NotificationMessageFilter::DidWritePersistentNotificationData,
@@ -210,7 +216,7 @@ void NotificationMessageFilter::DidWritePersistentNotificationData(
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources,
     bool success,
-    int64_t persistent_notification_id) {
+    const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!success) {
@@ -223,8 +229,7 @@ void NotificationMessageFilter::DidWritePersistentNotificationData(
       service_worker_registration_id, origin,
       base::Bind(&NotificationMessageFilter::DidFindServiceWorkerRegistration,
                  weak_factory_io_.GetWeakPtr(), request_id, origin,
-                 notification_data, notification_resources,
-                 persistent_notification_id));
+                 notification_data, notification_resources, notification_id));
 }
 
 void NotificationMessageFilter::DidFindServiceWorkerRegistration(
@@ -232,7 +237,7 @@ void NotificationMessageFilter::DidFindServiceWorkerRegistration(
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources,
-    int64_t persistent_notification_id,
+    const std::string& notification_id,
     content::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<content::ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -252,9 +257,8 @@ void NotificationMessageFilter::DidFindServiceWorkerRegistration(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PlatformNotificationService::DisplayPersistentNotification,
                  base::Unretained(service),  // The service is a singleton.
-                 browser_context_, persistent_notification_id,
-                 registration->pattern(), origin, notification_data,
-                 notification_resources));
+                 browser_context_, notification_id, registration->pattern(),
+                 origin, notification_data, notification_resources));
 
   Send(new PlatformNotificationMsg_DidShowPersistent(request_id, true));
 }
@@ -303,10 +307,16 @@ void NotificationMessageFilter::DidGetNotifications(
 }
 
 void NotificationMessageFilter::OnClosePlatformNotification(
-    int notification_id) {
+    const GURL& origin,
+    const std::string& tag,
+    int non_persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!RenderProcessHost::FromID(process_id_))
     return;
+
+  std::string notification_id =
+      GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
+          origin, tag, non_persistent_notification_id, process_id_);
 
   if (!close_closures_.count(notification_id))
     return;
@@ -317,7 +327,8 @@ void NotificationMessageFilter::OnClosePlatformNotification(
 
 void NotificationMessageFilter::OnClosePersistentNotification(
     const GURL& origin,
-    int64_t persistent_notification_id) {
+    const std::string& tag,
+    const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
       blink::mojom::PermissionStatus::GRANTED) {
@@ -335,10 +346,10 @@ void NotificationMessageFilter::OnClosePersistentNotification(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PlatformNotificationService::ClosePersistentNotification,
                  base::Unretained(service),  // The service is a singleton.
-                 browser_context_, persistent_notification_id));
+                 browser_context_, notification_id));
 
   notification_context_->DeleteNotificationData(
-      persistent_notification_id, origin,
+      notification_id, origin,
       base::Bind(
           &NotificationMessageFilter::DidDeletePersistentNotificationData,
           weak_factory_io_.GetWeakPtr()));
@@ -378,6 +389,11 @@ bool NotificationMessageFilter::VerifyNotificationPermissionGranted(
 
   bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_VERIFY);
   return false;
+}
+
+NotificationIdGenerator* NotificationMessageFilter::GetNotificationIdGenerator()
+    const {
+  return notification_context_->notification_id_generator();
 }
 
 }  // namespace content

@@ -26,6 +26,7 @@ class NotificationObjectProxy : public NotificationDelegate {
   // will take ownership of |delegate|.
   NotificationObjectProxy(
       content::BrowserContext* browser_context,
+      const std::string& notification_id,
       std::unique_ptr<content::DesktopNotificationDelegate> delegate);
 
   // NotificationDelegate implementation.
@@ -44,7 +45,7 @@ class NotificationObjectProxy : public NotificationDelegate {
   content::BrowserContext* browser_context_;
   std::unique_ptr<content::DesktopNotificationDelegate> delegate_;
   bool displayed_;
-  std::string id_;
+  std::string notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationObjectProxy);
 };

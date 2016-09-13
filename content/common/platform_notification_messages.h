@@ -19,10 +19,10 @@
 #ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 #define CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 
-// Defines the pair of [persistent notification id] => [notification data] used
-// when getting the notifications for a given Service Worker registration.
+// Defines the pair of [notification id] => [notification data] used when
+// getting the notifications for a given Service Worker registration.
 using PersistentNotificationInfo =
-    std::pair<int64_t, content::PlatformNotificationData>;
+    std::pair<std::string, content::PlatformNotificationData>;
 
 #endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 
@@ -100,7 +100,7 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
 
 IPC_MESSAGE_CONTROL4(
     PlatformNotificationHostMsg_Show,
-    int /* notification_id */,
+    int /* non_persistent_notification_id */,
     GURL /* origin */,
     content::PlatformNotificationData /* notification_data */,
     content::NotificationResources /* notification_resources */)
@@ -119,9 +119,12 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_GetNotifications,
                      GURL /* origin */,
                      std::string /* filter_tag */)
 
-IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_Close,
-                     int /* notification_id */)
-
-IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_ClosePersistent,
+IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_Close,
                      GURL /* origin */,
-                     int64_t /* persistent_notification_id */)
+                     std::string /* tag */,
+                     int /* non_persistent_notification_id */)
+
+IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_ClosePersistent,
+                     GURL /* origin */,
+                     std::string /* tag */,
+                     std::string /* notification_id */)

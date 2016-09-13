@@ -149,6 +149,7 @@ source_set("browser_sources") {
     "navigation_throttle.cc",
     "navigation_throttle.h",
     "navigation_type.h",
+    "notification_database_data.cc",
     "notification_database_data.h",
     "notification_details.h",
     "notification_event_dispatcher.h",

@@ -77,8 +77,8 @@ public:
     void dispatchFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest&) override;
     void dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest&) override;
     void dispatchInstallEvent(int) override;
-    void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&, int actionIndex) override;
-    void dispatchNotificationCloseEvent(int, int64_t notificationID, const WebNotificationData&) override;
+    void dispatchNotificationClickEvent(int, const WebString& notificationID, const WebNotificationData&, int actionIndex) override;
+    void dispatchNotificationCloseEvent(int, const WebString& notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
     void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
     bool hasFetchEventHandler() override;

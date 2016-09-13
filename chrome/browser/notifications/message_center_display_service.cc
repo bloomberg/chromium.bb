@@ -41,7 +41,3 @@ bool MessageCenterDisplayService::GetDisplayed(
   }
   return true;
 }
-
-bool MessageCenterDisplayService::SupportsNotificationCenter() const {
-  return false;
-}

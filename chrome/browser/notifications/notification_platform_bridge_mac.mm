@@ -209,10 +209,6 @@ bool NotificationPlatformBridgeMac::GetDisplayed(
   return true;
 }
 
-bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
-  return true;
-}
-
 // static
 bool NotificationPlatformBridgeMac::VerifyNotificationData(
     NSDictionary* response) {

@@ -19,7 +19,7 @@
 
 namespace content {
 
-const int64_t kNotificationId = 42;
+const char kNotificationId[] = "my-notification";
 const int64_t kServiceWorkerRegistrationId = 9001;
 
 const PlatformNotificationActionType kNotificationActionType =

@@ -30,7 +30,8 @@
 //        in serialized form.
 //
 // key: "NEXT_NOTIFICATION_ID"
-// value: Decimal string which fits into an int64_t.
+// value: Decimal string which fits into an int64_t, containing the next
+//        persistent notification ID.
 
 namespace content {
 namespace {
@@ -43,7 +44,7 @@ const char kDataKeyPrefix[] = "DATA:";
 const char kKeySeparator = '\x00';
 
 // The first notification id which to be handed out by the database.
-const int64_t kFirstNotificationId = 1;
+const int64_t kFirstPersistentNotificationId = 1;
 
 // Converts the LevelDB |status| to one of the notification database's values.
 NotificationDatabase::Status LevelDBStatusToStatus(
@@ -75,9 +76,12 @@ std::string CreateDataPrefix(const GURL& origin) {
 }
 
 // Creates the compound data key in which notification data is stored.
-std::string CreateDataKey(const GURL& origin, int64_t notification_id) {
+std::string CreateDataKey(const GURL& origin,
+                          const std::string& notification_id) {
   DCHECK(origin.is_valid());
-  return CreateDataPrefix(origin) + base::Int64ToString(notification_id);
+  DCHECK(!notification_id.empty());
+
+  return CreateDataPrefix(origin) + notification_id;
 }
 
 // Deserializes data in |serialized_data| to |notification_database_data|.
@@ -137,16 +141,20 @@ NotificationDatabase::Status NotificationDatabase::Open(
   state_ = STATE_INITIALIZED;
   db_.reset(db);
 
-  return ReadNextNotificationId();
+  return ReadNextPersistentNotificationId();
+}
+
+int64_t NotificationDatabase::GetNextPersistentNotificationId() {
+  return next_persistent_notification_id_++;
 }
 
 NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
-    int64_t notification_id,
+    const std::string& notification_id,
     const GURL& origin,
     NotificationDatabaseData* notification_database_data) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
-  DCHECK_GE(notification_id, kFirstNotificationId);
+  DCHECK(!notification_id.empty());
   DCHECK(origin.is_valid());
   DCHECK(notification_database_data);
 
@@ -188,45 +196,39 @@ NotificationDatabase::ReadAllNotificationDataForServiceWorkerRegistration(
 
 NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
     const GURL& origin,
-    const NotificationDatabaseData& notification_database_data,
-    int64_t* notification_id) {
+    const NotificationDatabaseData& notification_data) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
-  DCHECK(notification_id);
   DCHECK(origin.is_valid());
 
-  DCHECK_GE(next_notification_id_, kFirstNotificationId);
-
-  NotificationDatabaseData storage_data = notification_database_data;
-  storage_data.notification_id = next_notification_id_;
+  const std::string& notification_id = notification_data.notification_id;
+  DCHECK(!notification_id.empty());
 
   std::string serialized_data;
-  if (!SerializeNotificationDatabaseData(storage_data, &serialized_data)) {
+  if (!SerializeNotificationDatabaseData(notification_data, &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << origin;
     return STATUS_ERROR_FAILED;
   }
 
   leveldb::WriteBatch batch;
-  batch.Put(CreateDataKey(origin, next_notification_id_), serialized_data);
-  batch.Put(kNextNotificationIdKey,
-            base::Int64ToString(next_notification_id_ + 1));
+  batch.Put(CreateDataKey(origin, notification_id), serialized_data);
 
-  Status status =
-      LevelDBStatusToStatus(db_->Write(leveldb::WriteOptions(), &batch));
-  if (status != STATUS_OK)
-    return status;
+  if (written_persistent_notification_id_ != next_persistent_notification_id_) {
+    written_persistent_notification_id_ = next_persistent_notification_id_;
+    batch.Put(kNextNotificationIdKey,
+              base::Int64ToString(next_persistent_notification_id_));
+  }
 
-  *notification_id = next_notification_id_++;
-  return STATUS_OK;
+  return LevelDBStatusToStatus(db_->Write(leveldb::WriteOptions(), &batch));
 }
 
 NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
-    int64_t notification_id,
+    const std::string& notification_id,
     const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
-  DCHECK_GE(notification_id, kFirstNotificationId);
+  DCHECK(!notification_id.empty());
   DCHECK(origin.is_valid());
 
   std::string key = CreateDataKey(origin, notification_id);
@@ -237,20 +239,20 @@ NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataForOrigin(
     const GURL& origin,
     const std::string& tag,
-    std::set<int64_t>* deleted_notification_set) {
+    std::set<std::string>* deleted_notification_ids) {
   return DeleteAllNotificationDataInternal(origin, tag,
                                            kInvalidServiceWorkerRegistrationId,
-                                           deleted_notification_set);
+                                           deleted_notification_ids);
 }
 
 NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataForServiceWorkerRegistration(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    std::set<int64_t>* deleted_notification_set) {
+    std::set<std::string>* deleted_notification_ids) {
   return DeleteAllNotificationDataInternal(origin, "" /* tag */,
                                            service_worker_registration_id,
-                                           deleted_notification_set);
+                                           deleted_notification_ids);
 }
 
 NotificationDatabase::Status NotificationDatabase::Destroy() {
@@ -271,23 +273,27 @@ NotificationDatabase::Status NotificationDatabase::Destroy() {
       leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
 }
 
-NotificationDatabase::Status NotificationDatabase::ReadNextNotificationId() {
+NotificationDatabase::Status
+NotificationDatabase::ReadNextPersistentNotificationId() {
   std::string value;
   Status status = LevelDBStatusToStatus(
       db_->Get(leveldb::ReadOptions(), kNextNotificationIdKey, &value));
 
   if (status == STATUS_ERROR_NOT_FOUND) {
-    next_notification_id_ = kFirstNotificationId;
+    next_persistent_notification_id_ = kFirstPersistentNotificationId;
+    written_persistent_notification_id_ = kFirstPersistentNotificationId;
     return STATUS_OK;
   }
 
   if (status != STATUS_OK)
     return status;
 
-  if (!base::StringToInt64(value, &next_notification_id_) ||
-      next_notification_id_ < kFirstNotificationId) {
+  if (!base::StringToInt64(value, &next_persistent_notification_id_) ||
+      next_persistent_notification_id_ < kFirstPersistentNotificationId) {
     return STATUS_ERROR_CORRUPTED;
   }
+
+  written_persistent_notification_id_ = next_persistent_notification_id_;
 
   return STATUS_OK;
 }
@@ -322,6 +328,11 @@ NotificationDatabase::ReadAllNotificationDataInternal(
       continue;
     }
 
+    // Silently ignore the notification if it doesn't have an ID assigned.
+    // TODO(peter): Remove this clause when Chrome 55 has branched.
+    if (notification_database_data.notification_id.empty())
+      continue;
+
     notification_data_vector->push_back(notification_database_data);
   }
 
@@ -333,15 +344,12 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     const GURL& origin,
     const std::string& tag,
     int64_t service_worker_registration_id,
-    std::set<int64_t>* deleted_notification_set) {
+    std::set<std::string>* deleted_notification_ids) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK(deleted_notification_set);
+  DCHECK(deleted_notification_ids);
   DCHECK(origin.is_valid());
 
   const std::string prefix = CreateDataPrefix(origin);
-  const bool should_deserialize =
-      service_worker_registration_id != kInvalidServiceWorkerRegistrationId ||
-      !tag.empty();
 
   leveldb::Slice prefix_slice(prefix);
   leveldb::WriteBatch batch;
@@ -353,39 +361,34 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     if (!iter->key().starts_with(prefix_slice))
       break;
 
-    if (should_deserialize) {
-      Status status = DeserializedNotificationData(iter->value().ToString(),
-                                                   &notification_database_data);
-      if (status != STATUS_OK)
-        return status;
+    Status status = DeserializedNotificationData(iter->value().ToString(),
+                                                 &notification_database_data);
+    if (status != STATUS_OK)
+      return status;
 
-      if (!tag.empty() &&
-          notification_database_data.notification_data.tag != tag) {
-        continue;
-      }
-
-      if (service_worker_registration_id !=
-              kInvalidServiceWorkerRegistrationId &&
-          notification_database_data.service_worker_registration_id !=
-              service_worker_registration_id) {
-        continue;
-      }
+    if (!tag.empty() &&
+        notification_database_data.notification_data.tag != tag) {
+      continue;
     }
 
-    leveldb::Slice notification_id_slice = iter->key();
-    notification_id_slice.remove_prefix(prefix_slice.size());
-
-    int64_t notification_id = 0;
-    if (!base::StringToInt64(notification_id_slice.ToString(),
-                             &notification_id)) {
-      return STATUS_ERROR_CORRUPTED;
+    if (service_worker_registration_id != kInvalidServiceWorkerRegistrationId &&
+        notification_database_data.service_worker_registration_id !=
+            service_worker_registration_id) {
+      continue;
     }
 
-    deleted_notification_set->insert(notification_id);
     batch.Delete(iter->key());
+
+    // Silently remove the notification if it doesn't have an ID assigned.
+    // TODO(peter): Remove this clause when Chrome 55 has branched.
+    if (notification_database_data.notification_id.empty())
+      continue;
+
+    deleted_notification_ids->insert(
+        notification_database_data.notification_id);
   }
 
-  if (deleted_notification_set->empty())
+  if (deleted_notification_ids->empty())
     return STATUS_OK;
 
   return LevelDBStatusToStatus(db_->Write(leveldb::WriteOptions(), &batch));

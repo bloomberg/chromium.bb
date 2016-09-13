@@ -69,7 +69,7 @@ public:
 
     // Used for embedder-created Notification objects. If |showing| is true, will initialize the
     // Notification's state as showing, or as closed otherwise.
-    static Notification* create(ExecutionContext*, int64_t persistentId, const WebNotificationData&, bool showing);
+    static Notification* create(ExecutionContext*, const String& notificationId, const WebNotificationData&, bool showing);
 
     ~Notification() override;
 
@@ -139,14 +139,14 @@ private:
     // NotificationResourcesLoader.
     void didLoadResources(NotificationResourcesLoader*);
 
-    void setPersistentId(int64_t persistentId) { m_persistentId = persistentId; }
+    void setNotificationId(const String& notificationId) { m_notificationId = notificationId; }
 
     WebNotificationData m_data;
 
     // Notifications can either be bound to the page, which means they're identified by
     // their delegate, or persistent, which means they're identified by a persistent Id
     // given to us by the embedder. This influences how we close the notification.
-    int64_t m_persistentId;
+    String m_notificationId;
 
     enum NotificationState {
         NotificationStateIdle,

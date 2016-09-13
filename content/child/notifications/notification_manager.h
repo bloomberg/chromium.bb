@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/id_map.h"
@@ -58,7 +58,8 @@ class NotificationManager : public blink::WebNotificationManager,
       blink::WebNotificationGetCallbacks* callbacks) override;
   void close(blink::WebNotificationDelegate* delegate) override;
   void closePersistent(const blink::WebSecurityOrigin& origin,
-                       int64_t persistent_notification_id) override;
+                       const blink::WebString& tag,
+                       const blink::WebString& notification_id) override;
   void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate) override;
 
@@ -89,8 +90,21 @@ class NotificationManager : public blink::WebNotificationManager,
   IDMap<blink::WebNotificationShowCallbacks, IDMapOwnPointer>
       pending_show_notification_requests_;
 
+  // Structure holding the information for active non-persistent notifications.
+  struct ActiveNotificationData {
+    ActiveNotificationData() = default;
+    ActiveNotificationData(blink::WebNotificationDelegate* delegate,
+                           const GURL& origin,
+                           const std::string& tag);
+    ~ActiveNotificationData();
+
+    blink::WebNotificationDelegate* delegate = nullptr;
+    GURL origin;
+    std::string tag;
+  };
+
   // Map to store the delegate associated with a notification request Id.
-  std::map<int, blink::WebNotificationDelegate*> active_page_notifications_;
+  std::unordered_map<int, ActiveNotificationData> active_page_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

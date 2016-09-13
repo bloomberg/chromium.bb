@@ -58,8 +58,8 @@ public:
     virtual void dispatchInstallEvent(int eventID) = 0;
     virtual void dispatchFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest) = 0;
-    virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
-    virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
+    virtual void dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData&, int actionIndex) = 0;
+    virtual void dispatchNotificationCloseEvent(int eventID, const WebString& notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
 
     virtual bool hasFetchEventHandler() = 0;

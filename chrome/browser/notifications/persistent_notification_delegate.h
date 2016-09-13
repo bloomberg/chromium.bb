@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_PERSISTENT_NOTIFICATION_DELEGATE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_PERSISTENT_NOTIFICATION_DELEGATE_H_
 
-#include <stdint.h>
 #include <string>
 
 #include "base/macros.h"
@@ -22,15 +21,9 @@ class BrowserContext;
 class PersistentNotificationDelegate : public NotificationDelegate {
  public:
   PersistentNotificationDelegate(content::BrowserContext* browser_context,
-                                 int64_t persistent_notification_id,
+                                 const std::string& notification_id,
                                  const GURL& origin,
                                  int notification_settings_index);
-
-  // Persistent id of this notification in the notification database. To be
-  // used when retrieving all information associated with it.
-  int64_t persistent_notification_id() const {
-    return persistent_notification_id_;
-  }
 
   // NotificationDelegate implementation.
   void Display() override;
@@ -47,9 +40,8 @@ class PersistentNotificationDelegate : public NotificationDelegate {
 
  private:
   content::BrowserContext* browser_context_;
-  int64_t persistent_notification_id_;
+  std::string notification_id_;
   GURL origin_;
-  std::string id_;
   int notification_settings_index_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentNotificationDelegate);

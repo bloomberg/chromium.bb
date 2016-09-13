@@ -32,60 +32,60 @@ LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 
 void LayoutTestNotificationManager::DisplayNotification(
     BrowserContext* browser_context,
+    const std::string& notification_id,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources,
     std::unique_ptr<DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::string title = base::UTF16ToUTF8(notification_data.title);
-
   DCHECK(cancel_callback);
+
   *cancel_callback = base::Bind(&LayoutTestNotificationManager::Close,
-                                weak_factory_.GetWeakPtr(),
-                                title);
+                                weak_factory_.GetWeakPtr(), notification_id);
 
-  ReplaceNotificationIfNeeded(notification_data);
+  ReplaceNotificationIfNeeded(notification_id);
 
-  page_notifications_[title] = delegate.release();
-  page_notifications_[title]->NotificationDisplayed();
+  non_persistent_notifications_[notification_id] = std::move(delegate);
+  non_persistent_notifications_[notification_id]->NotificationDisplayed();
+
+  notification_id_map_[base::UTF16ToUTF8(notification_data.title)] =
+      notification_id;
 }
 
 void LayoutTestNotificationManager::DisplayPersistentNotification(
     BrowserContext* browser_context,
-    int64_t persistent_notification_id,
+    const std::string& notification_id,
     const GURL& service_worker_scope,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::string title = base::UTF16ToUTF8(notification_data.title);
 
-  ReplaceNotificationIfNeeded(notification_data);
+  ReplaceNotificationIfNeeded(notification_id);
 
   PersistentNotification notification;
   notification.browser_context = browser_context;
   notification.origin = origin;
-  notification.persistent_id = persistent_notification_id;
 
-  persistent_notifications_[title] = notification;
+  persistent_notifications_[notification_id] = notification;
+
+  notification_id_map_[base::UTF16ToUTF8(notification_data.title)] =
+      notification_id;
 }
 
 void LayoutTestNotificationManager::ClosePersistentNotification(
     BrowserContext* browser_context,
-    int64_t persistent_notification_id) {
-  for (const auto& iter : persistent_notifications_) {
-    if (iter.second.persistent_id != persistent_notification_id)
-      continue;
+    const std::string& notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    persistent_notifications_.erase(iter.first);
-    return;
-  }
+  persistent_notifications_.erase(notification_id);
 }
 
 bool LayoutTestNotificationManager::GetDisplayedPersistentNotifications(
     BrowserContext* browser_context,
     std::set<std::string>* displayed_notifications) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(displayed_notifications);
 
   // Notifications will never outlive the lifetime of running layout tests.
@@ -96,46 +96,51 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title,
                                                   int action_index) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // First check for page-notifications with the given title.
-  const auto& page_iterator = page_notifications_.find(title);
-  if (page_iterator != page_notifications_.end()) {
+  const auto notification_id_iter = notification_id_map_.find(title);
+  if (notification_id_iter == notification_id_map_.end())
+    return;
+
+  const std::string& notification_id = notification_id_iter->second;
+
+  const auto persistent_iter = persistent_notifications_.find(notification_id);
+  const auto non_persistent_iter =
+      non_persistent_notifications_.find(notification_id);
+
+  if (persistent_iter != persistent_notifications_.end()) {
+    DCHECK(non_persistent_iter == non_persistent_notifications_.end());
+
+    const PersistentNotification& notification = persistent_iter->second;
+    content::NotificationEventDispatcher::GetInstance()
+        ->DispatchNotificationClickEvent(
+            notification.browser_context, notification_id, notification.origin,
+            action_index, base::Bind(&OnEventDispatchComplete));
+  } else if (non_persistent_iter != non_persistent_notifications_.end()) {
     DCHECK_EQ(action_index, -1) << "Action buttons are only supported for "
                                    "persistent notifications";
-    page_iterator->second->NotificationClick();
-    return;
+
+    non_persistent_iter->second->NotificationClick();
   }
-
-  // Then check for persistent notifications with the given title.
-  const auto& persistent_iterator = persistent_notifications_.find(title);
-  if (persistent_iterator == persistent_notifications_.end())
-    return;
-
-  const PersistentNotification& notification = persistent_iterator->second;
-  content::NotificationEventDispatcher::GetInstance()
-      ->DispatchNotificationClickEvent(
-          notification.browser_context,
-          notification.persistent_id,
-          notification.origin,
-          action_index,
-          base::Bind(&OnEventDispatchComplete));
 }
 
 void LayoutTestNotificationManager::SimulateClose(const std::string& title,
                                                   bool by_user) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const auto& persistent_iterator = persistent_notifications_.find(title);
-  if (persistent_iterator == persistent_notifications_.end())
+  const auto notification_id_iter = notification_id_map_.find(title);
+  if (notification_id_iter == notification_id_map_.end())
     return;
 
-  const PersistentNotification& notification = persistent_iterator->second;
+  const std::string& notification_id = notification_id_iter->second;
+
+  const auto& persistent_iter = persistent_notifications_.find(notification_id);
+  if (persistent_iter == persistent_notifications_.end())
+    return;
+
+  const PersistentNotification& notification = persistent_iter->second;
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationCloseEvent(
-          notification.browser_context,
-          notification.persistent_id,
-          notification.origin,
-          by_user,
-          base::Bind(&OnEventDispatchComplete));
+          notification.browser_context, notification_id, notification.origin,
+          by_user, base::Bind(&OnEventDispatchComplete));
 }
 
 blink::mojom::PermissionStatus
@@ -156,44 +161,28 @@ LayoutTestNotificationManager::CheckPermissionOnIOThread(
   return CheckPermission(origin);
 }
 
-void LayoutTestNotificationManager::Close(const std::string& title) {
+void LayoutTestNotificationManager::Close(const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto iterator = page_notifications_.find(title);
-  if (iterator == page_notifications_.end())
+  auto iterator = non_persistent_notifications_.find(notification_id);
+  if (iterator == non_persistent_notifications_.end())
     return;
 
   iterator->second->NotificationClosed();
 }
 
 void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
-    const PlatformNotificationData& notification_data) {
-  if (!notification_data.tag.length())
-    return;
+    const std::string& notification_id) {
+  const auto persistent_iter = persistent_notifications_.find(notification_id);
+  const auto non_persistent_iter =
+      non_persistent_notifications_.find(notification_id);
 
-  std::string tag = notification_data.tag;
-  const auto& replace_iter = replacements_.find(tag);
-  if (replace_iter != replacements_.end()) {
-    const std::string& previous_title = replace_iter->second;
-
-    const auto& page_notification_iter =
-        page_notifications_.find(previous_title);
-    if (page_notification_iter != page_notifications_.end()) {
-      DesktopNotificationDelegate* previous_delegate =
-          page_notification_iter->second;
-
-      previous_delegate->NotificationClosed();
-
-      page_notifications_.erase(page_notification_iter);
-      delete previous_delegate;
-    }
-
-    const auto& persistent_notification_iter =
-        persistent_notifications_.find(previous_title);
-    if (persistent_notification_iter != persistent_notifications_.end())
-      persistent_notifications_.erase(persistent_notification_iter);
+  if (persistent_iter != persistent_notifications_.end()) {
+    DCHECK(non_persistent_iter == non_persistent_notifications_.end());
+    persistent_notifications_.erase(persistent_iter);
+  } else if (non_persistent_iter != non_persistent_notifications_.end()) {
+    non_persistent_iter->second->NotificationClosed();
+    non_persistent_notifications_.erase(non_persistent_iter);
   }
-
-  replacements_[tag] = base::UTF16ToUTF8(notification_data.title);
 }
 
 blink::mojom::PermissionStatus

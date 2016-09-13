@@ -6,8 +6,8 @@
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_NOTIFICATION_MANAGER_H_
 
 #include <stdint.h>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -49,6 +49,7 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
       int render_process_id) override;
   void DisplayNotification(
       BrowserContext* browser_context,
+      const std::string& notification_id,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
@@ -56,14 +57,13 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       const GURL& service_worker_scope,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources) override;
-  void ClosePersistentNotification(
-      BrowserContext* browser_context,
-      int64_t persistent_notification_id) override;
+  void ClosePersistentNotification(BrowserContext* browser_context,
+                                   const std::string& notification_id) override;
   bool GetDisplayedPersistentNotifications(
       BrowserContext* browser_context,
       std::set<std::string>* displayed_notifications) override;
@@ -73,26 +73,26 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   struct PersistentNotification {
     BrowserContext* browser_context = nullptr;
     GURL origin;
-    int64_t persistent_id = 0;
   };
 
   // Closes the notification titled |title|. Must be called on the UI thread.
   void Close(const std::string& title);
 
-  // Fakes replacing the notification identified by |params| when it has a tag
-  // and a previous notification has been displayed using the same tag. All
-  // notifications, both page and persistent ones, will be considered for this.
-  void ReplaceNotificationIfNeeded(
-      const PlatformNotificationData& notification_data);
+  // Fakes replacing the notification identified by |notification_id|. Both
+  // persistent and non-persistent notifications will be considered for this.
+  void ReplaceNotificationIfNeeded(const std::string& notification_id);
 
   // Checks if |origin| has permission to display notifications. May be called
   // on both the IO and the UI threads.
   blink::mojom::PermissionStatus CheckPermission(const GURL& origin);
 
-  std::map<std::string, DesktopNotificationDelegate*> page_notifications_;
-  std::map<std::string, PersistentNotification> persistent_notifications_;
+  std::unordered_map<std::string, PersistentNotification>
+      persistent_notifications_;
+  std::unordered_map<std::string, std::unique_ptr<DesktopNotificationDelegate>>
+      non_persistent_notifications_;
 
-  std::map<std::string, std::string> replacements_;
+  // Mapping of titles to notification ids giving test a usable identifier.
+  std::unordered_map<std::string, std::string> notification_id_map_;
 
   base::WeakPtrFactory<LayoutTestNotificationManager> weak_factory_;
 

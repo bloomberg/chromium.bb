@@ -835,26 +835,24 @@ void ServiceWorkerContextClient::OnFetchEvent(
 
 void ServiceWorkerContextClient::OnNotificationClickEvent(
     int request_id,
-    int64_t persistent_notification_id,
+    const std::string& notification_id,
     const PlatformNotificationData& notification_data,
     int action_index) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNotificationClickEvent");
   proxy_->dispatchNotificationClickEvent(
-      request_id,
-      persistent_notification_id,
-      ToWebNotificationData(notification_data),
-      action_index);
+      request_id, blink::WebString::fromUTF8(notification_id),
+      ToWebNotificationData(notification_data), action_index);
 }
 
 void ServiceWorkerContextClient::OnNotificationCloseEvent(
     int request_id,
-    int64_t persistent_notification_id,
+    const std::string& notification_id,
     const PlatformNotificationData& notification_data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNotificationCloseEvent");
   proxy_->dispatchNotificationCloseEvent(
-      request_id, persistent_notification_id,
+      request_id, blink::WebString::fromUTF8(notification_id),
       ToWebNotificationData(notification_data));
 }
 

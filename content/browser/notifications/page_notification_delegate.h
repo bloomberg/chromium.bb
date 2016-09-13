@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_PAGE_NOTIFICATION_DELEGATE_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_PAGE_NOTIFICATION_DELEGATE_H_
 
+#include <string>
+
 #include "content/public/browser/desktop_notification_delegate.h"
 
 namespace content {
@@ -14,7 +16,9 @@ namespace content {
 // that of the page displaying them.
 class PageNotificationDelegate : public DesktopNotificationDelegate {
  public:
-  PageNotificationDelegate(int render_process_id, int notification_id);
+  PageNotificationDelegate(int render_process_id,
+                           int non_persistent_notification_id,
+                           const std::string& notification_id);
   ~PageNotificationDelegate() override;
 
   // DesktopNotificationDelegate implementation.
@@ -24,7 +28,8 @@ class PageNotificationDelegate : public DesktopNotificationDelegate {
 
  private:
   int render_process_id_;
-  int notification_id_;
+  int non_persistent_notification_id_;
+  std::string notification_id_;
 };
 
 }  // namespace content

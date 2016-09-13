@@ -497,12 +497,12 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_FetchEvent,
                      content::ServiceWorkerFetchRequest)
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
-                     int64_t /* persistent_notification_id */,
+                     std::string /* notification_id */,
                      content::PlatformNotificationData /* notification_data */,
                      int /* action_index */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationCloseEvent,
                      int /* request_id */,
-                     int64_t /* persistent_notification_id */,
+                     std::string /* notification_id */,
                      content::PlatformNotificationData /* notification_data */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,

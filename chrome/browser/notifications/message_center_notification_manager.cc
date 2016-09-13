@@ -44,6 +44,7 @@
 #include "ash/shell.h"
 #endif
 
+using message_center::NotifierId;
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
@@ -157,6 +158,11 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
 
       // TODO(liyanhou): Add routing updated notifications to alternative
       // providers.
+
+      // Non-persistent Web Notifications rely on receiving the Display() event
+      // to inform the developer, even when replacing a previous notification.
+      if (notification.notifier_id().type == NotifierId::WEB_PAGE)
+        notification.delegate()->Display();
 
       // WARNING: You MUST use AddProfileNotification or update the message
       // center via the notification within a ProfileNotification object or the

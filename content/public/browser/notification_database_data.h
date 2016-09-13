@@ -6,7 +6,9 @@
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_DATABASE_DATA_H_
 
 #include <stdint.h>
+#include <string>
 
+#include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
 #include "url/gurl.h"
 
@@ -15,9 +17,15 @@ namespace content {
 // Stores information about a Web Notification as available in the notification
 // database. Beyond the notification's own data, its id and attribution need
 // to be available for users of the database as well.
-struct NotificationDatabaseData {
-  // Id of the notification as allocated by the NotificationDatabase.
-  int64_t notification_id = 0;
+struct CONTENT_EXPORT NotificationDatabaseData {
+  NotificationDatabaseData();
+  NotificationDatabaseData(const NotificationDatabaseData& other);
+  ~NotificationDatabaseData();
+
+  NotificationDatabaseData& operator=(const NotificationDatabaseData& other);
+
+  // Id of the notification as assigned by the NotificationIdGenerator.
+  std::string notification_id;
 
   // Origin of the website this notification is associated with.
   GURL origin;

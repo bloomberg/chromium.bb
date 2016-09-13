@@ -58,8 +58,6 @@
 namespace blink {
 namespace {
 
-const int64_t kInvalidPersistentId = -1;
-
 WebNotificationManager* notificationManager()
 {
     return Platform::current()->notificationManager();
@@ -109,10 +107,10 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     return notification;
 }
 
-Notification* Notification::create(ExecutionContext* context, int64_t persistentId, const WebNotificationData& data, bool showing)
+Notification* Notification::create(ExecutionContext* context, const String& notificationId, const WebNotificationData& data, bool showing)
 {
     Notification* notification = new Notification(context, data);
-    notification->setPersistentId(persistentId);
+    notification->setNotificationId(notificationId);
     notification->setState(showing ? NotificationStateShowing : NotificationStateClosed);
     notification->suspendIfNeeded();
 
@@ -123,7 +121,6 @@ Notification::Notification(ExecutionContext* context, const WebNotificationData&
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_data(data)
-    , m_persistentId(kInvalidPersistentId)
     , m_state(NotificationStateIdle)
     , m_prepareShowMethodRunner(AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow))
 {
@@ -172,7 +169,7 @@ void Notification::close()
     if (m_state != NotificationStateShowing)
         return;
 
-    if (m_persistentId == kInvalidPersistentId) {
+    if (m_notificationId.isNull()) {
         // Fire the close event asynchronously.
         getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, wrapPersistent(this)));
 
@@ -184,7 +181,7 @@ void Notification::close()
         SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
         DCHECK(origin);
 
-        notificationManager()->closePersistent(WebSecurityOrigin(origin), m_persistentId);
+        notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag, m_notificationId);
     }
 }
 

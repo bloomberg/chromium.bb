@@ -44,12 +44,6 @@ class NotificationPlatformBridge {
                             bool incognito,
                             std::set<std::string>* notification_ids) const = 0;
 
-  // Temporary method while the refactor is finished. It denotes whether
-  // the notifications will be shown by chrome itself or by the OS.
-  // It is needed while migrating MacOSX and Windows to their respective
-  // notification centers since the decision is made at runtime via flags.
-  virtual bool SupportsNotificationCenter() const = 0;
-
  protected:
   NotificationPlatformBridge() {}
 

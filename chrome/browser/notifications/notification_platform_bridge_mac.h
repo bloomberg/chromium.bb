@@ -39,7 +39,6 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
   bool GetDisplayed(const std::string& profile_id,
                     bool incognito,
                     std::set<std::string>* notifications) const override;
-  bool SupportsNotificationCenter() const override;
 
   // Validates contents of the |response| dictionary as received from the system
   // when a notification gets activated.

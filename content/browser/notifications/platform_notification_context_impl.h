@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,14 +69,19 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Mojo pipe disconnected. Must be called on the IO thread.
   void RemoveService(BlinkNotificationServiceImpl* service);
 
+  // Returns the notification Id generator owned by the context.
+  NotificationIdGenerator* notification_id_generator() {
+    return &notification_id_generator_;
+  }
+
   // PlatformNotificationContext implementation.
-  void ReadNotificationData(int64_t notification_id,
+  void ReadNotificationData(const std::string& notification_id,
                             const GURL& origin,
                             const ReadResultCallback& callback) override;
   void WriteNotificationData(const GURL& origin,
                              const NotificationDatabaseData& database_data,
                              const WriteResultCallback& callback) override;
-  void DeleteNotificationData(int64_t notification_id,
+  void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
                               const DeleteResultCallback& callback) override;
   void ReadAllNotificationDataForServiceWorkerRegistration(
@@ -116,7 +122,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Actually reads the notification data from the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // IO thread when the operation has completed.
-  void DoReadNotificationData(int64_t notification_id,
+  void DoReadNotificationData(const std::string& notification_id,
                               const GURL& origin,
                               const ReadResultCallback& callback);
 
@@ -138,7 +144,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Actually deletes the notification information from the database. Must only
   // be called on the |task_runner_| thread. |callback| will be invoked on the
   // IO thread when the operation has completed.
-  void DoDeleteNotificationData(int64_t notification_id,
+  void DoDeleteNotificationData(const std::string& notification_id,
                                 const GURL& origin,
                                 const DeleteResultCallback& callback);
 
@@ -167,6 +173,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<NotificationDatabase> database_;
+
+  NotificationIdGenerator notification_id_generator_;
 
   // Indicates whether the database should be pruned when it's opened.
   bool prune_database_on_open_ = false;

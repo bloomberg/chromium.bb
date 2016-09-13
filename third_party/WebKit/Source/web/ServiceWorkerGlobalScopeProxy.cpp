@@ -197,7 +197,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData& data, int actionIndex)
+void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData& data, int actionIndex)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::NotificationClick, eventID);
     NotificationEventInit eventInit;
@@ -208,7 +208,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, 
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData& data)
+void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, const WebString& notificationID, const WebNotificationData& data)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::NotificationClose, eventID);
     NotificationEventInit eventInit;

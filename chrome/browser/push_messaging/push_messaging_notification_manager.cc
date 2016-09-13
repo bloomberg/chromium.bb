@@ -292,13 +292,13 @@ void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
     const PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
-    int64_t persistent_notification_id) {
+    const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingNotificationManager::DidWriteNotificationData,
                  ui_weak_ptr, origin, notification_data,
-                 message_handled_closure, success, persistent_notification_id));
+                 message_handled_closure, success, notification_id));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
@@ -306,7 +306,7 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
     const PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
-    int64_t persistent_notification_id) {
+    const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success) {
     DLOG(ERROR) << "Writing forced notification to database should not fail";
@@ -319,8 +319,8 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
   // attributed to a WebAPK on Android. This is OK because this code path is hit
   // rarely.
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
-      profile_, persistent_notification_id, GURL() /* service_worker_scope */,
-      origin, notification_data, NotificationResources());
+      profile_, notification_id, GURL() /* service_worker_scope */, origin,
+      notification_data, NotificationResources());
 
   message_handled_closure.Run();
 }

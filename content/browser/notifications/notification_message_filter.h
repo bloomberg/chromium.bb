@@ -23,6 +23,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
+class NotificationIdGenerator;
 struct NotificationResources;
 class PlatformNotificationContextImpl;
 struct PlatformNotificationData;
@@ -40,9 +41,9 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
       BrowserContext* browser_context);
 
-  // To be called by the notification's delegate when it has closed, so that
-  // the close closure associated with that notification can be removed.
-  void DidCloseNotification(int notification_id);
+  // To be called by non-persistent notification delegates when they are closed,
+  // so that the close closure associated with that notification can be removed.
+  void DidCloseNotification(const std::string& notification_id);
 
   // BrowserMessageFilter implementation. Called on the UI thread.
   void OnDestruct() const override;
@@ -58,7 +59,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   friend class BrowserThread;
 
   void OnShowPlatformNotification(
-      int notification_id,
+      int non_persistent_notification_id,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources);
@@ -72,9 +73,12 @@ class NotificationMessageFilter : public BrowserMessageFilter {
                           int64_t service_worker_registration_id,
                           const GURL& origin,
                           const std::string& filter_tag);
-  void OnClosePlatformNotification(int notification_id);
+  void OnClosePlatformNotification(const GURL& origin,
+                                   const std::string& tag,
+                                   int non_persistent_notification_id);
   void OnClosePersistentNotification(const GURL& origin,
-                                     int64_t persistent_notification_id);
+                                     const std::string& tag,
+                                     const std::string& notification_id);
 
   // Callback to be invoked by the notification context when the notification
   // data for the persistent notification may have been written, as indicated by
@@ -86,7 +90,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
       bool success,
-      int64_t persistent_notification_id);
+      const std::string& notification_id);
 
   // Callback to be invoked by the service worker context when the service
   // worker registration was retrieved. Will present the notification to the
@@ -96,7 +100,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       content::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
@@ -128,14 +132,18 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   bool VerifyNotificationPermissionGranted(PlatformNotificationService* service,
                                            const GURL& origin);
 
+  // Returns the NotificationIdGenerator instance owned by the context.
+  NotificationIdGenerator* GetNotificationIdGenerator() const;
+
   int process_id_;
   scoped_refptr<PlatformNotificationContextImpl> notification_context_;
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   BrowserContext* browser_context_;
 
-  // Map mapping notification ids to their associated close closures.
-  std::map<int, base::Closure> close_closures_;
+  // Map mapping notification IDs associated with non-persistent notifications
+  // to the closures that may be used for programmatically closing them.
+  std::unordered_map<std::string, base::Closure> close_closures_;
 
   base::WeakPtrFactory<NotificationMessageFilter> weak_factory_io_;
 

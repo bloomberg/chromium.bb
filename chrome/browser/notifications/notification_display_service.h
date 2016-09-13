@@ -41,10 +41,6 @@ class NotificationDisplayService : public KeyedService {
   // notifications and stores them in |*notification_ids| when possible.
   virtual bool GetDisplayed(std::set<std::string>* notifications) const = 0;
 
-  // Temporary method while we finish the refactor. Returns whether there is
-  // a native notification center backing up notifications.
-  virtual bool SupportsNotificationCenter() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayService);
 };

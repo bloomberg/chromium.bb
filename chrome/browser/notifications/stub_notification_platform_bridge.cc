@@ -56,7 +56,3 @@ bool StubNotificationPlatformBridge::GetDisplayed(
     notifications->insert(notification.id());
   return true;
 }
-
-bool StubNotificationPlatformBridge::SupportsNotificationCenter() const {
-  return false;
-}

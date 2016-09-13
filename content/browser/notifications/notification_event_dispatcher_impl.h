@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_EVENT_DISPATCHER_IMPL_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_EVENT_DISPATCHER_IMPL_H_
 
-#include <stdint.h>
-
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_database_data.h"
@@ -23,14 +21,14 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
   // NotificationEventDispatcher implementation.
   void DispatchNotificationClickEvent(
       BrowserContext* browser_context,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       const GURL& origin,
       int action_index,
       const NotificationDispatchCompleteCallback& dispatch_complete_callback)
       override;
   void DispatchNotificationCloseEvent(
       BrowserContext* browser_context,
-      int64_t persistent_notification_id,
+      const std::string& notification_id,
       const GURL& origin,
       bool by_user,
       const NotificationDispatchCompleteCallback& dispatch_complete_callback)

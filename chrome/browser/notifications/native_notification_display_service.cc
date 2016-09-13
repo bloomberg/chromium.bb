@@ -115,7 +115,3 @@ NotificationHandler* NativeNotificationDisplayService::GetNotificationHandler(
       << notification_type << " is not registered.";
   return notification_handlers_[notification_type].get();
 }
-
-bool NativeNotificationDisplayService::SupportsNotificationCenter() const {
-  return notification_bridge_->SupportsNotificationCenter();
-}
