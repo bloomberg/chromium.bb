@@ -51,8 +51,7 @@ def stack(out_dir):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('command',
-                      choices=['gyp',
-                               'gn',
+                      choices=['gn',
                                'sync',
                                'build',
                                'install',
@@ -94,10 +93,6 @@ def main():
     gn_extra = ''
     out_dir_suffix = ''
 
-  gyp_defines = 'GYP_DEFINES="OS=' + target_os + ' enable_websockets=0 '+ \
-      'disable_file_support=1 disable_ftp_support=1 '+ \
-      'enable_errorprone=1 use_platform_icu_alternatives=1 ' + \
-      'disable_brotli_filter=1 arm_neon=0"'
   gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
       'use_platform_icu_alternatives=true '+ \
@@ -118,12 +113,10 @@ def main():
   if options.out_dir:
     out_dir = options.out_dir
 
-  if (options.command=='gyp'):
-    return run (gyp_defines + ' gclient runhooks')
   if (options.command=='gn'):
     return run ('gn gen %s --args=\'%s\' %s' % (out_dir, gn_args, gn_extra))
   if (options.command=='sync'):
-    return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
+    return run ('git pull --rebase && gclient sync')
   if (options.command=='build'):
     return build(out_dir, test_target, extra_options)
   if (not is_os):

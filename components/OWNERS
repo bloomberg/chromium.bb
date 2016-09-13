@@ -44,8 +44,6 @@ per-file contextual_search.gypi=file://components/contextual_search/OWNERS
 per-file crash.gypi=file://components/crash/OWNERS
 per-file crash_strings.grdp=file://components/crash/OWNERS
 
-per-file cronet.gypi=file://components/cronet/OWNERS
-
 per-file data_reduction_proxy.gypi=file://components/data_reduction_proxy/OWNERS
 
 per-file data_usage.gypi=file://components/data_usage/OWNERS
