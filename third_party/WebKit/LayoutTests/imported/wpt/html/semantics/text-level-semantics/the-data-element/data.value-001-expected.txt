@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+PASS Getter tests 
+FAIL data[value] #0 getter test assert_equals: expected (string) "" but got (undefined) undefined
+FAIL data[value] #1 getter test assert_equals: expected (string) "40" but got (undefined) undefined
+FAIL data[value] #2 getter test assert_equals: expected (string) "5" but got (undefined) undefined
+PASS Setter tests 
+FAIL data[value] #0 setter test assert_equals: expected "20" but got ""
+FAIL data[value] #1 setter test assert_equals: expected "20" but got "40"
+FAIL data[value] #2 setter test assert_equals: expected "20" but got "5"
+FAIL data[value] #3 setter test assert_equals: expected (string) "20" but got (object) null
+Harness: the test ran to completion.
+
