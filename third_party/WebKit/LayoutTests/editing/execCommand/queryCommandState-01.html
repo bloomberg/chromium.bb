@@ -1,44 +1,21 @@
-<head>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<div contenteditable id="sample">foo</div>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
+test(() => {
+    const sample = document.getElementById('sample');
+    const selection = window.getSelection();
+    selection.collapse(sample, 0);
+    assert_false(document.queryCommandState('insertUnorderedList'), '1 InsertUnorderedList');
+    assert_false(document.queryCommandState('insertOrderedList'), '2 insertOrderedList');
+    document.execCommand('insertUnorderedList');
+    assert_true(document.queryCommandState('insertUnorderedList'), '3 insertUnorderedList');
+    assert_false(document.queryCommandState('insertOrderedList'), '4 insertOrderedList');
+    document.execCommand('insertUnorderedList');
+    document.execCommand('insertOrderedList');
+    assert_false(document.queryCommandState('insertUnorderedList'), '5 insertUnorderedList');
+    assert_true(document.queryCommandState('insertOrderedList'), '6 insertOrderedList');
+}, 'queryCommandState for InsertOrderedList/InsertUnorderedList');
 </script>
-
-<script>
-function log(str) {
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(str));
-    var console = document.getElementById("console");
-    console.appendChild(li);
-}
-
-function assert(bool) {
-    if (!bool)
-        log("Failure");
-    else
-        log("Success");
-}
-</script>
-</head>
-<body>
-<p>This tests queryCommandState for InsertUnorderedList and InsertOrderedList.</p>
-<div id="div" contenteditable="true">foo</div>
-<ol id="console"></ol>
-<script>
-if (window.testRunner)
-    window.testRunner.dumpAsText();
-var sel = window.getSelection();
-var div = document.getElementById("div");
-sel.collapse(div, 0);
-
-assert(!document.queryCommandState("InsertUnorderedList"));
-assert(!document.queryCommandState("InsertOrderedList"));
-document.execCommand("InsertUnorderedList");
-assert(document.queryCommandState("InsertUnorderedList"));
-assert(!document.queryCommandState("InsertOrderedList"));
-document.execCommand("InsertUnorderedList");
-document.execCommand("InsertOrderedList");
-assert(!document.queryCommandState("InsertUnorderedList"));
-assert(document.queryCommandState("InsertOrderedList"));
-</script>
-</body>
