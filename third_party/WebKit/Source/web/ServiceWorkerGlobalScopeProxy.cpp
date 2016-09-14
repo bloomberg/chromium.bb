@@ -264,11 +264,11 @@ void ServiceWorkerGlobalScopeProxy::didLoadWorkerScript(size_t scriptSize, size_
     m_workerGlobalScope->didLoadWorkerScript(scriptSize, cachedMetadataSize);
 }
 
-void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
+void ServiceWorkerGlobalScopeProxy::didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope* workerGlobalScope)
 {
-    DCHECK(m_workerGlobalScope);
-    m_workerGlobalScope->didEvaluateWorkerScript();
-    client().didEvaluateWorkerScript(success);
+    DCHECK(!m_workerGlobalScope);
+    m_workerGlobalScope = static_cast<ServiceWorkerGlobalScope*>(workerGlobalScope);
+    client().workerContextStarted(this);
 }
 
 void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
@@ -277,14 +277,14 @@ void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
     client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context());
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerOrWorkletGlobalScope* workerGlobalScope)
+void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
 {
-    DCHECK(!m_workerGlobalScope);
-    m_workerGlobalScope = static_cast<ServiceWorkerGlobalScope*>(workerGlobalScope);
-    client().workerContextStarted(this);
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->didEvaluateWorkerScript();
+    client().didEvaluateWorkerScript(success);
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
+void ServiceWorkerGlobalScopeProxy::didCloseWorkerGlobalScope()
 {
     // This should never be called because close() is not defined in
     // ServiceWorkerGlobalScope.
@@ -298,7 +298,7 @@ void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
     m_workerGlobalScope = nullptr;
 }
 
-void ServiceWorkerGlobalScopeProxy::workerThreadTerminated()
+void ServiceWorkerGlobalScopeProxy::didTerminateWorkerThread()
 {
     client().workerContextDestroyed();
 }

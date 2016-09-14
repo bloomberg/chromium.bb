@@ -273,10 +273,10 @@ private:
 
     void expectWorkerLifetimeReportingCalls()
     {
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(1);
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread()).Times(1);
     }
 
     void workerCreateLoader(ThreadableLoaderClient* client, WaitableEvent* event, CrossOriginRequestPolicy crossOriginRequestPolicy)

@@ -80,9 +80,9 @@ public:
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void didEvaluateWorkerScript(bool success) override { }
-    void workerGlobalScopeClosed() override;
-    void workerThreadTerminated() override;
+    void didCloseWorkerGlobalScope() override;
     void willDestroyWorkerGlobalScope() override { }
+    void didTerminateWorkerThread() override;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) override;
@@ -124,9 +124,10 @@ private:
     void onScriptLoaderFinished();
 
     static void connectTask(WebMessagePortChannelUniquePtr, ExecutionContext*);
+
     // Tasks that are run on the main thread.
-    void workerGlobalScopeClosedOnMainThread();
-    void workerThreadTerminatedOnMainThread();
+    void didCloseWorkerGlobalScopeOnMainThread();
+    void didTerminateWorkerThreadOnMainThread();
 
     void postMessageToPageInspectorOnMainThread(const String& message);
 

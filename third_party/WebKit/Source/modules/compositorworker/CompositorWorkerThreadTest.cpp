@@ -44,11 +44,11 @@ public:
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override {}
     void postMessageToPageInspector(const String&) override {}
 
+    void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override {}
     void didEvaluateWorkerScript(bool success) override {}
-    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override {}
-    void workerGlobalScopeClosed() override {}
-    void workerThreadTerminated() override {}
+    void didCloseWorkerGlobalScope() override {}
     void willDestroyWorkerGlobalScope() override {}
+    void didTerminateWorkerThread() override {}
 
     ExecutionContext* getExecutionContext() override { return m_executionContext.get(); }
 

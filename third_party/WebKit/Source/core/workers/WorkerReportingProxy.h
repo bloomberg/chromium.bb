@@ -55,28 +55,30 @@ public:
     // Invoked when the worker script or imported script is loaded.
     virtual void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) { }
 
-    // Invoked when the worker script is evaluated. |success| is true if the
-    // evaluation completed with no uncaught exception.
-    virtual void didEvaluateWorkerScript(bool success) = 0;
+    // Invoked when the new WorkerGlobalScope is created. This is called after
+    // didLoadWorkerScript().
+    virtual void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) { }
 
-    // Invoked when the thread creates a worker script context.
+    // Invoked when the WorkerGlobalScope is initialized. This is called after
+    // didCreateWorkerGlobalScope().
     virtual void didInitializeWorkerContext() { }
 
-    // Invoked when the new WorkerGlobalScope is started.
-    virtual void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) { }
+    // Invoked when the worker script is evaluated. |success| is true if the
+    // evaluation completed with no uncaught exception. This is called after
+    // didInitializeWorkerContext().
+    virtual void didEvaluateWorkerScript(bool success) = 0;
 
     // Invoked when close() is invoked on the worker context.
-    virtual void workerGlobalScopeClosed() = 0;
-
-    // Invoked when the thread is stopped and WorkerGlobalScope is being
-    // destructed. (This is be the last method that is called on this
-    // interface)
-    virtual void workerThreadTerminated() = 0;
+    virtual void didCloseWorkerGlobalScope() = 0;
 
     // Invoked when the thread is about to be stopped and WorkerGlobalScope
-    // is to be destructed. (When this is called it is guaranteed that
-    // WorkerGlobalScope is still alive)
+    // is to be destructed. When this is called, it is guaranteed that
+    // WorkerGlobalScope is still alive.
     virtual void willDestroyWorkerGlobalScope() = 0;
+
+    // Invoked when the thread is stopped and WorkerGlobalScope is being
+    // destructed. This is the last method that is called on this interface.
+    virtual void didTerminateWorkerThread() = 0;
 };
 
 } // namespace blink

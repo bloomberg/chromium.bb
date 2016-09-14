@@ -55,25 +55,27 @@ public:
     ~MockWorkerReportingProxy() override { }
 
     MOCK_METHOD3(reportExceptionMock, void(const String& errorMessage, SourceLocation*, int exceptionId));
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
-    {
-        reportExceptionMock(errorMessage, location.get(), exceptionId);
-    }
     MOCK_METHOD4(reportConsoleMessage, void(MessageSource, MessageLevel, const String& message, SourceLocation*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
 
     MOCK_METHOD2(didLoadWorkerScriptMock, void(size_t scriptSize, size_t cachedMetadataSize));
+    MOCK_METHOD1(didCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
+    MOCK_METHOD0(didInitializeWorkerContext, void());
+    MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
+    MOCK_METHOD0(didCloseWorkerGlobalScope, void());
+    MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
+    MOCK_METHOD0(didTerminateWorkerThread, void());
+
+    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
+    {
+        reportExceptionMock(errorMessage, location.get(), exceptionId);
+    }
+
     void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override
     {
         m_scriptLoadedEvent.signal();
         didLoadWorkerScriptMock(scriptSize, cachedMetadataSize);
     }
-
-    MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
-    MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerOrWorkletGlobalScope*));
-    MOCK_METHOD0(workerGlobalScopeClosed, void());
-    MOCK_METHOD0(workerThreadTerminated, void());
-    MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
 
     void waitUntilScriptLoaded()
     {

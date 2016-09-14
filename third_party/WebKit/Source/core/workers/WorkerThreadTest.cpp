@@ -103,29 +103,32 @@ public:
 protected:
     void expectReportingCalls()
     {
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didInitializeWorkerContext()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(1);
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread()).Times(1);
     }
 
     void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization()
     {
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(AtMost(1));
         EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(AtMost(1));
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_)).Times(AtMost(1));
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didInitializeWorkerContext()).Times(AtMost(1));
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread()).Times(1);
     }
 
     void expectReportingCallsForWorkerForciblyTerminated()
     {
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didInitializeWorkerContext()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(false)).Times(1);
-        EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+        EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread()).Times(1);
     }
 
     ExitCode getExitCode()
@@ -219,9 +222,10 @@ TEST_F(WorkerThreadTest, StartAndTerminateImmediately_SyncTerminate)
 
 TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebuggerTaskIsRunning)
 {
-    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(1);
-    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread()).Times(1);
 
     std::unique_ptr<Vector<CSPHeaderAndType>> headers = wrapUnique(new Vector<CSPHeaderAndType>());
     CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);

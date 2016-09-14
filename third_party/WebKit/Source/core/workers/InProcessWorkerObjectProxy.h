@@ -74,11 +74,11 @@ public:
     void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) override;
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     void postMessageToPageInspector(const String&) override;
+    void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
     void didEvaluateWorkerScript(bool success) override;
-    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override;
-    void workerGlobalScopeClosed() override;
-    void workerThreadTerminated() override;
+    void didCloseWorkerGlobalScope() override;
     void willDestroyWorkerGlobalScope() override;
+    void didTerminateWorkerThread() override;
 
 protected:
     InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy*);

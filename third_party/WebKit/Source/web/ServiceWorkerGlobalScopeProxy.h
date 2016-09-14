@@ -88,12 +88,12 @@ public:
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     void postMessageToPageInspector(const String&) override;
     void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override;
-    void didEvaluateWorkerScript(bool success) override;
+    void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
     void didInitializeWorkerContext() override;
-    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override;
-    void workerGlobalScopeClosed() override;
+    void didEvaluateWorkerScript(bool success) override;
+    void didCloseWorkerGlobalScope() override;
     void willDestroyWorkerGlobalScope() override;
-    void workerThreadTerminated() override;
+    void didTerminateWorkerThread() override;
 
     DECLARE_TRACE();
 

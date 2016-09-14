@@ -134,7 +134,7 @@ public:
                 scriptController->getRejectedPromises()->processQueue();
             if (global->isClosing()) {
                 // |m_workerThread| will eventually be requested to terminate.
-                m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
+                m_workerThread->workerReportingProxy().didCloseWorkerGlobalScope();
 
                 // Stop further worker tasks to run after this point.
                 m_workerThread->prepareForShutdownOnWorkerThread();
@@ -498,7 +498,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
             // Notify the proxy that the WorkerOrWorkletGlobalScope has been
             // disposed of. This can free this thread object, hence it must not
             // be touched afterwards.
-            m_workerReportingProxy.workerThreadTerminated();
+            m_workerReportingProxy.didTerminateWorkerThread();
 
             // Notify the main thread that it is safe to deallocate our
             // resources.
@@ -516,13 +516,11 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
 
         // Optimize for memory usage instead of latency for the worker isolate.
         isolate()->IsolateInBackgroundNotification();
+
         m_consoleMessageStorage = new ConsoleMessageStorage();
         m_globalScope = createWorkerGlobalScope(std::move(startupData));
+        m_workerReportingProxy.didCreateWorkerGlobalScope(globalScope());
         m_workerInspectorController = WorkerInspectorController::create(this);
-
-        // Notify proxy that a new WorkerOrWorkletGlobalScope has been created
-        // and started.
-        m_workerReportingProxy.workerGlobalScopeStarted(globalScope());
 
         if (globalScope()->isWorkerGlobalScope())
             m_workerReportingProxy.didLoadWorkerScript(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
@@ -614,7 +612,7 @@ void WorkerThread::performShutdownOnWorkerThread()
     // Notify the proxy that the WorkerOrWorkletGlobalScope has been disposed
     // of. This can free this thread object, hence it must not be touched
     // afterwards.
-    workerReportingProxy().workerThreadTerminated();
+    workerReportingProxy().didTerminateWorkerThread();
 
     m_shutdownEvent->signal();
 }

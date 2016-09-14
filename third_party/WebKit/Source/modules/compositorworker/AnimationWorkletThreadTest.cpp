@@ -43,9 +43,9 @@ public:
     void postMessageToPageInspector(const String&) override {}
 
     void didEvaluateWorkerScript(bool success) override {}
-    void workerGlobalScopeClosed() override {}
-    void workerThreadTerminated() override {}
+    void didCloseWorkerGlobalScope() override {}
     void willDestroyWorkerGlobalScope() override {}
+    void didTerminateWorkerThread() override {}
 
 private:
     TestAnimationWorkletReportingProxy() {}

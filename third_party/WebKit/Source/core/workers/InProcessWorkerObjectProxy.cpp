@@ -110,33 +110,33 @@ void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& messag
     }
 }
 
-void InProcessWorkerObjectProxy::didEvaluateWorkerScript(bool)
-{
-    startPendingActivityTimer();
-}
-
-void InProcessWorkerObjectProxy::workerGlobalScopeStarted(WorkerOrWorkletGlobalScope* globalScope)
+void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope* globalScope)
 {
     DCHECK(!m_workerGlobalScope);
     m_workerGlobalScope = toWorkerGlobalScope(globalScope);
     m_timer = wrapUnique(new Timer<InProcessWorkerObjectProxy>(this, &InProcessWorkerObjectProxy::checkPendingActivity));
 }
 
-void InProcessWorkerObjectProxy::workerGlobalScopeClosed()
+void InProcessWorkerObjectProxy::didEvaluateWorkerScript(bool)
 {
-    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::terminateGlobalScope, crossThreadUnretained(m_messagingProxy)));
+    startPendingActivityTimer();
 }
 
-void InProcessWorkerObjectProxy::workerThreadTerminated()
+void InProcessWorkerObjectProxy::didCloseWorkerGlobalScope()
 {
-    // This will terminate the MessagingProxy.
-    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::workerThreadTerminated, crossThreadUnretained(m_messagingProxy)));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::terminateGlobalScope, crossThreadUnretained(m_messagingProxy)));
 }
 
 void InProcessWorkerObjectProxy::willDestroyWorkerGlobalScope()
 {
     m_timer.reset();
     m_workerGlobalScope = nullptr;
+}
+
+void InProcessWorkerObjectProxy::didTerminateWorkerThread()
+{
+    // This will terminate the MessagingProxy.
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::workerThreadTerminated, crossThreadUnretained(m_messagingProxy)));
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy* messagingProxy)

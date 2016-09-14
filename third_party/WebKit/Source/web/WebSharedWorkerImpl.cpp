@@ -244,24 +244,24 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& m
     m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeClosed()
+void WebSharedWorkerImpl::didCloseWorkerGlobalScope()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, crossThreadUnretained(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread, crossThreadUnretained(this)));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
+void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread()
 {
     m_client->workerContextClosed();
 
     terminateWorkerThread();
 }
 
-void WebSharedWorkerImpl::workerThreadTerminated()
+void WebSharedWorkerImpl::didTerminateWorkerThread()
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, crossThreadUnretained(this)));
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread, crossThreadUnretained(this)));
 }
 
-void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
+void WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread()
 {
     m_client->workerContextDestroyed();
     // The lifetime of this proxy is controlled by the worker context.
