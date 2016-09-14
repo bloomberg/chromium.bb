@@ -32873,6 +32873,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to complete a speculative certificate verification.</summary>
 </histogram>
 
+<histogram name="Net.SSLNegotiatedAlpnProtocol"
+    enum="SSLNegotiatedAlpnProtocol">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    For each TLS handshake, whether ALPN was negotiated; and if so, the
+    negotiated protocol.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLProtocolErrorCipher" enum="SSLCipherSuite">
   <obsolete>
     Removed in March 2016.
@@ -32899,6 +32908,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLProtocolNegotiation" enum="SSLProtocolNegotiation">
+  <obsolete>
+    Superseded by Net.SSLNegotiatedAlpnProtocol in 2016 August.
+  </obsolete>
   <owner>bnc@chromium.org</owner>
   <summary>
     TLS extension used to negotiate protocol (ALPN or NPN); in case of NPN,
@@ -96406,6 +96418,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
   <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
   <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
+</enum>
+
+<enum name="SSLNegotiatedAlpnProtocol" type="int">
+  <int value="0" label="ALPN not used"/>
+  <int value="1" label="HTTP/1.1 negotiated via ALPN"/>
+  <int value="2" label="HTTP/2 negotiated via ALPN"/>
 </enum>
 
 <enum name="SSLOrQUICVersion" type="int">

@@ -1219,7 +1219,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     }
   }
 
-  RecordNegotiationExtension();
+  RecordNegotiatedProtocol();
   RecordChannelIDSupport();
 
   const uint8_t* ocsp_response_raw;
@@ -2337,26 +2337,9 @@ void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
                     base::Bind(&NetLogSSLInfoCallback, base::Unretained(this)));
 }
 
-void SSLClientSocketImpl::RecordNegotiationExtension() const {
-  if (negotiation_extension_ == kExtensionUnknown)
-    return;
-  if (npn_status_ == kNextProtoUnsupported)
-    return;
-  base::HistogramBase::Sample sample =
-      static_cast<base::HistogramBase::Sample>(negotiated_protocol_);
-  // In addition to the protocol negotiated, we want to record which TLS
-  // extension was used, and in case of NPN, whether there was overlap between
-  // server and client list of supported protocols.
-  if (negotiation_extension_ == kExtensionNPN) {
-    if (npn_status_ == kNextProtoNoOverlap) {
-      sample += 1000;
-    } else {
-      sample += 500;
-    }
-  } else {
-    DCHECK_EQ(kExtensionALPN, negotiation_extension_);
-  }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolNegotiation", sample);
+void SSLClientSocketImpl::RecordNegotiatedProtocol() const {
+  UMA_HISTOGRAM_ENUMERATION("Net.SSLNegotiatedAlpnProtocol",
+                            negotiated_protocol_, kProtoLast + 1);
 }
 
 void SSLClientSocketImpl::RecordChannelIDSupport() const {

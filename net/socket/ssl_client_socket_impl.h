@@ -240,9 +240,9 @@ class SSLClientSocketImpl : public SSLClientSocket {
 
   void LogConnectEndEvent(int rv);
 
-  // Record which TLS extension was used to negotiate protocol and protocol
-  // chosen in a UMA histogram.
-  void RecordNegotiationExtension() const;
+  // Record whether ALPN was used, and if so, the negotiated protocol,
+  // in a UMA histogram.
+  void RecordNegotiatedProtocol() const;
 
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
