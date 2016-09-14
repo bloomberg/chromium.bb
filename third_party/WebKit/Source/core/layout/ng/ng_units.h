@@ -127,6 +127,7 @@ struct CORE_EXPORT NGMarginStrut {
 
   void AppendMarginBlockStart(const LayoutUnit& value);
   void AppendMarginBlockEnd(const LayoutUnit& value);
+  void SetMarginBlockStart(const LayoutUnit& value);
   void SetMarginBlockEnd(const LayoutUnit& value);
 
   String ToString() const;

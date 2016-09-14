@@ -50,10 +50,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // fragment's MarginStrut if needed.
   // See https://www.w3.org/TR/CSS2/box.html#collapsing-margins
   //
+  // @param space Constraint space for the block.
   // @param child_margins Margins information for the current child.
   // @param children_margin_strut MarginStrut for children of the current child.
   // @return Margin block start based on collapsed margins result.
-  LayoutUnit CollapseMargins(const NGBoxStrut& child_margins,
+  LayoutUnit CollapseMargins(const NGConstraintSpace& space,
+                             const NGBoxStrut& child_margins,
                              const NGMarginStrut& children_margin_strut);
 
   RefPtr<const ComputedStyle> style_;

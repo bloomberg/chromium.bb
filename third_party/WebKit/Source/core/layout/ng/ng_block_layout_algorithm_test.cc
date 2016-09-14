@@ -231,6 +231,59 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
             NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv1MarginBottom)}));
 }
 
+// Verifies that 2 adjoining margins are not collapsed if there is padding or
+// border that separates them.
+//
+// Test case's HTML representation:
+// <div style="margin: 30px 0px; padding: 20px 0px;">    <!-- DIV1 -->
+//   <div style="margin: 200px 0px; height: 50px;"/>     <!-- DIV2 -->
+// </div>
+//
+// Expected:
+// Margins do NOT collapse if there is an interfering padding or border.
+TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
+  const int kHeight = 50;
+  const int kDiv1Margin = 30;
+  const int kDiv1Padding = 20;
+  const int kDiv2Margin = 200;
+
+  // DIV1
+  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
+  div1_style->setMarginTop(Length(kDiv1Margin, Fixed));
+  div1_style->setMarginBottom(Length(kDiv1Margin, Fixed));
+  div1_style->setPaddingTop(Length(kDiv1Padding, Fixed));
+  div1_style->setPaddingBottom(Length(kDiv1Padding, Fixed));
+  NGBox* div1 = new NGBox(div1_style.get());
+
+  // DIV2
+  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
+  div2_style->setHeight(Length(kHeight, Fixed));
+  div2_style->setMarginTop(Length(kDiv2Margin, Fixed));
+  div2_style->setMarginBottom(Length(kDiv2Margin, Fixed));
+  NGBox* div2 = new NGBox(div2_style.get());
+
+  div1->SetFirstChild(div2);
+
+  auto* space = new NGConstraintSpace(
+      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+
+  // Verify that margins do NOT collapse.
+  frag = RunBlockLayoutAlgorithm(space, div1);
+  EXPECT_EQ(frag->MarginStrut(),
+            NGMarginStrut({LayoutUnit(kDiv1Margin), LayoutUnit(kDiv1Margin)}));
+  ASSERT_EQ(frag->Children().size(), 1UL);
+  EXPECT_EQ(frag->Children()[0]->MarginStrut(),
+            NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}));
+
+  // Reset padding and verify that margins DO collapse.
+  div1_style->setPaddingTop(Length(0, Fixed));
+  div1_style->setPaddingBottom(Length(0, Fixed));
+  frag = RunBlockLayoutAlgorithm(space, div1);
+  EXPECT_EQ(frag->MarginStrut(),
+            NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}));
+}
+
 // Verifies that a box's size includes its borders and padding, and that
 // children are positioned inside the content box.
 //

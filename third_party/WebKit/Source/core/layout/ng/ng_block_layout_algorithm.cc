@@ -66,8 +66,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         NGBoxStrut child_margins = computeMargins(
             *constraint_space_for_children_, *current_child_->Style());
 
-        LayoutUnit margin_block_start =
-            CollapseMargins(child_margins, fragment->MarginStrut());
+        LayoutUnit margin_block_start = CollapseMargins(
+            *constraint_space, child_margins, fragment->MarginStrut());
 
         // TODO(layout-ng): Support auto margins
         builder_->AddChild(fragment,
@@ -107,14 +107,33 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
 }
 
 LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
+    const NGConstraintSpace& space,
     const NGBoxStrut& margins,
     const NGMarginStrut& children_margin_strut) {
   // Calculate margin strut for the current child.
   NGMarginStrut curr_margin_strut = children_margin_strut;
-  curr_margin_strut.AppendMarginBlockStart(margins.block_start);
-  if (current_child_->Style()->logicalHeight().isAuto()) {
-    // bottom margin of a last in-flow child is only collapsed if
-    // the parent has 'auto' computed height
+
+  // Calculate borders and padding for the current child.
+  NGBoxStrut borders = computeBorders(*current_child_->Style());
+  NGBoxStrut paddings = computePadding(space, *current_child_->Style());
+  LayoutUnit border_and_padding_before =
+      borders.block_start + paddings.block_start;
+  LayoutUnit border_and_padding_after = borders.block_end + paddings.block_end;
+
+  // Collapse BLOCK-START margins if there is no padding or border between
+  // parent (current child) and its first in-flow child.
+  if (border_and_padding_before) {
+    curr_margin_strut.SetMarginBlockStart(margins.block_start);
+  } else {
+    curr_margin_strut.AppendMarginBlockStart(margins.block_start);
+  }
+
+  // Collapse BLOCK-END margins if
+  // 1) there is no padding or border between parent (current child) and its
+  //    first/last in-flow child
+  // 2) parent's logical height is auto.
+  if (current_child_->Style()->logicalHeight().isAuto() &&
+      !border_and_padding_after) {
     curr_margin_strut.AppendMarginBlockEnd(margins.block_end);
   } else {
     curr_margin_strut.SetMarginBlockEnd(margins.block_end);
