@@ -82,8 +82,7 @@ Display::Display()
       rotation_(ROTATE_0),
       touch_support_(TOUCH_SUPPORT_UNKNOWN),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
-      depth_per_component_(DEFAULT_BITS_PER_COMPONENT),
-      is_monochrome_(false) {}
+      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {}
 
 Display::Display(const Display& other) = default;
 

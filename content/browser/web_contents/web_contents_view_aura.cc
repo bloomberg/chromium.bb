@@ -652,7 +652,6 @@ void GetScreenInfoForWindow(ScreenInfo* results,
   // TODO(derat|oshima): Don't hardcode this. Get this from display object.
   results->depth = 24;
   results->depth_per_component = 8;
-  results->is_monochrome = false;
   results->device_scale_factor = display.device_scale_factor();
 
   // The Display rotation and the ScreenInfo orientation are not the same

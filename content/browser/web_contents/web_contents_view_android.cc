@@ -42,7 +42,7 @@ void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
   gfx::DeviceDisplayInfo info;
   results->depth = display.color_depth();
   results->depth_per_component = display.depth_per_component();
-  results->is_monochrome = display.is_monochrome();
+  results->is_monochrome = (results->depth_per_component == 0);
 }
 
 WebContentsView* CreateWebContentsView(

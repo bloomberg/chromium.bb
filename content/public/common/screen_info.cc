@@ -6,13 +6,8 @@
 
 namespace content {
 
-ScreenInfo::ScreenInfo() = default;
-ScreenInfo::ScreenInfo(const ScreenInfo& other) = default;
-ScreenInfo::~ScreenInfo() = default;
-
 bool ScreenInfo::operator==(const ScreenInfo& other) const {
   return device_scale_factor == other.device_scale_factor &&
-         icc_profile == other.icc_profile &&
          depth == other.depth &&
          depth_per_component == other.depth_per_component &&
          is_monochrome == other.is_monochrome &&

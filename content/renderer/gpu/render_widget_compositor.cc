@@ -1137,9 +1137,4 @@ void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(
   layer_tree_host_->GetLayerTree()->SetPaintedDeviceScaleFactor(device_scale);
 }
 
-void RenderWidgetCompositor::SetDeviceColorSpace(
-    const gfx::ColorSpace& color_space) {
-  // TODO(ccameron): Plumb this to the cc compositor.
-}
-
 }  // namespace content
