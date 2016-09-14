@@ -53,16 +53,16 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
                            engagement_score);
   int32_t message_length = static_cast<int32_t>(message_text.length());
   if (engagement_score == 0) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementNone",
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementNone",
                          message_length);
   } else if (engagement_score < 1) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementLessThanOne",
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementLessThanOne",
                          message_length);
   } else if (engagement_score < 5) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementOneToFive",
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementOneToFive",
                          message_length);
   } else {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfCharacters.EngagementHigher",
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementHigher",
                          message_length);
   }
 
