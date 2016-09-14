@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -62,6 +63,11 @@ const unsigned kLoadMaxDelayMs = 2000;
 // When no wallpaper image is specified, the screen is filled with a solid
 // color.
 const SkColor kDefaultWallpaperColor = SK_ColorGRAY;
+
+#if DCHECK_IS_ON()
+base::LazyInstance<base::SequenceChecker>::Leaky g_wallpaper_sequence_checker =
+    LAZY_INSTANCE_INITIALIZER;
+#endif
 
 // The path ids for directories.
 int dir_user_data_path_id = -1;            // chrome::DIR_USER_DATA
@@ -156,6 +162,12 @@ WallpaperInfo::WallpaperInfo(const std::string& in_location,
 }
 
 WallpaperInfo::~WallpaperInfo() {
+}
+
+void AssertCalledOnWallpaperSequence() {
+#if DCHECK_IS_ON()
+  DCHECK(g_wallpaper_sequence_checker.Get().CalledOnValidSequence());
+#endif
 }
 
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";

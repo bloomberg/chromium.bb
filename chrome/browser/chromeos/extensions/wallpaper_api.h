@@ -64,10 +64,6 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 
   // Id used to identify user wallpaper files on hard drive.
   wallpaper::WallpaperFilesId wallpaper_files_id_;
-
-  // Sequence token associated with wallpaper operations. Shared with
-  // WallpaperManager.
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_API_H_

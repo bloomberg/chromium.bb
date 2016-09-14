@@ -80,6 +80,10 @@ struct WALLPAPER_EXPORT WallpaperInfo {
   }
 };
 
+// Asserts that the current task is sequenced with any other task that calls
+// this.
+void WALLPAPER_EXPORT AssertCalledOnWallpaperSequence();
+
 class WallpaperManagerBrowserTest;
 
 // Name of wallpaper sequence token.
