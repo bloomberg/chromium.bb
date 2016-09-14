@@ -82,7 +82,8 @@ FloatPoint ScrollAnimator::desiredTargetPosition() const
 
 bool ScrollAnimator::hasRunningAnimation() const
 {
-    return (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor);
+    return m_runState != RunState::PostAnimationCleanup
+        && (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor);
 }
 
 FloatSize ScrollAnimator::computeDeltaToConsume(const FloatSize& delta) const

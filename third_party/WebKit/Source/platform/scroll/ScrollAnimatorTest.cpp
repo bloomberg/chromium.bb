@@ -601,9 +601,9 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
         .WillRepeatedly(Return(IntPoint(-100, -100)));
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint(1000, 1000)));
-    // Twice from tickAnimation, once from reset, and once from
+    // Twice from tickAnimation, once from reset, and twice from
     // adjustAnimationAndSetScrollPosition.
-    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(4);
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(5);
     // One from call to userScroll and one from updateCompositorAnimations.
     EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
     EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
@@ -630,11 +630,18 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
     animator->adjustAnimationAndSetScrollPosition(newPos, AnchoringScroll);
     EXPECT_EQ(FloatPoint(110, 90), animator->desiredTargetPosition());
 
-    // Animation finished
+    // Adjusting after finished animation should do nothing.
     gMockedTime += 1.0;
     animator->updateCompositorAnimations();
     animator->tickAnimation(getMockedTime());
-    EXPECT_EQ(FloatPoint(110, 90), animator->currentPosition());
+    EXPECT_EQ(animator->runStateForTesting(),
+        ScrollAnimatorCompositorCoordinator::RunState::PostAnimationCleanup);
+    newPos = animator->currentPosition() + FloatSize(10, -10);
+    animator->adjustAnimationAndSetScrollPosition(newPos, AnchoringScroll);
+    EXPECT_EQ(animator->runStateForTesting(),
+        ScrollAnimatorCompositorCoordinator::RunState::PostAnimationCleanup);
+    EXPECT_EQ(FloatPoint(110, 90), animator->desiredTargetPosition());
+
     reset(*animator);
 
     // Forced GC in order to finalize objects depending on the mock object.
