@@ -565,6 +565,7 @@ test("media_unittests") {
     "formats/webm/tracks_builder.h",
     "formats/webm/webm_cluster_parser_unittest.cc",
     "formats/webm/webm_content_encodings_client_unittest.cc",
+    "formats/webm/webm_crypto_helpers_unittest.cc",
     "formats/webm/webm_parser_unittest.cc",
     "formats/webm/webm_stream_parser_unittest.cc",
     "formats/webm/webm_tracks_parser_unittest.cc",

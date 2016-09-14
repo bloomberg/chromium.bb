@@ -209,8 +209,11 @@ const uint8_t kWebMFlagKeyframe = 0x80;
 // Current encrypted WebM request for comments specification is here
 // http://wiki.webmproject.org/encryption/webm-encryption-rfc
 const uint8_t kWebMFlagEncryptedFrame = 0x1;
+const uint8_t kWebMFlagEncryptedFramePartitioned = 0x2;
 const int kWebMIvSize = 8;
 const int kWebMSignalByteSize = 1;
+const int kWebMEncryptedFrameNumPartitionsSize = 1;
+const int kWebMEncryptedFramePartitionOffsetSize = 4;
 
 // Current specification for WebVTT embedded in WebM
 // http://wiki.webmproject.org/webm-metadata/temporal-metadata/webvtt-in-webm
