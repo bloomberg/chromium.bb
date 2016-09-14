@@ -55,7 +55,7 @@
 #elif defined(OS_ANDROID)
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
-#define MAYBE_TakePhoto DISABLED_TakePhoto
+#define MAYBE_TakePhoto TakePhoto
 #elif defined(OS_LINUX)
 // AllocateBadSize will hang when a real camera is attached and if more than one
 // test is trying to use the camera (even across processes). Do NOT renable
@@ -148,7 +148,7 @@ class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
     EXPECT_EQ(0xFF, blob->data[0]);  // First SOI byte
     EXPECT_EQ(0xD8, blob->data[1]);  // Second SOI byte
     EXPECT_EQ(0xFF, blob->data[2]);  // First JFIF-APP0 byte
-    EXPECT_EQ(0xE0, blob->data[3]);  // Second JFIF-APP0 byte
+    EXPECT_EQ(0xE0, blob->data[3] & 0xF0);  // Second JFIF-APP0/APP1 byte
     OnCorrectPhotoTaken();
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
