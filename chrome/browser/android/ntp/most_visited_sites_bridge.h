@@ -83,7 +83,6 @@ class MostVisitedSitesBridge {
   };
   SupervisorBridge supervisor_;
 
-  ntp_tiles::PopularSites popular_sites_;
   ntp_tiles::MostVisitedSites most_visited_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSitesBridge);

@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -158,17 +159,17 @@ void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
     : supervisor_(profile),
-      popular_sites_(BrowserThread::GetBlockingPool(),
-                     profile->GetPrefs(),
-                     TemplateURLServiceFactory::GetForProfile(profile),
-                     g_browser_process->variations_service(),
-                     profile->GetRequestContext(),
-                     ChromePopularSites::GetDirectory(),
-                     base::Bind(safe_json::SafeJsonParser::Parse)),
       most_visited_(profile->GetPrefs(),
                     TopSitesFactory::GetForProfile(profile),
                     SuggestionsServiceFactory::GetForProfile(profile),
-                    &popular_sites_,
+                    base::MakeUnique<ntp_tiles::PopularSites>(
+                        BrowserThread::GetBlockingPool(),
+                        profile->GetPrefs(),
+                        TemplateURLServiceFactory::GetForProfile(profile),
+                        g_browser_process->variations_service(),
+                        profile->GetRequestContext(),
+                        ChromePopularSites::GetDirectory(),
+                        base::Bind(safe_json::SafeJsonParser::Parse)),
                     &supervisor_) {
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.

@@ -119,7 +119,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
-                   PopularSites* popular_sites,
+                   std::unique_ptr<PopularSites> popular_sites,
                    MostVisitedSitesSupervisor* supervisor);
 
   ~MostVisitedSites() override;
@@ -195,7 +195,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   PrefService* prefs_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
-  PopularSites* const popular_sites_;
+  std::unique_ptr<PopularSites> const popular_sites_;
   MostVisitedSitesSupervisor* supervisor_;
 
   Observer* observer_;
