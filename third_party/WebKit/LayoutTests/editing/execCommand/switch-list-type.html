@@ -1,45 +1,135 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpEditingCallbacks();
-    testRunner.dumpAsText();
-}
-</script>
-<p>This test checks to see if InsertOrderedList can switch the list type of list items.</p>
-<div id="div" contenteditable="true">
-<ol style="border: 1px solid red;">
-    <li>This should be in an ordered list.</li>
-    <span id="item1">This should be in an unordered list.</span>
-    <br><br>
-    This should be in an ordered list.
-    <li>This should be in an ordered list.</li>
-    <span id="item2">This should be in an unordered list.</span>
-    <li>This should be in an ordered list.</li>
-    <li><span id="item3">This should be in an unordered list.</span></li>
-    <li>This should be in an ordered list.</li>
-</ol>
-This should not be in a list.
-<li><span id="item4">This should be in an ordered list.</span></li>
-</div>
-<p id="console"></p>
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+                '|one-1<br>',
+                '<br>',
+                'one-2',
+                '<li>item-2</li>',
+            '</ol>',
+        '</div>',
+    ].join(''),
+    'insertUnorderedList',
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+            '</ol>',
+            '<ul>',
+                '<li>|one-1</li>',
+            '</ul>',
+            '<ol>',
+                '<br>',
+                'one-2',
+                '<li>item-2</li>',
+            '</ol>',
+        '</div>',
+    ].join('')),
+    '1 switch list type on text outside LI with BR');
 
-<script>
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<ul>',
+                '<li>one-1</li>',
+            '</ul>',
+            '<ol>',
+                '<br>',
+                'one-2',
+                '<li>item-2</li>',
+                '|two-1',
+            '</ol>',
+        '</div>',
+    ].join(''),
+    'insertUnorderedList',
+    [
+        '<div contenteditable>',
+            '<ul>',
+                '<li>one-1</li>',
+            '</ul>',
+            '<ol>',
+                '<br>',
+                'one-2',
+                '<li>item-2</li>',
+            '</ol>',
+            '<ul>',
+                '<li>|two-1</li>',
+            '</ul>',
+        '</div>',
+    ].join('')),
+    '2 switch list type on text outside LI');
 
-function log(message) {
-    var console = document.getElementById("console");
-    var text = document.createTextNode(message);
-    console.appendChild(text);
-}
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>|item-1</li>',
+                '<li>item-2</li>',
+            '</ol>',
+        '</div>',
+    ].join(''),
+    'insertUnorderedList',
+    [
+        '<div contenteditable>',
+            '<ul>',
+                '<li>|item-1</li>',
+            '</ul>',
+            '<ol>',
+                '<li>item-2</li>',
+            '</ol>',
+        '</div>',
+    ].join('')),
+    '3 switch list type on text in LI');
 
-var s = window.getSelection();
-s.collapse(document.getElementById("item1"), 0);
-document.execCommand("InsertUnorderedList", false, "Moo");
-s.collapse(document.getElementById("item2"), 0);
-document.execCommand("InsertUnorderedList", false, "Goo");
-s.collapse(document.getElementById("item3"), 0);
-document.execCommand("InsertUnorderedList", false, "Gai");
-s.collapse(document.getElementById("item4"), 0);
-document.execCommand("InsertOrderedList", false, "Noodles");
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+            '</ol>',
+            'item-2',
+            '<li>|item-3</li>',
+        '</div>',
+    ].join(''),
+    'insertOrderedList',
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+            '</ol>',
+            'item-2<br>',
+            '<ol>',
+                '<li>|item-3</li>',
+            '</ol>',
+        '</div>',
+    ].join('')),
+    '4 insertOrderedList on LI outside list');
 
-log(div.innerHTML);
-
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+            '</ol>',
+            'item-2',
+            '<li>|item-3</li>',
+        '</div>',
+    ].join(''),
+    'insertUnorderedList',
+    [
+        '<div contenteditable>',
+            '<ol>',
+                '<li>item-1</li>',
+            '</ol>',
+            'item-2<br>',
+            '|item-3',  // remove LI
+        '</div>',
+    ].join('')),
+    '5 insertUnorderedList on LI outside list');
 </script>
