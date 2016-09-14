@@ -164,6 +164,21 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      r'XSelectInput|CWEventMask|XCB_CW_EVENT_MASK',
+      (
+       'Chrome clients wishing to select events on X windows should use',
+       'ui::XScopedEventSelector.  It is safe to ignore this warning only if',
+       'you are selecting events from the GPU process, or if you are using',
+       'an XDisplay other than gfx::GetXDisplay().',
+      ),
+      True,
+      (
+        r"^ui[\\\/]gl[\\\/].*\.cc$",
+        r"^media[\\\/]gpu[\\\/].*\.cc$",
+        r"^gpu[\\\/].*\.cc$",
+      ),
+    ),
+    (
       'ScopedAllowIO',
       (
        'New code should not use ScopedAllowIO. Post a task to the blocking',
