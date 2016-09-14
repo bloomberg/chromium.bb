@@ -2638,7 +2638,6 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
                 if (view.compositor()->inCompositingMode())
                     scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
-                m_frame->document()->rootScrollerController()->didUpdateCompositing();
                 updateCompositedSelectionIfNeeded();
             }
         }

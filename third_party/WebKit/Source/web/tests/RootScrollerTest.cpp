@@ -7,8 +7,11 @@
 #include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -553,6 +556,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     {
 
         iframe->contentDocument()->setRootScroller(container, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
 
         EXPECT_EQ(
             mainController->rootScrollerLayer(),
@@ -566,6 +570,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     // scroller.
     {
         mainFrame()->document()->setRootScroller(iframe, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
 
         ScrollableArea* containerScroller =
             static_cast<PaintInvalidationCapableScrollableArea*>(
@@ -585,6 +590,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     // documentElement becomes the global root scroller.
     {
         iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
         EXPECT_EQ(
             mainController->rootScrollerLayer(),
             iframe->contentDocument()->view()->layerForScrolling());
@@ -600,6 +606,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     // documentElement and corresponding layer.
     {
         mainFrame()->document()->setRootScroller(nullptr, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
         EXPECT_EQ(
             mainController->rootScrollerLayer(),
             mainFrameView()->layerForScrolling());
@@ -755,6 +762,196 @@ TEST_F(RootScrollerTest, RemoteMainFrame)
 
     // Reset explicitly to prevent lifetime issues with the RemoteFrameClient.
     m_helper.reset();
+}
+
+// Tests that clipping layers belonging to any compositors in the ancestor chain
+// of the global root scroller have their masking bit removed.
+TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
+{
+    // TODO(bokan): Remove casts to TDRSC once follow-up patch lands separating TDRSC
+    // from RootScrollerController.
+
+    initialize("root-scroller-iframe.html");
+
+    HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
+        mainFrame()->document()->getElementById("iframe"));
+    Element* container =
+        iframe->contentDocument()->getElementById("container");
+
+    RootScrollerController* mainController =
+        mainFrame()->document()->rootScrollerController();
+    RootScrollerController* childController =
+        iframe->contentDocument()->rootScrollerController();
+
+    PaintLayerCompositor* mainCompositor =
+        mainFrameView()->layoutViewItem().compositor();
+    PaintLayerCompositor* childCompositor =
+        iframe->contentDocument()->view()->layoutViewItem().compositor();
+
+    NonThrowableExceptionState nonThrow;
+
+    // No root scroller set, on the main frame the root content layer should
+    // clip. Additionally, on the child frame, the overflow controls host and
+    // container layers should also clip.
+    {
+        EXPECT_TRUE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_TRUE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_TRUE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_TRUE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
+
+    // Now set the root scrollers such that the container in the iframe is the
+    // global root scroller. All the previously clipping layers in both paint
+    // layer compositors should no longer clip.
+    {
+        iframe->contentDocument()->setRootScroller(container, nonThrow);
+        mainFrame()->document()->setRootScroller(iframe, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(iframe, mainController->effectiveRootScroller());
+        ASSERT_EQ(container, childController->effectiveRootScroller());
+
+        EXPECT_FALSE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_FALSE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
+
+    // Now reset the iframe's root scroller. Since the iframe itself is now the
+    // global root scroller we want it to behave as if it were the main frame, which
+    // means it should clip only on its root content layer.
+    {
+        iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(iframe, mainController->effectiveRootScroller());
+        ASSERT_EQ(iframe->contentDocument()->documentElement(),
+            childController->effectiveRootScroller());
+        ASSERT_EQ(iframe->contentDocument()->documentElement(),
+            ((TopDocumentRootScrollerController*)mainController)
+                ->globalRootScroller());
+
+        EXPECT_FALSE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_TRUE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
+
+    // Now reset the main frame's root scroller. Its compositor should go back
+    // to clipping as well. Because the iframe is now no longer the global root
+    // scroller, it should go back to clipping its overflow host and container
+    // layers. This checks that we invalidate the compositing state even though
+    // the iframe's effective root scroller hasn't changed.
+
+    {
+        mainFrame()->document()->setRootScroller(nullptr, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(mainFrame()->document()->documentElement(),
+            mainController->effectiveRootScroller());
+        ASSERT_EQ(iframe->contentDocument()->documentElement(),
+            childController->effectiveRootScroller());
+        ASSERT_EQ(mainFrame()->document()->documentElement(),
+            ((TopDocumentRootScrollerController*)mainController)
+                ->globalRootScroller());
+
+        EXPECT_TRUE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_TRUE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_TRUE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_TRUE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
+
+    // Set the iframe back as the main frame's root scroller. Since its the
+    // global root scroller again, it should clip like the root frame. This
+    // checks that we invalidate the compositing state even though the iframe's
+    // effective root scroller hasn't changed.
+    {
+        mainFrame()->document()->setRootScroller(iframe, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(iframe, mainController->effectiveRootScroller());
+        ASSERT_EQ(iframe->contentDocument()->documentElement(),
+            childController->effectiveRootScroller());
+        ASSERT_EQ(iframe->contentDocument()->documentElement(),
+            ((TopDocumentRootScrollerController*)mainController)
+                ->globalRootScroller());
+
+        EXPECT_FALSE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_TRUE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
+
+    // Set just the iframe's root scroller. We should stop clipping the
+    // iframe's compositor's layers but not the main frame's.
+    {
+        mainFrame()->document()->setRootScroller(nullptr, nonThrow);
+        iframe->contentDocument()->setRootScroller(container, nonThrow);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(mainFrame()->document()->documentElement(),
+            mainController->effectiveRootScroller());
+        ASSERT_EQ(container, childController->effectiveRootScroller());
+
+        EXPECT_TRUE(mainCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(mainCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+
+        EXPECT_FALSE(childCompositor->rootContentLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->rootGraphicsLayer()->platformLayer()
+            ->masksToBounds());
+        EXPECT_FALSE(childCompositor->containerLayer()->platformLayer()
+            ->masksToBounds());
+    }
 }
 
 } // namespace

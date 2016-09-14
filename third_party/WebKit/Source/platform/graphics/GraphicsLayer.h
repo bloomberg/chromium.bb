@@ -319,7 +319,6 @@ private:
     bool m_contentsOpaque : 1;
     bool m_shouldFlattenTransform: 1;
     bool m_backfaceVisibility : 1;
-    bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
     bool m_isRootForIsolatedGroup : 1;

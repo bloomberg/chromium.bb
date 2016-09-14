@@ -10,6 +10,8 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -100,7 +102,22 @@ void RootScrollerController::recomputeEffectiveRootScroller()
     if (m_effectiveRootScroller == newEffectiveRootScroller)
         return;
 
+    PaintLayer* oldRootScrollerLayer = rootScrollerPaintLayer();
+
     m_effectiveRootScroller = newEffectiveRootScroller;
+
+    // This change affects both the old and new layers.
+    if (oldRootScrollerLayer)
+        oldRootScrollerLayer->setNeedsCompositingInputsUpdate();
+    if (rootScrollerPaintLayer())
+        rootScrollerPaintLayer()->setNeedsCompositingInputsUpdate();
+
+    // The above may not be enough as we need to update existing ancestor
+    // GraphicsLayers. This will force us to rebuild the GraphicsLayer tree.
+    if (LayoutView* layoutView = m_document->layoutView()) {
+        layoutView->compositor()
+            ->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+    }
 
     m_document->topDocument().rootScrollerController()
         ->globalRootScrollerMayHaveChanged();
@@ -170,6 +187,27 @@ bool RootScrollerController::isViewportScrollCallback(
     RootScrollerController* topDocumentController =
         m_document->topDocument().rootScrollerController();
     return topDocumentController->isViewportScrollCallback(callback);
+}
+
+PaintLayer* RootScrollerController::rootScrollerPaintLayer() const
+{
+    if (!m_effectiveRootScroller
+        || !m_effectiveRootScroller->layoutObject()
+        || !m_effectiveRootScroller->layoutObject()->isBox())
+        return nullptr;
+
+    LayoutBox* box = toLayoutBox(m_effectiveRootScroller->layoutObject());
+    PaintLayer* layer = box->layer();
+
+    // If the root scroller is the <html> element we do a bit of a fake out because
+    // while <html> has a PaintLayer, scrolling for it is handled by the #document's
+    // PaintLayer (i.e. the PaintLayerCompositor's root layer). The reason the root
+    // scroller is the <html> layer and not #document is because the latter is a Node
+    // but not an Element.
+    if (m_effectiveRootScroller->isSameNode(m_document->documentElement()))
+        return layer->compositor()->rootLayer();
+
+    return layer;
 }
 
 Element* RootScrollerController::defaultEffectiveRootScroller()

@@ -13,6 +13,7 @@ namespace blink {
 class Document;
 class Element;
 class GraphicsLayer;
+class PaintLayer;
 class ScrollableArea;
 class ScrollStateCallback;
 
@@ -89,6 +90,8 @@ public:
     // apply scroll. crbug.com/623079.
     virtual bool isViewportScrollCallback(const ScrollStateCallback*) const;
 
+    PaintLayer* rootScrollerPaintLayer() const;
+
 protected:
     RootScrollerController(Document&);
 
@@ -103,7 +106,6 @@ protected:
     WeakMember<Document> m_document;
 
 private:
-
     // Ensures the effective root scroller is currently valid and replaces it
     // with the default if not.
     void recomputeEffectiveRootScroller();

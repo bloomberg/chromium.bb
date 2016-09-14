@@ -167,6 +167,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     , m_hasDescendantWithClipPath(false)
     , m_hasNonIsolatedDescendantWithBlendMode(false)
     , m_hasAncestorWithClipPath(false)
+    , m_hasRootScrollerAsDescendant(false)
     , m_layoutObject(layoutObject)
     , m_parent(0)
     , m_previous(0)
@@ -983,10 +984,11 @@ void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependen
     m_needsAncestorDependentCompositingInputsUpdate = false;
 }
 
-void PaintLayer::updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode)
+void PaintLayer::updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode, bool hasRootScrollerAsDescendant)
 {
     m_hasDescendantWithClipPath = hasDescendantWithClipPath;
     m_hasNonIsolatedDescendantWithBlendMode = hasNonIsolatedDescendantWithBlendMode;
+    m_hasRootScrollerAsDescendant = hasRootScrollerAsDescendant;
     m_needsDescendantDependentCompositingInputsUpdate = false;
 }
 

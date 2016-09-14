@@ -53,6 +53,9 @@ public:
     // Returns the GraphicsLayer for the global root scroller.
     GraphicsLayer* rootScrollerLayer() override;
 
+    // Returns the Element that's the global root scroller.
+    Element* globalRootScroller() const;
+
 protected:
     TopDocumentRootScrollerController(Document&);
 
@@ -69,6 +72,8 @@ private:
     // Should be called to recalculate the global root scroller and ensure all
     // appropriate state changes are made if it changes.
     void updateGlobalRootScroller();
+
+    void setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
     // The apply-scroll callback that moves top controls and produces
     // overscroll effects. This class makes sure this callback is set on the

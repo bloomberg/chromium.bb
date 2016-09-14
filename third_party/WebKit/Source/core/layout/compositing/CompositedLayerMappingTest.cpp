@@ -8,6 +8,7 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -644,6 +645,136 @@ TEST_F(CompositedLayerMappingTest, ScrollingContentsAndForegroundLayerPaintingPh
     ASSERT_TRUE(mapping->scrollingContentsLayer());
     EXPECT_EQ(static_cast<GraphicsLayerPaintingPhase>(GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll | GraphicsLayerPaintForeground), mapping->scrollingContentsLayer()->paintingPhase());
     EXPECT_FALSE(mapping->foregroundLayer());
+}
+
+// Make sure that clipping layers are removed or their masking bit turned off
+// when they're an ancestor of the root scroller element.
+TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
+{
+    NonThrowableExceptionState nonThrow;
+
+    // TODO(bokan): Avoid cast once follow-up patch separates TDRSC from
+    // RootScrollerController.
+    TopDocumentRootScrollerController* rootScrollerController =
+        (TopDocumentRootScrollerController*)document().rootScrollerController();
+
+    setBodyInnerHTML(
+        // The container DIV is composited with scrolling contents and a
+        // non-composited parent that clips it.
+        "<div id='clip' style='overflow: hidden; width: 200px; height: 200px; position: absolute; left: 0px; top: 0px;'>"
+        "    <div id='container' style='transform: translateZ(0); overflow: scroll; width: 300px; height: 300px'>"
+        "        <div style='width: 2000px; height: 2000px;'>lorem ipsum</div>"
+        "        <div id='innerScroller' style='width: 800px; height: 600px; left: 0px; top: 0px; position: absolute; overflow: scroll'>"
+        "            <div style='height: 2000px; width: 2000px'></div>"
+        "        </div>"
+        "    </div>"
+        "</div>"
+
+        // The container DIV is composited with scrolling contents and a
+        // composited parent that clips it.
+        "<div id='clip2' style='transform: translateZ(0); position: absolute; left: 0px; top: 0px; overflow: hidden; width: 200px; height: 200px'>"
+        "    <div id='container2' style='transform: translateZ(0); overflow: scroll; width: 300px; height: 300px'>"
+        "        <div style='width: 2000px; height: 2000px;'>lorem ipsum</div>"
+        "        <div id='innerScroller2' style='width: 800px; height: 600px; left: 0px; top: 0px; position: absolute; overflow: scroll'>"
+        "            <div style='height: 2000px; width: 2000px'></div>"
+        "        </div>"
+        "    </div>"
+        "</div>"
+
+        // The container DIV is composited without scrolling contents but
+        // composited children that it clips.
+        "<div id='container3' style='translateZ(0); position: absolute; left: 0px; top: 0px; z-index: 1; overflow: hidden; width: 300px; height: 300px'>"
+        "    <div style='transform: translateZ(0); z-index: -1; width: 2000px; height: 2000px;'>lorem ipsum</div>"
+        "        <div id='innerScroller3' style='width: 800px; height: 600px; left: 0px; top: 0px; position: absolute; overflow: scroll'>"
+        "            <div style='height: 2000px; width: 2000px'></div>"
+        "        </div>"
+        "</div>"
+        );
+
+    CompositedLayerMapping* mapping = toLayoutBlock(getLayoutObjectByElementId("container"))->layer()->compositedLayerMapping();
+    CompositedLayerMapping* mapping2 = toLayoutBlock(getLayoutObjectByElementId("container2"))->layer()->compositedLayerMapping();
+    CompositedLayerMapping* mapping3 = toLayoutBlock(getLayoutObjectByElementId("container3"))->layer()->compositedLayerMapping();
+    Element* innerScroller = document().getElementById("innerScroller");
+    Element* innerScroller2 = document().getElementById("innerScroller2");
+    Element* innerScroller3 = document().getElementById("innerScroller3");
+
+    ASSERT_TRUE(mapping);
+    ASSERT_TRUE(mapping2);
+    ASSERT_TRUE(mapping3);
+    ASSERT_TRUE(innerScroller);
+    ASSERT_TRUE(innerScroller2);
+    ASSERT_TRUE(innerScroller3);
+
+    // Since there's no need to composite the clip and we prefer LCD text, the
+    // mapping should create an ancestorClippingLayer.
+    ASSERT_TRUE(mapping->scrollingLayer());
+    ASSERT_TRUE(mapping->ancestorClippingLayer());
+
+    // Since the clip has a transform it should be composited so there's no
+    // need for an ancestor clipping layer.
+    ASSERT_TRUE(mapping2->scrollingLayer());
+
+    // The third <div> should have a clipping layer since it's composited and clips
+    // composited children.
+    ASSERT_TRUE(mapping3->clippingLayer());
+
+    // All scrolling and clipping layers should have masksToBounds set on them.
+    {
+        EXPECT_TRUE(mapping->scrollingLayer()->platformLayer()->masksToBounds());
+        EXPECT_TRUE(mapping->ancestorClippingLayer()->platformLayer()->masksToBounds());
+        EXPECT_TRUE(mapping2->scrollingLayer()->platformLayer()->masksToBounds());
+        EXPECT_TRUE(mapping3->clippingLayer()->platformLayer()->masksToBounds());
+    }
+
+    // Set the inner scroller in the first container as the root scroller. Its
+    // clipping layer should be removed and the scrolling layer should not
+    // mask.
+    {
+        document().setRootScroller(innerScroller, nonThrow);
+        document().view()->updateAllLifecyclePhases();
+        ASSERT_EQ(innerScroller, rootScrollerController->globalRootScroller());
+
+        EXPECT_FALSE(mapping->ancestorClippingLayer());
+        EXPECT_FALSE(mapping->scrollingLayer()->platformLayer()->masksToBounds());
+    }
+
+    // Set the inner scroller in the second container as the root scroller. Its
+    // scrolling layer should no longer mask. The clipping and scrolling layers
+    // on the first container should now reset back.
+    {
+        document().setRootScroller(innerScroller2, nonThrow);
+        document().view()->updateAllLifecyclePhases();
+        ASSERT_EQ(innerScroller2, rootScrollerController->globalRootScroller());
+
+        EXPECT_TRUE(mapping->ancestorClippingLayer());
+        EXPECT_TRUE(mapping->ancestorClippingLayer()->platformLayer()->masksToBounds());
+        EXPECT_TRUE(mapping->scrollingLayer()->platformLayer()->masksToBounds());
+
+        EXPECT_FALSE(mapping2->scrollingLayer()->platformLayer()->masksToBounds());
+    }
+
+    // Set the inner scroller in the third container as the root scroller. Its
+    // clipping layer should be removed.
+    {
+        document().setRootScroller(innerScroller3, nonThrow);
+        document().view()->updateAllLifecyclePhases();
+        ASSERT_EQ(innerScroller3, rootScrollerController->globalRootScroller());
+
+        EXPECT_TRUE(mapping2->scrollingLayer()->platformLayer()->masksToBounds());
+
+        EXPECT_FALSE(mapping3->clippingLayer());
+    }
+
+    // Unset the root scroller. The clipping layer on the third container should
+    // be restored.
+    {
+        document().setRootScroller(nullptr, nonThrow);
+        document().view()->updateAllLifecyclePhases();
+        ASSERT_EQ(document().documentElement(), rootScrollerController->globalRootScroller());
+
+        EXPECT_TRUE(mapping3->clippingLayer());
+        EXPECT_TRUE(mapping3->clippingLayer()->platformLayer()->masksToBounds());
+    }
 }
 
 } // namespace blink

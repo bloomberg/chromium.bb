@@ -118,7 +118,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsOpaque(false)
     , m_shouldFlattenTransform(true)
     , m_backfaceVisibility(true)
-    , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
     , m_isRootForIsolatedGroup(false)
@@ -954,8 +953,7 @@ void GraphicsLayer::setRenderingContext(int context)
 
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)
 {
-    m_masksToBounds = masksToBounds;
-    m_layer->layer()->setMasksToBounds(m_masksToBounds);
+    m_layer->layer()->setMasksToBounds(masksToBounds);
 }
 
 void GraphicsLayer::setDrawsContent(bool drawsContent)

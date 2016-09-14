@@ -449,6 +449,12 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (m_owningLayer.needsCompositedScrolling())
         needsDescendantsClippingLayer = false;
 
+    // We disable clipping on ancestor layers of the root scroller to give it
+    // the same behavior w.r.t top controls as the real root layer. See the
+    // RootScrollerController class for more details.
+    if (m_owningLayer.hasRootScrollerAsDescendant())
+        needsDescendantsClippingLayer = false;
+
     const PaintLayer* scrollParent = this->scrollParent();
 
     // This is required because compositing layers are parented according to the z-order hierarchy, yet
@@ -456,7 +462,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     // PaintLayer that is an ancestor in the layoutObject hierarchy, but a sibling in the z-order
     // hierarchy. Further, that sibling need not be composited at all. In such scenarios, an ancestor
     // clipping layer is necessary to apply the composited clip for this layer.
-    bool needsAncestorClip = owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent);
+    bool needsAncestorClip = owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent)
+        && !m_owningLayer.clippingContainer()->enclosingLayer()->hasRootScrollerAsDescendant();
 
     if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
         layerConfigChanged = true;
@@ -1689,7 +1696,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
             // Outer layer which corresponds with the scroll view.
             m_scrollingLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContainer);
             m_scrollingLayer->setDrawsContent(false);
-            m_scrollingLayer->setMasksToBounds(true);
 
             // Inner layer which renders the content that scrolls.
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
@@ -1705,6 +1711,9 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
                 scrollingCoordinator->scrollableAreasDidChange();
             }
         }
+
+        m_scrollingLayer->setMasksToBounds(
+            !m_owningLayer.hasRootScrollerAsDescendant());
     } else if (m_scrollingLayer) {
         m_scrollingLayer = nullptr;
         m_scrollingContentsLayer = nullptr;

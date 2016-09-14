@@ -591,7 +591,7 @@ public:
 
     void updateAncestorOverflowLayer(const PaintLayer* ancestorOverflowLayer) { m_ancestorOverflowLayer = ancestorOverflowLayer; }
     void updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs&, const RareAncestorDependentCompositingInputs&, bool hasAncestorWithClipPath);
-    void updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode);
+    void updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode, bool hasRootScrollerAsDescendant);
     void didUpdateCompositingInputs();
 
     IntRect clippedAbsoluteBoundingBox() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_ancestorDependentCompositingInputs.clippedAbsoluteBoundingBox; }
@@ -607,6 +607,8 @@ public:
     bool hasAncestorWithClipPath() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_hasAncestorWithClipPath; }
     bool hasDescendantWithClipPath() const { ASSERT(!m_needsDescendantDependentCompositingInputsUpdate); return m_hasDescendantWithClipPath; }
     bool hasNonIsolatedDescendantWithBlendMode() const;
+
+    bool hasRootScrollerAsDescendant() const { ASSERT(!m_needsDescendantDependentCompositingInputsUpdate); return m_hasRootScrollerAsDescendant; }
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
@@ -887,6 +889,7 @@ private:
     unsigned m_hasDescendantWithClipPath : 1;
     unsigned m_hasNonIsolatedDescendantWithBlendMode : 1;
     unsigned m_hasAncestorWithClipPath : 1;
+    unsigned m_hasRootScrollerAsDescendant : 1;
 
     LayoutBoxModelObject* m_layoutObject;
 

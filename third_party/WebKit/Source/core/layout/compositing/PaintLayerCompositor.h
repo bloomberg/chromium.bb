@@ -122,6 +122,7 @@ public:
     GraphicsLayer* frameScrollLayer() const;
     GraphicsLayer* scrollLayer() const;
     GraphicsLayer* containerLayer() const;
+    GraphicsLayer* rootContentLayer() const;
 
     enum RootLayerAttachment {
         RootLayerUnattached,
@@ -132,6 +133,12 @@ public:
     RootLayerAttachment getRootLayerAttachment() const { return m_rootLayerAttachment; }
     void updateRootLayerAttachment();
     void updateRootLayerPosition();
+
+    // If the root scroller isn't the root layer then the PaintLayerCompositor
+    // must disable clipping on its layers so that the root scroller can
+    // expand/shrink its clipping layer in response to top controls and have
+    // the result be visible.
+    void updateClippingOnCompositorLayers();
 
     void setIsInWindow(bool);
 
