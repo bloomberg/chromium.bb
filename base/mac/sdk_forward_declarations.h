@@ -38,10 +38,6 @@
 @protocol CALayerDelegate
 @end
 
-@interface NSWindow (SierraSDK)
-@property(class) BOOL allowsAutomaticWindowTabbing;
-@end
-
 #endif  // MAC_OS_X_VERSION_10_12
 
 #if !defined(MAC_OS_X_VERSION_10_11) || \
@@ -243,6 +239,17 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_10
+
+// Once Chrome no longer supports OSX 10.11, everything within this
+// preprocessor block can be removed.
+#if !defined(MAC_OS_X_VERSION_10_12) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
+
+@interface NSWindow (SierraSDK)
+@property(class) BOOL allowsAutomaticWindowTabbing;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_12
 
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the
