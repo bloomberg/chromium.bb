@@ -1273,6 +1273,18 @@ class SiteConfig(dict):
 
     return cfg
 
+  def _UsedTemplates(self):
+    """Return a version of self._templates with only used templates.
+
+    Returns:
+      Dict copy of self._templates with all unreferenced templates removed.
+    """
+    # All templates used. We ignore child configs since they
+    # should exist at top level.
+    used = set(c.get('_template', None) for c in self.itervalues())
+    used.discard(None)
+    return {k: self._templates[k] for k in used}
+
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
@@ -1283,7 +1295,7 @@ class SiteConfig(dict):
       config_dict[k] = self.HideDefaults(k, v)
 
     config_dict['_default'] = default
-    config_dict['_templates'] = self._templates
+    config_dict['_templates'] = self._UsedTemplates()
     config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
 
     return PrettyJsonDict(config_dict)

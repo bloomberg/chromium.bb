@@ -429,6 +429,9 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     "_templates": {
        "build": {
             "baz": true
+       },
+       "unused": {
+            "description": "No build uses this template."
        }
     },
     "diff_build": {
@@ -496,10 +499,17 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     self.assertTrue(config.params.site_foo)
     self.assertFalse(config.params.site_bar)
 
+    # Ensure that all templates are present.
+    self.assertItemsEqual(config.templates.keys(), ['build', 'unused'])
+
     # Load an save again, just to make sure there are no changes.
     loaded = config_lib.LoadConfigFromString(config.SaveConfigToString())
 
+    # This tests that build configs match, except that unused templates
+    # are stripped out.
     self.assertEqual(config, loaded)
+    self.assertEqual(config._site_params, loaded._site_params)
+    self.assertItemsEqual(loaded.templates.keys(), ['build'])
 
     # Make sure we can dump debug content without crashing.
     self.assertNotEqual(config.DumpExpandedConfigToString(), '')
@@ -530,6 +540,31 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
 
     # This confirms they are exactly the same.
     self.assertDictEqual(new, src)
+
+  def testUnusedTemplates(self):
+    config = config_lib.SiteConfig()
+    config.AddTemplate('base', foo=True)
+    config.AddTemplate('unused', bar=True)
+    config.Add('build1', config.templates.base, var=1)
+    config.Add('build2', var=2)
+    config.Add('build3', config.templates.base, var=3)
+
+    self.assertItemsEqual(
+        config.templates,
+        {
+            'base': {'_template': 'base', 'foo': True},
+            'unused': {'_template': 'unused', 'bar': True},
+        }
+    )
+
+    results = config._UsedTemplates()
+
+    self.assertItemsEqual(
+        results,
+        {
+            'base': {'_template': 'base', 'foo': True},
+        }
+    )
 
 
 class SiteConfigFindTest(cros_test_lib.TestCase):
