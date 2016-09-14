@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
 /**
  * Verifies URL load parameters set when triggering navigations from the context menu.
  */
+@RetryOnFailure
 public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
     private static final String HTML_PATH =
             "/chrome/test/data/android/contextmenu/context_menu_test.html";

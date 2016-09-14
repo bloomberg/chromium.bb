@@ -13,6 +13,7 @@ import android.os.RemoteException;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Instrumentation test for SupervisedUserContentProvider.
  */
+@RetryOnFailure
 public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
     private static final String AUTHORITY_SUFFIX = ".SupervisedUserProvider";

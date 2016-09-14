@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -39,6 +40,7 @@ public class TabCountLabelTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @RetryOnFailure
     public void testTabCountLabel() throws InterruptedException {
         final int tabCount = getActivity().getCurrentTabModel().getCount();
         tabCountLabelCheck("Initial state", tabCount);

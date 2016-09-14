@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -77,6 +78,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testQueueStackOrder() throws InterruptedException {
         final Snackbar stackbar = Snackbar.make("stack", mDefaultController,
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);

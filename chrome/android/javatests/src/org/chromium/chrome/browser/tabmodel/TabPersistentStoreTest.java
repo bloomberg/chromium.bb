@@ -16,6 +16,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
@@ -595,6 +596,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"TabPersistentStore"})
+    @RetryOnFailure
     public void testUndoCloseAllTabsWritesTabListFile() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
         mMockDirectory.writeTabModelFiles(info, true);

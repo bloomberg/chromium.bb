@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.components.sync.signin.AccountManagerHelper;
@@ -359,6 +360,7 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
 
     @MediumTest
     @UiThreadTest
+    @RetryOnFailure
     public void testValidateAccountsTwoAccountsThenRemoveAllSignOut() {
         // Add accounts.
         mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);

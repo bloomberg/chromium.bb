@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.Assert;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -31,6 +32,7 @@ public class ToolbarModelTest extends ChromeTabbedActivityTestBase {
      */
     @Feature({"Android-Toolbar"})
     @MediumTest
+    @RetryOnFailure
     public void testClosingLastTabReflectedInModel() throws InterruptedException {
         assertNotSame("No current tab", Tab.INVALID_TAB_ID,
                 getCurrentTabId(getActivity()));

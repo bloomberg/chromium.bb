@@ -18,6 +18,7 @@ import android.util.Pair;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestBase;
@@ -188,6 +189,7 @@ public class PushMessagingTest
      */
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
+    @RetryOnFailure
     public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
@@ -206,6 +208,7 @@ public class PushMessagingTest
      */
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
+    @RetryOnFailure
     public void testDefaultNotification() throws InterruptedException, TimeoutException {
         // Start off using the tab loaded in setUp().
         assertEquals(1, getActivity().getCurrentTabModel().getCount());

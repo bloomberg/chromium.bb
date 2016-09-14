@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -50,6 +51,7 @@ public class IncognitoTabModelTest extends ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature({"OffTheRecord"})
+    @RetryOnFailure
     public void testCloseAllDuringAddTabDoesNotCrash() {
         createTabOnUiThread();
         assertEquals(1, mTabModel.getCount());

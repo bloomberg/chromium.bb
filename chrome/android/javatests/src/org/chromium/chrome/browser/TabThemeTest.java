@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -77,6 +78,7 @@ public class TabThemeTest extends ChromeActivityTestCaseBase<ChromeTabbedActivit
     @Feature({"Toolbar-Theme-Color"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @RetryOnFailure
     public void testThemeColorIsCorrect()
             throws ExecutionException, InterruptedException, TimeoutException {
 

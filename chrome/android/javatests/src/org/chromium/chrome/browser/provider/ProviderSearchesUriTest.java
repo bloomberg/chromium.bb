@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.Date;
 
@@ -42,6 +43,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
 
     @MediumTest
     @Feature({"Android-ContentProvider"})
+    @RetryOnFailure
     public void testAddSearchTerm() {
         long searchTime = System.currentTimeMillis();
         String searchTerm = "chrome";
@@ -92,6 +94,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
 
     @MediumTest
     @Feature({"Android-ContentProvider"})
+    @RetryOnFailure
     public void testDeleteSearchTerm() {
         long[] searchTime = { System.currentTimeMillis(), System.currentTimeMillis() - 1000 };
         String[] searchTerm = {"chrome", "chromium"};
@@ -126,6 +129,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
     // Copied from CTS test with minor adaptations.
     @MediumTest
     @Feature({"Android-ContentProvider"})
+    @RetryOnFailure
     public void testSearchesTable() {
         final int idIndex = 0;
         String insertSearch = "search_insert";

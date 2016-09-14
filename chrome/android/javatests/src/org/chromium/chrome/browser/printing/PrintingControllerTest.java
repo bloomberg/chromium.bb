@@ -18,6 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -42,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  * TODO(cimamoglu): Add a test with multiple, stacked onLayout/onWrite calls.
  * TODO(cimamoglu): Add a test which emulates Chromium failing to generate a PDF.
  */
+@RetryOnFailure
 public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEMP_FILE_NAME = "temp_print";

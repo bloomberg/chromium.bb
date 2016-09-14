@@ -14,6 +14,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
@@ -376,6 +377,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testSingleTab() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
@@ -615,6 +617,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testInOrderRestore() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
@@ -926,6 +929,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testOutOfOrder1() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
@@ -1259,6 +1263,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testMoveTab() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
@@ -1381,6 +1386,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testUndoNotSupported() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(true);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(true);
@@ -1458,6 +1464,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    @RetryOnFailure
     public void testOpenRecentlyClosedTab() throws InterruptedException {
         TabModelSelector selector = getActivity().getTabModelSelector();
         TabModel model = selector.getModel(false);

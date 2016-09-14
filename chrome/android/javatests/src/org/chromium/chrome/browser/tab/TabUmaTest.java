@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -23,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for Tab-related histogram collection.
  */
+@RetryOnFailure
 public class TabUmaTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PATH = "/chrome/test/data/android/about.html";

@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for InterceptNavigationDelegate
  */
+@RetryOnFailure
 public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String BASE_PAGE = "/chrome/test/data/navigation_interception/";
     private static final String NAVIGATION_FROM_TIMEOUT_PAGE =

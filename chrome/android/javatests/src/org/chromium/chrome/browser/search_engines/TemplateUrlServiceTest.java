@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.test.util.ApplicationData;
@@ -48,6 +49,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testUrlForContextualSearchQueryValid()
             throws InterruptedException, ExecutionException {
         waitForTemplateUrlServiceToLoad();
@@ -90,6 +92,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"SearchEngines"})
+    @RetryOnFailure
     public void testLoadUrlService() throws InterruptedException {
         assertFalse(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override

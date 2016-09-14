@@ -13,6 +13,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
@@ -102,6 +103,7 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @MediumTest
     @Feature({"TextInput", "Main"})
+    @RetryOnFailure
     public void testSelectFileAndCancelRequest() throws Throwable {
         DOMUtils.clickNode(this, mContentViewCore, "input_file");
         CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());

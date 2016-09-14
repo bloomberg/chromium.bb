@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests verifying that form resubmission dialogs are correctly displayed and handled.
  */
+@RetryOnFailure
 public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     // Active tab.
     private Tab mTab;

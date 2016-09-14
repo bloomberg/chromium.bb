@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
@@ -165,6 +166,7 @@ public class SmartClipProviderTest
 
     @MediumTest
     @Feature({"SmartClip"})
+    @RetryOnFailure
     public void testSmartClipDataCallback() throws InterruptedException, TimeoutException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

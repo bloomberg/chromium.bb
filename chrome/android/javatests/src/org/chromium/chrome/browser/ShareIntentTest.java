@@ -13,6 +13,7 @@ import android.os.ParcelFileDescriptor;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
@@ -103,6 +104,7 @@ public class ShareIntentTest extends ChromeTabbedActivityTestBase {
     }
 
     @LargeTest
+    @RetryOnFailure
     public void testShareIntent() {
         final MockChromeActivity mockActivity = new MockChromeActivity(getActivity());
         // Sets a test component as last shared and "shareDirectly" option is set so that the share

@@ -16,6 +16,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -34,6 +35,7 @@ import java.util.concurrent.Callable;
 /**
  * Contains tests for the brand color feature.
  */
+@RetryOnFailure
 public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public BrandColorTest() {

@@ -15,6 +15,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -253,6 +254,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      */
     @SmallTest
     @Feature({"TabPersistentStore"})
+    @RetryOnFailure
     public void testFindsMaxIdProperly() throws IOException {
         TabModelSelector selector0 = new MockTabModelSelector(1, 1, null);
         TabModelSelector selector1 = new MockTabModelSelector(1, 1, null);
