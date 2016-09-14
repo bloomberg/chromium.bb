@@ -12,8 +12,6 @@
 #
 # This script can be used to verify that all of the global text symbols in
 # a Mach-O file are accounted for in an order file.
-#
-# Also check that the file does not depend on either of libstdc++ or libc++.
 
 if [ ${#} -ne 2 ] ; then
   echo "usage: ${0} LAST_SYMBOL MACH_O_FILE" >& 2
@@ -45,14 +43,6 @@ fi
 LIBS=$(otool -L "${MACH_O_FILE}")
 if [ ${?} -ne 0 ] ; then
   echo "${0}: failed to get libraries in ${MACH_O_FILE}" >& 2
-  exit 1
-fi
-if grep -Fq libstdc++ <<< ${LIBS} ; then
-  echo "${0}: ${MACH_O_FILE} depends on libstdc++" >& 2
-  exit 1
-fi
-if grep -Fq libc++ <<< ${LIBS} ; then
-  echo "${0}: ${MACH_O_FILE} depends on libc++" >& 2
   exit 1
 fi
 
