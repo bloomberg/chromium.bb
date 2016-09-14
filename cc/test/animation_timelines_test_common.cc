@@ -547,4 +547,8 @@ bool AnimationTimelinesTest::CheckPlayerTimelineNeedsPushProperties(
   return result;
 }
 
+void AnimationTimelinesTest::PushProperties() {
+  host_->PushPropertiesTo(host_impl_);
+}
+
 }  // namespace cc

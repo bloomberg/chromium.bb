@@ -7082,9 +7082,29 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   host_impl.animation_host()->AddAnimationTimeline(timeline);
 
   host_impl.active_tree()->SetElementIdsForTesting();
-  AddAnimatedTransformToElementWithPlayer(parent_raw->element_id(), timeline,
-                                          1.0, TransformOperations(),
-                                          translation);
+
+  scoped_refptr<AnimationPlayer> grand_parent_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(grand_parent_player);
+  grand_parent_player->AttachElement(grand_parent_raw->element_id());
+
+  scoped_refptr<AnimationPlayer> parent_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(parent_player);
+  parent_player->AttachElement(parent_raw->element_id());
+
+  scoped_refptr<AnimationPlayer> child_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(child_player);
+  child_player->AttachElement(child_raw->element_id());
+
+  scoped_refptr<AnimationPlayer> grand_child_player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(grand_child_player);
+  grand_child_player->AttachElement(grand_child_raw->element_id());
+
+  AddAnimatedTransformToPlayer(parent_player.get(), 1.0, TransformOperations(),
+                               translation);
 
   // No layers have scale-affecting animations.
   EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
@@ -7100,8 +7120,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   TransformOperations scale;
   scale.AppendScale(5.f, 4.f, 3.f);
 
-  AddAnimatedTransformToElementWithPlayer(child_raw->element_id(), timeline,
-                                          1.0, TransformOperations(), scale);
+  AddAnimatedTransformToPlayer(child_player.get(), 1.0, TransformOperations(),
+                               scale);
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
@@ -7116,9 +7136,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(1.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(1.f, GetStartingAnimationScale(grand_child_raw));
 
-  AddAnimatedTransformToElementWithPlayer(grand_parent_raw->element_id(),
-                                          timeline, 1.0, TransformOperations(),
-                                          scale);
+  AddAnimatedTransformToPlayer(grand_parent_player.get(), 1.0,
+                               TransformOperations(), scale);
   grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
@@ -7135,8 +7154,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  AddAnimatedTransformToElementWithPlayer(parent_raw->element_id(), timeline,
-                                          1.0, TransformOperations(), scale);
+  AddAnimatedTransformToPlayer(parent_player.get(), 1.0, TransformOperations(),
+                               scale);
   parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
@@ -7151,19 +7170,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  AbortAnimationsOnElementWithPlayer(grand_parent_raw->element_id(), timeline,
-                                     TargetProperty::TRANSFORM);
-  AbortAnimationsOnElementWithPlayer(parent_raw->element_id(), timeline,
-                                     TargetProperty::TRANSFORM);
-  AbortAnimationsOnElementWithPlayer(child_raw->element_id(), timeline,
-                                     TargetProperty::TRANSFORM);
+  grand_parent_player->AbortAnimations(TargetProperty::TRANSFORM, false);
+  parent_player->AbortAnimations(TargetProperty::TRANSFORM, false);
+  child_player->AbortAnimations(TargetProperty::TRANSFORM, false);
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
 
-  AddAnimatedTransformToElementWithPlayer(child_raw->element_id(), timeline,
-                                          1.0, TransformOperations(),
-                                          perspective);
+  AddAnimatedTransformToPlayer(child_player.get(), 1.0, TransformOperations(),
+                               perspective);
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
@@ -7187,8 +7202,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   parent_raw->test_properties()->transform = scale_matrix;
   grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
-  AddAnimatedTransformToElementWithPlayer(parent_raw->element_id(), timeline,
-                                          1.0, TransformOperations(), scale);
+  AddAnimatedTransformToPlayer(parent_player.get(), 1.0, TransformOperations(),
+                               scale);
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent| and |parent| each have scale 2.f. |parent| has a  scale

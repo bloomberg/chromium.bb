@@ -374,9 +374,6 @@ class COMPOSITOR_EXPORT Layer
       cc::Layer* layer) override;
   void didUpdateMainThreadScrollingReasons() override;
 
-  // Whether this layer has animations waiting to get sent to its cc::Layer.
-  bool HasPendingThreadedAnimationsForTesting() const;
-
   // Triggers a call to SwitchToLayer.
   void SwitchCCLayerForTest();
 

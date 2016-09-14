@@ -525,10 +525,6 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   SetLayerBackgroundFilters();
 }
 
-bool Layer::HasPendingThreadedAnimationsForTesting() const {
-  return animator_->HasPendingThreadedAnimationsForTesting();
-}
-
 void Layer::SwitchCCLayerForTest() {
   scoped_refptr<cc::Layer> new_layer = cc::PictureLayer::Create(this);
   SwitchToLayer(new_layer);

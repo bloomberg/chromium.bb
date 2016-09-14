@@ -5,7 +5,6 @@
 #ifndef CC_ANIMATION_ELEMENT_ANIMATIONS_H_
 #define CC_ANIMATION_ELEMENT_ANIMATIONS_H_
 
-#include <bitset>
 #include <memory>
 #include <vector>
 
@@ -173,44 +172,20 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   bool scroll_offset_animation_was_interrupted() const {
     return scroll_offset_animation_was_interrupted_;
   }
+  void SetScrollOffsetAnimationWasInterrupted();
 
-  bool needs_to_start_animations_for_testing() {
-    return needs_to_start_animations_;
-  }
+  // TODO(loyso): Erase it, use AnimationPlayer's one.
+  bool needs_to_start_animations_for_testing() const;
 
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
 
- private:
-  friend class base::RefCounted<ElementAnimations>;
+  // TODO(loyso): Rework UpdateClientAnimationState to use bitset.
+  void UpdateClientAnimationState(TargetProperty::Type target_property);
+  void UpdateClientAnimationState(bool transform, bool opacity, bool filter);
+  void SetNeedsUpdateImplClientState(bool transform, bool opacity, bool filter);
 
-  ElementAnimations();
-  ~ElementAnimations();
-
-  // A set of target properties. TargetProperty must be 0-based enum.
-  using TargetProperties =
-      std::bitset<TargetProperty::LAST_TARGET_PROPERTY + 1>;
-
-  void PushNewAnimationsToImplThread(
-      ElementAnimations* element_animations_impl) const;
-  void MarkAbortedAnimationsForDeletion(
-      ElementAnimations* element_animations_impl) const;
-  void RemoveAnimationsCompletedOnMainThread(
-      ElementAnimations* element_animations_impl) const;
-  void PushPropertiesToImplThread(ElementAnimations* element_animations_impl);
-
-  void StartAnimations(base::TimeTicks monotonic_time);
-  void PromoteStartedAnimations(base::TimeTicks monotonic_time,
-                                AnimationEvents* events);
-  void MarkFinishedAnimations(base::TimeTicks monotonic_time);
-  void MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
-                                 AnimationEvents* events);
-  void PurgeAnimationsMarkedForDeletion();
-
-  void TickAnimations(base::TimeTicks monotonic_time);
-
-  enum UpdateActivationType { NORMAL_ACTIVATION, FORCE_ACTIVATION };
-  void UpdateActivation(UpdateActivationType type);
+  void UpdateActivationNormal();
 
   void NotifyClientOpacityAnimated(float opacity,
                                    bool notify_active_elements,
@@ -224,13 +199,24 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void NotifyClientScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset,
                                         bool notify_active_elements,
                                         bool notify_pending_elements);
+  gfx::ScrollOffset ScrollOffsetForAnimation() const;
+
+ private:
+  friend class base::RefCounted<ElementAnimations>;
+
+  ElementAnimations();
+  ~ElementAnimations();
+
+  enum class ActivationType { NORMAL, FORCE };
+  void UpdateActivation(ActivationType type);
+
+  void UpdateClientAnimationStateInternal(TargetProperty::Type property);
+
   void NotifyClientAnimationChanged(
       TargetProperty::Type property,
       ElementListType list_type,
       bool notify_elements_about_potential_animation,
       bool notify_elements_about_running_animation);
-
-  void UpdateClientAnimationState(TargetProperty::Type property);
 
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters);
@@ -243,28 +229,12 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
                           TargetProperty::Type property,
                           AnimationChangeType change_type,
                           bool is_animating);
-  gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
-  void NotifyPlayersAnimationStarted(base::TimeTicks monotonic_time,
-                                     TargetProperty::Type target_property,
-                                     int group);
-  void NotifyPlayersAnimationFinished(base::TimeTicks monotonic_time,
-                                      TargetProperty::Type target_property,
-                                      int group);
-  void NotifyPlayersAnimationAborted(base::TimeTicks monotonic_time,
-                                     TargetProperty::Type target_property,
-                                     int group);
-  void NotifyPlayersAnimationWaitingForDeletion();
-  void NotifyPlayersAnimationPropertyUpdate(const AnimationEvent& event);
-  void NotifyPlayersAnimationTakeover(base::TimeTicks monotonic_time,
-                                      TargetProperty::Type target_property,
-                                      double animation_start_time,
-                                      std::unique_ptr<AnimationCurve> curve);
+  void ClearNeedsUpdateImplClientState();
 
   std::unique_ptr<PlayersList> players_list_;
   AnimationHost* animation_host_;
   ElementId element_id_;
-  std::vector<std::unique_ptr<Animation>> animations_;
 
   // This is used to ensure that we don't spam the animation host.
   bool is_active_;
@@ -273,10 +243,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool has_element_in_active_list_;
   bool has_element_in_pending_list_;
-
-  // Only try to start animations when new animations are added or when the
-  // previous attempt at starting animations failed to start all animations.
-  bool needs_to_start_animations_;
 
   bool scroll_offset_animation_was_interrupted_;
 
@@ -298,6 +264,10 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   struct PropertyAnimationState filter_animation_state_;
   struct PropertyAnimationState opacity_animation_state_;
   struct PropertyAnimationState transform_animation_state_;
+
+  bool needs_update_impl_client_state_transform_ : 1;
+  bool needs_update_impl_client_state_opacity_ : 1;
+  bool needs_update_impl_client_state_filter_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };

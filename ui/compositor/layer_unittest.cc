@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation_player.h"
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -1791,41 +1792,43 @@ TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
   l2->SetAnimator(LayerAnimator::CreateImplicitAnimator());
 
-  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
+  auto player1 = l1->GetAnimator()->GetAnimationPlayerForTesting();
+  auto player2 = l2->GetAnimator()->GetAnimationPlayerForTesting();
+
+  EXPECT_FALSE(player1->has_any_animation());
 
   // Trigger a threaded animation.
   l1->SetOpacity(0.5f);
 
-  EXPECT_TRUE(l1->HasPendingThreadedAnimationsForTesting());
+  EXPECT_TRUE(player1->has_any_animation());
 
   // Ensure we can remove a pending threaded animation.
   l1->GetAnimator()->StopAnimating();
 
-  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
+  EXPECT_FALSE(player1->has_any_animation());
 
   // Trigger another threaded animation.
   l1->SetOpacity(0.2f);
 
-  EXPECT_TRUE(l1->HasPendingThreadedAnimationsForTesting());
+  EXPECT_TRUE(player1->has_any_animation());
 
   root->Add(l1.get());
   GetCompositor()->SetRootLayer(root.get());
 
-  // Now that l1 is part of a tree, it should have dispatched the pending
-  // animation.
-  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
+  // Now l1 is part of a tree.
+  EXPECT_TRUE(player1->has_any_animation());
 
-  // Ensure that l1 no longer holds on to animations.
   l1->SetOpacity(0.1f);
-  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
+  // IMMEDIATELY_SET_NEW_TARGET is a default preemption strategy for conflicting
+  // animations.
+  EXPECT_FALSE(player1->has_any_animation());
 
-  // Ensure that adding a layer to an existing tree causes its pending
-  // animations to get dispatched.
+  // Adding a layer to an existing tree.
   l2->SetOpacity(0.5f);
-  EXPECT_TRUE(l2->HasPendingThreadedAnimationsForTesting());
+  EXPECT_TRUE(player2->has_any_animation());
 
   l1->Add(l2.get());
-  EXPECT_FALSE(l2->HasPendingThreadedAnimationsForTesting());
+  EXPECT_TRUE(player2->has_any_animation());
 }
 
 // Tests that in-progress threaded animations complete when a Layer's

@@ -5,9 +5,11 @@
 #include "platform/animation/CompositorAnimationPlayer.h"
 
 #include "base/time/time.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
+#include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/testing/CompositorTest.h"
 
@@ -59,16 +61,22 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate)
     std::unique_ptr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
     cc::AnimationPlayer* ccPlayer = player->animationPlayer();
 
+    std::unique_ptr<CompositorAnimationCurve> curve = CompositorFloatAnimationCurve::create();
+    std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+        *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
+    // TODO(loyso): CompositorPlayer::addAnimation should consume unique_ptr.
+    player->addAnimation(animation.release());
+
     player->setAnimationDelegate(delegate.get());
     EXPECT_FALSE(delegate->m_finished);
 
-    ccPlayer->NotifyAnimationFinished(base::TimeTicks(), CompositorTargetProperty::SCROLL_OFFSET, 0);
+    ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::TRANSFORM, 1);
     EXPECT_TRUE(delegate->m_finished);
 
     delegate->resetFlags();
 
     player->setAnimationDelegate(nullptr);
-    ccPlayer->NotifyAnimationFinished(base::TimeTicks(), CompositorTargetProperty::SCROLL_OFFSET, 0);
+    ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::TRANSFORM, 1);
     EXPECT_FALSE(delegate->m_finished);
 }
 
@@ -79,14 +87,24 @@ TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
     std::unique_ptr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
     scoped_refptr<cc::AnimationPlayer> ccPlayer = player->animationPlayer();
 
+    std::unique_ptr<CompositorAnimationCurve> curve = CompositorFloatAnimationCurve::create();
+    std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+        *curve, CompositorTargetProperty::OPACITY, 1, 0);
+    // TODO(loyso): CompositorPlayer::addAnimation should consume unique_ptr.
+    player->addAnimation(animation.release());
+
     player->setAnimationDelegate(delegate.get());
     EXPECT_FALSE(delegate->m_finished);
+
+    ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::OPACITY, 1);
+    EXPECT_TRUE(delegate->m_finished);
+    delegate->m_finished = false;
 
     // Delete CompositorAnimationPlayer. ccPlayer stays alive.
     player = nullptr;
 
     // No notifications. Doesn't crash.
-    ccPlayer->NotifyAnimationFinished(base::TimeTicks(), CompositorTargetProperty::OPACITY, 0);
+    ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::OPACITY, 1);
     EXPECT_FALSE(delegate->m_finished);
 }
 

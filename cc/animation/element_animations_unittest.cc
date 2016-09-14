@@ -61,7 +61,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_TRUE(element_animations->has_element_in_active_list());
   EXPECT_FALSE(element_animations->has_element_in_pending_list());
 
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
 
   GetImplTimelineAndPlayerByID();
 
@@ -89,7 +89,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_FALSE(element_animations->has_element_in_pending_list());
 
   // Sync doesn't detach LayerImpl.
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_TRUE(element_animations_impl->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
@@ -107,7 +107,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
 
   // Sync doesn't change anything.
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_FALSE(element_animations_impl->has_element_in_active_list());
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
@@ -123,8 +123,7 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
 
-  host_->PushPropertiesTo(host_impl_);
-
+  PushProperties();
   GetImplTimelineAndPlayerByID();
 
   player_->AttachElement(element_id_);
@@ -136,7 +135,7 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
   EXPECT_FALSE(element_animations->has_element_in_active_list());
   EXPECT_FALSE(element_animations->has_element_in_pending_list());
 
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
 
   scoped_refptr<ElementAnimations> element_animations_impl =
       player_impl_->element_animations();
@@ -183,7 +182,7 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   EXPECT_EQ(element_animations, player1->element_animations());
   EXPECT_EQ(element_animations, player2->element_animations());
 
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
   GetImplTimelineAndPlayerByID();
 
   scoped_refptr<ElementAnimations> element_animations_impl =
@@ -205,7 +204,7 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   EXPECT_EQ(element_animations, player_->element_animations());
   EXPECT_EQ(element_animations, player1->element_animations());
 
-  host_->PushPropertiesTo(host_impl_);
+  PushProperties();
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
 
   int list_size_after = 0;
@@ -219,11 +218,12 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
 }
 
 TEST_F(ElementAnimationsTest, SyncNewAnimation) {
-  auto animations_impl = ElementAnimations::Create();
-  animations_impl->set_has_element_in_active_list(true);
+  CreateTestLayer(true, false);
+  AttachTimelinePlayerLayer();
+  CreateImplTimelineAndPlayer();
 
-  auto animations = ElementAnimations::Create();
-  animations->set_has_element_in_active_list(true);
+  scoped_refptr<ElementAnimations> animations = element_animations();
+  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   EXPECT_FALSE(animations_impl->GetAnimation(TargetProperty::OPACITY));
 
@@ -231,10 +231,10 @@ TEST_F(ElementAnimationsTest, SyncNewAnimation) {
   EXPECT_FALSE(animations_impl->needs_to_start_animations_for_testing());
 
   int animation_id =
-      AddOpacityTransitionToElementAnimations(animations.get(), 1, 0, 1, false);
+      AddOpacityTransitionToPlayer(player_.get(), 1, 0, 1, false);
   EXPECT_TRUE(animations->needs_to_start_animations_for_testing());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(animations_impl->needs_to_start_animations_for_testing());
   animations_impl->ActivateAnimations();
 
@@ -273,7 +273,7 @@ TEST_F(ElementAnimationsTest,
   std::unique_ptr<Animation> animation_fixed(Animation::Create(
       std::move(curve_fixed), animation1_id, 0, TargetProperty::SCROLL_OFFSET));
   animations->AddAnimation(std::move(animation_fixed));
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_VECTOR2DF_EQ(initial_value,
                       animations_impl->GetAnimationById(animation1_id)
                           ->curve()
@@ -289,7 +289,7 @@ TEST_F(ElementAnimationsTest,
   std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), animation2_id, 0, TargetProperty::SCROLL_OFFSET));
   animations->AddAnimation(std::move(animation));
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_VECTOR2DF_EQ(provider_initial_value,
                       animations_impl->GetAnimationById(animation2_id)
                           ->curve()
@@ -334,20 +334,20 @@ TEST_F(ElementAnimationsTest, AddedPlayerIsDestroyed) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   TestAnimationDelegateThatDestroysPlayer delegate;
-  {
-    scoped_refptr<AnimationPlayer> player =
-        AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
-    delegate.setTimelineAndPlayer(timeline_, player);
 
-    timeline_->AttachPlayer(player);
-    player->AttachElement(element_id_);
-    player->set_animation_delegate(&delegate);
-  }
+  scoped_refptr<AnimationPlayer> player2 =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  delegate.setTimelineAndPlayer(timeline_, player2);
 
-  int animation_id = AddOpacityTransitionToElementAnimations(
-      animations.get(), 1.0, 0.f, 1.f, false);
+  timeline_->AttachPlayer(player2);
+  player2->AttachElement(element_id_);
+  player2->set_animation_delegate(&delegate);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  int animation_id =
+      AddOpacityTransitionToPlayer(player2.get(), 1.0, 0.f, 1.f, false);
+
+  PushProperties();
+
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
 
@@ -378,7 +378,7 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
   int animation_id =
       AddOpacityTransitionToElementAnimations(animations.get(), 1, 0, 1, false);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -416,7 +416,7 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
   const TimeTicks start_time = TicksFromSecondsF(123);
   animations->GetAnimation(TargetProperty::OPACITY)->set_start_time(start_time);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -470,7 +470,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   // The main thread animations should now be active.
   EXPECT_EQ(1u, host->active_element_animations_for_testing().size());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   // Both animationss should now be active.
   EXPECT_EQ(1u, host->active_element_animations_for_testing().size());
@@ -516,7 +516,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   // The main thread animations should have de-activated.
   EXPECT_EQ(0u, host->active_element_animations_for_testing().size());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->HasAnyAnimation());
   EXPECT_FALSE(animations_impl->HasAnyAnimation());
@@ -543,7 +543,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
   animations->GetAnimationById(animation_id)
       ->set_time_offset(TimeDelta::FromSecondsD(1.01));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -583,7 +583,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
             animations->GetAnimationById(animation_id)->run_state());
 
   // The pause run state change should make it to the impl thread animations.
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   // Advance time so it stays within the first range.
@@ -615,7 +615,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   int animation_id =
       AddOpacityTransitionToElementAnimations(animations.get(), 1, 0, 1, false);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -643,7 +643,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   animations->Animate(kInitialTickTime + TimeDelta::FromSeconds(2));
   animations->UpdateState(true, nullptr);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->GetAnimationById(animation_id));
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id));
@@ -666,7 +666,13 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, nullptr);
   EXPECT_TRUE(animations->needs_push_properties());
-  animations->PushPropertiesTo(animations_impl.get());
+
+  PushProperties();
+  EXPECT_FALSE(animations->needs_push_properties());
+
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(host_impl_->needs_push_properties());
+
   animations_impl->ActivateAnimations();
 
   animations_impl->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
@@ -704,7 +710,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   animations->UpdateState(true, nullptr);
   EXPECT_TRUE(host_->needs_push_properties());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // Both animationss should now have deleted the animation. The impl animations
   // should have deleted the animation even though activation has not occurred,
@@ -838,7 +844,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   animations->AddAnimation(std::move(animation));
 
   client_impl_.SetScrollOffsetForAnimation(initial_value);
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET));
   TimeDelta duration =
@@ -1034,7 +1040,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   animations->AddAnimation(std::move(animation));
 
   client_.SetScrollOffsetForAnimation(initial_value);
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET));
   TimeDelta duration =
@@ -1122,7 +1128,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
       std::move(curve), animation_id, 0, TargetProperty::SCROLL_OFFSET));
   animation->set_needs_synchronized_start_time(true);
   animations->AddAnimation(std::move(animation));
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
@@ -1130,7 +1136,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   animations->RemoveAnimation(animation_id);
   EXPECT_TRUE(animations->scroll_offset_animation_was_interrupted());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(animations_impl->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
@@ -1145,7 +1151,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
                                 TargetProperty::SCROLL_OFFSET);
   animation->set_needs_synchronized_start_time(true);
   animations->AddAnimation(std::move(animation));
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
@@ -1153,7 +1159,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   animations->RemoveAnimation(animation_id);
   EXPECT_TRUE(animations->scroll_offset_animation_was_interrupted());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(animations_impl->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
@@ -1164,7 +1170,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   // scroll_offset_animation_was_interrupted() to get set.
   animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 1.0, 1, 2);
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
@@ -1172,7 +1178,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   animations->RemoveAnimation(animation_id);
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
@@ -1181,7 +1187,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
 
   animation_id =
       AddAnimatedFilterToElementAnimations(animations.get(), 1.0, 0.1f, 0.2f);
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
@@ -1189,7 +1195,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   animations->RemoveAnimation(animation_id);
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animations->scroll_offset_animation_was_interrupted());
 
@@ -1265,7 +1271,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
   const TimeTicks start_time = TicksFromSecondsF(123);
   animations->GetAnimation(TargetProperty::OPACITY)->set_start_time(start_time);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -1689,7 +1695,7 @@ TEST_F(ElementAnimationsTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   EXPECT_TRUE(active_animation->needs_synchronized_start_time());
 
   EXPECT_TRUE(animations->needs_push_properties());
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
 
   active_animation = animations_impl->GetAnimation(TargetProperty::OPACITY);
@@ -1942,27 +1948,35 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
   scoped_refptr<ElementAnimations> animations = element_animations();
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
-  int animation_id = AddOpacityTransitionToElementAnimations(
-      animations.get(), 1.0, 0.f, 1.f, false);
+  int animation_id =
+      AddOpacityTransitionToPlayer(player_.get(), 1.0, 0.f, 1.f, false);
+  EXPECT_TRUE(host_->needs_push_properties());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
+
   animations_impl->ActivateAnimations();
+
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
+  EXPECT_FALSE(host_->needs_push_properties());
 
   animations->AbortAnimations(TargetProperty::OPACITY);
   EXPECT_EQ(Animation::ABORTED,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_FALSE(host_->needs_push_properties());
-  EXPECT_FALSE(host_impl_->needs_push_properties());
+  EXPECT_TRUE(host_->needs_push_properties());
 
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, nullptr);
-  EXPECT_FALSE(host_->needs_push_properties());
   EXPECT_EQ(Animation::ABORTED,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
 
   EXPECT_TRUE(animations->needs_push_properties());
-  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(player_->needs_push_properties());
+  EXPECT_TRUE(host_->needs_push_properties());
+
+  PushProperties();
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(player_->needs_push_properties());
+
   EXPECT_FALSE(animations->GetAnimationById(animation_id));
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id));
 }
@@ -1982,7 +1996,9 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   int animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1.0, 0.f, 1.f, false);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
+  EXPECT_FALSE(host_->needs_push_properties());
+
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
 
@@ -1990,8 +2006,8 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_EQ(
       Animation::ABORTED,
       animations_impl->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_FALSE(host_->needs_push_properties());
-  EXPECT_FALSE(host_impl_->needs_push_properties());
+  EXPECT_TRUE(host_impl_->needs_push_properties());
+  EXPECT_TRUE(player_impl_->needs_push_properties());
 
   auto events = host_impl_->CreateEvents();
   animations_impl->Animate(kInitialTickTime);
@@ -2014,7 +2030,8 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
+
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->GetAnimationById(animation_id));
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id));
@@ -2050,18 +2067,19 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   animation->set_is_impl_only(true);
   animations_impl->AddAnimation(std::move(animation));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
+  EXPECT_FALSE(host_->needs_push_properties());
+
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
 
   const bool needs_completion = true;
   animations_impl->AbortAnimations(TargetProperty::SCROLL_OFFSET,
                                    needs_completion);
+  EXPECT_TRUE(host_impl_->needs_push_properties());
   EXPECT_EQ(Animation::ABORTED_BUT_NEEDS_COMPLETION,
             animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
                 ->run_state());
-  EXPECT_FALSE(host_->needs_push_properties());
-  EXPECT_FALSE(host_impl_->needs_push_properties());
 
   auto events = host_impl_->CreateEvents();
   animations_impl->Animate(kInitialTickTime);
@@ -2088,7 +2106,8 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
 
   // ElementAnimations::PurgeAnimationsMarkedForDeletion call happens only in
   // ElementAnimations::PushPropertiesTo.
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
+
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->GetAnimationById(animation_id));
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id));
@@ -2679,7 +2698,7 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
   EXPECT_TRUE(animations->needs_to_start_animations_for_testing());
 
   EXPECT_FALSE(animations_impl->needs_to_start_animations_for_testing());
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(animations_impl->needs_to_start_animations_for_testing());
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
@@ -2738,7 +2757,7 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
   const int animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1, 0.5f, 1.f, true);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id));
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
@@ -2808,7 +2827,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2842,7 +2861,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // animations_impl hasn't yet ticked at/past the end of the animation.
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
@@ -2874,7 +2893,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2903,7 +2922,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2927,7 +2946,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2978,7 +2997,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animations->GetAnimationById(animation_id)
       ->set_fill_mode(Animation::FillMode::NONE);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -3026,7 +3045,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
                                                      ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3060,7 +3079,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
                                                       ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // animations_impl hasn't yet ticked at/past the end of the animation.
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
@@ -3092,7 +3111,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
                                                      ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3121,7 +3140,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
                                                       ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3145,7 +3164,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
                                                      ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3196,7 +3215,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animations->GetAnimationById(animation_id)
       ->set_fill_mode(Animation::FillMode::NONE);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3243,7 +3262,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
                                                     ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3277,7 +3296,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
                                                      ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // animations_impl hasn't yet ticked at/past the end of the animation.
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
@@ -3309,7 +3328,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
                                                     ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3338,7 +3357,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
                                                      ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3362,7 +3381,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
                                                     ElementListType::ACTIVE));
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3413,7 +3432,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   animations->GetAnimationById(animation_id)
       ->set_fill_mode(Animation::FillMode::NONE);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3475,7 +3494,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   const int animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1, 0.5f, 1.f, true);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
@@ -3494,7 +3513,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   // Delete the animation on the main-thread animations.
   animations->RemoveAnimation(
       animations->GetAnimation(TargetProperty::OPACITY)->id());
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // The animation should no longer affect pending elements.
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id)
@@ -3532,7 +3551,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   const int first_animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1, 0.f, 1.f, true);
 
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
   animations_impl->ActivateAnimations();
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
@@ -3543,7 +3562,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
       animations->GetAnimation(TargetProperty::OPACITY)->id());
   const int second_animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1, 1.f, 0.5f, true);
-  animations->PushPropertiesTo(animations_impl.get());
+  PushProperties();
 
   // The original animation should only affect active elements, and the new
   // animation should only affect pending elements.
