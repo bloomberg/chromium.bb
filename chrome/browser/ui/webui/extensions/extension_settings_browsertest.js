@@ -323,8 +323,11 @@ TEST_F('AutoScrollExtensionSettingsWebUITest', 'testAutoScroll', function() {
     assertEquals(0, document.body.scrollTop);
     this.nextStep();
   };
-  var scrollToTop = function() {
+  var scrollToOrigin = function() {
+    // Reset both top and left to avoid a scroll anchoring adjustment when the
+    // #dev-controls element is inserted (crbug.com/646977).
     document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
     this.nextStep();
   };
   // Test that a) autoscroll works on first page load and b) updating the
@@ -332,7 +335,7 @@ TEST_F('AutoScrollExtensionSettingsWebUITest', 'testAutoScroll', function() {
   this.steps = [this.waitForPageLoad,
                 checkHasScrollbar,
                 checkIsScrolled,
-                scrollToTop,
+                scrollToOrigin,
                 this.enableDeveloperMode,
                 checkScrolledToTop,
                 testDone];
