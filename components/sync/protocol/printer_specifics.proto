@@ -1,0 +1,59 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for printer data.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+// Properties of PPDs associated with printers.
+message PrinterPPDData {
+  // Id issued by PPD Server.  0 for user specified ppds.
+  optional int32 id = 1 [default = 0];
+
+  // A relative path uniquely identifying the file.
+  optional string file_name = 2;
+
+  // File version number.
+  optional int64 version_number = 3;
+
+  // True if the file came from the PPD Server.  False if
+  // user provided.
+  optional bool from_quirks_server = 4 [default = false];
+}
+
+message PrinterSpecifics {
+  // Printer record GUID
+  optional string id = 1;
+
+  // User visible name.  Any string.
+  optional string display_name = 2;
+
+  // User visible description.  Any string.
+  optional string description = 3;
+
+  // Printer manufacturer.  Should be a known manufacturuer.
+  optional string manufacturer = 4;
+
+  // Printer model.  Should match a known model for the manufacturer.
+  optional string model = 5;
+
+  // Universal Resource Identifier for the printer on the network.  usb:// will
+  // be the scheme for USB printers.  Example
+  // ipp://address.example:port/queue/queue/queue.
+  optional string uri = 6;
+
+  // Universally Unique Identifier provided by the printer.  Used for unique
+  // identification of printers in a zeroconf environment.
+  optional string uuid = 7;
+
+  // Structure representing the PPD with which the printer was configured.
+  optional PrinterPPDData ppd = 8;
+}

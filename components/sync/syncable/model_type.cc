@@ -133,6 +133,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber, 33},
     {ARC_PACKAGE, "ARC_PACKAGE", "arc_package", "Arc Package",
      sync_pb::EntitySpecifics::kArcPackageFieldNumber, 36},
+    {PRINTERS, "PRINTER", "printers", "Printers",
+     sync_pb::EntitySpecifics::kPrinterFieldNumber, 37},
     {PROXY_TABS, "", "", "Tabs", -1, 25},
     {NIGORI, "NIGORI", "nigori", "Encryption keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
@@ -154,7 +156,7 @@ const char* kUserSelectableDataTypeNames[] = {
 };
 
 static_assert(
-    37 == MODEL_TYPE_COUNT,
+    38 == MODEL_TYPE_COUNT,
     "update kUserSelectableDataTypeName to match UserSelectableTypes");
 
 void AddDefaultFieldValue(ModelType datatype,
@@ -235,6 +237,9 @@ void AddDefaultFieldValue(ModelType datatype,
       break;
     case EXPERIMENTS:
       specifics->mutable_experiments();
+      break;
+    case PRINTERS:
+      specifics->mutable_printer();
       break;
     case PRIORITY_PREFERENCES:
       specifics->mutable_priority_preference();
@@ -399,6 +404,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_priority_preference())
     return PRIORITY_PREFERENCES;
+
+  if (specifics.has_printer())
+    return PRINTERS;
 
   if (specifics.has_dictionary())
     return DICTIONARY;

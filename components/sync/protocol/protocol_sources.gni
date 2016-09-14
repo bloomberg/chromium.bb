@@ -35,6 +35,7 @@ sync_protocol_sources = [
   "//components/sync/protocol/managed_user_whitelist_specifics.proto",
   "//components/sync/protocol/password_specifics.proto",
   "//components/sync/protocol/preference_specifics.proto",
+  "//components/sync/protocol/printer_specifics.proto",
   "//components/sync/protocol/priority_preference_specifics.proto",
   "//components/sync/protocol/search_engine_specifics.proto",
   "//components/sync/protocol/session_specifics.proto",

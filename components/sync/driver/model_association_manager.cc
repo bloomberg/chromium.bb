@@ -47,9 +47,9 @@ static const syncer::ModelType kStartOrder[] = {
     syncer::APPS, syncer::APP_LIST, syncer::ARC_PACKAGE, syncer::THEMES,
     syncer::SEARCH_ENGINES, syncer::SESSIONS, syncer::APP_NOTIFICATIONS,
     syncer::DICTIONARY, syncer::FAVICON_IMAGES, syncer::FAVICON_TRACKING,
-    syncer::SUPERVISED_USER_SETTINGS, syncer::SUPERVISED_USER_SHARED_SETTINGS,
-    syncer::SUPERVISED_USER_WHITELISTS, syncer::ARTICLES,
-    syncer::WIFI_CREDENTIALS,
+    syncer::PRINTERS, syncer::SUPERVISED_USER_SETTINGS,
+    syncer::SUPERVISED_USER_SHARED_SETTINGS, syncer::SUPERVISED_USER_WHITELISTS,
+    syncer::ARTICLES, syncer::WIFI_CREDENTIALS,
 };
 
 static_assert(arraysize(kStartOrder) ==

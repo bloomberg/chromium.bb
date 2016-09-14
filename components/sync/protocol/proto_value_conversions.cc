@@ -38,6 +38,7 @@
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
+#include "components/sync/protocol/printer_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
@@ -285,6 +286,17 @@ std::unique_ptr<base::DictionaryValue> ArcPackageSpecificsToValue(
   SET_INT64(last_backup_android_id);
   SET_INT64(last_backup_time);
 
+  return value;
+}
+
+std::unique_ptr<base::DictionaryValue> PrinterPPDDataToValue(
+    const sync_pb::PrinterPPDData& proto) {
+  std::unique_ptr<base::DictionaryValue> value =
+      base::MakeUnique<base::DictionaryValue>();
+  SET_INT32(id);
+  SET_STR(file_name);
+  SET_INT64(version_number);
+  SET_BOOL(from_quirks_server);
   return value;
 }
 
@@ -626,6 +638,21 @@ std::unique_ptr<base::DictionaryValue> PreferenceSpecificsToValue(
   return value;
 }
 
+std::unique_ptr<base::DictionaryValue> PrinterSpecificsToValue(
+    const sync_pb::PrinterSpecifics& proto) {
+  std::unique_ptr<base::DictionaryValue> value =
+      base::MakeUnique<base::DictionaryValue>();
+  SET_STR(id);
+  SET_STR(display_name);
+  SET_STR(description);
+  SET_STR(manufacturer);
+  SET_STR(model);
+  SET_STR(uri);
+  SET_STR(uuid);
+  SET(ppd, PrinterPPDDataToValue);
+  return value;
+}
+
 std::unique_ptr<base::DictionaryValue> PriorityPreferenceSpecificsToValue(
     const sync_pb::PriorityPreferenceSpecifics& specifics) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
@@ -777,6 +804,7 @@ std::unique_ptr<base::DictionaryValue> EntitySpecificsToValue(
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);
   SET_FIELD(preference, PreferenceSpecificsToValue);
+  SET_FIELD(printer, PrinterSpecificsToValue);
   SET_FIELD(priority_preference, PriorityPreferenceSpecificsToValue);
   SET_FIELD(search_engine, SearchEngineSpecificsToValue);
   SET_FIELD(session, SessionSpecificsToValue);

@@ -116,6 +116,9 @@ void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
       case ::syncer::EXPERIMENTS:                              \
         PER_DATA_TYPE_MACRO("Experiments");                    \
         break;                                                 \
+      case ::syncer::PRINTERS:                                 \
+        PER_DATA_TYPE_MACRO("Printers");                       \
+        break;                                                 \
       case ::syncer::PRIORITY_PREFERENCES:                     \
         PER_DATA_TYPE_MACRO("PriorityPreferences");            \
         break;                                                 \

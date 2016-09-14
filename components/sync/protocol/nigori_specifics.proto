@@ -139,4 +139,7 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether arc pakcage items should be encrypted.
   optional bool encrypt_arc_package = 41;
+
+  // Boolean corresponding to whether printer items should be encrypted.
+  optional bool encrypt_printers = 42;
 }

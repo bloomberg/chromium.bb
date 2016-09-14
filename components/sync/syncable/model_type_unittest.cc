@@ -69,6 +69,7 @@ TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_TRUE(IsRealDataType(BOOKMARKS));
   EXPECT_TRUE(IsRealDataType(APPS));
   EXPECT_TRUE(IsRealDataType(ARC_PACKAGE));
+  EXPECT_TRUE(IsRealDataType(PRINTERS));
 }
 
 TEST_F(ModelTypeTest, IsProxyType) {

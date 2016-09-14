@@ -57,7 +57,8 @@ enum UserSelectableSyncType {
   // FAVICON_TRACKING,
   // ARTICLE,
   // SYNCED_NOTIFICATION_APP_INFO,
-  // ARC_PACKAGE
+  // ARC_PACKAGE,
+  // PRINTERS
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 11,

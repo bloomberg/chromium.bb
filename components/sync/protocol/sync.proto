@@ -41,6 +41,7 @@ import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
+import "printer_specifics.proto";
 import "priority_preference_specifics.proto";
 import "search_engine_specifics.proto";
 import "session_specifics.proto";
@@ -136,6 +137,7 @@ message EntitySpecifics {
   optional AutofillWalletSpecifics autofill_wallet = 306270;
   optional WalletMetadataSpecifics wallet_metadata = 330441;
   optional ArcPackageSpecifics arc_package = 340906;
+  optional PrinterSpecifics printer = 410745;
 }
 
 message SyncEntity {

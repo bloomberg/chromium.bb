@@ -1618,7 +1618,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     sync_driver::user_selectable_type::PROXY_TABS,
   };
 
-  static_assert(37 == syncer::MODEL_TYPE_COUNT,
+  static_assert(38 == syncer::MODEL_TYPE_COUNT,
                 "custom config histogram must be updated");
 
   if (!sync_everything) {

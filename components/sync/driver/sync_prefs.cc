@@ -320,6 +320,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncWifiCredentials;
     case syncer::ARC_PACKAGE:
       return prefs::kSyncArcPackage;
+    case syncer::PRINTERS:
+      return prefs::kSyncPrinters;
     default:
       break;
   }

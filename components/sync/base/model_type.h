@@ -132,6 +132,8 @@ enum ModelType {
   SUPERVISED_USER_WHITELISTS,
   // Arc Package items.
   ARC_PACKAGE,
+  // Printer device information.
+  PRINTERS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

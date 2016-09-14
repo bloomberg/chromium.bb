@@ -46,6 +46,7 @@ import managed_user_whitelist_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
 import preference_specifics_pb2
+import printer_specifics_pb2
 import priority_preference_specifics_pb2
 import search_engine_specifics_pb2
 import session_specifics_pb2
@@ -86,6 +87,7 @@ ALL_TYPES = (
     NIGORI,
     PASSWORD,
     PREFERENCE,
+    PRINTERS,
     PRIORITY_PREFERENCE,
     SEARCH_ENGINE,
     SESSION,
@@ -96,7 +98,7 @@ ALL_TYPES = (
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
     FAVICON_TRACKING,
-    WIFI_CREDENTIAL) = range(35)
+    WIFI_CREDENTIAL) = range(36)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -140,6 +142,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     NIGORI: SYNC_TYPE_FIELDS['nigori'],
     PASSWORD: SYNC_TYPE_FIELDS['password'],
     PREFERENCE: SYNC_TYPE_FIELDS['preference'],
+    PRINTERS: SYNC_TYPE_FIELDS['printer'],
     PRIORITY_PREFERENCE: SYNC_TYPE_FIELDS['priority_preference'],
     SEARCH_ENGINE: SYNC_TYPE_FIELDS['search_engine'],
     SESSION: SYNC_TYPE_FIELDS['session'],
@@ -565,6 +568,9 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=PASSWORD),
       PermanentItem('google_chrome_preferences', name='Preferences',
                     parent_tag=ROOT_ID, sync_type=PREFERENCE),
+      PermanentItem('google_chrome_printer', name='Printers',
+                    parent_tag=ROOT_ID, sync_type=PRINTERS,
+                    create_by_default=False),
       PermanentItem('google_chrome_priority_preferences',
                     name='Priority Preferences',
                     parent_tag=ROOT_ID, sync_type=PRIORITY_PREFERENCE),

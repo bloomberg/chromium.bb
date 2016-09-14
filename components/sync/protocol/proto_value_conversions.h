@@ -59,6 +59,8 @@ class PasswordSpecifics;
 class PasswordSpecificsData;
 class PreferenceSpecifics;
 class PriorityPreferenceSpecifics;
+class PrinterPPDData;
+class PrinterSpecifics;
 class SearchEngineSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -156,6 +158,11 @@ std::unique_ptr<base::DictionaryValue> KeystoreEncryptionToValue(
 std::unique_ptr<base::DictionaryValue> SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
 
+// Sub-protocol of PrinterSpecifics.
+
+std::unique_ptr<base::DictionaryValue> PrinterPPDDataToValue(
+    const sync_pb::PrinterPPDData& proto);
+
 // Main *SpecificsToValue functions.
 
 std::unique_ptr<base::DictionaryValue> AppNotificationToValue(
@@ -238,6 +245,9 @@ std::unique_ptr<base::DictionaryValue> PasswordSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
+
+std::unique_ptr<base::DictionaryValue> PrinterSpecificsToValue(
+    const sync_pb::PrinterSpecifics& printer_specifics);
 
 std::unique_ptr<base::DictionaryValue>
 SyncedNotificationAppInfoSpecificsToValue(
