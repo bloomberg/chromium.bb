@@ -275,14 +275,35 @@ void GetOfflinePagesSync(
   }
 }
 
-void AddOrUpdateOfflinePageSync(
-    const OfflinePageItem& offline_page,
+void AddOfflinePageSync(sql::Connection* db,
+                        scoped_refptr<base::SingleThreadTaskRunner> runner,
+                        const OfflinePageItem& offline_page,
+                        const OfflinePageMetadataStore::AddCallback& callback) {
+  // TODO(fgorski): Only insert should happen here.
+  InsertOrReplace(db, offline_page);
+  runner->PostTask(FROM_HERE,
+                   base::Bind(callback, OfflinePageMetadataStore::SUCCESS));
+}
+
+void UpdateOfflinePagesSync(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const std::vector<OfflinePageItem>& pages,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  // TODO(bburns): add UMA metrics here (and for levelDB).
-  bool ok = InsertOrReplace(db, offline_page);
-  runner->PostTask(FROM_HERE, base::Bind(callback, ok));
+  // TODO(fgorski): Update the callback to provide information about all items
+  // and not just a high level boolean.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    runner->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  // TODO(fgorski): Switch to only accept updates and not create new items.
+  for (auto& page : pages)
+    InsertOrReplace(db, page);
+
+  bool result = transaction.Commit();
+  runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 void RemoveOfflinePagesSync(
@@ -355,14 +376,28 @@ void OfflinePageMetadataStoreSQL::GetOfflinePages(
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
-void OfflinePageMetadataStoreSQL::AddOrUpdateOfflinePage(
+void OfflinePageMetadataStoreSQL::AddOfflinePage(
     const OfflinePageItem& offline_page,
-    const UpdateCallback& callback) {
-  DCHECK(db_.get());
+    const AddCallback& callback) {
+  if (!CheckDb(base::Bind(callback, STORE_ERROR)))
+    return;
+
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AddOrUpdateOfflinePageSync, offline_page, db_.get(),
-                 base::ThreadTaskRunnerHandle::Get(), callback));
+      base::Bind(&AddOfflinePageSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), offline_page, callback));
+}
+
+void OfflinePageMetadataStoreSQL::UpdateOfflinePages(
+    const std::vector<OfflinePageItem>& pages,
+    const UpdateCallback& callback) {
+  if (!CheckDb(base::Bind(callback, false)))
+    return;
+
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&UpdateOfflinePagesSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), pages, callback));
 }
 
 void OfflinePageMetadataStoreSQL::RemoveOfflinePages(

@@ -46,8 +46,17 @@ class OfflinePageMetadataStore {
     FAILED_RESET,
   };
 
+  // Statuses referring to actions taken on items in the store.
+  enum ItemActionStatus {
+    SUCCESS,
+    ALREADY_EXISTS,
+    DOESNT_EXIST,
+    STORE_ERROR,
+  };
+
   typedef base::Callback<void(LoadStatus, const std::vector<OfflinePageItem>&)>
       LoadCallback;
+  typedef base::Callback<void(ItemActionStatus)> AddCallback;
   typedef base::Callback<void(bool)> UpdateCallback;
   typedef base::Callback<void(bool)> ResetCallback;
 
@@ -57,10 +66,13 @@ class OfflinePageMetadataStore {
   // Get all of the offline pages from the store.
   virtual void GetOfflinePages(const LoadCallback& callback) = 0;
 
-  // Asynchronously adds or updates offline page metadata to the store.
-  // Result of the update is passed in callback.
-  virtual void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
-                                      const UpdateCallback& callback) = 0;
+  // Asynchronously adds an offline page item metadata to the store.
+  virtual void AddOfflinePage(const OfflinePageItem& offline_page,
+                              const AddCallback& callback) = 0;
+
+  // Asynchronously updates a set of offline page items in the store.
+  virtual void UpdateOfflinePages(const std::vector<OfflinePageItem>& pages,
+                                  const UpdateCallback& callback) = 0;
 
   // Asynchronously removes offline page metadata from the store.
   // Result of the update is passed in callback.

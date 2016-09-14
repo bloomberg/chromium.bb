@@ -405,10 +405,10 @@ void OfflinePageModelImpl::MarkPageAccessedWhenLoadDone(int64_t offline_id) {
   offline_page_item.last_access_time = GetCurrentTime();
   offline_page_item.access_count++;
 
-  store_->AddOrUpdateOfflinePage(
-      offline_page_item,
-      base::Bind(&OfflinePageModelImpl::OnMarkPageAccesseDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_page_item));
+  std::vector<OfflinePageItem> items = { offline_page_item };
+  store_->UpdateOfflinePages(
+      items, base::Bind(&OfflinePageModelImpl::OnMarkPageAccesseDone,
+                        weak_ptr_factory_.GetWeakPtr(), offline_page_item));
 }
 
 void OfflinePageModelImpl::DeletePagesByOfflineId(
@@ -676,6 +676,7 @@ void OfflinePageModelImpl::ExpirePages(
     const base::Time& expiration_time,
     const base::Callback<void(bool)>& callback) {
   std::vector<base::FilePath> paths_to_delete;
+  std::vector<OfflinePageItem> items_to_update;
   for (int64_t offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
@@ -685,11 +686,14 @@ void OfflinePageModelImpl::ExpirePages(
     paths_to_delete.push_back(offline_page.file_path);
     offline_page.expiration_time = expiration_time;
 
-    store_->AddOrUpdateOfflinePage(
-        offline_page, base::Bind(&OfflinePageModelImpl::OnExpirePageDone,
-                                 weak_ptr_factory_.GetWeakPtr(), offline_id,
-                                 expiration_time));
+    items_to_update.push_back(offline_page);
   }
+
+  store_->UpdateOfflinePages(items_to_update,
+                             base::Bind(&OfflinePageModelImpl::OnExpirePageDone,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        items_to_update, expiration_time));
+
   if (paths_to_delete.empty()) {
     callback.Run(true);
     return;
@@ -697,17 +701,22 @@ void OfflinePageModelImpl::ExpirePages(
   archive_manager_->DeleteMultipleArchives(paths_to_delete, callback);
 }
 
-void OfflinePageModelImpl::OnExpirePageDone(int64_t offline_id,
-                                            const base::Time& expiration_time,
-                                            bool success) {
+void OfflinePageModelImpl::OnExpirePageDone(
+    const std::vector<OfflinePageItem>& expired_pages,
+    const base::Time& expiration_time,
+    bool success) {
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.ExpirePage.StoreUpdateResult", success);
   if (!success)
     return;
-  const auto& iter = offline_pages_.find(offline_id);
-  if (iter != offline_pages_.end()) {
+  for (auto& expired_page : expired_pages) {
+    const auto& iter = offline_pages_.find(expired_page.offline_id);
+    if (iter == offline_pages_.end())
+      continue;
+
     iter->second.expiration_time = expiration_time;
     ClientId client_id = iter->second.client_id;
-    offline_event_logger_.RecordPageExpired(std::to_string(offline_id));
+    offline_event_logger_.RecordPageExpired(
+        std::to_string(expired_page.offline_id));
     base::HistogramBase* histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime"),
         1, base::TimeDelta::FromDays(30).InMinutes(), 50,
@@ -773,8 +782,8 @@ void OfflinePageModelImpl::OnCreateArchiveDone(const GURL& requested_url,
   OfflinePageItem offline_page_item(url, offline_id, client_id, file_path,
                                     file_size, start_time);
   offline_page_item.title = title;
-  store_->AddOrUpdateOfflinePage(
-      offline_page_item, base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
+  store_->AddOfflinePage(offline_page_item,
+                         base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
                                     weak_ptr_factory_.GetWeakPtr(), archiver,
                                     callback, offline_page_item));
 }
@@ -783,9 +792,9 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
     OfflinePageArchiver* archiver,
     const SavePageCallback& callback,
     const OfflinePageItem& offline_page,
-    bool success) {
+    OfflinePageMetadataStore::ItemActionStatus status) {
   SavePageResult result;
-  if (success) {
+  if (status == OfflinePageMetadataStore::SUCCESS) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
     ReportPageHistogramAfterSave(offline_pages_, offline_page,
@@ -793,6 +802,8 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
     offline_event_logger_.RecordPageSaved(
         offline_page.client_id.name_space, offline_page.url.spec(),
         std::to_string(offline_page.offline_id));
+  } else if (status == OfflinePageMetadataStore::ALREADY_EXISTS) {
+    result = SavePageResult::ALREADY_EXISTS;
   } else {
     result = SavePageResult::STORE_FAILURE;
   }

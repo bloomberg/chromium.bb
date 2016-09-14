@@ -180,7 +180,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,
                             const OfflinePageItem& offline_page,
-                            bool success);
+                            OfflinePageMetadataStore::ItemActionStatus status);
   void InformSavePageDone(const SavePageCallback& callback,
                           SavePageResult result,
                           const ClientId& client_id,
@@ -243,7 +243,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                                          const DeletePageCallback& callback);
 
   // Callback completing page expiration.
-  void OnExpirePageDone(int64_t offline_id,
+  void OnExpirePageDone(const std::vector<OfflinePageItem>& expired_pages,
                         const base::Time& expiration_time,
                         bool success);
 

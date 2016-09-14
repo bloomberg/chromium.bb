@@ -34,13 +34,33 @@ void OfflinePageTestStore::GetOfflinePages(const LoadCallback& callback) {
                          base::Bind(callback, load_status, GetAllPages()));
 }
 
-void OfflinePageTestStore::AddOrUpdateOfflinePage(
-    const OfflinePageItem& offline_page,
-    const UpdateCallback& callback) {
-  last_saved_page_ = offline_page;
-  bool result = scenario_ != TestScenario::WRITE_FAILED;
-  if (result)
+void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
+                                          const AddCallback& callback) {
+  // TODO(fgorski): Add and cover scenario with existing item.
+  OfflinePageMetadataStore::ItemActionStatus result;
+  if (scenario_ == TestScenario::SUCCESSFUL) {
     offline_pages_[offline_page.offline_id] = offline_page;
+    last_saved_page_ = offline_page;
+    result = OfflinePageMetadataStore::SUCCESS;
+  } else if (scenario_ == TestScenario::WRITE_FAILED) {
+    result = OfflinePageMetadataStore::STORE_ERROR;
+  }
+  if (!callback.is_null())
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+}
+
+void OfflinePageTestStore::UpdateOfflinePages(
+    const std::vector<OfflinePageItem>& pages,
+    const UpdateCallback& callback) {
+  bool result = scenario_ != TestScenario::WRITE_FAILED;
+  if (result) {
+    // TODO(fgorski): Cover scenario, where new items are being created, while
+    // they shouldn't.
+    for (auto& page : pages) {
+      offline_pages_[page.offline_id] = page;
+      last_saved_page_ = page;
+    }
+  }
   if (!callback.is_null())
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }

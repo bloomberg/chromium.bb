@@ -59,8 +59,10 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
 
   // Implementation methods.
   void GetOfflinePages(const LoadCallback& callback) override;
-  void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
-                              const UpdateCallback& callback) override;
+  void AddOfflinePage(const OfflinePageItem& offline_page,
+                      const AddCallback& callback) override;
+  void UpdateOfflinePages(const std::vector<OfflinePageItem>& pages,
+                          const UpdateCallback& callback) override;
   void RemoveOfflinePages(const std::vector<int64_t>& offline_ids,
                           const UpdateCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
