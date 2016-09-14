@@ -1187,14 +1187,8 @@ class SiteConfig(dict):
 
   def AddWithoutTemplate(self, name, *args, **kwargs):
     """Add a config containing only explicitly listed values (no defaults)."""
-    # TODO(kevcheng): Eventually deprecate this method and modify Add so that
-    #                 there's a clean way of handling this use case.
-    # Let's remove the _template for all the BuildConfigs passed in.
-    inherits = []
-    for build_config in args:
-      inherits.append(build_config.derive(
-          _template=BuildConfig.delete_key()))
-    return self.Add(name, BuildConfig(), *inherits, **kwargs)
+    self.Add(name, BuildConfig(), *args, **kwargs)
+    self[name]['_template'] = None
 
   def AddGroup(self, name, *args, **kwargs):
     """Create a new group of build configurations.
