@@ -417,6 +417,7 @@
       'dbus/fake_power_manager_client_unittest.cc',
       'dbus/gsm_sms_client_unittest.cc',
       'dbus/modem_messaging_client_unittest.cc',
+      'dbus/power_manager_client_unittest.cc',
       'dbus/power_policy_controller_unittest.cc',
       'dbus/services/cros_dbus_service_unittest.cc',
       'dbus/services/proxy_resolution_service_provider_unittest.cc',

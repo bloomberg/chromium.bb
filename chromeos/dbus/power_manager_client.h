@@ -198,6 +198,9 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   ~PowerManagerClient() override;
 
  protected:
+  // Needs to call DBusClient::Init().
+  friend class PowerManagerClientTest;
+
   // Create() should be used instead.
   PowerManagerClient();
 
