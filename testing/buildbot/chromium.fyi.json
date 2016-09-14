@@ -10946,12 +10946,18 @@
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_shell_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blimp_unittests"
       },
       {
@@ -10959,18 +10965,27 @@
           "--site-per-process",
           "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -10978,48 +10993,72 @@
           "--site-per-process",
           "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "interactive_ui_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_integration_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "unit_tests"
       }
     ]
@@ -11030,6 +11069,9 @@
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_shell_unittests"
       },
       {
@@ -11037,18 +11079,27 @@
           "--site-per-process",
           "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -11056,54 +11107,81 @@
           "--site-per-process",
           "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_browsertests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "installer_util_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "interactive_ui_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_integration_tests"
       },
       {
         "args": [
           "--site-per-process"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "unit_tests"
       }
     ]
