@@ -1223,7 +1223,10 @@ if (is_win) {
       "/Gw",
     ]
   }
-  common_optimize_on_ldflags = [ "/OPT:ICF" ]  # Redundant COMDAT folding.
+  common_optimize_on_ldflags = []
+  if (!is_component_build) {
+    common_optimize_on_ldflags += [ "/OPT:ICF" ]  # Redundant COMDAT folding.
+  }
   if (is_official_build) {
     common_optimize_on_ldflags += [
       "/OPT:REF",  # Remove unreferenced data.

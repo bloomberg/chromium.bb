@@ -180,8 +180,10 @@ component("core") {
   if (is_win && is_debug && is_component_build && current_cpu == "x64") {
     # Incremental linking doesn't work on this target in debug mode for
     # 64-bit builds - the .ilk file gets too large and the incremental
-    # link silently fails. Therefore 32-bit builds should be used for
-    # fastest incremental build performance.
+    # link silently fails. Therefore 32-bit builds or 64-bit release builds
+    # (component either way) should be used for fastest incremental build
+    # performance. VC++ bug filed for 64-bit debug incremental link failures:
+    # https://connect.microsoft.com/VisualStudio/feedback/details/2846790
     configs -= [ "//build/config/win:default_incremental_linking" ]
     configs += [ "//build/config/win:no_incremental_linking" ]
   }
