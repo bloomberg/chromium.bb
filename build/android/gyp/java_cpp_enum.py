@@ -340,78 +340,27 @@ ${ENUM_ENTRIES}
   return template.substitute(values)
 
 
-def AssertFilesList(output_paths, assert_files_list):
-  actual = set(output_paths)
-  expected = set(assert_files_list)
-  if not actual == expected:
-    need_to_add = list(actual - expected)
-    need_to_remove = list(expected - actual)
-    raise Exception('Output files list does not match expectations. Please '
-                    'add %s and remove %s.' % (need_to_add, need_to_remove))
-
 def DoMain(argv):
   usage = 'usage: %prog [options] [output_dir] input_file(s)...'
   parser = optparse.OptionParser(usage=usage)
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option('--assert_file', action="append", default=[],
-                    dest="assert_files_list", help='Assert that the given '
-                    'file is an output. There can be multiple occurrences of '
-                    'this flag.')
   parser.add_option('--srcjar',
                     help='When specified, a .srcjar at the given path is '
                     'created instead of individual .java files.')
-  parser.add_option('--print_output_only', help='Only print output paths.',
-                    action='store_true')
-  parser.add_option('--verbose', help='Print more information.',
-                    action='store_true')
 
   options, args = parser.parse_args(argv)
 
-  if options.srcjar:
-    if not args:
-      parser.error('Need to specify at least one input file')
-    input_paths = args
-  else:
-    if len(args) < 2:
-      parser.error(
-          'Need to specify output directory and at least one input file')
-    output_dir = args[0]
-    input_paths = args[1:]
+  if not args:
+    parser.error('Need to specify at least one input file')
+  input_paths = args
+
+  with zipfile.ZipFile(options.srcjar, 'w', zipfile.ZIP_STORED) as srcjar:
+    for output_path, data in DoGenerate(input_paths):
+      build_utils.AddToZipHermetic(srcjar, output_path, data=data)
 
   if options.depfile:
-    python_deps = build_utils.GetPythonDependencies()
-    build_utils.WriteDepfile(options.depfile, input_paths + python_deps)
-
-  if options.srcjar:
-    if options.print_output_only:
-      parser.error('--print_output_only does not work with --srcjar')
-    if options.assert_files_list:
-      parser.error('--assert_file does not work with --srcjar')
-
-    with zipfile.ZipFile(options.srcjar, 'w', zipfile.ZIP_STORED) as srcjar:
-      for output_path, data in DoGenerate(input_paths):
-        build_utils.AddToZipHermetic(srcjar, output_path, data=data)
-  else:
-    # TODO(agrieve): Delete this non-srcjar branch once GYP is gone.
-    output_paths = []
-    for output_path, data in DoGenerate(input_paths):
-      full_path = os.path.join(output_dir, output_path)
-      output_paths.append(full_path)
-      if not options.print_output_only:
-        build_utils.MakeDirectory(os.path.dirname(full_path))
-        with open(full_path, 'w') as out_file:
-          out_file.write(data)
-
-    if options.assert_files_list:
-      AssertFilesList(output_paths, options.assert_files_list)
-
-    if options.verbose:
-      print 'Output paths:'
-      print '\n'.join(output_paths)
-
-    # Used by GYP.
-    return ' '.join(output_paths)
+    build_utils.WriteDepfile(options.depfile, options.srcjar)
 
 
 if __name__ == '__main__':

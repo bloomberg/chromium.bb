@@ -692,8 +692,8 @@ if (enable_java_templates) {
       ]
 
       outputs = [
-        _config_path,
         _result_path,
+        _config_path,
       ]
 
       args = [

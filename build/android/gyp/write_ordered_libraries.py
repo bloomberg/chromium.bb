@@ -133,9 +133,7 @@ def main():
     build_utils.Touch(options.stamp)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        libraries + build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, options.output, libraries)
 
 
 if __name__ == '__main__':

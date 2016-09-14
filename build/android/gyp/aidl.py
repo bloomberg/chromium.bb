@@ -53,9 +53,7 @@ def main(argv):
         srcjar.writestr(arcname, data)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, options.srcjar)
 
 
 if __name__ == '__main__':

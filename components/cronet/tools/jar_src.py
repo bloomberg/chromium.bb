@@ -71,12 +71,12 @@ def main():
     JarSources(src_dir, options.jar_path)
 
   if options.depfile:
-    input_paths = []
+    deps = []
     for src_dir in src_dirs:
       for root, _, filenames in os.walk(src_dir):
-        input_paths.extend(os.path.join(root, f) for f in filenames)
-    build_utils.WriteDepfile(options.depfile,
-                             input_paths + build_utils.GetPythonDependencies())
+        deps.extend(os.path.join(root, f) for f in filenames)
+    build_utils.WriteDepfile(options.depfile, options.jar_path, deps)
+
   # Clean up temporary output directory.
   if unzipped_jar_path:
     build_utils.DeleteDirectory(unzipped_jar_path)

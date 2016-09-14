@@ -90,11 +90,10 @@ def main(args):
 
   if options.filelistjson:
     build_utils.WriteJson({ 'files': output_paths }, options.filelistjson)
+    output_paths.append(options.filelistjson)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        libraries + build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, output_paths[-1], libraries)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

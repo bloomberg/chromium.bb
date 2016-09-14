@@ -104,9 +104,8 @@ def main(args):
     DoRenaming(options, deps)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        deps + build_utils.GetPythonDependencies())
+    assert options.stamp
+    build_utils.WriteDepfile(options.depfile, options.stamp, deps)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

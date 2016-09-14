@@ -1379,9 +1379,7 @@ See SampleForTests.java for more details.
   GenerateJNIHeader(input_file, output_file, options)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, output_file)
 
 
 if __name__ == '__main__':

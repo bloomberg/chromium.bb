@@ -105,10 +105,8 @@ def main():
     print
   else:
     if args.depfile:
-      build_utils.WriteDepfile(
-          args.depfile,
-          build_utils.GetPythonDependencies() + args.auxclasspath
-              + args.jar_paths)
+      deps = args.auxclasspath + args.jar_paths
+      build_utils.WriteDepfile(args.depfile, args.output_file, deps)
     if args.stamp:
       build_utils.Touch(args.stamp)
 

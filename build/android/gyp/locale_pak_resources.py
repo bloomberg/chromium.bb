@@ -96,8 +96,8 @@ def main():
   sources = build_utils.ParseGnList(options.locale_paks)
 
   if options.depfile:
-    deps = sources + build_utils.GetPythonDependencies()
-    build_utils.WriteDepfile(options.depfile, deps)
+    assert options.resources_zip
+    build_utils.WriteDepfile(options.depfile, options.resources_zip, sources)
 
   mappings, lang_to_locale_map = ComputeMappings(sources)
   if options.print_languages:

@@ -123,9 +123,7 @@ def main(args):
   os.chmod(args.script_output_path, 0750)
 
   if args.depfile:
-    build_utils.WriteDepfile(
-        args.depfile,
-        build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(args.depfile, args.script_output_path)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

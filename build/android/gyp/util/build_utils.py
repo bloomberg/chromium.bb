@@ -423,12 +423,17 @@ def AddDepfileOption(parser):
        help='Path to depfile. Must be specified as the action\'s first output.')
 
 
-def WriteDepfile(path, dependencies):
-  MakeDirectory(os.path.dirname(path))
-  with open(path, 'w') as depfile:
-    depfile.write(path)
+def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
+  assert depfile_path != first_gn_output  # http://crbug.com/646165
+  inputs = inputs or []
+  if add_pydeps:
+    inputs = GetPythonDependencies() + inputs
+  MakeDirectory(os.path.dirname(depfile_path))
+  # Ninja does not support multiple outputs in depfiles.
+  with open(depfile_path, 'w') as depfile:
+    depfile.write(first_gn_output.replace(' ', '\\ '))
     depfile.write(': ')
-    depfile.write(' '.join(dependencies))
+    depfile.write(' '.join(i.replace(' ', '\\ ') for i in inputs))
     depfile.write('\n')
 
 
@@ -524,7 +529,8 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
       all_depfile_deps = list(python_deps)
       if depfile_deps:
         all_depfile_deps.extend(depfile_deps)
-      WriteDepfile(options.depfile, all_depfile_deps)
+      WriteDepfile(options.depfile, output_paths[0], all_depfile_deps,
+                   add_pydeps=False)
     if stamp_file:
       Touch(stamp_file)
 

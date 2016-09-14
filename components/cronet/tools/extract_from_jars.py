@@ -40,8 +40,8 @@ def main():
   ExtractJars(options)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile,
-                             build_utils.GetPythonDependencies())
+    assert options.stamp
+    build_utils.WriteDepfile(options.depfile, options.stamp)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

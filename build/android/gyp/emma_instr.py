@@ -100,8 +100,7 @@ def _RunCopyCommand(_command, options, _, option_parser):
     build_utils.Touch(options.stamp)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile,
-                             build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, options.output_path)
 
 
 def _GetSourceDirsFromSourceFiles(source_files):

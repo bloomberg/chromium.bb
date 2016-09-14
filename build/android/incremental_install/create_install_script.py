@@ -151,9 +151,7 @@ def main(args):
   os.chmod(options.script_output_path, 0750)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, options.script_output_path)
 
 
 if __name__ == '__main__':

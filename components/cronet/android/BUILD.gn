@@ -763,8 +763,10 @@ action("extract_cronet_jars") {
     "$root_out_dir/lib.java/net/android/net_java.jar",
     "$root_out_dir/lib.java/url/url_java.jar",
   ]
+
+  _stamp_file = "$target_gen_dir/$target_name.stamp"
   outputs = [
-    depfile,
+    _stamp_file,
   ]
 
   _rebased_sources = rebase_path(sources, root_build_dir)
@@ -775,6 +777,8 @@ action("extract_cronet_jars") {
     "--jars=${_rebased_sources}",
     "--depfile",
     rebase_path(depfile, root_build_dir),
+    "--stamp",
+    rebase_path(_stamp_file, root_build_dir),
   ]
 
   deps = [
@@ -872,8 +876,9 @@ action("generate_licenses") {
 action("generate_javadoc") {
   script = "//components/cronet/tools/generate_javadoc.py"
   depfile = "$target_gen_dir/$target_name.d"
+  _stamp_file = "$target_gen_dir/$target_name.stamp"
   outputs = [
-    depfile,
+    _stamp_file,
   ]
   args = [
     "--output-dir",
@@ -886,6 +891,8 @@ action("generate_javadoc") {
     rebase_path("//components/cronet/README.md", root_build_dir),
     "--depfile",
     rebase_path(depfile, root_build_dir),
+    "--stamp",
+    rebase_path(_stamp_file, root_build_dir),
     "--lib-java-dir",
     rebase_path("$root_build_dir/lib.java/components/cronet/android",
                 root_build_dir),

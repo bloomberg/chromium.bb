@@ -110,9 +110,7 @@ def main(argv):
   os.chmod(options.output, 0750)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, options.output)
 
 
 if __name__ == '__main__':

@@ -128,8 +128,9 @@ def main():
                   options.outputs_zip)
 
   if options.depfile:
-    deps = processor.GetLoadedTemplates() + build_utils.GetPythonDependencies()
-    build_utils.WriteDepfile(options.depfile, deps)
+    output = options.output or options.outputs_zip
+    deps = processor.GetLoadedTemplates()
+    build_utils.WriteDepfile(options.depfile, output, deps)
 
 
 if __name__ == '__main__':
