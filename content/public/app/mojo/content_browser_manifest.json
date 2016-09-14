@@ -9,9 +9,11 @@
       "all_interfaces": [ "*" ],
       "web": [
         "blink::mojom::BackgroundSyncService",
+        "blink::mojom::BroadcastChannelProvider",
         "blink::mojom::BudgetService",
         "blink::mojom::MimeRegistry",
         "blink::mojom::NotificationService",
+        "blink::mojom::OffscreenCanvasFrameReceiver",
         "blink::mojom::OffscreenCanvasSurface",
         "blink::mojom::PermissionService",
         "blink::mojom::WebSocket",
