@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -14,6 +15,46 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+// Key of the UMA Previews.InfoBarAction.LoFi histogram.
+const char kUMAPreviewsInfoBarActionLoFi[] = "Previews.InfoBarAction.LoFi";
+
+// Key of the UMA Previews.InfoBarAction.Offline histogram.
+const char kUMAPreviewsInfoBarActionOffline[] =
+    "Previews.InfoBarAction.Offline";
+
+// Key of the UMA Previews.InfoBarAction.LitePage histogram.
+const char kUMAPreviewsInfoBarActionLitePage[] =
+    "Previews.InfoBarAction.LitePage";
+
+// Actions on the previews infobar. This enum must remain synchronized with the
+// enum of the same name in metrics/histograms/histograms.xml.
+enum PreviewsInfoBarAction {
+  INFOBAR_SHOWN = 0,
+  INFOBAR_LOAD_ORIGINAL_CLICKED = 1,
+  INFOBAR_DISMISSED_BY_USER = 2,
+  INFOBAR_DISMISSED_BY_NAVIGATION = 3,
+  INFOBAR_INDEX_BOUNDARY
+};
+
+void RecordPreviewsInfoBarAction(
+    PreviewsInfoBarDelegate::PreviewsInfoBarType infobar_type,
+    PreviewsInfoBarAction action) {
+  if (infobar_type == PreviewsInfoBarDelegate::LOFI) {
+    UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionLoFi, action,
+                              INFOBAR_INDEX_BOUNDARY);
+  } else if (infobar_type == PreviewsInfoBarDelegate::LITE_PAGE) {
+    UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionLitePage, action,
+                              INFOBAR_INDEX_BOUNDARY);
+  } else if (infobar_type == PreviewsInfoBarDelegate::OFFLINE) {
+    UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionOffline, action,
+                              INFOBAR_INDEX_BOUNDARY);
+  }
+}
+
+}  // namespace
 
 PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {}
 
@@ -40,6 +81,7 @@ void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
     data_reduction_proxy_settings->IncrementLoFiUIShown();
   }
 
+  RecordPreviewsInfoBarAction(infobar_type, INFOBAR_SHOWN);
   infobar_tab_helper->set_displayed_preview_infobar(true);
 }
 
@@ -64,8 +106,12 @@ int PreviewsInfoBarDelegate::GetIconId() const {
 
 bool PreviewsInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  // TODO(megjablon): Record UMA data.
+  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_DISMISSED_BY_NAVIGATION);
   return InfoBarDelegate::ShouldExpire(details);
+}
+
+void PreviewsInfoBarDelegate::InfoBarDismissed() {
+  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_DISMISSED_BY_USER);
 }
 
 base::string16 PreviewsInfoBarDelegate::GetMessageText() const {
@@ -83,7 +129,8 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 }
 
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  // TODO(megjablon): Record UMA data.
+  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_LOAD_ORIGINAL_CLICKED);
+
   if (infobar_type_ == LITE_PAGE || infobar_type_ == LOFI) {
     auto* web_contents =
         InfoBarService::WebContentsFromInfoBar(infobar());

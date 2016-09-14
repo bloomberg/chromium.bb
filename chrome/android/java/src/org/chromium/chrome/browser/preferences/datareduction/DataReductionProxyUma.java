@@ -27,17 +27,14 @@ public class DataReductionProxyUma {
     public static final int ACTION_INFOBAR_DISMISSED = 12;
     public static final int ACTION_INDEX_BOUNDARY = 13;
 
-    // Represent the possible Lo-Fi user actions. This must remain in sync with
-    // DataReductionProxy.UIAction.LoFi in tools/metrics/histograms/histograms.xml.
-    public static final int ACTION_LOAD_IMAGES_SNACKBAR_SHOWN = 0;
-    public static final int ACTION_LOAD_IMAGES_SNACKBAR_CLICKED = 1;
-    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN = 2;
-    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED = 3;
-    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE = 4;
-    public static final int ACTION_LOAD_IMAGES_CONTEXT_MENU_SHOWN = 5;
-    public static final int ACTION_LOAD_IMAGES_CONTEXT_MENU_CLICKED = 6;
-    public static final int LOFI_ACTION_INDEX_BOUNDARY = 7;
-
+    // Represent the possible Lo-Fi context menu user actions. This must remain in sync with
+    // Previews.ContextMenuAction.LoFi in tools/metrics/histograms/histograms.xml.
+    public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_SHOWN = 0;
+    public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED = 1;
+    public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE = 2;
+    public static final int ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_SHOWN = 3;
+    public static final int ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_CLICKED = 4;
+    public static final int ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY = 5;
     /**
      * Record the DataReductionProxy.UIAction histogram.
      * @param action User action at the promo, first run experience, or settings screen
@@ -50,13 +47,13 @@ public class DataReductionProxyUma {
     }
 
     /**
-     * Record the DataReductionProxy.UIAction.LoFi histogram.
-     * @param action LoFi user action on the snackbar or context menu
+     * Record the Previews.ContextMenuAction.LoFi histogram.
+     * @param action LoFi user action on the context menu
      */
-    public static void dataReductionProxyLoFiUIAction(int action) {
-        assert action >= 0 && action < LOFI_ACTION_INDEX_BOUNDARY;
+    public static void previewsLoFiContextMenuAction(int action) {
+        assert action >= 0 && action < ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY;
         RecordHistogram.recordEnumeratedHistogram(
-                "DataReductionProxy.LoFi.UIAction", action,
-                DataReductionProxyUma.LOFI_ACTION_INDEX_BOUNDARY);
+                "Previews.ContextMenuAction.LoFi", action,
+                ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY);
     }
 }

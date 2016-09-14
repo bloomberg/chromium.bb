@@ -8062,6 +8062,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.LoFi.UIAction"
     enum="DataReductionProxyLoFiUIAction">
+  <obsolete>
+    Deprecated as of 9/2016, replaced by Previews.ContextMenuAction.LoFi.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -46357,6 +46360,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Previews.ContextMenuAction.LoFi"
+    enum="PreviewsContextMenuActionLoFi">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the Lo-Fi context menu options. These
+    samples include:
+
+    Displays and clicks on the &quot;Load image&quot; and &quot;Load
+    images&quot; context menu options. Count of pages where the user has clicked
+    &quot;Load image&quot; at least once.
+  </summary>
+</histogram>
+
 <histogram name="Previews.DataInflation" units="KB">
   <owner>ryansturm@chromium.org</owner>
   <summary>
@@ -46390,6 +46407,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The estimated percent of data savings for a page load using a previews
     optimization. Recorded when a page load using a previews optimization
     reduces the data used.
+  </summary>
+</histogram>
+
+<histogram name="Previews.InfoBarAction.LitePage" enum="PreviewsInfoBarAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the previews LitePage &quot;Saved
+    data&quot; infobar. These samples include:
+
+    Displays of the infobar and clicks on the &quot;Load original&quot; link.
+    Whether the infobar was dismissed by navigation or the user clicking on
+    &quot;X&quot; close button.
+  </summary>
+</histogram>
+
+<histogram name="Previews.InfoBarAction.LoFi" enum="PreviewsInfoBarAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the previews Lo-Fi &quot;Saved data&quot;
+    infobar. These samples include:
+
+    Displays of the infobar and clicks on the &quot;Load original&quot; link.
+    Whether the infobar was dismissed by navigation or the user clicking on
+    &quot;X&quot; close button.
+  </summary>
+</histogram>
+
+<histogram name="Previews.InfoBarAction.Offline" enum="PreviewsInfoBarAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the previews Offline &quot;Faster page
+    loaded&quot; infobar. These samples include:
+
+    Displays of the infobar and clicks on the &quot;Load original&quot; link.
+    Whether the infobar was dismissed by navigation or the user clicking on
+    &quot;X&quot; close button.
   </summary>
 </histogram>
 
@@ -91592,6 +91648,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="tapdown"/>
   <int value="2" label="tapunconfirmed"/>
   <int value="3" label="tapdown + tapunconfirmed"/>
+</enum>
+
+<enum name="PreviewsContextMenuActionLoFi" type="int">
+  <int value="0" label="'Load image' context menu item shown"/>
+  <int value="1" label="'Load image' context menu item clicked"/>
+  <int value="2"
+      label="Pages where the user has clicked 'Load image' at least once"/>
+  <int value="3" label="'Load images' context menu item shown"/>
+  <int value="4" label="'Load images' context menu item clicked"/>
+</enum>
+
+<enum name="PreviewsInfoBarAction" type="int">
+  <int value="0" label="Infobar shown"/>
+  <int value="1" label="Infobar 'Load original' clicked"/>
+  <int value="2" label="Infobar dismissed by user"/>
+  <int value="3" label="Infobar dismissed by navigation"/>
 </enum>
 
 <enum name="PrinterServiceEventType" type="int">

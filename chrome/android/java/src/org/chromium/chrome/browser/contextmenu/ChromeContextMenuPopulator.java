@@ -241,16 +241,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             // properties can also prevent an image underlying a link from being clickable.
             // When Lo-Fi is active, provide the user with a "Load images" option on links
             // to get the images in these cases.
-            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                    DataReductionProxyUma.ACTION_LOAD_IMAGES_CONTEXT_MENU_SHOWN);
+            DataReductionProxyUma.previewsLoFiContextMenuAction(
+                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_SHOWN);
         }
 
         if (params.isVideo()) {
             menu.findItem(R.id.contextmenu_save_video).setVisible(
                     params.canSaveMedia() && UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
         } else if (params.isImage() && params.imageWasFetchedLoFi()) {
-            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                    DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
+            DataReductionProxyUma.previewsLoFiContextMenuAction(
+                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
             // All image context menu items other than "Load image," "Open original image in
             // new tab," and "Copy image URL" should be disabled on Lo-Fi images.
             menu.findItem(R.id.contextmenu_save_image).setVisible(false);
@@ -325,16 +325,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_load_images) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_IMAGES);
-            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                    DataReductionProxyUma.ACTION_LOAD_IMAGES_CONTEXT_MENU_CLICKED);
+            DataReductionProxyUma.previewsLoFiContextMenuAction(
+                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_CLICKED);
             mDelegate.onReloadLoFiImages();
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_ORIGINAL_IMAGE);
-            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                    DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
+            DataReductionProxyUma.previewsLoFiContextMenuAction(
+                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
             if (!DataReductionProxySettings.getInstance().wasLoFiLoadImageRequestedBefore()) {
-                DataReductionProxyUma.dataReductionProxyLoFiUIAction(
-                        DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
+                DataReductionProxyUma.previewsLoFiContextMenuAction(
+                        DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
                 DataReductionProxySettings.getInstance().setLoFiLoadImageRequested();
             }
             mDelegate.onLoadOriginalImage();
