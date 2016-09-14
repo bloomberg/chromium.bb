@@ -647,6 +647,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
          '--board=%s' % board,
          '--type=%s' % dut_type,
          '--no_graphics',
+         '--verbose',
          '--target_image=%s' % image_path,
          '--test_results_root=%s' % results_dir_in_chroot
         ]

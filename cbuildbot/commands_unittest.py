@@ -125,6 +125,7 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
                           '/tmp/taco', archive_dir='/fake/root',
                           whitelist_chrome_crashes=False,
                           test_type=test_type)
+    self.assertCommandContains(['--no_graphics', '--verbose'])
 
   def testFull(self):
     """Test running FULL config."""
