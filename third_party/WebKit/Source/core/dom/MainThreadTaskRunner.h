@@ -74,6 +74,7 @@ private:
     Vector<std::pair<std::unique_ptr<ExecutionContextTask>, bool /* instrumenting */>> m_pendingTasks;
     bool m_suspended;
     WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
+    WeakPtr<MainThreadTaskRunner> m_weakPtr;
 };
 
 inline std::unique_ptr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)

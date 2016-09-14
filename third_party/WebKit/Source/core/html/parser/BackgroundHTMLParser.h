@@ -65,7 +65,11 @@ public:
         bool shouldCoalesceChunks;
     };
 
-    static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, std::unique_ptr<Configuration>, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, std::unique_ptr<WebTaskRunner>);
+    // The returned BackgroundHTMLParser should only be used on the parser
+    // thread: it must first be initialized by calling init(), and free by
+    // calling stop().
+    static WeakPtr<BackgroundHTMLParser> create(std::unique_ptr<Configuration>, std::unique_ptr<WebTaskRunner>);
+    void init(const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
 
     struct Checkpoint {
         USING_FAST_MALLOC(Checkpoint);
@@ -90,7 +94,7 @@ public:
     void forcePlaintextForTextDocument();
 
 private:
-    BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>>, std::unique_ptr<Configuration>, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, std::unique_ptr<WebTaskRunner>);
+    BackgroundHTMLParser(std::unique_ptr<Configuration>, std::unique_ptr<WebTaskRunner>);
     ~BackgroundHTMLParser();
 
     void appendDecodedBytes(const String&);

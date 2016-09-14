@@ -761,9 +761,6 @@ void HTMLDocumentParser::startBackgroundParser()
     if (document()->loader())
         document()->ensureStyleResolver();
 
-    RefPtr<WeakReference<BackgroundHTMLParser>> reference = WeakReference<BackgroundHTMLParser>::createUnbound();
-    m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
-
     std::unique_ptr<BackgroundHTMLParser::Configuration> config = wrapUnique(new BackgroundHTMLParser::Configuration);
     config->options = m_options;
     config->parser = m_weakFactory.createWeakPtr();
@@ -781,15 +778,15 @@ void HTMLDocumentParser::startBackgroundParser()
     }
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
-    postTaskToLookaheadParser(
-        Synchronous,
-        &BackgroundHTMLParser::start,
-        reference.release(),
-        passed(std::move(config)),
-        document()->url(),
-        passed(CachedDocumentParameters::create(document())),
-        MediaValuesCached::MediaValuesCachedData(*document()),
-        passed(m_loadingTaskRunner->clone()));
+
+    // The background parser is created on the main thread, but may otherwise
+    // only be used from the parser thread.
+    m_backgroundParser = BackgroundHTMLParser::create(
+        std::move(config),
+        m_loadingTaskRunner->clone());
+    // TODO(csharrison): This is a hack to initialize MediaValuesCached on the
+    // correct thread. We should get rid of it.
+    postTaskToLookaheadParser(Synchronous, &BackgroundHTMLParser::init, m_backgroundParser, document()->url(), passed(CachedDocumentParameters::create(document())), MediaValuesCached::MediaValuesCachedData(*document()));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()

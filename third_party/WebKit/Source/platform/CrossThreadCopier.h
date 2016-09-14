@@ -40,6 +40,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
+#include "wtf/WeakPtr.h"
 #include <memory>
 
 class SkRefCnt;

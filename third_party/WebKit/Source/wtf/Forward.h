@@ -31,7 +31,6 @@ template <typename T> class RefPtr;
 template <size_t size> class SizeSpecificPartitionAllocator;
 template <typename T> class StringBuffer;
 template <typename T, size_t inlineCapacity, typename Allocator> class Vector;
-template <typename T> class WeakPtr;
 
 class ArrayBuffer;
 class ArrayBufferView;
@@ -57,7 +56,6 @@ class Uint32Array;
 using WTF::PassRefPtr;
 using WTF::RefPtr;
 using WTF::Vector;
-using WTF::WeakPtr;
 
 using WTF::ArrayBuffer;
 using WTF::ArrayBufferView;
