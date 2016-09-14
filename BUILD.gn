@@ -938,6 +938,7 @@ group("chromium_builder_perf") {
     deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
+      "//chrome/test:telemetry_perf_tests",
       "//gpu:gpu_perftests",
       "//media:media_perftests",
       "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
