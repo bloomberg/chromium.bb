@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
@@ -371,6 +372,9 @@ bool RequestCoordinator::StartProcessing(
 void RequestCoordinator::StartProcessingIfConnected() {
   // Makes sure not already busy processing.
   if (is_busy_) return;
+
+  // Make sure we are not on svelte device to start immediately.
+  if (base::SysInfo::IsLowEndDevice()) return;
 
   // Check for network connectivity.
   net::NetworkChangeNotifier::ConnectionType connection = GetConnectionType();

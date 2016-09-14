@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/sys_info.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -959,12 +960,20 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
   EXPECT_EQ(kRequestId1, std::get<0>(last_remove_results().at(0)));
 }
 
-TEST_F(RequestCoordinatorTest, SavePageStartsProcessingWhenConnected) {
+TEST_F(RequestCoordinatorTest,
+       SavePageStartsProcessingWhenConnectedAndNotLowEndDevice) {
   SetNetworkConditionsForTest(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
   PumpLoop();
-  EXPECT_TRUE(is_busy());
+
+  // Now whether processing triggered immediately depends on whether test
+  // is run on svelte device or not.
+  if (base::SysInfo::IsLowEndDevice()) {
+    EXPECT_FALSE(is_busy());
+  } else {
+    EXPECT_TRUE(is_busy());
+  }
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
@@ -975,7 +984,8 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
   EXPECT_FALSE(is_busy());
 }
 
-TEST_F(RequestCoordinatorTest, ResumeStartsProcessingWhenConnected) {
+TEST_F(RequestCoordinatorTest,
+       ResumeStartsProcessingWhenConnectedAndNotLowEndDevice) {
   SetNetworkConditionsForTest(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
 
@@ -1011,7 +1021,14 @@ TEST_F(RequestCoordinatorTest, ResumeStartsProcessingWhenConnected) {
   coordinator()->ResumeRequests(request_ids);
   EXPECT_FALSE(is_busy());
   PumpLoop();
-  EXPECT_TRUE(is_busy());
+
+  // Now whether processing triggered immediately depends on whether test
+  // is run on svelte device or not.
+  if (base::SysInfo::IsLowEndDevice()) {
+    EXPECT_FALSE(is_busy());
+  } else {
+    EXPECT_TRUE(is_busy());
+  }
 }
 
 }  // namespace offline_pages
