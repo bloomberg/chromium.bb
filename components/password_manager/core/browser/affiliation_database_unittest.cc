@@ -93,7 +93,7 @@ class AffiliationDatabaseTest : public testing::Test {
   AffiliationDatabase& db() { return *db_; }
 
   base::FilePath db_path() {
-    return temp_directory_.path().Append(
+    return temp_directory_.GetPath().Append(
         FILE_PATH_LITERAL("Test Affiliation Database"));
   }
 

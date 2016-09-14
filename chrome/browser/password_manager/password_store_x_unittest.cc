@@ -353,7 +353,7 @@ void PasswordStoreXTestDelegate::SetupTempDir() {
 }
 
 base::FilePath PasswordStoreXTestDelegate::test_login_db_file_path() const {
-  return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
 }
 
 class PasswordStoreXNoBackendTestDelegate : public PasswordStoreXTestDelegate {
@@ -391,7 +391,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   base::FilePath test_login_db_file_path() const {
-    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+    return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

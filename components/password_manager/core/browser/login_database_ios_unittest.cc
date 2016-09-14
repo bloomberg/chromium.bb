@@ -27,7 +27,7 @@ class LoginDatabaseIOSTest : public PlatformTest {
     ClearKeychain();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath login_db_path =
-        temp_dir_.path().AppendASCII("temp_login.db");
+        temp_dir_.GetPath().AppendASCII("temp_login.db");
     login_db_.reset(new password_manager::LoginDatabase(login_db_path));
     login_db_->Init();
   }

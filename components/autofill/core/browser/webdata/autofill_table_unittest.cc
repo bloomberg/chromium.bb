@@ -128,7 +128,7 @@ class AutofillTableTest : public testing::Test {
   void SetUp() override {
     OSCryptMocker::SetUpWithSingleton();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
+    file_ = temp_dir_.GetPath().AppendASCII("TestWebDatabase");
 
     table_.reset(new AutofillTable);
     db_.reset(new WebDatabase);

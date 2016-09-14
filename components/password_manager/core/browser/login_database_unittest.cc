@@ -138,7 +138,7 @@ class LoginDatabaseTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_ = temp_dir_.path().AppendASCII("TestMetadataStoreMacDatabase");
+    file_ = temp_dir_.GetPath().AppendASCII("TestMetadataStoreMacDatabase");
     OSCryptMocker::SetUpWithSingleton();
 
     db_.reset(new LoginDatabase(file_));
@@ -1501,7 +1501,7 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
 TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath database_path = temp_dir.path().AppendASCII("test.db");
+  base::FilePath database_path = temp_dir.GetPath().AppendASCII("test.db");
 
   // To cause an init failure, set the compatible version to be higher than the
   // current version (in reality, this could happen if, e.g., someone opened a
@@ -1529,7 +1529,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
                                   .AppendASCII("test")
                                   .AppendASCII("data")
                                   .AppendASCII("password_manager");
-    database_path_ = temp_dir_.path().AppendASCII("test.db");
+    database_path_ = temp_dir_.GetPath().AppendASCII("test.db");
     OSCryptMocker::SetUpWithSingleton();
   }
 

@@ -91,7 +91,7 @@ class PasswordStoreTest : public testing::Test {
   void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
 
   base::FilePath test_login_db_file_path() const {
-    return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+    return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
   base::MessageLoopForUI message_loop_;

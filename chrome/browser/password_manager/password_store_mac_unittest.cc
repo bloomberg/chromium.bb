@@ -236,7 +236,7 @@ void PasswordStoreMacTestDelegate::ClosePasswordStore() {
 }
 
 base::FilePath PasswordStoreMacTestDelegate::test_login_db_file_path() const {
-  return db_dir_.path().Append(FILE_PATH_LITERAL("login.db"));
+  return db_dir_.GetPath().Append(FILE_PATH_LITERAL("login.db"));
 }
 
 }  // namespace
@@ -1367,7 +1367,7 @@ class PasswordStoreMacTest : public testing::Test {
   }
 
   base::FilePath test_login_db_file_path() const {
-    return db_dir_.path().Append(FILE_PATH_LITERAL("login.db"));
+    return db_dir_.GetPath().Append(FILE_PATH_LITERAL("login.db"));
   }
 
   password_manager::LoginDatabase* login_db() const {

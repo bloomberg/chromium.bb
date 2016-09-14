@@ -101,7 +101,7 @@ class WebDataServiceTest : public testing::Test {
     db_thread_.Start();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
+    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
 
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_thread_.task_runner());

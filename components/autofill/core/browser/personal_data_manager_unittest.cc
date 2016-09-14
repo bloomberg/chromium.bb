@@ -114,7 +114,7 @@ class PersonalDataManagerTest : public testing::Test {
     OSCryptMocker::SetUpWithSingleton();
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
+    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
     web_database_ =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());

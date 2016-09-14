@@ -76,7 +76,8 @@ TEST_F(PasswordImporterTest, CSVImport) {
       "Url,Username,Password\n"
       "http://accounts.google.com/a/LoginAuth,test@gmail.com,test1\n";
 
-  base::FilePath input_path = temp_directory_.path().AppendASCII(kTestFileName);
+  base::FilePath input_path =
+      temp_directory_.GetPath().AppendASCII(kTestFileName);
   ASSERT_TRUE(
       base::WriteFile(input_path, kTestCSVInput, strlen(kTestCSVInput)));
   ASSERT_NO_FATAL_FAILURE(StartImportAndWaitForCompletion(input_path));

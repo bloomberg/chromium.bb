@@ -40,7 +40,7 @@ class StatisticsTableTest : public testing::Test {
   }
 
   void ReloadDatabase() {
-    base::FilePath file = temp_dir_.path().AppendASCII("TestDatabase");
+    base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
     db_.reset(new StatisticsTable);
     connection_.reset(new sql::Connection);
     connection_->set_exclusive_locking();

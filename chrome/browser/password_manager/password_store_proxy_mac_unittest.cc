@@ -203,7 +203,7 @@ void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
 }
 
 base::FilePath PasswordStoreProxyMacTest::test_login_db_file_path() const {
-  return db_dir_.path().Append(FILE_PATH_LITERAL("login.db"));
+  return db_dir_.GetPath().Append(FILE_PATH_LITERAL("login.db"));
 }
 
 MigrationStatus PasswordStoreProxyMacTest::GetTargetStatus(

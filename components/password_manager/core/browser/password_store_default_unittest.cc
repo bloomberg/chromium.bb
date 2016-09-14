@@ -147,7 +147,7 @@ PasswordStoreDefaultTestDelegate::CreateInitializedStore(
 
 base::FilePath PasswordStoreDefaultTestDelegate::test_login_db_file_path()
     const {
-  return temp_dir_.path().Append(FILE_PATH_LITERAL("login_test"));
+  return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
 }
 
 }  // anonymous namespace
