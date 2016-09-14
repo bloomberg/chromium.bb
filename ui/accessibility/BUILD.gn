@@ -6,7 +6,6 @@ import("//build/config/linux/pkg_config.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/json_schema_api.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -153,14 +152,4 @@ json_schema_api("ax_gen") {
   ]
   root_namespace = "ui"
   schemas = true
-}
-
-fuzzer_test("ax_tree_fuzzer") {
-  sources = [
-    "ax_tree_fuzzer.cc",
-  ]
-
-  deps = [
-    ":accessibility",
-  ]
 }
