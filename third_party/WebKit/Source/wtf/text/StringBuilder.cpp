@@ -42,6 +42,7 @@ String StringBuilder::toString()
             m_string = String(characters8(), m_length);
         else
             m_string = String(characters16(), m_length);
+        clearBuffer();
     }
     return m_string;
 }
@@ -55,6 +56,7 @@ AtomicString StringBuilder::toAtomicString()
             m_string = AtomicString(characters8(), m_length);
         else
             m_string = AtomicString(characters16(), m_length);
+        clearBuffer();
     }
     return AtomicString(m_string);
 }
@@ -79,14 +81,19 @@ void StringBuilder::swap(StringBuilder& builder)
     std::swap(m_is8Bit, builder.m_is8Bit);
 }
 
-void StringBuilder::clear()
+void StringBuilder::clearBuffer()
 {
-    m_string = String();
     if (m_is8Bit)
         delete m_buffer8;
     else
         delete m_buffer16;
     m_buffer = nullptr;
+}
+
+void StringBuilder::clear()
+{
+    clearBuffer();
+    m_string = String();
     m_length = 0;
     m_is8Bit = true;
 }
@@ -111,14 +118,14 @@ void StringBuilder::reserveCapacity(unsigned newCapacity)
 void StringBuilder::resize(unsigned newSize)
 {
     DCHECK_LE(newSize, m_length);
+    m_string = m_string.left(newSize);
     m_length = newSize;
-    m_string = String();
-    if (!hasBuffer())
-        return;
-    if (m_is8Bit)
-        m_buffer8->resize(newSize);
-    else
-        m_buffer16->resize(newSize);
+    if (hasBuffer()) {
+        if (m_is8Bit)
+            m_buffer8->resize(newSize);
+        else
+            m_buffer16->resize(newSize);
+    }
 }
 
 void StringBuilder::createBuffer8(unsigned addedSize)
@@ -137,9 +144,8 @@ void StringBuilder::createBuffer8(unsigned addedSize)
     // This allows doing append(string); append('\0') without extra mallocs.
     m_buffer8->reserveInitialCapacity(m_length + std::max(addedSize, initialBufferSize()));
     m_length = 0;
-    // Must keep a ref to the string since append will clear it.
-    String string(m_string);
-    append(string);
+    append(m_string);
+    m_string = String();
 }
 
 void StringBuilder::createBuffer16(unsigned addedSize)
@@ -160,9 +166,8 @@ void StringBuilder::createBuffer16(unsigned addedSize)
         append(buffer8.data(), length);
         return;
     }
-    // Must keep a ref to the string since append will clear it.
-    String string(m_string);
-    append(string);
+    append(m_string);
+    m_string = String();
 }
 
 void StringBuilder::append(const UChar* characters, unsigned length)
@@ -179,7 +184,6 @@ void StringBuilder::append(const UChar* characters, unsigned length)
     }
 
     ensureBuffer16(length);
-    m_string = String();
     m_buffer16->append(characters, length);
     m_length += length;
 }
@@ -192,14 +196,12 @@ void StringBuilder::append(const LChar* characters, unsigned length)
 
     if (m_is8Bit) {
         ensureBuffer8(length);
-        m_string = String();
         m_buffer8->append(characters, length);
         m_length += length;
         return;
     }
 
     ensureBuffer16(length);
-    m_string = String();
     m_buffer16->append(characters, length);
     m_length += length;
 }

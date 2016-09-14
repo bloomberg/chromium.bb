@@ -116,7 +116,6 @@ public:
             return;
         }
         ensureBuffer16(1);
-        m_string = String();
         m_buffer16->append(c);
         ++m_length;
     }
@@ -128,7 +127,6 @@ public:
             return;
         }
         ensureBuffer8(1);
-        m_string = String();
         m_buffer8->append(c);
         ++m_length;
     }
@@ -226,7 +224,7 @@ private:
 
     void createBuffer8(unsigned addedSize);
     void createBuffer16(unsigned addedSize);
-
+    void clearBuffer();
     bool hasBuffer() const { return m_buffer; }
 
     String m_string;
