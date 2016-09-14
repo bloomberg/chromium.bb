@@ -12,7 +12,7 @@
 
 using bookmarks::BookmarkModel;
 
-namespace browser_sync {
+namespace sync_bookmarks {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
     const base::Closure& dump_stack,
@@ -106,4 +106,4 @@ void BookmarkDataTypeController::HistoryServiceBeingDeleted(
   CleanUpState();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_bookmarks

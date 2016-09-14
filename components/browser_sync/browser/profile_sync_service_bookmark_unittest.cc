@@ -60,6 +60,8 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using sync_bookmarks::BookmarkChangeProcessor;
+using sync_bookmarks::BookmarkModelAssociator;
 using syncer::BaseNode;
 using testing::_;
 using testing::Return;

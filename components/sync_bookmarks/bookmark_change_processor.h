@@ -35,7 +35,7 @@ namespace sync_driver {
 class SyncClient;
 }
 
-namespace browser_sync {
+namespace sync_bookmarks {
 
 // This class is responsible for taking changes from the BookmarkModel
 // and applying them to the sync API 'syncable' model, and vice versa.
@@ -258,6 +258,6 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   DISALLOW_COPY_AND_ASSIGN(BookmarkChangeProcessor);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_bookmarks
 
 #endif  // COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_

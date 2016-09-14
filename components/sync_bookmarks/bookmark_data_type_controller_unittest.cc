@@ -29,7 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
-using browser_sync::BookmarkDataTypeController;
+using sync_bookmarks::BookmarkDataTypeController;
 using sync_driver::ChangeProcessorMock;
 using sync_driver::DataTypeController;
 using sync_driver::ModelAssociatorMock;

@@ -40,7 +40,7 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-namespace browser_sync {
+namespace sync_bookmarks {
 
 // The sync protocol identifies top-level entities by means of well-known tags,
 // which should not be confused with titles.  Each tag corresponds to a
@@ -1015,4 +1015,4 @@ syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
   return syncer::SyncError();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_bookmarks

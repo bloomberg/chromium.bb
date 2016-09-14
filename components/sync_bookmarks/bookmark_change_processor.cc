@@ -38,7 +38,7 @@ using bookmarks::BookmarkNode;
 using syncer::ChangeRecord;
 using syncer::ChangeRecordList;
 
-namespace browser_sync {
+namespace sync_bookmarks {
 
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
@@ -977,4 +977,4 @@ bool BookmarkChangeProcessor::CanSyncNode(const BookmarkNode* node) {
   return bookmark_model_->client()->CanSyncNode(node);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_bookmarks

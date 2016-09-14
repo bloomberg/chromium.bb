@@ -44,7 +44,7 @@ namespace sync_driver {
 class SyncClient;
 }
 
-namespace browser_sync {
+namespace sync_bookmarks {
 
 // Contains all model association related logic:
 // * Algorithm to associate bookmark model and sync model.
@@ -310,6 +310,6 @@ class BookmarkModelAssociator
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelAssociator);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_bookmarks
 
 #endif  // COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_ASSOCIATOR_H_

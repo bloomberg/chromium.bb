@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
+#include <stack>
 #include <vector>
 
 #include "base/bind.h"
@@ -267,7 +269,7 @@ void SetFaviconImpl(Profile* profile,
     } else {
       ProfileSyncService* pss =
           ProfileSyncServiceFactory::GetForProfile(profile);
-      browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+      sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
           node, pss->GetSyncClient(), icon_url, image.As1xPNGBytes());
     }
 
@@ -903,12 +905,12 @@ bool ContainsDuplicateBookmarks(int profile) {
       continue;
     std::vector<const BookmarkNode*> nodes;
     GetBookmarkModel(profile)->GetNodesByURL(node->url(), &nodes);
-    EXPECT_TRUE(nodes.size() >= 1);
+    EXPECT_GE(nodes.size(), 1U);
     for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
          it != nodes.end(); ++it) {
       if (node->id() != (*it)->id() &&
           node->parent() == (*it)->parent() &&
-          node->GetTitle() == (*it)->GetTitle()){
+          node->GetTitle() == (*it)->GetTitle()) {
         return true;
       }
     }
