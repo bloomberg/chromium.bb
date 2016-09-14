@@ -56,7 +56,8 @@ LinkHandlerModelImpl::LinkHandlerModelImpl(
 LinkHandlerModelImpl::~LinkHandlerModelImpl() {}
 
 bool LinkHandlerModelImpl::Init(const GURL& url) {
-  mojom::IntentHelperInstance* intent_helper_instance = GetIntentHelper();
+  mojom::IntentHelperInstance* intent_helper_instance =
+      ArcIntentHelperBridge::GetIntentHelperInstance(kMinInstanceVersion);
   if (!intent_helper_instance)
     return false;
 
@@ -77,7 +78,8 @@ void LinkHandlerModelImpl::AddObserver(Observer* observer) {
 
 void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
                                                uint32_t handler_id) {
-  mojom::IntentHelperInstance* intent_helper_instance = GetIntentHelper();
+  mojom::IntentHelperInstance* intent_helper_instance =
+      ArcIntentHelperBridge::GetIntentHelperInstance(kMinInstanceVersion);
   if (!intent_helper_instance)
     return;
   if (handler_id >= handlers_.size())
@@ -85,25 +87,6 @@ void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
   const GURL rewritten(RewriteUrlFromQueryIfAvailable(url));
   intent_helper_instance->HandleUrl(rewritten.spec(),
                                     handlers_[handler_id]->package_name);
-}
-
-mojom::IntentHelperInstance* LinkHandlerModelImpl::GetIntentHelper() {
-  ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    DLOG(WARNING) << "ARC bridge is not ready.";
-    return nullptr;
-  }
-  mojom::IntentHelperInstance* intent_helper_instance =
-      bridge_service->intent_helper()->instance();
-  if (!intent_helper_instance) {
-    DLOG(WARNING) << "ARC intent helper instance is not ready.";
-    return nullptr;
-  }
-  if (bridge_service->intent_helper()->version() < kMinInstanceVersion) {
-    DLOG(WARNING) << "ARC intent helper instance is too old.";
-    return nullptr;
-  }
-  return intent_helper_instance;
 }
 
 void LinkHandlerModelImpl::OnUrlHandlerList(

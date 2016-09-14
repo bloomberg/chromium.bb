@@ -58,21 +58,7 @@ arc::mojom::IntentHelperInstance* GetArcIntentHelper(Profile* profile,
   // File manager in secondary profile cannot access ARC.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return nullptr;
-
-  arc::ArcBridgeService* arc_service = arc::ArcBridgeService::Get();
-  if (!arc_service)
-    return nullptr;
-
-  arc::mojom::IntentHelperInstance* intent_helper_instance =
-      arc_service->intent_helper()->instance();
-  if (!intent_helper_instance)
-    return nullptr;
-
-  if (arc_service->intent_helper()->version() < min_version) {
-    DLOG(WARNING) << "ARC intent helper instance is too old.";
-    return nullptr;
-  }
-  return intent_helper_instance;
+  return arc::ArcIntentHelperBridge::GetIntentHelperInstance(min_version);
 }
 
 // Returns the icon loader that wraps the Mojo interface for ARC Intent Helper.

@@ -37,6 +37,15 @@ class ArcIntentHelperBridge
       public mojom::IntentHelperHost,
       public ash::LinkHandlerModelFactory {
  public:
+  enum class GetResult {
+    // Failed. The intent_helper instance is not yet ready. This is a temporary
+    // error.
+    FAILED_ARC_NOT_READY,
+    // Failed. Either ARC is not supported at all or intent_helper instance
+    // version is too old.
+    FAILED_ARC_NOT_SUPPORTED,
+  };
+
   ArcIntentHelperBridge(
       ArcBridgeService* bridge_service,
       const scoped_refptr<ActivityIconLoader>& icon_loader,
@@ -66,6 +75,16 @@ class ArcIntentHelperBridge
   // a new array.
   static mojo::Array<mojom::UrlHandlerInfoPtr> FilterOutIntentHelper(
       mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
+
+  // Gets the mojo instance if it's available. On failure, returns nullptr and
+  // updates |out_error_code| if it's not nullptr.
+  static mojom::IntentHelperInstance* GetIntentHelperInstanceWithErrorCode(
+      int min_instance_version,
+      GetResult* out_error_code);
+
+  // Does the same as above without asking for the error code.
+  static mojom::IntentHelperInstance* GetIntentHelperInstance(
+      int min_instance_version);
 
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;

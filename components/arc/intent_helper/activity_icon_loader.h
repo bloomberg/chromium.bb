@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 
