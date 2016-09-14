@@ -13,11 +13,11 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
@@ -38,9 +38,9 @@ namespace {
 // WebCrypto operations can be slow. For instance generating an RSA key can
 // take seconds.
 //
-// The strategy used here is to run a sequenced worker pool for all WebCrypto
-// operations (except structured cloning). This same pool is also used by
-// requests started from Blink Web Workers.
+// The strategy used here is to run a worker pool for all WebCrypto operations
+// (except structured cloning). This same pool is also used by requests started
+// from Blink Web Workers.
 //
 // A few notes to keep in mind:
 //
@@ -71,21 +71,24 @@ namespace {
 //   be deleted while running in the crypto worker pool.
 class CryptoThreadPool {
  public:
-  CryptoThreadPool()
-      : worker_pool_(
-            new base::SequencedWorkerPool(1,
-                                          "WebCrypto",
-                                          base::TaskPriority::USER_BLOCKING)),
-        task_runner_(worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-            worker_pool_->GetSequenceToken(),
-            base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {}
+  CryptoThreadPool() : worker_thread_("WebCrypto") {
+    base::Thread::Options options;
+    options.joinable = false;
+    worker_thread_.StartWithOptions(options);
+  }
 
   static bool PostTask(const tracked_objects::Location& from_here,
                        const base::Closure& task);
 
  private:
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // TODO(gab): the pool is currently using a single non-joinable thread to
+  // mimic the old behavior of using a CONTINUE_ON_SHUTDOWN SequencedTaskRunner
+  // on a single-threaded SequencedWorkerPool, but we'd like to consider using
+  // the TaskScheduler here and allowing multiple threads (SEQUENCED or even
+  // PARALLEL ExecutionMode: http://crbug.com/623700).
+  base::Thread worker_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(CryptoThreadPool);
 };
 
 base::LazyInstance<CryptoThreadPool>::Leaky crypto_thread_pool =
@@ -93,7 +96,8 @@ base::LazyInstance<CryptoThreadPool>::Leaky crypto_thread_pool =
 
 bool CryptoThreadPool::PostTask(const tracked_objects::Location& from_here,
                                 const base::Closure& task) {
-  return crypto_thread_pool.Get().task_runner_->PostTask(from_here, task);
+  return crypto_thread_pool.Get().worker_thread_.task_runner()->PostTask(
+      from_here, task);
 }
 
 void CompleteWithThreadPoolError(blink::WebCryptoResult* result) {
