@@ -34,7 +34,7 @@ namespace {
 class TestRLZTrackerDelegate : public RLZTrackerDelegate {
  public:
   TestRLZTrackerDelegate()
-      : worker_pool_owner_(1, "TestRLZTracker"),
+      : worker_pool_owner_(2, "TestRLZTracker"),
         request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {}
 
