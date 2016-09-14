@@ -5,11 +5,13 @@
 #include "chrome/browser/extensions/menu_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <tuple>
 #include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,11 +91,11 @@ MenuItem::List MenuItemsFromValue(const std::string& extension_id,
   return items;
 }
 
-std::unique_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
+std::unique_ptr<base::ListValue> MenuItemsToValue(const MenuItem::List& items) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < items.size(); ++i)
     list->Append(items[i]->ToValue());
-  return std::unique_ptr<base::Value>(list.release());
+  return list;
 }
 
 bool GetStringList(const base::DictionaryValue& dict,
@@ -638,10 +640,11 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
 
-  base::DictionaryValue* properties = new base::DictionaryValue();
-  SetIdKeyValue(properties, "menuItemId", item->id());
+  std::unique_ptr<base::DictionaryValue> properties(
+      new base::DictionaryValue());
+  SetIdKeyValue(properties.get(), "menuItemId", item->id());
   if (item->parent_id())
-    SetIdKeyValue(properties, "parentMenuItemId", *item->parent_id());
+    SetIdKeyValue(properties.get(), "parentMenuItemId", *item->parent_id());
 
   switch (params.media_type) {
     case blink::WebContextMenuData::MediaTypeImage:
@@ -656,10 +659,10 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
     default:  {}  // Do nothing.
   }
 
-  AddURLProperty(properties, "linkUrl", params.unfiltered_link_url);
-  AddURLProperty(properties, "srcUrl", params.src_url);
-  AddURLProperty(properties, "pageUrl", params.page_url);
-  AddURLProperty(properties, "frameUrl", params.frame_url);
+  AddURLProperty(properties.get(), "linkUrl", params.unfiltered_link_url);
+  AddURLProperty(properties.get(), "srcUrl", params.src_url);
+  AddURLProperty(properties.get(), "pageUrl", params.page_url);
+  AddURLProperty(properties.get(), "frameUrl", params.frame_url);
 
   if (params.selection_text.length() > 0)
     properties->SetString("selectionText", params.selection_text);
@@ -674,7 +677,8 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
                            webview_guest->view_instance_id());
   }
 
-  args->Append(properties);
+  base::DictionaryValue* raw_properties = properties.get();
+  args->Append(std::move(properties));
 
   // Add the tab info to the argument list.
   // No tab info in a platform app.
@@ -683,18 +687,18 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
     if (web_contents) {
       int frame_id = ExtensionApiFrameIdMap::GetFrameId(render_frame_host);
       if (frame_id != ExtensionApiFrameIdMap::kInvalidFrameId)
-        properties->SetInteger("frameId", frame_id);
+        raw_properties->SetInteger("frameId", frame_id);
 
       args->Append(ExtensionTabUtil::CreateTabObject(web_contents)->ToValue());
     } else {
-      args->Append(new base::DictionaryValue());
+      args->Append(base::MakeUnique<base::DictionaryValue>());
     }
   }
 
   if (item->type() == MenuItem::CHECKBOX ||
       item->type() == MenuItem::RADIO) {
     bool was_checked = item->checked();
-    properties->SetBoolean("wasChecked", was_checked);
+    raw_properties->SetBoolean("wasChecked", was_checked);
 
     // RADIO items always get set to true when you click on them, but CHECKBOX
     // items get their state toggled.
@@ -702,7 +706,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
         (item->type() == MenuItem::RADIO) ? true : !was_checked;
 
     item->SetChecked(checked);
-    properties->SetBoolean("checked", item->checked());
+    raw_properties->SetBoolean("checked", item->checked());
 
     if (extension)
       WriteToStorage(extension, item->id().extension_key);

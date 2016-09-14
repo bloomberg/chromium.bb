@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -88,7 +89,7 @@ class ScreenlockPrivateEventRouter
 
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     base::Value* arg);
+                     std::unique_ptr<base::Value> arg);
 
   content::BrowserContext* browser_context_;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateEventRouter);

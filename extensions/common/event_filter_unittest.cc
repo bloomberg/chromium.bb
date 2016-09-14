@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
@@ -214,7 +215,8 @@ TEST_F(EventFilterUnittest, RemoveEventMatcherReturnsEventName) {
 
 TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
   std::unique_ptr<base::ListValue> filter_list(new base::ListValue());
-  filter_list->Append(new base::ListValue());  // Should be a dict.
+  filter_list->Append(
+      base::MakeUnique<base::ListValue>());  // Should be a dict.
   std::unique_ptr<EventMatcher> matcher(
       MatcherFromURLFilterList(std::move(filter_list)));
   int id1 = event_filter_.AddEventMatcher("event1", std::move(matcher));

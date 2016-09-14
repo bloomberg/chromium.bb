@@ -275,8 +275,7 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
   std::unique_ptr<base::ListValue> status_array(new base::ListValue());
   for (URLToStatusMap::iterator it = file_sync_statuses_.begin();
        it != file_sync_statuses_.end(); ++it) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    status_array->Append(dict);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     storage::FileSystemURL url = it->first;
     SyncStatusCode file_error = it->second.first;
@@ -290,6 +289,8 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     if (file_error == sync_file_system::SYNC_STATUS_OK)
       continue;
     dict->SetString("error", ErrorToString(file_error));
+
+    status_array->Append(std::move(dict));
   }
   SetResult(std::move(status_array));
 

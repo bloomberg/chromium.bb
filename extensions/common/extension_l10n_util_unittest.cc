@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -429,7 +430,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   base::ListValue* handlers = new base::ListValue();
   manifest.Set(keys::kFileBrowserHandlers, handlers);
   base::DictionaryValue* handler = new base::DictionaryValue();
-  handlers->Append(handler);
+  handlers->Append(base::WrapUnique(handler));
   handler->SetString(keys::kPageActionDefaultTitle,
                      "__MSG_file_handler_title__");
 

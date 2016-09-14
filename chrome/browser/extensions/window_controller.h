@@ -90,10 +90,6 @@ class WindowController {
       const extensions::Extension* extension,
       int tab_index) const = 0;
 
-  // DEPRECATED: Use std::unique_ptr<api::tabs::Tab> CreateTabObject(...)
-  virtual base::DictionaryValue* CreateTabValue(
-      const extensions::Extension* extension, int tab_index) const = 0;
-
   // Returns false if the window is in a state where closing the window is not
   // permitted and sets |reason| if not NULL.
   virtual bool CanClose(Reason* reason) const = 0;

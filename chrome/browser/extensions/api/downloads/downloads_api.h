@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -388,7 +389,7 @@ class ExtensionDownloadsEventRouter
       const std::string& event_name,
       bool include_incognito,
       const extensions::Event::WillDispatchCallback& will_dispatch_callback,
-      base::Value* json_arg);
+      std::unique_ptr<base::Value> json_arg);
 
   // extensions::ExtensionRegistryObserver.
   void OnExtensionUnloaded(

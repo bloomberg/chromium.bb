@@ -414,7 +414,7 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
     filtered_events->SetWithoutPathExpansion(event_name, filter_list);
   }
 
-  filter_list->Append(filter->DeepCopy());
+  filter_list->Append(filter->CreateDeepCopy());
 }
 
 void EventRouter::RemoveFilterFromEvent(const std::string& event_name,

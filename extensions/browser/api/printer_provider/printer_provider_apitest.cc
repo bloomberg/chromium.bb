@@ -48,7 +48,7 @@ void AppendPrintersAndRunCallbackIfDone(base::ListValue* printers_out,
     EXPECT_TRUE(printers.GetDictionary(i, &printer))
         << "Found invalid printer value at index " << i << ": " << printers;
     if (printer)
-      printers_out->Append(printer->DeepCopy());
+      printers_out->Append(printer->CreateDeepCopy());
   }
   if (done && !callback.is_null())
     callback.Run();

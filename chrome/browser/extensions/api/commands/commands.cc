@@ -12,9 +12,10 @@
 
 namespace {
 
-base::DictionaryValue* CreateCommandValue(
-    const extensions::Command& command, bool active) {
-  base::DictionaryValue* result = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> CreateCommandValue(
+    const extensions::Command& command,
+    bool active) {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetString("name", command.command_name());
   result->SetString("description", command.description());
   result->SetString("shortcut",

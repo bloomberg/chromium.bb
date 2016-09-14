@@ -677,8 +677,10 @@ const char kTargetTabIdField[] = "tabId";
 const char kTargetExtensionIdField[] = "extensionId";
 const char kTargetTypeWorker[] = "worker";
 
-base::Value* SerializeTarget(scoped_refptr<DevToolsAgentHost> host) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> SerializeTarget(
+    scoped_refptr<DevToolsAgentHost> host) {
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
   dictionary->SetString(kTargetIdField, host->GetId());
   dictionary->SetString(kTargetTitleField, host->GetTitle());
   dictionary->SetBoolean(kTargetAttachedField, host->IsAttached());

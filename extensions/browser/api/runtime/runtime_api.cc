@@ -518,8 +518,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
     return;
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  base::DictionaryValue* info = new base::DictionaryValue();
-  event_args->Append(info);
+  std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue());
   if (old_version.IsValid()) {
     info->SetString(kInstallReason, kInstallReasonUpdate);
     info->SetString(kInstallPreviousVersion, old_version.GetString());
@@ -528,6 +527,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   } else {
     info->SetString(kInstallReason, kInstallReasonInstall);
   }
+  event_args->Append(std::move(info));
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
   std::unique_ptr<Event> event(new Event(events::RUNTIME_ON_INSTALLED,
@@ -546,11 +546,12 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
            i != dependents->end();
            i++) {
         std::unique_ptr<base::ListValue> sm_event_args(new base::ListValue());
-        base::DictionaryValue* sm_info = new base::DictionaryValue();
-        sm_event_args->Append(sm_info);
+        std::unique_ptr<base::DictionaryValue> sm_info(
+            new base::DictionaryValue());
         sm_info->SetString(kInstallReason, kInstallReasonSharedModuleUpdate);
         sm_info->SetString(kInstallPreviousVersion, old_version.GetString());
         sm_info->SetString(kInstallId, extension_id);
+        sm_event_args->Append(std::move(sm_info));
         std::unique_ptr<Event> sm_event(new Event(
             events::RUNTIME_ON_INSTALLED, runtime::OnInstalled::kEventName,
             std::move(sm_event_args)));
@@ -571,7 +572,7 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
     return;
 
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(manifest->DeepCopy());
+  args->Append(manifest->CreateDeepCopy());
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
   std::unique_ptr<Event> event(new Event(events::RUNTIME_ON_UPDATE_AVAILABLE,

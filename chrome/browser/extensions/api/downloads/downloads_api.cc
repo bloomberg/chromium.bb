@@ -1609,14 +1609,14 @@ void ExtensionDownloadsEventRouter::OnDeterminingFilename(
   }
   data->BeginFilenameDetermination(no_change, change);
   bool any_determiners = false;
-  base::DictionaryValue* json = DownloadItemToJSON(
-      item, profile_).release();
+  std::unique_ptr<base::DictionaryValue> json =
+      DownloadItemToJSON(item, profile_);
   json->SetString(kFilenameKey, suggested_path.LossyDisplayName());
   DispatchEvent(events::DOWNLOADS_ON_DETERMINING_FILENAME,
                 downloads::OnDeterminingFilename::kEventName, false,
                 base::Bind(&OnDeterminingFilenameWillDispatchCallback,
                            &any_determiners, data),
-                json);
+                std::move(json));
   if (!any_determiners) {
     data->ClearPendingDeterminers();
     if (!data->creator_suggested_filename().empty() ||
@@ -1777,7 +1777,8 @@ void ExtensionDownloadsEventRouter::OnDownloadCreated(
   std::unique_ptr<base::DictionaryValue> json_item(
       DownloadItemToJSON(download_item, profile_));
   DispatchEvent(events::DOWNLOADS_ON_CREATED, downloads::OnCreated::kEventName,
-                true, Event::WillDispatchCallback(), json_item->DeepCopy());
+                true, Event::WillDispatchCallback(),
+                json_item->CreateDeepCopy());
   if (!ExtensionDownloadsEventRouterData::Get(download_item) &&
       (router->HasEventListener(downloads::OnChanged::kEventName) ||
        router->HasEventListener(
@@ -1848,7 +1849,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
   if (changed) {
     DispatchEvent(events::DOWNLOADS_ON_CHANGED,
                   downloads::OnChanged::kEventName, true,
-                  Event::WillDispatchCallback(), delta.release());
+                  Event::WillDispatchCallback(), std::move(delta));
     data->OnChangedFired();
   }
   data->set_json(std::move(new_json));
@@ -1859,10 +1860,10 @@ void ExtensionDownloadsEventRouter::OnDownloadRemoved(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (download_item->IsTemporary())
     return;
-  DispatchEvent(
-      events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName, true,
-      Event::WillDispatchCallback(),
-      new base::FundamentalValue(static_cast<int>(download_item->GetId())));
+  DispatchEvent(events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName,
+                true, Event::WillDispatchCallback(),
+                base::MakeUnique<base::FundamentalValue>(
+                    static_cast<int>(download_item->GetId())));
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(
@@ -1870,12 +1871,12 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
     const std::string& event_name,
     bool include_incognito,
     const Event::WillDispatchCallback& will_dispatch_callback,
-    base::Value* arg) {
+    std::unique_ptr<base::Value> arg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!EventRouter::Get(profile_))
     return;
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(arg);
+  args->Append(std::move(arg));
   std::string json_args;
   base::JSONWriter::Write(*args, &json_args);
   std::unique_ptr<Event> event(

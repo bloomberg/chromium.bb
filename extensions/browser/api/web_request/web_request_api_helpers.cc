@@ -1275,10 +1275,11 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
 }
 
 // Converts the |name|, |value| pair of a http header to a HttpHeaders
-// dictionary. Ownership is passed to the caller.
-base::DictionaryValue* CreateHeaderDictionary(
-    const std::string& name, const std::string& value) {
-  base::DictionaryValue* header = new base::DictionaryValue();
+// dictionary.
+std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
+    const std::string& name,
+    const std::string& value) {
+  std::unique_ptr<base::DictionaryValue> header(new base::DictionaryValue());
   header->SetString(keys::kHeaderNameKey, name);
   if (base::IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);

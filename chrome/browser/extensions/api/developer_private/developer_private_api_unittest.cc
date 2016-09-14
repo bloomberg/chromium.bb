@@ -115,7 +115,7 @@ bool DeveloperPrivateApiUnitTest::RunFunction(
     const scoped_refptr<UIThreadExtensionFunction>& function,
     const base::ListValue& args) {
   return extension_function_test_utils::RunFunction(
-      function.get(), base::WrapUnique(args.DeepCopy()), browser(),
+      function.get(), args.CreateDeepCopy(), browser(),
       extension_function_test_utils::NONE);
 }
 
@@ -178,27 +178,37 @@ void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateUpdateExtensionConfigurationFunction());
 
-  base::ListValue args;
-  base::DictionaryValue* parameters = new base::DictionaryValue();
-  parameters->SetString("extensionId", extension_id);
-  parameters->SetBoolean(key, true);
-  args.Append(parameters);
-
   EXPECT_FALSE(has_pref.Run()) << key;
 
-  EXPECT_FALSE(RunFunction(function, args)) << key;
-  EXPECT_EQ(std::string("This action requires a user gesture."),
-            function->GetError());
+  {
+    auto parameters = base::MakeUnique<base::DictionaryValue>();
+    parameters->SetString("extensionId", extension_id);
+    parameters->SetBoolean(key, true);
 
-  ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
-  function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
-  EXPECT_TRUE(RunFunction(function, args)) << key;
-  EXPECT_TRUE(has_pref.Run()) << key;
+    base::ListValue args;
+    args.Append(std::move(parameters));
+    EXPECT_FALSE(RunFunction(function, args)) << key;
+    EXPECT_EQ("This action requires a user gesture.", function->GetError());
 
-  parameters->SetBoolean(key, false);
-  function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
-  EXPECT_TRUE(RunFunction(function, args)) << key;
-  EXPECT_FALSE(has_pref.Run()) << key;
+    ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+    function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
+    EXPECT_TRUE(RunFunction(function, args)) << key;
+    EXPECT_TRUE(has_pref.Run()) << key;
+  }
+
+  {
+    auto parameters = base::MakeUnique<base::DictionaryValue>();
+    parameters->SetString("extensionId", extension_id);
+    parameters->SetBoolean(key, false);
+
+    base::ListValue args;
+    args.Append(std::move(parameters));
+
+    ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+    function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
+    EXPECT_TRUE(RunFunction(function, args)) << key;
+    EXPECT_FALSE(has_pref.Run()) << key;
+  }
 }
 
 testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(

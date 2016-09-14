@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -381,8 +382,6 @@ void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
   DCHECK(rv);
 
   base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  args.Append(dict);
   const PrefService::Preference* pref =
       pref_service->FindPreference(browser_pref.c_str());
   CHECK(pref);
@@ -396,12 +395,14 @@ void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
     return;
   }
 
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set(keys::kValue, transformed_value);
   if (incognito) {
     ExtensionPrefs* ep = ExtensionPrefs::Get(profile_);
     dict->SetBoolean(keys::kIncognitoSpecific,
                      ep->HasIncognitoPrefValue(browser_pref));
   }
+  args.Append(std::move(dict));
 
   // TODO(kalman): Have a histogram value for each pref type.
   // This isn't so important for the current use case of these

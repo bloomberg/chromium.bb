@@ -52,17 +52,6 @@ BrowserExtensionWindowController::CreateWindowValueWithTabs(
   return result;
 }
 
-base::DictionaryValue* BrowserExtensionWindowController::CreateTabValue(
-    const extensions::Extension* extension, int tab_index) const {
-  TabStripModel* tab_strip = browser_->tab_strip_model();
-  base::DictionaryValue* result =
-      extensions::ExtensionTabUtil::CreateTabObject(
-          tab_strip->GetWebContentsAt(tab_index), tab_strip, tab_index)
-          ->ToValue()
-          .release();
-  return result;
-}
-
 std::unique_ptr<extensions::api::tabs::Tab>
 BrowserExtensionWindowController::CreateTabObject(
     const extensions::Extension* extension,

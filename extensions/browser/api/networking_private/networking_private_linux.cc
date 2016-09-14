@@ -83,7 +83,7 @@ std::unique_ptr<base::ListValue> CopyNetworkMapToList(
   std::unique_ptr<base::ListValue> network_list(new base::ListValue);
 
   for (const auto& network : network_map) {
-    network_list->Append(network.second->DeepCopy());
+    network_list->Append(network.second->CreateDeepCopy());
   }
 
   return network_list;

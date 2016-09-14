@@ -192,14 +192,12 @@ static bool WillDispatchTabCreatedEvent(
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
-  base::DictionaryValue* tab_value =
-      ExtensionTabUtil::CreateTabObject(contents, extension)
-          ->ToValue()
-          .release();
   event->event_args->Clear();
-  event->event_args->Append(tab_value);
+  std::unique_ptr<base::DictionaryValue> tab_value =
+      ExtensionTabUtil::CreateTabObject(contents, extension)->ToValue();
   tab_value->SetBoolean(tabs_constants::kSelectedKey, active);
   tab_value->SetBoolean(tabs_constants::kActiveKey, active);
+  event->event_args->Append(std::move(tab_value));
   return true;
 }
 
@@ -300,15 +298,15 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
                                        WebContents* new_contents,
                                        int index,
                                        int reason) {
-  std::unique_ptr<base::ListValue> args(new base::ListValue);
+  auto args = base::MakeUnique<base::ListValue>();
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
   args->AppendInteger(tab_id);
 
-  base::DictionaryValue* object_args = new base::DictionaryValue();
+  auto object_args = base::MakeUnique<base::DictionaryValue>();
   object_args->Set(tabs_constants::kWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(new_contents)));
-  args->Append(object_args);
+  args->Append(object_args->CreateDeepCopy());
 
   // The onActivated event replaced onActiveChanged and onSelectionChanged. The
   // deprecated events take two arguments: tabId, {windowId}.
@@ -319,18 +317,19 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
       ? EventRouter::USER_GESTURE_ENABLED
       : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile, events::TABS_ON_SELECTION_CHANGED,
-                tabs::OnSelectionChanged::kEventName,
-                std::unique_ptr<base::ListValue>(args->DeepCopy()), gesture);
+                tabs::OnSelectionChanged::kEventName, args->CreateDeepCopy(),
+                gesture);
   DispatchEvent(profile, events::TABS_ON_ACTIVE_CHANGED,
-                tabs::OnActiveChanged::kEventName,
-                std::unique_ptr<base::ListValue>(args->DeepCopy()), gesture);
+                tabs::OnActiveChanged::kEventName, std::move(args), gesture);
 
   // The onActivated event takes one argument: {windowId, tabId}.
-  args->Remove(0, NULL);
+  auto on_activated_args = base::MakeUnique<base::ListValue>();
   object_args->Set(tabs_constants::kTabIdKey,
                    new FundamentalValue(tab_id));
+  on_activated_args->Append(std::move(object_args));
   DispatchEvent(profile, events::TABS_ON_ACTIVATED,
-                tabs::OnActivated::kEventName, std::move(args), gesture);
+                tabs::OnActivated::kEventName, std::move(on_activated_args),
+                gesture);
 }
 
 void TabsEventRouter::TabSelectionChanged(

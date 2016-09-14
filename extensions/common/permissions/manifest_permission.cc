@@ -29,15 +29,13 @@ bool ManifestPermission::Equal(const ManifestPermission* rhs) const {
 
 void ManifestPermission::GetSize(base::PickleSizer* s) const {
   base::ListValue singleton;
-  base::Value* value = ToValue().release();
-  singleton.Append(value);
+  singleton.Append(ToValue());
   IPC::GetParamSize(s, singleton);
 }
 
 void ManifestPermission::Write(base::Pickle* m) const {
   base::ListValue singleton;
-  base::Value* value = ToValue().release();
-  singleton.Append(value);
+  singleton.Append(ToValue());
   IPC::WriteParam(m, singleton);
 }
 

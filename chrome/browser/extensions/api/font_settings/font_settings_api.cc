@@ -180,11 +180,11 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
   font_name = MaybeGetLocalizedFontName(font_name);
 
   base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  args.Append(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kFontIdKey, font_name);
   dict->SetString(kGenericFamilyKey, generic_family);
   dict->SetString(kScriptKey, script);
+  args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
       profile_, events::FONT_SETTINGS_ON_FONT_CHANGED,
@@ -202,9 +202,9 @@ void FontSettingsEventRouter::OnFontPrefChanged(
   CHECK(pref);
 
   base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  args.Append(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set(key, pref->GetValue()->DeepCopy());
+  args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
       profile_, histogram_value, event_name, &args,

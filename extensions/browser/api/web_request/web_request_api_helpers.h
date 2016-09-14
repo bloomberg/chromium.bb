@@ -342,9 +342,10 @@ void NotifyWebRequestAPIUsed(void* browser_context_id,
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
 
 // Converts the |name|, |value| pair of a http header to a HttpHeaders
-// dictionary. Ownership is passed to the caller.
-base::DictionaryValue* CreateHeaderDictionary(
-    const std::string& name, const std::string& value);
+// dictionary.
+std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
+    const std::string& name,
+    const std::string& value);
 
 // Returns whether |type| is a ResourceType that is handled by the web request
 // API.
