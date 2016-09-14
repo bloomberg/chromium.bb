@@ -152,6 +152,21 @@ void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
   }
 }
 
+scoped_refptr<net::ParsedCertificate> ParseCertificate(const CertInput& input) {
+  net::CertErrors errors;
+  scoped_refptr<net::ParsedCertificate> cert =
+      net::ParsedCertificate::Create(input.der_cert, {}, &errors);
+  if (!cert) {
+    PrintCertError("ERROR: ParsedCertificate failed:", input);
+    std::cout << errors.ToDebugString() << "\n";
+  }
+
+  // TODO(crbug.com/634443): Print errors if there are any on success too (i.e.
+  //                         warnings).
+
+  return cert;
+}
+
 }  // namespace
 
 // Verifies |target_der_cert| using CertPathBuilder.
@@ -170,12 +185,8 @@ bool VerifyUsingPathBuilder(
   net::TrustStoreInMemory trust_store_in_memory;
   trust_store.AddTrustStoreSynchronousOnly(&trust_store_in_memory);
   for (const auto& der_cert : root_der_certs) {
-    scoped_refptr<net::ParsedCertificate> cert =
-        net::ParsedCertificate::CreateFromCertificateCopy(der_cert.der_cert,
-                                                          {});
-    if (!cert)
-      PrintCertError("ERROR: ParsedCertificate failed:", der_cert);
-    else {
+    scoped_refptr<net::ParsedCertificate> cert = ParseCertificate(der_cert);
+    if (cert) {
       trust_store_in_memory.AddTrustAnchor(
           net::TrustAnchor::CreateFromCertificateNoConstraints(cert));
     }
@@ -194,22 +205,15 @@ bool VerifyUsingPathBuilder(
 
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;
   for (const auto& der_cert : intermediate_der_certs) {
-    scoped_refptr<net::ParsedCertificate> cert =
-        net::ParsedCertificate::CreateFromCertificateCopy(der_cert.der_cert,
-                                                          {});
-    if (!cert)
-      PrintCertError("ERROR: ParsedCertificate failed:", der_cert);
-    else
+    scoped_refptr<net::ParsedCertificate> cert = ParseCertificate(der_cert);
+    if (cert)
       intermediate_cert_issuer_source.AddCert(cert);
   }
 
   scoped_refptr<net::ParsedCertificate> target_cert =
-      net::ParsedCertificate::CreateFromCertificateCopy(
-          target_der_cert.der_cert, {});
-  if (!target_cert) {
-    PrintCertError("ERROR: ParsedCertificate failed:", target_der_cert);
+      ParseCertificate(target_der_cert);
+  if (!target_cert)
     return false;
-  }
 
   // Verify the chain.
   net::SimpleSignaturePolicy signature_policy(2048);

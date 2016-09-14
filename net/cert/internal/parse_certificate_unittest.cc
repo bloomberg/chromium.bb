@@ -5,6 +5,7 @@
 #include "net/cert/internal/parse_certificate.h"
 
 #include "base/strings/stringprintf.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +50,8 @@ void EnsureParsingCertificateSucceeds(const std::string& file_name) {
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
   ASSERT_TRUE(ParseCertificate(der::Input(&data), &tbs_certificate_tlv,
-                               &signature_algorithm_tlv, &signature_value));
+                               &signature_algorithm_tlv, &signature_value,
+                               nullptr));
 
   // Ensure that the parsed certificate matches expectations.
   EXPECT_EQ(0, signature_value.unused_bits());
@@ -73,8 +75,12 @@ void EnsureParsingCertificateFails(const std::string& file_name) {
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
+  CertErrors errors;
   ASSERT_FALSE(ParseCertificate(der::Input(&data), &tbs_certificate_tlv,
-                                &signature_algorithm_tlv, &signature_value));
+                                &signature_algorithm_tlv, &signature_value,
+                                &errors));
+  // TODO(crbug.com/634443): Verify |errors| to make sure it failed for the
+  //                         expected reason.
 }
 
 // Tests parsing a Certificate.

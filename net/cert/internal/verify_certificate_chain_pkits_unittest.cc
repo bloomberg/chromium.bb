@@ -56,12 +56,11 @@ class VerifyCertificateChainPkitsTestDelegate {
     // PKITS lists chains from trust anchor to target, VerifyCertificateChain
     // takes them starting with the target and not including the trust anchor.
     std::vector<scoped_refptr<net::ParsedCertificate>> input_chain;
+    CertErrors errors;
     for (auto i = cert_ders.rbegin(); i != cert_ders.rend(); ++i) {
-      if (!net::ParsedCertificate::CreateAndAddToVector(
-              reinterpret_cast<const uint8_t*>(i->data()), i->size(),
-              net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE, {},
-              &input_chain)) {
-        ADD_FAILURE() << "cert failed to parse";
+      if (!net::ParsedCertificate::CreateAndAddToVector(*i, {}, &input_chain,
+                                                        &errors)) {
+        ADD_FAILURE() << "Cert failed to parse:\n" << errors.ToDebugString();
         return false;
       }
     }
@@ -76,7 +75,6 @@ class VerifyCertificateChainPkitsTestDelegate {
     der::GeneralizedTime time = {2011, 4, 15, 0, 0, 0};
 
     //  TODO(crbug.com/634443): Test errors on failure?
-    CertErrors errors;
     return VerifyCertificateChain(input_chain, trust_anchor.get(),
                                   &signature_policy, time, &errors);
   }

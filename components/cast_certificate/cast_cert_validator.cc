@@ -67,11 +67,11 @@ class CastTrustStore {
   // storage.
   template <size_t N>
   void AddAnchor(const uint8_t (&data)[N]) {
+    net::CertErrors errors;
     scoped_refptr<net::ParsedCertificate> cert =
-        net::ParsedCertificate::CreateFromCertificateData(
-            data, N, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
-            {});
-    CHECK(cert);
+        net::ParsedCertificate::CreateWithoutCopyingUnsafe(data, N, {},
+                                                           &errors);
+    CHECK(cert) << errors.ToDebugString();
     // Enforce pathlen constraints and policies defined on the root certificate.
     scoped_refptr<net::TrustAnchor> anchor =
         net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
@@ -255,7 +255,7 @@ net::ParseCertificateOptions GetCertParsingOptions() {
   return options;
 }
 
-// Verifies a cast device certficate given a chain of DER-encoded certificates.
+// Verifies a cast device certificate given a chain of DER-encoded certificates.
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time& time,
                       std::unique_ptr<CertVerificationContext>* context,
@@ -266,16 +266,13 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   if (certs.empty())
     return false;
 
-  // No reference to these ParsedCertificates is kept past the end of this
-  // function, so using EXTERNAL_REFERENCE here is safe.
+  net::CertErrors errors;
   scoped_refptr<net::ParsedCertificate> target_cert;
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;
   for (size_t i = 0; i < certs.size(); ++i) {
-    scoped_refptr<net::ParsedCertificate> cert(
-        net::ParsedCertificate::CreateFromCertificateData(
-            reinterpret_cast<const uint8_t*>(certs[i].data()), certs[i].size(),
-            net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
-            GetCertParsingOptions()));
+    scoped_refptr<net::ParsedCertificate> cert(net::ParsedCertificate::Create(
+        certs[i], GetCertParsingOptions(), &errors));
+    // TODO(eroman): Propagate/log these parsing errors.
     if (!cert)
       return false;
 

@@ -127,7 +127,8 @@ bool ParseCertificateSandboxed(const base::StringPiece& certificate,
   der::Input cert_data(certificate);
   der::Input tbs_cert, signature_alg;
   der::BitString signature_value;
-  if (!ParseCertificate(cert_data, &tbs_cert, &signature_alg, &signature_value))
+  if (!ParseCertificate(cert_data, &tbs_cert, &signature_alg, &signature_value,
+                        nullptr))
     return false;
 
   ParsedTbsCertificate parsed_tbs_cert;

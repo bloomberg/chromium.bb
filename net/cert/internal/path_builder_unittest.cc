@@ -121,9 +121,13 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
       "net/data/ssl/certificates/" + file_name, "CERTIFICATE", &der);
   if (!r)
     return r;
-  *result = ParsedCertificate::CreateFromCertificateCopy(der, {});
-  if (!*result)
-    return ::testing::AssertionFailure() << "CreateFromCertificateCopy failed";
+  CertErrors errors;
+  *result = ParsedCertificate::Create(der, {}, &errors);
+  if (!*result) {
+    return ::testing::AssertionFailure()
+           << "ParseCertificate::Create() failed:\n"
+           << errors.ToDebugString();
+  }
   return ::testing::AssertionSuccess();
 }
 
@@ -941,8 +945,8 @@ TEST_F(PathBuilderKeyRolloverTest,
 TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediates) {
   // Create a separate copy of oldintermediate.
   scoped_refptr<ParsedCertificate> oldintermediate_dupe(
-      ParsedCertificate::CreateFromCertificateCopy(
-          oldintermediate_->der_cert().AsStringPiece(), {}));
+      ParsedCertificate::Create(oldintermediate_->der_cert().AsStringPiece(),
+                                {}, nullptr));
 
   // Only newroot is a trusted root.
   TrustStoreInMemory trust_store;
@@ -1002,9 +1006,8 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediates) {
 // SPKI as a TrustAnchor.
 TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediateAndRoot) {
   // Create a separate copy of newroot.
-  scoped_refptr<ParsedCertificate> newroot_dupe(
-      ParsedCertificate::CreateFromCertificateCopy(
-          newroot_->der_cert().AsStringPiece(), {}));
+  scoped_refptr<ParsedCertificate> newroot_dupe(ParsedCertificate::Create(
+      newroot_->der_cert().AsStringPiece(), {}, nullptr));
 
   // Only newroot is a trusted root.
   TrustStoreInMemory trust_store;
@@ -1233,8 +1236,8 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateAsyncIntermediates) {
 
   // Second async batch: return a different copy of oldintermediate_ again.
   scoped_refptr<ParsedCertificate> oldintermediate_dupe(
-      ParsedCertificate::CreateFromCertificateCopy(
-          oldintermediate_->der_cert().AsStringPiece(), {}));
+      ParsedCertificate::Create(oldintermediate_->der_cert().AsStringPiece(),
+                                {}, nullptr));
   EXPECT_CALL(*target_issuers_req, GetNext(_))
       .WillOnce(DoAll(SetArgPointee<0>(oldintermediate_dupe),
                       Return(CompletionStatus::SYNC)))

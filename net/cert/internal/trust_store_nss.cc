@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "crypto/nss_util.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
 
 // TODO(mattm): structure so that supporting ChromeOS multi-profile stuff is
@@ -56,13 +57,13 @@ void GetAnchors(const scoped_refptr<ParsedCertificate>& cert,
     if ((SEC_GET_TRUST_FLAGS(&trust, trust_type) & ca_trust) != ca_trust)
       continue;
 
-    scoped_refptr<ParsedCertificate> anchor_cert =
-        ParsedCertificate::CreateFromCertificateData(
-            node->cert->derCert.data, node->cert->derCert.len,
-            ParsedCertificate::DataSource::INTERNAL_COPY, {});
+    CertErrors errors;
+    scoped_refptr<ParsedCertificate> anchor_cert = ParsedCertificate::Create(
+        node->cert->derCert.data, node->cert->derCert.len, {}, &errors);
     if (!anchor_cert) {
-      // TODO(mattm): return errors better.
-      LOG(ERROR) << "error parsing issuer certificate";
+      // TODO(crbug.com/634443): return errors better.
+      LOG(ERROR) << "Error parsing issuer certificate:\n"
+                 << errors.ToDebugString();
       continue;
     }
 

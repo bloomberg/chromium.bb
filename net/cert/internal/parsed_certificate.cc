@@ -24,11 +24,61 @@ WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
 ParsedCertificate::ParsedCertificate() {}
 ParsedCertificate::~ParsedCertificate() {}
 
-scoped_refptr<ParsedCertificate> ParsedCertificate::CreateFromCertificateData(
+scoped_refptr<ParsedCertificate> ParsedCertificate::Create(
+    const uint8_t* data,
+    size_t length,
+    const ParseCertificateOptions& options,
+    CertErrors* errors) {
+  return CreateInternal(data, length, DataSource::INTERNAL_COPY, options,
+                        errors);
+}
+
+scoped_refptr<ParsedCertificate> ParsedCertificate::Create(
+    const base::StringPiece& data,
+    const ParseCertificateOptions& options,
+    CertErrors* errors) {
+  return ParsedCertificate::Create(
+      reinterpret_cast<const uint8_t*>(data.data()), data.size(), options,
+      errors);
+}
+
+bool ParsedCertificate::CreateAndAddToVector(
+    const uint8_t* data,
+    size_t length,
+    const ParseCertificateOptions& options,
+    ParsedCertificateList* chain,
+    CertErrors* errors) {
+  scoped_refptr<ParsedCertificate> cert(Create(data, length, options, errors));
+  if (!cert)
+    return false;
+  chain->push_back(std::move(cert));
+  return true;
+}
+
+bool ParsedCertificate::CreateAndAddToVector(
+    const base::StringPiece& data,
+    const ParseCertificateOptions& options,
+    ParsedCertificateList* chain,
+    CertErrors* errors) {
+  return CreateAndAddToVector(reinterpret_cast<const uint8_t*>(data.data()),
+                              data.size(), options, chain, errors);
+}
+
+scoped_refptr<ParsedCertificate> ParsedCertificate::CreateWithoutCopyingUnsafe(
+    const uint8_t* data,
+    size_t length,
+    const ParseCertificateOptions& options,
+    CertErrors* errors) {
+  return CreateInternal(data, length, DataSource::EXTERNAL_REFERENCE, options,
+                        errors);
+}
+
+scoped_refptr<ParsedCertificate> ParsedCertificate::CreateInternal(
     const uint8_t* data,
     size_t length,
     DataSource source,
-    const ParseCertificateOptions& options) {
+    const ParseCertificateOptions& options,
+    CertErrors* errors) {
   scoped_refptr<ParsedCertificate> result(new ParsedCertificate);
 
   switch (source) {
@@ -44,7 +94,7 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateFromCertificateData(
 
   if (!ParseCertificate(result->cert_, &result->tbs_certificate_tlv_,
                         &result->signature_algorithm_tlv_,
-                        &result->signature_value_)) {
+                        &result->signature_value_, errors)) {
     return nullptr;
   }
 
@@ -147,28 +197,6 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateFromCertificateData(
   }
 
   return result;
-}
-
-scoped_refptr<ParsedCertificate> ParsedCertificate::CreateFromCertificateCopy(
-    const base::StringPiece& data,
-    const ParseCertificateOptions& options) {
-  return ParsedCertificate::CreateFromCertificateData(
-      reinterpret_cast<const uint8_t*>(data.data()), data.size(),
-      DataSource::INTERNAL_COPY, options);
-}
-
-bool ParsedCertificate::CreateAndAddToVector(
-    const uint8_t* data,
-    size_t length,
-    DataSource source,
-    const ParseCertificateOptions& options,
-    ParsedCertificateList* chain) {
-  scoped_refptr<ParsedCertificate> cert(
-      CreateFromCertificateData(data, length, source, options));
-  if (!cert)
-    return false;
-  chain->push_back(std::move(cert));
-  return true;
 }
 
 }  // namespace net

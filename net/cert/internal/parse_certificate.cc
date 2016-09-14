@@ -170,7 +170,10 @@ bool VerifySerialNumber(const der::Input& value) {
 bool ParseCertificate(const der::Input& certificate_tlv,
                       der::Input* out_tbs_certificate_tlv,
                       der::Input* out_signature_algorithm_tlv,
-                      der::BitString* out_signature_value) {
+                      der::BitString* out_signature_value,
+                      CertErrors* out_errors) {
+  // TODO(crbug.com/634443): Fill |out_errors| (which may be null) with error
+  // information.
   der::Parser parser(certificate_tlv);
 
   //   Certificate  ::=  SEQUENCE  {

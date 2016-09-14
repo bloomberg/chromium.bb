@@ -5,6 +5,7 @@
 #include "net/cert/internal/cert_issuer_source_static.h"
 
 #include "base/bind.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +37,13 @@ void NotCalled(CertIssuerSource::Request* req) {
                   "CERTIFICATE", &der);
   if (!r)
     return r;
-  *result = ParsedCertificate::CreateFromCertificateCopy(der, {});
-  if (!*result)
-    return ::testing::AssertionFailure() << "CreateFromCertificateCopy failed";
+  CertErrors errors;
+  *result = ParsedCertificate::Create(der, {}, &errors);
+  if (!*result) {
+    return ::testing::AssertionFailure()
+           << "ParsedCertificate::Create() failed:\n"
+           << errors.ToDebugString();
+  }
   return ::testing::AssertionSuccess();
 }
 

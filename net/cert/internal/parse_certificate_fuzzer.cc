@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/name_constraints.h"
@@ -32,8 +33,9 @@ void ParseCertificateForFuzzer(const der::Input& in) {
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
+  CertErrors errors;
   if (!ParseCertificate(in, &tbs_certificate_tlv, &signature_algorithm_tlv,
-                        &signature_value))
+                        &signature_value, &errors))
     return;
   std::unique_ptr<SignatureAlgorithm> sig_alg(
       SignatureAlgorithm::CreateFromDer(signature_algorithm_tlv));

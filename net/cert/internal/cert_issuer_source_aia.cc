@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "net/cert/cert_net_fetcher.h"
+#include "net/cert/internal/cert_errors.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -86,11 +87,13 @@ void AiaRequest::OnFetchCompleted(Error error,
     // TODO(mattm): Avoid copying bytes. Change the CertNetFetcher and
     // ParsedCertificate interface to allow passing through ownership of the
     // bytes.
-    if (!ParsedCertificate::CreateAndAddToVector(
-            fetched_bytes.data(), fetched_bytes.size(),
-            ParsedCertificate::DataSource::INTERNAL_COPY, {}, &results_)) {
-      // TODO(mattm): propagate error info.
-      LOG(ERROR) << "Error parsing AIA data";
+    CertErrors errors;
+    if (!ParsedCertificate::CreateAndAddToVector(fetched_bytes.data(),
+                                                 fetched_bytes.size(), {},
+                                                 &results_, &errors)) {
+      // TODO(crbug.com/634443): propagate error info.
+      LOG(ERROR) << "Error parsing cert retrieved from AIA:\n"
+                 << errors.ToDebugString();
     }
   }
   // If the client is waiting for results, need to run callback if:

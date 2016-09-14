@@ -7,6 +7,7 @@
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "components/cast_certificate/cast_crl.h"
 #include "components/cast_certificate/proto/test_suite.pb.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,9 +22,10 @@ std::unique_ptr<net::TrustStoreInMemory> CreateTrustStoreFromFile(
   const auto trusted_test_roots =
       cast_certificate::testing::ReadCertificateChainFromFile(path);
   for (const auto& trusted_root : trusted_test_roots) {
+    net::CertErrors errors;
     scoped_refptr<net::ParsedCertificate> cert(
-        net::ParsedCertificate::CreateFromCertificateCopy(trusted_root, {}));
-    EXPECT_TRUE(cert);
+        net::ParsedCertificate::Create(trusted_root, {}, &errors));
+    EXPECT_TRUE(cert) << errors.ToDebugString();
     scoped_refptr<net::TrustAnchor> anchor =
         net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
     trust_store->AddTrustAnchor(std::move(anchor));

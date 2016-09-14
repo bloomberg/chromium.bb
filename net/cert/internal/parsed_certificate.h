@@ -20,6 +20,7 @@ struct GeneralNames;
 class NameConstraints;
 class ParsedCertificate;
 class SignatureAlgorithm;
+class CertErrors;
 
 using ParsedCertificateList = std::vector<scoped_refptr<ParsedCertificate>>;
 
@@ -36,40 +37,67 @@ class NET_EXPORT ParsedCertificate
   // Map from OID to ParsedExtension.
   using ExtensionsMap = std::map<der::Input, ParsedExtension>;
 
-  // The certificate data for may either be owned internally (INTERNAL_COPY) or
-  // owned externally (EXTERNAL_REFERENCE). When it is owned internally the data
-  // is held by |cert_data_|
-  enum class DataSource {
-    INTERNAL_COPY,
-    EXTERNAL_REFERENCE,
-  };
-
   // Creates a ParsedCertificate given a DER-encoded Certificate. Returns
   // nullptr on failure. Failure will occur if the standard certificate fields
   // and supported extensions cannot be parsed.
   //
-  // The provided certificate data is either copied, or aliased, depending on
-  // the value of |source|. See the comments for DataSource for details.
-  static scoped_refptr<ParsedCertificate> CreateFromCertificateData(
+  // The provided certificate data is copied, so |data| needn't remain valid
+  // after this call.
+  //
+  // On either success or failure, if |errors| is non-null it may have error
+  // information added to it.
+  static scoped_refptr<ParsedCertificate> Create(
       const uint8_t* data,
       size_t length,
-      DataSource source,
-      const ParseCertificateOptions& options);
+      const ParseCertificateOptions& options,
+      CertErrors* errors);
 
-  // Creates a ParsedCertificate and appends it to |chain|. Returns true if the
-  // certificate was successfully parsed and added. If false is return, |chain|
-  // is unmodified.
+  // Overload that takes a StringPiece.
+  static scoped_refptr<ParsedCertificate> Create(
+      const base::StringPiece& data,
+      const ParseCertificateOptions& options,
+      CertErrors* errors);
+
+  // Creates a ParsedCertificate by copying the provided |data|, and appends it
+  // to |chain|. Returns true if the certificate was successfully parsed and
+  // added. If false is return, |chain| is unmodified.
+  //
+  // On either success or failure, if |errors| is non-null it may have error
+  // information added to it.
   static bool CreateAndAddToVector(
       const uint8_t* data,
       size_t length,
-      DataSource source,
       const ParseCertificateOptions& options,
-      std::vector<scoped_refptr<net::ParsedCertificate>>* chain);
+      std::vector<scoped_refptr<net::ParsedCertificate>>* chain,
+      CertErrors* errors);
 
-  // Creates a ParsedCertificate, copying the data from |data|.
-  static scoped_refptr<ParsedCertificate> CreateFromCertificateCopy(
+  // Overload that takes a StringPiece.
+  static bool CreateAndAddToVector(
       const base::StringPiece& data,
-      const ParseCertificateOptions& options);
+      const ParseCertificateOptions& options,
+      std::vector<scoped_refptr<net::ParsedCertificate>>* chain,
+      CertErrors* errors);
+
+  // Like Create() this builds a ParsedCertificate given a DER-encoded
+  // Certificate and returns nullptr on failure.
+  //
+  // However a copy of |data| is NOT made.
+  //
+  // This is a dangerous way to create as ParsedCertificate and should only be
+  // used with care when saving a copy is really worth it, or the data is known
+  // to come from static storage (and hence remain valid for entire life of
+  // process).
+  //
+  // ParsedCertificate is reference counted, so it is easy to extend the life
+  // and and end up with a ParsedCertificate referencing feed memory.
+  //
+  // On either success or failure, if |errors| is non-null it may have error
+  // information added to it.
+  static scoped_refptr<ParsedCertificate> CreateWithoutCopyingUnsafe(
+      const uint8_t* data,
+      size_t length,
+      const ParseCertificateOptions& options,
+      CertErrors* errors);
 
   // Returns the DER-encoded certificate data for this cert.
   const der::Input& der_cert() const { return cert_; }
@@ -180,9 +208,24 @@ class NET_EXPORT ParsedCertificate
   }
 
  private:
+  // The certificate data for may either be owned internally (INTERNAL_COPY) or
+  // owned externally (EXTERNAL_REFERENCE). When it is owned internally the data
+  // is held by |cert_data_|
+  enum class DataSource {
+    INTERNAL_COPY,
+    EXTERNAL_REFERENCE,
+  };
+
   friend class base::RefCountedThreadSafe<ParsedCertificate>;
   ParsedCertificate();
   ~ParsedCertificate();
+
+  static scoped_refptr<ParsedCertificate> CreateInternal(
+      const uint8_t* data,
+      size_t length,
+      DataSource source,
+      const ParseCertificateOptions& options,
+      CertErrors* errors);
 
   // The backing store for the certificate data. This is only applicable when
   // the ParsedCertificate was initialized using DataSource::INTERNAL_COPY.
