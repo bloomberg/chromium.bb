@@ -90,7 +90,8 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
       base::MakeUnique<CrossThreadNetworkEventObserver>(
-          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get())));
+          connection_status_.GetWeakPtr(),
+          base::SequencedTaskRunnerHandle::Get())));
 
   // The |thread_pipe_manager_| must be set up correctly before features are
   // registered.
@@ -154,14 +155,6 @@ void BlimpClientContextImpl::OnAuthTokenReceived(
                  weak_factory_.GetWeakPtr()));
 }
 
-void BlimpClientContextImpl::OnConnected() {
-  UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", true);
-}
-
-void BlimpClientContextImpl::OnDisconnected(int result) {
-  UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", false);
-}
-
 GURL BlimpClientContextImpl::GetAssignerURL() {
   return GURL(kDefaultAssignerUrl);
 }
@@ -173,11 +166,19 @@ IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
   return identity_source_.get();
 }
 
+ConnectionStatus* BlimpClientContextImpl::GetConnectionStatus() {
+  return &connection_status_;
+}
+
 void BlimpClientContextImpl::OnAssignmentReceived(
     AssignmentRequestResult result,
     const Assignment& assignment) {
   VLOG(1) << "Assignment result: " << result;
 
+  // Cache engine info.
+  connection_status_.OnAssignmentResult(result, assignment);
+
+  // Inform the embedder of the assignment result.
   if (delegate_) {
     delegate_->OnAssignmentConnectionAttempted(result, assignment);
   }

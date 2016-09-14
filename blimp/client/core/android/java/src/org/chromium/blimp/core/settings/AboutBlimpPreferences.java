@@ -16,6 +16,7 @@ import android.preference.SwitchPreference;
 import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -27,6 +28,7 @@ import org.chromium.components.sync.signin.ChromeSigninController;
  */
 @JNINamespace("blimp::client")
 public class AboutBlimpPreferences extends PreferenceFragment {
+    private static final String PREF_ENGINE_INFO = "blimp_engine_info";
     /**
      * If this fragment is waiting for user sign in.
      */
@@ -72,31 +74,30 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initializeNative();
         getActivity().setTitle(R.string.blimp_about_blimp_preferences);
-        updateSettingPage();
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateSettingPage();
-    }
-
-    @Override
-    public void onDestroy() {
-        destroyNative();
-        super.onDestroy();
-    }
-
-    // Reload the items in preferences list.
-    private void updateSettingPage() {
         PreferenceScreen screen = getPreferenceScreen();
         if (screen != null) screen.removeAll();
         addPreferencesFromResource(R.xml.blimp_preferences);
 
         setupBlimpSwitch();
         setupAssignerPreferences();
+
+        // Initialize native layer must be called after Java loads the prefrences entries from xml
+        // file.
+        initializeNative();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setupBlimpSwitch();
+    }
+
+    @Override
+    public void onDestroy() {
+        destroyNative();
+        super.onDestroy();
     }
 
     /**
@@ -236,8 +237,7 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     @VisibleForTesting
     @CalledByNative
     protected void onSignedOut() {
-        // If user signed out, turn off the switch. We also do a sign in state check on
-        // {@link AboutBlimpPreferences#updateSettingPage()}.
+        // If user signed out, turn off the switch. We also do a sign in state check in onResume.
         final SwitchPreference pref =
                 (SwitchPreference) findPreference(PreferencesUtil.PREF_BLIMP_SWITCH);
         pref.setChecked(false);
@@ -258,6 +258,20 @@ public class AboutBlimpPreferences extends PreferenceFragment {
             sPreferencesDelegate.connect();
             mWaitForSignIn = false;
         }
+    }
+
+    /**
+     * Setup engine connection info. This entry is not persisted into shared preference.
+     * @param engineInfo The engine IP address if connected to engine, or error string displayed to
+     * the user.
+     */
+    @CalledByNative
+    private void setEngineInfo(String engineInfo) {
+        ThreadUtils.assertOnUiThread();
+
+        Preference pref = findPreference(PREF_ENGINE_INFO);
+        assert pref != null;
+        pref.setSummary(engineInfo);
     }
 
     @VisibleForTesting

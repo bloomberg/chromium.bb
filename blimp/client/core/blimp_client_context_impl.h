@@ -15,8 +15,9 @@
 #include "base/threading/thread.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/core/session/client_network_components.h"
+#include "blimp/client/core/session/connection_status.h"
 #include "blimp/client/core/session/identity_source.h"
-#include "blimp/client/core/session/network_event_observer.h"
+#include "blimp/client/core/settings/blimp_settings_delegate.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "blimp/client/public/session/assignment.h"
@@ -41,8 +42,8 @@ class TabControlFeature;
 // the blimp client.
 class BlimpClientContextImpl
     : public BlimpClientContext,
-      public BlobImageSerializationProcessor::ErrorDelegate,
-      public NetworkEventObserver {
+      public BlimpSettingsDelegate,
+      public BlobImageSerializationProcessor::ErrorDelegate {
  public:
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
@@ -61,16 +62,14 @@ class BlimpClientContextImpl
   void Connect() override;
   void ConnectWithAssignment(const Assignment& assignment) override;
 
-  // NetworkEventObserver implementation.
-  void OnConnected() override;
-  void OnDisconnected(int result) override;
-
  protected:
   // Returns the URL to use for connections to the assigner. Used to construct
   // the AssignmentSource.
   virtual GURL GetAssignerURL();
 
-  IdentitySource* GetIdentitySource();
+  // BlimpSettingsDelegate implementation.
+  IdentitySource* GetIdentitySource() override;
+  ConnectionStatus* GetConnectionStatus() override;
 
  private:
   // Called when an OAuth2 token is received.  Will then ask the
@@ -127,6 +126,9 @@ class BlimpClientContextImpl
 
   // Provide OAuth2 token and propagate account sign in states change.
   std::unique_ptr<IdentitySource> identity_source_;
+
+  // Connection status to the engine.
+  ConnectionStatus connection_status_;
 
   base::WeakPtrFactory<BlimpClientContextImpl> weak_factory_;
 

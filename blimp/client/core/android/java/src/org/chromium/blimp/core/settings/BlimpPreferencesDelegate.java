@@ -17,7 +17,8 @@ public interface BlimpPreferencesDelegate {
 
     /**
      * Initialize setting page.
-     * Setup all helper objects that the setting page needs, such as IdentitySource in native code.
+     * Set the delegate in native. We don't directly pass the delegate to native
+     * BlimpSettingsAndroid because jni pointer can't be cast to parent class via reinterpret_cast.
      */
     void initSettingsPage(AboutBlimpPreferences preferences);
 

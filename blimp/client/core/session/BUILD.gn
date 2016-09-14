@@ -18,6 +18,8 @@ source_set("session") {
     "assignment_source.h",
     "client_network_components.cc",
     "client_network_components.h",
+    "connection_status.cc",
+    "connection_status.h",
     "cross_thread_network_event_observer.cc",
     "cross_thread_network_event_observer.h",
     "identity_source.cc",

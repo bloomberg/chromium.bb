@@ -4,8 +4,14 @@
 
 #include "blimp/client/core/settings/android/blimp_settings_android.h"
 
+#include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "blimp/client/core/session/connection_status.h"
+#include "blimp/client/core/settings/blimp_settings_delegate.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "jni/AboutBlimpPreferences_jni.h"
+
+using base::android::AttachCurrentThread;
 
 namespace blimp {
 namespace client {
@@ -31,43 +37,65 @@ static jlong Init(JNIEnv* env,
 BlimpSettingsAndroid::BlimpSettingsAndroid(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj)
-    : identity_source_(nullptr) {
+    : delegate_(nullptr) {
   java_obj_.Reset(jobj);
 }
 
 BlimpSettingsAndroid::~BlimpSettingsAndroid() {
   Java_AboutBlimpPreferences_clearNativePtr(
       base::android::AttachCurrentThread(), java_obj_);
+  if (delegate_) {
+    delegate_->GetIdentitySource()->RemoveObserver(this);
+    delegate_->GetConnectionStatus()->RemoveObserver(this);
+  }
 }
 
 void BlimpSettingsAndroid::Destroy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj) {
-  DCHECK(identity_source_);
-  identity_source_->RemoveObserver(this);
   delete this;
 }
 
-void BlimpSettingsAndroid::SetIdentitySource(IdentitySource* identity_source) {
-  if (identity_source_) {
-    identity_source_->RemoveObserver(this);
-  }
-
-  identity_source_ = identity_source;
-  DCHECK(identity_source_);
+void BlimpSettingsAndroid::SetDelegate(BlimpSettingsDelegate* delegate) {
+  // Set the Delegate, it can only be called for once.
+  DCHECK(!delegate_ && delegate);
+  delegate_ = delegate;
 
   // Listen to sign in state change.
-  identity_source->AddObserver(this);
+  delegate_->GetIdentitySource()->AddObserver(this);
+
+  // Listen to connection state change.
+  ConnectionStatus* conn_status = delegate_->GetConnectionStatus();
+  DCHECK(conn_status);
+  conn_status->AddObserver(this);
+
+  // Propagate connection info if the client is connected to the engine.
+  if (conn_status->is_connected()) {
+    OnConnected();
+  }
 }
 
-void BlimpSettingsAndroid::OnSignedOut() {
+void BlimpSettingsAndroid::OnSignedOut() const {
   Java_AboutBlimpPreferences_onSignedOut(base::android::AttachCurrentThread(),
                                          java_obj_);
 }
 
-void BlimpSettingsAndroid::OnSignedIn() {
+void BlimpSettingsAndroid::OnSignedIn() const {
   Java_AboutBlimpPreferences_onSignedIn(base::android::AttachCurrentThread(),
                                         java_obj_);
+}
+
+void BlimpSettingsAndroid::UpdateEngineInfo() const {
+  DCHECK(delegate_);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::string engine_id =
+      delegate_->GetConnectionStatus()->engine_endpoint().address().ToString();
+
+  base::android::ScopedJavaLocalRef<jstring> jengine_id(
+      base::android::ConvertUTF8ToJavaString(env, engine_id));
+
+  Java_AboutBlimpPreferences_setEngineInfo(env, java_obj_, jengine_id);
 }
 
 void BlimpSettingsAndroid::OnActiveAccountLogout() {
@@ -76,6 +104,14 @@ void BlimpSettingsAndroid::OnActiveAccountLogout() {
 
 void BlimpSettingsAndroid::OnActiveAccountLogin() {
   OnSignedIn();
+}
+
+void BlimpSettingsAndroid::OnConnected() {
+  UpdateEngineInfo();
+}
+
+void BlimpSettingsAndroid::OnDisconnected(int result) {
+  UpdateEngineInfo();
 }
 
 }  // namespace client

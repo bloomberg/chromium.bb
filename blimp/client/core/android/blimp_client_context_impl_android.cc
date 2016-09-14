@@ -103,8 +103,10 @@ void BlimpClientContextImplAndroid::InitSettingsPage(
     const base::android::JavaRef<jobject>& blimp_settings) {
   BlimpSettingsAndroid* settings_android =
       BlimpSettingsAndroid::FromJavaObject(env, blimp_settings);
+  DCHECK(settings_android);
 
-  settings_android->SetIdentitySource(GetIdentitySource());
+  // Set the delegate for settings.
+  settings_android->SetDelegate(this);
 }
 
 }  // namespace client

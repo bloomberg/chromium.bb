@@ -11,6 +11,7 @@ source_set("settings") {
   visibility = [ "//blimp/client/*" ]
 
   sources = [
+    "blimp_settings_delegate.h",
     "settings_feature.cc",
     "settings_feature.h",
   ]

@@ -5,18 +5,23 @@
 #ifndef BLIMP_CLIENT_CORE_SETTINGS_ANDROID_BLIMP_SETTINGS_ANDROID_H_
 #define BLIMP_CLIENT_CORE_SETTINGS_ANDROID_BLIMP_SETTINGS_ANDROID_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "blimp/client/core/session/identity_source.h"
+#include "blimp/client/core/session/network_event_observer.h"
 
 namespace blimp {
 namespace client {
 
 class BlimpClientContextImplAndroid;
+class BlimpSettingsDelegate;
 
 // JNI bridge between AboutBlimpPreferences.java and native code.
-class BlimpSettingsAndroid : public IdentityProvider::Observer {
+class BlimpSettingsAndroid : public IdentityProvider::Observer,
+                             public NetworkEventObserver {
  public:
   static bool RegisterJni(JNIEnv* env);
   static BlimpSettingsAndroid* FromJavaObject(
@@ -28,21 +33,29 @@ class BlimpSettingsAndroid : public IdentityProvider::Observer {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
-  void SetIdentitySource(IdentitySource* identity_source);
+  void SetDelegate(BlimpSettingsDelegate* delegate);
 
+ private:
   // Notify Java layer for user sign in state change.
-  void OnSignedOut();
-  void OnSignedIn();
+  void OnSignedOut() const;
+  void OnSignedIn() const;
+
+  // Update engine info in Java, this can be either connection end point or
+  // engine disconnection reason.
+  void UpdateEngineInfo() const;
 
   // IdentityProvider::Observer implementation.
   void OnActiveAccountLogout() override;
   void OnActiveAccountLogin() override;
 
- private:
+  // NetworkEventObserver implementation.
+  void OnConnected() override;
+  void OnDisconnected(int result) override;
+
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  // IdentitySource that broadcasts sign in state change.
-  IdentitySource* identity_source_;
+  // Delegate that provides functions needed by settings.
+  BlimpSettingsDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpSettingsAndroid);
 };

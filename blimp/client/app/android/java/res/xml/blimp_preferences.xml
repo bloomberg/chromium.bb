@@ -9,8 +9,8 @@
         android:key="blimp_switch"
         android:title="@string/blimp_switch" />
     <Preference
-        android:key="blimp_engine_ip"
-        android:title="@string/blimp_engine_ip" />
+        android:key="blimp_engine_info"
+        android:title="@string/blimp_engine_info" />
     <Preference
         android:key="blimp_engine_version"
         android:title="@string/blimp_engine_version" />

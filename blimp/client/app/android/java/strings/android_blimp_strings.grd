@@ -190,8 +190,11 @@
       <message name="IDS_BLIMP_SWITCH" desc="Blimp Switch.">
         Blimp Switch
       </message>
-      <message name="IDS_BLIMP_ENGINE_IP" desc="Blimp Engine IP.">
+      <message name="IDS_BLIMP_ENGINE_IP" desc="Blimp Engine ip.">
         Engine IP
+      </message>
+      <message name="IDS_BLIMP_ENGINE_INFO" desc="Blimp Engine info.">
+        Engine Info
       </message>
       <message name="IDS_BLIMP_ENGINE_VERSION" desc="Blimp Engine Version.">
         Engine Version
