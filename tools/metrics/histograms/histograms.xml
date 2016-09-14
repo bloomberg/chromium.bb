@@ -81233,6 +81233,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1555"
       label="PresentationConnectionListConnectionAvailableEventListener"/>
   <int value="1556" label="WebAudioAutoplayCrossOriginIframe"/>
+  <int value="1557" label="ScriptInvalidTypeOrLanguage"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

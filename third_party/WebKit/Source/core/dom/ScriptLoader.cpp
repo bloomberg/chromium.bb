@@ -122,7 +122,7 @@ void ScriptLoader::detach()
     m_pendingScript = nullptr;
 }
 
-// Helper function
+// Helper function. Must take a lowercase language as input.
 static bool isLegacySupportedJavaScriptLanguage(const String& language)
 {
     // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only javascript1.1 - javascript1.3.
@@ -132,23 +132,19 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language)
     // We want to accept all the values that either of these browsers accept, but not other values.
 
     // FIXME: This function is not HTML5 compliant. These belong in the MIME registry as "text/javascript<version>" entries.
-    typedef HashSet<String, CaseFoldingHash> LanguageSet;
-    DEFINE_STATIC_LOCAL(LanguageSet, languages, ({
-        "javascript",
-        "javascript1.0",
-        "javascript1.1",
-        "javascript1.2",
-        "javascript1.3",
-        "javascript1.4",
-        "javascript1.5",
-        "javascript1.6",
-        "javascript1.7",
-        "livescript",
-        "ecmascript",
-        "jscript",
-    }));
-
-    return languages.contains(language);
+    DCHECK_EQ(language, language.lower());
+    return language == "javascript"
+        || language == "javascript1.0"
+        || language == "javascript1.1"
+        || language == "javascript1.2"
+        || language == "javascript1.3"
+        || language == "javascript1.4"
+        || language == "javascript1.5"
+        || language == "javascript1.6"
+        || language == "javascript1.7"
+        || language == "livescript"
+        || language == "ecmascript"
+        || language == "jscript";
 }
 
 void ScriptLoader::dispatchErrorEvent()
@@ -163,27 +159,28 @@ void ScriptLoader::dispatchLoadEvent()
     setHaveFiredLoadEvent(true);
 }
 
-bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) const
+bool ScriptLoader::isValidScriptTypeAndLanguage(const String& type, const String& language, LegacyTypeSupport supportLegacyTypes)
 {
     // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used here to maintain backwards compatibility with existing layout tests. The specific violations are:
     // - Allowing type=javascript. type= should only support MIME types, such as text/javascript.
     // - Allowing a different set of languages for language= and type=. language= supports Javascript 1.1 and 1.4-1.6, but type= does not.
-
-    String type = client()->typeAttributeValue();
-    String language = client()->languageAttributeValue();
-    if (type.isEmpty() && language.isEmpty())
-        return true; // Assume text/javascript.
     if (type.isEmpty()) {
-        type = "text/" + language.lower();
-        if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type) || isLegacySupportedJavaScriptLanguage(language))
-            return true;
+        String lowerLanguage = language.lower();
+        return language.isEmpty() // assume text/javascript.
+            || MIMETypeRegistry::isSupportedJavaScriptMIMEType("text/" + lowerLanguage)
+            || isLegacySupportedJavaScriptLanguage(lowerLanguage);
     } else if (RuntimeEnabledFeatures::moduleScriptsEnabled() && type == "module") {
         return true;
-    } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace()) || (supportLegacyTypes == AllowLegacyTypeInTypeAttribute && isLegacySupportedJavaScriptLanguage(type))) {
+    } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace()) || (supportLegacyTypes == AllowLegacyTypeInTypeAttribute && isLegacySupportedJavaScriptLanguage(type.lower()))) {
         return true;
     }
 
     return false;
+}
+
+bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) const
+{
+    return isValidScriptTypeAndLanguage(client()->typeAttributeValue(), client()->languageAttributeValue(), supportLegacyTypes);
 }
 
 // http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
@@ -346,9 +343,10 @@ bool isSVGScriptLoader(Element* element)
 
 void ScriptLoader::logScriptMimetype(ScriptResource* resource, LocalFrame* frame, String mimetype)
 {
-    bool text = mimetype.lower().startsWith("text/");
-    bool application = mimetype.lower().startsWith("application/");
-    bool expectedJs = MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimetype) || (text && isLegacySupportedJavaScriptLanguage(mimetype.substring(5)));
+    String lowerMimetype = mimetype.lower();
+    bool text = lowerMimetype.startsWith("text/");
+    bool application = lowerMimetype.startsWith("application/");
+    bool expectedJs = MIMETypeRegistry::isSupportedJavaScriptMIMEType(lowerMimetype) || (text && isLegacySupportedJavaScriptLanguage(lowerMimetype.substring(5)));
     bool sameOrigin = m_element->document().getSecurityOrigin()->canRequest(m_resource->url());
     if (expectedJs) {
         return;

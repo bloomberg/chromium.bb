@@ -29,6 +29,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/Histogram.h"
@@ -90,6 +91,10 @@ void HTMLResourcePreloader::preload(std::unique_ptr<PreloadRequest> preload, con
     int duration = static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime()));
     DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDelayHistogram, ("WebCore.PreloadDelayMs", 0, 2000, 20));
     preloadDelayHistogram.count(duration);
+
+    if (preload->scriptHasInvalidTypeOrLanguage()) {
+        Deprecation::countDeprecation(m_document, UseCounter::ScriptInvalidTypeOrLanguage);
+    }
 
     Resource* resource = m_document->loader()->startPreload(preload->resourceType(), request);
     if (resource && preload->resourceType() == Resource::CSSStyleSheet) {

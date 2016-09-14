@@ -68,6 +68,9 @@ public:
         return m_integrityMetadata;
     }
 
+    void setScriptHasInvalidTypeOrLanguage() { m_hasInvalidTypeOrLanguage = true; }
+    bool scriptHasInvalidTypeOrLanguage() { return m_hasInvalidTypeOrLanguage; }
+
 private:
     PreloadRequest(const String& initiatorName,
         const TextPosition& initiatorPosition,
@@ -110,6 +113,9 @@ private:
     RequestType m_requestType;
     ReferrerPolicy m_referrerPolicy;
     IntegrityMetadataSet m_integrityMetadata;
+
+    // Used for deprecation warnings.
+    bool m_hasInvalidTypeOrLanguage = false;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;

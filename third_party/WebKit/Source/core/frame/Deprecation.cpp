@@ -376,6 +376,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::WebAudioAutoplayCrossOriginIframe:
         return willBeRemoved("Web Audio autoplay (without user gesture) from cross-origin iframes", 55, "6406908126691328");
 
+    case UseCounter::ScriptInvalidTypeOrLanguage:
+        return String::format("Fetching scripts with an invalid type/language attributes is deprecated and will be removed in %s. See https://www.chromestatus.com/feature/5760718284521472 for more details.", milestoneString(56));
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
