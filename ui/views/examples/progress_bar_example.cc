@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
@@ -27,11 +27,10 @@ namespace examples {
 
 ProgressBarExample::ProgressBarExample()
     : ExampleBase("Progress Bar"),
-      minus_button_(NULL),
-      plus_button_(NULL),
-      progress_bar_(NULL),
-      current_percent_(0.0) {
-}
+      minus_button_(nullptr),
+      plus_button_(nullptr),
+      progress_bar_(nullptr),
+      current_percent_(0.0) {}
 
 ProgressBarExample::~ProgressBarExample() {
 }
@@ -41,22 +40,35 @@ void ProgressBarExample::CreateExampleView(View* container) {
   container->SetLayoutManager(layout);
 
   ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
-                        0, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        1, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::FIXED, 200, 0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(GridLayout::TRAILING, GridLayout::FILL,
-                        0, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ = new LabelButton(this, base::ASCIIToUTF16("-"));
+  minus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("-"));
   layout->AddView(minus_button_);
   progress_bar_ = new ProgressBar();
   layout->AddView(progress_bar_);
-  plus_button_ = new LabelButton(this, base::ASCIIToUTF16("+"));
+  plus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("+"));
   layout->AddView(plus_button_);
+
+  layout->StartRowWithPadding(0, 0, 0, 10);
+  layout->AddView(new Label(base::ASCIIToUTF16("Infinite loader:")));
+  ProgressBar* infinite_bar = new ProgressBar();
+  infinite_bar->SetValue(-1);
+  layout->AddView(infinite_bar);
+
+  layout->StartRowWithPadding(0, 0, 0, 10);
+  layout->AddView(
+      new Label(base::ASCIIToUTF16("Infinite loader (very short):")));
+  ProgressBar* shorter_bar = new ProgressBar(2);
+  shorter_bar->SetValue(-1);
+  layout->AddView(shorter_bar);
 }
 
 void ProgressBarExample::ButtonPressed(Button* sender, const ui::Event& event) {

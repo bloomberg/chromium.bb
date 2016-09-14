@@ -136,8 +136,6 @@ component("app_list") {
       "views/image_shadow_animator.h",
       "views/page_switcher.cc",
       "views/page_switcher.h",
-      "views/progress_bar_view.cc",
-      "views/progress_bar_view.h",
       "views/pulsing_block_view.cc",
       "views/pulsing_block_view.h",
       "views/search_box_view.cc",

@@ -42,7 +42,6 @@ const int kAutoclickRingAngleEndValue = 360;
 // Visual constants.
 const SkColor kAutoclickRingArcColor = SkColorSetARGB(255, 0, 255, 0);
 const SkColor kAutoclickRingCircleColor = SkColorSetARGB(255, 0, 0, 255);
-const int kAutoclickRingFrameRateHz = 60;
 
 void PaintAutoclickRingCircle(gfx::Canvas* canvas,
                               gfx::Point& center,
@@ -168,7 +167,7 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
 
 // AutoclickRingHandler, public
 AutoclickRingHandler::AutoclickRingHandler()
-    : gfx::LinearAnimation(kAutoclickRingFrameRateHz, nullptr),
+    : gfx::LinearAnimation(nullptr),
       ring_widget_(nullptr),
       current_animation_type_(AnimationType::NONE) {}
 

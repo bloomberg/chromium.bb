@@ -502,7 +502,7 @@ StatusBubbleViews::StatusViewAnimation::StatusViewAnimation(
     StatusView* status_view,
     float opacity_start,
     float opacity_end)
-    : gfx::LinearAnimation(kFramerate, this),
+    : gfx::LinearAnimation(this, kFramerate),
       status_view_(status_view),
       opacity_start_(opacity_start),
       opacity_end_(opacity_end) {}
@@ -537,14 +537,12 @@ void StatusBubbleViews::StatusViewAnimation::AnimationEnded(
 class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
                                               public gfx::AnimationDelegate {
  public:
-  StatusViewExpander(StatusBubbleViews* status_bubble,
-                     StatusView* status_view)
-      : gfx::LinearAnimation(kFramerate, this),
+  StatusViewExpander(StatusBubbleViews* status_bubble, StatusView* status_view)
+      : gfx::LinearAnimation(this, kFramerate),
         status_bubble_(status_bubble),
         status_view_(status_view),
         expansion_start_(0),
-        expansion_end_(0) {
-  }
+        expansion_end_(0) {}
 
   // Manage the expansion of the bubble.
   void StartExpansion(const base::string16& expanded_text,

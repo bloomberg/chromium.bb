@@ -8,22 +8,18 @@
 
 namespace gfx {
 
-// How many frames per second to target.
-static const int kDefaultFrameRateHz = 60;
-
 // How long animations should take by default.
 static const int kDefaultDurationMs = 120;
 
 SlideAnimation::SlideAnimation(AnimationDelegate* target)
-    : LinearAnimation(kDefaultFrameRateHz, target),
+    : LinearAnimation(target),
       target_(target),
       tween_type_(Tween::EASE_OUT),
       showing_(false),
       value_start_(0),
       value_end_(0),
       value_current_(0),
-      slide_duration_(kDefaultDurationMs) {
-}
+      slide_duration_(kDefaultDurationMs) {}
 
 SlideAnimation::~SlideAnimation() {
 }

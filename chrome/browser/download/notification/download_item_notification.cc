@@ -387,6 +387,7 @@ void DownloadItemNotification::UpdateNotificationData(
           // Negative progress value shows an indeterminate progress bar.
           notification_->set_progress(-1);
         }
+
         notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
         break;
       }

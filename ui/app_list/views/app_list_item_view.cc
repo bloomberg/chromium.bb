@@ -14,7 +14,6 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
-#include "ui/app_list/views/progress_bar_view.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,6 +32,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/drag_controller.h"
 
 namespace app_list {
@@ -78,7 +78,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new views::Label),
-      progress_bar_(new ProgressBarView),
+      progress_bar_(new views::ProgressBar),
       ui_state_(UI_STATE_NORMAL),
       touch_dragging_(false),
       shadow_animator_(this),

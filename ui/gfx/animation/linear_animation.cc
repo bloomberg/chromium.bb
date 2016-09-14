@@ -24,19 +24,13 @@ static TimeDelta CalculateInterval(int frame_rate) {
   return TimeDelta::FromMicroseconds(timer_interval);
 }
 
-LinearAnimation::LinearAnimation(int frame_rate,
-                                 AnimationDelegate* delegate)
-    : Animation(CalculateInterval(frame_rate)),
-      state_(0.0),
-      in_end_(false) {
-  set_delegate(delegate);
-}
+LinearAnimation::LinearAnimation(AnimationDelegate* delegate, int frame_rate)
+    : LinearAnimation(0, frame_rate, delegate) {}
 
 LinearAnimation::LinearAnimation(int duration,
                                  int frame_rate,
                                  AnimationDelegate* delegate)
     : Animation(CalculateInterval(frame_rate)),
-      duration_(TimeDelta::FromMilliseconds(duration)),
       state_(0.0),
       in_end_(false) {
   set_delegate(delegate);

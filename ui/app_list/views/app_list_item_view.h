@@ -24,13 +24,13 @@ namespace views {
 class ImageView;
 class Label;
 class MenuRunner;
+class ProgressBar;
 }
 
 namespace app_list {
 
 class AppListItem;
 class AppsGridView;
-class ProgressBarView;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
@@ -151,7 +151,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   AppsGridView* apps_grid_view_;   // Parent view, owns this.
   views::ImageView* icon_;         // Strongly typed child view.
   views::Label* title_;            // Strongly typed child view.
-  ProgressBarView* progress_bar_;  // Strongly typed child view.
+  views::ProgressBar* progress_bar_;  // Strongly typed child view.
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 

@@ -10,20 +10,9 @@
 
 namespace views {
 
-TEST(ProgressBarTest, TooltipTextProperty) {
-  ProgressBar bar;
-  base::string16 tooltip = base::ASCIIToUTF16("Some text");
-  EXPECT_FALSE(bar.GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(base::string16(), tooltip);
-  base::string16 tooltip_text = base::ASCIIToUTF16("My progress");
-  bar.SetTooltipText(tooltip_text);
-  EXPECT_TRUE(bar.GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
-}
-
 TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
-  bar.SetValue(62);
+  bar.SetValue(0.62);
 
   ui::AXViewState state;
   bar.GetAccessibleState(&state);

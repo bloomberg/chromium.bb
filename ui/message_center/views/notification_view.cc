@@ -29,7 +29,6 @@
 #include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/notification_button.h"
-#include "ui/message_center/views/notification_progress_bar.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/native_theme/native_theme.h"
@@ -356,15 +355,13 @@ void NotificationView::ButtonPressed(views::Button* sender,
 void NotificationView::CreateOrUpdateTitleView(
     const Notification& notification) {
   if (notification.title().empty()) {
-    if (title_view_) {
-      // Deletion will also remove |title_view_| from its parent.
-      delete title_view_;
-      title_view_ = NULL;
-    }
+    // Deletion will also remove |title_view_| from its parent.
+    delete title_view_;
+    title_view_ = nullptr;
     return;
   }
 
-  DCHECK(top_view_ != NULL);
+  DCHECK(top_view_);
 
   const gfx::FontList& font_list =
       views::Label().font_list().DeriveWithSizeDelta(2);
@@ -393,11 +390,9 @@ void NotificationView::CreateOrUpdateTitleView(
 void NotificationView::CreateOrUpdateMessageView(
     const Notification& notification) {
   if (notification.message().empty()) {
-    if (message_view_) {
-      // Deletion will also remove |message_view_| from its parent.
-      delete message_view_;
-      message_view_ = NULL;
-    }
+    // Deletion will also remove |message_view_| from its parent.
+    delete message_view_;
+    message_view_ = nullptr;
     return;
   }
 
@@ -440,11 +435,9 @@ void NotificationView::CreateOrUpdateContextMessageView(
     const Notification& notification) {
   if (notification.context_message().empty() &&
       !notification.UseOriginAsContextMessage()) {
-    if (context_message_view_) {
-      // Deletion will also remove |context_message_view_| from its parent.
-      delete context_message_view_;
-      context_message_view_ = NULL;
-    }
+    // Deletion will also remove |context_message_view_| from its parent.
+    delete context_message_view_;
+    context_message_view_ = nullptr;
     return;
   }
 
@@ -469,10 +462,8 @@ void NotificationView::CreateOrUpdateContextMessageView(
 
 void NotificationView::CreateOrUpdateSettingsButtonView(
     const Notification& notification) {
-  if (settings_button_view_) {
-    delete settings_button_view_;
-    settings_button_view_ = NULL;
-  }
+  delete settings_button_view_;
+  settings_button_view_ = nullptr;
 
   if (!settings_button_view_ && notification.delegate() &&
       notification.delegate()->ShouldDisplaySettingsButton()) {
@@ -497,37 +488,22 @@ void NotificationView::CreateOrUpdateSettingsButtonView(
 void NotificationView::CreateOrUpdateProgressBarView(
     const Notification& notification) {
   if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
-    if (progress_bar_view_) {
-      // Deletion will also remove |progress_bar_view_| from its parent.
-      delete progress_bar_view_;
-      progress_bar_view_ = NULL;
-    }
+    // Deletion will also remove |progress_bar_view_| from its parent.
+    delete progress_bar_view_;
+    progress_bar_view_ = nullptr;
     return;
   }
 
-  DCHECK(top_view_ != NULL);
-
-  bool is_indeterminate = (notification.progress() < 0);
-  if (progress_bar_view_ &&
-      progress_bar_view_->is_indeterminate() != is_indeterminate) {
-    delete progress_bar_view_;
-    progress_bar_view_ = NULL;
-  }
+  DCHECK(top_view_);
 
   if (!progress_bar_view_) {
-    if (!is_indeterminate)
-      progress_bar_view_ = new NotificationProgressBar();
-    else
-      progress_bar_view_ = new NotificationIndeterminateProgressBar();
-
+    progress_bar_view_ = new views::ProgressBar();
     progress_bar_view_->SetBorder(MakeProgressBarBorder(
         message_center::kProgressBarTopPadding, kProgressBarBottomPadding));
     top_view_->AddChildView(progress_bar_view_);
   }
 
-  if (!is_indeterminate)
-    progress_bar_view_->SetValue(notification.progress() / 100.0);
-
+  progress_bar_view_->SetValue(notification.progress() / 100.0);
   progress_bar_view_->SetVisible(notification.items().empty());
 }
 

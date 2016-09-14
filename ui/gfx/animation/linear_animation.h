@@ -17,13 +17,17 @@ class AnimationDelegate;
 // invoked.
 class GFX_EXPORT LinearAnimation : public Animation {
  public:
+  // Default frame rate (hz).
+  static const int kDefaultFrameRate = 60;
+
   // Initializes everything except the duration.
   //
   // Caller must make sure to call SetDuration() if they use this
   // constructor; it is preferable to use the full one, but sometimes
   // duration can change between calls to Start() and we need to
   // expose this interface.
-  LinearAnimation(int frame_rate, AnimationDelegate* delegate);
+  explicit LinearAnimation(AnimationDelegate* delegate,
+                           int frame_rate = kDefaultFrameRate);
 
   // Initializes all fields.
   LinearAnimation(int duration, int frame_rate, AnimationDelegate* delegate);

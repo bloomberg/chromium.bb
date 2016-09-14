@@ -28,8 +28,7 @@ namespace {
 class RunAnimation : public LinearAnimation {
  public:
   RunAnimation(int frame_rate, AnimationDelegate* delegate)
-      : LinearAnimation(frame_rate, delegate) {
-  }
+      : LinearAnimation(delegate, frame_rate) {}
 
   void AnimateToState(double state) override {
     EXPECT_LE(0.0, state);
