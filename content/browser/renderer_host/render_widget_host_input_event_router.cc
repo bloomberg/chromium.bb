@@ -4,10 +4,14 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
+
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
@@ -70,6 +74,21 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     bubbling_gesture_scroll_target_.target = nullptr;
     first_bubbling_scroll_target_.target = nullptr;
   }
+
+  if (view == last_mouse_move_target_) {
+    // When a child iframe is destroyed, consider its parent to be to be the
+    // most recent target, if possible. In some cases the parent might already
+    // have been destroyed, in which case the last target is cleared.
+    if (view != last_mouse_move_root_view_)
+      last_mouse_move_target_ =
+          static_cast<RenderWidgetHostViewChildFrame*>(last_mouse_move_target_)
+              ->GetParentView();
+    else
+      last_mouse_move_target_ = nullptr;
+
+    if (!last_mouse_move_target_)
+      last_mouse_move_root_view_ = nullptr;
+  }
 }
 
 void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
@@ -102,7 +121,9 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : active_touches_(0),
+    : last_mouse_move_target_(nullptr),
+      last_mouse_move_root_view_(nullptr),
+      active_touches_(0),
       in_touchscreen_gesture_pinch_(false),
       gesture_pinch_did_send_scroll_begin_(false) {}
 
@@ -152,6 +173,14 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
       root_view, gfx::Point(event->x, event->y), &transformed_point);
   if (!target)
     return;
+
+  // SendMouseEnterOrLeaveEvents is called with the original event
+  // coordinates, which are transformed independently for each view that will
+  // receive an event.
+  if ((event->type == blink::WebInputEvent::MouseLeave ||
+       event->type == blink::WebInputEvent::MouseMove) &&
+      target != last_mouse_move_target_)
+    SendMouseEnterOrLeaveEvents(event, target, root_view);
 
   event->x = transformed_point.x();
   event->y = transformed_point.y();
@@ -290,6 +319,113 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     default:
       NOTREACHED();
   }
+}
+
+void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
+    blink::WebMouseEvent* event,
+    RenderWidgetHostViewBase* target,
+    RenderWidgetHostViewBase* root_view) {
+  // This method treats RenderWidgetHostViews as a tree, where the mouse
+  // cursor is potentially leaving one node and entering another somewhere
+  // else in the tree. Since iframes are graphically self-contained (i.e. an
+  // iframe can't have a descendant that renders outside of its rect
+  // boundaries), all affected RenderWidgetHostViews are ancestors of either
+  // the node being exited or the node being entered.
+  // Approach:
+  // 1. Find lowest common ancestor (LCA) of the last view and current target
+  //    view.
+  // 2. The last view, and its ancestors up to but not including the LCA,
+  //    receive a MouseLeave.
+  // 3. The LCA itself, unless it is the new target, receives a MouseOut
+  //    because the cursor has passed between elements within its bounds.
+  // 4. The new target view's ancestors, up to but not including the LCA,
+  //    receive a MouseEnter.
+  // Ordering does not matter since these are handled asynchronously relative
+  // to each other.
+
+  // If the mouse has moved onto a different root view (typically meaning it
+  // has crossed over a popup or context menu boundary), then we invalidate
+  // last_mouse_move_target_ because we have no reference for its coordinate
+  // space.
+  if (root_view != last_mouse_move_root_view_)
+    last_mouse_move_target_ = nullptr;
+
+  // Finding the LCA uses a standard approach. We build vectors of the
+  // ancestors of each node up to the root, and then remove common ancestors.
+  std::vector<RenderWidgetHostViewBase*> entered_views;
+  std::vector<RenderWidgetHostViewBase*> exited_views;
+  RenderWidgetHostViewBase* cur_view = target;
+  entered_views.push_back(cur_view);
+  while (cur_view != root_view) {
+    // Non-root RWHVs are guaranteed to be RenderWidgetHostViewChildFrames.
+    cur_view =
+        static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
+    // cur_view can possibly be nullptr for guestviews that are not currently
+    // connected to the webcontents tree.
+    if (!cur_view)
+      break;
+    entered_views.push_back(cur_view);
+  }
+
+  cur_view = last_mouse_move_target_;
+  if (cur_view) {
+    exited_views.push_back(cur_view);
+    while (cur_view != root_view) {
+      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                     ->GetParentView();
+      if (!cur_view)
+        break;
+      exited_views.push_back(cur_view);
+    }
+  }
+
+  // This removes common ancestors from the root downward.
+  RenderWidgetHostViewBase* common_ancestor = nullptr;
+  while (entered_views.size() > 0 && exited_views.size() > 0 &&
+         entered_views.back() == exited_views.back()) {
+    common_ancestor = entered_views.back();
+    entered_views.pop_back();
+    exited_views.pop_back();
+  }
+
+  gfx::Point transformed_point;
+  // Send MouseLeaves.
+  for (auto view : exited_views) {
+    blink::WebMouseEvent mouse_leave(*event);
+    mouse_leave.type = blink::WebInputEvent::MouseLeave;
+    transformed_point = root_view->TransformPointToCoordSpaceForView(
+        gfx::Point(event->x, event->y), view);
+    mouse_leave.x = transformed_point.x();
+    mouse_leave.y = transformed_point.y();
+    view->ProcessMouseEvent(mouse_leave, ui::LatencyInfo());
+  }
+
+  // The ancestor might need to trigger MouseOut handlers.
+  if (common_ancestor && common_ancestor != target) {
+    blink::WebMouseEvent mouse_move(*event);
+    mouse_move.type = blink::WebInputEvent::MouseMove;
+    transformed_point = root_view->TransformPointToCoordSpaceForView(
+        gfx::Point(event->x, event->y), common_ancestor);
+    mouse_move.x = transformed_point.x();
+    mouse_move.y = transformed_point.y();
+    common_ancestor->ProcessMouseEvent(mouse_move, ui::LatencyInfo());
+  }
+
+  // Send MouseMoves to trigger MouseEnter handlers.
+  for (auto view : entered_views) {
+    if (view == target)
+      continue;
+    blink::WebMouseEvent mouse_enter(*event);
+    mouse_enter.type = blink::WebInputEvent::MouseMove;
+    transformed_point = root_view->TransformPointToCoordSpaceForView(
+        gfx::Point(event->x, event->y), view);
+    mouse_enter.x = transformed_point.x();
+    mouse_enter.y = transformed_point.y();
+    view->ProcessMouseEvent(mouse_enter, ui::LatencyInfo());
+  }
+
+  last_mouse_move_target_ = target;
+  last_mouse_move_root_view_ = root_view;
 }
 
 void RenderWidgetHostInputEventRouter::BubbleScrollEvent(

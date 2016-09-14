@@ -121,6 +121,15 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                  blink::WebGestureEvent* event,
                                  const ui::LatencyInfo& latency);
 
+  // MouseMove/Enter/Leave events might need to be processed by multiple frames
+  // in different processes for MouseEnter and MouseLeave event handlers to
+  // properly fire. This method determines which RenderWidgetHostViews other
+  // than the actual target require notification, and sends the appropriate
+  // events to them.
+  void SendMouseEnterOrLeaveEvents(blink::WebMouseEvent* event,
+                                   RenderWidgetHostViewBase* target,
+                                   RenderWidgetHostViewBase* root_view);
+
   // The following methods take a GestureScrollUpdate event and send a
   // GestureScrollBegin or GestureScrollEnd for wrapping it. This is needed
   // when GestureScrollUpdates are being forwarded for scroll bubbling.
@@ -136,6 +145,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetData touchpad_gesture_target_;
   TargetData bubbling_gesture_scroll_target_;
   TargetData first_bubbling_scroll_target_;
+
+  // Tracked for the purpose of generating MouseEnter and MouseLeave events.
+  RenderWidgetHostViewBase* last_mouse_move_target_;
+  RenderWidgetHostViewBase* last_mouse_move_root_view_;
+
   int active_touches_;
   // Keep track of when we are between GesturePinchBegin and GesturePinchEnd
   // inclusive, as we need to route these events (and anything in between) to

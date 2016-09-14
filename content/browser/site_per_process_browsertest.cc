@@ -1298,6 +1298,119 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
+// This test verifies that MouseEnter and MouseLeave events fire correctly
+// when the mouse cursor moves between processes.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_CrossProcessMouseEnterAndLeaveTest \
+  DISABLED_CrossProcessMouseEnterAndLeaveTest
+#else
+#define MAYBE_CrossProcessMouseEnterAndLeaveTest \
+  CrossProcessMouseEnterAndLeaveTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_CrossProcessMouseEnterAndLeaveTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c(d))"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site B ------- proxies for A C D\n"
+      "   +--Site C ------- proxies for A B D\n"
+      "        +--Site D -- proxies for A B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/\n"
+      "      D = http://d.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* b_node = root->child_at(0);
+  FrameTreeNode* c_node = root->child_at(1);
+  FrameTreeNode* d_node = c_node->child_at(0);
+
+  RenderWidgetHostViewBase* rwhv_a = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_b = static_cast<RenderWidgetHostViewBase*>(
+      b_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_d = static_cast<RenderWidgetHostViewBase*>(
+      d_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // Verifying surfaces are ready in B and D are sufficient, since other
+  // surfaces contain at least one of them.
+  SurfaceHitTestReadyNotifier notifier_b(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_b));
+  notifier_b.WaitForSurfaceReady();
+  SurfaceHitTestReadyNotifier notifier_d(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_d));
+  notifier_d.WaitForSurfaceReady();
+
+  // Create listeners for mouse events. These are used to verify that the
+  // RenderWidgetHostInputEventRouter is generating MouseLeave, etc for
+  // the right renderers.
+  RenderWidgetHostMouseEventMonitor root_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor a_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor b_frame_monitor(
+      b_node->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor c_frame_monitor(
+      c_node->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor d_frame_monitor(
+      d_node->current_frame_host()->GetRenderWidgetHost());
+
+  gfx::Point point_in_a_frame(2, 2);
+  gfx::Point point_in_b_frame(rwhv_b->GetViewBounds().x() + 2,
+                              rwhv_b->GetViewBounds().y() + 2);
+  gfx::Point point_in_d_frame(rwhv_d->GetViewBounds().x() + 2,
+                              rwhv_d->GetViewBounds().y() + 2);
+
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseMove;
+  mouse_event.x = point_in_a_frame.x();
+  mouse_event.y = point_in_a_frame.y();
+
+  // Send an initial MouseMove to the root view, which shouldn't affect the
+  // other renderers.
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+  a_frame_monitor.ResetEventReceived();
+  EXPECT_FALSE(b_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(c_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(d_frame_monitor.EventWasReceived());
+
+  // Next send a MouseMove to B frame, which shouldn't affect C or D but
+  // A should receive a MouseMove event.
+  mouse_event.x = point_in_b_frame.x();
+  mouse_event.y = point_in_b_frame.y();
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+  EXPECT_EQ(a_frame_monitor.event().type, blink::WebInputEvent::MouseMove);
+  a_frame_monitor.ResetEventReceived();
+  EXPECT_TRUE(b_frame_monitor.EventWasReceived());
+  b_frame_monitor.ResetEventReceived();
+  EXPECT_FALSE(c_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(d_frame_monitor.EventWasReceived());
+
+  // Next send a MouseMove to D frame, which should have side effects in every
+  // other RenderWidgetHostView.
+  mouse_event.x = point_in_d_frame.x();
+  mouse_event.y = point_in_d_frame.y();
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+  EXPECT_EQ(a_frame_monitor.event().type, blink::WebInputEvent::MouseMove);
+  EXPECT_TRUE(b_frame_monitor.EventWasReceived());
+  EXPECT_EQ(b_frame_monitor.event().type, blink::WebInputEvent::MouseLeave);
+  EXPECT_TRUE(c_frame_monitor.EventWasReceived());
+  EXPECT_EQ(c_frame_monitor.event().type, blink::WebInputEvent::MouseMove);
+  EXPECT_TRUE(d_frame_monitor.EventWasReceived());
+}
+
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
 #if defined(OS_ANDROID)
