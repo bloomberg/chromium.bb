@@ -17,6 +17,8 @@ extern NSString* const kNotificationType;
 extern NSString* const kNotificationOperation;
 extern NSString* const kNotificationButtonIndex;
 
+extern NSString* const kAlertXPCServiceName;
+
 }  // notification_constants
 
 #endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_NOTIFICATION_CONSTANTS_MAC_H_

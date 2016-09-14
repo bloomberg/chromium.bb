@@ -27,6 +27,7 @@ buildflag_header("features") {
     "ENABLE_GOOGLE_NOW=$enable_google_now",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
+    "ENABLE_XPC_NOTIFICATIONS=$enable_xpc_notifications",
     "USE_VULCANIZE=$use_vulcanize",
     "PGO_BUILD=$pgo_build",
   ]
