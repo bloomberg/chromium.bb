@@ -28,7 +28,6 @@ class VIEWS_EXPORT VectorIconButton : public views::ImageButton {
   void SetIcon(gfx::VectorIconId id);
 
   // views::ImageButton:
-  void OnEnabledChanged() override;
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 

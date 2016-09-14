@@ -46,10 +46,6 @@ void VectorIconButton::SetIcon(gfx::VectorIconId id) {
   }
 }
 
-void VectorIconButton::OnEnabledChanged() {
-  OnThemeChanged();
-}
-
 void VectorIconButton::OnThemeChanged() {
   SkColor icon_color =
       color_utils::DeriveDefaultIconColor(delegate_->GetVectorIconBaseColor());
