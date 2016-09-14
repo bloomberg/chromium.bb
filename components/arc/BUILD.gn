@@ -164,7 +164,7 @@ mojom("arc_bindings") {
     "common/wallpaper.mojom",
   ]
 
-  deps = [
+  public_deps = [
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
