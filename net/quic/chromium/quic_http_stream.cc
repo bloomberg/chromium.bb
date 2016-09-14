@@ -58,6 +58,7 @@ QuicHttpStream::QuicHttpStream(
       headers_bytes_sent_(0),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
+      closed_is_first_stream_(false),
       user_buffer_len_(0),
       quic_connection_error_(QUIC_NO_ERROR),
       port_migration_detected_(false),
@@ -416,7 +417,15 @@ int64_t QuicHttpStream::GetTotalSentBytes() const {
 }
 
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
-  // TODO(mmenke):  Figure out what to do here.
+  bool is_first_stream = closed_is_first_stream_;
+  if (stream_)
+    is_first_stream = stream_->IsFirstStream();
+  if (is_first_stream) {
+    load_timing_info->socket_reused = false;
+    load_timing_info->connect_timing = connect_timing_;
+  } else {
+    load_timing_info->socket_reused = true;
+  }
   return true;
 }
 
@@ -795,6 +804,9 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
   response_info_->request_time = request_time_;
   response_headers_received_ = true;
 
+  // Populate |connect_timing_| when response headers are received. This should
+  // take care of 0-RTT where request is sent before handshake is confirmed.
+  connect_timing_ = session_->GetConnectTiming();
   return OK;
 }
 
@@ -824,6 +836,7 @@ void QuicHttpStream::ResetStream() {
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
   closed_stream_sent_bytes_ = stream_->stream_bytes_written();
+  closed_is_first_stream_ = stream_->IsFirstStream();
   stream_ = nullptr;
 
   // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress
