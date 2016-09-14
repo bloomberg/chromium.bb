@@ -124,35 +124,26 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
   MessageWriter writer(message.get());
 
   // Append stdout.
-  FileDescriptor temp(1);
-  // Descriptor should not be valid until checked.
-  ASSERT_FALSE(temp.is_valid());
-  // NB: thread IO requirements not relevant for unit tests.
-  temp.CheckValidity();
-  ASSERT_TRUE(temp.is_valid());
-  writer.AppendFileDescriptor(temp);
+  const int fd_in = 1;
+  writer.AppendFileDescriptor(fd_in);
 
-  FileDescriptor fd_value;
+  base::ScopedFD fd_out;
 
   MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
   ASSERT_EQ(Message::UNIX_FD, reader.GetDataType());
   ASSERT_EQ("h", reader.GetDataSignature());
-  ASSERT_TRUE(reader.PopFileDescriptor(&fd_value));
+  ASSERT_TRUE(reader.PopFileDescriptor(&fd_out));
   ASSERT_FALSE(reader.HasMoreData());
-  // Descriptor is not valid until explicitly checked.
-  ASSERT_FALSE(fd_value.is_valid());
-  fd_value.CheckValidity();
-  ASSERT_TRUE(fd_value.is_valid());
 
   // Stdout should be returned but we cannot check the descriptor
   // value because stdout will be dup'd.  Instead check st_rdev
   // which should be identical.
   struct stat sb_stdout;
-  int status_stdout = HANDLE_EINTR(fstat(1, &sb_stdout));
+  int status_stdout = HANDLE_EINTR(fstat(fd_in, &sb_stdout));
   ASSERT_GE(status_stdout, 0);
   struct stat sb_fd;
-  int status_fd = HANDLE_EINTR(fstat(fd_value.value(), &sb_fd));
+  int status_fd = HANDLE_EINTR(fstat(fd_out.get(), &sb_fd));
   ASSERT_GE(status_fd, 0);
   EXPECT_EQ(sb_stdout.st_rdev, sb_fd.st_rdev);
 }

@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "dbus/bus.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 

@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "dbus/file_descriptor.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"

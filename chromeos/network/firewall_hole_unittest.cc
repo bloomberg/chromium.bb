@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_permission_broker_client.h"
-#include "dbus/file_descriptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

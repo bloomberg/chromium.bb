@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertisement_service_provider.h"

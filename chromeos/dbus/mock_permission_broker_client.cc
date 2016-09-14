@@ -4,8 +4,6 @@
 
 #include "chromeos/dbus/mock_permission_broker_client.h"
 
-#include "dbus/file_descriptor.h"
-
 namespace chromeos {
 
 MockPermissionBrokerClient::MockPermissionBrokerClient() {
