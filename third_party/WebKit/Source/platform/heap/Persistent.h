@@ -766,6 +766,15 @@ struct IsWeakReceiver<blink::WeakPersistent<T>> : std::true_type {};
 template <typename T>
 struct IsWeakReceiver<blink::CrossThreadWeakPersistent<T>> : std::true_type {};
 
+template <typename T>
+struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
+    static blink::CrossThreadPersistent<T> Unwrap(const blink::CrossThreadWeakPersistent<T>& wrapped)
+    {
+        blink::CrossThreadPersistentRegion::LockScope persistentLock(blink::ProcessHeap::crossThreadPersistentRegion());
+        return blink::CrossThreadPersistent<T>(wrapped.get());
+    }
+};
+
 }
 
 #endif // Persistent_h
