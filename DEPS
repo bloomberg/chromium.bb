@@ -422,7 +422,7 @@ deps_os = {
 
     # gRPC, an RPC framework. For Blimp use only.
     'src/third_party/grpc':
-     Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + 'dc44fe515c8c30093ea8b2f14230123959c886e8',
+     Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + '3f186a41daa7c951234ea98cfaa50996047a47fd',
   },
   'android': {
     'src/third_party/android_protobuf/src':
