@@ -34,20 +34,16 @@ UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Gets the fulls strength image for a connected network type.
-UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForConnectedNetwork(
-    IconType icon_type,
-    const std::string& network_type);
+// Gets the fulls strength image for a wifi network.
+// TODO(estade): Expose SignalStrengthImageSource and use that instead.
+UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForConnectedMobileNetwork();
 
-// Gets the image for a connecting network type.
-UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForConnectingNetwork(
-    IconType icon_type,
-    const std::string& network_type);
+// Gets the disconnected image for a cell network.
+// TODO(estade): Expose SignalStrengthImageSource and use that instead.
+UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
 
-// Gets the image for a disconnected network type.
-UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForDisconnectedNetwork(
-    IconType icon_type,
-    const std::string& network_type);
+// Returns a vpn image suitable for use on a light background.
+UI_CHROMEOS_EXPORT gfx::ImageSkia GetVpnImage();
 
 // Returns the label for |network| based on |icon_type|. |network| can be NULL.
 UI_CHROMEOS_EXPORT base::string16 GetLabelForNetwork(

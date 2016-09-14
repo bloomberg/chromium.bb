@@ -87,9 +87,8 @@ class VpnDefaultView : public TrayItemMore,
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
+    *image = ui::network_icon::GetVpnImage();
     if (!vpn || (!vpn->IsConnectedState() && !vpn->IsConnectingState())) {
-      *image = ui::network_icon::GetImageForDisconnectedNetwork(
-          ui::network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
       if (label) {
         *label =
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
@@ -98,8 +97,6 @@ class VpnDefaultView : public TrayItemMore,
       return;
     }
     *animating = vpn->IsConnectingState();
-    *image = ui::network_icon::GetImageForNetwork(
-        vpn, ui::network_icon::ICON_TYPE_DEFAULT_VIEW);
     if (label) {
       *label = ui::network_icon::GetLabelForNetwork(
           vpn, ui::network_icon::ICON_TYPE_DEFAULT_VIEW);

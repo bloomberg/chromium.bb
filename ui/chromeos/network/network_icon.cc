@@ -486,24 +486,9 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
       gfx::Rect(0, index * height, width, height));
 }
 
-gfx::ImageSkia GetConnectedImage(IconType icon_type,
-                                 const std::string& network_type) {
-  if (network_type == shill::kTypeVPN) {
-    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NETWORK_VPN);
-  }
-  ImageType image_type = ImageTypeForNetworkType(network_type);
-  const int connected_index = kNumNetworkImages - 1;
-  return GetImageForIndex(image_type, icon_type, connected_index);
-}
-
 const gfx::ImageSkia GetDisconnectedImage(IconType icon_type,
                                           const std::string& network_type) {
-  if (network_type == shill::kTypeVPN) {
-    // Note: same as connected image, shouldn't normally be seen.
-    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NETWORK_VPN);
-  }
+  DCHECK_NE(shill::kTypeVPN, network_type);
   ImageType image_type = ImageTypeForNetworkType(network_type);
   const int disconnected_index = 0;
   return GetImageForIndex(image_type, icon_type, disconnected_index);
@@ -549,16 +534,18 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
   return *s_vpn_images[index];
 }
 
-gfx::ImageSkia ConnectingVpnBadge(double animation) {
+gfx::ImageSkia ConnectingVpnBadge(double animation, IconType icon_type) {
   int index = animation * nextafter(static_cast<float>(kNumFadeImages), 0);
   static gfx::ImageSkia* s_vpn_badges[kNumFadeImages];
   if (!s_vpn_badges[index]) {
     // Lazily cache images.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia* badge =
-        rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
+    gfx::ImageSkia badge =
+        UseMd() ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_VPN,
+                                        GetBaseColorForIconType(icon_type))
+                : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                      IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     s_vpn_badges[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateTransparentImage(*badge, animation));
+        gfx::ImageSkiaOperations::CreateTransparentImage(badge, animation));
   }
   return *s_vpn_badges[index];
 }
@@ -644,18 +631,22 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
                        int strength_index) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (network->Matches(NetworkTypePattern::Ethernet())) {
-    return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
+    DCHECK_NE(ICON_TYPE_TRAY, icon_type);
+    return UseMd()
+               ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_ETHERNET,
+                                       GetBaseColorForIconType(ICON_TYPE_LIST))
+               : *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
   } else if (network->Matches(NetworkTypePattern::Wireless())) {
     DCHECK(strength_index > 0);
     return GetImageForIndex(ImageTypeForNetworkType(network->type()), icon_type,
                             strength_index);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
-    return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
-  } else {
-    LOG(WARNING) << "Request for icon for unsupported type: "
-                 << network->type();
-    return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
+    DCHECK_NE(ICON_TYPE_TRAY, icon_type);
+    return GetVpnImage();
   }
+
+  NOTREACHED() << "Request for icon for unsupported type: " << network->type();
+  return gfx::ImageSkia();
 }
 
 //------------------------------------------------------------------------------
@@ -674,7 +665,7 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
   Badges badges;
   if (connected_network) {
     icon = GetImageForNetwork(connected_network, icon_type);
-    badges.bottom_left = ConnectingVpnBadge(animation);
+    badges.bottom_left = ConnectingVpnBadge(animation, icon_type);
   } else {
     icon = ConnectingVpnImage(animation);
   }
@@ -909,19 +900,23 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
   return icon->image();
 }
 
-gfx::ImageSkia GetImageForConnectedNetwork(IconType icon_type,
-                                           const std::string& network_type) {
-  return GetConnectedImage(icon_type, network_type);
+gfx::ImageSkia GetImageForConnectedMobileNetwork() {
+  ImageType image_type = ImageTypeForNetworkType(shill::kTypeWifi);
+  const IconType icon_type = ICON_TYPE_LIST;
+  const int connected_index = kNumNetworkImages - 1;
+  return GetImageForIndex(image_type, icon_type, connected_index);
 }
 
-gfx::ImageSkia GetImageForConnectingNetwork(IconType icon_type,
-                                            const std::string& network_type) {
-  return GetConnectingImage(icon_type, network_type);
+gfx::ImageSkia GetImageForDisconnectedCellNetwork() {
+  return GetDisconnectedImage(ICON_TYPE_LIST, shill::kTypeCellular);
 }
 
-gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
-                                              const std::string& network_type) {
-  return GetDisconnectedImage(icon_type, network_type);
+gfx::ImageSkia GetVpnImage() {
+  return UseMd()
+             ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_VPN,
+                                     GetBaseColorForIconType(ICON_TYPE_LIST))
+             : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                   IDR_AURA_UBER_TRAY_NETWORK_VPN);
 }
 
 base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
@@ -1057,13 +1052,13 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
     // If no connecting network, check for cellular initializing.
     int uninitialized_msg = GetCellularUninitializedMsg();
     if (uninitialized_msg != 0) {
-      *image = GetImageForConnectingNetwork(icon_type, shill::kTypeCellular);
+      *image = GetConnectingImage(icon_type, shill::kTypeCellular);
       if (label)
         *label = l10n_util::GetStringUTF16(uninitialized_msg);
       *animating = true;
     } else {
       // Otherwise show the disconnected wifi icon.
-      *image = GetImageForDisconnectedNetwork(icon_type, shill::kTypeWifi);
+      *image = GetDisconnectedImage(icon_type, shill::kTypeWifi);
       if (label) {
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
