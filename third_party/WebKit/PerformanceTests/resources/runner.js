@@ -293,8 +293,8 @@ if (window.testRunner) {
 
 
     PerfTestRunner.measurePageLoadTime = function(test) {
+        var file = PerfTestRunner.loadFile(test.path);
         test.run = function() {
-            var file = PerfTestRunner.loadFile(test.path);
             if (!test.chunkSize)
                 this.chunkSize = 50000;
 
