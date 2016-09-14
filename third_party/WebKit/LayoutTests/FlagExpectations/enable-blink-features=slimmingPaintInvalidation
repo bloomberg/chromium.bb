@@ -1,3 +1,12 @@
 # Expectations for slimmingPaintInvalidation feature
+
+# Different order of caret invalidations
 paint/invalidation/4776765.html [ NeedsRebaseline ]
 paint/invalidation/caret-subpixel.html [ NeedsRebaseline ]
+paint/invalidation/caret-with-composited-scroll.html [ NeedsRebaseline ]
+paint/invalidation/delete-into-nested-block.html [ NeedsRebaseline ]
+paint/invalidation/inline-outline-repaint.html [ NeedsRebaseline ]
+paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
+paint/invalidation/invalidate-caret-in-non-composited-scrolling-container.html [ NeedsRebaseline ]
+paint/invalidation/selection-after-delete.html [ NeedsRebaseline ]
+paint/invalidation/textarea-caret.html [ NeedsRebaseline ]

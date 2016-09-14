@@ -40,6 +40,8 @@ struct PaintInvalidatorContext {
         ForcedSubtreeInvalidationRectUpdate = 1 << 1,
         ForcedSubtreeFullInvalidation = 1 << 2,
         ForcedSubtreeFullInvalidationForStackedContents = 1 << 3,
+        // TODO(crbug.com/637313): This is temporary before we support filters in paint property tree.
+        ForcedSubtreeSlowPathRect = 1 << 4,
     };
     unsigned forcedSubtreeInvalidationFlags = 0;
 
