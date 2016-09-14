@@ -38596,6 +38596,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Omnibox.SearchProvider.GetMostRecentKeywordTermsDefaultProviderTime"
+    units="ms">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Time it takes for the omnibox to search the previous query history database
+    for queries that start with the omnibox text.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SearchProviderMatches">
   <owner>mpearson@chromium.org</owner>
   <summary>
