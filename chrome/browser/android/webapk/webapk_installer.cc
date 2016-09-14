@@ -418,8 +418,9 @@ void WebApkInstaller::OnTimeout() {
 
 void WebApkInstaller::OnSuccess() {
   FinishCallback callback = finish_callback_;
+  std::string webapk_package = webapk_package_;
   delete this;
-  callback.Run(true, webapk_package_);
+  callback.Run(true, webapk_package);
 }
 
 void WebApkInstaller::OnFailure() {
