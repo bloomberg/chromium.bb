@@ -92,7 +92,7 @@ Polymer({
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.advancedToggleExpanded_ = e.detail;
-      this.currentRouteChanged(settings.getCurrentRoute());
+      this.updatePagesShown_();
     }.bind(this));
 
     var currentRoute = settings.getCurrentRoute();
@@ -152,6 +152,9 @@ Polymer({
     if (!newRoute.isSubpage())
       this.hasExpandedSection_ = false;
 
+    if (settings.Route.ADVANCED.contains(newRoute))
+      this.advancedToggleExpanded_ = true;
+
     this.updatePagesShown_();
   },
 
@@ -177,15 +180,10 @@ Polymer({
         about: false,
         basic: settings.Route.BASIC.contains(currentRoute) ||
             !this.hasExpandedSection_,
-        advanced: settings.Route.ADVANCED.contains(currentRoute) ||
-            (!this.hasExpandedSection_ && this.advancedToggleExpanded_),
+        advanced: this.hasExpandedSection_ ?
+            settings.Route.ADVANCED.contains(currentRoute) :
+            this.advancedToggleExpanded_,
       };
-
-      if (this.showPages_.advanced) {
-        assert(!this.pageVisibility ||
-            this.pageVisibility.advancedSettings !== false);
-        this.advancedToggleExpanded_ = true;
-      }
     }
 
     // Wait for any other changes prior to calculating the overflow padding.

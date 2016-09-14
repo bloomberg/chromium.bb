@@ -42,7 +42,7 @@ cr.define('settings_main_page', function() {
       return CrSettingsPrefs.initialized;
     });
 
-    suite('SearchTests', function() {
+    suite('MainPageTests', function() {
       /** @type {?TestSearchManager} */
       var searchManager = null;
 
@@ -50,6 +50,7 @@ cr.define('settings_main_page', function() {
       var settingsMain = null;
 
       setup(function() {
+        settings.navigateTo(settings.Route.BASIC);
         searchManager = new TestSearchManager();
         settings.setSearchManagerForTesting(searchManager);
         PolymerTest.clearBody();
@@ -121,6 +122,32 @@ cr.define('settings_main_page', function() {
           assertEquals(
               'none', settingsMain.$$('settings-advanced-page').style.display);
         });
+      });
+
+      test('can collapse advanced on advanced section route', function() {
+        settings.navigateTo(settings.Route.PRIVACY);
+        Polymer.dom.flush();
+
+        var advancedToggle = settingsMain.$$('#advancedToggle');
+        assertTrue(!!advancedToggle);
+
+        MockInteractions.tap(advancedToggle);
+        Polymer.dom.flush();
+
+        assertFalse(settingsMain.showPages_.advanced);
+      });
+
+      test('navigating to a basic page does not collapse advanced', function() {
+        settings.navigateTo(settings.Route.PRIVACY);
+        Polymer.dom.flush();
+
+        var advancedToggle = settingsMain.$$('#advancedToggle');
+        assertTrue(!!advancedToggle);
+
+        settings.navigateTo(settings.Route.PEOPLE);
+        Polymer.dom.flush();
+
+        assertTrue(settingsMain.showPages_.advanced);
       });
     });
   }
