@@ -17,7 +17,6 @@
 #include "ui/views/controls/button/button.h"
 
 namespace content {
-class NavigationHandle;
 class WebContents;
 }  // namespace content
 
@@ -61,7 +60,7 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
       base::Callback<void(size_t, arc::ArcNavigationThrottle::CloseReason)>;
 
   ~IntentPickerBubbleView() override;
-  static void ShowBubble(content::NavigationHandle* handle,
+  static void ShowBubble(content::WebContents* web_contents,
                          const std::vector<NameAndIcon>& app_info,
                          const ThrottleCallback& throttle_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(

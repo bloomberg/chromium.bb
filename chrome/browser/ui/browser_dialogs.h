@@ -175,11 +175,11 @@ class ContentSettingBubbleViewsBridge {
 #if defined(OS_CHROMEOS)
 
 // Return a pointer to the IntentPickerBubbleView::ShowBubble method.
-using BubbleShowPtr =
-void(*)(content::NavigationHandle*,
-        const std::vector<std::pair<std::basic_string<char>, gfx::Image> >&,
-        const base::Callback<void(size_t,
-                                  arc::ArcNavigationThrottle::CloseReason)>&);
+using BubbleShowPtr = void (*)(
+    content::WebContents*,
+    const std::vector<std::pair<std::basic_string<char>, gfx::Image>>&,
+    const base::Callback<void(size_t,
+                              arc::ArcNavigationThrottle::CloseReason)>&);
 
 BubbleShowPtr ShowIntentPickerBubble();
 

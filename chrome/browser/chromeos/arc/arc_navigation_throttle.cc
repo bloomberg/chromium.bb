@@ -221,7 +221,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
   }
 
   show_intent_picker_callback_.Run(
-      navigation_handle(), app_info,
+      navigation_handle()->GetWebContents(), app_info,
       base::Bind(&ArcNavigationThrottle::OnIntentPickerClosed,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&handlers)));
 }
