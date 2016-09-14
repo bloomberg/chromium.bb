@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
@@ -81,7 +82,26 @@ void RunCallbacksWhileFrameIsValid(
   }
 }
 
+enum class PortType {
+  EXTENSION,
+  TAB,
+  NATIVE_APP,
+};
+
 }  // namespace
+
+struct ExtensionFrameHelper::PendingPortRequest {
+  PendingPortRequest(PortType type, const base::Callback<void(int)>& callback)
+      : type(type), callback(callback) {}
+  ~PendingPortRequest() {}
+
+  base::ElapsedTimer timer;
+  PortType type;
+  base::Callback<void(int)> callback;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PendingPortRequest);
+};
 
 ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
                                            Dispatcher* extension_dispatcher)
@@ -180,7 +200,8 @@ void ExtensionFrameHelper::RequestPortId(
     bool include_tls_channel_id,
     const base::Callback<void(int)>& callback) {
   int port_request_id = next_port_request_id_++;
-  pending_port_requests_[port_request_id] = callback;
+  pending_port_requests_[port_request_id] =
+      base::MakeUnique<PendingPortRequest>(PortType::EXTENSION, callback);
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.GetPortIdSyncTime.Extension");
@@ -196,7 +217,8 @@ void ExtensionFrameHelper::RequestTabPortId(
     const std::string& channel_name,
     const base::Callback<void(int)>& callback) {
   int port_request_id = next_port_request_id_++;
-  pending_port_requests_[port_request_id] = callback;
+  pending_port_requests_[port_request_id] =
+      base::MakeUnique<PendingPortRequest>(PortType::TAB, callback);
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.GetPortIdSyncTime.Tab");
     render_frame()->Send(new ExtensionHostMsg_OpenChannelToTab(
@@ -209,7 +231,8 @@ void ExtensionFrameHelper::RequestNativeAppPortId(
     const std::string& native_app_name,
     const base::Callback<void(int)>& callback) {
   int port_request_id = next_port_request_id_++;
-  pending_port_requests_[port_request_id] = callback;
+  pending_port_requests_[port_request_id] =
+      base::MakeUnique<PendingPortRequest>(PortType::NATIVE_APP, callback);
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.GetPortIdSyncTime.NativeApp");
@@ -341,7 +364,25 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
 void ExtensionFrameHelper::OnAssignPortId(int port_id, int request_id) {
   auto iter = pending_port_requests_.find(request_id);
   DCHECK(iter != pending_port_requests_.end());
-  iter->second.Run(port_id);
+  PendingPortRequest& request = *iter->second;
+  switch (request.type) {
+    case PortType::EXTENSION: {
+      UMA_HISTOGRAM_TIMES("Extensions.Messaging.GetPortIdAsyncTime.Extension",
+                          request.timer.Elapsed());
+      break;
+    }
+    case PortType::TAB: {
+      UMA_HISTOGRAM_TIMES("Extensions.Messaging.GetPortIdAsyncTime.Tab",
+                          request.timer.Elapsed());
+      break;
+    }
+    case PortType::NATIVE_APP: {
+      UMA_HISTOGRAM_TIMES("Extensions.Messaging.GetPortIdAsyncTime.NativeApp",
+                          request.timer.Elapsed());
+      break;
+    }
+  }
+  request.callback.Run(port_id);
   pending_port_requests_.erase(iter);
 }
 

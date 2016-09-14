@@ -96,6 +96,8 @@ class ExtensionFrameHelper
                               const base::Callback<void(int)>& callback);
 
  private:
+  struct PendingPortRequest;
+
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
   void DidCreateNewDocument() override;
@@ -161,7 +163,7 @@ class ExtensionFrameHelper
   int next_port_request_id_;
 
   // Map of port requests to callbacks.
-  std::map<int, base::Callback<void(int)>> pending_port_requests_;
+  std::map<int, std::unique_ptr<PendingPortRequest>> pending_port_requests_;
 
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
 

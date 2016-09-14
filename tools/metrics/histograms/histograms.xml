@@ -15965,6 +15965,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The manifest version of each loaded extension.</summary>
 </histogram>
 
+<histogram name="Extensions.Messaging.GetPortIdAsyncTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The total amount of time between when an extension opens a new channel and
+    when it receives the global port id from the browser and can begin sending
+    messages.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Messaging.GetPortIdSyncTime" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -101252,6 +101261,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Extension" label="A port opened to an extension context."/>
   <suffix name="NativeApp" label="A port opened to a native application."/>
   <suffix name="Tab" label="A port opened to a tab context."/>
+  <affected-histogram name="Extensions.Messaging.GetPortIdAsyncTime"/>
   <affected-histogram name="Extensions.Messaging.GetPortIdSyncTime"/>
 </histogram_suffixes>
 
