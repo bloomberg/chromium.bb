@@ -118,6 +118,26 @@ class TaskQueueManagerTest : public testing::Test {
     manager_->UpdateWorkQueues(lazy_now);
   }
 
+  // Runs all immediate tasks until there is no more work to do and advances
+  // time if there is a pending delayed task. |per_run_time_callback| is called
+  // when the clock advances.
+  void RunUntilIdle(base::Closure per_run_time_callback) {
+    for (;;) {
+      // Advance time if we've run out of immediate work to do.
+      if (manager_->selector_.EnabledWorkQueuesEmpty()) {
+        base::TimeTicks run_time;
+        if (manager_->real_time_domain()->NextScheduledRunTime(&run_time)) {
+          now_src_->SetNowTicks(run_time);
+          per_run_time_callback.Run();
+        } else {
+          break;
+        }
+      }
+
+      test_task_runner_->RunPendingTasks();
+    }
+  }
+
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
@@ -1841,6 +1861,151 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
   analyzer->FindEvents(q, &events);
 
   EXPECT_EQ(2u, events.size());
+}
+
+class CancelableTask {
+ public:
+  CancelableTask() : weak_factory_(this) {}
+
+  void NopTask() {}
+
+  base::WeakPtrFactory<CancelableTask> weak_factory_;
+};
+
+TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasks) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  CancelableTask task1;
+  CancelableTask task2;
+  CancelableTask task3;
+  CancelableTask task4;
+  base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
+  base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
+  base::TimeDelta delay3(base::TimeDelta::FromSeconds(15));
+  base::TimeDelta delay4(base::TimeDelta::FromSeconds(30));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task1.weak_factory_.GetWeakPtr()),
+      delay1);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task2.weak_factory_.GetWeakPtr()),
+      delay2);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task3.weak_factory_.GetWeakPtr()),
+      delay3);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task4.weak_factory_.GetWeakPtr()),
+      delay4);
+
+  task2.weak_factory_.InvalidateWeakPtrs();
+  task3.weak_factory_.InvalidateWeakPtrs();
+
+  std::set<base::TimeTicks> run_times;
+
+  RunUntilIdle(base::Bind([](std::set<base::TimeTicks>* run_times,
+                             base::SimpleTestTickClock* clock) {
+    run_times->insert(clock->NowTicks());
+  }, &run_times, now_src_.get()));
+
+  EXPECT_THAT(run_times, ElementsAre(start_time + delay1, start_time + delay4));
+}
+
+TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasksReversePostOrder) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  CancelableTask task1;
+  CancelableTask task2;
+  CancelableTask task3;
+  CancelableTask task4;
+  base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
+  base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
+  base::TimeDelta delay3(base::TimeDelta::FromSeconds(15));
+  base::TimeDelta delay4(base::TimeDelta::FromSeconds(30));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task4.weak_factory_.GetWeakPtr()),
+      delay4);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task3.weak_factory_.GetWeakPtr()),
+      delay3);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task2.weak_factory_.GetWeakPtr()),
+      delay2);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task1.weak_factory_.GetWeakPtr()),
+      delay1);
+
+  task2.weak_factory_.InvalidateWeakPtrs();
+  task3.weak_factory_.InvalidateWeakPtrs();
+
+  std::set<base::TimeTicks> run_times;
+
+  RunUntilIdle(base::Bind([](std::set<base::TimeTicks>* run_times,
+                             base::SimpleTestTickClock* clock) {
+    run_times->insert(clock->NowTicks());
+  }, &run_times, now_src_.get()));
+
+  EXPECT_THAT(run_times, ElementsAre(start_time + delay1, start_time + delay4));
+}
+
+TEST_F(TaskQueueManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  CancelableTask task1;
+  CancelableTask task2;
+  CancelableTask task3;
+  CancelableTask task4;
+  base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
+  base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
+  base::TimeDelta delay3(base::TimeDelta::FromSeconds(15));
+  base::TimeDelta delay4(base::TimeDelta::FromSeconds(30));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task1.weak_factory_.GetWeakPtr()),
+      delay1);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task2.weak_factory_.GetWeakPtr()),
+      delay2);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task3.weak_factory_.GetWeakPtr()),
+      delay3);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::NopTask, task4.weak_factory_.GetWeakPtr()),
+      delay4);
+
+  // Post a non-canceled task with |delay3|. So we should still get a wakeup at
+  // |delay3| even though we cancel |task3|.
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&CancelableTask::NopTask, base::Unretained(&task3)),
+      delay3);
+
+  task2.weak_factory_.InvalidateWeakPtrs();
+  task3.weak_factory_.InvalidateWeakPtrs();
+
+  std::set<base::TimeTicks> run_times;
+
+  RunUntilIdle(base::Bind([](std::set<base::TimeTicks>* run_times,
+                             base::SimpleTestTickClock* clock) {
+    run_times->insert(clock->NowTicks());
+  }, &run_times, now_src_.get()));
+
+  EXPECT_THAT(run_times, ElementsAre(start_time + delay1, start_time + delay3,
+                                     start_time + delay4));
 }
 
 }  // namespace scheduler

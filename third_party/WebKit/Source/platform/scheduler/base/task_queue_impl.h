@@ -172,8 +172,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|.  Must be called from the main thread.
-  void MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now);
+  // |delayed_work_queue|. It also schedules the next wake up with the
+  // TimeDomain. Must be called from the main thread.
+  void WakeUpForDelayedWork(LazyNow* lazy_now);
 
  private:
   friend class WorkQueue;

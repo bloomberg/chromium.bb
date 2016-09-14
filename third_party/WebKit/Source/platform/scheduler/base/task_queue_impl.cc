@@ -217,11 +217,25 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task, base::TimeTicks now) {
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
 
-  // Schedule a later call to MoveReadyDelayedTasksToDelayedWorkQueue.
   base::TimeTicks delayed_run_time = pending_task.delayed_run_time;
+  bool queue_was_empty = main_thread_only().delayed_incoming_queue.empty();
+  base::TimeTicks previous_next_run_time;
+  if (!queue_was_empty) {
+    previous_next_run_time =
+        main_thread_only().delayed_incoming_queue.top().delayed_run_time;
+  }
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
-  main_thread_only().time_domain->ScheduleDelayedWork(this, delayed_run_time,
-                                                      now);
+
+  // Make sure the next wakeup (and only the next wakeup) is registered with the
+  // TimeDomain.
+  if (queue_was_empty || delayed_run_time < previous_next_run_time) {
+    main_thread_only().time_domain->ScheduleDelayedWork(this, delayed_run_time,
+                                                        now);
+    if (!queue_was_empty) {
+      main_thread_only().time_domain->CancelDelayedWork(this,
+                                                        previous_next_run_time);
+    }
+  }
   TraceQueueSize(false);
 }
 
@@ -240,11 +254,11 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
 }
 
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
-         const tracked_objects::Location& posted_from,
-         const base::Closure& task,
-         base::TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         bool nestable) {
+    const tracked_objects::Location& posted_from,
+    const base::Closure& task,
+    base::TimeTicks desired_run_time,
+    EnqueueOrder sequence_number,
+    bool nestable) {
   if (any_thread().immediate_incoming_queue.empty())
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
   // If the |immediate_incoming_queue| is empty we need a DoWork posted to make
@@ -269,17 +283,19 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   base::TimeTicks delayed_run_time = pending_task.delayed_run_time;
   base::TimeTicks time_domain_now = main_thread_only().time_domain->Now();
-  // Make sure |delayed_run_time| isn't in the past.
   if (delayed_run_time < time_domain_now) {
+    // If |delayed_run_time| is in the past then push it onto the work queue
+    // immediately. To ensure the right task ordering we need to temporarily
+    // push it onto the |delayed_incoming_queue|.
     delayed_run_time = time_domain_now;
     pending_task.delayed_run_time = time_domain_now;
     main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
     LazyNow lazy_now(time_domain_now);
-    MoveReadyDelayedTasksToDelayedWorkQueue(&lazy_now);
+    WakeUpForDelayedWork(&lazy_now);
   } else {
-    main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
-    main_thread_only().time_domain->ScheduleDelayedWork(
-        this, delayed_run_time, main_thread_only().time_domain->Now());
+    // If |delayed_run_time| is in the future we can queue it as normal.
+    PushOntoDelayedIncomingQueueFromMainThread(std::move(pending_task),
+                                               time_domain_now);
   }
   TraceQueueSize(false);
 }
@@ -334,7 +350,7 @@ bool TaskQueueImpl::HasPendingImmediateWork() const {
   return !any_thread().immediate_incoming_queue.empty();
 }
 
-void TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now) {
+void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
   while (!main_thread_only().delayed_incoming_queue.empty()) {
@@ -351,6 +367,13 @@ void TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now) {
         main_thread_only().task_queue_manager->GetNextSequenceNumber());
     main_thread_only().delayed_work_queue->Push(std::move(task));
     main_thread_only().delayed_incoming_queue.pop();
+  }
+
+  // Make sure the next wake up is scheduled.
+  if (!main_thread_only().delayed_incoming_queue.empty()) {
+    main_thread_only().time_domain->ScheduleDelayedWork(
+        this, main_thread_only().delayed_incoming_queue.top().delayed_run_time,
+        lazy_now->Now());
   }
 }
 
@@ -452,6 +475,8 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->SetDouble("delay_to_next_task_ms",
                      delay_to_next_task.InMillisecondsF());
   }
+  if (main_thread_only().current_fence)
+    state->SetInteger("current_fence", main_thread_only().current_fence);
   if (verbose_tracing_enabled) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(any_thread().immediate_incoming_queue, state);
