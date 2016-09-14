@@ -196,6 +196,8 @@ source_set("common_sources") {
     "screen_orientation_values.h",
     "security_style.h",
     "send_zygote_child_ping_linux.h",
+    "service_names.cc",
+    "service_names.h",
     "speech_recognition_error.h",
     "speech_recognition_grammar.h",
     "speech_recognition_result.cc",

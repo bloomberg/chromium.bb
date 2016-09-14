@@ -717,6 +717,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterMojoApplicationManifests(
       MojoApplicationManifestMap* manifests) {}
 
+  // Allow the embedder to provide a dictionary loaded from a JSON file
+  // resembling a service manifest whose capabilities section will be merged
+  // with content's own for |name|. Additional entries will be appended to their
+  // respective sections.
+  virtual std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& name);
+
   // Allows to override the visibility state of a RenderFrameHost.
   // |visibility_state| should not be null. It will only be set if needed.
   virtual void OverridePageVisibilityState(

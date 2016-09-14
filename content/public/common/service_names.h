@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MOJO_CONSTANTS_H_
-#define CONTENT_COMMON_MOJO_CONSTANTS_H_
+#ifndef CONTENT_PUBLIC_COMMON_SERVICE_NAMES_H_
+#define CONTENT_PUBLIC_COMMON_SERVICE_NAMES_H_
 
 #include "content/common/content_export.h"
 
@@ -17,4 +17,4 @@ extern const char CONTENT_EXPORT kUtilityMojoApplicationName[];
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_MOJO_CONSTANTS_H_
+#endif  // CONTENT_PUBLIC_COMMON_SERVICE_NAMES_H_

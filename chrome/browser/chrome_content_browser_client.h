@@ -299,6 +299,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       StaticMojoApplicationMap* apps) override;
   void RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& name) override;
   void OpenURL(content::BrowserContext* browser_context,
                const content::OpenURLParams& params,
                const base::Callback<void(content::WebContents*)>& callback)

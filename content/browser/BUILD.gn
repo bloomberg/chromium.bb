@@ -875,6 +875,8 @@ source_set("browser") {
     "mime_registry_impl.h",
     "mojo/interface_registrar_android.cc",
     "mojo/interface_registrar_android.h",
+    "mojo/merge_dictionary.cc",
+    "mojo/merge_dictionary.h",
     "mojo/mojo_shell_context.cc",
     "mojo/mojo_shell_context.h",
     "net/browser_online_state_observer.cc",
