@@ -348,6 +348,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerT
     m_mockWorkerReportingProxy->waitUntilScriptLoaded();
 
     // Simulate that a debugger task is running.
+    // TODO(nhiroki): Run a real debugger task instead of simulation.
     m_workerThread->m_runningDebuggerTask = true;
 
     // terminate() should not schedule a force termination task because there is
@@ -370,7 +371,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerT
 
     // Clean up in order to satisfy DCHECK in the dtor of WorkerThread.
     m_workerThread->m_runningDebuggerTask = false;
-    m_workerThread->forciblyTerminateExecution();
+    m_workerThread->isolate()->TerminateExecution();
     m_workerThread->waitForShutdownForTesting();
 }
 

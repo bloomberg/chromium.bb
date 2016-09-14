@@ -104,8 +104,7 @@ private:
             return;
         }
 
-        m_workerThread->forciblyTerminateExecution();
-        m_workerThread->setExitCode(lock, ExitCode::AsyncForciblyTerminated);
+        m_workerThread->forciblyTerminateExecution(lock, ExitCode::AsyncForciblyTerminated);
     }
 
     WorkerThread* m_workerThread;
@@ -138,7 +137,7 @@ public:
 
                 // Stop further worker tasks to run after this point.
                 m_workerThread->prepareForShutdownOnWorkerThread();
-            } else if (scriptController && scriptController->isExecutionTerminating()) {
+            } else if (m_workerThread->isForciblyTerminated()) {
                 // The script has been terminated forcibly, which means we need
                 // to ask objects in the thread to stop working as soon as
                 // possible.
@@ -397,9 +396,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
             // main thread and the scheduled termination task never runs.
             if (mode == TerminationMode::Forcible && m_exitCode == ExitCode::NotTerminated) {
                 DCHECK(m_scheduledForceTerminationTask);
-                m_scheduledForceTerminationTask.reset();
-                forciblyTerminateExecution();
-                setExitCode(lock, ExitCode::SyncForciblyTerminated);
+                forciblyTerminateExecution(lock, ExitCode::SyncForciblyTerminated);
             }
             return;
         }
@@ -413,8 +410,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
         } else if (shouldScheduleToTerminateExecution(lock)) {
             switch (mode) {
             case TerminationMode::Forcible:
-                forciblyTerminateExecution();
-                setExitCode(lock, ExitCode::SyncForciblyTerminated);
+                forciblyTerminateExecution(lock, ExitCode::SyncForciblyTerminated);
                 break;
             case TerminationMode::Graceful:
                 DCHECK(!m_scheduledForceTerminationTask);
@@ -458,12 +454,16 @@ bool WorkerThread::shouldScheduleToTerminateExecution(const MutexLocker& lock)
     return false;
 }
 
-void WorkerThread::forciblyTerminateExecution()
+void WorkerThread::forciblyTerminateExecution(const MutexLocker& lock, ExitCode exitCode)
 {
     DCHECK(isMainThread());
-    DCHECK(m_globalScope);
-    m_globalScope->scriptController()->willScheduleExecutionTermination();
+    DCHECK(isThreadStateMutexLocked(lock));
+
+    DCHECK(exitCode == ExitCode::SyncForciblyTerminated || exitCode == ExitCode::AsyncForciblyTerminated);
+    setExitCode(lock, exitCode);
+
     isolate()->TerminateExecution();
+    m_scheduledForceTerminationTask.reset();
 }
 
 bool WorkerThread::isInShutdown()

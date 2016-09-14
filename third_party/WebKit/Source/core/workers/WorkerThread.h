@@ -203,7 +203,9 @@ private:
     // acquired.
     bool shouldScheduleToTerminateExecution(const MutexLocker&);
 
-    void forciblyTerminateExecution();
+    // Forcibly terminates the worker execution. This must be called with
+    // |m_threadStateMutex| acquired.
+    void forciblyTerminateExecution(const MutexLocker&, ExitCode);
 
     // Returns true if termination or shutdown sequence has started. This is
     // thread safe.
