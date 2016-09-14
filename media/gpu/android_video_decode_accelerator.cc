@@ -724,9 +724,17 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   base::AutoReset<bool> auto_reset(&defer_errors_, true);
   if (state_ == ERROR || state_ == WAITING_FOR_CODEC)
     return false;
-  if (picturebuffers_requested_ && output_picture_buffers_.empty())
+  // If we're draining for reset or destroy, then we don't need picture buffers
+  // since we won't send any decoded frames anyway.  There might not be any,
+  // since the pipeline might not be sending them back and / or they don't
+  // exist anymore.  From the pipeline's point of view, for Destroy at least,
+  // the VDA is already gone.
+  if (picturebuffers_requested_ && output_picture_buffers_.empty() &&
+      !IsDrainingForResetOrDestroy()) {
     return false;
-  if (!output_picture_buffers_.empty() && free_picture_ids_.empty()) {
+  }
+  if (!output_picture_buffers_.empty() && free_picture_ids_.empty() &&
+      !IsDrainingForResetOrDestroy()) {
     // Don't have any picture buffer to send. Need to wait.
     return false;
   }
