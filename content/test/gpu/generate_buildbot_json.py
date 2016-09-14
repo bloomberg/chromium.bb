@@ -709,7 +709,6 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_tests': {
     'tester_configs': [
       {
-        'allow_on_android': True,
         'fyi_only': True,
         # Run this on the optional tryservers.
         'run_on_optional': True,
