@@ -346,7 +346,7 @@ void DOMStorageArea::Shutdown() {
 }
 
 void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  task_runner_->AssertIsRunningOnPrimarySequence();
   if (!is_initial_import_done_)
     return;
 
@@ -435,7 +435,7 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
 }
 
 void DOMStorageArea::PopulateCommitBatchValues() {
-  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  task_runner_->AssertIsRunningOnPrimarySequence();
   for (auto& key_value : commit_batch_->changed_values)
     key_value.second = map_->GetItem(key_value.first);
 }
@@ -492,7 +492,7 @@ void DOMStorageArea::PostCommitTask() {
 
   // This method executes on the primary sequence, we schedule
   // a task for immediate execution on the commit sequence.
-  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  task_runner_->AssertIsRunningOnPrimarySequence();
   bool success = task_runner_->PostShutdownBlockingTask(
       FROM_HERE,
       DOMStorageTaskRunner::COMMIT_SEQUENCE,
@@ -504,7 +504,7 @@ void DOMStorageArea::PostCommitTask() {
 
 void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
   // This method executes on the commit sequence.
-  DCHECK(task_runner_->IsRunningOnCommitSequence());
+  task_runner_->AssertIsRunningOnCommitSequence();
   backing_->CommitChanges(commit_batch->clear_all_first,
                           commit_batch->changed_values);
   // TODO(michaeln): what if CommitChanges returns false (e.g., we're trying to
@@ -516,7 +516,7 @@ void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
 
 void DOMStorageArea::OnCommitComplete() {
   // We're back on the primary sequence in this method.
-  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  task_runner_->AssertIsRunningOnPrimarySequence();
   --commit_batches_in_flight_;
   if (is_shutdown_)
     return;
@@ -530,7 +530,7 @@ void DOMStorageArea::OnCommitComplete() {
 
 void DOMStorageArea::ShutdownInCommitSequence() {
   // This method executes on the commit sequence.
-  DCHECK(task_runner_->IsRunningOnCommitSequence());
+  task_runner_->AssertIsRunningOnCommitSequence();
   DCHECK(backing_.get());
   if (commit_batch_) {
     // Commit any changes that accrued prior to the timer firing.

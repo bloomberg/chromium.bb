@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -47,18 +48,8 @@ class CONTENT_EXPORT DOMStorageTaskRunner
       SequenceID sequence_id,
       const base::Closure& task) = 0;
 
-  // The TaskRunner override returns true if the current thread is running
-  // on the primary sequence.
-  bool RunsTasksOnCurrentThread() const override;
-
-  // Returns true if the current thread is running on the given |sequence_id|.
-  virtual bool IsRunningOnSequence(SequenceID sequence_id) const = 0;
-  bool IsRunningOnPrimarySequence() const {
-    return IsRunningOnSequence(PRIMARY_SEQUENCE);
-  }
-  bool IsRunningOnCommitSequence() const {
-    return IsRunningOnSequence(COMMIT_SEQUENCE);
-  }
+  virtual void AssertIsRunningOnPrimarySequence() const = 0;
+  virtual void AssertIsRunningOnCommitSequence() const = 0;
 
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
       SequenceID sequence_id) = 0;
@@ -79,6 +70,8 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
       base::SequencedWorkerPool::SequenceToken commit_sequence_token,
       base::SingleThreadTaskRunner* delayed_task_task_runner);
 
+  bool RunsTasksOnCurrentThread() const override;
+
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override;
@@ -87,7 +80,8 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
                                 SequenceID sequence_id,
                                 const base::Closure& task) override;
 
-  bool IsRunningOnSequence(SequenceID sequence_id) const override;
+  void AssertIsRunningOnPrimarySequence() const override;
+  void AssertIsRunningOnCommitSequence() const override;
 
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
       SequenceID sequence_id) override;
@@ -102,7 +96,9 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   base::SequencedWorkerPool::SequenceToken primary_sequence_token_;
+  base::SequenceChecker primary_sequence_checker_;
   base::SequencedWorkerPool::SequenceToken commit_sequence_token_;
+  base::SequenceChecker commit_sequence_checker_;
 };
 
 // A derived class used in unit tests that ignores all delays so
@@ -115,6 +111,8 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
  public:
   explicit MockDOMStorageTaskRunner(base::SingleThreadTaskRunner* task_runner);
 
+  bool RunsTasksOnCurrentThread() const override;
+
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override;
@@ -123,7 +121,8 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
                                 SequenceID sequence_id,
                                 const base::Closure& task) override;
 
-  bool IsRunningOnSequence(SequenceID sequence_id) const override;
+  void AssertIsRunningOnPrimarySequence() const override;
+  void AssertIsRunningOnCommitSequence() const override;
 
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner(
       SequenceID sequence_id) override;

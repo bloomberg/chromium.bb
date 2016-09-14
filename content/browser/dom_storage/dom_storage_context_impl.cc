@@ -240,7 +240,8 @@ void DOMStorageContextImpl::Flush() {
 }
 
 void DOMStorageContextImpl::Shutdown() {
-  DCHECK(!task_runner_ || task_runner_->IsRunningOnPrimarySequence());
+  if (task_runner_)
+    task_runner_->AssertIsRunningOnPrimarySequence();
   is_shutdown_ = true;
   StorageNamespaceMap::const_iterator it = namespaces_.begin();
   for (; it != namespaces_.end(); ++it)

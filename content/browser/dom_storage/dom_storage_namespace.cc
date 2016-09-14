@@ -184,7 +184,7 @@ DOMStorageNamespace::UsageStatistics DOMStorageNamespace::GetUsageStatistics()
 
 void DOMStorageNamespace::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  task_runner_->AssertIsRunningOnPrimarySequence();
   for (const auto& it : areas_)
     it.second.area_->OnMemoryDump(pmd);
 }
