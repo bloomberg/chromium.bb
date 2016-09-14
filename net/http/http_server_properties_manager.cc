@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -1110,20 +1111,22 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     const url::SchemeHostPort server = map_it->first;
     const ServerPref& server_pref = map_it->second;
 
-    base::DictionaryValue* servers_dict = new base::DictionaryValue;
-    base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
+    auto servers_dict = base::MakeUnique<base::DictionaryValue>();
+    auto server_pref_dict = base::MakeUnique<base::DictionaryValue>();
 
     // Save supports_spdy.
     if (server_pref.supports_spdy)
       server_pref_dict->SetBoolean(kSupportsSpdyKey, server_pref.supports_spdy);
-    SaveSpdySettingsToServerPrefs(server_pref.settings_map, server_pref_dict);
+    SaveSpdySettingsToServerPrefs(server_pref.settings_map,
+                                  server_pref_dict.get());
     SaveAlternativeServiceToServerPrefs(
-        server_pref.alternative_service_info_vector, server_pref_dict);
+        server_pref.alternative_service_info_vector, server_pref_dict.get());
     SaveNetworkStatsToServerPrefs(server_pref.server_network_stats,
-                                  server_pref_dict);
+                                  server_pref_dict.get());
 
-    servers_dict->SetWithoutPathExpansion(server.Serialize(), server_pref_dict);
-    bool value = servers_list->AppendIfNotPresent(servers_dict);
+    servers_dict->SetWithoutPathExpansion(server.Serialize(),
+                                          std::move(server_pref_dict));
+    bool value = servers_list->AppendIfNotPresent(std::move(servers_dict));
     DCHECK(value);  // Should never happen.
   }
 

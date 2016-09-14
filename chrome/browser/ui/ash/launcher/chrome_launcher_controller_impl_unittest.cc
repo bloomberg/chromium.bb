@@ -553,9 +553,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void InsertPrefValue(base::ListValue* pref_value,
                        int index,
                        const std::string& extension_id) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString(ash::launcher::kPinnedAppsPrefAppIDPath, extension_id);
-    pref_value->Insert(index, entry);
+    pref_value->Insert(index, std::move(entry));
   }
 
   void InsertRemoveAllPinsChange(syncer::SyncChangeList* list) {

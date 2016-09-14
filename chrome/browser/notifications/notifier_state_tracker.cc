@@ -144,11 +144,9 @@ void NotifierStateTracker::SetNotifierEnabled(
   ListPrefUpdate update(profile_->GetPrefs(), pref_name);
   base::ListValue* const list = update.Get();
   if (add_new_item) {
-    // AppendIfNotPresent will delete |adding_value| when the same value
-    // already exists.
-    list->AppendIfNotPresent(id.release());
+    list->AppendIfNotPresent(std::move(id));
   } else {
-    list->Remove(*id, NULL);
+    list->Remove(*id, nullptr);
   }
 }
 

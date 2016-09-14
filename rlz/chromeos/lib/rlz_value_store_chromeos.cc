@@ -10,6 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -147,7 +148,7 @@ bool RlzValueStoreChromeOS::AddProductEvent(Product product,
                                             const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kProductEventKey, product),
-                        new base::StringValue(event_rlz));
+                        base::MakeUnique<base::StringValue>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::ReadProductEvents(
@@ -184,7 +185,7 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
-                        new base::StringValue(event_rlz));
+                        base::MakeUnique<base::StringValue>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
@@ -243,13 +244,13 @@ void RlzValueStoreChromeOS::WriteStore() {
 }
 
 bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
-                                           base::Value* value) {
+                                           std::unique_ptr<base::Value> value) {
   base::ListValue* list_value = NULL;
   if (!rlz_store_->GetList(list_name, &list_value)) {
     list_value = new base::ListValue;
     rlz_store_->Set(list_name, list_value);
   }
-  list_value->AppendIfNotPresent(value);
+  list_value->AppendIfNotPresent(std::move(value));
   return true;
 }
 

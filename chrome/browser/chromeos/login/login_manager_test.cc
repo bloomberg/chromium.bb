@@ -155,7 +155,7 @@ void LoginManagerTest::SetUpOnMainThread() {
 
 void LoginManagerTest::RegisterUser(const std::string& user_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
-  users_pref->AppendIfNotPresent(new base::StringValue(user_id));
+  users_pref->AppendIfNotPresent(base::MakeUnique<base::StringValue>(user_id));
 }
 
 void LoginManagerTest::SetExpectedCredentials(const UserContext& user_context) {

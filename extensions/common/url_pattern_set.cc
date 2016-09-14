@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
@@ -233,7 +234,8 @@ std::unique_ptr<base::ListValue> URLPatternSet::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
-    value->AppendIfNotPresent(new base::StringValue(i->GetAsString()));
+    value->AppendIfNotPresent(
+        base::MakeUnique<base::StringValue>(i->GetAsString()));
   return value;
 }
 

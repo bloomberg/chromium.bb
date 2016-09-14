@@ -1081,24 +1081,23 @@ void ListValue::AppendStrings(const std::vector<string16>& in_values) {
   }
 }
 
-bool ListValue::AppendIfNotPresent(Value* in_value) {
+bool ListValue::AppendIfNotPresent(std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
   for (const auto& entry : list_) {
-    if (entry->Equals(in_value)) {
-      delete in_value;
+    if (entry->Equals(in_value.get())) {
       return false;
     }
   }
-  list_.emplace_back(in_value);
+  list_.push_back(std::move(in_value));
   return true;
 }
 
-bool ListValue::Insert(size_t index, Value* in_value) {
+bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
   if (index > list_.size())
     return false;
 
-  list_.insert(list_.begin() + index, WrapUnique(in_value));
+  list_.insert(list_.begin() + index, std::move(in_value));
   return true;
 }
 

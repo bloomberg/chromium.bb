@@ -542,8 +542,8 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
       clients = new base::ListValue;
       whitelist_dict->Set(kClients, clients);
     }
-    bool success =
-        clients->AppendIfNotPresent(new base::StringValue(client_id));
+    bool success = clients->AppendIfNotPresent(
+        base::MakeUnique<base::StringValue>(client_id));
     DCHECK(success);
   }
 

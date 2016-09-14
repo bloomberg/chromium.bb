@@ -796,8 +796,8 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
 
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
-  prefs_users_update->Insert(0,
-                             new base::StringValue(account_id.GetUserEmail()));
+  prefs_users_update->Insert(
+      0, base::MakeUnique<base::StringValue>(account_id.GetUserEmail()));
   users_.insert(users_.begin(), active_user_);
 
   // Now that user is in the list, save display name.
@@ -1237,7 +1237,7 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->AppendIfNotPresent(
-      new base::StringValue(account_id.GetUserEmail()));
+      base::MakeUnique<base::StringValue>(account_id.GetUserEmail()));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {

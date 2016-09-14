@@ -115,7 +115,7 @@ void ChooserContextBase::GrantObjectPermission(
     object_list = new base::ListValue();
     setting->Set(kObjectListKey, object_list);
   }
-  object_list->AppendIfNotPresent(object.release());
+  object_list->AppendIfNotPresent(std::move(object));
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
 }
 

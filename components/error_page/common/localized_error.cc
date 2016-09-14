@@ -505,12 +505,11 @@ void AddSingleEntryDictionaryToList(base::ListValue* list,
                                     const char* path,
                                     int message_id,
                                     bool insert_as_first_item) {
-  std::unique_ptr<base::DictionaryValue> suggestion_list_item(
-      new base::DictionaryValue);
+  auto suggestion_list_item = base::MakeUnique<base::DictionaryValue>();
   suggestion_list_item->SetString(path, l10n_util::GetStringUTF16(message_id));
 
   if (insert_as_first_item) {
-    list->Insert(0, suggestion_list_item.release());
+    list->Insert(0, std::move(suggestion_list_item));
   } else {
     list->Append(std::move(suggestion_list_item));
   }

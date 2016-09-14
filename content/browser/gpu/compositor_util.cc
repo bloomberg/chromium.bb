@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
@@ -378,7 +379,7 @@ base::Value* GetProblems() {
   manager->GetBlacklistReasons(problem_list);
 
   if (gpu_access_blocked) {
-    base::DictionaryValue* problem = new base::DictionaryValue();
+    auto problem = base::MakeUnique<base::DictionaryValue>();
     problem->SetString("description",
         "GPU process was unable to boot: " + gpu_access_blocked_reason);
     problem->Set("crBugs", new base::ListValue());
@@ -387,7 +388,7 @@ base::Value* GetProblems() {
     disabled_features->AppendString("all");
     problem->Set("affectedGpuSettings", disabled_features);
     problem->SetString("tag", "disabledFeatures");
-    problem_list->Insert(0, problem);
+    problem_list->Insert(0, std::move(problem));
   }
 
   bool eof = false;

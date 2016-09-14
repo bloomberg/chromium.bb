@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -207,7 +208,8 @@ const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
       local_state,
       kSupervisedUserManagerDisplayEmails);
 
-  prefs_new_users_update->Insert(0, new base::StringValue(local_user_id));
+  prefs_new_users_update->Insert(
+      0, base::MakeUnique<base::StringValue>(local_user_id));
 
   sync_id_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(sync_user_id));

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -166,10 +167,10 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
 
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it < users.end();
-       ++it)
-    new_list->AppendIfNotPresent(new base::StringValue((*it)->email()));
+  for (const auto* user : users) {
+    new_list->AppendIfNotPresent(
+        base::MakeUnique<base::StringValue>(user->email()));
+  }
 
   if (OwnerSettingsServiceChromeOS* service =
           OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {

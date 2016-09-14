@@ -7,9 +7,11 @@
 #include <stddef.h>
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -109,11 +111,11 @@ void AddOverridesToList(base::ListValue* list,
     }
   }
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString(kEntry, override);
   dict->SetBoolean(kActive, true);
   // Add the entry to the front of the list.
-  list->Insert(0, dict.release());
+  list->Insert(0, std::move(dict));
 }
 
 // Validates that each entry in |list| contains a valid url and points to an

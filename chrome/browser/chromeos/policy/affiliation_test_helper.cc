@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -99,7 +100,7 @@ void SetUserAffiliationIDs(
 
 void PreLoginUser(const std::string& user_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
-  users_pref->AppendIfNotPresent(new base::StringValue(user_id));
+  users_pref->AppendIfNotPresent(base::MakeUnique<base::StringValue>(user_id));
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 

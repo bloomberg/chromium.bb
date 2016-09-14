@@ -141,9 +141,9 @@ class Handler : public content::WebContentsObserver {
       // If this is the main result, we put it at index 0. Otherwise, we just
       // append it at the end.
       if (is_root_frame && !results_.empty())
-        CHECK(results_.Insert(0u, script_value->DeepCopy()));
+        CHECK(results_.Insert(0u, script_value->CreateDeepCopy()));
       else
-        results_.Append(script_value->DeepCopy());
+        results_.Append(script_value->CreateDeepCopy());
     }
 
     if (is_root_frame) {  // Only use the root frame's error and url.
