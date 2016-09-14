@@ -15,14 +15,15 @@
 namespace blink {
 
 class DOMMatrix;
+class DOMMatrixInit;
 
-class DOMMatrixReadOnly : public GarbageCollectedFinalized<DOMMatrixReadOnly>, public ScriptWrappable {
+class CORE_EXPORT DOMMatrixReadOnly : public GarbageCollectedFinalized<DOMMatrixReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMMatrixReadOnly* create(Vector<double>, ExceptionState&);
     static DOMMatrixReadOnly* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
     static DOMMatrixReadOnly* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
-
+    static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
     virtual ~DOMMatrixReadOnly();
 
     double a() const { return m_matrix->m11(); }
@@ -52,7 +53,7 @@ public:
     bool is2D() const;
     bool isIdentity() const;
 
-    DOMMatrix* multiply(DOMMatrix*);
+    DOMMatrix* multiply(DOMMatrixInit&, ExceptionState&);
     DOMMatrix* translate(double tx, double ty, double tz = 0);
     DOMMatrix* scale(double scale, double ox = 0, double oy = 0);
     DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
@@ -96,6 +97,7 @@ protected:
         }
     }
 
+    static bool validateAndFixup(DOMMatrixInit&, ExceptionState&);
     // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
     // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
     // to allocate TransformationMatrix on PartitionAlloc.

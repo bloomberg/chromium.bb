@@ -3,8 +3,81 @@
 // found in the LICENSE file.
 
 #include "core/dom/DOMMatrix.h"
+#include "core/dom/DOMMatrixInit.h"
 
 namespace blink {
+namespace {
+
+void setDictionaryMembers(DOMMatrixInit& other)
+{
+    if (!other.hasM11())
+        other.setM11(other.hasA() ? other.a() : 1);
+
+    if (!other.hasM12())
+        other.setM12(other.hasB() ? other.b() : 0);
+
+    if (!other.hasM21())
+        other.setM21(other.hasC() ? other.c() : 0);
+
+    if (!other.hasM22())
+        other.setM22(other.hasD() ? other.d() : 1);
+
+    if (!other.hasM41())
+        other.setM41(other.hasE() ? other.e() : 0);
+
+    if (!other.hasM42())
+        other.setM42(other.hasF() ? other.f() : 0);
+}
+
+String getErrorMessage(const char* a, const char* b)
+{
+    return String::format("The '%s' property should eqaul the '%s' property.", a, b);
+}
+
+} // namespace
+
+bool DOMMatrixReadOnly::validateAndFixup(DOMMatrixInit& other, ExceptionState& exceptionState)
+{
+    if (other.hasA() && other.hasM11() && other.a() != other.m11()) {
+        exceptionState.throwTypeError(getErrorMessage("a", "m11"));
+        return false;
+    }
+    if (other.hasB() && other.hasM12() && other.b() != other.m12()) {
+        exceptionState.throwTypeError(getErrorMessage("b", "m12"));
+        return false;
+    }
+    if (other.hasC() && other.hasM21() && other.c() != other.m21()) {
+        exceptionState.throwTypeError(getErrorMessage("c", "m21"));
+        return false;
+    }
+    if (other.hasD() && other.hasM22() && other.d() != other.m22()) {
+        exceptionState.throwTypeError(getErrorMessage("d", "m22"));
+        return false;
+    }
+    if (other.hasE() && other.hasM41() && other.e() != other.m41()) {
+        exceptionState.throwTypeError(getErrorMessage("e", "m41"));
+        return false;
+    }
+    if (other.hasF() && other.hasM42() && other.f() != other.m42()) {
+        exceptionState.throwTypeError(getErrorMessage("f", "m42"));
+        return false;
+    }
+    if (other.hasIs2D() && other.is2D() && (other.m31() || other.m32()
+        || other.m13() || other.m23() || other.m43() || other.m14()
+        || other.m24() || other.m34() || other.m33() != 1 || other.m44() != 1)) {
+        exceptionState.throwTypeError("The is2D member is set to true but the input matrix is 3d matrix.");
+        return false;
+    }
+
+    setDictionaryMembers(other);
+    if (!other.hasIs2D()) {
+        bool is2D = !(other.m31() || other.m32() || other.m13() || other.m23()
+            || other.m43() || other.m14() || other.m24() || other.m34()
+            || other.m33() != 1 || other.m44() != 1);
+        other.setIs2D(is2D);
+    }
+    return true;
+}
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence, ExceptionState& exceptionState)
 {
@@ -34,6 +107,28 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(DOMFloat64Array* float64A
     return new DOMMatrixReadOnly(float64Array->data(), float64Array->length());
 }
 
+DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(DOMMatrixInit& other, ExceptionState& exceptionState)
+{
+    if (!validateAndFixup(other, exceptionState))
+        return nullptr;
+
+    if (other.is2D()) {
+        double args[] = {
+            other.m11(), other.m12(), other.m21(),
+            other.m22(), other.m41(), other.m42()
+        };
+        return new DOMMatrixReadOnly(args, 6);
+    }
+
+    double args[] = {
+        other.m11(), other.m12(), other.m13(), other.m14(),
+        other.m21(), other.m22(), other.m23(), other.m24(),
+        other.m31(), other.m32(), other.m33(), other.m34(),
+        other.m41(), other.m42(), other.m43(), other.m44()
+    };
+    return new DOMMatrixReadOnly(args, 16);
+}
+
 DOMMatrixReadOnly::~DOMMatrixReadOnly()
 {
 }
@@ -48,9 +143,9 @@ bool DOMMatrixReadOnly::isIdentity() const
     return m_matrix->isIdentity();
 }
 
-DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrix* other)
+DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrixInit& other, ExceptionState& exceptionState)
 {
-    return DOMMatrix::create(this)->multiplySelf(other);
+    return DOMMatrix::create(this)->multiplySelf(other, exceptionState);
 }
 
 DOMMatrix* DOMMatrixReadOnly::translate(double tx, double ty, double tz)

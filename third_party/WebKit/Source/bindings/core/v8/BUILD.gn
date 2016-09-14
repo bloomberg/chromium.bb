@@ -28,6 +28,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/css/cssom/CSSCalcDictionary.h",
   "$blink_core_output_dir/dom/DOMPointInit.cpp",
   "$blink_core_output_dir/dom/DOMPointInit.h",
+  "$blink_core_output_dir/dom/DOMMatrixInit.cpp",
+  "$blink_core_output_dir/dom/DOMMatrixInit.h",
   "$blink_core_output_dir/dom/ElementRegistrationOptions.cpp",
   "$blink_core_output_dir/dom/ElementRegistrationOptions.h",
   "$blink_core_output_dir/dom/GetRootNodeOptions.cpp",

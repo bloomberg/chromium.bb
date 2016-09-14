@@ -51,29 +51,50 @@ DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
     m_is2D = is2D;
 }
 
+DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit& other, ExceptionState& exceptionState)
+{
+    validateAndFixup(other, exceptionState);
+    if (exceptionState.hadException())
+        return nullptr;
+
+    if (other.is2D()) {
+        return new DOMMatrix({
+            other.m11(), other.m12(), other.m21(),
+            other.m22(), other.m41(), other.m42()}, other.is2D());
+    }
+
+    return new DOMMatrix({
+        other.m11(), other.m12(), other.m13(), other.m14(),
+        other.m21(), other.m22(), other.m23(), other.m24(),
+        other.m31(), other.m32(), other.m33(), other.m34(),
+        other.m41(), other.m42(), other.m43(), other.m44()}, other.is2D());
+}
+
 void DOMMatrix::setIs2D(bool value)
 {
     if (m_is2D)
         m_is2D = value;
 }
 
-DOMMatrix* DOMMatrix::multiplySelf(DOMMatrix* other)
+DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other, ExceptionState& exceptionState)
 {
-    if (!other->is2D())
+    DOMMatrix* otherMatrix = DOMMatrix::fromMatrix(other, exceptionState);
+    if (!otherMatrix->is2D())
         m_is2D = false;
 
-    *m_matrix *= other->matrix();
+    *m_matrix *= otherMatrix->matrix();
 
     return this;
 }
 
-DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrix* other)
+DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit& other, ExceptionState& exceptionState)
 {
-    if (!other->is2D())
+    DOMMatrix* otherMatrix = DOMMatrix::fromMatrix(other, exceptionState);
+    if (!otherMatrix->is2D())
         m_is2D = false;
 
     TransformationMatrix& matrix = *m_matrix;
-    *m_matrix = other->matrix() * matrix;
+    *m_matrix = otherMatrix->matrix() * matrix;
 
     return this;
 }

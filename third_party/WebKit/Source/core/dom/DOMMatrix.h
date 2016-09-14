@@ -5,11 +5,12 @@
 #ifndef DOMMatrix_h
 #define DOMMatrix_h
 
+#include "core/dom/DOMMatrixInit.h"
 #include "core/dom/DOMMatrixReadOnly.h"
 
 namespace blink {
 
-class DOMMatrix : public DOMMatrixReadOnly {
+class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMMatrix* create();
@@ -17,6 +18,7 @@ public:
     static DOMMatrix* create(const SkMatrix44&);
     static DOMMatrix* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
     static DOMMatrix* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
+    static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
 
     void setA(double value) { m_matrix->setM11(value); }
     void setB(double value) { m_matrix->setM12(value); }
@@ -42,8 +44,8 @@ public:
     void setM43(double value) { m_matrix->setM43(value); setIs2D(!value); }
     void setM44(double value) { m_matrix->setM44(value); setIs2D(value != 1); }
 
-    DOMMatrix* multiplySelf(DOMMatrix*);
-    DOMMatrix* preMultiplySelf(DOMMatrix*);
+    DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
+    DOMMatrix* preMultiplySelf(DOMMatrixInit&, ExceptionState&);
     DOMMatrix* translateSelf(double tx, double ty, double tz = 0);
     DOMMatrix* scaleSelf(double scale, double ox = 0, double oy = 0);
     DOMMatrix* scale3dSelf(double scale, double ox = 0, double oy = 0, double oz = 0);

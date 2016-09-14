@@ -4,11 +4,12 @@
 <title>Geometry Interfaces: DOMMatrix</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/geometry-interfaces-test-helpers.js"></script>
 </head>
 <body>
 <script>
 
-test(function() {
+test(() => {
   var matrix = new DOMMatrix();
   assert_equals(matrix.m11, 1);
   assert_equals(matrix.m12, 0);
@@ -30,7 +31,7 @@ test(function() {
   assert_true(matrix.isIdentity);
 }, "DOMMatrix() constructor");
 
-test(function() {
+test(() => {
   var other = new DOMMatrix();
   other.m11 = 10;
   other.m12 = 20;
@@ -60,7 +61,7 @@ test(function() {
   assert_false(matrix.isIdentity);
 }, "DOMMatrix(other) constructor");
 
-test(function() {
+test(() => {
     var float32Array = new Float32Array([1, 2, 3, 4, 5, 6]);
     var matrix2d = DOMMatrix.fromFloat32Array(float32Array);
     assert_true(matrix2d.is2D);
@@ -72,7 +73,7 @@ test(function() {
     assert_equals(matrix2d.f, 6);
 }, "DOMMatrix fromFloat32Array - 2D matrix");
 
-test(function() {
+test(() => {
     // 3.1 is not representable as a 32-bit float
     var float64Array = new Float64Array([1, 2, 3, 3.1, 4, 5]);
     var matrix2d = DOMMatrix.fromFloat64Array(float64Array);
@@ -85,7 +86,7 @@ test(function() {
     assert_equals(matrix2d.f, 5);
 }, "DOMMatrix fromFloat64Array - 2D matrix");
 
-test(function() {
+test(() => {
     var float32Array = new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     var matrix3d = DOMMatrix.fromFloat32Array(float32Array);
     assert_false(matrix3d.is2D);
@@ -107,7 +108,7 @@ test(function() {
     assert_equals(matrix3d.m44, 16);
 }, "DOMMatrix fromFloat32Array - 3D matrix");
 
-test(function() {
+test(() => {
     // 10.1 and 16.6 are not representable as a 32-bit float
     var float64Array = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
     var matrix3d = DOMMatrix.fromFloat64Array(float64Array);
@@ -130,7 +131,7 @@ test(function() {
     assert_equals(matrix3d.m44, 16.6);
 }, "DOMMatrix fromFloat64Array - 3D matrix");
 
-test(function() {
+test(() => {
   var matrix = new DOMMatrix();
   matrix.a = 10;
   matrix.b = 20;
@@ -164,7 +165,7 @@ test(function() {
   assert_false(matrix.isIdentity);
 }, "DOMMatrix attributes");
 
-test(function() {
+test(() => {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
@@ -178,42 +179,122 @@ test(function() {
   assert_true(matrix.isIdentity);
 }, "DOMMatrix.is2D can never be set to 'true' when it was set to 'false' before calling setMatrixValue().");
 
-test(function() {
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5])); },
+test(() => {
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
 }, "DOMMatrix fromFloat*Array - invalid array size of nearby 6");
 
-test(function() {
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
+test(() => {
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([1, 2, 3, 4, 5, 6 ,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
 }, "DOMMatrix fromFloat*Array - invalid array size of nearby 16");
 
-test(function() {
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([])); },
+test(() => {
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array([1])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array([1])); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array([1])); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array([1])); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat32Array(new Float32Array(65536)); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat32Array(new Float32Array(65536)); },
             "fromFloat32Array function only accepts 1 Float32Array with 6 or 16 elements.");
-    assert_throws(new TypeError(), function() { DOMMatrix.fromFloat64Array(new Float64Array(65536)); },
+    assert_throws(new TypeError(), () => { DOMMatrix.fromFloat64Array(new Float64Array(65536)); },
             "fromFloat64Array function only accepts 1 Float64Array with 6 or 16 elements.");
 }, "DOMMatrix fromFloat*Array - invalid array size");
+
+test(() => {
+  assert_identity_2d_matrix(DOMMatrix.fromMatrix());
+}, "DOMMatrix.fromMatrix() with no parameter.");
+
+test(() => {
+  assert_identity_2d_matrix(DOMMatrix.fromMatrix(null));
+}, "DOMMatrix.fromMatrix() with null.");
+
+test(() => {
+  assert_identity_2d_matrix(DOMMatrix.fromMatrix(undefined));
+}, "DOMMatrix.fromMatrix() with undefined.");
+
+test(() => {
+  assert_identity_2d_matrix(DOMMatrix.fromMatrix({}));
+}, "DOMMatrix.fromMatrix() with empty object.");
+
+test(() => {
+  var matrix = DOMMatrix.fromMatrix({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6});
+  assert_2d_matrix_equals(matrix, {
+      m11: 1, m12: 2,
+      m21: 3, m22: 4,
+      m41: 5, m42: 6,
+      isIdentity: false
+  });
+}, "DOMMatrix.fromMatrix({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6}) should create a 2D DOMMatrix.");
+
+test(() => {
+  var matrix = DOMMatrix.fromMatrix({m11: 1, m22: 2, m33: 3, m44: 4, m23: 5, m43: 6});
+  assert_3d_matrix_equals(matrix, {
+      m11: 1, m12: 0, m13: 0, m14: 0,
+      m21: 0, m22: 2, m23: 5, m24: 0,
+      m31: 0, m32: 0, m33: 3, m34: 0,
+      m41: 0, m42: 0, m43: 6, m44: 4,
+      isIdentity: false
+  });
+}, "DOMMatrix.fromMatrix({m11: 1, m22: 2, m33: 3, m44: 4, m23: 5, m43: 6}) should create a 3D DOMMatrix.");
+
+test(() => {
+  var matrix = DOMMatrix.fromMatrix({a: 7, c: 9});
+  assert_2d_matrix_equals(matrix, {
+      m11: 7, m12: 0,
+      m21: 9, m22: 1,
+      m41: 0, m42: 0,
+      isIdentity: false
+  });
+}, "If 2d related properties don't be set, should set to fallback.");
+
+test(() => {
+  var matrix = DOMMatrix.fromMatrix({
+      m11: NaN, m12: NaN, m13: NaN, m14: NaN,
+      m21: NaN, m22: NaN, m23: NaN, m24: NaN,
+      m31: NaN, m32: NaN, m33: NaN, m34: NaN,
+      m41: NaN, m42: NaN, m43: NaN, m44: NaN,
+      is2D: false
+  });
+  assert_equals(matrix.a, matrix.m11);
+  assert_equals(matrix.b, matrix.m12);
+  assert_equals(matrix.c, matrix.m21);
+  assert_equals(matrix.d, matrix.m22);
+  assert_equals(matrix.e, matrix.m41);
+  assert_equals(matrix.f, matrix.m42);
+  assert_3d_matrix_equals(matrix, {
+      m11: NaN, m12: NaN, m13: NaN, m14: NaN,
+      m21: NaN, m22: NaN, m23: NaN, m24: NaN,
+      m31: NaN, m32: NaN, m33: NaN, m34: NaN,
+      m41: NaN, m42: NaN, m43: NaN, m44: NaN,
+      isIdentity: false, is2D: false
+  });
+}, "DOMMatrix.fromMatrix(): NaN test");
+
+test(() => {
+  assert_throws(new TypeError(), () => {
+        var matrix = DOMMatrix.fromMatrix({a: 1, b: 2, m33: 3, m44: 4, is2D: true});
+      }, "The 'is2D' property is set to true but the input matrix is 3d matrix.");
+  assert_throws(new TypeError(), () => {
+        var matrix = DOMMatrix.fromMatrix({a: 1, b: 2, m11: 3});
+      }, "The 'a' property should equal the 'm11' property.");
+}, "DOMMatrix.fromMatrix(): Exception test.");
+
 </script>
 </body>
 </html>

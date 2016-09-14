@@ -999,6 +999,7 @@ interface DOMMatrix : DOMMatrixReadOnly
 interface DOMMatrixReadOnly
     static method fromFloat32Array
     static method fromFloat64Array
+    static method fromMatrix
     attribute @@toStringTag
     getter a
     getter b
