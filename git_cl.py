@@ -3089,9 +3089,9 @@ def GetRietveldCodereviewSettingsInteractively():
 def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
-  print('WARNING: git cl config works for Rietveld only.\n'
-        'For Gerrit, see http://crbug.com/603116.')
-  # TODO(tandrii): add Gerrit support as part of http://crbug.com/603116.
+  print('WARNING: git cl config works for Rietveld only')
+  # TODO(tandrii): remove this once we switch to Gerrit.
+  # See bugs http://crbug.com/637561 and http://crbug.com/600469.
   parser.add_option('--activate-update', action='store_true',
                     help='activate auto-updating [rietveld] section in '
                          '.git/config')
@@ -4403,8 +4403,6 @@ review to be closed, without actually landing upstream. If you choose to
 proceed, please verify that the commit lands upstream as expected."""
     print(message)
     ask_for_data('[Press enter to dcommit or ctrl-C to quit]')
-  # TODO(tandrii): kill this post SVN migration with
-  # https://codereview.chromium.org/2076683002
   print('WARNING: chrome infrastructure is migrating SVN repos to Git.\n'
         'Please let us know of this project you are committing to:'
         '    http://crbug.com/600451')
