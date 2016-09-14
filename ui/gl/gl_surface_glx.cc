@@ -520,13 +520,7 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurface::Format format) {
                           CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
   XMapWindow(g_display, window_);
 
-  ui::PlatformEventSource* event_source =
-      ui::PlatformEventSource::GetInstance();
-  // Can be nullptr in tests, when we don't care about Exposes.
-  if (event_source) {
-    XSelectInput(g_display, window_, ExposureMask);
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  }
+  RegisterEvents();
   XFlush(g_display);
 
   GetConfig();
@@ -560,26 +554,11 @@ void NativeViewGLSurfaceGLX::Destroy() {
     glx_window_ = 0;
   }
   if (window_) {
-    ui::PlatformEventSource* event_source =
-        ui::PlatformEventSource::GetInstance();
-    if (event_source)
-      event_source->RemovePlatformEventDispatcher(this);
+    UnregisterEvents();
     XDestroyWindow(g_display, window_);
     window_ = 0;
     XFlush(g_display);
   }
-}
-
-bool NativeViewGLSurfaceGLX::CanDispatchEvent(const ui::PlatformEvent& event) {
-  return event->type == Expose && event->xexpose.window == window_;
-}
-
-uint32_t NativeViewGLSurfaceGLX::DispatchEvent(const ui::PlatformEvent& event) {
-  XEvent forwarded_event = *event;
-  forwarded_event.xexpose.window = parent_window_;
-  XSendEvent(g_display, parent_window_, False, ExposureMask, &forwarded_event);
-  XFlush(g_display);
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size,
@@ -637,6 +616,18 @@ gfx::VSyncProvider* NativeViewGLSurfaceGLX::GetVSyncProvider() {
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
   Destroy();
+}
+
+void NativeViewGLSurfaceGLX::ForwardExposeEvent(XEvent* event) {
+  XEvent forwarded_event = *event;
+  forwarded_event.xexpose.window = parent_window_;
+  XSendEvent(g_display, parent_window_, False, ExposureMask, &forwarded_event);
+  XFlush(g_display);
+}
+
+bool NativeViewGLSurfaceGLX::CanHandleEvent(XEvent* event) {
+  return event->type == Expose &&
+         event->xexpose.window == static_cast<Window>(window_);
 }
 
 UnmappedNativeViewGLSurfaceGLX::UnmappedNativeViewGLSurfaceGLX(

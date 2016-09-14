@@ -7,6 +7,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
@@ -136,6 +138,12 @@ X11EventSourceLibevent::X11EventSourceLibevent(XDisplay* display)
 }
 
 X11EventSourceLibevent::~X11EventSourceLibevent() {}
+
+// static
+X11EventSourceLibevent* X11EventSourceLibevent::GetInstance() {
+  return static_cast<X11EventSourceLibevent*>(
+      PlatformEventSource::GetInstance());
+}
 
 void X11EventSourceLibevent::AddXEventDispatcher(XEventDispatcher* dispatcher) {
   dispatchers_xevent_.AddObserver(dispatcher);

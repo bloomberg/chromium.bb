@@ -12,6 +12,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/platform/x11/gl_ozone_glx.h"
 
 namespace ui {
 
@@ -149,6 +150,7 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 }  // namespace
 
 X11SurfaceFactory::X11SurfaceFactory() {
+  glx_implementation_.reset(new GLOzoneGLX());
   egl_implementation_.reset(new GLOzoneEGLX11());
 }
 
@@ -157,6 +159,7 @@ X11SurfaceFactory::~X11SurfaceFactory() {}
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
   std::vector<gl::GLImplementation> impls;
+  impls.push_back(gl::kGLImplementationDesktopGL);
   impls.push_back(gl::kGLImplementationEGLGLES2);
   impls.push_back(gl::kGLImplementationOSMesaGL);
   return impls;
@@ -164,6 +167,8 @@ X11SurfaceFactory::GetAllowedGLImplementations() {
 
 GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
   switch (implementation) {
+    case gl::kGLImplementationDesktopGL:
+      return glx_implementation_.get();
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
     default:

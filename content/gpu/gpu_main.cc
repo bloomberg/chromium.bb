@@ -168,7 +168,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
 };
 
-}  // namespace anonymous
+}  // namespace
 
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
@@ -210,14 +210,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   // create child windows to render to.
   base::MessagePumpForGpu::InitFactory();
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
-#elif defined(OS_LINUX) && defined(USE_X11)
+#elif defined(USE_X11)
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
   std::unique_ptr<ui::PlatformEventSource> event_source =
       ui::PlatformEventSource::CreateDefault();
-#elif defined(OS_LINUX)
+#elif defined(USE_OZONE) && defined(OZONE_X11)
+  // If we might be running Ozone X11 we need a UI loop to grab Expose events.
+  // See GLSurfaceGLX and https://crbug.com/326995.
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+#elif defined(USE_OZONE)
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
+#elif defined(OS_LINUX)
+#error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)
   // This is necessary for CoreAnimation layers hosted in the GPU process to be
   // drawn. See http://crbug.com/312462.

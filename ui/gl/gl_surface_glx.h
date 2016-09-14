@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
@@ -54,8 +54,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 };
 
 // A surface used to render to a view.
-class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
-                                         public ui::PlatformEventDispatcher {
+class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
  public:
   explicit NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window);
 
@@ -77,13 +76,21 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
  protected:
   ~NativeViewGLSurfaceGLX() override;
 
+  // Handle registering and unregistering for Expose events.
+  virtual void RegisterEvents() = 0;
+  virtual void UnregisterEvents() = 0;
+
+  // Forwards Expose event to child window.
+  void ForwardExposeEvent(XEvent* xevent);
+
+  // Checks if event is Expose for child window.
+  bool CanHandleEvent(XEvent* xevent);
+
+  gfx::AcceleratedWidget window() const { return window_; }
+
  private:
   // The handle for the drawable to make current or swap.
   GLXDrawable GetDrawableHandle() const;
-
-  // PlatformEventDispatcher implementation
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // Window passed in at creation. Always valid.
   gfx::AcceleratedWidget parent_window_;

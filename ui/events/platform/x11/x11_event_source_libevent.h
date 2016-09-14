@@ -39,6 +39,8 @@ class EVENTS_EXPORT X11EventSourceLibevent
   explicit X11EventSourceLibevent(XDisplay* display);
   ~X11EventSourceLibevent() override;
 
+  static X11EventSourceLibevent* GetInstance();
+
   // Adds a XEvent dispatcher to the XEvent dispatcher list.
   void AddXEventDispatcher(XEventDispatcher* dispatcher);
 

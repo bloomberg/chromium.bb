@@ -4,10 +4,11 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
 use_egl = is_win || is_android || is_linux
-use_glx = use_x11
+use_glx = use_x11 || ozone_platform_x11
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -168,6 +169,8 @@ component("gl") {
     sources += [
       "gl_surface_egl_x11.cc",
       "gl_surface_egl_x11.h",
+      "gl_surface_glx_x11.cc",
+      "gl_surface_glx_x11.h",
       "gl_surface_osmesa_x11.cc",
       "gl_surface_osmesa_x11.h",
     ]

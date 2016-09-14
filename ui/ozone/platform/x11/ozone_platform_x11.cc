@@ -91,7 +91,8 @@ class OzonePlatformX11 : public OzonePlatform {
 
   void InitializeUI() override {
     window_manager_.reset(new X11WindowManagerOzone);
-    event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
+    if (!event_source_)
+      event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_.reset(new X11CursorFactoryOzone());
@@ -99,13 +100,14 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   void InitializeGPU() override {
+    if (!event_source_)
+      event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
     surface_factory_ozone_.reset(new X11SurfaceFactory());
   }
 
  private:
-  // Objects in the Browser process.
+  // Objects in the browser process.
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
-  std::unique_ptr<X11EventSourceLibevent> event_source_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
@@ -113,6 +115,9 @@ class OzonePlatformX11 : public OzonePlatform {
 
   // Objects in the GPU process.
   std::unique_ptr<X11SurfaceFactory> surface_factory_ozone_;
+
+  // Objects in both browser and GPU process.
+  std::unique_ptr<X11EventSourceLibevent> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformX11);
 };

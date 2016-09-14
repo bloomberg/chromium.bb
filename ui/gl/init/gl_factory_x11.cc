@@ -18,6 +18,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_egl_x11.h"
 #include "ui/gl/gl_surface_glx.h"
+#include "ui/gl/gl_surface_glx_x11.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_osmesa_x11.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -72,7 +73,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
     case kGLImplementationOSMesaGL:
       return InitializeGLSurface(new GLSurfaceOSMesaX11(window));
     case kGLImplementationDesktopGL:
-      return InitializeGLSurface(new NativeViewGLSurfaceGLX(window));
+      return InitializeGLSurface(new GLSurfaceGLXX11(window));
     case kGLImplementationEGLGLES2:
       DCHECK(window != gfx::kNullAcceleratedWidget);
       return InitializeGLSurface(new NativeViewGLSurfaceEGLX11(window));
