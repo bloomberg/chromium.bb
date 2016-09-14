@@ -419,6 +419,10 @@ void WizardController::ShowNetworkScreen() {
 }
 
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
+  // This may be triggered by multiply asynchronous events from the JS side.
+  if (login_screen_started_)
+    return;
+
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
