@@ -33,7 +33,6 @@
 
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceSetLoadEventInit.h"
-#include "core/dom/DOMError.h"
 #include "core/events/Event.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

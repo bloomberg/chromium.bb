@@ -51,8 +51,6 @@ blink_core_sources("dom") {
     "DOMArrayPiece.h",
     "DOMDataView.cpp",
     "DOMDataView.h",
-    "DOMError.cpp",
-    "DOMError.h",
     "DOMException.cpp",
     "DOMException.h",
     "DOMImplementation.cpp",

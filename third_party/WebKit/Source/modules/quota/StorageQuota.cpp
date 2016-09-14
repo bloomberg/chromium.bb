@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/quota/DOMError.h"
 #include "modules/quota/StorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageQuotaClient.h"
 #include "platform/weborigin/KURL.h"

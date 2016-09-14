@@ -23,24 +23,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMError.h"
+#ifndef DOMError_h
+#define DOMError_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMException.h"
+#include "modules/ModulesExport.h"
+#include "platform/heap/Handle.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-DOMError::~DOMError()
-{
-}
+class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static DOMError* create(const String& name)
+    {
+        return new DOMError(name);
+    }
+    static DOMError* create(const String& name, const String& message)
+    {
+        return new DOMError(name, message);
+    }
 
-DOMError::DOMError(const String& name)
-    : m_name(name)
-{
-}
+    static DOMError* create(ExceptionCode ec)
+    {
+        return new DOMError(DOMException::getErrorName(ec), DOMException::getErrorMessage(ec));
+    }
 
-DOMError::DOMError(const String& name, const String& message)
-    : m_name(name)
-    , m_message(message)
-{
-}
+    static DOMError* create(ExceptionCode ec, const String& message)
+    {
+        return new DOMError(DOMException::getErrorName(ec), message);
+    }
+
+    virtual ~DOMError();
+
+    const String& name() const { return m_name; }
+    const String& message() const { return m_message; }
+
+    DEFINE_INLINE_TRACE() { }
+
+protected:
+    explicit DOMError(const String& name);
+    DOMError(const String& name, const String& message);
+
+private:
+    const String m_name;
+    const String m_message;
+};
 
 } // namespace blink
+
+#endif // DOMError_h

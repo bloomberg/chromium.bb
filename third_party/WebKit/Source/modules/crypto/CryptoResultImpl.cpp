@@ -39,7 +39,6 @@
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMError.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
