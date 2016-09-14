@@ -392,6 +392,7 @@ struct BindState;
 
 template <typename BindStateType, typename SFINAE = void>
 struct CancellationChecker {
+  static constexpr bool is_cancellable = false;
   static bool Run(const BindStateBase*) {
     return false;
   }
@@ -402,6 +403,7 @@ struct CancellationChecker<
     BindState<Functor, BoundArgs...>,
     typename std::enable_if<IsWeakMethod<FunctorTraits<Functor>::is_method,
                                          BoundArgs...>::value>::type> {
+  static constexpr bool is_cancellable = true;
   static bool Run(const BindStateBase* base) {
     using BindStateType = BindState<Functor, BoundArgs...>;
     const BindStateType* bind_state = static_cast<const BindStateType*>(base);
@@ -411,6 +413,7 @@ struct CancellationChecker<
 
 template <typename Signature, typename... BoundArgs>
 struct CancellationChecker<BindState<Callback<Signature>, BoundArgs...>> {
+  static constexpr bool is_cancellable = true;
   static bool Run(const BindStateBase* base) {
     using Functor = Callback<Signature>;
     using BindStateType = BindState<Functor, BoundArgs...>;
@@ -424,8 +427,27 @@ struct CancellationChecker<BindState<Callback<Signature>, BoundArgs...>> {
 // This stores all the state passed into Bind().
 template <typename Functor, typename... BoundArgs>
 struct BindState final : BindStateBase {
+  using IsCancellable = std::integral_constant<
+      bool, CancellationChecker<BindState>::is_cancellable>;
+
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
   explicit BindState(BindStateBase::InvokeFuncStorage invoke_func,
+                     ForwardFunctor&& functor,
+                     ForwardBoundArgs&&... bound_args)
+      // IsCancellable is std::false_type if the CancellationChecker<>::Run
+      // returns always false. Otherwise, it's std::true_type.
+      : BindState(IsCancellable{},
+                  invoke_func,
+                  std::forward<ForwardFunctor>(functor),
+                  std::forward<ForwardBoundArgs>(bound_args)...) {}
+
+  Functor functor_;
+  std::tuple<BoundArgs...> bound_args_;
+
+ private:
+  template <typename ForwardFunctor, typename... ForwardBoundArgs>
+  explicit BindState(std::true_type,
+                     BindStateBase::InvokeFuncStorage invoke_func,
                      ForwardFunctor&& functor,
                      ForwardBoundArgs&&... bound_args)
       : BindStateBase(invoke_func, &Destroy,
@@ -435,10 +457,17 @@ struct BindState final : BindStateBase {
     DCHECK(!IsNull(functor_));
   }
 
-  Functor functor_;
-  std::tuple<BoundArgs...> bound_args_;
+  template <typename ForwardFunctor, typename... ForwardBoundArgs>
+  explicit BindState(std::false_type,
+                     BindStateBase::InvokeFuncStorage invoke_func,
+                     ForwardFunctor&& functor,
+                     ForwardBoundArgs&&... bound_args)
+      : BindStateBase(invoke_func, &Destroy),
+        functor_(std::forward<ForwardFunctor>(functor)),
+        bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
+    DCHECK(!IsNull(functor_));
+  }
 
- private:
   ~BindState() {}
 
   static void Destroy(BindStateBase* self) {

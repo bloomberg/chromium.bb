@@ -36,6 +36,8 @@ class BASE_EXPORT BindStateBase {
 
  protected:
   BindStateBase(InvokeFuncStorage polymorphic_invoke,
+                void (*destructor)(BindStateBase*));
+  BindStateBase(InvokeFuncStorage polymorphic_invoke,
                 void (*destructor)(BindStateBase*),
                 bool (*is_cancelled)(const BindStateBase*));
   ~BindStateBase() = default;

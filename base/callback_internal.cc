@@ -9,13 +9,26 @@
 namespace base {
 namespace internal {
 
+namespace {
+
+bool ReturnFalse(const BindStateBase*) {
+  return false;
+}
+
+}  // namespace
+
+BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
+                             void (*destructor)(BindStateBase*))
+    : BindStateBase(polymorphic_invoke, destructor, &ReturnFalse) {
+}
+
 BindStateBase::BindStateBase(InvokeFuncStorage polymorphic_invoke,
                              void (*destructor)(BindStateBase*),
                              bool (*is_cancelled)(const BindStateBase*))
-      : polymorphic_invoke_(polymorphic_invoke),
-        ref_count_(0),
-        destructor_(destructor),
-        is_cancelled_(is_cancelled) {}
+    : polymorphic_invoke_(polymorphic_invoke),
+      ref_count_(0),
+      destructor_(destructor),
+      is_cancelled_(is_cancelled) {}
 
 void BindStateBase::AddRef() {
   AtomicRefCountInc(&ref_count_);
