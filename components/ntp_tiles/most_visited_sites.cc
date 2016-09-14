@@ -123,15 +123,15 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
-std::string GetSourceHistogramName(int source) {
+std::string GetSourceHistogramName(NTPTileSource source) {
   switch (source) {
-    case static_cast<int>(NTPTileSource::TOP_SITES):
+    case NTPTileSource::TOP_SITES:
       return kHistogramClientName;
-    case static_cast<int>(NTPTileSource::POPULAR):
+    case NTPTileSource::POPULAR:
       return kHistogramPopularName;
-    case static_cast<int>(NTPTileSource::WHITELIST):
+    case NTPTileSource::WHITELIST:
       return kHistogramWhitelistName;
-    case static_cast<int>(NTPTileSource::SUGGESTIONS_SERVICE):
+    case NTPTileSource::SUGGESTIONS_SERVICE:
       return kHistogramServerName;
   }
   NOTREACHED();
@@ -226,11 +226,11 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
 }
 
 void MostVisitedSites::RecordTileTypeMetrics(
-    const std::vector<int>& tile_types,
-    const std::vector<int>& sources) {
+    const std::vector<MostVisitedTileType>& tile_types,
+    const std::vector<NTPTileSource>& sources) {
   int counts_per_type[NUM_TILE_TYPES] = {0};
   for (size_t i = 0; i < tile_types.size(); ++i) {
-    int tile_type = tile_types[i];
+    MostVisitedTileType tile_type = tile_types[i];
     ++counts_per_type[tile_type];
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type, NUM_TILE_TYPES);
@@ -249,9 +249,10 @@ void MostVisitedSites::RecordTileTypeMetrics(
                               counts_per_type[ICON_DEFAULT]);
 }
 
-void MostVisitedSites::RecordOpenedMostVisitedItem(int index,
-                                                   int tile_type,
-                                                   int source) {
+void MostVisitedSites::RecordOpenedMostVisitedItem(
+    int index,
+    MostVisitedTileType tile_type,
+    NTPTileSource source) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, num_sites_);
 
   std::string histogram = base::StringPrintf(
@@ -534,8 +535,7 @@ void MostVisitedSites::RecordImpressionUMAMetrics() {
 
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
-        GetSourceHistogramName(static_cast<int>(current_tiles_[i].source))
-            .c_str());
+        GetSourceHistogramName(current_tiles_[i].source).c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }

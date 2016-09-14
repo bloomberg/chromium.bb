@@ -129,9 +129,11 @@ class MostVisitedSites : public history::TopSitesObserver,
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
-  void RecordTileTypeMetrics(const std::vector<int>& tile_types,
-                             const std::vector<int>& sources);
-  void RecordOpenedMostVisitedItem(int index, int tile_type, int source);
+  void RecordTileTypeMetrics(const std::vector<MostVisitedTileType>& tile_types,
+                             const std::vector<NTPTileSource>& sources);
+  void RecordOpenedMostVisitedItem(int index,
+                                   MostVisitedTileType tile_type,
+                                   NTPTileSource source);
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;
