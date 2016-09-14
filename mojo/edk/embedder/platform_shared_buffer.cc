@@ -253,21 +253,28 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
 bool PlatformSharedBuffer::InitFromPlatformHandlePair(
     ScopedPlatformHandle rw_platform_handle,
     ScopedPlatformHandle ro_platform_handle) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   NOTREACHED();
   return false;
-#else
-  DCHECK(!shared_memory_);
+#else  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+  base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
+                                  base::GetCurrentProcId());
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
+                                     base::GetCurrentProcId());
+#else  // defined(OS_WIN)
   base::SharedMemoryHandle handle(rw_platform_handle.release().handle, false);
-  shared_memory_.reset(new base::SharedMemory(handle, false));
-
   base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
                                      false);
-  ro_shared_memory_.reset(new base::SharedMemory(ro_handle, true));
+#endif  // defined(OS_WIN)
 
+  DCHECK(!shared_memory_);
+  shared_memory_.reset(new base::SharedMemory(handle, false));
+  ro_shared_memory_.reset(new base::SharedMemory(ro_handle, true));
   return true;
-#endif
+
+#endif  // defined(OS_MACOSX)
 }
 
 void PlatformSharedBuffer::InitFromSharedMemoryHandle(

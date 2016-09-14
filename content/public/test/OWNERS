@@ -3,3 +3,7 @@ sky@chromium.org
 
 # For WebRTC files.
 tommi@chromium.org
+
+# For security presubmit checks, though test mojom really don't need review.
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS

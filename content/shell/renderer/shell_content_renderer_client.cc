@@ -71,6 +71,11 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
     callback.Run("Not implemented.");
   }
 
+  void CreateSharedBuffer(const std::string& message,
+                          const CreateSharedBufferCallback& callback) override {
+    NOTREACHED();
+  }
+
   mojo::Binding<mojom::TestMojoService> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoServiceImpl);

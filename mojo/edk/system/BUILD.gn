@@ -20,9 +20,10 @@ component("system") {
     "awakable_list.cc",
     "awakable_list.h",
     "broker.h",
+    "broker_host.cc",
     "broker_host.h",
-    "broker_host_posix.cc",
     "broker_posix.cc",
+    "broker_win.cc",
     "channel.cc",
     "channel.h",
     "channel_posix.cc",
@@ -106,7 +107,7 @@ component("system") {
 
   if (is_nacl && !is_nacl_nonsfi) {
     sources -= [
-      "broker_host_posix.cc",
+      "broker_host.cc",
       "broker_posix.cc",
       "channel_posix.cc",
       "remote_message_pipe_bootstrap.cc",

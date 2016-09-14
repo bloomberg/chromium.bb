@@ -183,6 +183,11 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
     callback.Run(mojo::String(""));
   }
 
+  void CreateSharedBuffer(const std::string& message,
+                          const CreateSharedBufferCallback& callback) override {
+    NOTREACHED();
+  }
+
  private:
   explicit TestMojoServiceImpl() {}
 };

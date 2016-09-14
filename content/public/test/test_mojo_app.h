@@ -40,6 +40,8 @@ class TestMojoApp : public shell::Service,
   void DoTerminateProcess(const DoTerminateProcessCallback& callback) override;
   void CreateFolder(const CreateFolderCallback& callback) override;
   void GetRequestorName(const GetRequestorNameCallback& callback) override;
+  void CreateSharedBuffer(const std::string& message,
+                          const CreateSharedBufferCallback& callback) override;
 
   mojo::Binding<mojom::TestMojoService> service_binding_;
 

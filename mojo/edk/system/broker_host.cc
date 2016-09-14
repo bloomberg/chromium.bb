@@ -4,17 +4,12 @@
 
 #include "mojo/edk/system/broker_host.h"
 
-#include <fcntl.h>
-#include <unistd.h>
-
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/broker_messages.h"
@@ -23,18 +18,25 @@ namespace mojo {
 namespace edk {
 
 namespace {
-// To prevent abuse, limit the maximum size of shared memory buffers.
-// TODO(amistry): Re-consider this limit, or do something smarter.
-const size_t kMaxSharedBufferSize = 16 * 1024 * 1024;
-}
 
-BrokerHost::BrokerHost(ScopedPlatformHandle platform_handle) {
+// To prevent abuse, limit the maximum size of shared memory buffers.
+// TODO(rockot): Re-consider this limit, or do something smarter.
+const uint32_t kMaxSharedBufferSize = 16 * 1024 * 1024;
+
+}  // namespace
+
+BrokerHost::BrokerHost(base::ProcessHandle client_process,
+                       ScopedPlatformHandle platform_handle)
+#if defined(OS_WIN)
+    : client_process_(client_process)
+#endif
+{
   CHECK(platform_handle.is_valid());
 
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  channel_ = Channel::Create(this, std::move(platform_handle),
-                             base::ThreadTaskRunnerHandle::Get());
+  channel_ = Channel::Create(
+      this, std::move(platform_handle), base::ThreadTaskRunnerHandle::Get());
   channel_->Start();
 }
 
@@ -46,6 +48,18 @@ BrokerHost::~BrokerHost() {
     channel_->ShutDown();
 }
 
+void BrokerHost::PrepareHandlesForClient(PlatformHandleVector* handles) {
+#if defined(OS_WIN)
+  if (!Channel::Message::RewriteHandles(
+      base::GetCurrentProcessHandle(), client_process_, handles)) {
+    // NOTE: We only log an error here. We do not signal a logical error or
+    // prevent any message from being sent. The client should handle unexpected
+    // invalid handles appropriately.
+    DLOG(ERROR) << "Failed to rewrite one or more handles to broker client.";
+  }
+#endif
+}
+
 void BrokerHost::SendChannel(ScopedPlatformHandle handle) {
   CHECK(handle.is_valid());
   CHECK(channel_);
@@ -55,12 +69,12 @@ void BrokerHost::SendChannel(ScopedPlatformHandle handle) {
   ScopedPlatformHandleVectorPtr handles;
   handles.reset(new PlatformHandleVector(1));
   handles->at(0) = handle.release();
+  PrepareHandlesForClient(handles.get());
   message->SetHandles(std::move(handles));
-
   channel_->Write(std::move(message));
 }
 
-void BrokerHost::OnBufferRequest(size_t num_bytes) {
+void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   scoped_refptr<PlatformSharedBuffer> buffer;
   scoped_refptr<PlatformSharedBuffer> read_only_buffer;
   if (num_bytes <= kMaxSharedBufferSize) {
@@ -80,6 +94,7 @@ void BrokerHost::OnBufferRequest(size_t num_bytes) {
     handles.reset(new PlatformHandleVector(2));
     handles->at(0) = buffer->PassPlatformHandle().release();
     handles->at(1) = read_only_buffer->PassPlatformHandle().release();
+    PrepareHandlesForClient(handles.get());
     message->SetHandles(std::move(handles));
   }
 
@@ -101,29 +116,18 @@ void BrokerHost::OnChannelMessage(const void* payload,
         const BufferRequestData* request =
             reinterpret_cast<const BufferRequestData*>(header + 1);
         OnBufferRequest(request->size);
-        return;
       }
       break;
 
     default:
+      LOG(ERROR) << "Unexpected broker message type: " << header->type;
       break;
   }
-
-  LOG(ERROR) << "Unexpected broker message type: " << header->type;
 }
 
-void BrokerHost::OnChannelError() {
-  if (channel_) {
-    channel_->ShutDown();
-    channel_ = nullptr;
-  }
+void BrokerHost::OnChannelError() { delete this; }
 
-  delete this;
-}
-
-void BrokerHost::WillDestroyCurrentMessageLoop() {
-  delete this;
-}
+void BrokerHost::WillDestroyCurrentMessageLoop() { delete this; }
 
 }  // namespace edk
 }  // namespace mojo

@@ -53,4 +53,10 @@ void TestMojoApp::GetRequestorName(const GetRequestorNameCallback& callback) {
   callback.Run(requestor_name_);
 }
 
+void TestMojoApp::CreateSharedBuffer(
+    const std::string& message,
+    const CreateSharedBufferCallback& callback) {
+  NOTREACHED();
+}
+
 }  // namespace content

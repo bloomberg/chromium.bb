@@ -228,10 +228,9 @@ void NodeController::CloseChildPorts(const std::string& child_token) {
 }
 
 void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
-// TODO(amistry): Consider the need for a broker on Windows.
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
-  // On posix, use the bootstrap channel for the broker and receive the node's
-  // channel synchronously as the first message from the broker.
+#if !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
+  // Use the bootstrap channel for the broker and receive the node's channel
+  // synchronously as the first message from the broker.
   base::ElapsedTimer timer;
   broker_.reset(new Broker(std::move(platform_handle)));
   platform_handle = broker_->GetParentPlatformHandle();
@@ -356,7 +355,7 @@ int NodeController::MergeLocalPorts(const ports::PortRef& port0,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
+#if !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
   // Shared buffer creation failure is fatal, so always use the broker when we
   // have one. This does mean that a non-root process that has children will use
   // the broker for shared buffer creation even though that process is
@@ -392,10 +391,11 @@ void NodeController::ConnectToChildOnIOThread(
     const ProcessErrorCallback& process_error_callback) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL)
+#if !defined(OS_MACOSX) && !defined(OS_NACL)
   PlatformChannelPair node_channel;
   // BrokerHost owns itself.
-  BrokerHost* broker_host = new BrokerHost(std::move(platform_handle));
+  BrokerHost* broker_host =
+      new BrokerHost(process_handle, std::move(platform_handle));
   broker_host->SendChannel(node_channel.PassClientHandle());
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
       this, node_channel.PassServerHandle(), io_task_runner_,

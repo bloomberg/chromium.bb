@@ -13,6 +13,7 @@
 #include "content/public/test/test_mojo_app.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
 namespace content {
@@ -43,6 +44,20 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
 
   void GetRequestorName(const GetRequestorNameCallback& callback) override {
     NOTREACHED();
+  }
+
+  void CreateSharedBuffer(const std::string& message,
+                          const CreateSharedBufferCallback& callback) override {
+    mojo::ScopedSharedBufferHandle buffer =
+        mojo::SharedBufferHandle::Create(message.size());
+    CHECK(buffer.is_valid());
+
+    mojo::ScopedSharedBufferMapping mapping = buffer->Map(message.size());
+    CHECK(mapping);
+    std::copy(message.begin(), message.end(),
+              reinterpret_cast<char*>(mapping.get()));
+
+    callback.Run(std::move(buffer));
   }
 
  private:

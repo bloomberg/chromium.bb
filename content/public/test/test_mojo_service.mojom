@@ -17,4 +17,8 @@ interface TestMojoService {
 
   // Retrieve the requestor name as seen by the test app providing this service.
   GetRequestorName() => (string name);
+
+  // Requests that a new shared buffer be created and returned. If successful,
+  // |buffer| is non-null and its contents match |message|'s bytes exactly.
+  CreateSharedBuffer(string message) => (handle<shared_buffer>? buffer);
 };
