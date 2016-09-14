@@ -133,10 +133,10 @@ class GFX_EXPORT ColorSpace {
   bool operator<(const ColorSpace& other) const;
 
  private:
-  PrimaryID primaries_;
-  TransferID transfer_;
-  MatrixID matrix_;
-  RangeID range_;
+  PrimaryID primaries_ = PrimaryID::UNSPECIFIED;
+  TransferID transfer_ = TransferID::UNSPECIFIED;
+  MatrixID matrix_ = MatrixID::UNSPECIFIED;
+  RangeID range_ = RangeID::LIMITED;
 
   // Only used if primaries_ == PrimaryID::CUSTOM
   float custom_primary_matrix_[12];

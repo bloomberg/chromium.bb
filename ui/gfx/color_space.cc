@@ -12,11 +12,9 @@
 
 namespace gfx {
 
-ColorSpace::ColorSpace()
-    : primaries_(PrimaryID::UNSPECIFIED),
-      transfer_(TransferID::UNSPECIFIED),
-      matrix_(MatrixID::UNSPECIFIED),
-      range_(RangeID::LIMITED) {}
+ColorSpace::ColorSpace() {
+  memset(custom_primary_matrix_, 0, sizeof(custom_primary_matrix_));
+}
 
 ColorSpace::ColorSpace(PrimaryID primaries,
                        TransferID transfer,
@@ -26,6 +24,7 @@ ColorSpace::ColorSpace(PrimaryID primaries,
       transfer_(transfer),
       matrix_(matrix),
       range_(range) {
+  memset(custom_primary_matrix_, 0, sizeof(custom_primary_matrix_));
   // TODO: Set profile_id_
 }
 

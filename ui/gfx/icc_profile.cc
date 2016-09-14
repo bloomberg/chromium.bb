@@ -105,6 +105,9 @@ const std::vector<char>& ICCProfile::GetData() const {
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
+  if (!valid_)
+    return gfx::ColorSpace();
+
   ColorSpace color_space(ColorSpace::PrimaryID::CUSTOM,
                          ColorSpace::TransferID::CUSTOM,
                          ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
