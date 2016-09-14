@@ -414,7 +414,7 @@ static std::unique_ptr<TracedValue> loadResourceTraceData(unsigned long identifi
 void FrameFetchContext::willStartLoadingResource(unsigned long identifier, ResourceRequest& request, Resource::Type type)
 {
     TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", identifier, "data", loadResourceTraceData(identifier, request.url(), request.priority()));
-    frame()->loader().progress().willStartLoading(identifier);
+    frame()->loader().progress().willStartLoading(identifier, request.priority());
     prepareRequest(request);
 
     if (!m_documentLoader || m_documentLoader->fetcher()->archive() || !request.url().isValid())

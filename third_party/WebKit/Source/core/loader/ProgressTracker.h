@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -60,7 +61,7 @@ public:
 
     void finishedParsing();
 
-    void willStartLoading(unsigned long identifier);
+    void willStartLoading(unsigned long identifier, ResourceLoadPriority);
     void incrementProgress(unsigned long identifier, const ResourceResponse&);
     void incrementProgress(unsigned long identifier, int);
     void completeProgress(unsigned long identifier);
