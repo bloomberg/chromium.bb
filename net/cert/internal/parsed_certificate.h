@@ -227,6 +227,24 @@ class NET_EXPORT ParsedCertificate
       const ParseCertificateOptions& options,
       CertErrors* errors);
 
+  // These private overloads should not be used, and have no definition.
+  //
+  // They are here to prevent incorrectly passing a const char*
+  // in place of a base::StringPiece (thanks to StringPiece implicit
+  // ctor on const char*).
+  //
+  // Accidentally inflating a const char* (without length) to a
+  // StringPiece would be a bug.
+  static scoped_refptr<ParsedCertificate> Create(
+      const char* invalid_data,
+      const ParseCertificateOptions& options,
+      CertErrors* errors);
+  static bool CreateAndAddToVector(
+      const char* data,
+      const ParseCertificateOptions& options,
+      std::vector<scoped_refptr<net::ParsedCertificate>>* chain,
+      CertErrors* errors);
+
   // The backing store for the certificate data. This is only applicable when
   // the ParsedCertificate was initialized using DataSource::INTERNAL_COPY.
   std::vector<uint8_t> cert_data_;
