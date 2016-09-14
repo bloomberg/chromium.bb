@@ -77,6 +77,10 @@ component("display") {
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//ui/gfx:gfx",
+  ]
+
   deps = [
     "//base",
     "//ui/display/types",

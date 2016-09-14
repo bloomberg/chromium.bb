@@ -1057,6 +1057,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (compositor_) {
     compositor_->setViewportSize(params.physical_backing_size);
     compositor_->setBottomControlsHeight(params.bottom_controls_height);
+    compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
   }
 
   visible_viewport_size_ = params.visible_viewport_size;
@@ -1139,6 +1140,7 @@ void RenderWidget::initializeLayerTreeView() {
                                                compositor_deps_);
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
+  compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
   // For background pages and certain tests, we don't want to trigger
   // OutputSurface creation.
   if (compositor_never_visible_ || !RenderThreadImpl::current())
