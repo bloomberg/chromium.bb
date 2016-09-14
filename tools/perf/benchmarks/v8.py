@@ -115,6 +115,8 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
+# Disabled on reference builds due to http://crbug.com/646925
+@benchmark.Disabled('reference')
 class V8TodoMVC(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the TodoMVC examples."""
   page_set = page_sets.TodoMVCPageSet
