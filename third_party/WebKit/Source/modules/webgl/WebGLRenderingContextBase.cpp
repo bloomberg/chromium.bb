@@ -4264,7 +4264,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(HTMLCanvasElement* canvas, G
 {
     if (!canvas->is3D()) {
         ImageBuffer* buffer = canvas->buffer();
-        if (!buffer->copyToPlatformTexture(contextGL(), targetTexture, targetInternalformat, targetType,
+        if (buffer && !buffer->copyToPlatformTexture(contextGL(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             NOTREACHED();
         }

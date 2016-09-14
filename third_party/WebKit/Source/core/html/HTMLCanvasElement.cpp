@@ -326,7 +326,7 @@ void HTMLCanvasElement::didFinalizeFrame()
     m_numFramesSinceLastRenderingModeSwitch++;
     if (RuntimeEnabledFeatures::enableCanvas2dDynamicRenderingModeSwitchingEnabled()
         && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-        if (m_context->is2d() && buffer()->isAccelerated()
+        if (m_context->is2d() && buffer() && buffer()->isAccelerated()
             && m_numFramesSinceLastRenderingModeSwitch >= ExpensiveCanvasHeuristicParameters::MinFramesBeforeSwitch
             && !m_pendingRenderingModeSwitch) {
             if (!m_context->isAccelerationOptimalForCanvasContent()) {
@@ -345,7 +345,7 @@ void HTMLCanvasElement::didFinalizeFrame()
         }
     }
 
-    if (m_pendingRenderingModeSwitch && !buffer()->isAccelerated()) {
+    if (m_pendingRenderingModeSwitch && buffer() && !buffer()->isAccelerated()) {
         m_pendingRenderingModeSwitch = false;
     }
 
@@ -625,10 +625,12 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
 
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
         imageData = ImageData::create(m_size);
-        sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
-        if (snapshot) {
-            SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-            snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        if (hasImageBuffer()) {
+            sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
+            if (snapshot) {
+                SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+                snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+            }
         }
         return imageData;
     }
@@ -639,10 +641,12 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
         return imageData;
 
     DCHECK(m_context->is2d());
-    sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
-    if (snapshot) {
-        SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+    if (hasImageBuffer()) {
+        sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
+        if (snapshot) {
+            SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+            snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        }
     }
 
     return imageData;
