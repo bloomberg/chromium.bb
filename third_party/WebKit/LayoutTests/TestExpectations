@@ -51,10 +51,7 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
 
-crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
-
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
-crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 
@@ -106,12 +103,6 @@ crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ S
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
 
 crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
-
-crbug.com/632548 [ Win ] paint/invalidation/overflow-scroll-body-appear.html [ Pass Failure ]
-crbug.com/632548 [ Win ] paint/invalidation/invalidation-after-opacity-change-subtree.html [ Pass Failure ]
-crbug.com/632548 [ Win ] paint/invalidation/compositing/text-match-highlight.html [ Pass Failure ]
-
-crbug.com/636222 [ Mac10.10 ] paint/invalidation/fixed-and-absolute-position-scrolled.html [ Failure ]
 
 crbug.com/636271 [ Mac ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
@@ -1168,6 +1159,8 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/stop-after-start-succeeds.html 
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-twice.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Skip ]
 
+crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
+crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
@@ -1186,8 +1179,10 @@ crbug.com/487344 media/video-controls-with-cast-rendering.html [ Failure ]
 crbug.com/487344 media/video-display-toggle.html [ Failure ]
 crbug.com/487344 media/video-empty-source.html [ Failure ]
 crbug.com/487344 media/video-no-audio.html [ Failure ]
-crbug.com/487344 [ Mac ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout Failure ]
-crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Pass Failure ]
+crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/638621 [ Win ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
+
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]

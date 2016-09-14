@@ -22,4 +22,3 @@ layer at (59,111) size 300x108
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108
 layer at (59,229) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32

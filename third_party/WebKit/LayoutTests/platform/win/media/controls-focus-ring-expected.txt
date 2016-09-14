@@ -14,4 +14,3 @@ layer at (8,50) size 300x32
     LayoutBlockFlow {DIV} at (0,0) size 300x32
 layer at (8,50) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32
