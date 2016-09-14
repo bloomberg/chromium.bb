@@ -28,6 +28,7 @@
 #include "ui/base/x/selection_requestor.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -301,6 +302,9 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   // Input-only window used as a selection owner.
   ::Window x_window_;
 
+  // Events selected on |x_window_|.
+  std::unique_ptr<XScopedEventSelector> x_window_events_;
+
   X11AtomCache atom_cache_;
 
   // Object which requests and receives selection data.
@@ -339,7 +343,8 @@ ClipboardAuraX11::AuraX11Details::AuraX11Details()
   atom_cache_.allow_uncached_atoms();
 
   XStoreName(x_display_, x_window_, "Chromium clipboard");
-  XSelectInput(x_display_, x_window_, PropertyChangeMask);
+  x_window_events_.reset(
+      new XScopedEventSelector(x_window_, PropertyChangeMask));
 
   if (PlatformEventSource::GetInstance())
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);

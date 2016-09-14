@@ -32,6 +32,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -1400,7 +1401,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
                     ExposureMask | VisibilityChangeMask |
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
-  XSelectInput(xdisplay_, xwindow_, event_mask);
+  xwindow_events_.reset(new ui::XScopedEventSelector(xwindow_, event_mask));
   XFlush(xdisplay_);
 
   if (ui::IsXInput2Available())

@@ -26,6 +26,10 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 }
 
+namespace ui {
+class XScopedEventSelector;
+}
+
 namespace views {
 
 // A singleton that owns global objects related to the desktop and listens for
@@ -68,6 +72,9 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
 
   // The native root window.
   ::Window x_root_window_;
+
+  // Events selected on x_root_window_.
+  std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
 
   ui::X11AtomCache atom_cache_;
 

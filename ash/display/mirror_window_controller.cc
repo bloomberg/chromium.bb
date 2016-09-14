@@ -40,26 +40,12 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
+#include "ui/aura/window_tree_host_x11.h"
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
 namespace ash {
 namespace {
-
-#if defined(USE_X11)
-// Mirror window shouldn't handle input events.
-void DisableInput(XID window) {
-  long event_mask = ExposureMask | VisibilityChangeMask | StructureNotifyMask |
-                    PropertyChangeMask;
-  XSelectInput(gfx::GetXDisplay(), window, event_mask);
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
-  XIEventMask evmask;
-  evmask.deviceid = XIAllDevices;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-  XISelectEvents(gfx::GetXDisplay(), window, &evmask, 1);
-}
-#endif
 
 // ScreenPositionClient for mirroring windows.
 class MirroringScreenPositionClient
@@ -197,17 +183,17 @@ void MirrorWindowController::UpdateWindow(
           base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
       host->compositor()->SetBackgroundColor(SK_ColorBLACK);
       // No need to remove the observer because the WindowTreeHostManager
-      // outlives
-      // the
-      // host.
+      // outlives the host.
       host->AddObserver(Shell::GetInstance()->window_tree_host_manager());
       host->AddObserver(this);
       // TODO(oshima): TouchHUD is using idkey.
       InitRootWindowSettings(host->window())->display_id = display_info.id();
       host->InitHost();
 #if defined(USE_X11)
-      if (!display_manager->IsInUnifiedMode())
-        DisableInput(host->GetAcceleratedWidget());
+      if (!display_manager->IsInUnifiedMode()) {
+        // Mirror window shouldn't handle input events.
+        static_cast<aura::WindowTreeHostX11*>(host)->DisableInput();
+      }
 #endif
 
 #if defined(OS_CHROMEOS)

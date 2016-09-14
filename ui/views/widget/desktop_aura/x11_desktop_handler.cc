@@ -13,6 +13,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
@@ -47,11 +48,9 @@ X11DesktopHandler::X11DesktopHandler()
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   aura::Env::GetInstance()->AddObserver(this);
 
-  XWindowAttributes attr;
-  XGetWindowAttributes(xdisplay_, x_root_window_, &attr);
-  XSelectInput(xdisplay_, x_root_window_,
-               attr.your_event_mask | PropertyChangeMask |
-               StructureNotifyMask | SubstructureNotifyMask);
+  x_root_window_events_.reset(new ui::XScopedEventSelector(
+      x_root_window_,
+      PropertyChangeMask | StructureNotifyMask | SubstructureNotifyMask));
 }
 
 X11DesktopHandler::~X11DesktopHandler() {

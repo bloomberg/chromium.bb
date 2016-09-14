@@ -18,6 +18,8 @@
 
 namespace ui {
 
+class XScopedEventSelector;
+
 // Abstract base implementation for a X11 based PlatformWindow. Methods that
 // are platform specific are left unimplemented.
 class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
@@ -65,6 +67,7 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   XID xwindow_;
   XID xroot_window_;
   X11AtomCache atom_cache_;
+  std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
   base::string16 window_title_;
 

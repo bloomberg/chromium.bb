@@ -21,6 +21,7 @@ using XWindow = unsigned long;
 namespace ui {
 
 class X11HotplugEventHandler;
+class XScopedEventSelector;
 
 // Responsible for notifying X11EventSource when new XEvents are available and
 // processing/dispatching XEvents. Implementations will likely be a
@@ -111,6 +112,7 @@ class EVENTS_EXPORT X11EventSource {
   bool dummy_initialized_;
   XWindow dummy_window_;
   XAtom dummy_atom_;
+  std::unique_ptr<XScopedEventSelector> dummy_window_events_;
 
   // Keeps track of whether this source should continue to dispatch all the
   // available events.

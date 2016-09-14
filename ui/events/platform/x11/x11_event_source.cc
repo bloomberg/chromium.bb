@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
@@ -160,7 +161,8 @@ Time X11EventSource::GetCurrentServerTime() {
     dummy_window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_),
                                         0, 0, 1, 1, 0, 0, 0);
     dummy_atom_ = XInternAtom(display_, "CHROMIUM_TIMESTAMP", False);
-    XSelectInput(display_, dummy_window_, PropertyChangeMask);
+    dummy_window_events_.reset(
+        new XScopedEventSelector(dummy_window_, PropertyChangeMask));
     dummy_initialized_ = true;
   }
 

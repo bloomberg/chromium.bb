@@ -24,6 +24,7 @@ typedef XID Window;
 
 namespace ui {
 class MouseEvent;
+class XScopedEventSelector;
 }
 
 namespace aura {
@@ -52,6 +53,9 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
+  // Deselects mouse and keyboard events on |xwindow_|.
+  void DisableInput();
+
  protected:
   // Called when X Configure Notify event is recevied.
   virtual void OnConfigureNotify();
@@ -78,6 +82,9 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
   ::Window xwindow_;
+
+  // Events selected on |xwindow_|.
+  std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
   // The native root window.
   ::Window x_root_window_;

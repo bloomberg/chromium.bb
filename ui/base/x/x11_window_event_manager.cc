@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,18 +9,37 @@
 #include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
 
-#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 
 namespace ui {
 
+namespace {
+
+// Asks the X server to set |xid|'s event mask to |new_mask|.
+void SetEventMask(XID xid, uint32_t new_mask) {
+  XDisplay* display = gfx::GetXDisplay();
+  xcb_connection_t* connection = XGetXCBConnection(display);
+  auto cookie = xcb_change_window_attributes(connection, xid, XCB_CW_EVENT_MASK,
+                                             &new_mask);
+  // Window |xid| may already be destroyed at this point, so the
+  // change_attributes request may give a BadWindow error.  In this case, just
+  // ignore the error.
+  xcb_discard_reply(connection, cookie.sequence);
+}
+
+}  // anonymous namespace
+
 XScopedEventSelector::XScopedEventSelector(XID xid, uint32_t event_mask)
-    : xid_(xid), event_mask_(event_mask) {
-  XWindowEventManager::GetInstance()->SelectEvents(xid_, event_mask_);
+    : xid_(xid),
+      event_mask_(event_mask),
+      event_manager_(
+          XWindowEventManager::GetInstance()->weak_ptr_factory_.GetWeakPtr()) {
+  event_manager_->SelectEvents(xid_, event_mask_);
 }
 
 XScopedEventSelector::~XScopedEventSelector() {
-  XWindowEventManager::GetInstance()->DeselectEvents(xid_, event_mask_);
+  if (event_manager_)
+    event_manager_->DeselectEvents(xid_, event_mask_);
 }
 
 // static
@@ -70,8 +89,13 @@ class XWindowEventManager::MultiMask {
   DISALLOW_COPY_AND_ASSIGN(MultiMask);
 };
 
-XWindowEventManager::XWindowEventManager() {}
-XWindowEventManager::~XWindowEventManager() {}
+XWindowEventManager::XWindowEventManager() : weak_ptr_factory_(this) {}
+
+XWindowEventManager::~XWindowEventManager() {
+  // Clear events still requested by not-yet-deleted XScopedEventSelectors.
+  for (const auto& mask_pair : mask_map_)
+    SetEventMask(mask_pair.first, NoEventMask);
+}
 
 void XWindowEventManager::SelectEvents(XID xid, uint32_t event_mask) {
   std::unique_ptr<MultiMask>& mask = mask_map_[xid];
@@ -95,14 +119,7 @@ void XWindowEventManager::AfterMaskChanged(XID xid, uint32_t old_mask) {
   if (new_mask == old_mask)
     return;
 
-  XDisplay* display = gfx::GetXDisplay();
-  xcb_connection_t* connection = XGetXCBConnection(display);
-  auto cookie = xcb_change_window_attributes(connection, xid, XCB_CW_EVENT_MASK,
-                                             &new_mask);
-  // Window |xid| may already be destroyed at this point, so the
-  // change_attributes request may give a BadWindow error.  In this case, just
-  // ignore the error.
-  xcb_discard_reply(connection, cookie.sequence);
+  SetEventMask(xid, new_mask);
 
   if (new_mask == NoEventMask)
     mask_map_.erase(xid);

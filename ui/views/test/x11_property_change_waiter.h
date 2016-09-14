@@ -18,6 +18,7 @@
 namespace ui {
 class ScopedEventDispatcher;
 class X11AtomCache;
+class XScopedEventSelector;
 }
 
 namespace views {
@@ -47,14 +48,13 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
   XID x_window_;
   const char* property_;
 
+  std::unique_ptr<ui::XScopedEventSelector> x_window_events_;
+
   // Whether Wait() should block.
   bool wait_;
 
   // Ends the run loop.
   base::Closure quit_closure_;
-
-  // The event mask to be restored upon X11PropertyChangeWaiter's destruction.
-  long old_event_mask_;
 
   std::unique_ptr<ui::ScopedEventDispatcher> dispatcher_;
 

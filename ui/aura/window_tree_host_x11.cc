@@ -34,6 +34,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
@@ -62,6 +63,14 @@ const char* kAtomsToCache[] = {
   "_NET_WM_PID",
   NULL
 };
+
+constexpr uint32_t kInputEventMask =
+    ButtonPressMask | ButtonReleaseMask | FocusChangeMask | KeyPressMask |
+    KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask;
+
+constexpr uint32_t kEventMask = kInputEventMask | ExposureMask |
+                                VisibilityChangeMask | StructureNotifyMask |
+                                PropertyChangeMask;
 
 ::Window FindEventTarget(const base::NativeEvent& xev) {
   ::Window target = xev->xany.window;
@@ -132,13 +141,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   if (ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 
-  long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
-                    KeyPressMask | KeyReleaseMask |
-                    EnterWindowMask | LeaveWindowMask |
-                    ExposureMask | VisibilityChangeMask |
-                    StructureNotifyMask | PropertyChangeMask |
-                    PointerMotionMask;
-  XSelectInput(xdisplay_, xwindow_, event_mask);
+  xwindow_events_.reset(new ui::XScopedEventSelector(xwindow_, kEventMask));
   XFlush(xdisplay_);
 
   if (ui::IsXInput2Available()) {
@@ -468,6 +471,17 @@ void WindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
 }
 
 void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
+}
+
+void WindowTreeHostX11::DisableInput() {
+  xwindow_events_.reset(
+      new ui::XScopedEventSelector(xwindow_, kEventMask & ~kInputEventMask));
+  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
+  XIEventMask evmask;
+  evmask.deviceid = XIAllDevices;
+  evmask.mask_len = sizeof(mask);
+  evmask.mask = mask;
+  XISelectEvents(gfx::GetXDisplay(), xwindow_, &evmask, 1);
 }
 
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {

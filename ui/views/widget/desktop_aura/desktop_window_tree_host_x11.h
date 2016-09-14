@@ -32,6 +32,7 @@ class ImageSkiaRep;
 
 namespace ui {
 class EventHandler;
+class XScopedEventSelector;
 }
 
 namespace views {
@@ -269,6 +270,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
   ::Window xwindow_;
+
+  // Events selected on |xwindow_|.
+  std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
   // The native root window.
   ::Window x_root_window_;
