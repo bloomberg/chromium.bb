@@ -646,6 +646,7 @@ class Settings(object):
     self.project = None
     self.force_https_commit_url = None
     self.pending_ref_prefix = None
+    self.git_number_footer = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -880,6 +881,14 @@ class Settings(object):
       self.pending_ref_prefix = self._GetRietveldConfig(
           'pending-ref-prefix', error_ok=True)
     return self.pending_ref_prefix
+
+  def GetHasGitNumberFooter(self):
+    # TODO(tandrii): this has to be removed after Rietveld is read-only.
+    # see also bugs http://crbug.com/642493 and http://crbug.com/600469.
+    if not self.git_number_footer:
+      self.git_number_footer = self._GetRietveldConfig(
+          'git-number-footer', error_ok=True)
+    return self.git_number_footer
 
   def _GetRietveldConfig(self, param, **kwargs):
     return self._GetConfig('rietveld.' + param, **kwargs)
@@ -2967,6 +2976,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
+  SetProperty('git-number-footer', 'GIT_NUMBER_FOOTER', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
 
