@@ -19,7 +19,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/remoting_host_messages.h"
+#include "remoting/host/win/remoting_host_messages.h"
 #include "remoting/protocol/transport.h"
 
 namespace remoting {

@@ -249,6 +249,7 @@ exec_script_whitelist = [
   "//net/BUILD.gn",
   "//remoting/host/BUILD.gn",
   "//remoting/remoting_version.gni",
+  "//remoting/host/installer/win/generate_clsids.gni",
   "//third_party/angle/BUILD.gn",
   "//third_party/angle/src/tests/BUILD.gn",
   "//third_party/angle/src/vulkan_support/BUILD.gn",
