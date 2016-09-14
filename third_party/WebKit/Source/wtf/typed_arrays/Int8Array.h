@@ -65,11 +65,11 @@ PassRefPtr<Int8Array> Int8Array::create(const signed char* array, unsigned lengt
 
 PassRefPtr<Int8Array> Int8Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<signed char>::create<Int8Array>(buffer, byteOffset, length);
+    return TypedArrayBase<signed char>::create<Int8Array>(std::move(buffer), byteOffset, length);
 }
 
 Int8Array::Int8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<signed char>(buffer, byteOffset, length)
+    : IntegralTypedArrayBase<signed char>(std::move(buffer), byteOffset, length)
 {
 }
 

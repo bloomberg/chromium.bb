@@ -74,11 +74,11 @@ PassRefPtr<Float64Array> Float64Array::create(const double* array, unsigned leng
 
 PassRefPtr<Float64Array> Float64Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<double>::create<Float64Array>(buffer, byteOffset, length);
+    return TypedArrayBase<double>::create<Float64Array>(std::move(buffer), byteOffset, length);
 }
 
 Float64Array::Float64Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : TypedArrayBase<double>(buffer, byteOffset, length)
+    : TypedArrayBase<double>(std::move(buffer), byteOffset, length)
 {
 }
 

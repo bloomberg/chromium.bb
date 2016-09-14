@@ -64,11 +64,11 @@ PassRefPtr<Int16Array> Int16Array::create(const short* array, unsigned length)
 
 PassRefPtr<Int16Array> Int16Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<short>::create<Int16Array>(buffer, byteOffset, length);
+    return TypedArrayBase<short>::create<Int16Array>(std::move(buffer), byteOffset, length);
 }
 
 Int16Array::Int16Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<short>(buffer, byteOffset, length)
+    : IntegralTypedArrayBase<short>(std::move(buffer), byteOffset, length)
 {
 }
 

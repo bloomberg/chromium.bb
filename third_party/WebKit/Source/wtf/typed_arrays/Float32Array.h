@@ -72,7 +72,7 @@ PassRefPtr<Float32Array> Float32Array::create(const float* array, unsigned lengt
 
 PassRefPtr<Float32Array> Float32Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<float>::create<Float32Array>(buffer, byteOffset, length);
+    return TypedArrayBase<float>::create<Float32Array>(std::move(buffer), byteOffset, length);
 }
 
 PassRefPtr<Float32Array> Float32Array::createOrNull(unsigned length)
@@ -81,7 +81,7 @@ PassRefPtr<Float32Array> Float32Array::createOrNull(unsigned length)
 }
 
 Float32Array::Float32Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : TypedArrayBase<float>(buffer, byteOffset, length)
+    : TypedArrayBase<float>(std::move(buffer), byteOffset, length)
 {
 }
 

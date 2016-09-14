@@ -65,11 +65,11 @@ PassRefPtr<Uint32Array> Uint32Array::create(const unsigned* array, unsigned leng
 
 PassRefPtr<Uint32Array> Uint32Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<unsigned>::create<Uint32Array>(buffer, byteOffset, length);
+    return TypedArrayBase<unsigned>::create<Uint32Array>(std::move(buffer), byteOffset, length);
 }
 
 Uint32Array::Uint32Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<unsigned>(buffer, byteOffset, length)
+    : IntegralTypedArrayBase<unsigned>(std::move(buffer), byteOffset, length)
 {
 }
 

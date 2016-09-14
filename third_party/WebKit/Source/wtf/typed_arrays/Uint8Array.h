@@ -65,11 +65,11 @@ PassRefPtr<Uint8Array> Uint8Array::create(const unsigned char* array, unsigned l
 
 PassRefPtr<Uint8Array> Uint8Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<unsigned char>::create<Uint8Array>(buffer, byteOffset, length);
+    return TypedArrayBase<unsigned char>::create<Uint8Array>(std::move(buffer), byteOffset, length);
 }
 
 Uint8Array::Uint8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-: IntegralTypedArrayBase<unsigned char>(buffer, byteOffset, length)
+: IntegralTypedArrayBase<unsigned char>(std::move(buffer), byteOffset, length)
 {
 }
 

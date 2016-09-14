@@ -51,7 +51,7 @@ public:
 
 protected:
     IntegralTypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-        : TypedArrayBase<T>(buffer, byteOffset, length)
+        : TypedArrayBase<T>(std::move(buffer), byteOffset, length)
     {
     }
 };

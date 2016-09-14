@@ -716,7 +716,7 @@ void ChromeClientImpl::openFileChooser(LocalFrame* frame, PassRefPtr<FileChooser
     params.needLocalPath = fileChooser->settings().allowsDirectoryUpload;
     params.requestor = frame->document()->url();
 
-    WebFileChooserCompletionImpl* chooserCompletion = new WebFileChooserCompletionImpl(fileChooser);
+    WebFileChooserCompletionImpl* chooserCompletion = new WebFileChooserCompletionImpl(std::move(fileChooser));
     if (client->runFileChooser(params, chooserCompletion))
         return;
     // Choosing failed, so do callback with an empty list.

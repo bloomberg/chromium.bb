@@ -72,7 +72,7 @@ public:
 
 protected:
     TypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-        : ArrayBufferView(buffer, byteOffset)
+        : ArrayBufferView(std::move(buffer), byteOffset)
         , m_length(length)
     {
     }

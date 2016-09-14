@@ -65,7 +65,7 @@ PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::create(const unsigned char* arr
 
 PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<unsigned char>::create<Uint8ClampedArray>(buffer, byteOffset, length);
+    return TypedArrayBase<unsigned char>::create<Uint8ClampedArray>(std::move(buffer), byteOffset, length);
 }
 
 void Uint8ClampedArray::set(unsigned index, double value)
@@ -80,7 +80,7 @@ void Uint8ClampedArray::set(unsigned index, double value)
 }
 
 Uint8ClampedArray::Uint8ClampedArray(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-: Uint8Array(buffer, byteOffset, length)
+: Uint8Array(std::move(buffer), byteOffset, length)
 {
 }
 
