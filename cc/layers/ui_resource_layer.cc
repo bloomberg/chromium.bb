@@ -124,7 +124,7 @@ void UIResourceLayer::SetBitmap(const SkBitmap& skbitmap) {
   bitmap_ = skbitmap;
   if (GetLayerTree() && !bitmap_.empty()) {
     ui_resource_holder_ = ScopedUIResourceHolder::Create(
-        GetLayerTree()->GetUIResourceManager(), bitmap_);
+        layer_tree_host()->GetUIResourceManager(), bitmap_);
   } else {
     ui_resource_holder_ = nullptr;
   }
@@ -164,7 +164,7 @@ void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
     DCHECK(GetLayerTree());
 
     gfx::Size image_size =
-        GetLayerTree()->GetUIResourceManager()->GetUIResourceSize(
+        layer_tree_host()->GetUIResourceManager()->GetUIResourceSize(
             ui_resource_holder_->id());
     layer_impl->SetUIResourceId(ui_resource_holder_->id());
     layer_impl->SetImageBounds(image_size);

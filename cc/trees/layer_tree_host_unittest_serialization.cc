@@ -209,10 +209,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
     EXPECT_EQ(layer_tree_src->inputs_.selection,
               layer_tree_dst->inputs_.selection);
     EXPECT_EQ(layer_tree_src->property_trees_, layer_tree_dst->property_trees_);
-    EXPECT_EQ(layer_tree_host_src_->surface_client_id_,
-              layer_tree_host_dst_->surface_client_id_);
-    EXPECT_EQ(layer_tree_host_src_->next_surface_sequence_,
-              layer_tree_host_dst_->next_surface_sequence_);
 
     // All layers must have a property tree index that matches PropertyTrees.
     if (layer_tree_dst->property_trees_.sequence_number) {
@@ -300,11 +296,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
     layer_tree_src->property_trees_.sequence_number =
         layer_tree_src->property_trees_.sequence_number * 3 + 1;
-
-    layer_tree_host_src_->surface_client_id_ =
-        layer_tree_host_src_->surface_client_id_ * 3 + 1;
-    layer_tree_host_src_->next_surface_sequence_ =
-        layer_tree_host_src_->next_surface_sequence_ * 3 + 1;
 
     VerifySerializationAndDeserialization();
   }

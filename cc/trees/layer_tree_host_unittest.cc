@@ -57,6 +57,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -4516,7 +4517,8 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
     ASSERT_LE(commit_count_, 2);
     std::unique_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_[commit_count_]));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+    layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+        std::move(swap_promise));
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -4627,7 +4629,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_->SetBounds(gfx::Size(10, 11));
-        layer_tree_host()->QueueSwapPromise(
+        layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
             base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
         break;
       case 2:
@@ -4742,7 +4744,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
       case 1:
         // Make no changes so that we abort the next commit caused by queuing
         // the swap promise.
-        layer_tree_host()->QueueSwapPromise(
+        layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
             base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
         layer_tree_host()->SetNeedsUpdateLayers();
         break;
@@ -4817,7 +4819,8 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
     layer_tree_host()->SetVisible(false);
     std::unique_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+    layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+        std::move(swap_promise));
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
@@ -4855,7 +4858,10 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
                            LayerTreeHostImpl* layer_tree_host_impl,
                            int* set_needs_commit_count,
                            int* set_needs_redraw_count)
-      : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
+      : SwapPromiseMonitor(
+            (layer_tree_host ? layer_tree_host->GetSwapPromiseManager()
+                             : nullptr),
+            layer_tree_host_impl),
         set_needs_commit_count_(set_needs_commit_count) {}
 
   ~SimpleSwapPromiseMonitor() override {}
@@ -5504,20 +5510,23 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     // Successful composite.
     std::unique_ptr<SwapPromise> swap_promise0(
         new TestSwapPromise(&swap_promise_result_[0]));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise0));
+    layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+        std::move(swap_promise0));
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to swap (no damage) if not reclaiming resources from the Display.
     std::unique_ptr<SwapPromise> swap_promise1(
         new TestSwapPromise(&swap_promise_result_[1]));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise1));
+    layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+        std::move(swap_promise1));
     layer_tree_host()->SetNeedsCommit();
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to draw (not visible).
     std::unique_ptr<SwapPromise> swap_promise2(
         new TestSwapPromise(&swap_promise_result_[2]));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise2));
+    layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+        std::move(swap_promise2));
     layer_tree()->SetNeedsDisplayOnAllLayers();
     layer_tree_host()->SetVisible(false);
     layer_tree_host()->Composite(base::TimeTicks::Now());

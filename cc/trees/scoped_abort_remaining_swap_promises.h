@@ -7,21 +7,22 @@
 
 #include "base/macros.h"
 #include "cc/output/swap_promise.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/swap_promise_manager.h"
 
 namespace cc {
 
 class ScopedAbortRemainingSwapPromises {
  public:
-  explicit ScopedAbortRemainingSwapPromises(LayerTreeHost* layer_tree_host)
-      : layer_tree_host_(layer_tree_host) {}
+  explicit ScopedAbortRemainingSwapPromises(
+      SwapPromiseManager* swap_promise_manager)
+      : swap_promise_manager_(swap_promise_manager) {}
 
   ~ScopedAbortRemainingSwapPromises() {
-    layer_tree_host_->BreakSwapPromises(SwapPromise::COMMIT_FAILS);
+    swap_promise_manager_->BreakSwapPromises(SwapPromise::COMMIT_FAILS);
   }
 
  private:
-  LayerTreeHost* layer_tree_host_;
+  SwapPromiseManager* swap_promise_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAbortRemainingSwapPromises);
 };

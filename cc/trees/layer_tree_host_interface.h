@@ -70,6 +70,10 @@ class CC_EXPORT LayerTreeHostInterface {
   // See swap_promise.h for how to use SwapPromise.
   virtual void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise) = 0;
 
+  // Returns the SwapPromiseManager used to create SwapPromiseMonitors for this
+  // host.
+  virtual SwapPromiseManager* GetSwapPromiseManager() = 0;
+
   // Sets whether the content is suitable to use Gpu Rasterization.
   virtual void SetHasGpuRasterizationTrigger(bool has_trigger) = 0;
 
@@ -177,13 +181,7 @@ class CC_EXPORT LayerTreeHostInterface {
 
   // Methods used internally in cc. These are not intended to be a part of the
   // public API for use by the embedder ----------------------
-
-  // When a SwapPromiseMonitor is created on the main thread, it calls
-  // InsertSwapPromiseMonitor() to register itself with LayerTreeHost.
-  // When the monitor is destroyed, it calls RemoveSwapPromiseMonitor()
-  // to unregister itself.
-  virtual void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) = 0;
-  virtual void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) = 0;
+  virtual SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() = 0;
 };
 
 }  // namespace cc

@@ -720,12 +720,4 @@ void LayerTree::SetNeedsDisplayOnAllLayers() {
     layer->SetNeedsDisplay();
 }
 
-UIResourceManager* LayerTree::GetUIResourceManager() const {
-  return layer_tree_host_->GetUIResourceManager();
-}
-
-const LayerTreeSettings& LayerTree::GetSettings() const {
-  return layer_tree_host_->GetSettings();
-}
-
 }  // namespace cc

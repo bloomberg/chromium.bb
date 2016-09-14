@@ -614,9 +614,8 @@ void RenderWidgetCompositor::SetNeedsForcedRedraw() {
 std::unique_ptr<cc::SwapPromiseMonitor>
 RenderWidgetCompositor::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
-  return std::unique_ptr<cc::SwapPromiseMonitor>(
-      new cc::LatencyInfoSwapPromiseMonitor(latency, layer_tree_host_.get(),
-                                            NULL));
+  return base::MakeUnique<cc::LatencyInfoSwapPromiseMonitor>(
+      latency, layer_tree_host_->GetSwapPromiseManager(), nullptr);
 }
 
 void RenderWidgetCompositor::QueueSwapPromise(

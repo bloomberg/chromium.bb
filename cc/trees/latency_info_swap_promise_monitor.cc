@@ -8,9 +8,9 @@
 
 #include "base/threading/platform_thread.h"
 #include "cc/output/latency_info_swap_promise.h"
-#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/swap_promise_manager.h"
 
 namespace {
 
@@ -42,9 +42,9 @@ namespace cc {
 
 LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency,
-    LayerTreeHostInterface* layer_tree_host,
+    SwapPromiseManager* swap_promise_manager,
     LayerTreeHostImpl* layer_tree_host_impl)
-    : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
+    : SwapPromiseMonitor(swap_promise_manager, layer_tree_host_impl),
       latency_(latency) {}
 
 LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
@@ -54,7 +54,7 @@ void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
   if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {
     std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(*latency_));
-    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
+    swap_promise_manager_->QueueSwapPromise(std::move(swap_promise));
   }
 }
 

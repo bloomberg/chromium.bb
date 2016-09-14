@@ -486,7 +486,9 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     DoBeginMainFrame(begin_frame_args);
     DoCommit();
 
-    DCHECK_EQ(0u, layer_tree_host_->num_queued_swap_promises())
+    DCHECK_EQ(
+        0u,
+        layer_tree_host_->GetSwapPromiseManager()->num_queued_swap_promises())
         << "Commit should always succeed and transfer promises.";
   }
 
@@ -648,7 +650,8 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
 
   // This checker assumes NotifyReadyToCommit in this stack causes a synchronous
   // commit.
-  ScopedAbortRemainingSwapPromises swap_promise_checker(layer_tree_host_);
+  ScopedAbortRemainingSwapPromises swap_promise_checker(
+      layer_tree_host_->GetSwapPromiseManager());
 
   if (!layer_tree_host_->IsVisible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);

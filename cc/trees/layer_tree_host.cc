@@ -59,6 +59,7 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/remote_channel_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -227,9 +228,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params,
       shared_bitmap_manager_(params->shared_bitmap_manager),
       gpu_memory_buffer_manager_(params->gpu_memory_buffer_manager),
       task_graph_runner_(params->task_graph_runner),
-      image_serialization_processor_(params->image_serialization_processor),
-      surface_client_id_(0u),
-      next_surface_sequence_(1u) {
+      image_serialization_processor_(params->image_serialization_processor) {
   DCHECK(task_graph_runner_);
   DCHECK(layer_tree_);
 
@@ -350,10 +349,6 @@ LayerTreeHost::~LayerTreeHost() {
   // Clear any references into the LayerTreeHost.
   layer_tree_.reset();
 
-  DCHECK(swap_promise_monitor_.empty());
-
-  BreakSwapPromises(SwapPromise::COMMIT_FAILS);
-
   if (proxy_) {
     DCHECK(task_runner_provider_->IsMainThread());
     proxy_->Stop();
@@ -387,8 +382,25 @@ TaskRunnerProvider* LayerTreeHost::GetTaskRunnerProvider() const {
   return task_runner_provider_.get();
 }
 
+SwapPromiseManager* LayerTreeHost::GetSwapPromiseManager() {
+  return &swap_promise_manager_;
+}
+
 const LayerTreeSettings& LayerTreeHost::GetSettings() const {
   return settings_;
+}
+
+void LayerTreeHost::SetSurfaceClientId(uint32_t client_id) {
+  surface_sequence_generator_.set_surface_client_id(client_id);
+}
+
+void LayerTreeHost::QueueSwapPromise(
+    std::unique_ptr<SwapPromise> swap_promise) {
+  swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
+}
+
+SurfaceSequenceGenerator* LayerTreeHost::GetSurfaceSequenceGenerator() {
+  return &surface_sequence_generator_;
 }
 
 void LayerTreeHost::WillBeginMainFrame() {
@@ -453,8 +465,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   layer_tree_->PushPropertiesTo(sync_tree);
 
-  sync_tree->PassSwapPromises(std::move(swap_promise_list_));
-  swap_promise_list_.clear();
+  sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
 
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
@@ -499,7 +510,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 }
 
 void LayerTreeHost::WillCommit() {
-  OnCommitForSwapPromises();
+  swap_promise_manager_.WillCommit();
   client_->WillCommit();
 }
 
@@ -590,18 +601,18 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
-  NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
-  NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
-  NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 void LayerTreeHost::SetNeedsRedraw() {
@@ -876,7 +887,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "Main thread scroll update");
-    QueueSwapPromise(std::move(swap_promise));
+    swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
   }
 
   if (layer_tree_->root_layer()) {
@@ -933,51 +944,6 @@ bool LayerTreeHost::SendMessageToMicroBenchmark(
   return micro_benchmark_controller_.SendMessage(id, std::move(value));
 }
 
-void LayerTreeHost::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
-  swap_promise_monitor_.insert(monitor);
-}
-
-void LayerTreeHost::RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
-  swap_promise_monitor_.erase(monitor);
-}
-
-void LayerTreeHost::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
-  std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
-  for (; it != swap_promise_monitor_.end(); it++)
-    (*it)->OnSetNeedsCommitOnMain();
-}
-
-void LayerTreeHost::QueueSwapPromise(
-    std::unique_ptr<SwapPromise> swap_promise) {
-  DCHECK(swap_promise);
-  swap_promise_list_.push_back(std::move(swap_promise));
-}
-
-void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (const auto& swap_promise : swap_promise_list_)
-    swap_promise->DidNotSwap(reason);
-  swap_promise_list_.clear();
-}
-
-std::vector<std::unique_ptr<SwapPromise>> LayerTreeHost::TakeSwapPromises() {
-  std::vector<std::unique_ptr<SwapPromise>> to_return;
-  to_return.swap(swap_promise_list_);
-  return to_return;
-}
-
-void LayerTreeHost::OnCommitForSwapPromises() {
-  for (const auto& swap_promise : swap_promise_list_)
-    swap_promise->OnCommit();
-}
-
-void LayerTreeHost::SetSurfaceClientId(uint32_t client_id) {
-  surface_client_id_ = client_id;
-}
-
-SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
-  return SurfaceSequence(surface_client_id_, next_surface_sequence_++);
-}
-
 void LayerTreeHost::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
   proxy_->SetMutator(std::move(mutator));
@@ -1031,8 +997,7 @@ void LayerTreeHost::ToProtobufForCommit(
   //   LayerTreeHost.
   // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
   TRACE_EVENT0("cc.remote", "LayerTreeHost::ToProtobufForCommit");
-  swap_promises->swap(swap_promise_list_);
-  DCHECK(swap_promise_list_.empty());
+  *swap_promises = swap_promise_manager_.TakeSwapPromises();
 
   proto->set_source_frame_number(source_frame_number_);
 
@@ -1055,9 +1020,6 @@ void LayerTreeHost::ToProtobufForCommit(
       content_is_suitable_for_gpu_rasterization_);
   proto->set_id(id_);
   proto->set_next_commit_forces_redraw(next_commit_forces_redraw_);
-
-  proto->set_surface_client_id(surface_client_id_);
-  proto->set_next_surface_sequence(next_surface_sequence_);
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       "cc.remote", "LayerTreeHostProto", source_frame_number_,
@@ -1089,9 +1051,6 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
       proto.content_is_suitable_for_gpu_rasterization();
   id_ = proto.id();
   next_commit_forces_redraw_ = proto.next_commit_forces_redraw();
-
-  surface_client_id_ = proto.surface_client_id();
-  next_surface_sequence_ = proto.next_surface_sequence();
 }
 
 }  // namespace cc

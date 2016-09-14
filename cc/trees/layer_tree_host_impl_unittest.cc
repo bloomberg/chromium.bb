@@ -8610,7 +8610,10 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
                            int* set_needs_commit_count,
                            int* set_needs_redraw_count,
                            int* forward_to_main_count)
-      : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
+      : SwapPromiseMonitor(
+            (layer_tree_host ? layer_tree_host->GetSwapPromiseManager()
+                             : nullptr),
+            layer_tree_host_impl),
         set_needs_commit_count_(set_needs_commit_count),
         set_needs_redraw_count_(set_needs_redraw_count),
         forward_to_main_count_(forward_to_main_count) {}

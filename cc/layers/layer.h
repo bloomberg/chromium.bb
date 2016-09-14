@@ -391,8 +391,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // of |proto| is only read if |needs_push_properties_| is set.
   void FromLayerPropertiesProto(const proto::LayerProperties& proto);
 
-  // TODO(xingliu): Layer will hold LayerTree instead of LayerTreeHost.
-  // http://crbug.com/628683
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
   LayerTree* GetLayerTree() const;

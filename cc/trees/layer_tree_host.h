@@ -34,14 +34,14 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/resource_format.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_interface.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
-#include "cc/trees/swap_promise_monitor.h"
+#include "cc/trees/surface_sequence_generator.h"
+#include "cc/trees/swap_promise_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -149,6 +149,7 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   void SetSurfaceClientId(uint32_t client_id) override;
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise) override;
+  SwapPromiseManager* GetSwapPromiseManager() override;
   void SetHasGpuRasterizationTrigger(bool has_trigger) override;
   void SetVisible(bool visible) override;
   bool IsVisible() const override;
@@ -179,8 +180,7 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
       const MicroBenchmark::DoneCallback& callback) override;
   bool SendMessageToMicroBenchmark(int id,
                                    std::unique_ptr<base::Value> value) override;
-  void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) override;
-  void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) override;
+  SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() override;
 
   // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();
@@ -226,13 +226,6 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   }
 
   Proxy* proxy() const { return proxy_.get(); }
-
-  void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
-  std::vector<std::unique_ptr<SwapPromise>> TakeSwapPromises();
-
-  size_t num_queued_swap_promises() const { return swap_promise_list_.size(); }
-
-  SurfaceSequence CreateSurfaceSequence();
 
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
@@ -341,8 +334,6 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
 
   void CalculateLCDTextMetricsCallback(Layer* layer);
 
-  void NotifySwapPromiseMonitorsOfSetNeedsCommit();
-
   void SetPropertyTreesNeedRebuild();
 
   const CompositorMode compositor_mode_;
@@ -356,6 +347,8 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   int source_frame_number_;
   std::unique_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_;
+
+  SwapPromiseManager swap_promise_manager_;
 
   // |current_output_surface_| can't be updated until we've successfully
   // initialized a new output surface. |new_output_surface_| contains the
@@ -389,11 +382,7 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   std::unique_ptr<EnginePictureCache> engine_picture_cache_;
   std::unique_ptr<ClientPictureCache> client_picture_cache_;
 
-  std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
-  std::set<SwapPromiseMonitor*> swap_promise_monitor_;
-
-  uint32_t surface_client_id_;
-  uint32_t next_surface_sequence_;
+  SurfaceSequenceGenerator surface_sequence_generator_;
   uint32_t num_consecutive_frames_suitable_for_gpu_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);

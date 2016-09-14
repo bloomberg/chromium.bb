@@ -11,6 +11,8 @@
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/surface_sequence_generator.h"
+#include "cc/trees/swap_promise_manager.h"
 
 namespace cc {
 
@@ -104,7 +106,9 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 void SurfaceLayer::CreateNewDestroySequence() {
   DCHECK(destroy_sequence_.is_null());
   if (layer_tree_host()) {
-    destroy_sequence_ = layer_tree_host()->CreateSurfaceSequence();
+    destroy_sequence_ = layer_tree_host()
+                            ->GetSurfaceSequenceGenerator()
+                            ->CreateSurfaceSequence();
     require_callback_.Run(surface_id_, destroy_sequence_);
   }
 }
@@ -115,7 +119,8 @@ void SurfaceLayer::SatisfyDestroySequence() {
   DCHECK(!destroy_sequence_.is_null());
   std::unique_ptr<SatisfySwapPromise> satisfy(
       new SatisfySwapPromise(destroy_sequence_, satisfy_callback_));
-  layer_tree_host()->QueueSwapPromise(std::move(satisfy));
+  layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
+      std::move(satisfy));
   destroy_sequence_ = SurfaceSequence();
 }
 

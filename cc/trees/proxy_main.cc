@@ -146,7 +146,8 @@ void ProxyMain::BeginMainFrame(
   // If the commit finishes, LayerTreeHost will transfer its swap promises to
   // LayerTreeImpl. The destructor of ScopedSwapPromiseChecker aborts the
   // remaining swap promises.
-  ScopedAbortRemainingSwapPromises swap_promise_checker(layer_tree_host_);
+  ScopedAbortRemainingSwapPromises swap_promise_checker(
+      layer_tree_host_->GetSwapPromiseManager());
 
   final_pipeline_stage_ = max_requested_pipeline_stage_;
   max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
@@ -201,7 +202,7 @@ void ProxyMain::BeginMainFrame(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     channel_main_->BeginMainFrameAbortedOnImpl(
         CommitEarlyOutReason::FINISHED_NO_UPDATES, begin_main_frame_start_time,
-        layer_tree_host_->TakeSwapPromises());
+        layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises());
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
