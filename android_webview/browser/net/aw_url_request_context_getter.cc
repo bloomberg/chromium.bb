@@ -59,6 +59,7 @@ namespace android_webview {
 namespace {
 
 const base::FilePath::CharType kChannelIDFilename[] = "Origin Bound Certs";
+const char kProxyServerSwitch[] = "proxy-server";
 
 void ApplyCmdlineOverridesToHostResolver(
     net::MappedHostResolver* host_resolver) {
@@ -228,8 +229,16 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
-  builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-      std::move(proxy_config_service_), net_log_.get()));
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(kProxyServerSwitch)) {
+    std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
+    builder.set_proxy_service(net::ProxyService::CreateFixed(proxy));
+  } else {
+    builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
+        std::move(proxy_config_service_), net_log_.get()));
+  }
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(base::MakeUnique<AwCookieStoreWrapper>(),
                                       std::move(channel_id_service));
