@@ -216,14 +216,16 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed(
   SendResponse(true);
 }
 
-bool FileManagerPrivateInternalSetDefaultTaskFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalSetDefaultTaskFunction::Run() {
   using extensions::api::file_manager_private_internal::SetDefaultTask::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          GetProfile(), render_frame_host());
+          profile, render_frame_host());
 
   const std::set<std::string> suffixes =
       GetUniqueSuffixes(params->urls, file_system_context.get());
@@ -237,13 +239,13 @@ bool FileManagerPrivateInternalSetDefaultTaskFunction::RunSync() {
   // TODO(gspencer): Fix file manager so that it never tries to set default in
   // cases where extensionless local files are part of the selection.
   if (suffixes.empty() && mime_types.empty()) {
-    SetResult(base::MakeUnique<base::FundamentalValue>(true));
-    return true;
+    return RespondNow(
+        OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
   }
 
   file_manager::file_tasks::UpdateDefaultTask(
-      GetProfile()->GetPrefs(), params->task_id, suffixes, mime_types);
-  return true;
+      profile->GetPrefs(), params->task_id, suffixes, mime_types);
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

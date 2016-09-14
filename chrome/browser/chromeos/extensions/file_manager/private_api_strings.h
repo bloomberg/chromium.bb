@@ -13,8 +13,7 @@ namespace extensions {
 
 // Implements the chrome.fileManagerPrivate.getStrings method.
 // Used to get strings for the file manager from JavaScript.
-class FileManagerPrivateGetStringsFunction
-    : public ChromeSyncExtensionFunction {
+class FileManagerPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getStrings",
                              FILEMANAGERPRIVATE_GETSTRINGS)
@@ -24,8 +23,8 @@ class FileManagerPrivateGetStringsFunction
  protected:
   ~FileManagerPrivateGetStringsFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

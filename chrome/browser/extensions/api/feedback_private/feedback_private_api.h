@@ -50,7 +50,7 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 };
 
 // Feedback strings.
-class FeedbackPrivateGetStringsFunction : public ChromeSyncExtensionFunction {
+class FeedbackPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getStrings",
                              FEEDBACKPRIVATE_GETSTRINGS)
@@ -63,21 +63,21 @@ class FeedbackPrivateGetStringsFunction : public ChromeSyncExtensionFunction {
  protected:
   ~FeedbackPrivateGetStringsFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   static base::Closure* test_callback_;
 };
 
-class FeedbackPrivateGetUserEmailFunction : public ChromeSyncExtensionFunction {
+class FeedbackPrivateGetUserEmailFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getUserEmail",
                              FEEDBACKPRIVATE_GETUSEREMAIL);
 
  protected:
   ~FeedbackPrivateGetUserEmailFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class FeedbackPrivateGetSystemInformationFunction

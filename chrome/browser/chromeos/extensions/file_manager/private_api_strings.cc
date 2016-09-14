@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -347,7 +348,7 @@ FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() {
 FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() {
 }
 
-bool FileManagerPrivateGetStringsFunction::RunSync() {
+ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   AddStringsForDrive(dict.get());
@@ -676,10 +677,12 @@ bool FileManagerPrivateGetStringsFunction::RunSync() {
 
   dict->SetBoolean("PDF_VIEW_ENABLED",
                    file_manager::util::ShouldBeOpenedWithPlugin(
-                       GetProfile(), FILE_PATH_LITERAL(".pdf")));
+                       Profile::FromBrowserContext(browser_context()),
+                       FILE_PATH_LITERAL(".pdf")));
   dict->SetBoolean("SWF_VIEW_ENABLED",
                    file_manager::util::ShouldBeOpenedWithPlugin(
-                       GetProfile(), FILE_PATH_LITERAL(".swf")));
+                       Profile::FromBrowserContext(browser_context()),
+                       FILE_PATH_LITERAL(".swf")));
   dict->SetString("CHROMEOS_RELEASE_BOARD",
                   base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(
@@ -703,9 +706,8 @@ bool FileManagerPrivateGetStringsFunction::RunSync() {
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
-  SetResult(std::move(dict));
 
-  return true;
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
 }  // namespace extensions

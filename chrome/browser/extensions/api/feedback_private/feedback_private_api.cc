@@ -153,7 +153,7 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
 // static
 base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
 
-bool FeedbackPrivateGetStringsFunction::RunSync() {
+ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
@@ -204,21 +204,19 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  SetResult(std::move(dict));
 
   if (test_callback_ && !test_callback_->is_null())
     test_callback_->Run();
 
-  return true;
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
-bool FeedbackPrivateGetUserEmailFunction::RunSync() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(GetProfile());
-  SetResult(base::MakeUnique<base::StringValue>(
+ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
+  SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
       signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
-                     : std::string()));
-  return true;
+                     : std::string())));
 }
 
 bool FeedbackPrivateGetSystemInformationFunction::RunAsync() {

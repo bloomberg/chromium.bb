@@ -474,21 +474,23 @@ bool ConsentProviderDelegate::IsWhitelistedComponent(
 using file_system_api::ConsentProvider;
 #endif
 
-bool FileSystemGetDisplayPathFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemGetDisplayPathFunction::Run() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   base::FilePath file_path;
+  std::string error;
   if (!app_file_handler_util::ValidateFileEntryAndGetPath(
           filesystem_name, filesystem_path,
-          render_frame_host()->GetProcess()->GetID(), &file_path, &error_))
-    return false;
+          render_frame_host()->GetProcess()->GetID(), &file_path, &error)) {
+    return RespondNow(Error(error));
+  }
 
   file_path = path_util::PrettifyPath(file_path);
-  SetResult(base::MakeUnique<base::StringValue>(file_path.value()));
-  return true;
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::StringValue>(file_path.value())));
 }
 
 FileSystemEntryFunction::FileSystemEntryFunction()
@@ -611,17 +613,15 @@ void FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread() {
   }
 }
 
-bool FileSystemIsWritableEntryFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   std::string filesystem_id;
-  if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
-    error_ = app_file_handler_util::kInvalidParameters;
-    return false;
-  }
+  if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
+    return RespondNow(Error(app_file_handler_util::kInvalidParameters));
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
@@ -629,8 +629,8 @@ bool FileSystemIsWritableEntryFunction::RunSync() {
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
                                                     filesystem_id);
 
-  SetResult(base::MakeUnique<base::FundamentalValue>(is_writable));
-  return true;
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(is_writable)));
 }
 
 // Handles showing a dialog to the user to ask for the filename for a file to
@@ -1192,13 +1192,12 @@ void FileSystemRetainEntryFunction::RetainFileEntry(
   SendResponse(true);
 }
 
-bool FileSystemIsRestorableFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemIsRestorableFunction::Run() {
   std::string entry_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
-  SetResult(base::MakeUnique<base::FundamentalValue>(
-      SavedFilesService::Get(GetProfile())
-          ->IsRegistered(extension_->id(), entry_id)));
-  return true;
+  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+      SavedFilesService::Get(Profile::FromBrowserContext(browser_context()))
+          ->IsRegistered(extension_->id(), entry_id))));
 }
 
 bool FileSystemRestoreEntryFunction::RunAsync() {
@@ -1229,22 +1228,19 @@ bool FileSystemRestoreEntryFunction::RunAsync() {
   return true;
 }
 
-bool FileSystemObserveDirectoryFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemObserveDirectoryFunction::Run() {
   NOTIMPLEMENTED();
-  error_ = kUnknownIdError;
-  return false;
+  return RespondNow(Error(kUnknownIdError));
 }
 
-bool FileSystemUnobserveEntryFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemUnobserveEntryFunction::Run() {
   NOTIMPLEMENTED();
-  error_ = kUnknownIdError;
-  return false;
+  return RespondNow(Error(kUnknownIdError));
 }
 
-bool FileSystemGetObservedEntriesFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemGetObservedEntriesFunction::Run() {
   NOTIMPLEMENTED();
-  error_ = kUnknownIdError;
-  return false;
+  return RespondNow(Error(kUnknownIdError));
 }
 
 #if !defined(OS_CHROMEOS)

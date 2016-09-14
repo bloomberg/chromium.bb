@@ -887,10 +887,12 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
   SendResponse(true);
 }
 
-bool FileManagerPrivateGetDriveConnectionStateFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetDriveConnectionStateFunction::Run() {
   api::file_manager_private::DriveConnectionState result;
 
-  switch (drive::util::GetDriveConnectionStatus(GetProfile())) {
+  switch (drive::util::GetDriveConnectionStatus(
+      Profile::FromBrowserContext(browser_context()))) {
     case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
       result.type = kDriveConnectionTypeOffline;
       result.reason.reset(new std::string(kDriveConnectionReasonNoService));
@@ -915,13 +917,14 @@ bool FileManagerPrivateGetDriveConnectionStateFunction::RunSync() {
       chromeos::NetworkHandler::Get()
           ->network_state_handler()
           ->FirstNetworkByType(chromeos::NetworkTypePattern::Mobile());
-  results_ = api::file_manager_private::GetDriveConnectionState::Results::
-      Create(result);
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  drive::EventLogger* logger = file_manager::util::GetLogger(
+      Profile::FromBrowserContext(browser_context()));
   if (logger)
     logger->Log(logging::LOG_INFO, "%s succeeded.", name());
-  return true;
+  return RespondNow(ArgumentList(
+      api::file_manager_private::GetDriveConnectionState::Results::Create(
+          result)));
 }
 
 bool FileManagerPrivateRequestAccessTokenFunction::RunAsync() {

@@ -64,11 +64,12 @@ using api::file_manager_private::ProfileInfo;
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 
 // Obtains the current app window.
-AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
+AppWindow* GetCurrentAppWindow(UIThreadExtensionFunction* function) {
   content::WebContents* const contents = function->GetSenderWebContents();
-  return contents ?
-      AppWindowRegistry::Get(function->GetProfile())->
-          GetAppWindowForWebContents(contents) : nullptr;
+  return contents
+             ? AppWindowRegistry::Get(function->browser_context())
+                   ->GetAppWindowForWebContents(contents)
+             : nullptr;
 }
 
 std::vector<ProfileInfo> GetLoggedInProfileInfoList() {
@@ -152,23 +153,27 @@ bool ConvertURLsToProvidedInfo(
 
 }  // namespace
 
-bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateLogoutUserForReauthenticationFunction::Run() {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          Profile::FromBrowserContext(browser_context()));
   if (user) {
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         user->GetAccountId(), user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 
   chrome::AttemptUserExit();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool FileManagerPrivateGetPreferencesFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetPreferencesFunction::Run() {
   api::file_manager_private::Preferences result;
-  const PrefService* const service = GetProfile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const PrefService* const service = profile->GetPrefs();
 
-  result.drive_enabled = drive::util::IsDriveEnabledForProfile(GetProfile());
+  result.drive_enabled = drive::util::IsDriveEnabledForProfile(profile);
   result.cellular_disabled =
       service->GetBoolean(drive::prefs::kDisableDriveOverCellular);
   result.hosted_files_disabled =
@@ -186,20 +191,21 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
       UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                       ->GetCurrentTimezoneID());
 
-  SetResult(result.ToValue());
-
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
   if (logger)
     logger->Log(logging::LOG_INFO, "%s succeeded.", name());
-  return true;
+
+  return RespondNow(OneArgument(result.ToValue()));
 }
 
-bool FileManagerPrivateSetPreferencesFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateSetPreferencesFunction::Run() {
   using extensions::api::file_manager_private::SetPreferences::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  PrefService* const service = GetProfile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  PrefService* const service = profile->GetPrefs();
 
   if (params->change_info.cellular_disabled)
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
@@ -209,10 +215,10 @@ bool FileManagerPrivateSetPreferencesFunction::RunSync() {
     service->SetBoolean(drive::prefs::kDisableDriveHostedFiles,
                         *params->change_info.hosted_files_disabled);
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
   if (logger)
     logger->Log(logging::LOG_INFO, "%s succeeded.", name());
-  return true;
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateInternalZipSelectionFunction::
@@ -282,7 +288,7 @@ void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
   SendResponse(true);
 }
 
-bool FileManagerPrivateZoomFunction::RunSync() {
+ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
   using extensions::api::file_manager_private::Zoom::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -300,10 +306,10 @@ bool FileManagerPrivateZoomFunction::RunSync() {
       break;
     default:
       NOTREACHED();
-      return false;
+      return RespondNow(Error(kUnknownErrorDoNotUse));
   }
   zoom::PageZoom::Zoom(GetSenderWebContents(), zoom_type);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
@@ -372,29 +378,30 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
   }
 }
 
-bool FileManagerPrivateGetProfilesFunction::RunSync() {
+ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
   const std::vector<ProfileInfo>& profiles = GetLoggedInProfileInfoList();
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
-  const AccountId current_profile_id =
-      multi_user_util::GetAccountIdFromProfile(GetProfile());
+  const AccountId current_profile_id = multi_user_util::GetAccountIdFromProfile(
+      Profile::FromBrowserContext(browser_context()));
   const AccountId display_profile_id =
       window_manager && app_window
           ? window_manager->GetUserPresentingWindow(
                 app_window->GetNativeWindow())
           : EmptyAccountId();
 
-  results_ = api::file_manager_private::GetProfiles::Results::Create(
-      profiles, current_profile_id.GetUserEmail(),
-      display_profile_id.is_valid() ? display_profile_id.GetUserEmail()
-                                    : current_profile_id.GetUserEmail());
-  return true;
+  return RespondNow(
+      ArgumentList(api::file_manager_private::GetProfiles::Results::Create(
+          profiles, current_profile_id.GetUserEmail(),
+          display_profile_id.is_valid() ? display_profile_id.GetUserEmail()
+                                        : current_profile_id.GetUserEmail())));
 }
 
-bool FileManagerPrivateOpenInspectorFunction::RunSync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateOpenInspectorFunction::Run() {
   using extensions::api::file_manager_private::OpenInspector::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -416,17 +423,16 @@ bool FileManagerPrivateOpenInspectorFunction::RunSync() {
       break;
     case extensions::api::file_manager_private::INSPECTION_TYPE_BACKGROUND:
       // Open inspector for background page.
-      extensions::devtools_util::InspectBackgroundPage(extension(),
-                                                       GetProfile());
+      extensions::devtools_util::InspectBackgroundPage(
+          extension(), Profile::FromBrowserContext(browser_context()));
       break;
     default:
       NOTREACHED();
-      SetError(
+      return RespondNow(Error(
           base::StringPrintf("Unexpected inspection type(%d) is specified.",
-                             static_cast<int>(params->type)));
-      return false;
+                             static_cast<int>(params->type))));
   }
-  return true;
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateInternalGetMimeTypeFunction::

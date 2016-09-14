@@ -81,7 +81,7 @@ class FileManagerPrivateInternalGetFileTasksFunction
 
 // Implements the chrome.fileManagerPrivateInternal.setDefaultTask method.
 class FileManagerPrivateInternalSetDefaultTaskFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setDefaultTask",
                              FILEMANAGERPRIVATEINTERNAL_SETDEFAULTTASK)
@@ -89,8 +89,8 @@ class FileManagerPrivateInternalSetDefaultTaskFunction
  protected:
   ~FileManagerPrivateInternalSetDefaultTaskFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

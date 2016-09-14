@@ -114,31 +114,32 @@ void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
 
 }  // namespace
 
-bool FileSystemProviderMountFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemProviderMountFunction::Run() {
   using api::file_system_provider::Mount::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // It's an error if the file system Id is empty.
   if (params->options.file_system_id.empty()) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
-    return false;
+    return RespondNow(
+        Error(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION)));
   }
 
   // It's an error if the display name is empty.
   if (params->options.display_name.empty()) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
-    return false;
+    return RespondNow(
+        Error(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION)));
   }
 
   // If the opened files limit is set, then it must be larger or equal than 0.
   if (params->options.opened_files_limit.get() &&
       *params->options.opened_files_limit.get() < 0) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
-    return false;
+    return RespondNow(
+        Error(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION)));
   }
 
-  Service* const service = Service::Get(GetProfile());
+  Service* const service =
+      Service::Get(Profile::FromBrowserContext(browser_context()));
   DCHECK(service);
 
   MountOptions options;
@@ -152,36 +153,34 @@ bool FileSystemProviderMountFunction::RunSync() {
 
   const base::File::Error result =
       service->MountFileSystem(extension_id(), options);
-  if (result != base::File::FILE_OK) {
-    SetError(FileErrorToString(result));
-    return false;
-  }
+  if (result != base::File::FILE_OK)
+    return RespondNow(Error(FileErrorToString(result)));
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool FileSystemProviderUnmountFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemProviderUnmountFunction::Run() {
   using api::file_system_provider::Unmount::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  Service* const service = Service::Get(GetProfile());
+  Service* const service =
+      Service::Get(Profile::FromBrowserContext(browser_context()));
   DCHECK(service);
 
   const base::File::Error result =
       service->UnmountFileSystem(extension_id(), params->options.file_system_id,
                                  Service::UNMOUNT_REASON_USER);
-  if (result != base::File::FILE_OK) {
-    SetError(FileErrorToString(result));
-    return false;
-  }
+  if (result != base::File::FILE_OK)
+    return RespondNow(Error(FileErrorToString(result)));
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool FileSystemProviderGetAllFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemProviderGetAllFunction::Run() {
   using api::file_system_provider::FileSystemInfo;
-  Service* const service = Service::Get(GetProfile());
+  Service* const service =
+      Service::Get(Profile::FromBrowserContext(browser_context()));
   DCHECK(service);
 
   const std::vector<ProvidedFileSystemInfo> file_systems =
@@ -204,17 +203,18 @@ bool FileSystemProviderGetAllFunction::RunSync() {
     }
   }
 
-  SetResultList(api::file_system_provider::GetAll::Results::Create(items));
-  return true;
+  return RespondNow(
+      ArgumentList(api::file_system_provider::GetAll::Results::Create(items)));
 }
 
-bool FileSystemProviderGetFunction::RunSync() {
+ExtensionFunction::ResponseAction FileSystemProviderGetFunction::Run() {
   using api::file_system_provider::Get::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using api::file_system_provider::FileSystemInfo;
-  Service* const service = Service::Get(GetProfile());
+  Service* const service =
+      Service::Get(Profile::FromBrowserContext(browser_context()));
   DCHECK(service);
 
   chromeos::file_system_provider::ProvidedFileSystemInterface* const
@@ -222,17 +222,16 @@ bool FileSystemProviderGetFunction::RunSync() {
                                                    params->file_system_id);
 
   if (!file_system) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND));
-    return false;
+    return RespondNow(
+        Error(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND)));
   }
 
   FileSystemInfo file_system_info;
   FillFileSystemInfo(file_system->GetFileSystemInfo(),
                      *file_system->GetWatchers(), file_system->GetOpenedFiles(),
                      &file_system_info);
-  SetResultList(
-      api::file_system_provider::Get::Results::Create(file_system_info));
-  return true;
+  return RespondNow(ArgumentList(
+      api::file_system_provider::Get::Results::Create(file_system_info)));
 }
 
 bool FileSystemProviderNotifyFunction::RunAsync() {

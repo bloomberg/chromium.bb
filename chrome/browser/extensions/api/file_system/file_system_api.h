@@ -143,14 +143,14 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
 
 }  // namespace file_system_api
 
-class FileSystemGetDisplayPathFunction : public ChromeSyncExtensionFunction {
+class FileSystemGetDisplayPathFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.getDisplayPath",
                              FILESYSTEM_GETDISPLAYPATH)
 
  protected:
   ~FileSystemGetDisplayPathFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
@@ -206,14 +206,14 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
   base::FilePath path_;
 };
 
-class FileSystemIsWritableEntryFunction : public ChromeSyncExtensionFunction {
+class FileSystemIsWritableEntryFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.isWritableEntry",
                              FILESYSTEM_ISWRITABLEENTRY)
 
  protected:
   ~FileSystemIsWritableEntryFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
@@ -299,13 +299,13 @@ class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
                        std::unique_ptr<base::File::Info> file_info);
 };
 
-class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {
+class FileSystemIsRestorableFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.isRestorable", FILESYSTEM_ISRESTORABLE)
 
  protected:
   ~FileSystemIsRestorableFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
@@ -317,35 +317,34 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
   bool RunAsync() override;
 };
 
-class FileSystemObserveDirectoryFunction : public ChromeSyncExtensionFunction {
+class FileSystemObserveDirectoryFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.observeDirectory",
                              FILESYSTEM_OBSERVEDIRECTORY)
 
  protected:
   ~FileSystemObserveDirectoryFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class FileSystemUnobserveEntryFunction : public ChromeSyncExtensionFunction {
+class FileSystemUnobserveEntryFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.unobserveEntry",
                              FILESYSTEM_UNOBSERVEENTRY)
 
  protected:
   ~FileSystemUnobserveEntryFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class FileSystemGetObservedEntriesFunction
-    : public ChromeSyncExtensionFunction {
+class FileSystemGetObservedEntriesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.getObservedEntries",
                              FILESYSTEM_GETOBSERVEDENTRIES);
 
  protected:
   ~FileSystemGetObservedEntriesFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 #if !defined(OS_CHROMEOS)
