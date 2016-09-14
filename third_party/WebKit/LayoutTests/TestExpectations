@@ -1203,11 +1203,6 @@ crbug.com/646133 [ Win7 Debug ] imported/wpt/quirks-mode/unitless-length.html [ 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
-crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
-crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
-crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
-crbug.com/621892 css3/filters/effect-saturate-hw.html [ Pass Failure ]
-crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
 crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
