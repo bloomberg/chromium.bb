@@ -179,6 +179,7 @@ outlineOffset
 outlineStyle
 outlineWidth
 overflow
+overflowAnchor
 overflowWrap
 overflowX
 overflowY
