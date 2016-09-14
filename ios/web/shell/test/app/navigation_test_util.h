@@ -14,6 +14,9 @@ namespace shell_test_util {
 // ui::PAGE_TRANSITION_TYPED.
 void LoadUrl(const GURL& url);
 
+// Returns true if the current page in the current WebState is loading.
+bool IsLoading();
+
 }  // namespace shell_test_util
 }  // namespace web
 

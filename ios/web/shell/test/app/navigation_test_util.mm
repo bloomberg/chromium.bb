@@ -14,5 +14,9 @@ void LoadUrl(const GURL& url) {
   web::test::LoadUrl(GetCurrentWebState(), url);
 }
 
+bool IsLoading() {
+  return GetCurrentWebState()->IsLoading();
+}
+
 }  // namespace shell_test_util
 }  // namespace web

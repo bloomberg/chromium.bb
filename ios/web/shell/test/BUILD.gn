@@ -69,6 +69,8 @@ source_set("earl_grey_test_support") {
     "earl_grey/shell_actions.mm",
     "earl_grey/shell_base_test_case.h",
     "earl_grey/shell_base_test_case.mm",
+    "earl_grey/shell_earl_grey.h",
+    "earl_grey/shell_earl_grey.mm",
     "earl_grey/shell_matchers.h",
     "earl_grey/shell_matchers.mm",
   ]
