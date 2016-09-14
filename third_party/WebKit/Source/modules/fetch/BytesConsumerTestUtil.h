@@ -104,7 +104,7 @@ public:
         Vector<char> m_data;
     };
 
-    class TwoPhaseReader final : public GarbageCollectedFinalized<Reader>, public BytesConsumer::Client {
+    class TwoPhaseReader final : public GarbageCollectedFinalized<TwoPhaseReader>, public BytesConsumer::Client {
         USING_GARBAGE_COLLECTED_MIXIN(TwoPhaseReader);
     public:
         // |consumer| must not have a client when called.
