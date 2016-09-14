@@ -1309,6 +1309,23 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   return max_offset;
 }
 
+void ScrollTree::OnScrollOffsetAnimated(int layer_id,
+                                        int transform_tree_index,
+                                        int scroll_tree_index,
+                                        const gfx::ScrollOffset& scroll_offset,
+                                        LayerTreeImpl* layer_tree_impl) {
+  // Only active tree needs to be updated, pending tree will find out about
+  // these changes as a result of the shared SyncedProperty.
+  if (!property_trees()->is_active)
+    return;
+
+  ScrollNode* scroll_node = Node(scroll_tree_index);
+  if (SetScrollOffset(layer_id,
+                      ClampScrollOffsetToLimits(scroll_offset, scroll_node)))
+    layer_tree_impl->DidUpdateScrollOffset(layer_id, transform_tree_index);
+  layer_tree_impl->DidAnimateScrollOffset();
+}
+
 gfx::Size ScrollTree::scroll_clip_layer_bounds(int scroll_node_id) const {
   const ScrollNode* scroll_node = Node(scroll_node_id);
   gfx::Size scroll_clip_layer_bounds = scroll_node->scroll_clip_layer_bounds;

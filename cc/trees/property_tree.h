@@ -399,6 +399,11 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
       ScrollOffsetMap;
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
+  void OnScrollOffsetAnimated(int layer_id,
+                              int transform_tree_index,
+                              int scroll_tree_index,
+                              const gfx::ScrollOffset& scroll_offset,
+                              LayerTreeImpl* layer_tree_impl);
   gfx::Size scroll_clip_layer_bounds(int scroll_node_id) const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;

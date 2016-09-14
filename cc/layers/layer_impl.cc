@@ -542,18 +542,6 @@ gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
 
-void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
-  // Only layers in the active tree should need to do anything here, since
-  // layers in the pending tree will find out about these changes as a
-  // result of the shared SyncedProperty.
-  if (!IsActive())
-    return;
-
-  SetCurrentScrollOffset(ClampScrollOffsetToLimits(scroll_offset));
-
-  layer_tree_impl_->DidAnimateScrollOffset();
-}
-
 void LayerImpl::OnTransformIsCurrentlyAnimatingChanged(
     bool is_currently_animating) {
   DCHECK(layer_tree_impl_);

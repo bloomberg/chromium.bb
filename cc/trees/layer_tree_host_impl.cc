@@ -3925,6 +3925,8 @@ void LayerTreeHostImpl::SetTreeLayerFilterMutated(
     return;
 
   const int layer_id = tree->LayerIdByElementId(element_id);
+  DCHECK(tree->property_trees()->IsInIdToIndexMap(
+      PropertyTrees::TreeType::EFFECT, layer_id));
   const int effect_id =
       tree->property_trees()->effect_id_to_index_map[layer_id];
   if (effect_id != EffectTree::kInvalidNodeId)
@@ -3939,6 +3941,8 @@ void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
     return;
 
   const int layer_id = tree->LayerIdByElementId(element_id);
+  DCHECK(tree->property_trees()->IsInIdToIndexMap(
+      PropertyTrees::TreeType::EFFECT, layer_id));
   const int effect_id =
       tree->property_trees()->effect_id_to_index_map[layer_id];
   if (effect_id != EffectTree::kInvalidNodeId)
@@ -3954,6 +3958,8 @@ void LayerTreeHostImpl::SetTreeLayerTransformMutated(
     return;
 
   const int layer_id = tree->LayerIdByElementId(element_id);
+  DCHECK(tree->property_trees()->IsInIdToIndexMap(
+      PropertyTrees::TreeType::TRANSFORM, layer_id));
   const int transform_id =
       tree->property_trees()->transform_id_to_index_map[layer_id];
   if (transform_id != TransformTree::kInvalidNodeId)
@@ -3971,9 +3977,19 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer) {
-    layer->OnScrollOffsetAnimated(scroll_offset);
+  const int layer_id = tree->LayerIdByElementId(element_id);
+  DCHECK(tree->property_trees()->IsInIdToIndexMap(
+      PropertyTrees::TreeType::TRANSFORM, layer_id));
+  DCHECK(tree->property_trees()->IsInIdToIndexMap(
+      PropertyTrees::TreeType::SCROLL, layer_id));
+  const int transform_id =
+      tree->property_trees()->transform_id_to_index_map[layer_id];
+  const int scroll_id =
+      tree->property_trees()->scroll_id_to_index_map[layer_id];
+  if (transform_id != TransformTree::kInvalidNodeId &&
+      scroll_id != ScrollTree::kInvalidNodeId) {
+    tree->property_trees()->scroll_tree.OnScrollOffsetAnimated(
+        layer_id, transform_id, scroll_id, scroll_offset, tree);
     // Run mutation callbacks to respond to updated scroll offset.
     Mutate(CurrentBeginFrameArgs().frame_time);
   }

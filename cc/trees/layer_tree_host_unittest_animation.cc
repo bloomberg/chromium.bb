@@ -772,6 +772,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
+    scroll_layer_->SetScrollClipLayerId(layer_tree()->root_layer()->id());
     layer_tree()->root_layer()->AddChild(scroll_layer_);
 
     AttachPlayersToTimeline();
@@ -835,6 +836,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
+    scroll_layer_->SetScrollClipLayerId(layer_tree()->root_layer()->id());
     layer_tree()->root_layer()->AddChild(scroll_layer_);
 
     AttachPlayersToTimeline();

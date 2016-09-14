@@ -1317,6 +1317,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
 
   AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 10.0,
                                           3, 0);
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
@@ -1367,7 +1368,6 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetElementIdsForTesting();
 
   // Add a translate from 6,7 to 8,9.
@@ -1377,6 +1377,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   end.AppendTranslate(8.f, 9.f, 0.f);
   AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
                                           start, end);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1479,7 +1480,6 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
 
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetElementIdsForTesting();
 
   // Add a translate animation.
@@ -1489,6 +1489,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   end.AppendTranslate(8.f, 9.f, 0.f);
   AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
                                           start, end);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1556,7 +1557,6 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   host_impl_->active_tree()->SetElementIdsForTesting();
 
@@ -1569,6 +1569,7 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   end.AppendTranslate(8.f, 9.f, 0.f);
   int animation_id = AddAnimatedTransformToElementWithPlayer(
       child->element_id(), timeline(), 4.0, start, end);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(

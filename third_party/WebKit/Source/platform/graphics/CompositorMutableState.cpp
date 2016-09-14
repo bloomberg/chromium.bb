@@ -56,7 +56,7 @@ void CompositorMutableState::setScrollLeft(double scrollLeft)
 
     gfx::ScrollOffset offset = m_scrollLayer->CurrentScrollOffset();
     offset.set_x(scrollLeft);
-    m_scrollLayer->OnScrollOffsetAnimated(offset);
+    m_scrollLayer->layer_tree_impl()->property_trees()->scroll_tree.OnScrollOffsetAnimated(m_scrollLayer->id(), m_scrollLayer->transform_tree_index(), m_scrollLayer->scroll_tree_index(), offset, m_scrollLayer->layer_tree_impl());
     m_mutation->setScrollLeft(scrollLeft);
 }
 
@@ -71,7 +71,7 @@ void CompositorMutableState::setScrollTop(double scrollTop)
         return;
     gfx::ScrollOffset offset = m_scrollLayer->CurrentScrollOffset();
     offset.set_y(scrollTop);
-    m_scrollLayer->OnScrollOffsetAnimated(offset);
+    m_scrollLayer->layer_tree_impl()->property_trees()->scroll_tree.OnScrollOffsetAnimated(m_scrollLayer->id(), m_scrollLayer->transform_tree_index(), m_scrollLayer->scroll_tree_index(), offset, m_scrollLayer->layer_tree_impl());
     m_mutation->setScrollTop(scrollTop);
 }
 
