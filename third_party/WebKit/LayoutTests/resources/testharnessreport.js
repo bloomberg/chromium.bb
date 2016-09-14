@@ -91,7 +91,8 @@
         didDispatchLoadEvent = true;
         window.removeEventListener('load', handleLoad);
         // Add synthetic input to pointer event manual tests
-        if(window.location.pathname.includes('imported/wpt/pointerevents/')) {
+        if(window.location.pathname.includes('imported/wpt/pointerevents/')
+            || window.location.pathname.includes('imported/wpt/uievents/')) {
             setTimeout(injectSyntheticInput, 0);
         }
     };
