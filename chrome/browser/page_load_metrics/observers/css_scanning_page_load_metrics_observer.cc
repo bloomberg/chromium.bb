@@ -19,7 +19,7 @@ void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
       WasStartedInForegroundOptionalEventInForeground(
           timing.first_meaningful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.CssScanner.Experimental.PaintTiming"
+        "PageLoad.Clients.CssScanner.Experimental.PaintTiming."
         "ParseStartToFirstMeaningfulPaint",
         timing.first_meaningful_paint.value() - timing.parse_start.value());
   }
