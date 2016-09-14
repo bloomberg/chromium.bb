@@ -2,12 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+
 # Runs the version processing script over the given template file to produce
 # an output file. This is used for generating various forms of files that
 # incorporate the product name and version.
 #
 # Unlike GYP, this will actually compile the resulting file, so you don't need
 # to add it separately to the sources, just depend on the target.
+#
+# This template automatically includes VERSION, LASTCHANGE, and BRANDING. It
+# automatically uses the template file .
+# GYP parameterizes this template file but all current invocations use this
+# same one. If in the future we need to set it, this should be added as an
+# optional argument.
 #
 # In GYP this is a rule that runs once per ".ver" file. In GN this just
 # processes one file per invocation of the template so you may have to have
@@ -17,7 +25,6 @@
 #   sources (optional):
 #     List of file names to read. When converting a GYP target, this should
 #     list the 'source' (see above) as well as any extra_variable_files.
-#     The files will be passed to version.py in the order specified here.
 #
 #   output:
 #     File name of file to write. In GYP this is unspecified and it will
@@ -26,7 +33,8 @@
 #
 #   template_file (optional):
 #     Template file to use (not a list). Most Windows uses for generating
-#     resources will want to use process_version_rc_template() instead.
+#     resources will want to specify the chrome_version_rc_template defined
+#     below.
 #
 #   extra_args (optional):
 #     Extra arguments to pass to version.py. Any "-f <filename>" args should
@@ -41,12 +49,10 @@
 #
 # Example:
 #   process_version("myversion") {
-#     sources = [
-#       "//chrome/VERSION"
-#       "myfile.h.in"
-#     ]
+#     sources = [ "myfile.h.in" ]
 #     output = "$target_gen_dir/myfile.h"
-#     extra_args = [ "-e", "FOO=42" ]
+#     extra_args = ["-e", "FOO=42"]
+#     extra_files = [ "foo/BRANDING" ]
 #   }
 template("process_version") {
   assert(defined(invoker.output), "Output must be defined for $target_name")
@@ -63,7 +69,19 @@ template("process_version") {
   action(action_name) {
     script = "//build/util/version.py"
 
-    inputs = []
+    lastchange_path = "//build/util/LASTCHANGE"
+    version_path = "//chrome/VERSION"
+    if (is_chrome_branded) {
+      branding_path = "//chrome/app/theme/google_chrome/BRANDING"
+    } else {
+      branding_path = "//chrome/app/theme/chromium/BRANDING"
+    }
+
+    inputs = [
+      version_path,
+      lastchange_path,
+      branding_path,
+    ]
     if (defined(invoker.inputs)) {
       inputs += invoker.inputs
     }
@@ -91,6 +109,14 @@ template("process_version") {
       }
     }
 
+    args += [
+      "-f",
+      rebase_path(version_path, root_build_dir),
+      "-f",
+      rebase_path(branding_path, root_build_dir),
+      "-f",
+      rebase_path(lastchange_path, root_build_dir),
+    ]
     if (defined(invoker.extra_args)) {
       args += invoker.extra_args
     }
@@ -123,3 +149,5 @@ template("process_version") {
     }
   }
 }
+
+chrome_version_rc_template = "//chrome/app/chrome_version.rc.version"

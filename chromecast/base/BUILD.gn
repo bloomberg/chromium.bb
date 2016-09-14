@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/util/process_version.gni")
+import("//chrome/version.gni")  # TODO layering violation!
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
@@ -200,9 +200,6 @@ process_version("cast_version") {
   template_file = "version.h.in"
   output = "$target_gen_dir/version.h"
 
-  sources = [
-    "//chrome/VERSION",
-  ]
   extra_args = [
     "-e",
     "VERSION_FULL=\"%s.%s.%s.%s\"%(MAJOR,MINOR,BUILD,PATCH)",

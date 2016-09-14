@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/util/process_version.gni")
 import("//chrome/common/features.gni")
-import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
+import("//chrome/version.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -510,11 +509,8 @@ process_version("version_header") {
   # currently depends on this.
   #visibility = [ ":*" ]
 
-  sources = [
-    "//build/util/LASTCHANGE",
-    "//chrome/VERSION",
-    branding_file_path,
-  ]
+  # This one just uses the custom template and no separate sources.
+  sources = []
   template_file = "chrome_version.h.in"
 
   output = "$target_gen_dir/chrome_version.h"

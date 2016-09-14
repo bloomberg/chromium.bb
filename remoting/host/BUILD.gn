@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/util/process_version.gni")
 import("//remoting/build/config/remoting_build.gni")
 
 process_version("remoting_version") {
@@ -965,6 +964,8 @@ if (is_win) {
       "win/version.rc.jinja2",
     ]
 
+    # TODO(zijiehe): Export lastchange_path from
+    # //chrome/version.gni:process_version
     variables = [
       rebase_path(chrome_version_file),
       rebase_path(remoting_version_file),

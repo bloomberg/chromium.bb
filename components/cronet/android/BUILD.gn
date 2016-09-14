@@ -5,8 +5,8 @@
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
-import("//build/util/process_version.gni")
 import("//build/util/version.gni")
+import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
@@ -95,10 +95,6 @@ _generated_api_version_java =
 
 process_version("cronet_api_version_java") {
   template_file = "api/src/org/chromium/net/ApiVersion.template"
-  sources = [
-    "//build/util/LASTCHANGE",
-    "//chrome/VERSION",
-  ]
   output = _generated_api_version_java
 }
 
@@ -120,10 +116,6 @@ _generated_impl_version_java =
 
 process_version("cronet_impl_version_java") {
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
-  sources = [
-    "//build/util/LASTCHANGE",
-    "//chrome/VERSION",
-  ]
   output = _generated_impl_version_java
 }
 

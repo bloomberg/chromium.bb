@@ -4,7 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
-import("//chrome/process_version_rc_template.gni")
+import("//chrome/version.gni")  # TODO layering violation
 import("//media/cdm/ppapi/cdm_paths.gni")
 import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//third_party/widevine/cdm/widevine.gni")
@@ -129,8 +129,9 @@ if (widevine_cdm_manifest_file != []) {
 
 if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
   # Produce and compile the .rc file.
-  process_version_rc_template("widevinecdmadapter_resources") {
+  process_version("widevinecdmadapter_resources") {
     visibility = [ ":*" ]
+    template_file = chrome_version_rc_template
     sources = [
       "BRANDING",
       "widevinecdmadapter.ver",

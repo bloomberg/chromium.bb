@@ -4,11 +4,10 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
-import("//build/util/process_version.gni")
 import("//build_overrides/v8.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/common/features.gni")
-import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
+import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -378,10 +377,6 @@ chrome_version_java_dir = "$root_gen_dir/templates/chrome_version_java"
 chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser/ChromeVersionConstants.java"
 process_version("chrome_version_java") {
   template_file = "java/ChromeVersionConstants.java.version"
-  sources = [
-    "//chrome/VERSION",
-    branding_file_path,
-  ]
   output = chrome_version_java_file
   extra_args = [
     "-e",
