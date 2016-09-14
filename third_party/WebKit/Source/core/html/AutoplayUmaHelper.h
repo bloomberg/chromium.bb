@@ -81,7 +81,7 @@ private:
     // The autoplay source. Use AutoplaySource::NumberOfSources for invalid source.
     AutoplaySource m_source;
     // The media element this UMA helper is attached to. |m_element| owns |this|.
-    WeakMember<HTMLMediaElement> m_element;
+    Member<HTMLMediaElement> m_element;
 
     // The observer is used to observe whether a muted video autoplaying by play()
     // method become visible at some point.

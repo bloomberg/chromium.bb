@@ -98,7 +98,7 @@ void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument)
 
     if (oldDocument.domWindow())
         oldDocument.domWindow()->removeEventListener(EventTypeNames::unload, this, false);
-    if (m_element && m_element->document().domWindow())
+    if (m_element->document().domWindow())
         m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
 }
 
@@ -220,7 +220,7 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration()
 
 void AutoplayUmaHelper::maybeUnregisterUnloadListener()
 {
-    if (!shouldListenToUnloadEvent() && m_element && m_element->document().domWindow())
+    if (!shouldListenToUnloadEvent() && m_element->document().domWindow())
         m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
 }
 
