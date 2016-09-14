@@ -59,11 +59,13 @@ void ReportSender::SetErrorCallback(const ErrorCallback& error_callback) {
   error_callback_ = error_callback;
 }
 
-void ReportSender::OnResponseStarted(URLRequest* request) {
-  if (!request->status().is_success()) {
+void ReportSender::OnResponseStarted(URLRequest* request, int net_error) {
+  DCHECK_NE(ERR_IO_PENDING, net_error);
+
+  if (net_error != OK) {
     DVLOG(1) << "Failed to send report for " << request->url().host();
     if (!error_callback_.is_null())
-      error_callback_.Run(request->url(), request->status().error());
+      error_callback_.Run(request->url(), net_error);
   }
 
   CHECK_GT(inflight_requests_.erase(request), 0u);
