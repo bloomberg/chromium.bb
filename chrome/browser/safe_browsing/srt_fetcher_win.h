@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SRT_FETCHER_WIN_H_
 
 #include <limits.h>
+#include <stdint.h>
 
+#include <queue>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -57,12 +59,19 @@ struct SwReporterInvocation {
   // ending in |suffix|. For the canonical version, |suffix| will be empty.
   std::string suffix;
 
-  // The experimental sw_reporter never triggers the prompt, just reports
-  // results through UMA.
-  bool is_experimental = false;
+  // Flags to control optional behaviours. By default all are enabled;
+  // experimental versions of the reporter will turn off the behaviours that
+  // are not yet supported.
+  using Flags = uint32_t;
+  enum : Flags {
+    FLAG_LOG_TO_RAPPOR = 0x1,
+    FLAG_LOG_EXIT_CODE_TO_PREFS = 0x2,
+    FLAG_TRIGGER_PROMPT = 0x4,
+    FLAG_SEND_REPORTER_LOGS = 0x8,
+  };
+  Flags flags = 0;
 
   SwReporterInvocation();
-  SwReporterInvocation(const SwReporterInvocation& other);
 
   static SwReporterInvocation FromFilePath(const base::FilePath& exe_path);
   static SwReporterInvocation FromCommandLine(
@@ -71,18 +80,25 @@ struct SwReporterInvocation {
   bool operator==(const SwReporterInvocation& other) const;
 };
 
+using SwReporterQueue = std::queue<SwReporterInvocation>;
+
 // Tries to run the sw_reporter component, and then schedule the next try. If
 // called multiple times, then multiple sequences of trying to run will happen,
-// yet only one reporter will run per specified period (either
+// yet only one SwReporterQueue will actually run per specified period (either
 // |kDaysBetweenSuccessfulSwReporterRuns| or
-// |kDaysBetweenSwReporterRunsForPendingPrompt|) will actually happen.
-// |invocation| is the details of the SwReporter to execute, and |version| is
-// its version. The task runners are provided to allow tests to provide their
-// own.
-void RunSwReporter(const SwReporterInvocation& invocation,
-                   const base::Version& version,
-                   scoped_refptr<base::TaskRunner> main_thread_task_runner,
-                   scoped_refptr<base::TaskRunner> blocking_task_runner);
+// |kDaysBetweenSwReporterRunsForPendingPrompt|).
+//
+// Each "run" of the sw_reporter component may aggregate the results of several
+// executions of the tool with different command lines. |invocations| is the
+// queue of SwReporters to execute as a single "run". When a new try is
+// scheduled the entire queue is executed.
+//
+// |version| is the version of the tool that will run. The task runners are
+// provided to allow tests to provide their own.
+void RunSwReporters(const SwReporterQueue& invocations,
+                    const base::Version& version,
+                    scoped_refptr<base::TaskRunner> main_thread_task_runner,
+                    scoped_refptr<base::TaskRunner> blocking_task_runner);
 
 // Returns true iff Local State is successfully accessed and indicates the most
 // recent Reporter run terminated with an exit code indicating the presence of

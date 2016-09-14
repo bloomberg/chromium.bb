@@ -47,6 +47,8 @@ namespace component_updater {
 
 namespace {
 
+using safe_browsing::SwReporterInvocation;
+
 // These values are used to send UMA information and are replicated in the
 // histograms.xml file, so the order MUST NOT CHANGE.
 enum SRTCompleted {
@@ -121,12 +123,12 @@ void ReportExperimentError(SwReporterExperimentError error) {
 // (This is the default |reporter_runner| function passed to the
 // |SwReporterInstallerTraits| constructor in |RegisterSwReporterComponent|
 // below.)
-void RunSwReporterAfterStartup(
-    const safe_browsing::SwReporterInvocation& invocation,
+void RunSwReportersAfterStartup(
+    const safe_browsing::SwReporterQueue& invocations,
     const base::Version& version) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&safe_browsing::RunSwReporter, invocation, version,
+      base::Bind(&safe_browsing::RunSwReporters, invocations, version,
                  base::ThreadTaskRunnerHandle::Get(),
                  base::WorkerPool::GetTaskRunner(true)));
 }
@@ -145,7 +147,7 @@ bool ValidateString(const std::string& str,
 
 // Reads the command-line params and an UMA histogram suffix from the manifest,
 // and launch the SwReporter with those parameters. If anything goes wrong the
-// SwReporter should not be run at all, instead of falling back to the default.
+// SwReporter should not be run at all.
 void RunExperimentalSwReporter(const base::FilePath& exe_path,
                                const base::Version& version,
                                std::unique_ptr<base::DictionaryValue> manifest,
@@ -158,73 +160,82 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     return;
 
   const base::ListValue* parameter_list = nullptr;
-  if (!launch_params->GetAsList(&parameter_list) || parameter_list->empty() ||
-      // For future expansion, the manifest takes a list of invocation
-      // parameters, but currently we only support a single invocation.
-      parameter_list->GetSize() > 1) {
+  if (!launch_params->GetAsList(&parameter_list) || parameter_list->empty()) {
     ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
     return;
   }
 
-  const base::DictionaryValue* invocation_params = nullptr;
-  if (!parameter_list->GetDictionary(0, &invocation_params)) {
-    ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
-    return;
-  }
-
-  // Max length of the registry and histogram suffix. Fairly arbitrary: the
-  // Windows registry accepts much longer keys, but we need to display this
-  // string in histograms as well.
-  constexpr size_t kMaxSuffixLength = 80;
-
-  // The suffix must be an alphanumeric string. (Empty is fine as long as the
-  // "suffix" key is present.)
-  std::string suffix;
-  const base::Value* suffix_value = nullptr;
-  if (!invocation_params->Get("suffix", &suffix_value) ||
-      !suffix_value->GetAsString(&suffix) ||
-      (!suffix.empty() &&
-       !ValidateString(suffix, std::string(), kMaxSuffixLength))) {
-    ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
-    return;
-  }
-
-  // Build a command line for the reporter out of the executable path and the
-  // arguments from the manifest. (The "arguments" key must be present, but
-  // it's ok if it's an empty list or a list of empty strings.)
-  std::vector<base::string16> argv = {exe_path.value()};
-  const base::Value* arguments_value = nullptr;
-  const base::ListValue* arguments = nullptr;
-  if (!invocation_params->Get("arguments", &arguments_value) ||
-      !arguments_value->GetAsList(&arguments)) {
-    ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
-    return;
-  }
-
-  for (const auto& value : *arguments) {
-    base::string16 argument;
-    if (!value->GetAsString(&argument)) {
+  safe_browsing::SwReporterQueue invocations;
+  for (const auto& iter : *parameter_list) {
+    const base::DictionaryValue* invocation_params = nullptr;
+    if (!iter->GetAsDictionary(&invocation_params)) {
       ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
       return;
     }
-    if (!argument.empty())
-      argv.push_back(argument);
+
+    // Max length of the registry and histogram suffix. Fairly arbitrary: the
+    // Windows registry accepts much longer keys, but we need to display this
+    // string in histograms as well.
+    constexpr size_t kMaxSuffixLength = 80;
+
+    // The suffix must be an alphanumeric string. (Empty is fine as long as the
+    // "suffix" key is present.)
+    std::string suffix;
+    if (!invocation_params->GetString("suffix", &suffix) ||
+        !ValidateString(suffix, std::string(), kMaxSuffixLength)) {
+      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      return;
+    }
+
+    // Build a command line for the reporter out of the executable path and the
+    // arguments from the manifest. (The "arguments" key must be present, but
+    // it's ok if it's an empty list or a list of empty strings.)
+    const base::ListValue* arguments = nullptr;
+    if (!invocation_params->GetList("arguments", &arguments)) {
+      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      return;
+    }
+
+    std::vector<base::string16> argv = {exe_path.value()};
+    for (const auto& value : *arguments) {
+      base::string16 argument;
+      if (!value->GetAsString(&argument)) {
+        ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+        return;
+      }
+      if (!argument.empty())
+        argv.push_back(argument);
+    }
+
+    base::CommandLine command_line(argv);
+
+    // Add the histogram suffix to the command-line as well, so that the
+    // reporter will add the same suffix to registry keys where it writes
+    // metrics.
+    if (!suffix.empty())
+      command_line.AppendSwitchASCII("registry-suffix", suffix);
+
+    // "prompt" is optional, but if present must be a boolean.
+    SwReporterInvocation::Flags flags = 0;
+    const base::Value* prompt_value = nullptr;
+    if (invocation_params->Get("prompt", &prompt_value)) {
+      bool prompt = false;
+      if (!prompt_value->GetAsBoolean(&prompt)) {
+        ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+        return;
+      }
+      if (prompt)
+        flags |= SwReporterInvocation::FLAG_TRIGGER_PROMPT;
+    }
+
+    auto invocation = SwReporterInvocation::FromCommandLine(command_line);
+    invocation.suffix = suffix;
+    invocation.flags = flags;
+    invocations.push(invocation);
   }
 
-  base::CommandLine command_line(argv);
-
-  // Add the histogram suffix to the command-line as well, so that the
-  // reporter will add the same suffix to registry keys where it writes
-  // metrics.
-  if (!suffix.empty())
-    command_line.AppendSwitchASCII("registry-suffix", suffix);
-
-  auto invocation =
-      safe_browsing::SwReporterInvocation::FromCommandLine(command_line);
-  invocation.suffix = suffix;
-  invocation.is_experimental = true;
-
-  reporter_runner.Run(invocation, version);
+  DCHECK(!invocations.empty());
+  reporter_runner.Run(invocations, version);
 }
 
 }  // namespace
@@ -268,8 +279,15 @@ void SwReporterInstallerTraits::ComponentReady(
     RunExperimentalSwReporter(exe_path, version, std::move(manifest),
                               reporter_runner_);
   } else {
-    reporter_runner_.Run(
-        safe_browsing::SwReporterInvocation::FromFilePath(exe_path), version);
+    auto invocation = SwReporterInvocation::FromFilePath(exe_path);
+    invocation.flags = SwReporterInvocation::FLAG_LOG_TO_RAPPOR |
+                       SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS |
+                       SwReporterInvocation::FLAG_TRIGGER_PROMPT |
+                       SwReporterInvocation::FLAG_SEND_REPORTER_LOGS;
+
+    safe_browsing::SwReporterQueue invocations;
+    invocations.push(invocation);
+    reporter_runner_.Run(invocations, version);
   }
 }
 
@@ -405,7 +423,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 
   // Install the component.
   std::unique_ptr<ComponentInstallerTraits> traits(
-      new SwReporterInstallerTraits(base::Bind(&RunSwReporterAfterStartup),
+      new SwReporterInstallerTraits(base::Bind(&RunSwReportersAfterStartup),
                                     is_experimental_engine_supported));
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =

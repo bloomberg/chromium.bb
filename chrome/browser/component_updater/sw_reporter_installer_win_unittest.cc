@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -37,6 +36,8 @@ constexpr char kErrorHistogramName[] = "SoftwareReporter.ExperimentErrors";
 constexpr char kExperimentTag[] = "experiment_tag";
 constexpr char kMissingTag[] = "missing_tag";
 
+using safe_browsing::SwReporterInvocation;
+
 }  // namespace
 
 class SwReporterInstallerTest : public ::testing::Test {
@@ -46,15 +47,16 @@ class SwReporterInstallerTest : public ::testing::Test {
             base::Bind(&SwReporterInstallerTest::SwReporterLaunched,
                        base::Unretained(this))),
         default_version_("1.2.3"),
-        default_path_(L"C:\\full\\path\\to\\download") {}
+        default_path_(L"C:\\full\\path\\to\\download"),
+        launched_version_("0.0.0") {}
 
   ~SwReporterInstallerTest() override {}
 
  protected:
-  void SwReporterLaunched(const safe_browsing::SwReporterInvocation& invocation,
+  void SwReporterLaunched(const safe_browsing::SwReporterQueue& invocations,
                           const base::Version& version) {
     ASSERT_TRUE(launched_invocations_.empty());
-    launched_invocations_.push_back(invocation);
+    launched_invocations_ = invocations;
     launched_version_ = version;
   }
 
@@ -73,14 +75,17 @@ class SwReporterInstallerTest : public ::testing::Test {
     EXPECT_EQ(default_version_, launched_version_);
     ASSERT_EQ(1U, launched_invocations_.size());
 
-    const safe_browsing::SwReporterInvocation& invocation =
-        launched_invocations_[0];
+    const SwReporterInvocation& invocation = launched_invocations_.front();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
     EXPECT_TRUE(invocation.command_line.GetSwitches().empty());
     EXPECT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_TRUE(invocation.suffix.empty());
-    EXPECT_FALSE(invocation.is_experimental);
+    EXPECT_EQ(SwReporterInvocation::FLAG_LOG_TO_RAPPOR |
+                  SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS |
+                  SwReporterInvocation::FLAG_TRIGGER_PROMPT |
+                  SwReporterInvocation::FLAG_SEND_REPORTER_LOGS,
+              invocation.flags);
   }
 
   // |ComponentReady| asserts that it is run on the UI thread, so we must
@@ -95,7 +100,7 @@ class SwReporterInstallerTest : public ::testing::Test {
   base::FilePath default_path_;
 
   // Results of running |ComponentReady|.
-  std::vector<safe_browsing::SwReporterInvocation> launched_invocations_;
+  safe_browsing::SwReporterQueue launched_invocations_;
   base::Version launched_version_;
 
  private:
@@ -161,8 +166,7 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     EXPECT_EQ(default_version_, launched_version_);
     ASSERT_EQ(1U, launched_invocations_.size());
 
-    const safe_browsing::SwReporterInvocation& invocation =
-        launched_invocations_[0];
+    const SwReporterInvocation& invocation = launched_invocations_.front();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
 
@@ -184,7 +188,7 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
                 invocation.command_line.GetArgs()[0]);
     }
 
-    EXPECT_TRUE(invocation.is_experimental);
+    EXPECT_EQ(0U, invocation.flags);
     histograms_.ExpectTotalCount(kErrorHistogramName, 0);
   }
 
@@ -274,7 +278,8 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
       "{\"launch_params\": ["
       "  {"
       "    \"arguments\": [\"--engine=experimental\", \"random argument\"],"
-      "    \"suffix\": \"TestSuffix\""
+      "    \"suffix\": \"TestSuffix\","
+      "    \"prompt\": false"
       "  }"
       "]}";
   traits.ComponentReady(
@@ -285,8 +290,7 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
   EXPECT_EQ(default_version_, launched_version_);
   ASSERT_EQ(1U, launched_invocations_.size());
 
-  const safe_browsing::SwReporterInvocation& invocation =
-      launched_invocations_[0];
+  const SwReporterInvocation& invocation = launched_invocations_.front();
   EXPECT_EQ(MakeTestFilePath(default_path_),
             invocation.command_line.GetProgram());
   EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
@@ -297,7 +301,7 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
   ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
   EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
   EXPECT_EQ("TestSuffix", invocation.suffix);
-  EXPECT_TRUE(invocation.is_experimental);
+  EXPECT_EQ(0U, invocation.flags);
   histograms_.ExpectTotalCount(kErrorHistogramName, 0);
 }
 
@@ -310,19 +314,73 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
       "{\"launch_params\": ["
       "  {"
       "    \"arguments\": [\"--engine=experimental\", \"random argument\"],"
-      "    \"suffix\": \"TestSuffix\""
+      "    \"suffix\": \"TestSuffix\","
+      "    \"prompt\": false"
       "  },"
       "  {"
       "    \"arguments\": [\"--engine=second\"],"
-      "    \"suffix\": \"SecondSuffix\""
+      "    \"suffix\": \"SecondSuffix\","
+      "    \"prompt\": true"
+      "  },"
+      "  {"
+      "    \"arguments\": [\"--engine=third\"],"
+      "    \"suffix\": \"ThirdSuffix\""
       "  }"
       "]}";
   traits.ComponentReady(
       default_version_, default_path_,
       base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
 
-  // Not supported yet.
-  ExpectLaunchError();
+  // The SwReporter should be launched three times with the given arguments.
+  EXPECT_EQ(default_version_, launched_version_);
+  ASSERT_EQ(3U, launched_invocations_.size());
+
+  {
+    SwReporterInvocation invocation = launched_invocations_.front();
+    launched_invocations_.pop();
+    EXPECT_EQ(MakeTestFilePath(default_path_),
+              invocation.command_line.GetProgram());
+    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ("experimental",
+              invocation.command_line.GetSwitchValueASCII("engine"));
+    EXPECT_EQ("TestSuffix", invocation.command_line.GetSwitchValueASCII(
+                                kRegistrySuffixSwitch));
+    ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
+    EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
+    EXPECT_EQ("TestSuffix", invocation.suffix);
+    EXPECT_EQ(0U, invocation.flags);
+  }
+
+  {
+    SwReporterInvocation invocation = launched_invocations_.front();
+    launched_invocations_.pop();
+    EXPECT_EQ(MakeTestFilePath(default_path_),
+              invocation.command_line.GetProgram());
+    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ("second", invocation.command_line.GetSwitchValueASCII("engine"));
+    EXPECT_EQ("SecondSuffix", invocation.command_line.GetSwitchValueASCII(
+                                  kRegistrySuffixSwitch));
+    ASSERT_TRUE(invocation.command_line.GetArgs().empty());
+    EXPECT_EQ("SecondSuffix", invocation.suffix);
+    EXPECT_EQ(SwReporterInvocation::FLAG_TRIGGER_PROMPT, invocation.flags);
+  }
+
+  {
+    SwReporterInvocation invocation = launched_invocations_.front();
+    launched_invocations_.pop();
+    EXPECT_EQ(MakeTestFilePath(default_path_),
+              invocation.command_line.GetProgram());
+    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ("third", invocation.command_line.GetSwitchValueASCII("engine"));
+    EXPECT_EQ("ThirdSuffix", invocation.command_line.GetSwitchValueASCII(
+                                 kRegistrySuffixSwitch));
+    ASSERT_TRUE(invocation.command_line.GetArgs().empty());
+    EXPECT_EQ("ThirdSuffix", invocation.suffix);
+    // A missing "prompt" key means "false".
+    EXPECT_EQ(0U, invocation.flags);
+  }
+
+  histograms_.ExpectTotalCount(kErrorHistogramName, 0);
 }
 
 TEST_F(ExperimentalSwReporterInstallerTest, MissingSuffix) {
@@ -623,4 +681,26 @@ TEST_F(ExperimentalSwReporterInstallerTest, BadTypesInManifest3) {
                                  SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
 }
 
+TEST_F(ExperimentalSwReporterInstallerTest, BadTypesInManifest4) {
+  SwReporterInstallerTraits traits(launched_callback_, true);
+  CreateFeatureWithTag(kExperimentTag);
+
+  // This has an int instead of a bool for prompt.
+  static constexpr char kTestManifest[] =
+      "{\"launch_params\": ["
+      "  {"
+      "    \"arguments\": [\"--engine=experimental\"],"
+      "    \"suffix\": \"TestSuffix\","
+      "    \"prompt\": 1"
+      "  }"
+      "]}";
+  traits.ComponentReady(
+      default_version_, default_path_,
+      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+
+  // The SwReporter should not be launched, and an error should be logged.
+  EXPECT_TRUE(launched_invocations_.empty());
+  histograms_.ExpectUniqueSample(kErrorHistogramName,
+                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+}
 }  // namespace component_updater

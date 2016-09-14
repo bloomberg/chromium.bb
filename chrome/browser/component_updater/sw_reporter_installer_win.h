@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 #include "components/component_updater/default_component_installer.h"
 
 class PrefRegistrySimple;
@@ -21,10 +22,6 @@ namespace base {
 class DictionaryValue;
 class FilePath;
 class Version;
-}
-
-namespace safe_browsing {
-struct SwReporterInvocation;
 }
 
 namespace user_prefs {
@@ -45,7 +42,7 @@ enum SwReporterExperimentError {
 
 // Callback for running the software reporter after it is downloaded.
 using SwReporterRunner =
-    base::Callback<void(const safe_browsing::SwReporterInvocation& invocation,
+    base::Callback<void(const safe_browsing::SwReporterQueue& invocations,
                         const base::Version& version)>;
 
 class SwReporterInstallerTraits : public ComponentInstallerTraits {
