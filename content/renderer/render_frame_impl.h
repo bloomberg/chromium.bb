@@ -357,8 +357,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::vector<blink::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  void SimulateImeConfirmComposition(const base::string16& text,
-                                     const gfx::Range& replacement_range);
+  void SimulateImeCommitText(const base::string16& text,
+                             const gfx::Range& replacement_range);
+  void SimulateImeFinishComposingText(bool keep_selection);
 
   // TODO(jam): remove these once the IPC handler moves from RenderView to
   // RenderFrame.
@@ -367,9 +368,11 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::vector<blink::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  void OnImeConfirmComposition(const base::string16& text,
-                               const gfx::Range& replacement_range,
-                               bool keep_selection);
+  void OnImeCommitText(const base::string16& text,
+                       const gfx::Range& replacement_range,
+                       int relative_cursor_pos);
+  void OnImeFinishComposingText(bool keep_selection);
+
 #endif  // defined(ENABLE_PLUGINS)
 
   // May return NULL in some cases, especially if userMediaClient() returns

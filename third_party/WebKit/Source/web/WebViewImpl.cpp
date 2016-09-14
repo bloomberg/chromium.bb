@@ -2300,7 +2300,7 @@ void WebViewImpl::setFocus(bool enable)
                 // needs to be audited.  See http://crbug.com/590369 for more details.
                 focusedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-                focusedFrame->inputMethodController().confirmComposition();
+                focusedFrame->inputMethodController().finishComposingText(InputMethodController::KeepSelection);
 
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(false);
@@ -2368,36 +2368,34 @@ bool WebViewImpl::setComposition(
 
 // TODO(ekaramad):These methods are almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::confirmComposition()
-{
-    return confirmComposition(DoNotKeepSelection);
-}
-
-bool WebViewImpl::confirmComposition(ConfirmCompositionBehavior selectionBehavior)
-{
-    return confirmComposition(WebString(), selectionBehavior);
-}
-
-bool WebViewImpl::confirmComposition(const WebString& text)
-{
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    return confirmComposition(text, DoNotKeepSelection);
-}
-
-bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior)
+bool WebViewImpl::finishComposingText(ConfirmCompositionBehavior selectionBehavior)
 {
     LocalFrame* focused = focusedLocalFrameAvailableForIme();
     if (!focused)
         return false;
 
     if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
-        return plugin->confirmComposition(text, selectionBehavior);
+        return plugin->finishComposingText(selectionBehavior);
+
+    return focused->inputMethodController().finishComposingText(selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
+}
+
+bool WebViewImpl::commitText(const WebString& text, int relativeCaretPosition)
+{
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
+        return false;
+
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
+        return plugin->commitText(text, relativeCaretPosition);
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
+    return focused->inputMethodController().commitText(text, relativeCaretPosition);
 }
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as

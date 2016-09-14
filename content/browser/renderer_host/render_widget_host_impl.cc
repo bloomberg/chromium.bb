@@ -1413,12 +1413,15 @@ void RenderWidgetHostImpl::ImeSetComposition(
             selection_start, selection_end));
 }
 
-void RenderWidgetHostImpl::ImeConfirmComposition(
-    const base::string16& text,
-    const gfx::Range& replacement_range,
-    bool keep_selection) {
-  Send(new InputMsg_ImeConfirmComposition(
-        GetRoutingID(), text, replacement_range, keep_selection));
+void RenderWidgetHostImpl::ImeCommitText(const base::string16& text,
+                                         const gfx::Range& replacement_range,
+                                         int relative_cursor_pos) {
+  Send(new InputMsg_ImeCommitText(GetRoutingID(), text, replacement_range,
+                                  relative_cursor_pos));
+}
+
+void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
+  Send(new InputMsg_ImeFinishComposingText(GetRoutingID(), keep_selection));
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {

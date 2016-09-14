@@ -368,15 +368,24 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       int selection_start,
       int selection_end);
 
-  // Finishes an ongoing composition with the specified text.
-  // A browser should call this function:
+  // Deletes the ongoing composition if any, inserts the specified text, and
+  // moves the cursor.
+  // A browser should call this function or ImeFinishComposingText:
   // * when it receives a WM_IME_COMPOSITION message with a GCS_RESULTSTR flag
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeConfirmComposition(const base::string16& text,
-                             const gfx::Range& replacement_range,
-                             bool keep_selection);
+  void ImeCommitText(const base::string16& text,
+                     const gfx::Range& replacement_range,
+                     int relative_cursor_pos);
+
+  // Finishes an ongoing composition.
+  // A browser should call this function or ImeCommitText:
+  // * when it receives a WM_IME_COMPOSITION message with a GCS_RESULTSTR flag
+  //   (on Windows);
+  // * when it receives a "commit" signal of GtkIMContext (on Linux);
+  // * when insertText of NSTextInput is called (on Mac).
+  void ImeFinishComposingText(bool keep_selection);
 
   // Cancels an ongoing composition.
   void ImeCancelComposition();

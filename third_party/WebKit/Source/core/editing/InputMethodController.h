@@ -57,17 +57,20 @@ public:
     bool hasComposition() const;
     void setComposition(const String&, const Vector<CompositionUnderline>&, int selectionStart, int selectionEnd);
     void setCompositionFromExistingText(const Vector<CompositionUnderline>&, unsigned compositionStart, unsigned compositionEnd);
-    // Inserts the text that is being composed as a regular text and returns true
-    // if composition exists.
-    bool confirmComposition();
-    // Inserts the given text string in the place of the existing composition
-    // and returns true.
-    bool confirmComposition(const String& text, ConfirmCompositionBehavior confirmBehavior = KeepSelection);
-    // Inserts the text that is being composed or specified non-empty text and
-    // returns true.
-    bool confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior);
+
+    // Deletes ongoing composing text if any, inserts specified text, and
+    // changes the selection according to relativeCaretPosition, which is
+    // relative to the end of the inserting text.
+    bool commitText(const String& text, int relativeCaretPosition);
+
+    // Inserts ongoing composing text; changes the selection to the end of
+    // the inserting text if DoNotKeepSelection, or holds the selection if
+    // KeepSelection.
+    bool finishComposingText(ConfirmCompositionBehavior);
+
     // Deletes the existing composition text.
     void cancelComposition();
+
     void cancelCompositionIfSelectionIsInvalid();
     EphemeralRange compositionEphemeralRange() const;
     Range* compositionRange() const;
@@ -99,6 +102,19 @@ private:
     String composingText() const;
     void selectComposition() const;
     bool setSelectionOffsets(const PlainTextRange&, FrameSelection::SetSelectionOptions = FrameSelection::CloseTyping);
+
+    bool insertText(const String&);
+    bool insertTextAndMoveCaret(const String&, int relativeCaretPosition);
+
+    // Inserts the given text string in the place of the existing composition.
+    // Returns true if did replace.
+    bool replaceComposition(const String& text);
+    // Inserts the given text string in the place of the existing composition
+    // and moves caret. Returns true if did replace and moved caret successfully.
+    bool replaceCompositionAndMoveCaret(const String&, int relativeCaretPosition);
+
+    // Returns true if moved caret successfully.
+    bool moveCaret(int newCaretPosition);
 };
 
 } // namespace blink

@@ -139,7 +139,6 @@ public:
     void dispatchWillSendRequest(WebURLRequest&) override;
     WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&) override;
     unsigned unloadListenerCount() const override;
-    void insertText(const WebString&) override;
     void setMarkedText(const WebString&, unsigned location, unsigned length) override;
     void unmarkText() override;
     bool hasMarkedText() const override;

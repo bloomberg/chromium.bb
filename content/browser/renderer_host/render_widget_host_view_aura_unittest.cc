@@ -1231,8 +1231,8 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   EXPECT_EQ(2U, sink_->message_count());
 
   if (sink_->message_count() == 2) {
-    // Verify mouse event happens after the confirm-composition event.
-    EXPECT_EQ(InputMsg_ImeConfirmComposition::ID,
+    // Verify mouse event happens after the finish composing text event.
+    EXPECT_EQ(InputMsg_ImeFinishComposingText::ID,
               sink_->GetMessageAt(0)->type());
     EXPECT_EQ(InputMsg_HandleInputEvent::ID,
               sink_->GetMessageAt(1)->type());
@@ -4355,11 +4355,11 @@ TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();
     EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
-                                      InputMsg_ImeConfirmComposition::ID));
+                                      InputMsg_ImeFinishComposingText::ID));
   }
 }
 
-// This test is for ui::TextInputClient::ConfirmCompositionText.
+// This test is for ui::TextInputClient::ClearCompositionText.
 TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
   base::Closure ime_call =
       base::Bind(&ui::TextInputClient::ClearCompositionText,
@@ -4372,15 +4372,28 @@ TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
   }
 }
 
-// This test is for that ui::TextInputClient::InsertText.
-TEST_F(InputMethodResultAuraTest, InsertText) {
+// This test is for ui::TextInputClient::InsertText with empty text.
+TEST_F(InputMethodResultAuraTest, FinishComposingText) {
   base::Closure ime_call =
       base::Bind(&ui::TextInputClient::InsertText,
                  base::Unretained(text_input_client()), base::string16());
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    SetHasCompositionTextToTrue();
     EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
-                                      InputMsg_ImeConfirmComposition::ID));
+                                      InputMsg_ImeFinishComposingText::ID));
+  }
+}
+
+// This test is for ui::TextInputClient::InsertText with non-empty text.
+TEST_F(InputMethodResultAuraTest, CommitText) {
+  base::Closure ime_call = base::Bind(&ui::TextInputClient::InsertText,
+                                      base::Unretained(text_input_client()),
+                                      base::UTF8ToUTF16("hello"));
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_call, processes_[index],
+                                      InputMsg_ImeCommitText::ID));
   }
 }
 
@@ -4395,7 +4408,7 @@ TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
     SetHasCompositionTextToTrue();
     EXPECT_TRUE(!!RunAndReturnIPCSent(ime_finish_session_call,
                                       processes_[index],
-                                      InputMsg_ImeConfirmComposition::ID));
+                                      InputMsg_ImeFinishComposingText::ID));
   }
 }
 

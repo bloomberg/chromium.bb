@@ -104,7 +104,8 @@ void WebWidgetTestClient::resetInputMethod() {
   // If a composition text exists, then we need to let the browser process
   // to cancel the input method's ongoing composition session.
   if (web_widget_test_proxy_base_)
-    web_widget_test_proxy_base_->web_widget()->confirmComposition();
+    web_widget_test_proxy_base_->web_widget()->finishComposingText(
+        blink::WebWidget::KeepSelection);
 }
 
 }  // namespace test_runner

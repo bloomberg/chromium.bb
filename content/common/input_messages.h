@@ -166,11 +166,15 @@ IPC_MESSAGE_ROUTED5(
     int, /* selectiont_start */
     int /* selection_end */)
 
-// This message confirms an ongoing composition.
-IPC_MESSAGE_ROUTED3(InputMsg_ImeConfirmComposition,
+// This message deletes the current composition, inserts specified text, and
+// moves the cursor.
+IPC_MESSAGE_ROUTED3(InputMsg_ImeCommitText,
                     base::string16 /* text */,
                     gfx::Range /* replacement_range */,
-                    bool /* keep_selection */)
+                    int /* relative_cursor_pos */)
+
+// This message inserts the ongoing composition.
+IPC_MESSAGE_ROUTED1(InputMsg_ImeFinishComposingText, bool /* keep_selection */)
 
 // This message notifies the renderer that the next key event is bound to one
 // or more pre-defined edit commands. If the next key event is not handled

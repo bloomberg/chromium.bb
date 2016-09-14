@@ -2241,7 +2241,7 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
     case PP_INPUTEVENT_TYPE_IME_TEXT:
       if (!render_frame_)
         return false;
-      render_frame_->SimulateImeConfirmComposition(
+      render_frame_->SimulateImeCommitText(
           base::UTF8ToUTF16(input_event.character_text), gfx::Range());
       break;
     default:

@@ -66,9 +66,8 @@ public:
         const WebVector<WebCompositionUnderline>& underlines,
         int selectionStart,
         int selectionEnd) override;
-    bool confirmComposition() override;
-    bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) override;
-    bool confirmComposition(const WebString& text) override;
+    bool commitText(const WebString& text, int relativeCaretPosition) override;
+    bool finishComposingText(ConfirmCompositionBehavior selectionBehavior) override;
     WebRange compositionRange() override;
     WebTextInputInfo textInputInfo() override;
     WebTextInputType textInputType() override;

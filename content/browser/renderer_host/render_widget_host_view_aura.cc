@@ -1365,8 +1365,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
   if (text_input_manager_ && text_input_manager_->GetActiveWidget() &&
       has_composition_text_) {
-    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
-        base::string16(), gfx::Range::InvalidRange(), false);
+    text_input_manager_->GetActiveWidget()->ImeFinishComposingText(false);
   }
   has_composition_text_ = false;
 }
@@ -1382,8 +1381,11 @@ void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   DCHECK_NE(GetTextInputType(), ui::TEXT_INPUT_TYPE_NONE);
 
   if (text_input_manager_ && text_input_manager_->GetActiveWidget()) {
-    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
-        text, gfx::Range::InvalidRange(), false);
+    if (text.length())
+      text_input_manager_->GetActiveWidget()->ImeCommitText(
+          text, gfx::Range::InvalidRange(), 0);
+    else if (has_composition_text_)
+      text_input_manager_->GetActiveWidget()->ImeFinishComposingText(false);
   }
   has_composition_text_ = false;
 }
@@ -2490,8 +2492,7 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
     return;
 
   if (!!text_input_manager_ && !!text_input_manager_->GetActiveWidget()) {
-    text_input_manager_->GetActiveWidget()->ImeConfirmComposition(
-        base::string16(), gfx::Range::InvalidRange(), false);
+    text_input_manager_->GetActiveWidget()->ImeFinishComposingText(false);
   }
   ImeCancelComposition();
 }

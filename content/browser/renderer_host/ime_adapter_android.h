@@ -46,10 +46,11 @@ class ImeAdapterAndroid {
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jobject>& text,
                         const base::android::JavaParamRef<jstring>& text_str,
-                        int new_cursor_pos);
+                        int relative_cursor_pos);
   void CommitText(JNIEnv*,
                   const base::android::JavaParamRef<jobject>&,
-                  const base::android::JavaParamRef<jstring>& text_str);
+                  const base::android::JavaParamRef<jstring>& text_str,
+                  int relative_cursor_pos);
   void FinishComposingText(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>&);
   void AttachImeAdapter(

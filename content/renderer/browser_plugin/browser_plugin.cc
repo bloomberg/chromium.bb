@@ -554,17 +554,24 @@ bool BrowserPlugin::setComposition(
   return true;
 }
 
-bool BrowserPlugin::confirmComposition(
-    const blink::WebString& text,
-    blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) {
+bool BrowserPlugin::commitText(const blink::WebString& text,
+                               int relative_cursor_pos) {
   if (!attached())
     return false;
-  bool keep_selection = (selectionBehavior == blink::WebWidget::KeepSelection);
+
+  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeCommitText(
+      browser_plugin_instance_id_, text.utf8(), relative_cursor_pos));
+  // TODO(kochi): This assumes the IPC handling always succeeds.
+  return true;
+}
+
+bool BrowserPlugin::finishComposingText(
+    blink::WebWidget::ConfirmCompositionBehavior selection_behavior) {
+  if (!attached())
+    return false;
+  bool keep_selection = (selection_behavior == blink::WebWidget::KeepSelection);
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_ImeConfirmComposition(
-          browser_plugin_instance_id_,
-          text.utf8(),
-          keep_selection));
+      new BrowserPluginHostMsg_ImeFinishComposingText(keep_selection));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }

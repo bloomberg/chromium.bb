@@ -154,19 +154,13 @@ public:
         KeepSelection,
     };
 
-    // Called to inform the WebWidget to confirm an ongoing composition.
-    // This method is same as confirmComposition(WebString());
-    // Returns true if there is an ongoing composition.
-    virtual bool confirmComposition() { return false; } // Deprecated
-    virtual bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) { return false; }
+    // Called to inform the WebWidget that deleting the ongoing composition if
+    // any, inserting the specified text, and moving the caret according to
+    // relativeCaretPosition.
+    virtual bool commitText(const WebString& text, int relativeCaretPosition) { return false; }
 
-    // Called to inform the WebWidget to confirm an ongoing composition with a
-    // new composition text. If the text is empty then the current composition
-    // text is confirmed. If there is no ongoing composition, then deletes the
-    // current selection and inserts the text. This method has no effect if
-    // there is no ongoing composition and the text is empty.
-    // Returns true if there is an ongoing composition or the text is inserted.
-    virtual bool confirmComposition(const WebString& text) { return false; }
+    // Called to inform the WebWidget to confirm an ongoing composition.
+    virtual bool finishComposingText(ConfirmCompositionBehavior selectionBehavior) { return false; }
 
     // Fetches the character range of the current composition, also called the
     // "marked range."

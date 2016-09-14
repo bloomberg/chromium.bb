@@ -199,8 +199,6 @@ public:
 
     // Editing -------------------------------------------------------------
 
-    virtual void insertText(const WebString& text) = 0;
-
     virtual void setMarkedText(const WebString& text, unsigned location, unsigned length) = 0;
     virtual void unmarkText() = 0;
     virtual bool hasMarkedText() const = 0;

@@ -195,7 +195,7 @@ class Layer;
 // Cancel ongoing composition (abandon the marked text).
 - (void)cancelComposition;
 // Confirm ongoing composition.
-- (void)confirmComposition;
+- (void)finishComposingText;
 - (void)updateCursor:(NSCursor*)cursor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange;

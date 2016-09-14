@@ -126,7 +126,7 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText)
     underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
     controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    controller().confirmComposition();
+    controller().finishComposingText(InputMethodController::KeepSelection);
     EXPECT_EQ(0, frame().selection().start().computeOffsetInContainerNode());
     EXPECT_EQ(0, frame().selection().end().computeOffsetInContainerNode());
 }
@@ -198,12 +198,12 @@ TEST_F(InputMethodControllerTest, ConfirmPasswordComposition)
     Vector<CompositionUnderline> underlines;
     underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
     controller().setComposition("foo", underlines, 0, 3);
-    controller().confirmComposition();
+    controller().finishComposingText(InputMethodController::KeepSelection);
 
     EXPECT_STREQ("foo", input->value().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionForInputWithDifferentNewCursorPositions)
+TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions)
 {
     HTMLInputElement* input = toHTMLInputElement(
         insertHTMLElement("<input id='sample'>", "sample"));
@@ -218,42 +218,42 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithDifferentNewCursorPo
     Vector<CompositionUnderline> underlines;
     underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
-    // The cursor exceeds left boundary.
-    // "*heABllo", where * stands for cursor.
+    // The caret exceeds left boundary.
+    // "*heABllo", where * stands for caret.
     controller().setComposition("AB", underlines, -100, -100);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
     EXPECT_EQ(0u, controller().getSelectionOffsets().start());
     EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The cursor is on left boundary.
+    // The caret is on left boundary.
     // "*heABllo".
     controller().setComposition("AB", underlines, -2, -2);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
     EXPECT_EQ(0u, controller().getSelectionOffsets().start());
     EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The cursor is before the composing text.
+    // The caret is before the composing text.
     // "he*ABllo".
     controller().setComposition("AB", underlines, 0, 0);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
     EXPECT_EQ(2u, controller().getSelectionOffsets().start());
     EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    // The cursor is after the composing text.
+    // The caret is after the composing text.
     // "heAB*llo".
     controller().setComposition("AB", underlines, 2, 2);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
     EXPECT_EQ(4u, controller().getSelectionOffsets().start());
     EXPECT_EQ(4u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary.
+    // The caret is on right boundary.
     // "heABllo*".
     controller().setComposition("AB", underlines, 5, 5);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
     EXPECT_EQ(7u, controller().getSelectionOffsets().start());
     EXPECT_EQ(7u, controller().getSelectionOffsets().end());
 
-    // The cursor exceeds right boundary.
+    // The caret exceeds right boundary.
     // "heABllo*".
     controller().setComposition("AB", underlines, 100, 100);
     EXPECT_STREQ("heABllo", input->value().utf8().data());
@@ -261,7 +261,7 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithDifferentNewCursorPo
     EXPECT_EQ(7u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithDifferentNewCursorPositions)
+TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithNewCaretPositions)
 {
     // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world", "\n", "012", "3456", "789".
     Element* div = insertHTMLElement(
@@ -281,77 +281,77 @@ TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithDifferentN
     Vector<CompositionUnderline> underlines;
     underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
-    // The cursor exceeds left boundary.
-    // "*hello\nworld\n01234AB56789", where * stands for cursor.
+    // The caret exceeds left boundary.
+    // "*hello\nworld\n01234AB56789", where * stands for caret.
     controller().setComposition("AB", underlines, -100, -100);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(0u, controller().getSelectionOffsets().start());
     EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The cursor is on left boundary.
+    // The caret is on left boundary.
     // "*hello\nworld\n01234AB56789".
     controller().setComposition("AB", underlines, -17, -17);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(0u, controller().getSelectionOffsets().start());
     EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The cursor is in the 1st node.
+    // The caret is in the 1st node.
     // "he*llo\nworld\n01234AB56789".
     controller().setComposition("AB", underlines, -15, -15);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(2u, controller().getSelectionOffsets().start());
     EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary of the 1st node.
+    // The caret is on right boundary of the 1st node.
     // "hello*\nworld\n01234AB56789".
     controller().setComposition("AB", underlines, -12, -12);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(5u, controller().getSelectionOffsets().start());
     EXPECT_EQ(5u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary of the 2nd node.
+    // The caret is on right boundary of the 2nd node.
     // "hello\n*world\n01234AB56789".
     controller().setComposition("AB", underlines, -11, -11);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(6u, controller().getSelectionOffsets().start());
     EXPECT_EQ(6u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary of the 3rd node.
+    // The caret is on right boundary of the 3rd node.
     // "hello\nworld*\n01234AB56789".
     controller().setComposition("AB", underlines, -6, -6);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(11u, controller().getSelectionOffsets().start());
     EXPECT_EQ(11u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary of the 4th node.
+    // The caret is on right boundary of the 4th node.
     // "hello\nworld\n*01234AB56789".
     controller().setComposition("AB", underlines, -5, -5);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(12u, controller().getSelectionOffsets().start());
     EXPECT_EQ(12u, controller().getSelectionOffsets().end());
 
-    // The cursor is before the composing text.
+    // The caret is before the composing text.
     // "hello\nworld\n01234*AB56789".
     controller().setComposition("AB", underlines, 0, 0);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(17u, controller().getSelectionOffsets().start());
     EXPECT_EQ(17u, controller().getSelectionOffsets().end());
 
-    // The cursor is after the composing text.
+    // The caret is after the composing text.
     // "hello\nworld\n01234AB*56789".
     controller().setComposition("AB", underlines, 2, 2);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(19u, controller().getSelectionOffsets().start());
     EXPECT_EQ(19u, controller().getSelectionOffsets().end());
 
-    // The cursor is on right boundary.
+    // The caret is on right boundary.
     // "hello\nworld\n01234AB56789*".
     controller().setComposition("AB", underlines, 7, 7);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(24u, controller().getSelectionOffsets().start());
     EXPECT_EQ(24u, controller().getSelectionOffsets().end());
 
-    // The cursor exceeds right boundary.
+    // The caret exceeds right boundary.
     // "hello\nworld\n01234AB56789*".
     controller().setComposition("AB", underlines, 100, 100);
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
@@ -414,7 +414,7 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText)
         "<div id='sample' contenteditable='true'></div>",
         "sample");
 
-    controller().confirmCompositionOrInsertText("hello", InputMethodController::ConfirmCompositionBehavior::KeepSelection);
+    controller().commitText("hello", 0);
     EXPECT_STREQ("hello", div->innerText().utf8().data());
 
     controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
@@ -453,7 +453,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)
     EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
 
     document().setTitle(emptyString());
-    controller().confirmComposition();
+    controller().finishComposingText(InputMethodController::KeepSelection);
     // Last pair of InputEvent should also be inside composition scope.
     EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
 }
@@ -488,7 +488,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventData)
     EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
 
     document().setTitle(emptyString());
-    controller().confirmComposition();
+    controller().finishComposingText(InputMethodController::KeepSelection);
     EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
 }
 

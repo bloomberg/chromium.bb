@@ -98,7 +98,8 @@ public:
     using WebWidget::mouseCaptureLost;
     using WebWidget::setFocus;
     using WebWidget::setComposition;
-    using WebWidget::confirmComposition;
+    using WebWidget::commitText;
+    using WebWidget::finishComposingText;
     using WebWidget::compositionRange;
     using WebWidget::textInputInfo;
     using WebWidget::textInputType;

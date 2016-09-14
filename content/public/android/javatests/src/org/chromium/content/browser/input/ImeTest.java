@@ -158,7 +158,7 @@ public class ImeTest extends ContentShellTestBase {
     @CommandLineFlags.Add("enable-features=ImeThread")
     @SmallTest
     @Feature({"TextInput", "Main"})
-    public void testSetComposingTextForDifferentnewCursorPositions() throws Throwable {
+    public void testSetComposingTextForNewCursorPositions() throws Throwable {
         // Cursor is on the right of composing text when newCursorPosition > 0.
         setComposingText("ab", 1);
         waitAndVerifyUpdateSelection(0, 2, 2, 0, 2);
@@ -202,6 +202,45 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(10, 8, 8, 2, 6);
     }
 
+    // When newCursorPosition != 1, commitText doesn't work for ReplicaInputConnection
+    // because there is a bug in BaseInputConnection.
+    @CommandLineFlags.Add("enable-features=ImeThread")
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testCommitTextForNewCursorPositions() throws Throwable {
+        // Cursor is on the left of committing text.
+        commitText("ab", 0);
+        waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
+
+        // Cursor is on the right of committing text.
+        commitText("cd", 1);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+
+        // Cursor is between the committing text and the right boundary.
+        commitText("ef", 2);
+        waitAndVerifyUpdateSelection(2, 5, 5, -1, -1);
+
+        // Cursor is between the left boundary and the committing text.
+        commitText("gh", -3);
+        waitAndVerifyUpdateSelection(3, 2, 2, -1, -1);
+
+        // Cursor is on the right boundary.
+        commitText("ij", 7);
+        waitAndVerifyUpdateSelection(4, 10, 10, -1, -1);
+
+        // Cursor is on the left boundary.
+        commitText("kl", -10);
+        waitAndVerifyUpdateSelection(5, 0, 0, -1, -1);
+
+        // Cursor exceeds the right boundary.
+        commitText("mn", 100);
+        waitAndVerifyUpdateSelection(6, 14, 14, -1, -1);
+
+        // Cursor exceeds the left boundary.
+        commitText("op", -100);
+        waitAndVerifyUpdateSelection(7, 0, 0, -1, -1);
+    }
+
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingTextWithEmptyText() throws Throwable {
@@ -220,6 +259,25 @@ public class ImeTest extends ContentShellTestBase {
         setComposingText("", 3);
         waitAndVerifyUpdateSelection(3, 4, 4, -1, -1);
         assertTextsAroundCursor("hell", null, "o");
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testCommitTextWithEmptyText() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+
+        setComposingText("world", 1);
+        waitAndVerifyUpdateSelection(2, 7, 7, 2, 7);
+        // With previous composition.
+        commitText("", 2);
+        waitAndVerifyUpdateSelection(3, 3, 3, -1, -1);
+
+        // Without previous composition.
+        commitText("", -1);
+        waitAndVerifyUpdateSelection(4, 2, 2, -1, -1);
     }
 
     @SmallTest

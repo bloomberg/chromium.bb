@@ -1246,7 +1246,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
     IME_SETINPUTMODE,
     IME_SETFOCUS,
     IME_SETCOMPOSITION,
-    IME_CONFIRMCOMPOSITION,
+    IME_COMMITTEXT,
+    IME_FINISHCOMPOSINGTEXT,
     IME_CANCELCOMPOSITION
   };
   struct ImeMessage {
@@ -1258,45 +1259,45 @@ TEST_F(RenderViewImplTest, ImeComposition) {
     const wchar_t* result;
   };
   static const ImeMessage kImeMessages[] = {
-    // Scenario 1: input a Chinese word with Microsoft IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 1, 1, L"n", L"n"},
-    {IME_SETCOMPOSITION, false, 2, 2, L"ni", L"ni"},
-    {IME_SETCOMPOSITION, false, 3, 3, L"nih", L"nih"},
-    {IME_SETCOMPOSITION, false, 4, 4, L"niha", L"niha"},
-    {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
-    // Scenario 2: input a Japanese word with Microsoft IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xFF4B", L"\xFF4B"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\x304B", L"\x304B"},
-    {IME_SETCOMPOSITION, false, 0, 2, L"\x304B\xFF4E", L"\x304B\xFF4E"},
-    {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\xFF4A",
-     L"\x304B\x3093\xFF4A"},
-    {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\x3058",
-     L"\x304B\x3093\x3058"},
-    {IME_SETCOMPOSITION, false, 0, 2, L"\x611F\x3058", L"\x611F\x3058"},
-    {IME_SETCOMPOSITION, false, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
-    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
-    // Scenario 3: input a Korean word with Microsot IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\x3147", L"\x3147"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xC544", L"\xC544"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xC548", L"\xC548"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\xC548"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\x3134", L"\xC548\x3134"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xB140", L"\xC548\xB140"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
-    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\xC548"},
-    {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\xC548\xB155"},
+      // Scenario 1: input a Chinese word with Microsoft IME (on Vista).
+      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_SETCOMPOSITION, false, 1, 1, L"n", L"n"},
+      {IME_SETCOMPOSITION, false, 2, 2, L"ni", L"ni"},
+      {IME_SETCOMPOSITION, false, 3, 3, L"nih", L"nih"},
+      {IME_SETCOMPOSITION, false, 4, 4, L"niha", L"niha"},
+      {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
+      {IME_COMMITTEXT, false, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
+      // Scenario 2: input a Japanese word with Microsoft IME (on Vista).
+      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xFF4B", L"\xFF4B"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\x304B", L"\x304B"},
+      {IME_SETCOMPOSITION, false, 0, 2, L"\x304B\xFF4E", L"\x304B\xFF4E"},
+      {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\xFF4A",
+       L"\x304B\x3093\xFF4A"},
+      {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\x3058",
+       L"\x304B\x3093\x3058"},
+      {IME_SETCOMPOSITION, false, 0, 2, L"\x611F\x3058", L"\x611F\x3058"},
+      {IME_SETCOMPOSITION, false, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
+      {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\x6F22\x5B57"},
+      {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
+      // Scenario 3: input a Korean word with Microsot IME (on Vista).
+      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\x3147", L"\x3147"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xC544", L"\xC544"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xC548", L"\xC548"},
+      {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\xC548"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\x3134", L"\xC548\x3134"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xB140", L"\xC548\xB140"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
+      {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\xC548"},
+      {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
+      {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\xC548\xB155"},
   };
 
   for (size_t i = 0; i < arraysize(kImeMessages); i++) {
@@ -1333,11 +1334,13 @@ TEST_F(RenderViewImplTest, ImeComposition) {
             ime_message->selection_end);
         break;
 
-      case IME_CONFIRMCOMPOSITION:
-        view()->OnImeConfirmComposition(
-            base::WideToUTF16(ime_message->ime_string),
-            gfx::Range::InvalidRange(),
-            false);
+      case IME_COMMITTEXT:
+        view()->OnImeCommitText(base::WideToUTF16(ime_message->ime_string),
+                                gfx::Range::InvalidRange(), 0);
+        break;
+
+      case IME_FINISHCOMPOSINGTEXT:
+        view()->OnImeFinishComposingText(false);
         break;
 
       case IME_CANCELCOMPOSITION:
@@ -1593,8 +1596,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeConfirmComposition(
-      empty_string, gfx::Range::InvalidRange(), false);
+  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
 
   // Non surrogate pair unicode character.
   const base::string16 unicode_composition = base::UTF8ToUTF16(
@@ -1605,8 +1607,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeConfirmComposition(
-      empty_string, gfx::Range::InvalidRange(), false);
+  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
 
   // Surrogate pair character.
   const base::string16 surrogate_pair_char =
@@ -1620,8 +1621,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
   EXPECT_LT(0, bounds[0].width());
   EXPECT_EQ(0, bounds[1].width());
-  view()->OnImeConfirmComposition(
-      empty_string, gfx::Range::InvalidRange(), false);
+  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
 
   // Mixed string.
   const base::string16 surrogate_pair_mixed_composition =
@@ -1644,8 +1644,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       EXPECT_LT(0, bounds[i].width());
     }
   }
-  view()->OnImeConfirmComposition(
-      empty_string, gfx::Range::InvalidRange(), false);
+  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
 }
 #endif
 

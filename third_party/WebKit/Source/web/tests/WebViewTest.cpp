@@ -820,7 +820,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     EXPECT_EQ(-1, info.compositionEnd);
 }
 
-TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
+TEST_F(WebViewTest, FinishComposingTextCursorPositionChange)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
@@ -839,7 +839,7 @@ TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
     EXPECT_EQ(0, info.compositionStart);
     EXPECT_EQ(5, info.compositionEnd);
 
-    webView->confirmComposition(WebWidget::KeepSelection);
+    webView->finishComposingText(WebWidget::KeepSelection);
     info = webView->textInputInfo();
     EXPECT_EQ(3, info.selectionStart);
     EXPECT_EQ(3, info.selectionEnd);
@@ -854,10 +854,257 @@ TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
     EXPECT_EQ(3, info.compositionStart);
     EXPECT_EQ(8, info.compositionEnd);
 
-    webView->confirmComposition(WebWidget::DoNotKeepSelection);
+    webView->finishComposingText(WebWidget::DoNotKeepSelection);
     info = webView->textInputInfo();
     EXPECT_EQ(8, info.selectionStart);
     EXPECT_EQ(8, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+}
+
+TEST_F(WebViewTest, SetCompositionForNewCaretPositions)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    webView->commitText("hello", 0);
+    webView->commitText("world", -5);
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("helloworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+    // Set up a composition that needs to be committed.
+    std::string compositionText("ABC");
+
+    // Caret is on the left of composing text.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 0, 0);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret is on the right of composing text.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 3, 3);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(8, info.selectionStart);
+    EXPECT_EQ(8, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret is between composing text and left boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, -2, -2);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret is between composing text and right boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 5, 5);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(10, info.selectionStart);
+    EXPECT_EQ(10, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret is on the left boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, -5, -5);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret is on the right boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 8, 8);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(13, info.selectionStart);
+    EXPECT_EQ(13, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret exceeds the left boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, -100, -100);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    // Caret exceeds the right boundary.
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 100, 100);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloABCworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(13, info.selectionStart);
+    EXPECT_EQ(13, info.selectionEnd);
+    EXPECT_EQ(5, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+}
+
+TEST_F(WebViewTest, SetCompositionWithEmptyText)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    webView->commitText("hello", 0);
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+
+    webView->setComposition(WebString::fromUTF8(""), emptyUnderlines, 0, 0);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    webView->setComposition(WebString::fromUTF8(""), emptyUnderlines, -2, -2);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+}
+
+TEST_F(WebViewTest, CommitTextForNewCaretPositions)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    // Caret is on the left of composing text.
+    webView->commitText("ab", -2);
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("ab", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Caret is on the right of composing text.
+    webView->commitText("c", 1);
+    info = webView->textInputInfo();
+    EXPECT_EQ("cab", std::string(info.value.utf8().data()));
+    EXPECT_EQ(2, info.selectionStart);
+    EXPECT_EQ(2, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Caret is on the left boundary.
+    webView->commitText("def", -5);
+    info = webView->textInputInfo();
+    EXPECT_EQ("cadefb", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Caret is on the right boundary.
+    webView->commitText("g", 6);
+    info = webView->textInputInfo();
+    EXPECT_EQ("gcadefb", std::string(info.value.utf8().data()));
+    EXPECT_EQ(7, info.selectionStart);
+    EXPECT_EQ(7, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Caret exceeds the left boundary.
+    webView->commitText("hi", -100);
+    info = webView->textInputInfo();
+    EXPECT_EQ("gcadefbhi", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Caret exceeds the right boundary.
+    webView->commitText("jk", 100);
+    info = webView->textInputInfo();
+    EXPECT_EQ("jkgcadefbhi", std::string(info.value.utf8().data()));
+    EXPECT_EQ(11, info.selectionStart);
+    EXPECT_EQ(11, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+}
+
+TEST_F(WebViewTest, CommitTextWhileComposing)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+    webView->setComposition(WebString::fromUTF8("abc"), emptyUnderlines, 0, 0);
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("abc", std::string(info.value.utf8().data()));
+    EXPECT_EQ(0, info.selectionStart);
+    EXPECT_EQ(0, info.selectionEnd);
+    EXPECT_EQ(0, info.compositionStart);
+    EXPECT_EQ(3, info.compositionEnd);
+
+    // Deletes ongoing composition, inserts the specified text and moves the
+    // caret.
+    webView->commitText("hello", -2);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    webView->setComposition(WebString::fromUTF8("abc"), emptyUnderlines, 0, 0);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helabclo", std::string(info.value.utf8().data()));
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(3, info.compositionStart);
+    EXPECT_EQ(6, info.compositionEnd);
+
+    // Deletes ongoing composition and moves the caret.
+    webView->commitText("", 2);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Inserts the specified text and moves the caret.
+    webView->commitText("world", -5);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    // Only moves the caret.
+    webView->commitText("", 5);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helloworld", std::string(info.value.utf8().data()));
+    EXPECT_EQ(10, info.selectionStart);
+    EXPECT_EQ(10, info.selectionEnd);
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
 }
@@ -887,12 +1134,12 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection)
     EXPECT_EQ("hello", std::string(info.value.utf8().data()));
 
     // Verify that the input field is not scrolled back into the viewport.
-    webView->confirmComposition(WebWidget::DoNotKeepSelection);
+    webView->finishComposingText(WebWidget::DoNotKeepSelection);
     EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
     EXPECT_EQ(offsetHeight, webView->mainFrame()->scrollOffset().height);
 }
 
-TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
+TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("text_area_populated.html"));
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
@@ -911,7 +1158,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
     EXPECT_EQ(8, info.compositionStart);
     EXPECT_EQ(12, info.compositionEnd);
 
-    webView->confirmComposition(WebWidget::KeepSelection);
+    webView->finishComposingText(WebWidget::KeepSelection);
     info = webView->textInputInfo();
     EXPECT_EQ(4, info.selectionStart);
     EXPECT_EQ(4, info.selectionEnd);
@@ -919,7 +1166,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
     EXPECT_EQ(-1, info.compositionEnd);
 
     std::string compositionText("\n");
-    webView->confirmComposition(WebString::fromUTF8(compositionText.c_str()));
+    webView->commitText(WebString::fromUTF8(compositionText.c_str()), 0);
     info = webView->textInputInfo();
     EXPECT_EQ(5, info.selectionStart);
     EXPECT_EQ(5, info.selectionEnd);
@@ -979,7 +1226,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     WebLocalFrameImpl* frame = webView->mainFrameImpl();
     frame->setEditableSelectionOffsets(27, 27);
     std::string newLineText("\n");
-    webView->confirmComposition(WebString::fromUTF8(newLineText.c_str()));
+    webView->commitText(WebString::fromUTF8(newLineText.c_str()), 0);
     WebTextInputInfo info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", std::string(info.value.utf8().data()));
 
@@ -993,7 +1240,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     EXPECT_EQ(34, info.compositionEnd);
 
     std::string compositionText("yolo");
-    webView->confirmComposition(WebString::fromUTF8(compositionText.c_str()));
+    webView->commitText(WebString::fromUTF8(compositionText.c_str()), 0);
     info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz", std::string(info.value.utf8().data()));
     EXPECT_EQ(34, info.selectionStart);
@@ -1027,7 +1274,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition)
     std::string compositionTextSecond("world");
     WebVector<WebCompositionUnderline> emptyUnderlines;
 
-    webView->confirmComposition(WebString::fromUTF8(compositionTextFirst.c_str()));
+    webView->commitText(WebString::fromUTF8(compositionTextFirst.c_str()), 0);
     webView->setComposition(WebString::fromUTF8(compositionTextSecond.c_str()), emptyUnderlines, 5, 5);
 
     WebTextInputInfo info = webView->textInputInfo();
@@ -2096,7 +2343,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace)
     frame->setAutofillClient(0);
 }
 
-TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
+TEST_F(WebViewTest, FinishComposingTextTriggersAutofillTextChange)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     MockAutofillClient client;
@@ -2118,7 +2365,7 @@ TEST_F(WebViewTest, ConfirmCompositionTriggersAutofillTextChange)
     EXPECT_EQ((int) compositionText.length(), info.compositionEnd);
 
     client.clearChangeCounts();
-    webView->confirmComposition();
+    webView->finishComposingText(WebWidget::KeepSelection);
     EXPECT_EQ(0, client.textChangesWhileIgnored());
     EXPECT_EQ(1, client.textChangesWhileNotIgnored());
 
@@ -2821,7 +3068,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
 
     WebVector<WebCompositionUnderline> emptyUnderlines;
     webViewImpl->setComposition(WebString::fromUTF8("2"), emptyUnderlines, 1, 1);
-    webViewImpl->confirmComposition(WebWidget::KeepSelection);
+    webViewImpl->finishComposingText(WebWidget::KeepSelection);
     EXPECT_FALSE(client.textIsUpdated());
     info = webViewImpl->textInputInfo();
     EXPECT_EQ("testA2", std::string(info.value.utf8().data()));
@@ -2852,7 +3099,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     client.reset();
     EXPECT_FALSE(client.textIsUpdated());
     webViewImpl->setComposition(WebString::fromUTF8("2"), emptyUnderlines, 1, 1);
-    webViewImpl->confirmComposition(WebWidget::KeepSelection);
+    webViewImpl->finishComposingText(WebWidget::KeepSelection);
     info = webViewImpl->textInputInfo();
     EXPECT_EQ("testB2", std::string(info.value.utf8().data()));
 
@@ -3293,7 +3540,7 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture)
     frame->setAutofillClient(&client);
     webView->setInitialFocus(false);
 
-    EXPECT_TRUE(webView->confirmComposition(WebString::fromUTF8(std::string("hello").c_str())));
+    EXPECT_TRUE(webView->commitText(WebString::fromUTF8(std::string("hello").c_str()), 0));
     EXPECT_EQ(1, client.textChangesFromUserGesture());
     EXPECT_FALSE(UserGestureIndicator::processingUserGesture());
     frame->setAutofillClient(0);

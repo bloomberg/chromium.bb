@@ -160,11 +160,11 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 }
 
 void TextInputController::InsertText(const std::string& text) {
-  view()->confirmComposition(blink::WebString::fromUTF8(text));
+  view()->commitText(blink::WebString::fromUTF8(text), 0);
 }
 
 void TextInputController::UnmarkText() {
-  view()->confirmComposition();
+  view()->finishComposingText(blink::WebWidget::KeepSelection);
 }
 
 void TextInputController::DoCommand(const std::string& text) {

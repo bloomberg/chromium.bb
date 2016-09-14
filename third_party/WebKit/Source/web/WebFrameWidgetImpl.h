@@ -98,9 +98,8 @@ public:
         const WebString& text,
         const WebVector<WebCompositionUnderline>& underlines,
         int selectionStart, int selectionEnd) override;
-    bool confirmComposition() override;
-    bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) override;
-    bool confirmComposition(const WebString& text) override;
+    bool commitText(const WebString& text, int relativeCaretPosition) override;
+    bool finishComposingText(ConfirmCompositionBehavior selectionBehavior) override;
     WebRange compositionRange() override;
     WebTextInputInfo textInputInfo() override;
     WebTextInputType textInputType() override;
@@ -205,8 +204,6 @@ private:
     // to this widget. It will return nullptr if no frame is focused or, the
     // focused frame has a different local root.
     LocalFrame* focusedLocalFrameInWidget() const;
-
-    bool confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior) const;
 
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*) const;
 

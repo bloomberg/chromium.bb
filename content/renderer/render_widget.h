@@ -496,9 +496,11 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Range& replacement_range,
       int selection_start,
       int selection_end);
-  virtual void OnImeConfirmComposition(const base::string16& text,
-                                       const gfx::Range& replacement_range,
-                                       bool keep_selection);
+  virtual void OnImeCommitText(const base::string16& text,
+                               const gfx::Range& replacement_range,
+                               int relative_cursor_pos);
+  virtual void OnImeFinishComposingText(bool keep_selection);
+
   // Called when the device scale factor is changed, or the layer tree is
   // initialized.
   virtual void OnDeviceScaleFactorChanged();

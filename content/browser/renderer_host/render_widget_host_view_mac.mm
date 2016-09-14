@@ -1844,7 +1844,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // simply confirm all ongoing composition here.
   if (type == NSLeftMouseDown || type == NSRightMouseDown ||
       type == NSOtherMouseDown) {
-    [self confirmComposition];
+    [self finishComposingText];
   }
 
   WebMouseEvent event = WebMouseEventBuilder::Build(theEvent, self);
@@ -2071,7 +2071,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // Then send keypress and/or composition related events.
   // If there was a marked text or the text to be inserted is longer than 1
-  // character, then we send the text by calling ConfirmComposition().
+  // character, then we send the text by calling FinishComposingText().
   // Otherwise, if the text to be inserted only contains 1 character, then we
   // can just send a keypress event which is fabricated by changing the type of
   // the keydown event, so that we can retain all necessary informations, such
@@ -2083,8 +2083,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   BOOL textInserted = NO;
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
-    widgetHost->ImeConfirmComposition(
-        textToBeInserted_, gfx::Range::InvalidRange(), false);
+    widgetHost->ImeCommitText(textToBeInserted_, gfx::Range::InvalidRange(), 0);
     textInserted = YES;
   }
 
@@ -2101,8 +2100,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
                                   NSMaxRange(markedTextSelectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_) {
-      widgetHost->ImeConfirmComposition(
-          base::string16(), gfx::Range::InvalidRange(), false);
+      widgetHost->ImeFinishComposingText(false);
     } else {
       widgetHost->ImeCancelComposition();
     }
@@ -2950,12 +2948,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
   underlines_.clear();
 
-  // If we are handling a key down event, then ConfirmComposition() will be
+  // If we are handling a key down event, then FinishComposingText() will be
   // called in keyEvent: method.
   if (!handlingKeyDown_) {
     if (renderWidgetHostView_->GetActiveWidget()) {
-      renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
-          base::string16(), gfx::Range::InvalidRange(), false);
+      renderWidgetHostView_->GetActiveWidget()->ImeFinishComposingText(false);
     }
   } else {
     unmarkTextCalled_ = YES;
@@ -3056,8 +3053,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   } else {
     gfx::Range replacement_range(replacementRange);
     if (renderWidgetHostView_->GetActiveWidget()) {
-      renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
-          base::SysNSStringToUTF16(im_text), replacement_range, false);
+      renderWidgetHostView_->GetActiveWidget()->ImeCommitText(
+          base::SysNSStringToUTF16(im_text), replacement_range, 0);
     }
   }
 
@@ -3185,13 +3182,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // cancel composition IPC message to the renderer.
 }
 
-- (void)confirmComposition {
+- (void)finishComposingText {
   if (!hasMarkedText_)
     return;
 
   if (renderWidgetHostView_->GetActiveWidget()) {
-    renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
-        base::string16(), gfx::Range::InvalidRange(), false);
+    renderWidgetHostView_->GetActiveWidget()->ImeFinishComposingText(false);
   }
 
   [self cancelComposition];
@@ -3258,7 +3254,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // If the user is currently using an IME, confirm the IME input,
   // and then insert the text from the service, the same as TextEdit and Safari.
-  [self confirmComposition];
+  [self finishComposingText];
   [self insertText:string];
   return YES;
 }

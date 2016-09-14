@@ -1320,10 +1320,14 @@ void RenderFrameImpl::SimulateImeSetComposition(
       selection_start, selection_end);
 }
 
-void RenderFrameImpl::SimulateImeConfirmComposition(
+void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
     const gfx::Range& replacement_range) {
-  render_view_->OnImeConfirmComposition(text, replacement_range, false);
+  render_view_->OnImeCommitText(text, replacement_range, 0);
+}
+
+void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {
+  render_view_->OnImeFinishComposingText(keep_selection);
 }
 
 void RenderFrameImpl::OnImeSetComposition(
@@ -1357,37 +1361,27 @@ void RenderFrameImpl::OnImeSetComposition(
   }
 }
 
-void RenderFrameImpl::OnImeConfirmComposition(
-    const base::string16& text,
-    const gfx::Range& replacement_range,
-    bool keep_selection) {
-  // When a PPAPI plugin has focus, we bypass WebKit.
-  // Here, text.empty() has a special meaning. It means to commit the last
-  // update of composition text (see
-  // RenderWidgetHost::ImeConfirmComposition()).
-  const base::string16& last_text = text.empty() ? pepper_composition_text_
-                                                 : text;
-
-  // last_text is empty only when both text and pepper_composition_text_ is.
-  // Ignore it.
-  if (last_text.empty())
+void RenderFrameImpl::OnImeCommitText(const base::string16& text,
+                                      const gfx::Range& replacement_range,
+                                      int relative_cursor_pos) {
+  if (text.empty())
     return;
 
   if (!IsPepperAcceptingCompositionEvents()) {
-    base::i18n::UTF16CharIterator iterator(&last_text);
+    base::i18n::UTF16CharIterator iterator(&text);
     int32_t i = 0;
     while (iterator.Advance()) {
       blink::WebKeyboardEvent char_event;
       char_event.type = blink::WebInputEvent::Char;
       char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
       char_event.modifiers = 0;
-      char_event.windowsKeyCode = last_text[i];
-      char_event.nativeKeyCode = last_text[i];
+      char_event.windowsKeyCode = text[i];
+      char_event.nativeKeyCode = text[i];
 
       const int32_t char_start = i;
       for (; i < iterator.array_pos(); ++i) {
-        char_event.text[i - char_start] = last_text[i];
-        char_event.unmodifiedText[i - char_start] = last_text[i];
+        char_event.text[i - char_start] = text[i];
+        char_event.unmodifiedText[i - char_start] = text[i];
       }
 
       if (GetRenderWidget()->GetWebWidget())
@@ -1396,8 +1390,43 @@ void RenderFrameImpl::OnImeConfirmComposition(
   } else {
     // Mimics the order of events sent by WebKit.
     // See WebCore::Editor::setComposition() for the corresponding code.
-    focused_pepper_plugin_->HandleCompositionEnd(last_text);
-    focused_pepper_plugin_->HandleTextInput(last_text);
+    focused_pepper_plugin_->HandleCompositionEnd(text);
+    focused_pepper_plugin_->HandleTextInput(text);
+  }
+  pepper_composition_text_.clear();
+}
+
+void RenderFrameImpl::OnImeFinishComposingText(bool keep_selection) {
+  const base::string16& text = pepper_composition_text_;
+
+  if (text.empty())
+    return;
+
+  if (!IsPepperAcceptingCompositionEvents()) {
+    base::i18n::UTF16CharIterator iterator(&text);
+    int32_t i = 0;
+    while (iterator.Advance()) {
+      blink::WebKeyboardEvent char_event;
+      char_event.type = blink::WebInputEvent::Char;
+      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+      char_event.modifiers = 0;
+      char_event.windowsKeyCode = text[i];
+      char_event.nativeKeyCode = text[i];
+
+      const int32_t char_start = i;
+      for (; i < iterator.array_pos(); ++i) {
+        char_event.text[i - char_start] = text[i];
+        char_event.unmodifiedText[i - char_start] = text[i];
+      }
+
+      if (GetRenderWidget()->GetWebWidget())
+        GetRenderWidget()->GetWebWidget()->handleInputEvent(char_event);
+    }
+  } else {
+    // Mimics the order of events sent by WebKit.
+    // See WebCore::Editor::setComposition() for the corresponding code.
+    focused_pepper_plugin_->HandleCompositionEnd(text);
+    focused_pepper_plugin_->HandleTextInput(text);
   }
   pepper_composition_text_.clear();
 }

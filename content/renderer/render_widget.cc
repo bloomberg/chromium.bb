@@ -485,7 +485,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_CursorVisibilityChange,
                         OnCursorVisibilityChange)
     IPC_MESSAGE_HANDLER(InputMsg_ImeSetComposition, OnImeSetComposition)
-    IPC_MESSAGE_HANDLER(InputMsg_ImeConfirmComposition, OnImeConfirmComposition)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeCommitText, OnImeCommitText)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeFinishComposingText,
+                        OnImeFinishComposingText)
     IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
@@ -1411,13 +1413,13 @@ void RenderWidget::OnImeSetComposition(
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
-void RenderWidget::OnImeConfirmComposition(const base::string16& text,
-                                           const gfx::Range& replacement_range,
-                                           bool keep_selection) {
+void RenderWidget::OnImeCommitText(const base::string16& text,
+                                   const gfx::Range& replacement_range,
+                                   int relative_cursor_pos) {
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeConfirmComposition(
-        text, replacement_range, keep_selection);
+    focused_pepper_plugin_->render_frame()->OnImeCommitText(
+        text, replacement_range, relative_cursor_pos);
     return;
   }
 #endif
@@ -1430,12 +1432,27 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
     return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
-  if (text.length())
-    GetWebWidget()->confirmComposition(text);
-  else if (keep_selection)
-    GetWebWidget()->confirmComposition(WebWidget::KeepSelection);
-  else
-    GetWebWidget()->confirmComposition(WebWidget::DoNotKeepSelection);
+  GetWebWidget()->commitText(text, relative_cursor_pos);
+  input_handler_->set_handling_input_event(false);
+  UpdateCompositionInfo(false /* not an immediate request */);
+}
+
+void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
+#if defined(ENABLE_PLUGINS)
+  if (focused_pepper_plugin_) {
+    focused_pepper_plugin_->render_frame()->OnImeFinishComposingText(
+        keep_selection);
+    return;
+  }
+#endif
+
+  if (!ShouldHandleImeEvent())
+    return;
+  ImeEventGuard guard(this);
+  input_handler_->set_handling_input_event(true);
+  GetWebWidget()->finishComposingText(keep_selection
+                                      ? WebWidget::KeepSelection
+                                      : WebWidget::DoNotKeepSelection);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
@@ -1965,7 +1982,7 @@ void RenderWidget::resetInputMethod() {
   if (text_input_info_.type != blink::WebTextInputTypeNone) {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
-    if (GetWebWidget()->confirmComposition())
+    if (GetWebWidget()->finishComposingText(WebWidget::DoNotKeepSelection))
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 

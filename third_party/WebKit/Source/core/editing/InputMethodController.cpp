@@ -40,7 +40,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -170,19 +169,46 @@ void InputMethodController::selectComposition() const
     frame().selection().setSelection(selection, 0);
 }
 
-bool InputMethodController::confirmComposition()
-{
-    return confirmComposition(composingText());
-}
-
-bool InputMethodController::confirmComposition(const String& text, ConfirmCompositionBehavior confirmBehavior)
+bool InputMethodController::finishComposingText(ConfirmCompositionBehavior confirmBehavior)
 {
     if (!hasComposition())
         return false;
 
-    Optional<Editor::RevealSelectionScope> revealSelectionScope;
-    if (confirmBehavior == KeepSelection)
-        revealSelectionScope.emplace(&editor());
+    if (confirmBehavior == KeepSelection) {
+        PlainTextRange oldOffsets = getSelectionOffsets();
+        Editor::RevealSelectionScope revealSelectionScope(&editor());
+
+        bool result = replaceComposition(composingText());
+
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited. see http://crbug.com/590369 for more details.
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+        setSelectionOffsets(oldOffsets);
+        return result;
+    }
+
+    return replaceCompositionAndMoveCaret(composingText(), 0);
+}
+
+bool InputMethodController::commitText(const String& text, int relativeCaretPosition)
+{
+    if (hasComposition())
+        return replaceCompositionAndMoveCaret(text, relativeCaretPosition);
+
+    // We should do nothing in this case, because:
+    // 1. No need to insert text when text is empty.
+    // 2. Shouldn't move caret when relativeCaretPosition == 0 to avoid
+    // duplicate selection change event.
+    if (!text.length() && !relativeCaretPosition)
+        return false;
+    return insertTextAndMoveCaret(text, relativeCaretPosition);
+}
+
+bool InputMethodController::replaceComposition(const String& text)
+{
+    if (!hasComposition())
+        return false;
 
     // If the composition was set from existing text and didn't change, then
     // there's nothing to do here (and we should avoid doing anything as that
@@ -220,36 +246,51 @@ bool InputMethodController::confirmComposition(const String& text, ConfirmCompos
     return true;
 }
 
-bool InputMethodController::confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior confirmBehavior)
+// relativeCaretPosition is relative to the end of the text.
+static int computeAbsoluteCaretPosition(size_t textStart, size_t textLength, int relativeCaretPosition)
 {
-    if (!hasComposition()) {
-        if (!text.length())
-            return false;
+    return textStart + textLength + relativeCaretPosition;
+}
 
-        if (dispatchBeforeInputInsertText(frame().document()->focusedElement(), text) != DispatchEventResult::NotCanceled)
-            return false;
+bool InputMethodController::replaceCompositionAndMoveCaret(const String& text, int relativeCaretPosition)
+{
+    Element* rootEditableElement = frame().selection().rootEditableElement();
+    if (!rootEditableElement)
+        return false;
+    PlainTextRange compositionRange = PlainTextRange::create(*rootEditableElement, *m_compositionRange);
+    if (compositionRange.isNull())
+        return false;
+    int textStart = compositionRange.start();
 
-        editor().insertText(text, 0);
-        return true;
-    }
+    if (!replaceComposition(text))
+        return false;
+
+    int absoluteCaretPosition = computeAbsoluteCaretPosition(textStart, text.length(), relativeCaretPosition);
+    return moveCaret(absoluteCaretPosition);
+}
+
+bool InputMethodController::insertText(const String& text)
+{
+    if (dispatchBeforeInputInsertText(frame().document()->focusedElement(), text) != DispatchEventResult::NotCanceled)
+        return false;
+    editor().insertText(text, 0);
+    return true;
+}
+
+bool InputMethodController::insertTextAndMoveCaret(const String& text, int relativeCaretPosition)
+{
+    PlainTextRange selectionRange = getSelectionOffsets();
+    if (selectionRange.isNull())
+        return false;
+    int textStart = selectionRange.start();
 
     if (text.length()) {
-        confirmComposition(text);
-        return true;
+        if (!insertText(text))
+            return false;
     }
 
-    if (confirmBehavior == DoNotKeepSelection)
-        return confirmComposition(composingText(), DoNotKeepSelection);
-
-    PlainTextRange oldOffsets = getSelectionOffsets();
-    bool result = confirmComposition();
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited. see http://crbug.com/590369 for more details.
-    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    setSelectionOffsets(oldOffsets);
-    return result;
+    int absoluteCaretPosition = computeAbsoluteCaretPosition(textStart, text.length(), relativeCaretPosition);
+    return moveCaret(absoluteCaretPosition);
 }
 
 void InputMethodController::cancelComposition()
@@ -341,7 +382,8 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     //    !hasComposition() && test.isEmpty().
     if (text.isEmpty()) {
         if (hasComposition()) {
-            confirmComposition(emptyString());
+            Editor::RevealSelectionScope revealSelectionScope(&editor());
+            replaceComposition(emptyString());
         } else {
             // It's weird to call |setComposition()| with empty text outside composition, however some IME
             // (e.g. Japanese IBus-Anthy) did this, so we simply delete selection without sending extra events.
@@ -544,6 +586,15 @@ PlainTextRange InputMethodController::createRangeForSelection(int start, int end
     end = std::min(end, rightBoundary);
 
     return PlainTextRange(start, end);
+}
+
+bool InputMethodController::moveCaret(int newCaretPosition)
+{
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    PlainTextRange selectedRange = createRangeForSelection(newCaretPosition, newCaretPosition, 0);
+    if (selectedRange.isNull())
+        return false;
+    return setEditableSelectionOffsets(selectedRange);
 }
 
 void InputMethodController::extendSelectionAndDelete(int before, int after)

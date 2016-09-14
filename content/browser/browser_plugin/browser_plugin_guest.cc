@@ -256,8 +256,11 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeConfirmComposition,
-                        OnImeConfirmComposition)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeCommitText, OnImeCommitText)
+
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeFinishComposingText,
+                        OnImeFinishComposingText)
+
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeSetComposition,
                         OnImeSetComposition)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
@@ -862,14 +865,16 @@ void BrowserPluginGuest::OnImeSetComposition(
                                       selection_start, selection_end));
 }
 
-void BrowserPluginGuest::OnImeConfirmComposition(
-    int browser_plugin_instance_id,
-    const std::string& text,
-    bool keep_selection) {
-  Send(new InputMsg_ImeConfirmComposition(routing_id(),
-                                          base::UTF8ToUTF16(text),
-                                          gfx::Range::InvalidRange(),
-                                          keep_selection));
+void BrowserPluginGuest::OnImeCommitText(int browser_plugin_instance_id,
+                                         const std::string& text,
+                                         int relative_cursor_pos) {
+  Send(new InputMsg_ImeCommitText(routing_id(), base::UTF8ToUTF16(text),
+                                  gfx::Range::InvalidRange(),
+                                  relative_cursor_pos));
+}
+
+void BrowserPluginGuest::OnImeFinishComposingText(bool keep_selection) {
+  Send(new InputMsg_ImeFinishComposingText(routing_id(), keep_selection));
 }
 
 void BrowserPluginGuest::OnExtendSelectionAndDelete(

@@ -137,19 +137,14 @@ bool WebViewFrameWidget::setComposition(
     return m_webView->setComposition(text, underlines, selectionStart, selectionEnd);
 }
 
-bool WebViewFrameWidget::confirmComposition()
+bool WebViewFrameWidget::finishComposingText(ConfirmCompositionBehavior selectionBehavior)
 {
-    return m_webView->confirmComposition();
+    return m_webView->finishComposingText(selectionBehavior);
 }
 
-bool WebViewFrameWidget::confirmComposition(ConfirmCompositionBehavior selectionBehavior)
+bool WebViewFrameWidget::commitText(const WebString& text, int relativeCaretPosition)
 {
-    return m_webView->confirmComposition(selectionBehavior);
-}
-
-bool WebViewFrameWidget::confirmComposition(const WebString& text)
-{
-    return m_webView->confirmComposition(text);
+    return m_webView->commitText(text, relativeCaretPosition);
 }
 
 WebRange WebViewFrameWidget::compositionRange()

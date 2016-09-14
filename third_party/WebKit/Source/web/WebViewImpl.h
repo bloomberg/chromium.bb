@@ -141,9 +141,8 @@ public:
         const WebVector<WebCompositionUnderline>& underlines,
         int selectionStart,
         int selectionEnd) override;
-    bool confirmComposition() override;
-    bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) override;
-    bool confirmComposition(const WebString& text) override;
+    bool commitText(const WebString& text, int relativeCaretPosition) override;
+    bool finishComposingText(ConfirmCompositionBehavior selectionBehavior) override;
     WebRange compositionRange() override;
     WebTextInputInfo textInputInfo() override;
     WebTextInputType textInputType() override;
@@ -562,8 +561,6 @@ private:
 
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);
-
-    bool confirmComposition(const WebString& text, ConfirmCompositionBehavior);
 
     // Returns true if the view was scrolled.
     bool scrollViewWithKeyboard(int keyCode, int modifiers);

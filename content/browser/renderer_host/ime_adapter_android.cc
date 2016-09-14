@@ -143,7 +143,7 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          const JavaParamRef<jobject>& text,
                                          const JavaParamRef<jstring>& text_str,
-                                         int new_cursor_pos) {
+                                         int relative_cursor_pos) {
   RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
@@ -165,25 +165,35 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
   // Sort spans by |.startOffset|.
   std::sort(underlines.begin(), underlines.end());
 
-  // new_cursor_position is as described in the Android API for
+  // relative_cursor_pos is as described in the Android API for
   // InputConnection#setComposingText, whereas the parameters for
   // ImeSetComposition are relative to the start of the composition.
-  if (new_cursor_pos > 0)
-    new_cursor_pos = text16.length() + new_cursor_pos - 1;
+  if (relative_cursor_pos > 0)
+    relative_cursor_pos = text16.length() + relative_cursor_pos - 1;
 
   rwhi->ImeSetComposition(text16, underlines, gfx::Range::InvalidRange(),
-                          new_cursor_pos, new_cursor_pos);
+                          relative_cursor_pos, relative_cursor_pos);
 }
 
 void ImeAdapterAndroid::CommitText(JNIEnv* env,
                                    const JavaParamRef<jobject>&,
-                                   const JavaParamRef<jstring>& text_str) {
+                                   const JavaParamRef<jstring>& text_str,
+                                   int relative_cursor_pos) {
   RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
   base::string16 text16 = ConvertJavaStringToUTF16(env, text_str);
-  rwhi->ImeConfirmComposition(text16, gfx::Range::InvalidRange(), false);
+
+  // relative_cursor_pos is as described in the Android API for
+  // InputConnection#commitText, whereas the parameters for
+  // ImeConfirmComposition are relative to the end of the composition.
+  if (relative_cursor_pos > 0)
+    relative_cursor_pos--;
+  else
+    relative_cursor_pos -= text16.length();
+
+  rwhi->ImeCommitText(text16, gfx::Range::InvalidRange(), relative_cursor_pos);
 }
 
 void ImeAdapterAndroid::FinishComposingText(JNIEnv* env,
@@ -192,8 +202,7 @@ void ImeAdapterAndroid::FinishComposingText(JNIEnv* env,
   if (!rwhi)
     return;
 
-  rwhi->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
-                              true);
+  rwhi->ImeFinishComposingText(true);
 }
 
 void ImeAdapterAndroid::AttachImeAdapter(
