@@ -20,7 +20,6 @@ private:
 TEST_F(TextAutosizerTest, SimpleParagraph)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -39,10 +38,9 @@ TEST_F(TextAutosizerTest, SimpleParagraph)
     EXPECT_FLOAT_EQ(40.f, autosized->layoutObject()->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, DISABLED_TextSizeAdjustDisablesAutosizing)
+TEST_F(TextAutosizerTest, TextSizeAdjustDisablesAutosizing)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -82,10 +80,9 @@ TEST_F(TextAutosizerTest, DISABLED_TextSizeAdjustDisablesAutosizing)
     EXPECT_FLOAT_EQ(16.f, textSizeAdjust100->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, DISABLED_ParagraphWithChangingTextSizeAdjustment)
+TEST_F(TextAutosizerTest, ParagraphWithChangingTextSizeAdjustment)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -126,10 +123,9 @@ TEST_F(TextAutosizerTest, DISABLED_ParagraphWithChangingTextSizeAdjustment)
     EXPECT_FLOAT_EQ(40.f, autosizedDiv->layoutObject()->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, DISABLED_ZeroTextSizeAdjustment)
+TEST_F(TextAutosizerTest, ZeroTextSizeAdjustment)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -150,7 +146,6 @@ TEST_F(TextAutosizerTest, DISABLED_ZeroTextSizeAdjustment)
 TEST_F(TextAutosizerTest, NegativeTextSizeAdjustment)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -172,7 +167,6 @@ TEST_F(TextAutosizerTest, NegativeTextSizeAdjustment)
 TEST_F(TextAutosizerTest, TextSizeAdjustmentPixelUnits)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -191,10 +185,9 @@ TEST_F(TextAutosizerTest, TextSizeAdjustmentPixelUnits)
     EXPECT_FLOAT_EQ(40.f, textSizeAdjustPixels->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, DISABLED_NestedTextSizeAdjust)
+TEST_F(TextAutosizerTest, NestedTextSizeAdjust)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -225,10 +218,9 @@ TEST_F(TextAutosizerTest, DISABLED_NestedTextSizeAdjust)
     EXPECT_FLOAT_EQ(8.48f, textSizeAdjustB->style()->computedFontSize());
 }
 
-TEST_F(TextAutosizerTest, DISABLED_PrefixedTextSizeAdjustIsAlias)
+TEST_F(TextAutosizerTest, PrefixedTextSizeAdjustIsAlias)
 {
     setBodyInnerHTML(
-        "<meta name='viewport' content='width=800'>"
         "<style>"
         "    html { font-size: 16px; }"
         "    body { width: 800px; margin: 0; overflow-y: hidden; }"
@@ -245,6 +237,162 @@ TEST_F(TextAutosizerTest, DISABLED_PrefixedTextSizeAdjustIsAlias)
     EXPECT_FLOAT_EQ(16.f, textSizeAdjust->style()->specifiedFontSize());
     EXPECT_FLOAT_EQ(8.f, textSizeAdjust->style()->computedFontSize());
     EXPECT_FLOAT_EQ(.5f, textSizeAdjust->style()->getTextSizeAdjust().multiplier());
+}
+
+TEST_F(TextAutosizerTest, AccessibilityFontScaleFactor)
+{
+    document().settings()->setAccessibilityFontScaleFactor(1.5);
+    setBodyInnerHTML(
+        "<style>"
+        "    html { font-size: 16px; }"
+        "    body { width: 800px; margin: 0; overflow-y: hidden; }"
+        "</style>"
+        "<div id='autosized'>"
+        "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+        "    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud"
+        "    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
+        "    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt"
+        "    mollit anim id est laborum."
+        "</div>");
+    Element* autosized = document().getElementById("autosized");
+    EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
+    // 1.5 * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 60px.
+    EXPECT_FLOAT_EQ(60.f, autosized->layoutObject()->style()->computedFontSize());
+}
+
+TEST_F(TextAutosizerTest, ChangingAccessibilityFontScaleFactor)
+{
+    document().settings()->setAccessibilityFontScaleFactor(1);
+    setBodyInnerHTML(
+        "<style>"
+        "    html { font-size: 16px; }"
+        "    body { width: 800px; margin: 0; overflow-y: hidden; }"
+        "</style>"
+        "<div id='autosized'>"
+        "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+        "    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud"
+        "    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
+        "    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt"
+        "    mollit anim id est laborum."
+        "</div>");
+    Element* autosized = document().getElementById("autosized");
+    EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
+    // 1.0 * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 40px.
+    EXPECT_FLOAT_EQ(40.f, autosized->layoutObject()->style()->computedFontSize());
+
+    document().settings()->setAccessibilityFontScaleFactor(2);
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
+    // 2.0 * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 80px.
+    EXPECT_FLOAT_EQ(80.f, autosized->layoutObject()->style()->computedFontSize());
+}
+
+TEST_F(TextAutosizerTest, TextSizeAdjustDoesNotDisableAccessibility)
+{
+    document().settings()->setAccessibilityFontScaleFactor(1.5);
+    setBodyInnerHTML(
+        "<style>"
+        "    html { font-size: 16px; }"
+        "    body { width: 800px; margin: 0; overflow-y: hidden; }"
+        "</style>"
+        "<div id='textSizeAdjustNone' style='text-size-adjust: none;'>"
+        "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+        "    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud"
+        "    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
+        "    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt"
+        "    mollit anim id est laborum."
+        "</div>"
+        "<div id='textSizeAdjustDouble' style='text-size-adjust: 200%;'>"
+        "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+        "    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud"
+        "    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
+        "    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt"
+        "    mollit anim id est laborum."
+        "</div>");
+    Element* textSizeAdjustNone = document().getElementById("textSizeAdjustNone");
+    EXPECT_FLOAT_EQ(16.f, textSizeAdjustNone->layoutObject()->style()->specifiedFontSize());
+    // 1.5 * (specified font-size = 16px) = 24px.
+    EXPECT_FLOAT_EQ(24.f, textSizeAdjustNone->layoutObject()->style()->computedFontSize());
+
+    Element* textSizeAdjustDouble = document().getElementById("textSizeAdjustDouble");
+    EXPECT_FLOAT_EQ(16.f, textSizeAdjustDouble->layoutObject()->style()->specifiedFontSize());
+    // 1.5 * (specified font-size = 16px) * (text size adjustment = 2) = 48px.
+    EXPECT_FLOAT_EQ(48.f, textSizeAdjustDouble->layoutObject()->style()->computedFontSize());
+
+    // Changing the accessibility font scale factor should change the adjusted size.
+    document().settings()->setAccessibilityFontScaleFactor(2);
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_FLOAT_EQ(16.f, textSizeAdjustNone->layoutObject()->style()->specifiedFontSize());
+    // 2.0 * (specified font-size = 16px) = 32px.
+    EXPECT_FLOAT_EQ(32.f, textSizeAdjustNone->layoutObject()->style()->computedFontSize());
+
+    EXPECT_FLOAT_EQ(16.f, textSizeAdjustDouble->layoutObject()->style()->specifiedFontSize());
+    // 2.0 * (specified font-size = 16px) * (text size adjustment = 2) = 64px.
+    EXPECT_FLOAT_EQ(64.f, textSizeAdjustDouble->layoutObject()->style()->computedFontSize());
+}
+
+// https://crbug.com/646237
+TEST_F(TextAutosizerTest, DISABLED_TextSizeAdjustWithoutNeedingAutosizing)
+{
+    document().settings()->setTextAutosizingWindowSizeOverride(IntSize(800, 600));
+    setBodyInnerHTML(
+        "<style>"
+        "    html { font-size: 16px; }"
+        "    body { width: 800px; margin: 0; overflow-y: hidden; }"
+        "</style>"
+        "<div id='textSizeAdjust' style='text-size-adjust: 150%;'>"
+        "    Text"
+        "</div>");
+
+    LayoutObject* textSizeAdjust = document().getElementById("textSizeAdjust")->layoutObject();
+    EXPECT_FLOAT_EQ(16.f, textSizeAdjust->style()->specifiedFontSize());
+    EXPECT_FLOAT_EQ(24.f, textSizeAdjust->style()->computedFontSize());
+    EXPECT_FLOAT_EQ(1.5f, textSizeAdjust->style()->getTextSizeAdjust().multiplier());
+}
+
+TEST_F(TextAutosizerTest, DeviceScaleAdjustmentWithViewport)
+{
+    setBodyInnerHTML(
+        "<meta name='viewport' content='width=800'>"
+        "<style>"
+        "    html { font-size: 16px; }"
+        "    body { width: 800px; margin: 0; overflow-y: hidden; }"
+        "</style>"
+        "<div id='autosized'>"
+        "    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+        "    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud"
+        "    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure"
+        "    dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        "    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt"
+        "    mollit anim id est laborum."
+        "</div>");
+
+    document().settings()->setViewportMetaEnabled(true);
+    document().settings()->setDeviceScaleAdjustment(1.5f);
+    document().view()->updateAllLifecyclePhases();
+
+    Element* autosized = document().getElementById("autosized");
+    EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
+    // (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 40px.
+    // The device scale adjustment of 1.5 is ignored.
+    EXPECT_FLOAT_EQ(40.f, autosized->layoutObject()->style()->computedFontSize());
+
+    document().settings()->setViewportMetaEnabled(false);
+    // TODO(pdr): This should not be needed but changing viewport settings does
+    // not invalidate TextAutosizing, see ViewportDescriptionChange in Page.cpp.
+    document().settings()->setDeviceScaleAdjustment(2.0f);
+    document().view()->updateAllLifecyclePhases();
+
+    autosized = document().getElementById("autosized");
+    EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
+    // (device scale adjustment = 2) * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 80px.
+    EXPECT_FLOAT_EQ(80.f, autosized->layoutObject()->style()->computedFontSize());
 }
 
 } // namespace blink
