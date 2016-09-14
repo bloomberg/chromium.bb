@@ -421,36 +421,6 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInput) {
   main_task_runner_->RunUntilIdle();
 }
 
-TEST_P(MainThreadEventQueueTest, RafAlignedMaxSize) {
-  // Don't run the test when we aren't supporting rAF aligned input.
-  if (!handle_raf_aligned_input_)
-    return;
-
-  const size_t kNumEventsToQueue = 16;
-  WebMouseWheelEvent mouseEvent =
-      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false);
-
-  EXPECT_FALSE(main_task_runner_->HasPendingTask());
-  EXPECT_EQ(0u, event_queue().size());
-
-  for (size_t i = 0; i < kNumEventsToQueue; ++i) {
-    mouseEvent.modifiers = i;
-    HandleEvent(mouseEvent, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  }
-
-  // There is a maximum number of events we handle in a rAF. kNumEventsToQueue
-  // exceeds that. Ensure that two rAF calls need to run.
-  EXPECT_EQ(kNumEventsToQueue, event_queue().size());
-  EXPECT_FALSE(main_task_runner_->HasPendingTask());
-  EXPECT_TRUE(needs_main_frame_);
-  RunSimulatedRafOnce();
-  EXPECT_TRUE(needs_main_frame_);
-  EXPECT_FALSE(main_task_runner_->HasPendingTask());
-  RunSimulatedRafOnce();
-  EXPECT_EQ(0u, event_queue().size());
-  EXPECT_FALSE(main_task_runner_->HasPendingTask());
-}
-
 TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   SyntheticWebTouchEvent kEvents[1];
   kEvents[0].PressPoint(10, 10);

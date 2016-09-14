@@ -12,12 +12,6 @@ namespace content {
 
 namespace {
 
-// The maximum number of post-coalesced events processed per rAF task. 10 was
-// chosen because it really should never be hit yet prevents an infinite loop if
-// the compositor keeps delivering events faster than the main thread can
-// process them.
-const size_t kMaxEventsPerRafTask = 10;
-
 const size_t kTenSeconds = 10 * 1000 * 1000;
 
 bool isContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
@@ -230,21 +224,21 @@ void MainThreadEventQueue::DispatchRafAlignedInput() {
   if (!handle_raf_aligned_input_)
     return;
 
+  std::deque<std::unique_ptr<EventWithDispatchType>> events_to_process;
   {
     base::AutoLock lock(shared_state_lock_);
     shared_state_.sent_main_frame_request_ = false;
-  }
 
-  for (size_t i = 0; i < kMaxEventsPerRafTask; ++i) {
-    {
-      base::AutoLock lock(shared_state_lock_);
-      if (shared_state_.events_.empty())
-        break;
-
+    while(!shared_state_.events_.empty()) {
       if (!isContinuousEvent(shared_state_.events_.front()))
         break;
-      in_flight_event_ = shared_state_.events_.Pop();
+      events_to_process.emplace_back(shared_state_.events_.Pop());
     }
+  }
+
+  while(!events_to_process.empty()) {
+    in_flight_event_ = std::move(events_to_process.front());
+    events_to_process.pop_front();
     DispatchInFlightEvent();
   }
   PossiblyScheduleMainFrame();
