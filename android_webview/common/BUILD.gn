@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/version.gni")
+import("//build/util/process_version.gni")
 
 process_version("version") {
+  sources = [
+    "//chrome/VERSION",
+  ]
   template_file = "aw_version_info_values.h.version"
   output = "$root_gen_dir/android_webview/common/aw_version_info_values.h"
 }

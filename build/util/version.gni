@@ -6,7 +6,7 @@
 #
 # PREFER NOT TO USE THESE. The GYP build uses this kind of thing extensively.
 # However, it is far better to write an action (or use the process_version
-# wrapper in chrome/version.gni) to generate a file at build-time with the
+# wrapper in build/util/version.gni) to generate a file at build-time with the
 # information you need. This allows better dependency checking and GN will
 # run faster.
 #

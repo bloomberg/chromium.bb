@@ -6,15 +6,14 @@
 # Please don't add dependencies on any other system libraries.
 
 import("//build/config/win/manifest.gni")
-import("//chrome/version.gni")
+import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
 ##------------------------------------------------------------------------------
 ## chrome_elf
 ##------------------------------------------------------------------------------
 
-process_version("chrome_elf_resources") {
-  template_file = chrome_version_rc_template
+process_version_rc_template("chrome_elf_resources") {
   sources = [
     "chrome_elf.ver",
   ]

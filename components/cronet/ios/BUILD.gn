@@ -6,8 +6,8 @@ import("//build/buildflag_header.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
+import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
 
@@ -19,6 +19,9 @@ declare_args() {
 
 process_version("cronet_version_header") {
   template_file = "//components/cronet/version.h.in"
+  sources = [
+    "//chrome/VERSION",
+  ]
   output = "$target_gen_dir/version.h"
   extra_args = [
     "-e",

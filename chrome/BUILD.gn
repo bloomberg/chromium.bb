@@ -13,7 +13,7 @@ import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
-import("//chrome/version.gni")
+import("//chrome/process_version_rc_template.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
@@ -1212,16 +1212,14 @@ group("child_dependencies") {
 }
 
 if (is_win) {
-  process_version("chrome_exe_version") {
-    template_file = chrome_version_rc_template
+  process_version_rc_template("chrome_exe_version") {
     sources = [
       "app/chrome_exe.ver",
     ]
     output = "$target_gen_dir/chrome_exe_version.rc"
   }
 
-  process_version("chrome_dll_version") {
-    template_file = chrome_version_rc_template
+  process_version_rc_template("chrome_dll_version") {
     sources = [
       "app/chrome_dll.ver",
     ]
@@ -1237,16 +1235,14 @@ if (is_win) {
     type = "dll"
   }
 
-  process_version("nacl64_exe_version") {
-    template_file = chrome_version_rc_template
+  process_version_rc_template("nacl64_exe_version") {
     sources = [
       "app/nacl64_exe.ver",
     ]
     output = "$target_gen_dir/nacl64_exe_version.rc"
   }
 
-  process_version("other_version") {
-    template_file = chrome_version_rc_template
+  process_version_rc_template("other_version") {
     sources = [
       "app/other.ver",
     ]
